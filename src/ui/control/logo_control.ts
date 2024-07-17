@@ -1,8 +1,8 @@
 import * as DOM from '../../util/dom';
 import {bindAll} from '../../util/util';
 
+import type {MapEventOf} from '../events';
 import type {Map, ControlPosition} from '../map';
-import type {MapSourceDataEvent} from '../events';
 
 /**
  * A `LogoControl` is a control that adds the Mapbox watermark
@@ -56,7 +56,7 @@ class LogoControl {
         return 'bottom-left';
     }
 
-    _updateLogo(e?: MapSourceDataEvent) {
+    _updateLogo(e?: MapEventOf<'sourcedata'>) {
         if (!e || e.sourceDataType === 'metadata') {
             this._container.style.display = this._logoRequired() ? 'block' : 'none';
         }

@@ -97,6 +97,7 @@ const emitValidationErrors = (evented: Evented, errors?: ValidationErrors | null
 import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties';
 import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties';
 import type {vec3} from 'gl-matrix';
+import type {MapEvents} from '../ui/events';
 import type {Map as MapboxMap} from '../ui/map';
 import type Transform from '../geo/transform';
 import type {StyleImage} from './style_image';
@@ -202,7 +203,7 @@ const defaultTransition = {duration: 300, delay: 0};
 /**
  * @private
  */
-class Style extends Evented {
+class Style extends Evented<MapEvents> {
     map: MapboxMap;
     stylesheet: StyleSpecification;
     dispatcher: Dispatcher;

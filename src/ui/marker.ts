@@ -14,7 +14,7 @@ import type {Anchor} from './anchor';
 import type {Map} from './map';
 import type Popup from './popup';
 import type {LngLatLike} from '../geo/lng_lat';
-import type {MapMouseEvent, MapTouchEvent} from './events';
+import type {MapEventOf, MapMouseEvent, MapTouchEvent} from './events';
 import type {PointLike} from '../types/point-like';
 
 type Options = {
@@ -557,7 +557,7 @@ export default class Marker extends Evented {
         return rotation ? `rotateZ(${rotation}deg)` : '';
     }
 
-    _update(delaySnap?: boolean) {
+    _update(delaySnap?: MapEventOf<'moveend'> | boolean) {
         cancelAnimationFrame(this._updateFrameId);
         const map = this._map;
         if (!map) return;

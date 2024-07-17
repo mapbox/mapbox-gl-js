@@ -20,10 +20,13 @@ import type {Class} from '../types/class';
 import type {Source} from './source_types';
 import type {Evented} from '../util/evented';
 import type {Callback} from '../types/callback';
+import type {MapEvents} from '../ui/events';
 import type {OverscaledTileID} from './tile_id';
 import type {SourceSpecification} from '../style-spec/types';
 
 export type {Source};
+
+export type SourceEvents = Pick<MapEvents, 'data' | 'dataloading' | 'error'>;
 
 export type SourceRasterLayer = {
     id: string;
@@ -66,7 +69,7 @@ export type SourceVectorLayer = {
  * @property {boolean} roundZoom `true` if zoom levels are rounded to the nearest integer in the source data, `false`
  * if they are floor-ed to the nearest integer.
  */
-export interface ISource extends Evented {
+export interface ISource extends Evented<SourceEvents> {
     readonly type: string;
     id: string;
     scope: string;

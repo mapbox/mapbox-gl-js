@@ -44,7 +44,7 @@ function sendPluginStateToWorker() {
 }
 
 type EventRegistry = {
-    'pluginStateChange': Event<'pluginStateChange', PluginState>;
+    'pluginStateChange': PluginState;
 };
 
 export const evented = new Evented<EventRegistry>();

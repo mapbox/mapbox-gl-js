@@ -44,12 +44,12 @@ import {Debug} from '../util/debug';
 import config from '../util/config';
 import {isFQID} from '../util/fqid';
 
-import type {Listener} from '../util/evented';
+import type {MapEventType, MapEventOf} from './events';
 import type {PointLike} from '../types/point-like';
 import type {FeatureState} from '../style-spec/expression/index';
+import type {Evented} from '../util/evented';
 import type {RequestTransformFunction} from '../util/mapbox';
 import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
-import type {MapEvent, MapDataEvent} from './events';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
 import type {StyleOptions, StyleSetterOptions, FeatureSelector} from '../style/style';
@@ -118,10 +118,12 @@ export type SetStyleOptions = {
     localIdeographFontFamily: StyleOptions['localIdeographFontFamily'];
 };
 
+type Listener<T extends MapEventType> = (event: MapEventOf<T>) => void;
+
 type DelegatedListener = {
     layers: Set<string>;
-    listener: Listener<any>;
-    delegates: {[K in MapEvent]?: Listener<any>};
+    listener: Listener<MapEventType>;
+    delegates: {[T in MapEventType]?: Listener<T>};
 };
 
 export const AVERAGE_ELEVATION_SAMPLING_INTERVAL = 500; // ms
@@ -760,11 +762,13 @@ export class Map extends Camera {
             }
             this._postStyleLoadEvent();
         });
-        this.on('data', (event: MapDataEvent) => {
+
+        this.on('data', (event) => {
             this._update(event.dataType === 'style');
             this.fire(new Event(`${event.dataType}data`, event));
         });
-        this.on('dataloading', (event: MapDataEvent) => {
+
+        this.on('dataloading', (event) => {
             this.fire(new Event(`${event.dataType}dataloading`, event));
         });
     }
@@ -1508,7 +1512,7 @@ export class Map extends Camera {
         return (this.handlers && this.handlers._isDragging()) || false;
     }
 
-    _createDelegatedListener(type: MapEvent, layers: Array<string>, listener: Listener): DelegatedListener {
+    _createDelegatedListener<T extends MapEventType>(type: T, layers: Array<string>, listener: Listener<T>): DelegatedListener {
         if (type === 'mouseenter' || type === 'mouseover') {
             let mousein = false;
             const mousemove = (e: MapMouseEvent) => {
@@ -1558,7 +1562,7 @@ export class Map extends Camera {
                 }
             };
 
-            return {layers: new Set(layers), listener, delegates: {[(type as string)]: delegate}};
+            return {layers: new Set(layers), listener, delegates: {[type]: delegate}};
         }
     }
 
@@ -1677,12 +1681,12 @@ export class Map extends Camera {
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
-    on(type: MapEvent, listener: Listener<any>): this;
-    on(type: MapEvent, layerIds: string | string[], listener: Listener<any>): this;
+    on<T extends MapEventType>(type: T, listener: Listener<T>): this;
+    on<T extends MapEventType>(type: T, layerIds: string | string[], listener: Listener<T>): this;
 
-    on(type: MapEvent, layerIds: string | string[] | Listener, listener?: Listener<any>): this {
+    on<T extends MapEventType>(type: T, layerIds: string | string[] | Listener<T>, listener?: Listener<T>): this {
         if (typeof layerIds === 'function' || listener === undefined) {
-            return super.on(type, layerIds as Listener<any>);
+            return super.on(type, layerIds as Listener<MapEventType>);
         }
 
         if (!Array.isArray(layerIds)) {
@@ -1704,7 +1708,7 @@ export class Map extends Camera {
         this._delegatedListeners[type].push(delegatedListener);
 
         for (const event in delegatedListener.delegates) {
-            this.on(event as MapEvent, delegatedListener.delegates[event]);
+            this.on(event as T, delegatedListener.delegates[event]);
         }
 
         return this;
@@ -1749,14 +1753,14 @@ export class Map extends Camera {
      * @see [Example: Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Example: Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-    once(type: MapEvent): Promise<Event<string, any>>;
-    once(type: MapEvent, listener: Listener<any>): this;
-    once(type: MapEvent, layerIds: string | string[]): Promise<Event<string, any>>;
-    once(type: MapEvent, layerIds: string | string[], listener: Listener<any>): this;
+    once<T extends MapEventType>(type: T): Promise<MapEventOf<T>>;
+    once<T extends MapEventType>(type: T, listener: Listener<T>): this;
+    once<T extends MapEventType>(type: T, layerIds: string | string[]): Promise<MapEventOf<T>>;
+    once<T extends MapEventType>(type: T, layerIds: string | string[], listener: Listener<T>): this;
 
-    once(type: MapEvent, layerIds?: string | string[] | Listener<any>, listener?: Listener<any>): this | Promise<Event<string, any>> {
+    once<T extends MapEventType>(type: T, layerIds?: string | string[] | Listener<T>, listener?: Listener<T>): this | Promise<MapEventOf<T>> {
         if (typeof layerIds === 'function' || listener === undefined) {
-            return super.once(type, layerIds as Listener<any>);
+            return super.once(type, layerIds as Listener<T>);
         }
 
         if (!Array.isArray(layerIds)) {
@@ -1774,7 +1778,7 @@ export class Map extends Camera {
         const delegatedListener = this._createDelegatedListener(type, layerIds, listener);
 
         for (const event in delegatedListener.delegates) {
-            this.once(event as MapEvent, delegatedListener.delegates[event]);
+            this.once(event as T, delegatedListener.delegates[event]);
         }
 
         return this;
@@ -1805,12 +1809,12 @@ export class Map extends Camera {
      * });
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    off(type: MapEvent, listener: Listener<any>): this;
-    off(type: MapEvent, layerIds: string | string[], listener: Listener<any>): this;
+    off<T extends MapEventType>(type: T, listener: Listener<T>): this;
+    off<T extends MapEventType>(type: T, layerIds: string | string[], listener: Listener<T>): this;
 
-    off(type: MapEvent, layerIds: string | string[] | Listener<any>, listener?: Listener<any>): this {
+    off<T extends MapEventType>(type: T, layerIds: string | string[] | Listener<T>, listener?: Listener<T>): this {
         if (typeof layerIds === 'function' || listener === undefined) {
-            return super.off(type, layerIds as Listener<any>);
+            return super.off(type, layerIds as Listener<T>);
         }
 
         const uniqLayerIds = new Set(Array.isArray(layerIds) ? layerIds : [layerIds]);
@@ -1838,7 +1842,7 @@ export class Map extends Camera {
                 const delegatedListener = listeners[i];
                 if (delegatedListener.listener === listener && areLayerIdsEqual(delegatedListener.layers, uniqLayerIds)) {
                     for (const event in delegatedListener.delegates) {
-                        this.off(event as MapEvent, delegatedListener.delegates[event]);
+                        this.off(event as T, delegatedListener.delegates[event]);
                     }
                     listeners.splice(i, 1);
                     return this;
@@ -3818,7 +3822,7 @@ export class Map extends Camera {
         storeAuthState(gl, true);
 
         this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._tp);
-        this.on('data', (event: MapDataEvent) => {
+        this.on('data', (event) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);
             }

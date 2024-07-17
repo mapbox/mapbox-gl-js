@@ -8,6 +8,7 @@ import throttle from '../../util/throttle';
 import {mercatorZfromAltitude} from '../../geo/mercator_coordinate';
 
 import type {Map} from '../map';
+import type {MapEventOf} from '../events';
 import type {AnimationOptions, CameraOptions} from '../camera';
 
 type Options = {
@@ -45,11 +46,11 @@ const defaultOptions = {
 };
 
 type GeolocateControlEvents = {
-    'error': Event<'error', GeolocationPositionError>;
-    'geolocate': Event<'geolocate', GeolocationPosition>;
-    'outofmaxbounds': Event<'outofmaxbounds', GeolocationPosition>;
-    'trackuserlocationstart': Event<'trackuserlocationstart'>;
-    'trackuserlocationend': Event<'trackuserlocationend'>;
+    'error': GeolocationPositionError;
+    'geolocate': GeolocationPosition;
+    'outofmaxbounds': GeolocationPosition;
+    'trackuserlocationstart': void;
+    'trackuserlocationend': void;
 };
 
 /**
@@ -478,7 +479,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> {
         // when the camera is changed (and it's not as a result of the Geolocation Control) change
         // the watch mode to background watch, so that the marker is updated but not the camera.
         if (this.options.trackUserLocation) {
-            this._map.on('movestart', (event) => {
+            this._map.on('movestart', (event: MapEventOf<'movestart'> & {geolocateSource?: boolean}) => {
                 const fromResize = event.originalEvent && event.originalEvent.type === 'resize';
                 if (!event.geolocateSource && this._watchState === 'ACTIVE_LOCK' && !fromResize) {
                     this._watchState = 'BACKGROUND';

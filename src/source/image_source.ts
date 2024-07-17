@@ -14,7 +14,7 @@ import {GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe_constants';
 import {mat3, vec3} from 'gl-matrix';
 import LngLat from '../geo/lng_lat';
 
-import type {ISource} from './source';
+import type {ISource, SourceEvents} from './source';
 import type {CanvasSourceSpecification} from './canvas_source';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -215,7 +215,7 @@ function sortTriangles(centerLatitudes: number[], indices: TriangleIndexArray): 
  * @see [Example: Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  * @see [Example: Animate a series of images](https://www.mapbox.com/mapbox-gl-js/example/animate-images/)
  */
-class ImageSource extends Evented implements ISource {
+class ImageSource extends Evented<SourceEvents> implements ISource {
     type: string;
     id: string;
     scope: string;

@@ -5,7 +5,7 @@ import EXTENT from '../style-spec/data/extent';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 
-import type {ISource} from './source';
+import type {ISource, SourceEvents} from './source';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
@@ -61,7 +61,7 @@ import type {Cancelable} from '../types/cancelable';
  * @see [Example: Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
  * @see [Example: Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
  */
-class GeoJSONSource extends Evented implements ISource {
+class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     type: 'geojson';
     id: string;
     scope: string;

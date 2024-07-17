@@ -7,10 +7,9 @@ import {makeFQID} from '../util/fqid';
 
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
-import type {ISource} from './source';
 import type {Callback} from '../types/callback';
 import type {OverscaledTileID} from './tile_id';
-import type {SourceSpecification} from '../style-spec/types';
+import type {ISource, SourceEvents} from './source';
 
 type DataType = 'raster';
 
@@ -172,7 +171,7 @@ export interface CustomSourceInterface<T> extends Evented {
     onRemove: (map: Map) => void | null | undefined;
 }
 
-class CustomSource<T> extends Evented implements ISource {
+class CustomSource<T> extends Evented<SourceEvents> implements ISource {
     id: string;
     scope: string;
     type: 'custom';

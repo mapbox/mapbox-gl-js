@@ -1072,6 +1072,7 @@ expectType<mapboxgl.Map>(
     map.on("load", ev => {
         expectType<mapboxgl.MapboxEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'load' event
         expectType<undefined>(ev.originalEvent);
     }),
 );
@@ -1082,6 +1083,7 @@ expectType<mapboxgl.Map>(
     map.on("remove", ev => {
         expectType<mapboxgl.MapboxEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'remove' event
         expectType<undefined>(ev.originalEvent);
     }),
 );
@@ -1089,6 +1091,7 @@ expectType<mapboxgl.Map>(
     map.on("render", ev => {
         expectType<mapboxgl.MapboxEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'render' event
         expectType<undefined>(ev.originalEvent);
     }),
 );
@@ -1096,6 +1099,7 @@ expectType<mapboxgl.Map>(
     map.on("resize", ev => {
         expectType<mapboxgl.MapboxEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'resize' event
         expectType<undefined>(ev.originalEvent);
     }),
 );
@@ -1105,6 +1109,7 @@ expectType<mapboxgl.Map>(
     map.on("error", ev => {
         expectType<mapboxgl.ErrorEvent>(ev);
         expectType<Error>(ev.error);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'error' event
         expectType<undefined>(ev.originalEvent);
     }),
 );
@@ -1297,6 +1302,7 @@ expectType<mapboxgl.Map>(
     map.on("dataloading", ev => {
         expectType<mapboxgl.MapDataEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'dataloading' event
         expectType<undefined>(ev.originalEvent);
     }),
 );
@@ -1304,14 +1310,18 @@ expectType<mapboxgl.Map>(
     map.on("data", ev => {
         expectType<mapboxgl.MapDataEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'data' event
         expectType<undefined>(ev.originalEvent);
     }),
 );
 expectType<mapboxgl.Map>(
     // @ts-expect-error - incompatible
     map.on("tiledataloading", ev => {
+        // @ts-expect-error - incompatible
         expectType<mapboxgl.MapDataEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+
+        // @ts-expect-error - incompatible
         expectType<undefined>(ev.originalEvent);
     }),
 );
@@ -1319,6 +1329,7 @@ expectType<mapboxgl.Map>(
     map.on("sourcedataloading", ev => {
         expectType<mapboxgl.MapSourceDataEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'sourcedataloading' event
         expectType<undefined>(ev.originalEvent);
         expectType<"source">(ev.dataType);
     }),
@@ -1327,6 +1338,7 @@ expectType<mapboxgl.Map>(
     map.on("sourcedata", ev => {
         expectType<mapboxgl.MapSourceDataEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'sourcedata' event
         expectType<undefined>(ev.originalEvent);
         expectType<"source">(ev.dataType);
     }),
@@ -1335,6 +1347,7 @@ expectType<mapboxgl.Map>(
     map.on("styledataloading", ev => {
         expectType<mapboxgl.MapStyleDataEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'styledataloading' event
         expectType<undefined>(ev.originalEvent);
         expectType<"style">(ev.dataType);
     }),
@@ -1343,6 +1356,7 @@ expectType<mapboxgl.Map>(
     map.on("styledata", ev => {
         expectType<mapboxgl.MapStyleDataEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
+        // @ts-expect-error - incompatible originalEvent does not exist on 'styledata' event
         expectType<undefined>(ev.originalEvent);
         expectType<"style">(ev.dataType);
     }),
