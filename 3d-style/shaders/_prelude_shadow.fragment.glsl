@@ -116,6 +116,15 @@ float shadowed_light_factor_normal(vec3 N, highp vec4 light_view_pos0, highp vec
     return mix(0.0, (1.0 - (u_shadow_intensity * occlusion)) * NDotL, step(0.0, NDotL));
 }
 
+float shadowed_light_factor_normal_opacity(vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth, float shadow_opacity) {
+    float NDotL = dot(N, u_shadow_direction);
+
+    float bias = calculate_shadow_bias(NDotL);
+    float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias) * shadow_opacity;
+
+    return mix(0.0, (1.0 - (u_shadow_intensity * occlusion)) * NDotL, step(0.0, NDotL));
+}
+
 float shadowed_light_factor_normal_unbiased(vec3 N, highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
     float NDotL = dot(N, u_shadow_direction);
 

@@ -1,0 +1,79 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "allowed": 0.0023
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.15,
+        "color": "rgba(100, 140, 255, 1.0)"
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.9,
+        "cast-shadows": true,
+        "shadow-intensity": 1.0,
+        "direction": [300, 75],
+        "color": "rgba(255, 255, 100, 1.0)"
+      }
+    }
+  ],
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "pitch": 65,
+  "bearing": 90,
+  "zoom": 15.3,
+  "center": [
+    -122.449283,
+    37.749211
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgreen"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "darkgray",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "minzoom": 15,
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-opacity": 1.0,
+        "fill-extrusion-height": 50.0,
+        "fill-extrusion-cutoff-fade-range": 1.0
+      }
+    }
+  ]
+}

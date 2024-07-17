@@ -134,7 +134,7 @@ void main() {
     vec3 centroid_random = vec3(centroid_pos.xy, centroid_pos.x + centroid_pos.y + 1.0);
     vec3 ground_pos = centroid_pos.x == 0.0 ? pos.xyz : (centroid_random / 8.0);
     vec4 ground = u_matrix * vec4(ground_pos.xy, ele, 1.0);
-    cutoff = max(0.01, cutoff_opacity(u_cutoff_params, ground.z));
+    cutoff = cutoff_opacity(u_cutoff_params, ground.z);
     if (centroid_pos.y != 0.0 && centroid_pos.x != 0.0) {
         vec3 g = floor(ground_pos);
         vec3 mod_ = centroid_random - g * 8.0;
@@ -144,10 +144,11 @@ void main() {
         }
     }
     float cutoff_scale = cutoff;
+    v_cutoff_opacity = cutoff;
 
     scaled_pos.z = mix(c_ele, h, cutoff_scale);
 #endif
-    float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (cutoff < 0.01 && centroid_pos.x != 0.0));
+    float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (cutoff == 0.0 && centroid_pos.x != 0.0));
 
     gl_Position = mix(u_matrix * vec4(scaled_pos, 1), AWAY, hidden);
     h = h - ele;
