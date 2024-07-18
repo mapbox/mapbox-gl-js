@@ -1,3 +1,12 @@
+## 3.5.2
+
+- Improve 3D models rendering performance.
+- Slightly improve terrain rendering performance.
+- Fix raster particle data decoding and improve rendering quality.
+- Fix 3D lighting rendering when lookup tables (LUT) image is applied.
+- Fix shadows rendering artifacts on `fill-extrusion-cutoff-fade-range`.
+- Improve TypeScript API, including strongly typed Map event listeners, improved type narrowing, and more.
+
 ## 3.5.1
 
 - Revert default behavior of symbol occlusion behind terrain to maintain compatibility. Set `icon-occlusion-opacity`/`text-occlusion-opacity` properties to opt-in to new occlusion behavior.
