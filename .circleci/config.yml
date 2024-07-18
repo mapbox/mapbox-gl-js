@@ -2,7 +2,6 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@4.1.3
   browser-tools: circleci/browser-tools@1.4.8
-  win: circleci/windows@5.0.0
 
 workflows:
   default:
@@ -191,10 +190,10 @@ mac-defaults: &mac-defaults
   working_directory: ~/mapbox-gl-js
 
 windows-defaults: &windows-defaults
-  executor:
-    # windows-server-2022-gui:current
-    # https://circleci.com/developer/machine/image/windows-server-2022-gui
-    name: win/default
+  resource_class: windows.medium
+  machine:
+      image: default
+      shell: powershell.exe -ExecutionPolicy Bypass
   working_directory: ~/mapbox-gl-js
 
 jobs:
