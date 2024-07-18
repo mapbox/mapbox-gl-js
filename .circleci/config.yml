@@ -177,7 +177,7 @@ workflows:
 
 linux-defaults: &linux-defaults
   docker:
-    - image: cimg/node:18.20-browsers
+    - image: cimg/node:20.15-browsers
   working_directory: ~/mapbox-gl-js
 
 mac-defaults: &mac-defaults
