@@ -436,6 +436,9 @@ jobs:
           at: ~/
       - aws-cli/install
       - run:
+          name: Generate release list
+          command: node build/generate-release-list.js
+      - run:
           name: Check build file for correct SDK version
           command: |
             if grep -q "\"${CIRCLE_TAG:1}\"" ./dist/mapbox-gl.js; then
