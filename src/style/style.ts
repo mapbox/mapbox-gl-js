@@ -153,7 +153,7 @@ const ignoredDiffOperations = pick(diffOperations, [
 const empty = emptyStyle();
 
 type AnyLayerSource = {
-    source: LayerSpecification['source'] | SourceSpecification
+    source?: LayerSpecification['source'] | SourceSpecification
 }
 
 /**
@@ -1768,7 +1768,7 @@ class Style extends Evented<MapEvents> {
         this._checkLoaded();
 
         assert(this.getOwnSource(id) !== undefined, 'There is no source with this ID');
-        const geojsonSource: GeoJSONSource = (this.getOwnSource(id) as any);
+        const geojsonSource: GeoJSONSource = this.getOwnSource(id);
         assert(geojsonSource.type === 'geojson');
 
         geojsonSource.setData(data);
@@ -1780,7 +1780,7 @@ class Style extends Evented<MapEvents> {
      * @param {string} id ID of the desired source.
      * @returns {?Source} The source object.
      */
-    getOwnSource(id: string): Source | null | undefined {
+    getOwnSource<T extends Source>(id: string): T | undefined {
         const sourceCache = this.getOwnSourceCache(id);
         return sourceCache && sourceCache.getSource();
     }
@@ -2299,8 +2299,8 @@ class Style extends Evented<MapEvents> {
      * @param {string} id ID of the desired layer.
      * @returns {?StyleLayer} A layer, if one with the given `id` exists.
      */
-    getOwnLayer(id: string): StyleLayer | null | undefined {
-        return this._layers[id];
+    getOwnLayer<T extends StyleLayer>(id: string): T | undefined {
+        return this._layers[id] as T;
     }
 
     /**

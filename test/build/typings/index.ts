@@ -175,6 +175,7 @@ map.addSource('points', {
 //
 
 const source = map.getSource('id');
+const geojsonSource: mapboxgl.GeoJSONSource = map.getSource('id');
 
 switch (source.type) {
     case 'geojson':
@@ -212,6 +213,11 @@ switch (source.type) {
 //
 // Adding layers
 //
+
+map.addLayer({
+    id: 'background',
+    type: 'background'
+});
 
 map.addLayer({
     'id': 'urban-areas-fill',
@@ -262,6 +268,40 @@ map.addLayer({
         'text-anchor': 'top',
     }
 });
+
+
+const layer = map.getLayer('id');
+const backgroundLayer: mapboxgl.BackgroundLayerSpecification = map.getLayer('background');
+
+switch (layer.type) {
+    case 'background':
+        layer satisfies mapboxgl.BackgroundLayerSpecification;
+        break;
+    case 'circle':
+        layer satisfies mapboxgl.CircleLayerSpecification;
+        break;
+    case 'fill':
+        layer satisfies mapboxgl.FillLayerSpecification;
+        break;
+    case 'fill-extrusion':
+        layer satisfies mapboxgl.FillExtrusionLayerSpecification;
+        break;
+    case 'heatmap':
+        layer satisfies mapboxgl.HeatmapLayerSpecification;
+        break;
+    case 'hillshade':
+        layer satisfies mapboxgl.HillshadeLayerSpecification;
+        break;
+    case 'line':
+        layer satisfies mapboxgl.LineLayerSpecification;
+        break;
+    case 'raster':
+        layer satisfies mapboxgl.RasterLayerSpecification;
+        break;
+    case 'symbol':
+        layer satisfies mapboxgl.SymbolLayerSpecification;
+        break;
+}
 
 //
 // Add Custom Layer

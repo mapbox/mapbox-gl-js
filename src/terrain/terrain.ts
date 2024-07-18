@@ -112,7 +112,7 @@ class ProxySourceCache extends SourceCache {
 
         // This source is not to be added as a map source: we use it's tile management.
         // For that, initialize internal structures used for tile cover update.
-        this.map = (this.getSource() as GeoJSONSource).map = map;
+        this.map = this.getSource().map = map;
         this.used = this._sourceLoaded = true;
         this.renderCache = [];
         this.renderCachePool = [];
@@ -1538,7 +1538,7 @@ export class Terrain extends Elevation {
 
         const coords = this.proxiedCoords[sourceCache.id] = [];
         const proxys = this.proxyCoords;
-        const imageSource: ImageSource = (sourceCache.getSource() as ImageSource);
+        const imageSource: ImageSource = sourceCache.getSource();
         // Special case where image is rendered outside of the map's bounds (eg. pole caps)
         const tileID = imageSource.tileID;
         if (!tileID) return;

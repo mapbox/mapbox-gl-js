@@ -2331,12 +2331,12 @@ export class Map extends Camera {
      * @see [Example: Animate a point](https://docs.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
      * @see [Example: Add live realtime data](https://docs.mapbox.com/mapbox-gl-js/example/live-geojson/)
      */
-    getSource<T extends Source>(id: string): T | null | undefined {
+    getSource<T extends Source>(id: string): T | undefined {
         if (!this._isValidId(id)) {
             return null;
         }
 
-        return this.style.getOwnSource(id) as T;
+        return this.style.getOwnSource(id);
     }
 
     /** @section {Images} */
@@ -3039,12 +3039,13 @@ export class Map extends Camera {
      * @see [Example: Filter symbols by toggling a list](https://www.mapbox.com/mapbox-gl-js/example/filter-markers/)
      * @see [Example: Filter symbols by text input](https://www.mapbox.com/mapbox-gl-js/example/filter-markers-by-input/)
      */
-    getLayer(id: string): StyleLayer | null | undefined {
+    getLayer<T extends LayerSpecification>(id: string): T | undefined {
         if (!this._isValidId(id)) {
             return null;
         }
 
-        return this.style.getOwnLayer(id);
+        const layer = this.style.getOwnLayer(id);
+        return layer ? layer.serialize() as T : undefined;
     }
 
     /**

@@ -134,8 +134,8 @@ class SourceCache extends Evented {
         return true;
     }
 
-    getSource(): Source {
-        return this._source as Source;
+    getSource<T extends Source>(): T {
+        return this._source as T;
     }
 
     pause() {

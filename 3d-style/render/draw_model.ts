@@ -241,8 +241,9 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
 }
 
 export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painter: Painter) {
-    const modelSource = sourceCache.getSource() as ModelSource | Tiled3DModelSource | VectorTileSource | GeoJSONSource;
+    const modelSource = sourceCache.getSource();
     if (!modelSource.loaded()) return;
+
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
         const scope = modelSource.type === 'vector' ? layer.scope : "";
         if (painter.modelManager) {
@@ -252,10 +253,14 @@ export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painte
         }
         return;
     }
+
     if (modelSource.type === 'batched-model') {
         // batched models uploads happen in tile_3d_bucket
         return;
     }
+
+    if (modelSource.type !== 'model') return;
+
     const models = modelSource.getModels();
     // Upload models
     for (const model of models) {
@@ -354,7 +359,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         }
     };
 
-    const modelSource = sourceCache.getSource() as ModelSource | Tiled3DModelSource | VectorTileSource | GeoJSONSource;
+    const modelSource = sourceCache.getSource();
     if (painter.renderPass === 'light-beam' && modelSource.type !== 'batched-model') {
         return;
     }
@@ -373,6 +378,9 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         cleanup();
         return;
     }
+
+    if (modelSource.type !== 'model') return;
+
     const models = modelSource.getModels();
     const modelParametersVector: ModelParameters[] = [];
 
