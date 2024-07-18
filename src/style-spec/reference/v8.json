@@ -1266,8 +1266,8 @@
           "sdk-support": {
             "basic functionality": {
               "js": "3.5.0",
-              "android": "11.5.0",
-              "ios": "11.5.0"
+              "android": "11.6.0",
+              "ios": "11.6.0"
             }
           }
         }
@@ -1476,8 +1476,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "3.5.0",
-          "android": "11.5.0",
-          "ios": "11.5.0"
+          "android": "11.6.0",
+          "ios": "11.6.0"
         }
       },
       "expression": {
