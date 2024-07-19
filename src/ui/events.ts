@@ -11,6 +11,24 @@ import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {EventData, EventOf} from '../util/evented';
 import type {SourceSpecification} from '../style-spec/types';
 
+type MapMouseEventType =
+    | 'mousedown'
+    | 'mouseup'
+    | 'preclick'
+    | 'click'
+    | 'dblclick'
+    | 'mousemove'
+    | 'mouseover'
+    | 'mouseenter'
+    | 'mouseleave'
+    | 'mouseout'
+    | 'contextmenu';
+
+type MapTouchEventType =
+    | 'touchstart'
+    | 'touchend'
+    | 'touchcancel';
+
 /**
  * `MapMouseEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'click' or 'hover'.
@@ -39,7 +57,6 @@ import type {SourceSpecification} from '../style-spec/types';
  * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  * @see [Example: Display popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
  */
-type MapMouseEventType = 'mousedown' | 'mouseup' | 'preclick' | 'click' | 'dblclick' | 'mousemove' | 'mouseover' | 'mouseenter' | 'mouseleave' | 'mouseout' | 'contextmenu';
 export class MapMouseEvent extends Event<MapEvents, MapMouseEventType> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
@@ -182,7 +199,6 @@ export class MapMouseEvent extends Event<MapEvents, MapMouseEventType> {
  * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
  */
-type MapTouchEventType = 'touchstart' | 'touchend' | 'touchcancel';
 export class MapTouchEvent extends Event<MapEvents, MapTouchEventType> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
@@ -358,6 +374,32 @@ export class MapWheelEvent extends Event<MapEvents, 'wheel'> {
         this._defaultPrevented = false;
     }
 }
+
+/**
+ * `MapBoxZoomEvent` is a class used to generate
+ * the events 'boxzoomstart', 'boxzoomend', and 'boxzoomcancel'.
+ * For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
+ *
+ * @typedef {Object} MapBoxZoomEvent
+ * @property {MouseEvent} originalEvent The DOM event that triggered the boxzoom event. Can be a `MouseEvent` or `KeyboardEvent`.
+ * @property {('boxzoomstart' | 'boxzoomend' | 'boxzoomcancel')} type The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
+ * @property {Map} target The `Map` instance that triggered the event.
+ * @example
+ * // Example trigger of a BoxZoomEvent of type "boxzoomstart"
+ * map.on('boxzoomstart', (e) => {
+ *     console.log('event type:', e.type);
+ *     // event type: boxzoomstart
+ * });
+ * @example
+ * // Example of a BoxZoomEvent of type "boxzoomstart"
+ * // {
+ * //   originalEvent: {...},
+ * //   type: "boxzoomstart",
+ * //   target: {...}
+ * // }
+ * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
+ * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ */
 
 export type MapStyleDataEvent = {
     dataType: 'style';
@@ -1465,7 +1507,7 @@ export type MapEvents = {
      * });
      * @see [Example: Generate and add a missing icon to the map](https://mapbox.com/mapbox-gl-js/example/add-image-missing-generated/)
      */
-    'styleimagemissing': void;
+    'styleimagemissing': {id: string};
 
     /**
      * Fired immediately after all style resources have been downloaded

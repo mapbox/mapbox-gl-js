@@ -1,10 +1,7 @@
-// @ts-expect-error - TS2300 - Duplicate identifier 'VectorTile'.
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import {getArrayBuffer} from '../util/ajax';
 
-// @ts-expect-error - TS2300 - Duplicate identifier 'VectorTile'.
-import type {VectorTile} from '@mapbox/vector-tile';
 import type {Callback} from '../types/callback';
 import type {RequestedTileParameters} from './worker_source';
 import type Scheduler from '../util/scheduler';
