@@ -748,7 +748,7 @@ class Style extends Evented<MapEvents> {
             this._serializedLayers = {};
             for (const layer of layers) {
                 const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
-                if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.fqid);
+                if (styleLayer.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
                 styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
                 this._layers[styleLayer.id] = styleLayer;
                 this._serializedLayers[styleLayer.id] = styleLayer.serialize();
@@ -1979,7 +1979,7 @@ class Style extends Evented<MapEvents> {
             minValue, maxValue, stepValue, type, values
         });
 
-        this.updateConfigDependencies();
+        this.updateConfigDependencies(key);
     }
 
     getConfig(fragmentId: string): ConfigSpecification | null | undefined {
@@ -2068,10 +2068,14 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    updateConfigDependencies() {
+    updateConfigDependencies(configKey?: string) {
         for (const id of this._configDependentLayers) {
             const layer = this.getLayer(id);
             if (layer) {
+                if (configKey && !layer.configDependencies.has(configKey)) {
+                    continue;
+                }
+
                 layer.possiblyEvaluateVisibility();
                 this._updateLayer(layer);
             }
@@ -2092,7 +2096,7 @@ class Style extends Evented<MapEvents> {
         this.forEachFragmentStyle((style: Style) => {
             if (style._styleColorTheme.colorTheme) {
                 const data = style._evaluateColorThemeData(style._styleColorTheme.colorTheme);
-                if (!style._styleColorTheme.lut || (style._styleColorTheme.lut && data !== style._styleColorTheme.lut.data)) {
+                if ((!style._styleColorTheme.lut && data !== '') || (style._styleColorTheme.lut && data !== style._styleColorTheme.lut.data)) {
                     style.setColorTheme(style._styleColorTheme.colorTheme);
                 }
             }
@@ -2141,7 +2145,7 @@ class Style extends Evented<MapEvents> {
             this._serializedLayers[layer.id] = layer.serialize();
         }
 
-        if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
+        if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
 
         let index = this._order.length;
         if (before) {
@@ -2425,7 +2429,7 @@ class Style extends Evented<MapEvents> {
         }
 
         layer.setLayoutProperty(name, value);
-        if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
+        if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
         this._updateLayer(layer);
     }
 
@@ -2464,7 +2468,7 @@ class Style extends Evented<MapEvents> {
         }
 
         const requiresRelayout = layer.setPaintProperty(name, value);
-        if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
+        if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
         if (requiresRelayout) {
             this._updateLayer(layer);
         }

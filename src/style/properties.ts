@@ -178,14 +178,14 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
     _values: TransitionablePropertyValues<Props>;
     _scope: string | null | undefined;
     _options: ConfigOptions | null | undefined;
-    isConfigDependent: boolean;
+    configDependencies: Set<string>;
 
     constructor(properties: Properties<Props>, scope?: string | null, options?: ConfigOptions | null) {
         this._properties = properties;
         this._values = (Object.create(properties.defaultTransitionablePropertyValues));
         this._scope = scope;
         this._options = options;
-        this.isConfigDependent = false;
+        this.configDependencies = new Set();
     }
 
     getValue<S extends keyof Props, T>(name: S): PropertyValueSpecification<T> | void {
@@ -199,7 +199,9 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         // Note that we do not _remove_ an own property in the case where a value is being reset
         // to the default: the transition might still be non-default.
         this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options);
-        this.isConfigDependent = this.isConfigDependent || this._values[name].value.expression.isConfigDependent;
+        if (this._values[name].value.expression.configDependencies) {
+            this.configDependencies = new Set([...this.configDependencies, ...this._values[name].value.expression.configDependencies]);
+        }
     }
 
     setTransitionOrValue<P extends PropertyValueSpecifications<Props>>(properties?: P, options?: ConfigOptions) {
@@ -428,14 +430,14 @@ export class Layout<Props extends {
     _values: PropertyValues<Props>;
     _scope: string;
     _options: ConfigOptions | null | undefined;
-    isConfigDependent: boolean;
+    configDependencies: Set<string>;
 
     constructor(properties: Properties<Props>, scope: string, options?: ConfigOptions | null) {
         this._properties = properties;
         this._values = (Object.create(properties.defaultPropertyValues));
         this._scope = scope;
         this._options = options;
-        this.isConfigDependent = false;
+        this.configDependencies = new Set();
     }
 
     getValue<S extends keyof Props, T>(name: S): PropertyValueSpecification<T> | void {
@@ -444,7 +446,9 @@ export class Layout<Props extends {
 
     setValue<S extends keyof Props>(name: S, value: any) {
         this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options) as PropertyValues<Props>[S];
-        this.isConfigDependent = this.isConfigDependent || this._values[name].expression.isConfigDependent;
+        if (this._values[name].expression.configDependencies) {
+            this.configDependencies = new Set([...this.configDependencies, ...this._values[name].expression.configDependencies]);
+        }
     }
 
     serialize(): PropertyValueSpecifications<Props> {
