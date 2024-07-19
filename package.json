@@ -33,7 +33,6 @@
     "gl-matrix": "^3.4.3",
     "grid-index": "^1.1.0",
     "kdbush": "^4.0.2",
-    "lodash.clonedeep": "^4.5.0",
     "murmurhash-js": "^1.0.0",
     "pbf": "^3.2.1",
     "potpack": "^2.0.0",
