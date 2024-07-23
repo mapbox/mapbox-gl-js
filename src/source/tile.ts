@@ -483,7 +483,7 @@ class Tile {
 
     querySourceFeatures(result: Array<GeoJSONFeature>, params?: {
         sourceLayer?: string;
-        filter?: FilterSpecification | ExpressionSpecification;
+        filter?: FilterSpecification;
         validate?: boolean;
     }) {
         const featureIndex = this.latestFeatureIndex;

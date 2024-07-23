@@ -649,8 +649,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
 
             // This timeout ensures that we still call finish() even if
             // the user declines to share their location in Firefox
-            // @ts-expect-error - TS2322 - Type 'Timeout' is not assignable to type 'number'.
-            this._timeoutId = setTimeout(this._finish, 10000 /* 10sec */);
+            this._timeoutId = window.setTimeout(this._finish, 10000 /* 10sec */);
         }
 
         return true;

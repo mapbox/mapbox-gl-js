@@ -47,21 +47,22 @@ import {isFQID} from '../util/fqid';
 import type {MapEventType, MapEventOf} from './events';
 import type {PointLike} from '../types/point-like';
 import type {FeatureState} from '../style-spec/expression/index';
-import type {Evented} from '../util/evented';
 import type {RequestTransformFunction} from '../util/mapbox';
 import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
 import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector} from '../style/style';
 import type ScrollZoomHandler from './handler/scroll_zoom';
+import type {ScrollZoomHandlerOptions} from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
-import type {TouchPitchHandler} from './handler/touch_zoom_rotate';
+import type {TouchPitchHandler, TouchPitchHandlerOptions} from './handler/touch_zoom_rotate';
 import type DragRotateHandler from './handler/shim/drag_rotate';
 import type DragPanHandler from './handler/shim/drag_pan';
 import type {DragPanOptions} from './handler/shim/drag_pan';
 import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
+import type {TouchZoomRotateHandlerOptions} from './handler/shim/touch_zoom_rotate';
 import defaultLocale from './default_locale';
 import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
@@ -83,9 +84,7 @@ import type {
     ConfigSpecification,
     SchemaSpecification,
     ColorThemeSpecification,
-    ExpressionSpecification
 } from '../style-spec/types';
-import type StyleLayer from '../style/style_layer';
 import type {Source, SourceClass} from '../source/source';
 import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
@@ -152,7 +151,7 @@ export type MapOptions = {
     bounds?: LngLatBoundsLike;
     maxBounds?: LngLatBoundsLike;
     fitBoundsOptions?: EasingOptions;
-    scrollZoom?: boolean;
+    scrollZoom?: boolean | ScrollZoomHandlerOptions;
     minZoom?: number;
     maxZoom?: number;
     minPitch?: number;
@@ -162,8 +161,8 @@ export type MapOptions = {
     dragPan?: boolean | DragPanOptions;
     keyboard?: boolean;
     doubleClickZoom?: boolean;
-    touchZoomRotate?: boolean;
-    touchPitch?: boolean;
+    touchZoomRotate?: boolean | TouchZoomRotateHandlerOptions;
+    touchPitch?: boolean | TouchPitchHandlerOptions;
     cooperativeGestures?: boolean;
     trackResize?: boolean;
     center?: LngLatLike;
@@ -321,7 +320,7 @@ const defaultOptions = {
  * @param {boolean} [options.antialias=false] If `true`, the gl context will be created with [MSAA antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing), which can be useful for antialiasing custom layers. This is `false` by default as a performance optimization.
  * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
  * @param {LngLatBoundsLike} [options.maxBounds=null] If set, the map will be constrained to the given bounds.
- * @param {boolean|Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
+ * @param {boolean | Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
  * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see {@link BoxZoomHandler}).
  * @param {boolean} [options.dragRotate=true] If `true`, the "drag to rotate" interaction is enabled (see {@link DragRotateHandler}).
  * @param {boolean | Object} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled. An `Object` value is passed as options to {@link DragPanHandler#enable}.
@@ -408,7 +407,7 @@ const defaultOptions = {
 export class Map extends Camera {
     style: Style;
     painter: Painter;
-    handlers: HandlerManager | null | undefined;
+    handlers?: HandlerManager;
 
     _container: HTMLElement;
     _missingCSSCanary: HTMLElement;
@@ -417,30 +416,30 @@ export class Map extends Camera {
     _controlPositions: {
         [_: string]: HTMLElement;
     };
-    _interactive: boolean | null | undefined;
-    _showTileBoundaries: boolean | null | undefined;
-    _showParseStatus: boolean | null | undefined;
+    _interactive?: boolean;
+    _showTileBoundaries?: boolean;
+    _showParseStatus?: boolean;
 
-    _showTerrainWireframe: boolean | null | undefined;
-    _showLayers2DWireframe: boolean | null | undefined;
-    _showLayers3DWireframe: boolean | null | undefined;
+    _showTerrainWireframe?: boolean;
+    _showLayers2DWireframe?: boolean;
+    _showLayers3DWireframe?: boolean;
 
-    _showQueryGeometry: boolean | null | undefined;
-    _showCollisionBoxes: boolean | null | undefined;
-    _showPadding: boolean | null | undefined;
-    _showTileAABBs: boolean | null | undefined;
+    _showQueryGeometry?: boolean;
+    _showCollisionBoxes?: boolean;
+    _showPadding?: boolean;
+    _showTileAABBs?: boolean;
     _showOverdrawInspector: boolean;
-    _repaint: boolean | null | undefined;
-    _vertices: boolean | null | undefined;
+    _repaint?: boolean;
+    _vertices?: boolean;
     _canvas: HTMLCanvasElement;
-    _minTileCacheSize: number | null | undefined;
-    _maxTileCacheSize: number | null | undefined;
-    _frame: Cancelable | null | undefined;
-    _renderNextFrame: boolean | null | undefined;
-    _styleDirty: boolean | null | undefined;
-    _sourcesDirty: boolean | null | undefined;
-    _placementDirty: boolean | null | undefined;
-    _occlusionOpacityChanged: boolean | null | undefined;
+    _minTileCacheSize?: number;
+    _maxTileCacheSize?: number;
+    _frame?: Cancelable;
+    _renderNextFrame?: boolean;
+    _styleDirty?: boolean;
+    _sourcesDirty?: boolean;
+    _placementDirty?: boolean;
+    _occlusionOpacityChanged?: boolean;
     _loaded: boolean;
     _fullyLoaded: boolean; // accounts for placement finishing as well
     _trackResize: boolean;
@@ -464,7 +463,7 @@ export class Map extends Camera {
     _logoControl: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
-    _localFontFamily: string | null | undefined;
+    _localFontFamily?: string;
     _requestManager: RequestManager;
     _locale: Partial<typeof defaultLocale>;
     _removed: boolean;
@@ -477,12 +476,12 @@ export class Map extends Camera {
     _averageElevation: EasedVariable;
     _containerWidth: number;
     _containerHeight: number;
-    _language: string | null | undefined | string[];
-    _worldview: string | null | undefined;
+    _language?: string | string[];
+    _worldview?: string;
     _interactionRange: [number, number];
     _visibilityHidden: number;
     _performanceMetricsCollection: boolean;
-    _tessellationStep: number | null | undefined;
+    _tessellationStep?: number;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -2012,7 +2011,7 @@ export class Map extends Camera {
         sourceId: string,
         parameters?: {
             sourceLayer?: string;
-            filter?: FilterSpecification | ExpressionSpecification;
+            filter?: FilterSpecification;
             validate?: boolean;
         },
     ): Array<GeoJSONFeature> {

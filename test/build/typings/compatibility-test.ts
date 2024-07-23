@@ -133,11 +133,8 @@ expectType<mapboxgl.MapboxOptions>({
  */
 expectType<mapboxgl.MapboxOptions>({
     container: "map",
-    // @ts-expect-error - incompatible
     touchPitch: {around: "center"},
-    // @ts-expect-error - incompatible
     touchZoomRotate: {around: "center"},
-    // @ts-expect-error - incompatible
     scrollZoom: {around: "center"},
 });
 

@@ -1,6 +1,10 @@
 import type {TouchZoomHandler, TouchRotateHandler} from '../touch_zoom_rotate';
 import type TapDragZoomHandler from '../tap_drag_zoom';
 
+export type TouchZoomRotateHandlerOptions = {
+    around?: 'center';
+};
+
 /**
  * The `TouchZoomRotateHandler` allows the user to zoom and rotate the map by
  * pinching on a touchscreen.
@@ -11,7 +15,6 @@ import type TapDragZoomHandler from '../tap_drag_zoom';
  * @see [Example: Toggle interactions](https://docs.mapbox.com/mapbox-gl-js/example/toggle-interaction-handlers/)
  */
 export default class TouchZoomRotateHandler {
-
     _el: HTMLElement;
     _touchZoom: TouchZoomHandler;
     _touchRotate: TouchRotateHandler;
@@ -42,9 +45,7 @@ export default class TouchZoomRotateHandler {
      * @example
      * map.touchZoomRotate.enable({around: 'center'});
      */
-    enable(options?: {
-     around?: 'center';
-    } | null) {
+    enable(options?: TouchZoomRotateHandlerOptions) {
         this._touchZoom.enable(options);
         if (!this._rotationDisabled) this._touchRotate.enable(options);
         this._tapDragZoom.enable();

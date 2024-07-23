@@ -4,12 +4,16 @@ import type {Map} from '../map';
 import type {Handler, HandlerResult} from '../handler';
 import {isFullscreen} from '../../util/util';
 
+export type TouchPitchHandlerOptions = {
+    around?: 'center';
+};
+
 class TwoTouchHandler implements Handler {
     _enabled: boolean;
     _active: boolean;
-    _firstTwoTouches: [number, number] | null | undefined;
-    _vector: Point | null | undefined;
-    _startVector: Point | null | undefined;
+    _firstTwoTouches?: [number, number];
+    _vector?: Point;
+    _startVector?: Point;
     _aroundCenter: boolean;
 
     constructor() {
@@ -21,16 +25,10 @@ class TwoTouchHandler implements Handler {
         this._firstTwoTouches = undefined;
     }
 
-    _start(points: [Point, Point]) {} //eslint-disable-line
-    _move(
-        points: [Point, Point],
-        pinchAround: Point | null | undefined,
-        e: TouchEvent,
-    ): HandlerResult | null | undefined { return {}; } //eslint-disable-line
+    _start(points: [Point, Point]) {}
+    _move(points: [Point, Point], pinchAround: Point | null | undefined, e: TouchEvent): HandlerResult | null | undefined { return {}; }
 
     touchstart(e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) {
-        //console.log(e.target, e.targetTouches.length ? e.targetTouches[0].target : null);
-        //log('touchstart', points, e.target.innerHTML, e.targetTouches.length ? e.targetTouches[0].target.innerHTML: undefined);
         if (this._firstTwoTouches || mapTouches.length < 2) return;
 
         this._firstTwoTouches = [
@@ -76,9 +74,7 @@ class TwoTouchHandler implements Handler {
         this.reset();
     }
 
-    enable(options?: {
-        around?: 'center';
-    } | null) {
+    enable(options?: TouchPitchHandlerOptions) {
         this._enabled = true;
         this._aroundCenter = !!options && options.around === 'center';
     }
@@ -213,8 +209,8 @@ const ALLOWED_SINGLE_TOUCH_TIME = 100;
 export class TouchPitchHandler extends TwoTouchHandler {
 
     _valid: boolean | undefined;
-    _firstMove: number | null | undefined;
-    _lastPoints: [Point, Point] | null | undefined;
+    _firstMove?: number;
+    _lastPoints?: [Point, Point];
     _map: Map;
 
     constructor(map: Map) {

@@ -2769,7 +2769,7 @@ class Style extends Evented<MapEvents> {
         sourceID: string,
         params?: {
             sourceLayer?: string;
-            filter?: FilterSpecification | ExpressionSpecification;
+            filter?: FilterSpecification;
             validate?: boolean;
         },
     ): Array<GeoJSONFeature> {

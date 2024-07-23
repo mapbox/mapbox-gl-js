@@ -596,8 +596,7 @@ export default class Marker extends Evented<MarkerEvents> {
             }
 
             if ((map._showingGlobe() || map.getTerrain() || map.getFog()) && !this._fadeTimer) {
-                // @ts-expect-error - TS2322 - Type 'Timeout' is not assignable to type 'number'.
-                this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
+                this._fadeTimer = window.setTimeout(this._evaluateOpacity.bind(this), 60);
             }
         });
     }
