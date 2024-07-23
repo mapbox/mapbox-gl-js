@@ -768,7 +768,7 @@ class Style extends Evented<MapEvents> {
             const terrain = this.stylesheet.terrain;
             if (terrain) {
                 this.checkCanvasFingerprintNoise();
-                if (!this.terrainSetForDrapingOnly()) {
+                if (!this.disableElevatedTerrain && !this.terrainSetForDrapingOnly()) {
                     this._createTerrain(terrain, DrapeRenderMode.elevated);
                 }
             }

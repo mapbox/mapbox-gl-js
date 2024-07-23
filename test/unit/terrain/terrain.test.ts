@@ -1782,3 +1782,92 @@ test('terrain recursively loads parent tiles on 404', async () => {
         new OverscaledTileID(14, 0, 14, 8191, 8191).key,
     ]);
 });
+
+describe('#hasCanvasFingerprintNoise', () => {
+    test('Dynamic terrain', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
+
+        const style = createStyle();
+        const map = createMap({style, center: [0, 0], zoom: 16});
+        await waitFor(map, 'style.load');
+
+        map.addSource('mapbox-dem', {
+            type: 'raster-dem',
+            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+            tileSize: TILE_SIZE,
+            maxzoom: 14
+        });
+
+        map.setTerrain({source: 'mapbox-dem'});
+
+        await waitFor(map, 'render');
+
+        expect(!!map.painter.terrain).toBeFalsy();
+    });
+
+    test('Terrain in Style', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
+
+        const style = {
+            version: 8,
+            layers: [],
+            sources: {
+                'mapbox-dem': {
+                    type: 'raster-dem',
+                    tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                    tileSize: TILE_SIZE,
+                    maxzoom: 14
+                }
+            },
+            terrain: {
+                source: 'mapbox-dem'
+            }
+        };
+
+        const map = createMap({style, center: [0, 0], zoom: 16});
+        await waitFor(map, 'style.load');
+
+        await waitFor(map, 'render');
+
+        expect(!!map.painter.terrain).toBeFalsy();
+    });
+
+    test('Terrain in Style fragment', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
+
+        const style = {
+            version: 8,
+            layers: [],
+            sources: {},
+            imports: [{
+                id: 'basemap',
+                url: '',
+                data: {
+                    version: 8,
+                    layers: [],
+                    sources: {
+                        'mapbox-dem': {
+                            type: 'raster-dem',
+                            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                            tileSize: TILE_SIZE,
+                            maxzoom: 14
+                        }
+                    },
+                    terrain: {
+                        source: 'mapbox-dem'
+                    }
+                }
+            }]
+        };
+
+        const map = createMap({style, center: [0, 0], zoom: 16});
+        await waitFor(map, 'style.load');
+
+        await waitFor(map, 'render');
+
+        expect(!!map.painter.terrain).toBeFalsy();
+    });
+});
