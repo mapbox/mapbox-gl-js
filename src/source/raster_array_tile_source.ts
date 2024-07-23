@@ -1,24 +1,38 @@
 import Texture from '../render/texture';
-import RasterTileSource from './raster_tile_source';
-import {extend} from '../util/util';
-import {ResourceType} from '../util/ajax';
-import {Evented, ErrorEvent} from '../util/evented';
-import RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
+import RasterStyleLayer from '../style/style_layer/raster_style_layer';
+import { ResourceType } from '../util/ajax';
+import { ErrorEvent, Evented } from '../util/evented';
+import { extend } from '../util/util';
+import RasterTileSource from './raster_tile_source';
 
 // Import MRTData as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../data/mrt_data';
 
-import type Tile from './tile';
-import type {Map} from '../ui/map';
+import type { RasterArraySourceSpecification } from '../style-spec/types';
+import type { Callback } from '../types/callback';
+import type { Map } from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type RasterArrayTile from './raster_array_tile';
-import type {Callback} from '../types/callback';
-import type {TextureDescriptor} from './raster_array_tile';
-import type {ISource, SourceRasterLayer} from './source';
-import type {RasterArraySourceSpecification} from '../style-spec/types';
+import type { TextureDescriptor } from './raster_array_tile';
+import type { ISource, SourceRasterLayer } from './source';
+import type Tile from './tile';
 
+/**
+ * A data source containing raster-array tile created with [Mapbox Tiling Service](https://docs.mapbox.com/mapbox-tiling-service/guides/).
+ * See the [Style Specification](https://docs.mapbox.com/style-spec/reference/sources/#raster-array) for detailed documentation of options.
+ *
+ * @example
+ * // add to map
+ * map.addSource('some id', {
+ *     type: 'raster-array',
+ *     url: ['https://api.mapbox.com/v4/rasterarrayexamples.gfs-winds.json'],
+ *     tileSize: 512
+ * });
+ *
+ * @see [Example: Create a wind particle animation](https://docs.mapbox.com/mapbox-gl-js/example/raster-particle-layer/)
+ */
 class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource {
     type: 'raster-array';
     map: Map;
