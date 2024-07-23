@@ -20,7 +20,7 @@ import type {ISource, SourceRasterLayer} from './source';
 import type Tile from './tile';
 
 /**
- * A data source containing raster-array tile created with [Mapbox Tiling Service](https://docs.mapbox.com/mapbox-tiling-service/guides/).
+ * A data source containing raster-array tiles created with [Mapbox Tiling Service](https://docs.mapbox.com/mapbox-tiling-service/guides/).
  * See the [Style Specification](https://docs.mapbox.com/style-spec/reference/sources/#raster-array) for detailed documentation of options.
  *
  * @example
