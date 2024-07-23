@@ -1,22 +1,22 @@
 import Texture from '../render/texture';
 import RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
 import RasterStyleLayer from '../style/style_layer/raster_style_layer';
-import { ResourceType } from '../util/ajax';
-import { ErrorEvent, Evented } from '../util/evented';
-import { extend } from '../util/util';
+import {ResourceType} from '../util/ajax';
+import {ErrorEvent, Evented} from '../util/evented';
+import {extend} from '../util/util';
 import RasterTileSource from './raster_tile_source';
 
 // Import MRTData as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../data/mrt_data';
 
-import type { RasterArraySourceSpecification } from '../style-spec/types';
-import type { Callback } from '../types/callback';
-import type { Map } from '../ui/map';
+import type {RasterArraySourceSpecification} from '../style-spec/types';
+import type {Callback} from '../types/callback';
+import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type RasterArrayTile from './raster_array_tile';
-import type { TextureDescriptor } from './raster_array_tile';
-import type { ISource, SourceRasterLayer } from './source';
+import type {TextureDescriptor} from './raster_array_tile';
+import type {ISource, SourceRasterLayer} from './source';
 import type Tile from './tile';
 
 /**
