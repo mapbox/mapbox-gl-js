@@ -19,6 +19,20 @@ import type {TextureDescriptor} from './raster_array_tile';
 import type {ISource, SourceRasterLayer} from './source';
 import type {RasterArraySourceSpecification} from '../style-spec/types';
 
+/**
+ * A data source containing raster-array tiles created with [Mapbox Tiling Service](https://docs.mapbox.com/mapbox-tiling-service/guides/).
+ * See the [Style Specification](https://docs.mapbox.com/style-spec/reference/sources/#raster-array) for detailed documentation of options.
+ *
+ * @example
+ * // add to map
+ * map.addSource('some id', {
+ *     type: 'raster-array',
+ *     url: 'mapbox://rasterarrayexamples.gfs-winds',
+ *     tileSize: 512
+ * });
+ *
+ * @see [Example: Create a wind particle animation](https://docs.mapbox.com/mapbox-gl-js/example/raster-particle-layer/)
+ */
 class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource {
     type: 'raster-array';
     map: Map;
