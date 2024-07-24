@@ -27,7 +27,7 @@ import type Tile from './tile';
  * // add to map
  * map.addSource('some id', {
  *     type: 'raster-array',
- *     url: ['https://api.mapbox.com/v4/rasterarrayexamples.gfs-winds.json'],
+ *     url: 'mapbox://rasterarrayexamples.gfs-winds',
  *     tileSize: 512
  * });
  *
