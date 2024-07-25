@@ -196,6 +196,7 @@ async function renderMap(style, options) {
         fadeDuration: options.fadeDuration || 0,
         localIdeographFontFamily: options.localIdeographFontFamily || false,
         projection: options.projection,
+        precompilePrograms: false,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
         performanceMetricsCollection: false,
         tessellationStep: options.tessellationStep,

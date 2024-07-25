@@ -184,6 +184,7 @@ export type MapOptions = {
     respectPrefersReducedMotion?: boolean;
     contextCreateOptions?: ContextOptions;
     devtools?: boolean;
+    precompilePrograms?: boolean;
     repaint?: boolean;
     fadeDuration?: number;
     localFontFamily?: string;
@@ -199,7 +200,7 @@ const defaultMaxZoom = 22;
 const defaultMinPitch = 0;
 const defaultMaxPitch = 85;
 
-const defaultOptions = {
+const defaultOptions: Omit<MapOptions, 'container'> = {
     center: [0, 0],
     zoom: 0,
     bearing: 0,
@@ -247,6 +248,7 @@ const defaultOptions = {
     crossSourceCollisions: true,
     collectResourceTiming: false,
     testMode: false,
+    precompilePrograms: true
 };
 
 /**
@@ -482,6 +484,7 @@ export class Map extends Camera {
     _visibilityHidden: number;
     _performanceMetricsCollection: boolean;
     _tessellationStep?: number;
+    _precompilePrograms: boolean;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -609,6 +612,7 @@ export class Map extends Camera {
         this._containerWidth = 0;
         this._containerHeight = 0;
         this._showParseStatus = true;
+        this._precompilePrograms = options.precompilePrograms;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevationExaggeration = 0;

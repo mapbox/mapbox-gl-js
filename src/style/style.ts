@@ -682,7 +682,7 @@ class Style extends Evented<MapEvents> {
             options: this.options
         });
 
-        this._shouldPrecompile = this.isRootStyle();
+        this._shouldPrecompile = this.map._precompilePrograms && this.isRootStyle();
     }
 
     _isInternalStyle(json: StyleSpecification): boolean {
@@ -1373,6 +1373,40 @@ class Style extends Evented<MapEvents> {
         return source;
     }
 
+    precompilePrograms(layer: StyleLayer, parameters: EvaluationParameters) {
+        const painter = this.map.painter;
+
+        if (!painter) {
+            return;
+        }
+
+        for (let i = (layer.minzoom || DEFAULT_MIN_ZOOM); i < (layer.maxzoom || DEFAULT_MAX_ZOOM); i++) {
+            const programIds = layer.getProgramIds();
+            if (!programIds) continue;
+
+            for (const programId of programIds) {
+                const params = layer.getDefaultProgramParams(programId, parameters.zoom, this._styleColorTheme.lut);
+                if (params) {
+                    painter.style = this;
+                    if (this.fog) {
+                        painter._fogVisible = true;
+                        params.overrideFog = true;
+                        painter.getOrCreateProgram(programId, params);
+                    }
+                    painter._fogVisible = false;
+                    params.overrideFog = false;
+                    painter.getOrCreateProgram(programId, params);
+
+                    if (this.stylesheet.terrain || (this.stylesheet.projection && this.stylesheet.projection.name === 'globe')) {
+                        params.overrideRtt = true;
+                        painter.getOrCreateProgram(programId, params);
+                    }
+                }
+            }
+        }
+
+    }
+
     /**
      * Apply queued style updates in a batch and recalculate zoom-dependent paint properties.
      * @private
@@ -1455,32 +1489,12 @@ class Style extends Evented<MapEvents> {
             }
 
             if (!this._precompileDone && this._shouldPrecompile) {
-                for (let i = (layer.minzoom || DEFAULT_MIN_ZOOM); i < (layer.maxzoom || DEFAULT_MAX_ZOOM); i++) {
-                    const painter = this.map.painter;
-                    if (painter) {
-                        const programIds = layer.getProgramIds();
-                        if (!programIds) continue;
-
-                        for (const programId of programIds) {
-                            const params = layer.getDefaultProgramParams(programId, parameters.zoom, this._styleColorTheme.lut);
-                            if (params) {
-                                painter.style = this;
-                                if (this.fog) {
-                                    painter._fogVisible = true;
-                                    params.overrideFog = true;
-                                    painter.getOrCreateProgram(programId, params);
-                                }
-                                painter._fogVisible = false;
-                                params.overrideFog = false;
-                                painter.getOrCreateProgram(programId, params);
-
-                                if (this.stylesheet.terrain || (this.stylesheet.projection && this.stylesheet.projection.name === 'globe')) {
-                                    params.overrideRtt = true;
-                                    painter.getOrCreateProgram(programId, params);
-                                }
-                            }
-                        }
-                    }
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(() => {
+                        this.precompilePrograms(layer, parameters);
+                    });
+                } else {
+                    this.precompilePrograms(layer, parameters);
                 }
             }
         }
