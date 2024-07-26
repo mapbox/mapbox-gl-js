@@ -6,27 +6,12 @@
       "a",
       {},
       "b",
-      {
-        "font-scale": 2
-      },
+      {"font-scale": 2},
       "c",
-      {
-        "text-font": [
-          "literal",
-          [
-            "a",
-            "b"
-          ]
-        ]
-      }
+      {"text-font": ["literal", ["a", "b"]]}
     ]
   ],
-  "inputs": [
-    [
-      {},
-      {}
-    ]
-  ],
+  "inputs": [[{}, {}]],
   "expected": {
     "compiled": {
       "result": "success",
@@ -34,9 +19,7 @@
       "isZoomConstant": true,
       "type": "string"
     },
-    "outputs": [
-      "abc"
-    ],
+    "outputs": ["abc"],
     "serialized": "abc"
   }
 }

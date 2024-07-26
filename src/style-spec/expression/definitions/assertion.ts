@@ -34,9 +34,8 @@ class Assertion implements Expression {
         this.args = args;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | void {
         if (args.length < 2)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`Expected at least one argument.`);
 
         let i = 1;
@@ -48,7 +47,6 @@ class Assertion implements Expression {
             if (args.length > 2) {
                 const type = args[1];
                 if (typeof type !== 'string' || !(type in types) || type === 'object')
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                     return context.error('The item type argument of "array" must be one of string, number, boolean', 1);
                 itemType = types[type];
                 i++;
@@ -63,7 +61,6 @@ class Assertion implements Expression {
                         args[2] < 0 ||
                         args[2] !== Math.floor(args[2]))
                 ) {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                     return context.error('The length argument to "array" must be a positive integer literal', 2);
                 }
                 N = (args[2] as number);
@@ -93,7 +90,7 @@ class Assertion implements Expression {
             if (!error) {
                 return value;
             } else if (i === this.args.length - 1) {
-                throw new RuntimeError(`Expected value to be of type ${toString(this.type)}, but found ${toString(typeOf(value))} instead.`);
+                throw new RuntimeError(`The expression ${JSON.stringify(this.args[i].serialize())} evaluated to ${toString(typeOf(value))} but was expected to be of type ${toString(this.type)}.`);
             }
         }
 

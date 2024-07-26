@@ -1,11 +1,11 @@
 {
   "expression": ["index-of", ["get", "i"], ["array", ["get", "arr"]]],
   "inputs": [
-    [{}, { "properties": { "i": null, "arr": [9, 8, 7] } }],
-    [{}, { "properties": { "i": null, "arr": [9, 8, 7, null] } }],
-    [{}, { "properties": { "i": 1, "arr": [9, 8, 7] } }],
-    [{}, { "properties": { "i": 9, "arr": [9, 8, 7, 9] } }],
-    [{}, { "properties": { "i": 1, "arr": null } }]
+    [{}, {"properties": {"i": null, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": null, "arr": [9, 8, 7, null]}}],
+    [{}, {"properties": {"i": 1, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 9, "arr": [9, 8, 7, 9]}}],
+    [{}, {"properties": {"i": 1, "arr": null}}]
   ],
   "expected": {
     "compiled": {
@@ -19,7 +19,9 @@
       3,
       -1,
       0,
-      { "error": "Expected value to be of type array, but found null instead." }
+      {
+        "error": "The expression [\"get\",\"arr\"] evaluated to null but was expected to be of type array."
+      }
     ],
     "serialized": ["index-of", ["get", "i"], ["array", ["get", "arr"]]]
   }

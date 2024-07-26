@@ -1,9 +1,9 @@
 {
   "expression": ["index-of", ["get", "i"], ["get", "arr"]],
   "inputs": [
-    [{}, { "properties": { "i": null, "arr": [9, 8, 7] } }],
-    [{}, { "properties": { "i": 1, "arr": [9, 8, 7] } }],
-    [{}, { "properties": { "i": 9, "arr": [9, 8, 7] } }],
+    [{}, {"properties": {"i": null, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 1, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 9, "arr": [9, 8, 7]}}],
     [
       {},
       {
@@ -22,7 +22,7 @@
         }
       }
     ],
-    [{}, { "properties": { "i": 1, "arr": null } }]
+    [{}, {"properties": {"i": 1, "arr": null}}]
   ],
   "expected": {
     "compiled": {

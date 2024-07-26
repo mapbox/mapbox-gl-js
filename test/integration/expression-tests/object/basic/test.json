@@ -17,15 +17,17 @@
     "outputs": [
       {"inner": "object"},
       {
-        "error": "Expected value to be of type object, but found number instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to number but was expected to be of type object."
       },
       {
-        "error": "Expected value to be of type object, but found string instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to string but was expected to be of type object."
       },
       {
-        "error": "Expected value to be of type object, but found boolean instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to boolean but was expected to be of type object."
       },
-      {"error": "Expected value to be of type object, but found null instead."}
+      {
+        "error": "The expression [\"get\",\"x\"] evaluated to null but was expected to be of type object."
+      }
     ],
     "serialized": ["object", ["get", "x"]]
   }

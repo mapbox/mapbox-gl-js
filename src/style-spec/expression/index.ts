@@ -133,7 +133,7 @@ export class StyleExpression {
             if (!this._warningHistory[e.message]) {
                 this._warningHistory[e.message] = true;
                 if (typeof console !== 'undefined') {
-                    console.warn(e.message);
+                    console.warn(`Failed to evaluate expression "${JSON.stringify(this.expression.serialize())}". ${e.message}`);
                 }
             }
             return this._defaultValue;

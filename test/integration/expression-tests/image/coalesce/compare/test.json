@@ -1,19 +1,7 @@
 {
-  "expression":
-  ["to-boolean", ["coalesce",
-    ["image", "monument-15"],
-    ""
-  ]],
-  "propertySpec": {
-    "type": "boolean"
-  },
-  "inputs": [
-    [
-      {"availableImages": ["monument-15"]},
-      {}
-    ],
-    [{}, {}]
-  ],
+  "expression": ["to-boolean", ["coalesce", ["image", "monument-15"], ""]],
+  "propertySpec": {"type": "boolean"},
+  "inputs": [[{"availableImages": ["monument-15"]}, {}], [{}, {}]],
   "expected": {
     "compiled": {
       "result": "success",
@@ -21,14 +9,7 @@
       "isZoomConstant": true,
       "type": "boolean"
     },
-    "outputs": [
-      true,
-      false
-    ],
-    "serialized":
-    ["to-boolean", ["coalesce",
-      ["image", "monument-15"],
-      ""
-    ]]
+    "outputs": [true, false],
+    "serialized": ["to-boolean", ["coalesce", ["image", "monument-15"], ""]]
   }
 }

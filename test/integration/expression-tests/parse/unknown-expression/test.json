@@ -3,12 +3,7 @@
   "expected": {
     "compiled": {
       "result": "error",
-      "errors": [
-        {
-          "key": "[1][4]",
-          "error": "Expected number but found array."
-        }
-      ]
+      "errors": [{"key": "[1][4]", "error": "Expected number but found array."}]
     }
   }
 }

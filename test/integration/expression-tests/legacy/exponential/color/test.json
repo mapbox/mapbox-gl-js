@@ -26,14 +26,16 @@
       "type": "color"
     },
     "outputs": [
-      {"error": "Expected value to be of type number, but found null instead."},
+      {
+        "error": "The expression [\"get\",\"p\"] evaluated to null but was expected to be of type number."
+      },
       [0, 0, 0, 1],
       [0, 0, 0, 1],
       [0.5, 0.5, 0.5, 1],
       [1, 1, 1, 1],
       [1, 1, 1, 1],
       {
-        "error": "Expected value to be of type number, but found string instead."
+        "error": "The expression [\"get\",\"p\"] evaluated to string but was expected to be of type number."
       }
     ],
     "serialized": [

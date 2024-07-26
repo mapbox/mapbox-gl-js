@@ -14,12 +14,7 @@
       "isZoomConstant": true,
       "type": "string"
     },
-    "outputs": [
-      "one",
-      "two",
-      "5",
-      ""
-    ],
+    "outputs": ["one", "two", "5", ""],
     "serialized": ["to-string", ["coalesce", ["get", "a"], ["get", "b"]]]
   }
 }

@@ -14,7 +14,7 @@
     "outputs": [
       0,
       {
-        "error": "Expected value to be of type object, but found string instead."
+        "error": "The expression [\"get\",\"a\"] evaluated to string but was expected to be of type object."
       }
     ],
     "serialized": ["get", "b", ["object", ["get", "a"]]]

@@ -70,6 +70,6 @@ describe('evaluate expression', () => {
         expect(value.evaluate({}, {properties: {x: 'invalid'}})).toEqual('a');
         expect(
             console.warn
-        ).toHaveBeenCalledWith(`Expected value to be one of "a", "b", "c", but found "invalid" instead.`);
+        ).toHaveBeenCalledWith(`Failed to evaluate expression \"[\"string\",[\"get\",\"x\"]]\". Expected value to be one of \"a\", \"b\", \"c\", but found \"invalid\" instead.`);
     });
 });

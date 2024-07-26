@@ -14,7 +14,9 @@
       "type": "number"
     },
     "outputs": [
-      {"error": "Expected value to be of type number, but found null instead."}
+      {
+        "error": "The expression [\"get\",\"a\"] evaluated to null but was expected to be of type number."
+      }
     ],
     "serialized": [
       "let",

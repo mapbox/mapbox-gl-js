@@ -1,44 +1,35 @@
 {
-  "expression": ["within", {
+  "expression": [
+    "within",
+    {
       "type": "Polygon",
       "coordinates": [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]]
-    }],
-  "inputs": [[{
-        "zoom": 3,
-        "canonicalID": {
-          "z": 3,
-          "x": 3,
-          "y": 3
-        }
-      }, {
-        "geometry": {
-          "type": "Point",
-          "coordinates": [6, 6]
-        }
-      }], [{
-        "zoom": 3,
-        "canonicalID": {
-          "z": 3,
-          "x": 3,
-          "y": 3
-        }
-      }, {
-        "geometry": {
-          "type": "Point",
-          "coordinates": [2, 2]
-        }
-      }]],
+    }
+  ],
+  "inputs": [
+    [
+      {"zoom": 3, "canonicalID": {"z": 3, "x": 3, "y": 3}},
+      {"geometry": {"type": "Point", "coordinates": [6, 6]}}
+    ],
+    [
+      {"zoom": 3, "canonicalID": {"z": 3, "x": 3, "y": 3}},
+      {"geometry": {"type": "Point", "coordinates": [2, 2]}}
+    ]
+  ],
   "expected": {
     "compiled": {
-      "type": "boolean",
+      "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "result": "success"
+      "type": "boolean"
     },
     "outputs": [false, true],
-    "serialized": ["within", {
-        "coordinates": [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]],
-        "type": "Polygon"
-      }]
+    "serialized": [
+      "within",
+      {
+        "type": "Polygon",
+        "coordinates": [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]]
+      }
+    ]
   }
 }

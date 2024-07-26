@@ -1,56 +1,58 @@
 {
-  "expression": ["within", {
+  "expression": [
+    "within",
+    {
       "type": "Polygon",
-      "coordinates": [[[-185.0, 60.0], [175.0, 60.0], [175.0, 65.0], [-185.0, 65.0], [-185.0, 60.0]]]
-    }],
-  "inputs": [[{
-        "zoom": 0,
-        "canonicalID": {
-          "z": 0,
-          "x": 0,
-          "y": 0
-        }
-      }, {
+      "coordinates": [
+        [[-185, 60], [175, 60], [175, 65], [-185, 65], [-185, 60]]
+      ]
+    }
+  ],
+  "inputs": [
+    [
+      {"zoom": 0, "canonicalID": {"z": 0, "x": 0, "y": 0}},
+      {
         "geometry": {
           "type": "LineString",
           "coordinates": [[-183, 61], [-179, 62]]
         }
-      }], [{
-        "zoom": 0,
-        "canonicalID": {
-          "z": 0,
-          "x": 0,
-          "y": 0
-        }
-      }, {
+      }
+    ],
+    [
+      {"zoom": 0, "canonicalID": {"z": 0, "x": 0, "y": 0}},
+      {
         "geometry": {
           "type": "LineString",
           "coordinates": [[-183, 61], [181, 63]]
         }
-      }], [{
-        "zoom": 0,
-        "canonicalID": {
-          "z": 0,
-          "x": 0,
-          "y": 0
-        }
-      }, {
+      }
+    ],
+    [
+      {"zoom": 0, "canonicalID": {"z": 0, "x": 0, "y": 0}},
+      {
         "geometry": {
           "type": "LineString",
           "coordinates": [[-183, 62], [55, 63.5]]
         }
-      }]],
+      }
+    ]
+  ],
   "expected": {
     "compiled": {
-      "type": "boolean",
+      "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "result": "success"
+      "type": "boolean"
     },
     "outputs": [true, false, true],
-    "serialized": ["within", {
-        "coordinates": [[[-185.0, 60.0], [175.0, 60.0], [175.0, 65.0], [-185.0, 65.0], [-185.0, 60.0]]],
-        "type": "Polygon"
-      }]
+    "serialized": [
+      "within",
+      {
+        "type": "Polygon",
+        "coordinates": [
+          [[-185, 60], [175, 60], [175, 65], [-185, 65], [-185, 60]]
+        ]
+      }
+    ]
   }
 }

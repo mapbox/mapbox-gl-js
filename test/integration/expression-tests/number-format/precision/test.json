@@ -3,9 +3,9 @@
     "number-format",
     987654321.234567,
     {
-        "locale": ["get", "locale"],
-        "min-fraction-digits": ["get", "min"],
-        "max-fraction-digits": ["get", "max"]
+      "locale": ["get", "locale"],
+      "min-fraction-digits": ["get", "min"],
+      "max-fraction-digits": ["get", "max"]
     }
   ],
   "inputs": [
@@ -24,9 +24,9 @@
       "number-format",
       987654321.234567,
       {
-          "locale": ["string", ["get", "locale"]],
-          "min-fraction-digits": ["number", ["get", "min"]],
-          "max-fraction-digits": ["number", ["get", "max"]]
+        "locale": ["string", ["get", "locale"]],
+        "min-fraction-digits": ["number", ["get", "min"]],
+        "max-fraction-digits": ["number", ["get", "max"]]
       }
     ]
   }

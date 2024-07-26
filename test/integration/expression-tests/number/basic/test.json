@@ -16,12 +16,14 @@
     "outputs": [
       1,
       {
-        "error": "Expected value to be of type number, but found string instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to string but was expected to be of type number."
       },
       {
-        "error": "Expected value to be of type number, but found boolean instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to boolean but was expected to be of type number."
       },
-      {"error": "Expected value to be of type number, but found null instead."}
+      {
+        "error": "The expression [\"get\",\"x\"] evaluated to null but was expected to be of type number."
+      }
     ],
     "serialized": ["number", ["get", "x"]]
   }

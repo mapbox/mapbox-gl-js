@@ -13,7 +13,9 @@
     },
     "outputs": [
       0,
-      {"error": "Expected value to be of type array, but found string instead."}
+      {
+        "error": "The expression [\"get\",\"array\"] evaluated to string but was expected to be of type array."
+      }
     ],
     "serialized": ["at", 0, ["array", ["get", "array"]]]
   }

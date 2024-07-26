@@ -1,13 +1,6 @@
-
 {
-  "expression": [
-    "number-format",
-    123456.789,
-    {}
-  ],
-  "inputs": [
-    [{}, {}]
-  ],
+  "expression": ["number-format", 123456.789, {}],
+  "inputs": [[{}, {}]],
   "expected": {
     "compiled": {
       "result": "success",

@@ -9,7 +9,9 @@
       "type": "number"
     },
     "outputs": [
-      {"error": "Expected value to be of type number, but found null instead."},
+      {
+        "error": "The expression [\"get\",\"x\"] evaluated to null but was expected to be of type number."
+      },
       1
     ],
     "serialized": ["number", ["get", "x"]]

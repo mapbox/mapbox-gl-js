@@ -21,10 +21,10 @@
     "outputs": [
       ["a", "b"],
       {
-        "error": "Expected value to be of type array<string>, but found array<number, 2> instead."
+        "error": "The expression [\"get\",\"array\"] evaluated to array<number, 2> but was expected to be of type array<string>."
       },
       {
-        "error": "Expected value to be of type array<string>, but found string instead."
+        "error": "The expression [\"get\",\"array\"] evaluated to string but was expected to be of type array<string>."
       }
     ],
     "serialized": ["array", "string", ["get", "array"]]

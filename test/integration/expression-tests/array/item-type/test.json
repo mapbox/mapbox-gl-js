@@ -16,10 +16,10 @@
     "outputs": [
       ["a", "b"],
       {
-        "error": "Expected value to be of type array<string>, but found array<number, 2> instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to array<number, 2> but was expected to be of type array<string>."
       },
       {
-        "error": "Expected value to be of type array<string>, but found array<value, 2> instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to array<value, 2> but was expected to be of type array<string>."
       },
       []
     ],
