@@ -19,8 +19,8 @@ in highp vec4 v_position_height;
 in lowp vec4 v_color_mix;
 
 #ifdef RENDER_SHADOWS
-in vec4 v_pos_light_view_0;
-in vec4 v_pos_light_view_1;
+in highp vec4 v_pos_light_view_0;
+in highp vec4 v_pos_light_view_1;
 in float v_depth_shadows;
 #endif
 
