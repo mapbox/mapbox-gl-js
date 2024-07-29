@@ -6574,7 +6574,7 @@
     "circle-blur": {
       "type": "number",
       "default": 0,
-      "doc": "Amount to blur the circle. 1 blurs the circle such that only the centerpoint is full opacity.",
+      "doc": "Amount to blur the circle. 1 blurs the circle such that only the centerpoint is full opacity. Setting a negative value renders the blur as an inner glow effect.",
       "transition": true,
       "sdk-support": {
         "basic functionality": {
