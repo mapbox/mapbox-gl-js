@@ -15,4 +15,17 @@ export type TileJSON = {
     vector_layers?: Array<any>;
     raster_layers?: Array<any>;
     variants?: Array<any>;
+    language?: {
+        [source_name: string]: string;
+    }
+    language_options?: {
+        [country_code: string]: string;
+    }
+    worldview?: {
+        [source_name: string]: string;
+    };
+    worldview_options?: {
+        [country_code: string]: string;
+    },
+    worldview_default?: string;
 };
