@@ -60,51 +60,18 @@
 <script type='text/javascript' src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.9/dist/tweakpane.min.js"></script>
 
 <script>
-const SPEED_FACTOR_DEFAULT = 0.6;
-const RESET_RATE_FACTOR_DEFAULT = 0.4;
-const PARTICLE_COUNT_DEFAULT = 1024;
-
 const PARAMS = {
     projection: 'globe',
     showTileBoundaries: false,
     fadeOpacityFactor: 0.98,
-    speedFactor: SPEED_FACTOR_DEFAULT,
-    maxSpeed: 70,
-    resetRateFactor: RESET_RATE_FACTOR_DEFAULT,
-    particleCount: PARTICLE_COUNT_DEFAULT,
+    speedFactor: 0.6,
+    maxSpeed: 40,
+    resetRateFactor: 0.4,
+    particleCount: 2048,
     bandIndex: 0,
 };
 
-// These are contained in debug/wind-512-mrt/tile.json.
-const BANDS = [
-    "1708300800",
-    "1708311600",
-    "1708322400",
-    "1708333200",
-    "1708344000",
-    "1708354800",
-    "1708365600",
-    "1708376400",
-    "1708387200",
-    "1708398000",
-    "1708408800",
-    "1708419600",
-    "1708430400",
-    "1708441200",
-    "1708452000",
-    "1708462800",
-    "1708473600",
-    "1708484400",
-    "1708495200",
-    "1708506000",
-    "1708516800",
-    "1708527600",
-    "1708538400",
-    "1708549200",
-    "1708560000",
-    "1708570800",
-    "1708581600"
-];
+const RASTERARRAY_LAYER = '10winds';
 
 window.onload = function() {
     const gui = new Tweakpane.Pane({  // eslint-disable-line
@@ -156,24 +123,38 @@ window.onload = function() {
         map.setPaintProperty('wind-layer', 'raster-particle-reset-rate-factor', ev.value);
     });
 
-    const particleCountSlider = gui.addInput(PARAMS, 'particleCount', {min: 64, max: 2048});
+    const particleCountSlider = gui.addInput(PARAMS, 'particleCount', {min: 64, max: 4096});
     particleCountSlider.on('change', (ev) => {
         map.setPaintProperty('wind-layer', 'raster-particle-count', ev.value);
     });
 
-    const bandSlider = gui.addInput(PARAMS, 'bandIndex', {min: 0, max: BANDS.length - 1, step: 1});
-    bandSlider.on('change', (ev) => {
-        const band = BANDS[ev.value];
-        map.setPaintProperty('wind-layer', 'raster-particle-array-band', band);
+    let bandSlider;
+    let bandList;
+    map.on('sourcedata', ({sourceId}) => {
+        const layer = map.getSource(sourceId)?.rasterLayers?.find(({id}) => id === RASTERARRAY_LAYER);
+        if (!layer?.fields?.bands) return;
+
+        // Exit early if the list of bands is unchanged
+        if (JSON.stringify(layer.fields.bands) === JSON.stringify(bandList)) return;
+        bandList = layer.fields.bands;
+
+        // Remove the existing slider before recreating
+        if (bandSlider) bandSlider.dispose();
+
+        // Create a new band slider with the updated list
+        bandSlider = gui.addInput(PARAMS, 'bandIndex', {min: 0, max: bandList.length - 1, step: 1});
+        bandSlider.on('change', ({value}) => {
+            map.setPaintProperty('wind-layer', 'raster-particle-array-band', bandList[value]);
+        });
     });
 };
 
 const map = new mapboxgl.Map({
     container: 'map',
-    maxZoom: 8,
+    maxZoom: 2,
     minZoom: 2,
-    zoom: 3,
-    center: [138, 36],
+    zoom: 2,
+    center: [-28, 47],
     // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
     style: 'mapbox://styles/mapbox/dark-v11'
 });
@@ -181,102 +162,83 @@ const map = new mapboxgl.Map({
 map.on('load', () => {
     map.addSource('raster-array-source', {
         'type': 'raster-array',
-        'tiles': [ `https://api.mapbox.com/rasterarrays/v1/demo/mapboxsatellite.msm-wind-512-tuned/{z}/{x}/{y}.mrt?jobid=123abc&access_token=${mapboxgl.accessToken}` ],
-        "raster_layers": [
-            {
-                "fields": {
-                    "range": [
-                        -6.97,
-                        37.27
-                    ],
-                    "name": "wind",
-                    "units": "m/s",
-                    "tilesize": 512,
-                    "buffer": 1,
-                    "bands": [
-                        "1708300800",
-                        "1708311600",
-                        "1708322400",
-                        "1708333200",
-                        "1708344000",
-                        "1708354800",
-                        "1708365600",
-                        "1708376400",
-                        "1708387200",
-                        "1708398000",
-                        "1708408800",
-                        "1708419600",
-                        "1708430400",
-                        "1708441200",
-                        "1708452000",
-                        "1708462800",
-                        "1708473600",
-                        "1708484400",
-                        "1708495200",
-                        "1708506000",
-                        "1708516800",
-                        "1708527600",
-                        "1708538400",
-                        "1708549200",
-                        "1708560000",
-                        "1708570800",
-                        "1708581600"
-                    ]
-                },
-                "id": "wind"
-            }
-        ],
-        'bounds': [
-            119.96875,
-            22.375,
-            150.03125,
-            47.62499999999999
-        ]
+        'url': 'mapbox://rasterarrayexamples.gfs-winds',
+        'tileSize': 512
     });
 
     map.addLayer({
         'id': 'wind-layer',
         'type': 'raster-particle',
         'source': 'raster-array-source',
-        'source-layer': 'wind',
+        'source-layer': RASTERARRAY_LAYER,
         'paint': {
-            'raster-particle-speed-factor': SPEED_FACTOR_DEFAULT,
-            'raster-particle-reset-rate-factor': RESET_RATE_FACTOR_DEFAULT,
-            'raster-particle-count': PARTICLE_COUNT_DEFAULT,
-            'raster-particle-max-speed': 70,
+            'raster-particle-speed-factor': PARAMS.speedFactor,
+            'raster-particle-fade-opacity-factor': PARAMS.fadeOpacityFactor,
+            'raster-particle-reset-rate-factor': PARAMS.resetRateFactor,
+            'raster-particle-count': PARAMS.particleCount,
+            'raster-particle-max-speed': 40,
             'raster-particle-color': [
-                "interpolate",
-                ["linear"],
-                ["raster-particle-speed"],
-                1.5, "rgba(134,163,171,256)",
-                2.5, "rgba(126,152,188,256)",
-                4.12, "rgba(110,143,208,256)",
-                4.63, "rgba(110,143,208,256)",
-                6.17, "rgba(15,147,167,256)",
-                7.72, "rgba(15,147,167,256)",
-                9.26, "rgba(57,163,57,256)",
-                10.29, "rgba(57,163,57,256)",
-                11.83, "rgba(194,134,62,256)",
-                13.37, "rgba(194,134,63,256)",
-                14.92, "rgba(200,66,13,256)",
-                16.46, "rgba(200,66,13,256)",
-                18.00, "rgba(210,0,50,256)",
-                20.06, "rgba(215,0,50,256)",
-                21.60, "rgba(175,80,136,256)",
-                23.66, "rgba(175,80,136,256)",
-                25.21, "rgba(117,74,147,256)",
-                27.78, "rgba(117,74,147,256)",
-                29.32, "rgba(68,105,141,256)",
-                31.89, "rgba(68,105,141,256)",
-                33.44, "rgba(194,251,119,256)",
-                42.18, "rgba(194,251,119,256)",
-                43.72, "rgba(241,255,109,256)",
-                48.87, "rgba(241,255,109,256)",
-                50.41, "rgba(256,256,256,256)",
-                57.61, "rgba(256,256,256,256)",
-                59.16, "rgba(0,256,256,256)",
-                68.93, "rgba(0,256,256,256)",
-                69.44, "rgba(256,37,256,256)"
+                'interpolate',
+                ['linear'],
+                ['raster-particle-speed'],
+                1.5,
+                'rgba(134,163,171,256)',
+                2.5,
+                'rgba(126,152,188,256)',
+                4.12,
+                'rgba(110,143,208,256)',
+                4.63,
+                'rgba(110,143,208,256)',
+                6.17,
+                'rgba(15,147,167,256)',
+                7.72,
+                'rgba(15,147,167,256)',
+                9.26,
+                'rgba(57,163,57,256)',
+                10.29,
+                'rgba(57,163,57,256)',
+                11.83,
+                'rgba(194,134,62,256)',
+                13.37,
+                'rgba(194,134,63,256)',
+                14.92,
+                'rgba(200,66,13,256)',
+                16.46,
+                'rgba(200,66,13,256)',
+                18.0,
+                'rgba(210,0,50,256)',
+                20.06,
+                'rgba(215,0,50,256)',
+                21.6,
+                'rgba(175,80,136,256)',
+                23.66,
+                'rgba(175,80,136,256)',
+                25.21,
+                'rgba(117,74,147,256)',
+                27.78,
+                'rgba(117,74,147,256)',
+                29.32,
+                'rgba(68,105,141,256)',
+                31.89,
+                'rgba(68,105,141,256)',
+                33.44,
+                'rgba(194,251,119,256)',
+                42.18,
+                'rgba(194,251,119,256)',
+                43.72,
+                'rgba(241,255,109,256)',
+                48.87,
+                'rgba(241,255,109,256)',
+                50.41,
+                'rgba(256,256,256,256)',
+                57.61,
+                'rgba(256,256,256,256)',
+                59.16,
+                'rgba(0,256,256,256)',
+                68.93,
+                'rgba(0,256,256,256)',
+                69.44,
+                'rgba(256,37,256,256)'
             ]
         }
     });
