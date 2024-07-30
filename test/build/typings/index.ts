@@ -333,7 +333,8 @@ map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
 //
 
 const features1 = map.queryRenderedFeatures([0, 0], {layers: ['layer-id'], filter: ['>=', 'area', 80000], validate: true}) satisfies mapboxgl.GeoJSONFeature[];
-const features2 = map.querySourceFeatures('sourceId', {sourceLayer: 'sourceLayer', filter: ['>=', 'area', 80000], validate: true}) satisfies mapboxgl.GeoJSONFeature[];
+const features2 = map.queryRenderedFeatures({validate: false});
+const features3 = map.querySourceFeatures('sourceId', {sourceLayer: 'sourceLayer', filter: ['>=', 'area', 80000], validate: true}) satisfies mapboxgl.GeoJSONFeature[];
 
 //
 // Set state

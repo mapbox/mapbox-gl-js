@@ -117,6 +117,8 @@ export type SetStyleOptions = {
     localIdeographFontFamily: StyleOptions['localIdeographFontFamily'];
 };
 
+export type QueryRenderedFeaturesOptions = Pick<QueryRenderedFeaturesParams, 'layers' | 'filter' | 'validate'>;
+
 type Listener<T extends MapEventType> = (event: MapEventOf<T>) => void;
 
 type DelegatedListener = {
@@ -1942,7 +1944,9 @@ export class Map extends Camera {
      * @see [Example: Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Example: Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
-    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike], options?: Pick<QueryRenderedFeaturesParams, 'layers' | 'filter' | 'validate'>): Array<GeoJSONFeature> {
+    queryRenderedFeatures(geometry: PointLike | [PointLike, PointLike], options?: QueryRenderedFeaturesOptions): Array<GeoJSONFeature>;
+    queryRenderedFeatures(options?: QueryRenderedFeaturesOptions): Array<GeoJSONFeature>;
+    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike] | QueryRenderedFeaturesOptions, options?: QueryRenderedFeaturesOptions): Array<GeoJSONFeature> {
         // The first parameter can be omitted entirely, making this effectively an overloaded method
         // with two signatures:
         //
@@ -1961,7 +1965,7 @@ export class Map extends Camera {
         }
 
         options = options || {};
-        geometry = geometry || [([0, 0] as PointLike), ([this.transform.width, this.transform.height] as PointLike)];
+        geometry = (geometry || [[0, 0], [this.transform.width, this.transform.height]]) as PointLike;
 
         if (options.layers && Array.isArray(options.layers)) {
             for (const layerId of options.layers) {
