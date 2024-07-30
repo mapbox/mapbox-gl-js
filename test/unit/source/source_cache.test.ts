@@ -1785,7 +1785,7 @@ describe('SourceCache loads tiles recursively', () => {
                     return;
                 }
 
-                if (e.tile) loadedTiles++;
+                if (e.tile && e.sourceDataType !== 'error') loadedTiles++;
                 if (loadedTiles === 4) setTimeout(() => assert(resolve), 0);
             });
 
@@ -1826,7 +1826,7 @@ describe('SourceCache loads tiles recursively', () => {
         }
     });
 
-    test('fires `data` event with `error` sourceDataType if all tiles are 404', async () => {
+    test('fires `data` event with `error` sourceDataType if all tile is 404', async () => {
         const transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 1;
@@ -1837,6 +1837,7 @@ describe('SourceCache loads tiles recursively', () => {
             }
         });
 
+        let loadedTiles = 0;
         await new Promise(resolve => {
             eventedParent.on('data', (e) => {
                 if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
@@ -1844,19 +1845,18 @@ describe('SourceCache loads tiles recursively', () => {
                     return;
                 }
 
-                if (e.dataType === 'source' && e.sourceDataType === 'error') {
-                    expect(sourceCache.loaded()).toEqual(true);
-                    expect(sourceCache.getRenderableIds()).toStrictEqual([]);
-
-                    const tileStates = Object.values(sourceCache._tiles).map(t => t.state);
-                    expect(tileStates).toStrictEqual(Array(5).fill('errored'));
-
-                    resolve();
-                }
+                if (e.tile) loadedTiles++;
+                if (loadedTiles === 5) resolve(); // 4 tiles on zoom 1 and 1 parent tile on zoom 0
             });
 
             sourceCache.getSource().onAdd();
         });
+
+        expect(sourceCache.loaded()).toEqual(true);
+        expect(sourceCache.getRenderableIds()).toStrictEqual([]);
+
+        const tileStates = Object.values(sourceCache._tiles).map(t => t.state);
+        expect(tileStates).toStrictEqual(Array(5).fill('errored'));
     });
 });
 
