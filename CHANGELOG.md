@@ -1,3 +1,21 @@
+## 3.6.0-beta.1
+
+### Features and improvements ✨
+- Improve initial load performance.
+- Add inner glow effect for negative `circle-blur` values.
+- Add support for inlining TileJSON in style source definitions using `data` field.
+- Improve 3D models' shadow appearance.
+- Improve performance of updating config values of a style.
+- Add more descriptive expression evaluation error messages.
+- Improve TypeScript typings.
+
+### Bug fixes 🐞
+- Fix `isSourceLoaded` flag on `sourcedata` event for already loaded sources.
+- Fix firing `load` event when all tiles fail to load.
+- Fix performance issues when GeoJSON in `dynamic` mode is updated too frequently.
+- Fix rasterarray layer flickering from stale tiles cache.
+- Fix spikes when viewing terrain-enabled maps in certain environments.
+
 ## 3.5.2
 
 - Improve 3D models rendering performance.
