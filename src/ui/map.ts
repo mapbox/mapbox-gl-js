@@ -49,6 +49,7 @@ import type {PointLike} from '../types/point-like';
 import type {FeatureState} from '../style-spec/expression/index';
 import type {RequestTransformFunction} from '../util/mapbox';
 import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
+import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
 import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector} from '../style/style';
@@ -3046,13 +3047,17 @@ export class Map extends Camera {
      * @see [Example: Filter symbols by toggling a list](https://www.mapbox.com/mapbox-gl-js/example/filter-markers/)
      * @see [Example: Filter symbols by text input](https://www.mapbox.com/mapbox-gl-js/example/filter-markers-by-input/)
      */
-    getLayer<T extends LayerSpecification>(id: string): T | undefined {
+    getLayer<T extends LayerSpecification | CustomLayerInterface>(id: string): T | undefined {
         if (!this._isValidId(id)) {
             return null;
         }
 
         const layer = this.style.getOwnLayer(id);
-        return layer ? layer.serialize() as T : undefined;
+        if (!layer) return;
+
+        if (layer.type === 'custom') return (layer as CustomStyleLayer).implementation as T;
+
+        return layer.serialize() as T;
     }
 
     /**

@@ -169,6 +169,14 @@ export interface CustomLayerInterface {
     shouldRerenderTiles?: () => boolean;
     onAdd?: (map: Map, gl: WebGL2RenderingContext) => void;
     onRemove?: (map: Map, gl: WebGL2RenderingContext) => void;
+
+    source?: never;
+    'source-layer'?: never;
+    minzoom?: never;
+    maxzoom?: never;
+    filter?: never;
+    layout?: never;
+    paint?: never;
 }
 
 export function validateCustomStyleLayer(layerObject: CustomLayerInterface): ValidationErrors {

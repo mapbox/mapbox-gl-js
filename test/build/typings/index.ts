@@ -271,7 +271,15 @@ map.addLayer({
 
 
 const layer = map.getLayer('id');
+layer.id satisfies string;
+layer.slot satisfies string;
+layer.paint satisfies mapboxgl.LayerSpecification['paint'];
+layer.layout satisfies mapboxgl.LayerSpecification['layout'];
+
 const backgroundLayer: mapboxgl.BackgroundLayerSpecification = map.getLayer('background');
+
+const customLayer: mapboxgl.CustomLayerInterface = map.getLayer<mapboxgl.CustomLayerInterface>('custom');
+customLayer.render satisfies mapboxgl.CustomLayerInterface['render'];
 
 switch (layer.type) {
     case 'background':
@@ -300,6 +308,9 @@ switch (layer.type) {
         break;
     case 'symbol':
         layer satisfies mapboxgl.SymbolLayerSpecification;
+        break;
+    case 'custom':
+        layer satisfies mapboxgl.CustomLayerInterface;
         break;
 }
 
