@@ -79,7 +79,12 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         if (isGlobeProjection) {
             definesValues.push('PROJECTION_GLOBE_VIEW');
         }
-        definesValues.push('TERRAIN_DEPTH_D24');
+        definesValues.push('DEPTH_D24');
+
+        if (painter.terrain && tr.depthOcclusionForSymbolsAndCircles) {
+            definesValues.push('DEPTH_OCCLUSION');
+        }
+
         const program = painter.getOrCreateProgram('circle', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
@@ -127,7 +132,9 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const {programConfiguration, program, layoutVertexBuffer, globeExtVertexBuffer, indexBuffer, uniformValues, tile} = segmentsState.state;
         const segments = segmentsState.segments;
 
-        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, terrainOptions);
+        if (painter.terrain) {
+            painter.terrain.setupElevationDraw(tile, program, terrainOptions);
+        }
 
         painter.uploadCommonUniforms(context, program, tile.tileID.toUnwrapped());
 

@@ -100,8 +100,6 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
         if (areTextsVisible) {
             drawLayerSymbols(painter, sourceCache, layer, coords, stencilMode, colorMode, {onlyText: true});
         }
-
-        drawOcclusions(painter, sourceCache, layer, coords);
     }
 
     if (sourceCache.map.showCollisionBoxes) {
@@ -279,153 +277,6 @@ type DrawLayerSymbolsOptions = {
     onlyText?: boolean;
 };
 
-function drawOcclusions(
-    painter: Painter,
-    sourceCache: SourceCache,
-    layer: SymbolStyleLayer,
-    coords: Array<OverscaledTileID>
-) {
-    if (!painter.symbolParams.useOcclusionQueries) {
-        return;
-    }
-
-    const context = painter.context;
-    const gl = context.gl;
-    const tr = painter.transform;
-
-    const paint = layer.paint;
-
-    const iconOccludedOpacityMultiplier = paint.get('icon-occlusion-opacity').constantOr(0);
-    const textOccludedOpacityMultiplier = paint.get('text-occlusion-opacity').constantOr(0);
-
-    const iconHasOcclusionOpacity = iconOccludedOpacityMultiplier !== 1;
-    const textHasOcclusionOpacity = textOccludedOpacityMultiplier !== 1;
-    const subjectForOcclusion = layer.hasInitialOcclusionOpacityProperties && (iconHasOcclusionOpacity || textHasOcclusionOpacity);
-
-    if (!subjectForOcclusion) {
-        return;
-    }
-
-    const isGlobeProjection = tr.projection.name === 'globe';
-
-    for (const coord of coords) {
-        const tile = sourceCache.getTile(coord);
-
-        const bucket: SymbolBucket = (tile.getBucket(layer) as any);
-
-        if (!bucket) continue;
-        // Allow rendering of buckets built for globe projection in mercator mode
-        // until the substitute tile has been loaded
-        if (bucket.projection.name === 'mercator' && isGlobeProjection) {
-            continue;
-        }
-
-        if (bucket.fullyClipped) continue;
-
-        const bucketIsGlobeProjection = bucket.projection.name === 'globe';
-        if (bucketIsGlobeProjection) {
-            warnOnce(`Occlusion not supported for globe mode. Layer: ${layer.type}`);
-            continue;
-        }
-        const tileMatrix = getSymbolTileProjectionMatrix(coord, bucket.getProjection(), tr);
-
-        // Result matrix is tile matrix + offset towards camera
-        const zOffsetMatrix = mat4.fromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, painter.symbolParams.depthOffset, 1);
-        const uMatrix = mat4.multiply([] as any, zOffsetMatrix, tileMatrix);
-
-        //
-        // Render occlusion queries
-        //
-        const queryFrameWindow = (() => {
-            if (painter.symbolParams.visualizeOcclusions !== 'none') {
-                return 1;
-            }
-
-            return painter.symbolParams.occlusionQueryFrameWindow;
-        })();
-
-        for (let symbolInstanceId = 0; symbolInstanceId < bucket.symbolInstances.length; symbolInstanceId++) {
-            const symbolInstance = bucket.symbolInstances.get(symbolInstanceId);
-
-            const crossTileID = symbolInstance.crossTileID;
-            const jointOpacity = painter.style.placement.opacities[crossTileID];
-            if (jointOpacity) {
-                if (jointOpacity.isHidden()) {
-                    continue;
-                }
-            }
-
-            if (((painter.frameCounter + symbolInstanceId) % queryFrameWindow) !== 0) {
-                continue;
-            }
-
-            const tileX = symbolInstance.tileAnchorX;
-            const tileY = symbolInstance.tileAnchorY;
-            const heightZ = symbolInstance.zOffset;
-
-            let query: OcclusionQuery | null | undefined;
-            if (painter.symbolParams.visualizeOcclusions === 'none') {
-                const q = bucket.queries.get(symbolInstanceId);
-
-                if (q) {
-                    if (!q.isFree()) {
-                        if (!q.isResultAvailable()) {
-                            continue;
-                        }
-                        const samplesPassed = q.consumeResult();
-                        const newState = samplesPassed === 0 ? 0 : 1;
-
-                        symbolInstance.occlusionState = newState;
-                        continue;
-                    } else {
-                        query = q;
-                    }
-                } else {
-                    query = new OcclusionQuery(painter.context);
-                    bucket.queries.set(symbolInstanceId, query);
-                }
-            }
-
-            const occlusionProgram = painter.getOrCreateProgram('occlusion');
-
-            const pos = [tileX, tileY, heightZ];
-
-            const occluderSize = painter.symbolParams.occluderSize;
-            const zPassColor = [1, 0, 0, 0.8];
-            const zTestColor = [1.0, 0.4, 0.2, 0.9];
-            const color = painter.symbolParams.visualizeOcclusions === 'zPass' ? zPassColor : zTestColor;
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number, number]'.
-            const occlusionUniforms = occlusionUniformValues(uMatrix, pos, [tr.width, tr.height], [occluderSize, occluderSize], color);
-
-            if (painter.terrain) {
-                const options = {
-                    useDepthForOcclusion: false,
-                    labelPlaneMatrixInv: undefined
-                };
-                painter.terrain.setupElevationDraw(tile, occlusionProgram, options);
-            }
-
-            if (painter.symbolParams.visualizeOcclusions === 'none' && query) {
-                query.begin();
-            }
-
-            const depthCompareFunc = painter.symbolParams.visualizeOcclusions === 'zPass' ? painter.context.gl.ALWAYS : painter.context.gl.LEQUAL;
-
-            const occlusionDepth = new DepthMode(depthCompareFunc, DepthMode.ReadOnly, painter.depthRangeFor3D);
-
-            const occlusionColor = painter.symbolParams.visualizeOcclusions !== 'none' ? ColorMode.alphaBlendedNonPremultiplied : ColorMode.disabled;
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
-            occlusionProgram.draw(painter, gl.TRIANGLES, occlusionDepth, StencilMode.disabled,
-                occlusionColor, CullFaceMode.disabled, occlusionUniforms, "occlusion",
-                painter.occlusionBuffers.vx, painter.occlusionBuffers.idx, painter.occlusionBuffers.segments);
-
-            if (painter.symbolParams.visualizeOcclusions === 'none' && query) {
-                query.end();
-            }
-        }
-    }
-}
-
 function drawLayerSymbols(
     painter: Painter,
     sourceCache: SourceCache,
@@ -506,18 +357,31 @@ function drawLayerSymbols(
 
         const invMatrix = bucket.getProjection().createInversionMatrix(tr, coord.canonical);
 
+        const setOcclusionDefines = (defines:any[]) => {
+            // Globe or orthographic - no depth occlusion needed
+            if (!tr.depthOcclusionForSymbolsAndCircles) {
+                return;
+            }
+
+            if (!layer.hasInitialOcclusionOpacityProperties) {
+                // Occlusion against terrain only
+                if (painter.terrain) {
+                    defines.push('DEPTH_D24');
+                    defines.push('DEPTH_OCCLUSION');
+                }
+            } else {
+                // Occlusion enabled
+                defines.push('DEPTH_D24');
+                defines.push('DEPTH_OCCLUSION');
+            }
+        };
+
         const getIconState = () => {
             const alongLine = iconRotateWithMap && layer.layout.get('symbol-placement') !== 'point';
 
             const baseDefines = ([] as any);
 
-            if (layer.hasInitialOcclusionOpacityProperties && iconHasOcclusionOpacity && painter.symbolParams.useOcclusionQueries && !bucketIsGlobeProjection && !isGlobeProjection) {
-                baseDefines.push('OCCLUSION_QUERIES');
-            }
-
-            if (!layer.hasInitialOcclusionOpacityProperties) {
-                baseDefines.push('SYMBOL_OCCLUSION_BY_TERRAIN_DEPTH');
-            }
+            setOcclusionDefines(baseDefines);
 
             const projectedPosOnLabelSpace = alongLine || updateTextFitIcon;
 
@@ -537,8 +401,6 @@ function drawLayerSymbols(
             if (bucket.icon.zOffsetVertexBuffer) {
                 baseDefines.push('Z_OFFSET');
             }
-
-            baseDefines.push('TERRAIN_DEPTH_D24');
 
             if (iconSaturation !== 0 || iconContrast !== 0 || iconBrightnessMin !== 0 || iconBrightnessMax !== 1) {
                 baseDefines.push('COLOR_ADJUSTMENT');
@@ -627,14 +489,6 @@ function drawLayerSymbols(
             const baseDefines = ([] as any);
             const projectedPosOnLabelSpace = alongLine || variablePlacement || updateTextFitIcon;
 
-            if (layer.hasInitialOcclusionOpacityProperties && textHasOcclusionOpacity && painter.symbolParams.useOcclusionQueries && !bucketIsGlobeProjection && !isGlobeProjection) {
-                baseDefines.push('OCCLUSION_QUERIES');
-            }
-
-            if (!layer.hasInitialOcclusionOpacityProperties) {
-                baseDefines.push('SYMBOL_OCCLUSION_BY_TERRAIN_DEPTH');
-            }
-
             if (painter.terrainRenderModeElevated() && textPitchWithMap) {
                 baseDefines.push('PITCH_WITH_MAP_TERRAIN');
             }
@@ -648,7 +502,7 @@ function drawLayerSymbols(
                 baseDefines.push('Z_OFFSET');
             }
 
-            baseDefines.push('TERRAIN_DEPTH_D24');
+            setOcclusionDefines(baseDefines);
 
             const programConfiguration = bucket.text.programConfigurations.get(layer.id);
             const program = painter.getOrCreateProgram(bucket.iconsInText ? 'symbolTextAndIcon' : 'symbolSDF', {config: programConfiguration, defines: baseDefines});
@@ -802,11 +656,14 @@ function drawLayerSymbols(
         if (painter.terrain) {
             const options = {
                 // Use depth occlusion only for unspecified opacity multiplier case
-                useDepthForOcclusion: !layer.hasInitialOcclusionOpacityProperties ? tr.depthOcclusionForSymbolsAndCircles : false,
+                useDepthForOcclusion: tr.depthOcclusionForSymbolsAndCircles,
                 labelPlaneMatrixInv: state.labelPlaneMatrixInv
             };
             painter.terrain.setupElevationDraw(state.tile, state.program, options);
+        } else {
+            painter.setupDepthForOcclusion(tr.depthOcclusionForSymbolsAndCircles, state.program);
         }
+
         context.activeTexture.set(gl.TEXTURE0);
         if (state.atlasTexture) {
             state.atlasTexture.bind(state.atlasInterpolation, gl.CLAMP_TO_EDGE, true);
@@ -843,9 +700,6 @@ function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, lay
     const context = painter.context;
     const gl = context.gl;
     const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.iconTransitioningVertexBuffer, buffers.globeExtVertexBuffer, buffers.zOffsetVertexBuffer];
-    if (buffers.occlusionQueryOpacityVertexBuffer.length > 0) {
-        dynamicBuffers.push(buffers.occlusionQueryOpacityVertexBuffer);
-    }
     program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, buffers.layoutVertexBuffer,
         buffers.indexBuffer, segments, layer.paint,

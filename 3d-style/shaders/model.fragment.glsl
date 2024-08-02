@@ -74,7 +74,7 @@ uniform highp sampler2D u_depthTexture;
 uniform vec2 u_inv_depth_size;
 uniform vec2 u_depth_range_unpack;
 
-#ifdef TERRAIN_DEPTH_D24
+#ifdef DEPTH_D24
     float unpack_depth(float depth) {
         return  depth * u_depth_range_unpack.x + u_depth_range_unpack.y;
     }
@@ -92,7 +92,7 @@ uniform vec2 u_depth_range_unpack;
 bool isOccluded() {
     vec2 coord = gl_FragCoord.xy * u_inv_depth_size;
 
-    #ifdef TERRAIN_DEPTH_D24
+    #ifdef DEPTH_D24
         highp float depth = unpack_depth(texture(u_depthTexture, coord).r);
     #else
         highp float depth = unpack_depth_rgba(texture(u_depthTexture, coord));

@@ -171,7 +171,10 @@ class Program<Us extends UniformBindings> {
 
         this.fixedUniforms = fixedUniforms(context);
         this.binderUniforms = configuration ? configuration.getUniforms(context) : [];
-        if (fixedDefines.includes('TERRAIN')) {
+
+        // Symbol and circle layer are depth (terrain + 3d layers) occluded
+        // For the sake of native compatibility depth occlusion goes via terrain uniforms block
+        if (fixedDefines.includes('TERRAIN') || name.indexOf("symbol") !== -1 || name.indexOf("circle") !== -1) {
             this.terrainUniforms = terrainUniforms(context);
         }
         if (fixedDefines.includes('GLOBE')) {

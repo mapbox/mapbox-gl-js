@@ -231,8 +231,6 @@ export class Terrain extends Elevation {
     _evaluationZoom: number | null | undefined;
     _previousCameraAltitude: number | null | undefined;
     _previousUpdateTimestamp: number | null | undefined;
-    _depthFBO: Framebuffer | null | undefined;
-    _depthTexture: Texture | null | undefined;
     _previousZoom: number;
     _updateTimestamp: number;
     _useVertexMorphing: boolean;
@@ -254,7 +252,6 @@ export class Terrain extends Elevation {
     };
     invalidateRenderCache: boolean;
 
-    _emptyDepthBufferTexture: Texture | null | undefined;
     _emptyDEMTexture: Texture | null | undefined;
     _initializing: boolean | null | undefined;
     _emptyDEMTextureDirty: boolean | null | undefined;
@@ -510,14 +507,8 @@ export class Terrain extends Elevation {
     destroy() {
         this._disable();
         if (this._emptyDEMTexture) this._emptyDEMTexture.destroy();
-        if (this._emptyDepthBufferTexture) this._emptyDepthBufferTexture.destroy();
         this.pool.forEach(fbo => fbo.fb.destroy());
         this.pool = [];
-        if (this._depthFBO) {
-            this._depthFBO.destroy();
-            this._depthFBO = undefined;
-            this._depthTexture = undefined;
-        }
         if (this.framebufferCopyTexture) this.framebufferCopyTexture.destroy();
     }
 
@@ -676,16 +667,6 @@ export class Terrain extends Elevation {
             this._emptyDEMTexture : this._updateEmptyDEMTexture();
     }
 
-    get emptyDepthBufferTexture(): Texture {
-        const context = this.painter.context;
-        const gl = context.gl;
-        if (!this._emptyDepthBufferTexture) {
-            const image = new RGBAImage({width: 1, height: 1}, Uint8Array.of(255, 255, 255, 255));
-            this._emptyDepthBufferTexture = new Texture(context, image, gl.RGBA, {premultiply: false});
-        }
-        return this._emptyDepthBufferTexture;
-    }
-
     _getLoadedAreaMinimum(): number {
         if (!this.enabled) return 0;
         let nonzero = 0;
@@ -727,8 +708,7 @@ export class Terrain extends Elevation {
         return texture;
     }
 
-    // useDepthForOcclusion: Pre-rendered depth to texture (this._depthTexture) is
-    // used to hide (actually moves all object's vertices out of viewport).
+    // useDepthForOcclusion: Pre-rendered depth texture is used for occlusion
     // useMeterToDem: u_meter_to_dem uniform is not used for all terrain programs,
     // optimization to avoid unnecessary computation and upload.
     setupElevationDraw(tile: Tile, program: Program<any>,
@@ -799,24 +779,7 @@ export class Terrain extends Elevation {
             demTexture.bind(filteringForDemTile(demTile), gl.CLAMP_TO_EDGE);
         }
 
-        context.activeTexture.set(gl.TEXTURE3);
-        if (options && options.useDepthForOcclusion && this.painter.terrainDepthTexture && this.painter.terrainDepthFBO) {
-            this.painter.terrainDepthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-            uniforms['u_depth_size_inv'] = [1 / this.painter.terrainDepthFBO.width, 1 / this.painter.terrainDepthFBO.height];
-
-            const getUnpackDepthRangeParams = (depthRange: [number, number]): [number, number] => {
-                // -1.0 + 2.0 * (depth - u_depth_range.x) / (u_depth_range.y - u_depth_range.x)
-                const a = 2 / (depthRange[1] - depthRange[0]);
-                const b = -1 - 2 * depthRange[0] / (depthRange[1] - depthRange[0]);
-                return [a, b];
-            };
-
-            uniforms['u_depth_range_unpack'] = getUnpackDepthRangeParams(this.painter.depthRangeFor3D);
-        } else {
-            this.emptyDepthBufferTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-            uniforms['u_depth_range_unpack'] = [2, 0];
-        }
-        context.activeTexture.set(gl.TEXTURE0);
+        this.painter.setupDepthForOcclusion(options && options.useDepthForOcclusion, program, uniforms);
 
         if (options && options.useMeterToDem && demTile) {
             const meterToDEM = (1 << demTile.tileID.canonical.z) * mercatorZfromAltitude(1, this.painter.transform.center.lat) * this.sourceCache.getSource().tileSize;
@@ -1787,6 +1750,8 @@ export type TerrainUniformsType = {
     ['u_depth']: Uniform1i;
     ['u_depth_size_inv']: Uniform2f;
     ['u_depth_range_unpack']: Uniform2f;
+    ['u_occluder_half_size']: Uniform1f;
+    ['u_occlusion_depth_offset']: Uniform1f;
     ['u_meter_to_dem']?: Uniform1f;
     ['u_label_plane_matrix_inv']?: UniformMatrix4f;
 };
@@ -1804,11 +1769,13 @@ export const terrainUniforms = (context: Context): TerrainUniformsType => ({
     'u_depth': new Uniform1i(context),
     'u_depth_size_inv': new Uniform2f(context),
     'u_depth_range_unpack': new Uniform2f(context),
+    'u_occluder_half_size': new Uniform1f(context),
+    'u_occlusion_depth_offset': new Uniform1f(context),
     'u_meter_to_dem': new Uniform1f(context),
     'u_label_plane_matrix_inv': new UniformMatrix4f(context),
 });
 
-function defaultTerrainUniforms(): UniformValues<TerrainUniformsType> {
+export function defaultTerrainUniforms(): UniformValues<TerrainUniformsType> {
     return {
         'u_dem': 2,
         'u_dem_prev': 4,
@@ -1820,7 +1787,9 @@ function defaultTerrainUniforms(): UniformValues<TerrainUniformsType> {
         'u_dem_lerp': 1.0,
         'u_depth': 3,
         'u_depth_size_inv': [0, 0],
-        'u_depth_range_unpack': [2, 0],
+        'u_depth_range_unpack': [0, 1],
+        'u_occluder_half_size':16,
+        'u_occlusion_depth_offset': -0.0001,
         'u_exaggeration': 0,
     };
 }

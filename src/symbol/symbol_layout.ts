@@ -979,8 +979,6 @@ function addSymbol(bucket: SymbolBucket,
         textOffset1,
         collisionCircleDiameter,
         0,
-        1, // Occlusion state
-        1, // Occlusion opacity
         hasIconTextFit ? 1 : 0,
     );
 }

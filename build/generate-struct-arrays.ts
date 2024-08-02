@@ -170,7 +170,6 @@ import {
     symbolGlobeExtAttributes,
     dynamicLayoutAttributes,
     placementOpacityAttributes,
-    occlusionQueryOpacityAttributes,
     iconTransitioningAttributes,
     collisionBox,
     collisionBoxLayout,
@@ -189,7 +188,6 @@ createStructArrayType(`symbol_layout`, symbolLayoutAttributes);
 createStructArrayType(`symbol_globe_ext`, symbolGlobeExtAttributes);
 createStructArrayType(`symbol_dynamic_layout`, dynamicLayoutAttributes);
 createStructArrayType(`symbol_opacity`, placementOpacityAttributes);
-createStructArrayType(`symbol_occlusion_query_opacity`, occlusionQueryOpacityAttributes);
 createStructArrayType(`symbol_icon_transitioning`, iconTransitioningAttributes);
 createStructArrayType('collision_box', collisionBox, true);
 createStructArrayType(`collision_box_layout`, collisionBoxLayout);
@@ -210,9 +208,6 @@ createStructArrayType('atmosphere_vertex', atmosphereLayout);
 
 import {starsLayout} from '../src/render/stars_attributes';
 createStructArrayType('stars_vertex', starsLayout);
-
-import {occlusionLayout} from '../src/render/occlusion_attributes.js';
-createStructArrayType('occlusion_vertex', occlusionLayout);
 
 // feature index array
 createStructArrayType('feature_index', createLayout([

@@ -184,9 +184,6 @@ void main() {
 #endif
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = globe_occlusion_fade;
-    #ifdef SYMBOL_OCCLUSION_BY_TERRAIN_DEPTH
-        occlusion_fade *= occlusionFade(projected_point);
-    #endif
 
     float projection_transition_fade = 1.0;
 #if defined(PROJECTED_POS_ON_VIEWPORT) && defined(PROJECTION_GLOBE_VIEW)
@@ -197,6 +194,12 @@ void main() {
     float interpolated_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
 
     float out_fade_opacity = interpolated_fade_opacity * projection_transition_fade;
+
+    #ifdef DEPTH_OCCLUSION
+        float depthOcclusion = occlusionFadeMultiSample(projected_point);
+        float depthOcclusionMultplier = mix(occlusion_opacity, 1.0, depthOcclusion);
+        out_fade_opacity *= depthOcclusionMultplier;
+    #endif
 
 #ifdef OCCLUSION_QUERIES
     float occludedFadeMultiplier = mix(occlusion_opacity, 1.0, a_occlusion_query_opacity);
