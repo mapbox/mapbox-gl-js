@@ -4,7 +4,7 @@
 uniform lowp float u_device_pixel_ratio;
 uniform float u_alpha_discard_threshold;
 uniform highp vec2 u_trim_offset;
-uniform lowp vec2 u_trim_fade_range;
+uniform highp vec2 u_trim_fade_range;
 uniform lowp vec4 u_trim_color;
 
 in vec2 v_width2;
@@ -88,9 +88,9 @@ void main() {
     // Nested conditionals fixes the issue
     // https://github.com/mapbox/mapbox-gl-js/issues/12013
     if (trim_end > trim_start) {
-        float start_transition = max(0.0, min(1.0, (line_progress - trim_start) / clamp(u_trim_fade_range[0], 1e-4, 1.0)));
-        float end_transition = max(0.0, min(1.0, (trim_end - line_progress) / clamp(u_trim_fade_range[1], 1e-4, 1.0)));
-        float transition_factor = min(start_transition, end_transition);
+        highp float start_transition = max(0.0, min(1.0, (line_progress - trim_start) / max(u_trim_fade_range[0], 1.0e-9)));
+        highp float end_transition = max(0.0, min(1.0, (trim_end - line_progress) / max(u_trim_fade_range[1], 1.0e-9)));
+        highp float transition_factor = min(start_transition, end_transition);
         out_color = mix(out_color, u_trim_color, transition_factor);
         trim_alpha = out_color.a;
     }
