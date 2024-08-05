@@ -1,5 +1,8 @@
 import '../data/mrt_data';
-import {MapboxRasterTile} from '../data/mrt/mrt';
+import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
+import Pbf from 'pbf';
+
+MapboxRasterTile.setPbf(Pbf);
 
 import type Actor from '../util/actor';
 import type {WorkerRasterArrayTileParameters, WorkerRasterArrayTileCallback} from './worker_source';
@@ -11,7 +14,6 @@ class RasterArrayTileWorkerSource {
         task,
         buffer,
     }: WorkerRasterArrayTileParameters, callback: WorkerRasterArrayTileCallback) {
-        // @ts-expect-error - TS2339 - Property 'performDecoding' does not exist on type 'typeof MapboxRasterTile'.
         MapboxRasterTile.performDecoding(buffer, task)
             .then(result => {
                 callback(null, result);

@@ -1,7 +1,8 @@
 import Tile from './tile';
 import Texture from '../render/texture';
 import {getArrayBuffer} from '../util/ajax';
-import {MapboxRasterTile} from '../data/mrt/mrt';
+import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
+import Pbf from 'pbf';
 
 import type Painter from '../render/painter';
 import type Framebuffer from '../gl/framebuffer';
@@ -10,6 +11,8 @@ import type {Cancelable} from '../types/cancelable';
 import type {TextureImage} from '../render/texture';
 import type {OverscaledTileID} from './tile_id';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
+
+MapboxRasterTile.setPbf(Pbf);
 
 export type TextureDescriptor = {
     img: TextureImage;
@@ -168,9 +171,7 @@ class RasterArrayTile extends Tile {
                 // If the received data covers all possible byte ranges (i.e. if the range request was
                 // ignored by the server), then cache the buffer and neglect range requests.
                 let lastByte = 0;
-                // @ts-expect-error - TS2339 - Property 'layers' does not exist on type 'MapboxRasterTile'.
                 for (const layer of Object.values(mrt.layers)) {
-                    // @ts-expect-error - TS2339 - Property 'dataIndex' does not exist on type 'unknown'. | TS2339 - Property 'dataIndex' does not exist on type 'unknown'.
                     lastByte = Math.max(lastByte, layer.dataIndex[layer.dataIndex.length - 1].last_byte);
                 }
 
