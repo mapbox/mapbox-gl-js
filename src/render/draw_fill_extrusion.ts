@@ -248,6 +248,11 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                 if (floodLightEnabled) {
                     passImmediate(false);
                 }
+
+                if (aoEnabled || floodLightEnabled) {
+                    // Reset clipping masks so follow-up rendering code can reliably use the stencil buffer.
+                    painter.resetStencilClippingMasks();
+                }
             }
         }
     }
