@@ -62,7 +62,7 @@
     "@types/pbf": "^3.0.5",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
-    "@vitest/browser": "^2.0.4",
+    "@vitest/browser": "^2.0.5",
     "@vitest/ui": "^2.0.3",
     "address": "^2.0.3",
     "browserify": "^17.0.0",
