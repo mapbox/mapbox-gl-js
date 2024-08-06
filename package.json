@@ -107,7 +107,7 @@
     "serve-static": "^1.15.0",
     "shuffle-seed": "^1.1.6",
     "st": "^3.0.0",
-    "stylelint": "^16.8.0",
+    "stylelint": "^16.8.1",
     "stylelint-config-standard": "^36.0.1",
     "tape": "^5.8.1",
     "tape-filter": "^1.0.4",
