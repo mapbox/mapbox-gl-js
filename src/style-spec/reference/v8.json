@@ -6493,7 +6493,6 @@
       "default": 0,
       "minimum": 0,
       "maximum": 1,
-      "experimental": true,
       "doc": "Opacity multiplier (multiplies line-opacity value) of the line part that is occluded by 3D objects. Value 0 hides occluded part, value 1 means the same opacity as non-occluded part. The property is not supported when `line-opacity` has data-driven styling.",
       "sdk-support": {
         "basic functionality": {
