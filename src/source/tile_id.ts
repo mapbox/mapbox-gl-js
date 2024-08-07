@@ -60,6 +60,7 @@ export class OverscaledTileID {
     key: number;
     projMatrix: Float32Array;
     expandedProjMatrix: Float32Array;
+    visibleQuadrants?: number;
 
     constructor(overscaledZ: number, wrap: number, z: number, x: number, y: number) {
         assert(overscaledZ >= z);
@@ -164,7 +165,7 @@ export class OverscaledTileID {
     }
 }
 
-function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number): number {
+export function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number): number {
     // only use 22 bits for x & y so that the key fits into MAX_SAFE_INTEGER
     const dim = 1 << Math.min(z, 22);
     let xy = dim * (y % dim) + (x % dim);

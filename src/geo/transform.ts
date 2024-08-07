@@ -13,7 +13,7 @@ import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_ca
 import assert from 'assert';
 import getProjectionAdjustments, {getProjectionAdjustmentInverted, getScaleAdjustment, getProjectionInterpolationT} from './projection/adjustments';
 import {getPixelsToTileUnitsMatrix} from '../source/pixels_to_tile_units';
-import {UnwrappedTileID, OverscaledTileID, CanonicalTileID} from '../source/tile_id';
+import {UnwrappedTileID, OverscaledTileID, CanonicalTileID, calculateKey} from '../source/tile_id';
 import {
     GLOBE_ZOOM_THRESHOLD_MIN,
     GLOBE_ZOOM_THRESHOLD_MAX,
@@ -69,6 +69,15 @@ const lerpMatrix = (out: Float64Array, a: Float64Array, b: Float64Array, value: 
 
     return out;
 };
+
+const enum QuadrantVisibility {
+    None = 0,
+    TopLeft = 1,
+    TopRight = 2,
+    BottomLeft = 4,
+    BottomRight = 8,
+    All = 15
+}
 
 /**
  * A single transform, generally used for a single tile to be
@@ -840,22 +849,34 @@ class Transform {
     }
 
     /**
-     * Extends tile coverage to include potential shadow caster tiles.
-     * @param {Array<OverscaledTileID>} coveringTiles tiles that are potential shadow receivers
-     * @param {Vec3} lightDir direction of the light (unit vector)
-     * @param {number} maxZoom maximum zoom level of shadow caster tiles
-     * @returns {Array<OverscaledTileID>} a set of potential shadow casters
+     * Extends tile coverage to include potential neighboring tiles using either light direction or quadrant visibility information.
+     * @param {Array<OverscaledTileID>} coveringTiles tile cover that is extended
+     * @param {number} maxZoom maximum zoom level
+     * @param {Vec3} lightDir direction of the light (unit vector), if undefined quadrant visibility information is used
+     * @returns {Array<OverscaledTileID>} a set of extension tiles
      */
-    extendTileCoverForShadows(coveringTiles: Array<OverscaledTileID>, lightDir: vec3, maxZoom: number): Array<OverscaledTileID> {
-        let out = [];
+    extendTileCover(coveringTiles: Array<OverscaledTileID>, maxZoom: number, lightDir?: vec3): Array<OverscaledTileID> {
+        let out: OverscaledTileID[] = [];
+        const extendShadows = lightDir !== undefined;
+        const extendQuadrants = !extendShadows;
+        if (extendQuadrants && this.zoom < maxZoom) return out;
+        if (extendShadows && lightDir[0] === 0.0 && lightDir[1] === 0.0) return out;
 
-        if (lightDir[0] === 0.0 && lightDir[1] === 0.0) {
-            return out;
-        }
+        const addedTiles = new Set<number>();
+        const addTileId = (overscaledZ: number, wrap: number, z: number, x: number, y: number) => {
+            const key = calculateKey(wrap, overscaledZ, z, x, y);
+            if (!addedTiles.has(key)) {
+                out.push(new OverscaledTileID(overscaledZ, wrap, z, x, y));
+                addedTiles.add(key);
+            }
+        };
 
-        // Extra tile selection based on the direction of the light:
-        // For each tile we add neighbourgs that might cast shadows over the current tile
-        for (const id of coveringTiles) {
+        for (let i = 0; i < coveringTiles.length; i++) {
+            const id = coveringTiles[i];
+
+            // Skip if not at the specified zoom level
+            if (extendQuadrants && id.canonical.z !== maxZoom) continue;
+
             const tileId = id.canonical;
             const overscaledZ = id.overscaledZ;
             const tileWrap = id.wrap;
@@ -873,55 +894,67 @@ class Transform {
             const leftTileX = xMinInsideRange ? tileId.x - 1 : tiles - 1;
             const rightTileX = xMaxInsideRange ? tileId.x + 1 : 0;
 
-            if (lightDir[0] < 0.0) {
-                out.push(new OverscaledTileID(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y));
-                if (lightDir[1] < 0.0 && yMaxInsideRange) {
-                    out.push(new OverscaledTileID(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1));
-                    out.push(new OverscaledTileID(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y + 1));
-                }
-                if (lightDir[1] > 0.0 && yMinInsideRange) {
-                    out.push(new OverscaledTileID(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1));
-                    out.push(new OverscaledTileID(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y - 1));
-                }
-            } else if (lightDir[0] > 0.0) {
-                out.push(new OverscaledTileID(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y));
-                if (lightDir[1] < 0.0 && yMaxInsideRange) {
-                    out.push(new OverscaledTileID(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1));
-                    out.push(new OverscaledTileID(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y + 1));
-                }
-                if (lightDir[1] > 0.0 && yMinInsideRange) {
-                    out.push(new OverscaledTileID(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1));
-                    out.push(new OverscaledTileID(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y - 1));
+            if (extendShadows) {
+                if (lightDir[0] < 0.0) {
+                    addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y);
+                    if (lightDir[1] < 0.0 && yMaxInsideRange) {
+                        addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
+                        addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y + 1);
+                    }
+                    if (lightDir[1] > 0.0 && yMinInsideRange) {
+                        addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);
+                        addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y - 1);
+                    }
+                } else if (lightDir[0] > 0.0) {
+                    addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y);
+                    if (lightDir[1] < 0.0 && yMaxInsideRange) {
+                        addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
+                        addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y + 1);
+                    }
+                    if (lightDir[1] > 0.0 && yMinInsideRange) {
+                        addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);
+                        addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y - 1);
+                    }
+                } else {
+                    if (lightDir[1] < 0.0 && yMaxInsideRange) {
+                        addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
+                    } else if (yMinInsideRange) {
+                        addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);
+                    }
                 }
             } else {
-                if (lightDir[1] < 0.0 && yMaxInsideRange) {
-                    out.push(new OverscaledTileID(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1));
-                } else if (yMinInsideRange) {
-                    out.push(new OverscaledTileID(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1));
+                const visibility = id.visibleQuadrants;
+                assert(visibility !== undefined);
+                // Check each quadrant and add neighboring tiles
+                if (visibility & QuadrantVisibility.TopLeft) {
+                    addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y);
+                    if (yMinInsideRange) {
+                        addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);
+                        addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y - 1);
+                    }
+                }
+                if (visibility & QuadrantVisibility.TopRight) {
+                    addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y);
+                    if (yMinInsideRange) {
+                        addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);
+                        addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y - 1);
+                    }
+                }
+                if (visibility & QuadrantVisibility.BottomLeft) {
+                    addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y);
+                    if (yMaxInsideRange) {
+                        addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
+                        addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y + 1);
+                    }
+                }
+                if (visibility & QuadrantVisibility.BottomRight) {
+                    addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y);
+                    if (yMaxInsideRange) {
+                        addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
+                        addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y + 1);
+                    }
                 }
             }
-        }
-
-        // Remove duplicates from new ids
-        if (out.length > 1) {
-            out.sort((a, b) => {
-                return a.overscaledZ - b.overscaledZ ||
-                        a.wrap - b.wrap ||
-                        a.canonical.z - b.canonical.z ||
-                        a.canonical.x - b.canonical.x ||
-                        a.canonical.y - b.canonical.y;
-            });
-
-            let i = 0;
-            let j = 0;
-            while (j < out.length) {
-                if (!out[j].equals(out[i])) {
-                    out[++i] = out[j++];
-                } else {
-                    ++j;
-                }
-            }
-            out.length = i + 1;
         }
 
         // Remove higher zoom new IDs that overlap with other new IDs
@@ -933,7 +966,7 @@ class Transform {
             }
         }
 
-        // Remove new IDs that overlap with old IDs
+        // Remove identical IDs
         out = nonOverlappingIds.filter(newId => !coveringTiles.some(oldId => {
             if (newId.overscaledZ < maxZoom && oldId.isChildOf(newId)) {
                 return true;
@@ -941,6 +974,27 @@ class Transform {
             // Remove identical IDs or children of existing IDs
             return newId.equals(oldId) || newId.isChildOf(oldId);
         }));
+
+        if (extendQuadrants) {
+            const numTiles = 1 << maxZoom;
+            const isGlobe = this.projection.name === 'globe';
+            const cameraCoord = isGlobe ? this._camera.mercatorPosition : this.pointCoordinate(this.getCameraPoint());
+            const cameraPoint = [numTiles * cameraCoord.x, numTiles * cameraCoord.y];
+
+            // Keep only closest tiles to the camera position
+            // Limit is found experimentally to fix landmark visibility issues in most cases without extending
+            // the tile cover too far in high pitch views
+            const limit = 4;
+            const limitSq = limit * limit;
+            out = out.filter(id => {
+                const tileCenterX = id.canonical.x + 0.5;
+                const tileCenterY = id.canonical.y + 0.5;
+                const dx = tileCenterX - cameraPoint[0];
+                const dy = tileCenterY - cameraPoint[1];
+                const distSq = dx * dx + dy * dy;
+                return distSq < limitSq;
+            });
+        }
 
         return out;
     }
@@ -966,6 +1020,7 @@ class Transform {
             reparseOverscaled?: boolean;
             renderWorldCopies?: boolean;
             isTerrainDEM?: boolean;
+            calculateQuadrantVisibility?: boolean;
         },
     ): Array<OverscaledTileID> {
         let z = this.coveringZoomLevel(options);
@@ -1058,7 +1113,7 @@ class Transform {
         };
 
         // Do a depth-first traversal to find visible tiles and proper levels of detail
-        const stack = [];
+        const stack: RootTile[] = [];
         let result = [];
         const maxZoom = z;
         const overscaledZ = options.reparseOverscaled ? actualZ : z;
@@ -1261,9 +1316,9 @@ class Transform {
                     continue;
                 }
 
+                let visibility = QuadrantVisibility.None;
                 // Perform more precise intersection tests to cull the remaining < 1% false positives from the earlier test.
                 if (!fullyVisible) {
-
                     let intersectResult = verticalFrustumIntersect ? it.aabb.intersectsPrecise(cameraFrustum) : it.aabb.intersectsPreciseFlat(cameraFrustum);
 
                     // For globe projection and pole neighboouring tiles - clip against pole segments as well
@@ -1276,12 +1331,31 @@ class Transform {
                     if (intersectResult === 0) {
                         continue;
                     }
+
+                    // Calculate quadrant visibility for tiles that are not fully visible
+                    if (options.calculateQuadrantVisibility) {
+                        // If the center point is visible, then all quadrants are as well
+                        if (cameraFrustum.containsPoint(it.aabb.center)) {
+                            visibility = QuadrantVisibility.All;
+                        } else {
+                            for (let i = 0; i < 4; i++) {
+                                const quadrantAabb = it.aabb.quadrant(i);
+                                if (quadrantAabb.intersects(cameraFrustum) !== 0) {
+                                    visibility |= 1 << i;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 const dx = centerPoint[0] - ((0.5 + x + (it.wrap << it.zoom)) * (1 << (z - it.zoom)));
                 const dy = centerPoint[1] - 0.5 - y;
                 const id = it.tileID ? it.tileID : new OverscaledTileID(tileZoom, it.wrap, it.zoom, x, y);
+                if (options.calculateQuadrantVisibility) {
+                    id.visibleQuadrants = visibility;
+                }
                 result.push({tileID: id, distanceSq: dx * dx + dy * dy});
+
                 continue;
             }
 

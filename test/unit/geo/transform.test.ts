@@ -539,14 +539,95 @@ describe('transform', () => {
                 new OverscaledTileID(3, 0, 3, 1, 0)
             ]);
 
-            const shadowCasterTiles = transform.extendTileCoverForShadows(visibleTiles, [0.25, -0.433, -0.866], 5);
+            const shadowCasterTiles = transform.extendTileCover(visibleTiles, 5, [0.25, -0.433, -0.866]);
 
             expect(shadowCasterTiles).toStrictEqual([
-                new OverscaledTileID(3, -1, 3, 7, 0),
-                new OverscaledTileID(3, -1, 3, 7, 1),
-                new OverscaledTileID(5, 0, 5, 1, 8),
+                new OverscaledTileID(5, 0, 5, 3, 8),
                 new OverscaledTileID(5, 0, 5, 2, 8),
-                new OverscaledTileID(5, 0, 5, 3, 8)
+                new OverscaledTileID(5, 0, 5, 1, 8),
+                new OverscaledTileID(3, -1, 3, 7, 0),
+                new OverscaledTileID(3, -1, 3, 7, 1)
+            ]);
+        });
+
+        test('Extend tile coverage for landmarks', () => {
+            transform.resize(512, 512);
+            transform.center = new LngLat(-122.16568, 37.72114);
+            transform.zoom = 14.23;
+            transform.pitch = 67;
+            transform.bearing = 0;
+
+            const visibleTiles = transform.coveringTiles({tileSize: 512, minzoom: 14, maxzoom: 14, roundZoom: true, calculateQuadrantVisibility: true});
+
+            expect(visibleTiles).toStrictEqual([
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6335), {visibleQuadrants: 15}),
+                Object.assign(new OverscaledTileID(14, 0, 14, 2631, 6335), {visibleQuadrants: 11}),
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6336), {visibleQuadrants: 1}),
+                Object.assign(new OverscaledTileID(14, 0, 14, 2631, 6336), {visibleQuadrants: 2}),
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6334), {visibleQuadrants: 15}),
+                Object.assign(new OverscaledTileID(14, 0, 14, 2631, 6334), {visibleQuadrants: 15}),
+                Object.assign(new OverscaledTileID(14, 0, 14, 2633, 6334), {visibleQuadrants: 1})
+            ]);
+
+            const tileExtension = transform.extendTileCover(visibleTiles, 14);
+
+            expect(tileExtension).toStrictEqual([
+                new OverscaledTileID(14, 0, 14, 2633, 6335),
+                new OverscaledTileID(14, 0, 14, 2633, 6336),
+                new OverscaledTileID(14, 0, 14, 2630, 6335),
+                new OverscaledTileID(14, 0, 14, 2630, 6334),
+                new OverscaledTileID(14, 0, 14, 2632, 6333),
+                new OverscaledTileID(14, 0, 14, 2631, 6333),
+                new OverscaledTileID(14, 0, 14, 2633, 6333),
+                new OverscaledTileID(14, 0, 14, 2630, 6333)
+            ]);
+        });
+
+        test('Extend tile coverage for landmarks, 4 tiles, no extension', () => {
+            transform.resize(512, 512);
+            transform.center = new LngLat(-122.167775, 37.71868);
+            transform.zoom = 18;
+            transform.pitch = 0;
+            transform.bearing = 0;
+
+            const visibleTiles = transform.coveringTiles({tileSize: 512, minzoom: 14, maxzoom: 14, roundZoom: true, calculateQuadrantVisibility: true});
+
+            expect(visibleTiles).toStrictEqual([
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6335), {visibleQuadrants: 4}),
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6336), {visibleQuadrants: 1}),
+                Object.assign(new OverscaledTileID(14, 0, 14, 2631, 6335), {visibleQuadrants: 8}),
+                Object.assign(new OverscaledTileID(14, 0, 14, 2631, 6336), {visibleQuadrants: 2})
+            ]);
+
+            const tileExtension = transform.extendTileCover(visibleTiles, 14);
+
+            expect(tileExtension).toStrictEqual([]);
+        });
+
+        test('Extend tile coverage for landmarks, center of tile', () => {
+            transform.resize(512, 512);
+            transform.center = new LngLat(-122.156884, 37.709877);
+            transform.zoom = 18;
+            transform.pitch = 0;
+            transform.bearing = 0;
+
+            const visibleTiles = transform.coveringTiles({tileSize: 512, minzoom: 14, maxzoom: 14, roundZoom: true, calculateQuadrantVisibility: true});
+
+            expect(visibleTiles).toStrictEqual([
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6336), {visibleQuadrants: 15})
+            ]);
+
+            const tileExtension = transform.extendTileCover(visibleTiles, 14);
+
+            expect(tileExtension).toStrictEqual([
+                new OverscaledTileID(14, 0, 14, 2631, 6336),
+                new OverscaledTileID(14, 0, 14, 2632, 6335),
+                new OverscaledTileID(14, 0, 14, 2631, 6335),
+                new OverscaledTileID(14, 0, 14, 2633, 6336),
+                new OverscaledTileID(14, 0, 14, 2633, 6335),
+                new OverscaledTileID(14, 0, 14, 2632, 6337),
+                new OverscaledTileID(14, 0, 14, 2631, 6337),
+                new OverscaledTileID(14, 0, 14, 2633, 6337)
             ]);
         });
     });

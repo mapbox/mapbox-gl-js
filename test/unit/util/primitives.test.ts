@@ -121,6 +121,20 @@ describe('primitives', () => {
     });
 
     describe('frustum', () => {
+        const createTestCameraFrustum = (fovy, aspectRatio, zNear, zFar, elevation, rotation) => {
+            const proj = new Float64Array(16);
+            const invProj = new Float64Array(16);
+            // Note that left handed coordinate space is used where z goes towards the sky.
+            // Y has to be flipped as well because it's part of the projection/camera matrix used in transform.js
+            mat4.perspective(proj, fovy, aspectRatio, zNear, zFar);
+            mat4.scale(proj, proj, [1, -1, 1]);
+            mat4.translate(proj, proj, [0, 0, elevation]);
+            mat4.rotateZ(proj, proj, rotation);
+            mat4.invert(invProj, proj);
+
+            return Frustum.fromInvProjectionMatrix(invProj, 1.0, 0.0);
+        };
+
         test('Create a frustum from inverse projection matrix', () => {
             const proj = new Float64Array(16);
             const invProj = new Float64Array(16);
@@ -157,6 +171,39 @@ describe('primitives', () => {
 
             expect(frustum.points).toEqual(expectedFrustumPoints);
             expect(frustum.planes).toEqual(expectedFrustumPlanes);
+        });
+
+        test('Point is inside frustum', () => {
+            const frustum = createTestCameraFrustum(Math.PI / 2, 1.0, 0.1, 100.0, 0, 0);
+
+            const pointList = [
+                vec3.fromValues(99.9, -99.9, -99.99),
+                vec3.fromValues(99, 0, -99.99),
+                vec3.fromValues(0, 99, -99.99),
+                vec3.fromValues(45, 45, -50),
+                vec3.fromValues(0.1, 0.5, -1),
+                vec3.fromValues(0, 0, -0.101),
+            ];
+
+            for (const point of pointList)
+                expect(frustum.containsPoint(point)).toBeTruthy();
+        });
+
+        test('Point is outside frustum', () => {
+            const frustum = createTestCameraFrustum(Math.PI / 2, 1.0, 0.1, 100.0, 0, 0);
+
+            const pointList = [
+                vec3.fromValues(0, 0, -100.01),
+                vec3.fromValues(0, 0, 0),
+                vec3.fromValues(-50.01, 0, -50),
+                vec3.fromValues(50.01, 0, -50),
+                vec3.fromValues(0, -50.01, -50),
+                vec3.fromValues(0, 50.01, -50),
+                vec3.fromValues(10, 100, 1000)
+            ];
+
+            for (const point of pointList)
+                expect(frustum.containsPoint(point)).toBeFalsy();
         });
     });
 

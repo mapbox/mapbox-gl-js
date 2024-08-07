@@ -528,7 +528,8 @@ class SourceCache extends Evented {
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
 
-        let idealTileIDs;
+        const isBatchedModelType = this._source.type === 'batched-model';
+        let idealTileIDs: OverscaledTileID[];
 
         if (!this.used && !this.usedForTerrain) {
             idealTileIDs = [];
@@ -545,7 +546,8 @@ class SourceCache extends Evented {
                 maxzoom: this._source.maxzoom,
                 roundZoom: this._source.roundZoom && !updateForTerrain,
                 reparseOverscaled: this._source.reparseOverscaled,
-                isTerrainDEM: this.usedForTerrain
+                isTerrainDEM: this.usedForTerrain,
+                calculateQuadrantVisibility: isBatchedModelType
             });
 
             // Add zoom level 1 tiles to cover area behind globe
@@ -562,7 +564,8 @@ class SourceCache extends Evented {
                 maxzoom: this._source.maxzoom,
                 roundZoom: this._source.roundZoom && !updateForTerrain,
                 reparseOverscaled: this._source.reparseOverscaled,
-                isTerrainDEM: this.usedForTerrain
+                isTerrainDEM: this.usedForTerrain,
+                calculateQuadrantVisibility: isBatchedModelType
             });
 
             if (this._source.hasTile) {
@@ -581,11 +584,18 @@ class SourceCache extends Evented {
             });
             const idealZoom = Math.min(coveringZoom, this._source.maxzoom);
 
-            // find shadowCasterTiles
-            const shadowCasterTileIDs = transform.extendTileCoverForShadows(idealTileIDs, directionalLight, idealZoom);
-            for (const id of shadowCasterTileIDs) {
-                this._shadowCasterTiles[id.key] = true;
-                idealTileIDs.push(id);
+            if (isBatchedModelType) {
+                const batchedModelTileIDs = transform.extendTileCover(idealTileIDs, idealZoom);
+                for (const id of batchedModelTileIDs) {
+                    idealTileIDs.push(id);
+                }
+            } else {
+                // find shadowCasterTiles
+                const shadowCasterTileIDs = transform.extendTileCover(idealTileIDs, idealZoom, directionalLight);
+                for (const id of shadowCasterTileIDs) {
+                    this._shadowCasterTiles[id.key] = true;
+                    idealTileIDs.push(id);
+                }
             }
         }
 

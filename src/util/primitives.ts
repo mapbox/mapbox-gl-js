@@ -339,6 +339,19 @@ class Frustum {
         return 1;
     }
 
+    containsPoint(point: vec3): boolean {
+        for (const plane of this.planes) {
+            const normal: vec3 = [plane[0], plane[1], plane[2]];
+            const distance = plane[3];
+
+            // If the point is behind any of the frustum's planes, it's outside the frustum
+            if (vec3.dot(normal, point) + distance < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
 
 class Aabb {
