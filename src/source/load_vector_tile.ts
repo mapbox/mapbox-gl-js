@@ -108,7 +108,7 @@ export class DedupedRequest {
         };
 
         let advanced = false;
-        const advanceImageRequestQueue = () => {
+        const advanceRequestQueue = () => {
             if (advanced) {
                 return;
             }
@@ -182,7 +182,7 @@ export class DedupedRequest {
                 }
 
                 filterQueue(key);
-                advanceImageRequestQueue();
+                advanceRequestQueue();
 
                 setTimeout(() => {
                     delete this.entries[key];
