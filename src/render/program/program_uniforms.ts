@@ -31,7 +31,8 @@ import {starsUniforms} from '../../terrain/stars_program';
 import {occlusionUniforms} from './occlusion_program';
 
 export type FogDefinesType = ['FOG', 'FOG_DITHERING'];
-export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType   | GlobeDefinesType | RasterDefinesType | RasterParticleDefinesType | FogDefinesType | HillshadeDefinesType;
+export type TerrainDepthAccessDefinesType = 'TERRAIN_DEPTH_D24';
+export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType   | GlobeDefinesType | RasterDefinesType | RasterParticleDefinesType | FogDefinesType | HillshadeDefinesType | TerrainDepthAccessDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,
@@ -64,7 +65,6 @@ export const programUniforms = {
     background: backgroundUniforms,
     backgroundPattern: backgroundPatternUniforms,
     terrainRaster: terrainRasterUniforms,
-    terrainDepth: terrainRasterUniforms,
     skybox: skyboxUniforms,
     skyboxGradient: skyboxGradientUniforms,
     skyboxCapture: skyboxCaptureUniforms,

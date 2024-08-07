@@ -32,8 +32,7 @@ import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer
 import {getCutoffParams} from '../render/cutoff';
 
 export {
-    drawTerrainRaster,
-    drawTerrainDepth
+    drawTerrainRaster
 };
 
 type DEMChain = {
@@ -374,31 +373,6 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                     uniformValues, "terrain_raster", terrain.gridBuffer, buffer, segments);
             }
         }
-    }
-}
-
-function drawTerrainDepth(painter: Painter, terrain: Terrain, sourceCache: SourceCache, tileIDs: Array<OverscaledTileID>) {
-    if (painter.transform.projection.name === 'globe') {
-        return;
-    }
-
-    assert(painter.renderPass === 'offscreen');
-
-    const context = painter.context;
-    const gl = context.gl;
-
-    context.clear({depth: 1});
-    const program = painter.getOrCreateProgram('terrainDepth');
-    const depthMode = new DepthMode(gl.LESS, DepthMode.ReadWrite, painter.depthRangeFor3D);
-
-    for (const coord of tileIDs) {
-        const tile = sourceCache.getTile(coord);
-        const uniformValues = terrainRasterUniformValues(coord.projMatrix, 0, [0, 0, 0]);
-        terrain.setupElevationDraw(tile, program);
-
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
-        program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.unblended, CullFaceMode.backCCW,
-            uniformValues, "terrain_depth", terrain.gridBuffer, terrain.gridIndexBuffer, terrain.gridNoSkirtSegments);
     }
 }
 

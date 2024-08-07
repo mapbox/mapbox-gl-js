@@ -20,7 +20,9 @@
       false,
       false,
       true,
-      {"error":"Expected value to be of type string, but found null instead."}
+      {
+        "error": "The expression [\"get\",\"str\"] evaluated to null but was expected to be of type string."
+      }
     ],
     "serialized": [
       "boolean",

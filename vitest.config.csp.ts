@@ -1,7 +1,6 @@
 import {defineConfig, mergeConfig} from 'vite';
 import baseConfig from './vitest.config.base';
 
-// @ts-expect-error - TS2345 - Argument of type 'UserConfig & Promise<UserConfig> & UserConfigFnObject & UserConfigExport' is not assignable to parameter of type 'never'.
 export default mergeConfig(baseConfig, defineConfig({
     test: {
         browser: {

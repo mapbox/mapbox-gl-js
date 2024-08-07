@@ -8,7 +8,7 @@ import Grid from 'grid-index';
 import DictionaryCoder from '../util/dictionary_coder';
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
-import GeoJSONFeature from '../util/vectortile_to_geojson';
+import Feature from '../util/vectortile_to_geojson';
 import {arraysIntersect, mapObject, extend} from '../util/util';
 import {OverscaledTileID} from '../source/tile_id';
 import {register} from '../util/web_worker_transfer';
@@ -20,10 +20,11 @@ import {FeatureIndexArray} from './array_types';
 import {DEMSampler} from '../terrain/elevation';
 
 import type StyleLayer from '../style/style_layer';
-import type {QueryResult, QueryFeature} from '../source/query_features';
+import type {QueryResult} from '../source/query_features';
 import type {FeatureStates} from '../source/source_state';
 import type {FeatureFilter} from '../style-spec/feature_filter/index';
 import type Transform from '../geo/transform';
+import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types';
 import type {TilespaceQueryGeometry} from '../style/query_geometry';
 import type {FeatureIndex as FeatureIndexStruct} from './array_types';
@@ -273,7 +274,7 @@ class FeatureIndex {
                 continue;
             }
 
-            const geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y, id);
+            const geojsonFeature = new Feature(feature, this.z, this.x, this.y, id);
 
             const serializedLayer = extend({}, serializedLayers[layerID]);
 
@@ -285,7 +286,7 @@ class FeatureIndex {
         }
     }
 
-    appendToResult(result: QueryResult, layerID: string, featureIndex: number, geojsonFeature: QueryFeature, intersectionZ: boolean | number) {
+    appendToResult(result: QueryResult, layerID: string, featureIndex: number, geojsonFeature: GeoJSONFeature, intersectionZ: boolean | number) {
         let layerResult = result[layerID];
         if (layerResult === undefined) {
             layerResult = result[layerID] = [];

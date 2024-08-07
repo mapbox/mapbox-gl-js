@@ -1,10 +1,10 @@
 {
   "expression": ["slice", ["array", ["get", "val"]], ["get", "index"]],
   "inputs": [
-    [{}, { "properties": { "val": [1, 2, 3, 4, 5], "index": 2 } }],
-    [{}, { "properties": { "val": [1, 2, 3, 4, 5], "index": 0 } }],
-    [{}, { "properties": { "val": [1, 2, 3, 4, 5], "index": 99 } }],
-    [{}, { "properties": { "val": [1, 2, 3, 4, 5], "index": -2 } }]
+    [{}, {"properties": {"val": [1, 2, 3, 4, 5], "index": 2}}],
+    [{}, {"properties": {"val": [1, 2, 3, 4, 5], "index": 0}}],
+    [{}, {"properties": {"val": [1, 2, 3, 4, 5], "index": 99}}],
+    [{}, {"properties": {"val": [1, 2, 3, 4, 5], "index": -2}}]
   ],
   "expected": {
     "compiled": {

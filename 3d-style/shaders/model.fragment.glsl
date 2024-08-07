@@ -19,8 +19,8 @@ in highp vec4 v_position_height;
 in lowp vec4 v_color_mix;
 
 #ifdef RENDER_SHADOWS
-in vec4 v_pos_light_view_0;
-in vec4 v_pos_light_view_1;
+in highp vec4 v_pos_light_view_0;
+in highp vec4 v_pos_light_view_1;
 in float v_depth_shadows;
 #endif
 
@@ -70,12 +70,34 @@ uniform highp sampler3D u_lutTexture;
 
 #ifdef TERRAIN_FRAGMENT_OCCLUSION
 in highp float v_depth;
-uniform sampler2D u_depthTexture;
+uniform highp sampler2D u_depthTexture;
 uniform vec2 u_inv_depth_size;
+uniform vec2 u_depth_range_unpack;
+
+#ifdef TERRAIN_DEPTH_D24
+    float unpack_depth(float depth) {
+        return  depth * u_depth_range_unpack.x + u_depth_range_unpack.y;
+    }
+#else
+    // Unpack depth from RGBA. A piece of code copied in various libraries and WebGL
+    // shadow mapping examples.
+    // https://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
+    highp float unpack_depth_rgba(highp vec4 rgba_depth)
+    {
+        const highp vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
+        return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
+    }
+#endif
 
 bool isOccluded() {
     vec2 coord = gl_FragCoord.xy * u_inv_depth_size;
-    highp float depth = unpack_depth(texture(u_depthTexture, coord));
+
+    #ifdef TERRAIN_DEPTH_D24
+        highp float depth = unpack_depth(texture(u_depthTexture, coord).r);
+    #else
+        highp float depth = unpack_depth_rgba(texture(u_depthTexture, coord));
+    #endif
+
     // Add some marging to avoid depth precision issues
     return v_depth > depth + 0.0005;
 }
@@ -473,6 +495,12 @@ vec4 finalColor;
 #if defined(HAS_TEXTURE_u_emissionTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
     emissive.rgb *= sRGBToLinear(texture(u_emissionTexture, uv_2f).rgb);
 #endif
+#ifdef APPLY_LUT_ON_GPU
+    // Note: the color is multiplied by the length of u_emissiveFactor
+    // which avoids increasing the brightness if the LUT doesn't have pure black.
+    float emissiveFactorLength = max(length(u_emissiveFactor.rgb), 0.001);
+    emissive.rgb = sRGBToLinear(applyLUT(u_lutTexture, linearTosRGB(emissive.rgb / emissiveFactorLength).rbg)) * emissiveFactorLength;
+#endif
     color += emissive.rgb;
 
     // Apply transparency
@@ -493,10 +521,6 @@ vec4 finalColor;
     float distance = length(vec2(1.3 * max(0.0, abs(color_4f.x) - color_4f.z), color_4f.y));
     distance +=  mix(0.5, 0.0, clamp(resEmission - 1.0, 0.0, 1.0));
     opacity *= v_roughness_metallic_emissive_alpha.w * saturate(1.0 - distance * distance);
-#endif
-#else
-#ifdef APPLY_LUT_ON_GPU
-    color = applyLUT(u_lutTexture, color);
 #endif
 #endif
     // Use emissive strength as interpolation between lit and unlit color

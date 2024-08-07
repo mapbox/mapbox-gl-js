@@ -1,5 +1,5 @@
 // @ts-nocheck
-import {describe, test, expect, beforeEach, beforeAll, afterEach, afterAll, vi} from 'vitest';
+import {describe, test, expect, assert, beforeEach, beforeAll, afterEach, afterAll, vi} from 'vitest';
 import {Map} from '../../src/ui/map';
 import {extend} from '../../src/util/util';
 
@@ -87,4 +87,4 @@ export function equalWithPrecision(expected, actual, multiplier) {
     return expect(expectedRounded).toEqual(actualRounded);
 }
 
-export {describe, test, beforeEach, beforeAll, afterEach, afterAll, expect, vi};
+export {describe, test, beforeEach, beforeAll, afterEach, afterAll, expect, assert, vi};

@@ -10,7 +10,7 @@ import {
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';
 
-export const RASTER_PARTICLE_POS_OFFSET: number = 0.15;
+export const RASTER_PARTICLE_POS_OFFSET: number = 0.05;
 export const RASTER_PARTICLE_POS_SCALE: number = 1.0 + 2.0 * RASTER_PARTICLE_POS_OFFSET;
 
 export type RasterParticleUniformsType = {
@@ -109,7 +109,7 @@ export type RasterParticleDrawUniformsType = {
     ['u_velocity_res']: Uniform2f;
     ['u_max_speed']: Uniform1f;
     ['u_uv_offset']: Uniform2f;
-    ['u_data_scale']: Uniform4f;
+    ['u_data_scale']: Uniform2f;
     ['u_data_offset']: Uniform1f;
     ['u_particle_pos_scale']: Uniform1f;
     ['u_particle_pos_offset']: Uniform2f;
@@ -124,7 +124,7 @@ const rasterParticleDrawUniforms = (context: Context): RasterParticleDrawUniform
     'u_velocity_res': new Uniform2f(context),
     'u_max_speed': new Uniform1f(context),
     'u_uv_offset': new Uniform2f(context),
-    'u_data_scale': new Uniform4f(context),
+    'u_data_scale': new Uniform2f(context),
     'u_data_offset': new Uniform1f(context),
     'u_particle_pos_scale': new Uniform1f(context),
     'u_particle_pos_offset': new Uniform2f(context)
@@ -150,7 +150,10 @@ const rasterParticleDrawUniformValues = (
     'u_velocity_res': velocityTextureSize,
     'u_max_speed': maxSpeed,
     'u_uv_offset': textureOffset,
-    'u_data_scale': dataScale,
+    'u_data_scale': [
+        255.0 * dataScale[0],
+        255.0 * dataScale[1]
+    ],
     'u_data_offset': dataOffset,
     'u_particle_pos_scale': RASTER_PARTICLE_POS_SCALE,
     'u_particle_pos_offset': [RASTER_PARTICLE_POS_OFFSET, RASTER_PARTICLE_POS_OFFSET]
@@ -166,7 +169,7 @@ export type RasterParticleUpdateUniformsType = {
     ['u_reset_rate']: Uniform1f;
     ['u_rand_seed']: Uniform1f;
     ['u_uv_offset']: Uniform2f;
-    ['u_data_scale']: Uniform4f;
+    ['u_data_scale']: Uniform2f;
     ['u_data_offset']: Uniform1f;
     ['u_particle_pos_scale']: Uniform1f;
     ['u_particle_pos_offset']: Uniform2f;
@@ -182,7 +185,7 @@ const rasterParticleUpdateUniforms = (context: Context): RasterParticleUpdateUni
     'u_reset_rate': new Uniform1f(context),
     'u_rand_seed': new Uniform1f(context),
     'u_uv_offset': new Uniform2f(context),
-    'u_data_scale': new Uniform4f(context),
+    'u_data_scale': new Uniform2f(context),
     'u_data_offset': new Uniform1f(context),
     'u_particle_pos_scale': new Uniform1f(context),
     'u_particle_pos_offset': new Uniform2f(context)
@@ -209,7 +212,10 @@ const rasterParticleUpdateUniformValues = (
     'u_reset_rate': resetRate,
     'u_rand_seed': Math.random(),
     'u_uv_offset': textureOffset,
-    'u_data_scale': dataScale,
+    'u_data_scale': [
+        255.0 * dataScale[0],
+        255.0 * dataScale[1]
+    ],
     'u_data_offset': dataOffset,
     'u_particle_pos_scale': RASTER_PARTICLE_POS_SCALE,
     'u_particle_pos_offset': [RASTER_PARTICLE_POS_OFFSET, RASTER_PARTICLE_POS_OFFSET]

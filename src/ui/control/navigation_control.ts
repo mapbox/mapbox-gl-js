@@ -1,17 +1,18 @@
+import type Point from '@mapbox/point-geometry';
+
 import * as DOM from '../../util/dom';
 import {extend, bindAll} from '../../util/util';
 import {MouseRotateHandler, MousePitchHandler} from '../handler/mouse';
 
-import type {Map} from '../map';
-import type Point from '@mapbox/point-geometry';
+import type {Map, IControl} from '../map';
 
-type Options = {
+export type NavigationControlOptions = {
     showCompass?: boolean;
     showZoom?: boolean;
     visualizePitch?: boolean;
 };
 
-const defaultOptions: Options = {
+const defaultOptions: NavigationControlOptions = {
     showCompass: true,
     showZoom: true,
     visualizePitch: false
@@ -37,17 +38,17 @@ const defaultOptions: Options = {
  * @see [Example: Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
  * @see [Example: Add a third party vector tile source](https://www.mapbox.com/mapbox-gl-js/example/third-party/)
  */
-class NavigationControl {
-    _map: Map | null | undefined;
-    options: Options;
+class NavigationControl implements IControl {
+    _map?: Map;
+    options: NavigationControlOptions;
     _container: HTMLElement;
     _zoomInButton: HTMLButtonElement;
     _zoomOutButton: HTMLButtonElement;
     _compass: HTMLButtonElement;
     _compassIcon: HTMLElement;
-    _handler: MouseRotateWrapper | null | undefined;
+    _handler?: MouseRotateWrapper;
 
-    constructor(options?: Options) {
+    constructor(options: NavigationControlOptions = {}) {
         this.options = extend({}, defaultOptions, options);
 
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');

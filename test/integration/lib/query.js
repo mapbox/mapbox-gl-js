@@ -95,6 +95,7 @@ async function runTest(t) {
             attributionControl: false,
             preserveDrawingBuffer: true,
             axonometric: options.axonometric || false,
+            precompilePrograms: false,
             skew: options.skew || [0, 0],
             fadeDuration: options.fadeDuration || 0,
             localIdeographFontFamily: options.localIdeographFontFamily || false,

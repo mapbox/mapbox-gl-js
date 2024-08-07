@@ -1,12 +1,12 @@
 {
   "expression": ["slice", ["get", "input"], ["get", "i1"]],
   "inputs": [
-    [{}, { "properties": { "input": false, "i1": 1 } }],
-    [{}, { "properties": { "input": null, "i1": 1 } }],
-    [{}, { "properties": { "input": 12, "i1": 1 } }],
-    [{}, { "properties": { "input": {}, "i1": 1 } }],
-    [{}, { "properties": { "other": 1, "i1": 1 } }],
-    [{}, { "properties": { "input": "correct", "i1": "one" } }]
+    [{}, {"properties": {"input": false, "i1": 1}}],
+    [{}, {"properties": {"input": null, "i1": 1}}],
+    [{}, {"properties": {"input": 12, "i1": 1}}],
+    [{}, {"properties": {"input": {}, "i1": 1}}],
+    [{}, {"properties": {"other": 1, "i1": 1}}],
+    [{}, {"properties": {"input": "correct", "i1": "one"}}]
   ],
   "expected": {
     "compiled": {
@@ -32,7 +32,7 @@
         "error": "Expected first argument to be of type array or string, but found null instead."
       },
       {
-        "error": "Expected value to be of type number, but found string instead."
+        "error": "The expression [\"get\",\"i1\"] evaluated to string but was expected to be of type number."
       }
     ],
     "serialized": ["slice", ["get", "input"], ["number", ["get", "i1"]]]

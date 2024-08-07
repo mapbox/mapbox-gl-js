@@ -82,7 +82,7 @@ function isExpressionFilter(filter: unknown): boolean {
  * @param {string} layerType the type of the layer this filter will be applied to.
  * @returns {Function} filter-evaluating function
  */
-function createFilter(filter?: FilterSpecification | ExpressionSpecification, layerType: string = 'fill'): FeatureFilter {
+function createFilter(filter?: FilterSpecification, layerType: string = 'fill'): FeatureFilter {
     if (filter === null || filter === undefined) {
         return {filter: () => true, needGeometry: false, needFeature: false};
     }

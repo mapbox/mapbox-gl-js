@@ -21,7 +21,7 @@ void main() {
         gl_Position = AWAY;
         v_particle_speed = 0.0;
     } else {
-        gl_Position = vec4(2.0 * pos - vec2(1.0), 0.0, 1.0);
+        gl_Position = vec4(2.0 * pos - 1.0, 0, 1);
         v_particle_speed = length(velocity);
     }
     gl_PointSize = 1.0;

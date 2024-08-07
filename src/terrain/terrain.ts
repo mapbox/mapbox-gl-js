@@ -22,7 +22,7 @@ import Color from '../style-spec/util/color';
 import type {Callback} from '../types/callback';
 import StencilMode from '../gl/stencil_mode';
 import {DepthStencilAttachment} from '../gl/value';
-import {drawTerrainRaster, drawTerrainDepth} from './draw_terrain_raster';
+import {drawTerrainRaster} from './draw_terrain_raster';
 import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
 import type LineStyleLayer from '../style/style_layer/line_style_layer';
@@ -112,7 +112,7 @@ class ProxySourceCache extends SourceCache {
 
         // This source is not to be added as a map source: we use it's tile management.
         // For that, initialize internal structures used for tile cover update.
-        this.map = (this.getSource() as GeoJSONSource).map = map;
+        this.map = this.getSource().map = map;
         this.used = this._sourceLoaded = true;
         this.renderCache = [];
         this.renderCachePool = [];
@@ -800,13 +800,23 @@ export class Terrain extends Elevation {
         }
 
         context.activeTexture.set(gl.TEXTURE3);
-        if (options && options.useDepthForOcclusion) {
-            if (this._depthTexture) this._depthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-            if (this._depthFBO) uniforms['u_depth_size_inv'] = [1 / this._depthFBO.width, 1 / this._depthFBO.height];
+        if (options && options.useDepthForOcclusion && this.painter.terrainDepthTexture && this.painter.terrainDepthFBO) {
+            this.painter.terrainDepthTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            uniforms['u_depth_size_inv'] = [1 / this.painter.terrainDepthFBO.width, 1 / this.painter.terrainDepthFBO.height];
+
+            const getUnpackDepthRangeParams = (depthRange: [number, number]): [number, number] => {
+                // -1.0 + 2.0 * (depth - u_depth_range.x) / (u_depth_range.y - u_depth_range.x)
+                const a = 2 / (depthRange[1] - depthRange[0]);
+                const b = -1 - 2 * depthRange[0] / (depthRange[1] - depthRange[0]);
+                return [a, b];
+            };
+
+            uniforms['u_depth_range_unpack'] = getUnpackDepthRangeParams(this.painter.depthRangeFor3D);
         } else {
             this.emptyDepthBufferTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-            uniforms['u_depth_size_inv'] = [1, 1];
+            uniforms['u_depth_range_unpack'] = [2, 0];
         }
+        context.activeTexture.set(gl.TEXTURE0);
 
         if (options && options.useMeterToDem && demTile) {
             const meterToDEM = (1 << demTile.tileID.canonical.z) * mercatorZfromAltitude(1, this.painter.transform.center.lat) * this.sourceCache.getSource().tileSize;
@@ -1460,35 +1470,6 @@ export class Terrain extends Elevation {
         return p;
     }
 
-    drawDepth() {
-        const painter = this.painter;
-        const context = painter.context;
-        const psc = this.proxySourceCache;
-
-        const width = Math.ceil(painter.width), height = Math.ceil(painter.height);
-        if (this._depthFBO && (this._depthFBO.width !== width || this._depthFBO.height !== height)) {
-            this._depthFBO.destroy();
-            this._depthFBO = undefined;
-            this._depthTexture = undefined;
-        }
-        if (!this._depthFBO) {
-            const gl = context.gl;
-            const fbo = context.createFramebuffer(width, height, true, 'renderbuffer');
-            context.activeTexture.set(gl.TEXTURE0);
-            const texture = new Texture(context, {width, height, data: null}, gl.RGBA);
-            texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-            fbo.colorAttachment.set(texture.texture);
-            const renderbuffer = context.createRenderbuffer(context.gl.DEPTH_COMPONENT16, width, height);
-            fbo.depthAttachment.set(renderbuffer);
-            this._depthFBO = fbo;
-            this._depthTexture = texture;
-        }
-        context.bindFramebuffer.set(this._depthFBO.framebuffer);
-        context.viewport.set([0, 0, width, height]);
-
-        drawTerrainDepth(painter, this, psc, this.proxyCoords);
-    }
-
     _setupProxiedCoordsForOrtho(
         sourceCache: SourceCache,
         sourceCoords: Array<OverscaledTileID>,
@@ -1557,7 +1538,7 @@ export class Terrain extends Elevation {
 
         const coords = this.proxiedCoords[sourceCache.id] = [];
         const proxys = this.proxyCoords;
-        const imageSource: ImageSource = (sourceCache.getSource() as ImageSource);
+        const imageSource: ImageSource = sourceCache.getSource();
         // Special case where image is rendered outside of the map's bounds (eg. pole caps)
         const tileID = imageSource.tileID;
         if (!tileID) return;
@@ -1805,6 +1786,7 @@ export type TerrainUniformsType = {
     ["u_exaggeration"]: Uniform1f;
     ['u_depth']: Uniform1i;
     ['u_depth_size_inv']: Uniform2f;
+    ['u_depth_range_unpack']: Uniform2f;
     ['u_meter_to_dem']?: Uniform1f;
     ['u_label_plane_matrix_inv']?: UniformMatrix4f;
 };
@@ -1821,6 +1803,7 @@ export const terrainUniforms = (context: Context): TerrainUniformsType => ({
     'u_exaggeration': new Uniform1f(context),
     'u_depth': new Uniform1i(context),
     'u_depth_size_inv': new Uniform2f(context),
+    'u_depth_range_unpack': new Uniform2f(context),
     'u_meter_to_dem': new Uniform1f(context),
     'u_label_plane_matrix_inv': new UniformMatrix4f(context),
 });
@@ -1837,6 +1820,7 @@ function defaultTerrainUniforms(): UniformValues<TerrainUniformsType> {
         'u_dem_lerp': 1.0,
         'u_depth': 3,
         'u_depth_size_inv': [0, 0],
+        'u_depth_range_unpack': [2, 0],
         'u_exaggeration': 0,
     };
 }

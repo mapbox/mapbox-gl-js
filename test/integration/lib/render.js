@@ -25,7 +25,7 @@ config.REQUIRE_ACCESS_TOKEN = false;
 window._suiteName = 'render-tests';
 
 mapboxgl.prewarm();
-mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js');
+mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.3.0/mapbox-gl-rtl-text.js');
 
 //1. Create and position the container, floating at the bottom right
 const container = document.createElement('div');
@@ -196,6 +196,7 @@ async function renderMap(style, options) {
         fadeDuration: options.fadeDuration || 0,
         localIdeographFontFamily: options.localIdeographFontFamily || false,
         projection: options.projection,
+        precompilePrograms: false,
         crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
         performanceMetricsCollection: false,
         tessellationStep: options.tessellationStep,

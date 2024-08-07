@@ -39,8 +39,9 @@ uniform float u_exaggeration;
 uniform float u_meter_to_dem;
 uniform mat4 u_label_plane_matrix_inv;
 
-uniform sampler2D u_depth;
+uniform highp sampler2D u_depth;
 uniform vec2 u_depth_size_inv;
+uniform vec2 u_depth_range_unpack;
 
 vec4 tileUvToDemSample(vec2 uv, float dem_size, float dem_scale, vec2 dem_tl) {
     vec2 pos = dem_size * (uv * dem_scale + dem_tl) + 1.0;
@@ -104,18 +105,35 @@ float elevation(vec2 apos) {
 }
 #endif
 
-// Unpack depth from RGBA. A piece of code copied in various libraries and WebGL
-// shadow mapping examples.
-// https://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
-highp float unpack_depth(highp vec4 rgba_depth)
-{
-    const highp vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
-    return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
-}
+#ifdef TERRAIN_DEPTH_D24
+    float unpack_depth(float depth) {
+        return depth * u_depth_range_unpack.x + u_depth_range_unpack.y;
+    }
+
+    vec4 unpack_depth4(vec4 depth) {
+        return depth * u_depth_range_unpack.x + vec4(u_depth_range_unpack.y);
+    }
+#else
+    // Unpack depth from RGBA. A piece of code copied in various libraries and WebGL
+    // shadow mapping examples.
+    // https://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
+    highp float unpack_depth_rgba(highp vec4 rgba_depth)
+    {
+        const highp vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
+        return dot(rgba_depth, bit_shift) * 2.0 - 1.0;
+    }
+#endif
+
 
 bool isOccluded(vec4 frag) {
     vec3 coord = frag.xyz / frag.w;
-    float depth = unpack_depth(texture(u_depth, (coord.xy + 1.0) * 0.5));
+
+    #ifdef TERRAIN_DEPTH_D24
+        float depth = unpack_depth(texture(u_depth, (coord.xy + 1.0) * 0.5).r);
+    #else
+        float depth = unpack_depth_rgba(texture(u_depth, (coord.xy + 1.0) * 0.5));
+    #endif
+
     return coord.z > depth + 0.0005;
 }
 
@@ -124,12 +142,24 @@ float occlusionFade(vec4 frag) {
 
     vec3 df = vec3(5.0 * u_depth_size_inv, 0.0);
     vec2 uv = 0.5 * coord.xy + 0.5;
-    vec4 depth = vec4(
-        unpack_depth(texture(u_depth, uv - df.xz)),
-        unpack_depth(texture(u_depth, uv + df.xz)),
-        unpack_depth(texture(u_depth, uv - df.zy)),
-        unpack_depth(texture(u_depth, uv + df.zy))
-    );
+
+    #ifdef TERRAIN_DEPTH_D24
+        vec4 depth = vec4(
+            texture(u_depth, uv - df.xz).r,
+            texture(u_depth, uv + df.xz).r,
+            texture(u_depth, uv - df.zy).r,
+            texture(u_depth, uv + df.zy).r
+        );
+        depth = unpack_depth4(depth);
+    #else
+        vec4 depth = vec4(
+            unpack_depth_rgba(texture(u_depth, uv - df.xz)),
+            unpack_depth_rgba(texture(u_depth, uv + df.xz)),
+            unpack_depth_rgba(texture(u_depth, uv - df.zy)),
+            unpack_depth_rgba(texture(u_depth, uv + df.zy))
+        );
+    #endif
+
     return dot(vec4(0.25), vec4(1.0) - clamp(300.0 * (vec4(coord.z - 0.001) - depth), 0.0, 1.0));
 }
 

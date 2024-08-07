@@ -22,6 +22,7 @@
 <div id='checkboxes'>
     <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
     <label><input id='globe-checkbox' type='checkbox'> globe</label><br />
+    <label><input type="range" min="-100" max="100" value="0" class="slider" id="blur-slider"> blur: </label><label id='glow'>0.0</label><br />
 </div>
 
 <script src='../dist/mapbox-gl-dev.js'></script>
@@ -99,6 +100,12 @@ document.getElementById('terrain-checkbox').onclick = function() {
 
 document.getElementById('globe-checkbox').onclick = function() {
     map.setProjection(this.checked ? "globe" : null);
+};
+
+document.getElementById('blur-slider').oninput = function() {
+    const glow = parseInt(this.value) / 100.0;
+    map.setPaintProperty("circles", 'circle-blur', glow);
+    document.getElementById('glow').innerHTML = glow;
 };
 
 let hovered = [];

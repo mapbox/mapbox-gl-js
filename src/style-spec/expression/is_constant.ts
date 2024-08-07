@@ -51,14 +51,15 @@ function isStateConstant(e: Expression): boolean {
     return result;
 }
 
-function isConfigConstant(e: Expression): boolean {
+function getConfigDependencies(e: Expression): Set<string> {
     if (e instanceof Config) {
-        return false;
+        const singleConfig = new Set([e.key]);
+        return singleConfig;
     }
 
-    let result = true;
+    let result = new Set<string>();
     e.eachChild(arg => {
-        if (result && !isConfigConstant(arg)) { result = false; }
+        result = new Set([...result, ...getConfigDependencies(arg)]);
     });
     return result;
 }
@@ -72,4 +73,4 @@ function isGlobalPropertyConstant(e: Expression, properties: Array<string>): boo
     return result;
 }
 
-export {isFeatureConstant, isGlobalPropertyConstant, isStateConstant, isConfigConstant};
+export {isFeatureConstant, isGlobalPropertyConstant, isStateConstant, getConfigDependencies};

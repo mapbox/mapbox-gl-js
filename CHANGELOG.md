@@ -1,3 +1,30 @@
+## 3.6.0-beta.1
+
+### Features and improvements ✨
+- Improve initial load performance.
+- Add inner glow effect for negative `circle-blur` values.
+- Add support for inlining TileJSON in style source definitions using `data` field.
+- Improve 3D models' shadow appearance.
+- Improve performance of updating config values of a style.
+- Add more descriptive expression evaluation error messages.
+- Improve TypeScript typings.
+
+### Bug fixes 🐞
+- Fix `isSourceLoaded` flag on `sourcedata` event for already loaded sources.
+- Fix firing `load` event when all tiles fail to load.
+- Fix performance issues when GeoJSON in `dynamic` mode is updated too frequently.
+- Fix rasterarray layer flickering from stale tiles cache.
+- Fix spikes when viewing terrain-enabled maps in certain environments.
+
+## 3.5.2
+
+- Improve 3D models rendering performance.
+- Slightly improve terrain rendering performance.
+- Fix raster particle data decoding and improve rendering quality.
+- Fix 3D lighting rendering when lookup tables (LUT) image is applied.
+- Fix shadows rendering artifacts on `fill-extrusion-cutoff-fade-range`.
+- Improve TypeScript API, including strongly typed Map event listeners, improved type narrowing, and more.
+
 ## 3.5.1
 
 - Revert default behavior of symbol occlusion behind terrain to maintain compatibility. Set `icon-occlusion-opacity`/`text-occlusion-opacity` properties to opt-in to new occlusion behavior.

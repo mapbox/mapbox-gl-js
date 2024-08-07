@@ -5,8 +5,8 @@ import EXTENT from '../style-spec/data/extent';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 
-import type {ISource} from './source';
-import type {Map} from '../ui/map';
+import type {ISource, SourceEvents} from './source';
+import type {Map as MapboxMap} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type Actor from '../util/actor';
@@ -61,7 +61,7 @@ import type {Cancelable} from '../types/cancelable';
  * @see [Example: Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
  * @see [Example: Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
  */
-class GeoJSONSource extends Evented implements ISource {
+class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     type: 'geojson';
     id: string;
     scope: string;
@@ -81,7 +81,7 @@ class GeoJSONSource extends Evented implements ISource {
     _data: GeoJSON.GeoJSON | string;
     _options: GeoJSONSourceSpecification;
     workerOptions: GeoJSONWorkerOptions;
-    map: Map;
+    map: MapboxMap;
     actor: Actor;
     _loaded: boolean;
     _coalesce: boolean | null | undefined;
@@ -164,7 +164,7 @@ class GeoJSONSource extends Evented implements ISource {
         }, options.workerOptions);
     }
 
-    onAdd(map: Map) {
+    onAdd(map: MapboxMap) {
         this.map = map;
         this.setData(this._data);
     }
@@ -242,7 +242,11 @@ class GeoJSONSource extends Evented implements ISource {
         }
         // if there's a pending load, accummulate feature updates
         if (this._coalesce && typeof data !== 'string' && typeof this._data !== 'string' && this._data.type === 'FeatureCollection') {
-            this._data.features.push(...data.features);
+            // merge features by ID to avoid accummulating duplicate features to update
+            const featuresById = new Map();
+            for (const feature of this._data.features) featuresById.set(feature.id, feature);
+            for (const feature of data.features) featuresById.set(feature.id, feature);
+            this._data.features = [...featuresById.values()];
         } else {
             this._data = data;
         }
@@ -484,7 +488,7 @@ class GeoJSONSource extends Evented implements ISource {
         tile.destroy();
     }
 
-    onRemove(_: Map) {
+    onRemove(_: MapboxMap) {
         if (this._pendingLoad) {
             this._pendingLoad.cancel();
         }

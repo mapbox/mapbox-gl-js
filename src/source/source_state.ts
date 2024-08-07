@@ -1,11 +1,12 @@
 import {extend} from '../util/util';
 import type Tile from './tile';
-import type {FeatureState} from '../style-spec/expression/index';
 import type Painter from '../render/painter';
+import type {FeatureState} from '../style-spec/expression/index';
 
 export type FeatureStates = {
     [feature_id: string]: FeatureState;
 };
+
 export type LayerFeatureStates = {
     [layer: string]: FeatureStates;
 };
@@ -22,7 +23,7 @@ export type LayerFeatureStates = {
 class SourceFeatureState {
     state: LayerFeatureStates;
     stateChanges: LayerFeatureStates;
-    deletedStates: Record<any, any>;
+    deletedStates: LayerFeatureStates;
 
     constructor() {
         this.state = {};
@@ -30,7 +31,7 @@ class SourceFeatureState {
         this.deletedStates = {};
     }
 
-    updateState(sourceLayer: string, featureId: number | string, newState: any) {
+    updateState(sourceLayer: string, featureId: number | string, newState: FeatureState) {
         const feature = String(featureId);
         this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || {};
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
@@ -84,7 +85,7 @@ class SourceFeatureState {
         }
     }
 
-    getState(sourceLayer: string, featureId: number | string): FeatureStates {
+    getState(sourceLayer: string, featureId: number | string): FeatureState {
         const feature = String(featureId);
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};
@@ -105,13 +106,13 @@ class SourceFeatureState {
         tile.setFeatureState(this.state, painter);
     }
 
-    coalesceChanges(tiles: Partial<Record<any, Tile>>, painter: any) {
+    coalesceChanges(tiles: Record<string | number, Tile>, painter: Painter) {
         //track changes with full state objects, but only for features that got modified
         const featuresChanged: LayerFeatureStates = {};
 
         for (const sourceLayer in this.stateChanges) {
-            this.state[sourceLayer]  = this.state[sourceLayer] || {};
-            const layerStates: Record<string, any> = {};
+            this.state[sourceLayer] = this.state[sourceLayer] || {};
+            const layerStates: Record<string, FeatureState> = {};
             for (const feature in this.stateChanges[sourceLayer]) {
                 if (!this.state[sourceLayer][feature]) this.state[sourceLayer][feature] = {};
                 extend(this.state[sourceLayer][feature], this.stateChanges[sourceLayer][feature]);
@@ -121,8 +122,8 @@ class SourceFeatureState {
         }
 
         for (const sourceLayer in this.deletedStates) {
-            this.state[sourceLayer]  = this.state[sourceLayer] || {};
-            const layerStates: Record<string, any> = {};
+            this.state[sourceLayer] = this.state[sourceLayer] || {};
+            const layerStates: Record<string, FeatureState> = {};
 
             if (this.deletedStates[sourceLayer] === null) {
                 for (const ft in this.state[sourceLayer]) {

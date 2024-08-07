@@ -43,7 +43,11 @@ function sendPluginStateToWorker() {
     evented.fire(new Event('pluginStateChange', {pluginStatus, pluginURL}));
 }
 
-export const evented: Evented = new Evented();
+type EventRegistry = {
+    'pluginStateChange': PluginState;
+};
+
+export const evented = new Evented<EventRegistry>();
 
 export const getRTLTextPluginStatus = function(): PluginStatus {
     return pluginStatus;

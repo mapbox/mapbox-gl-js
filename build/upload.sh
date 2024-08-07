@@ -88,3 +88,6 @@ do
 		aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file}
 	fi
 done
+
+aws s3 cp --acl public-read --content-type application/json dist/versions.json s3://mapbox-gl-js/versions.json &&
+aws s3 cp --acl public-read --content-type application/javascript dist/versions.jsonp s3://mapbox-gl-js/versions.jsonp

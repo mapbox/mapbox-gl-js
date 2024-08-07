@@ -10,6 +10,7 @@ export type ResolvedImageSpecification = string;
 export type PromoteIdSpecification = {[_: string]: string} | string;
 
 export type FilterSpecification =
+    | ExpressionSpecification
     | ['has', string]
     | ['!has', string]
     | ['==', string, string | number | boolean]

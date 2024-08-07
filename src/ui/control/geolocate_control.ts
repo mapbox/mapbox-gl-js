@@ -7,17 +7,18 @@ import LngLat from '../../geo/lng_lat';
 import throttle from '../../util/throttle';
 import {mercatorZfromAltitude} from '../../geo/mercator_coordinate';
 
-import type {Map} from '../map';
+import type {Map, IControl} from '../map';
+import type {MapEventOf} from '../events';
 import type {AnimationOptions, CameraOptions} from '../camera';
 
-type Options = {
-    positionOptions: PositionOptions;
-    fitBoundsOptions: AnimationOptions & CameraOptions;
-    trackUserLocation: boolean;
-    showAccuracyCircle: boolean;
-    showUserLocation: boolean;
-    showUserHeading: boolean;
-    geolocation: Geolocation;
+export type GeolocateControlOptions = {
+    positionOptions?: PositionOptions;
+    fitBoundsOptions?: AnimationOptions & CameraOptions;
+    trackUserLocation?: boolean;
+    showAccuracyCircle?: boolean;
+    showUserLocation?: boolean;
+    showUserHeading?: boolean;
+    geolocation?: Geolocation;
 };
 
 type DeviceOrientationEvent = {
@@ -42,6 +43,14 @@ const defaultOptions = {
     showAccuracyCircle: true,
     showUserLocation: true,
     showUserHeading: false
+};
+
+type GeolocateControlEvents = {
+    'error': GeolocationPositionError;
+    'geolocate': GeolocationPosition;
+    'outofmaxbounds': GeolocationPosition;
+    'trackuserlocationstart': void;
+    'trackuserlocationend': void;
 };
 
 /**
@@ -84,29 +93,29 @@ const defaultOptions = {
  * }));
  * @see [Example: Locate the user](https://www.mapbox.com/mapbox-gl-js/example/locate-user/)
  */
-class GeolocateControl extends Evented {
+class GeolocateControl extends Evented<GeolocateControlEvents> implements IControl {
     _map: Map;
-    options: Options;
+    options: GeolocateControlOptions;
     _container: HTMLElement;
     _dotElement: HTMLElement;
     _circleElement: HTMLElement;
     _geolocateButton: HTMLButtonElement;
     _geolocationWatchID: number;
-    _timeoutId: number | null | undefined;
+    _timeoutId?: number;
     _watchState: 'OFF' | 'ACTIVE_LOCK' | 'WAITING_ACTIVE' | 'ACTIVE_ERROR' | 'BACKGROUND' | 'BACKGROUND_ERROR';
-    _lastKnownPosition: any;
+    _lastKnownPosition?: GeolocationPosition;
     _userLocationDotMarker: Marker;
     _accuracyCircleMarker: Marker;
     _accuracy: number;
     _setup: boolean; // set to true once the control has been setup
-    _heading: number | null | undefined;
-    _updateMarkerRotationThrottled: any;
+    _heading?: number;
+    _updateMarkerRotationThrottled?: () => number;
 
     _numberOfWatches: number;
     _noTimeout: boolean;
     _supportsGeolocation: boolean;
 
-    constructor(options?: Partial<Options>) {
+    constructor(options: GeolocateControlOptions = {}) {
         super();
         const geolocation = navigator.geolocation;
         this.options = extend({geolocation}, defaultOptions, options);
@@ -470,7 +479,7 @@ class GeolocateControl extends Evented {
         // when the camera is changed (and it's not as a result of the Geolocation Control) change
         // the watch mode to background watch, so that the marker is updated but not the camera.
         if (this.options.trackUserLocation) {
-            this._map.on('movestart', (event) => {
+            this._map.on('movestart', (event: MapEventOf<'movestart'> & {geolocateSource?: boolean}) => {
                 const fromResize = event.originalEvent && event.originalEvent.type === 'resize';
                 if (!event.geolocateSource && this._watchState === 'ACTIVE_LOCK' && !fromResize) {
                     this._watchState = 'BACKGROUND';
@@ -640,8 +649,7 @@ class GeolocateControl extends Evented {
 
             // This timeout ensures that we still call finish() even if
             // the user declines to share their location in Firefox
-            // @ts-expect-error - TS2322 - Type 'Timeout' is not assignable to type 'number'.
-            this._timeoutId = setTimeout(this._finish, 10000 /* 10sec */);
+            this._timeoutId = window.setTimeout(this._finish, 10000 /* 10sec */);
         }
 
         return true;

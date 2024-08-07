@@ -1,5 +1,4 @@
 import {Pane} from 'tweakpane';
-import cloneDeep from 'lodash.clonedeep';
 import serialize from 'serialize-to-js';
 import assert from 'assert';
 import {isWorker} from '../util/util';
@@ -85,7 +84,7 @@ function mergePaneParams(dest: PaneState, src: PaneState) {
         const destFolder = dest.folders.get(key);
         if (srcFolder && destFolder) {
             for (const parameterKey of Object.keys(srcFolder.current)) {
-                destFolder.current[parameterKey] = cloneDeep(srcFolder.current[parameterKey]);
+                destFolder.current[parameterKey] = structuredClone(srcFolder.current[parameterKey]);
             }
         } else if (srcFolder) {
             dest.folders.set(key, srcFolder);
@@ -122,7 +121,7 @@ function deSerializePaneParams(input?: string | null): PaneState {
                     f.isFolded = it.isFolded;
                 }
                 if (`current` in it && it.current instanceof Object) {
-                    f.current = cloneDeep(it.current);
+                    f.current = structuredClone(it.current);
                 }
                 p.folders.set(key, f);
             });
@@ -216,13 +215,13 @@ export class TrackedParameters implements ITrackedParameters {
     resetToDefaults() {
         const doReset = () => {
             this._parametersInfo.forEach((elem, key) => {
-                elem.containerObject[elem.parameterName] = cloneDeep(elem.defaultValue);
+                elem.containerObject[elem.parameterName] = structuredClone(elem.defaultValue);
 
                 // Update serializable state as well
                 const folderName = key.slice(0, key.lastIndexOf("|"));
                 const folder = this._paneState.folders.get(folderName);
                 if (folder) {
-                    folder.current[elem.parameterName] = cloneDeep(elem.defaultValue);
+                    folder.current[elem.parameterName] = structuredClone(elem.defaultValue);
                 }
             });
             this.checkDefaults();
@@ -340,7 +339,7 @@ export class TrackedParameters implements ITrackedParameters {
                     const fullParameterName = `${folderKey}|${parameterKey}`;
                     const paramInfo = this._parametersInfo.get(fullParameterName);
                     if (paramInfo && !paramInfo.noSave) {
-                        paramInfo.containerObject[parameterKey] = cloneDeep(value);
+                        paramInfo.containerObject[parameterKey] = structuredClone(value);
                     }
                 }
 
@@ -483,21 +482,21 @@ export class TrackedParameters implements ITrackedParameters {
         const fullParameterName = `${fullScopeName}|${name}`;
 
         if (!this._parametersInfo.has(fullParameterName)) {
-            const defaultValue = cloneDeep(containerObject[name]);
+            const defaultValue = structuredClone(containerObject[name]);
 
             // Check if parameter should ignore (de)serialization
             const noSave = !!(description && description.noSave);
 
             if (!noSave && folderStateObj.current.hasOwnProperty(name)) {
-                containerObject[name] = cloneDeep(folderStateObj.current[name]);
+                containerObject[name] = structuredClone(folderStateObj.current[name]);
             } else {
-                folderStateObj.current[name] = cloneDeep(containerObject[name]);
+                folderStateObj.current[name] = structuredClone(containerObject[name]);
             }
 
             // Create binding to TweakPane UI
             const binding = currentScope.addBinding(containerObject, name, description);
             binding.on('change', (ev) => {
-                folderStateObj.current[name] = cloneDeep(ev.value);
+                folderStateObj.current[name] = structuredClone(ev.value);
                 this.dump();
                 this.checkDefaults();
                 if (changeValueCallback) { changeValueCallback(ev.value); }

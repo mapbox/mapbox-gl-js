@@ -271,7 +271,7 @@ export default class Model {
         // apply local transform to bounding volume
         if (node.meshes) {
             for (const mesh of node.meshes) {
-                const enclosingBounds = Aabb.applyTransform(mesh.aabb, node.matrix);
+                const enclosingBounds = Aabb.applyTransformFast(mesh.aabb, node.matrix);
                 this.aabb.encapsulate(enclosingBounds);
             }
         }

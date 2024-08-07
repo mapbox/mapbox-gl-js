@@ -1,9 +1,8 @@
-// @ts-nocheck
-import {readFileSync} from 'node:fs';
 import {basename as pathBasename} from 'node:path';
-
-import {mergeConfig, defineConfig} from 'vite';
+import {readFileSync} from 'node:fs';
+import {mergeConfig, defineConfig} from 'vitest/config';
 import {globSync} from 'glob';
+
 import baseConfig from './vitest.config.base';
 
 function styleSpecFixtures() {
@@ -33,8 +32,13 @@ export default mergeConfig(baseConfig, defineConfig({
     test: {
         include: ['test/unit/**/*.test.ts'],
         setupFiles: ['test/unit/setup.ts'],
+        reporters: process.env.CI ? [
+            ['html', {outputFile: './test/unit/vitest/index.html'}],
+            ['junit', {outputFile: './test/unit/test-results.xml'}],
+        ] : ['basic'],
     },
-    publicDir: 'test/util',
+    // For msw mock worker
+    publicDir: 'test/unit/mock-worker',
     plugins: [
         styleSpecFixtures()
     ]

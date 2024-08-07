@@ -1526,12 +1526,12 @@ describe('Marker interaction and raycast', () => {
 
         test('terrain is above horizon line', () => {
         // With a bit of tweaking (given that const terrain planes are used), terrain is above horizon line.
-            expect(terrainTop.y < tr.horizonLineFromTop() - 3).toBeTruthy();
+            expect(terrainTop.y < tr.horizonLineFromTop()).toBeTruthy();
         });
 
         test('Drag above clamps at horizon', () => {
         // Offset marker down, 2 pixels under terrain top above horizon.
-            const startPos = new Point(0, 2)._add(terrainTop);
+            const startPos = new Point(0, 7)._add(terrainTop);
             marker.setLngLat(tr.pointLocation3D(startPos));
             expect(Math.abs(tr.locationPoint3D(marker.getLngLat()).y - startPos.y) < 0.000001).toBeTruthy();
             const el = marker.getElement();
@@ -1781,4 +1781,93 @@ test('terrain recursively loads parent tiles on 404', async () => {
         new OverscaledTileID(14, 0, 14, 8192, 8191).key,
         new OverscaledTileID(14, 0, 14, 8191, 8191).key,
     ]);
+});
+
+describe('#hasCanvasFingerprintNoise', () => {
+    test('Dynamic terrain', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
+
+        const style = createStyle();
+        const map = createMap({style, center: [0, 0], zoom: 16});
+        await waitFor(map, 'style.load');
+
+        map.addSource('mapbox-dem', {
+            type: 'raster-dem',
+            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+            tileSize: TILE_SIZE,
+            maxzoom: 14
+        });
+
+        map.setTerrain({source: 'mapbox-dem'});
+
+        await waitFor(map, 'render');
+
+        expect(!!map.painter.terrain).toBeFalsy();
+    });
+
+    test('Terrain in Style', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
+
+        const style = {
+            version: 8,
+            layers: [],
+            sources: {
+                'mapbox-dem': {
+                    type: 'raster-dem',
+                    tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                    tileSize: TILE_SIZE,
+                    maxzoom: 14
+                }
+            },
+            terrain: {
+                source: 'mapbox-dem'
+            }
+        };
+
+        const map = createMap({style, center: [0, 0], zoom: 16});
+        await waitFor(map, 'style.load');
+
+        await waitFor(map, 'render');
+
+        expect(!!map.painter.terrain).toBeFalsy();
+    });
+
+    test('Terrain in Style fragment', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
+
+        const style = {
+            version: 8,
+            layers: [],
+            sources: {},
+            imports: [{
+                id: 'basemap',
+                url: '',
+                data: {
+                    version: 8,
+                    layers: [],
+                    sources: {
+                        'mapbox-dem': {
+                            type: 'raster-dem',
+                            tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                            tileSize: TILE_SIZE,
+                            maxzoom: 14
+                        }
+                    },
+                    terrain: {
+                        source: 'mapbox-dem'
+                    }
+                }
+            }]
+        };
+
+        const map = createMap({style, center: [0, 0], zoom: 16});
+        await waitFor(map, 'style.load');
+
+        await waitFor(map, 'render');
+
+        expect(!!map.painter.terrain).toBeFalsy();
+    });
 });

@@ -26,7 +26,7 @@ export class MapEventHandler implements Handler {
     wheel(e: WheelEvent): HandlerResult | null | undefined {
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - ScrollZoom
-        return this._firePreventable(new MapWheelEvent(e.type, this._map, e));
+        return this._firePreventable(new MapWheelEvent(this._map, e));
     }
 
     mousedown(e: MouseEvent, point: Point): HandlerResult | null | undefined {
@@ -36,37 +36,37 @@ export class MapEventHandler implements Handler {
         // - MouseRotate
         // - MousePitch
         // - DblclickHandler
-        return this._firePreventable(new MapMouseEvent(e.type, this._map, e));
+        return this._firePreventable(new MapMouseEvent(e.type as 'mousedown', this._map, e));
     }
 
     mouseup(e: MouseEvent) {
-        this._map.fire(new MapMouseEvent(e.type, this._map, e));
+        this._map.fire(new MapMouseEvent(e.type as 'mouseup', this._map, e));
     }
 
     preclick(e: MouseEvent) {
         const synth: Mutable<MouseEvent> = extend({}, e);
         synth.type = 'preclick';
-        this._map.fire(new MapMouseEvent(synth.type, this._map, synth));
+        this._map.fire(new MapMouseEvent(synth.type as 'preclick', this._map, synth));
     }
 
     click(e: MouseEvent, point: Point) {
         if (this._mousedownPos && this._mousedownPos.dist(point) >= this._clickTolerance) return;
         this.preclick(e);
-        this._map.fire(new MapMouseEvent(e.type, this._map, e));
+        this._map.fire(new MapMouseEvent(e.type as 'click', this._map, e));
     }
 
     dblclick(e: MouseEvent): HandlerResult | null | undefined {
         // If mapEvent.preventDefault() is called by the user, prevent handlers such as:
         // - DblClickZoom
-        return this._firePreventable(new MapMouseEvent(e.type, this._map, e));
+        return this._firePreventable(new MapMouseEvent(e.type as 'dblclick', this._map, e));
     }
 
     mouseover(e: MouseEvent) {
-        this._map.fire(new MapMouseEvent(e.type, this._map, e));
+        this._map.fire(new MapMouseEvent(e.type as 'mouseover', this._map, e));
     }
 
     mouseout(e: MouseEvent) {
-        this._map.fire(new MapMouseEvent(e.type, this._map, e));
+        this._map.fire(new MapMouseEvent(e.type as 'mouseout', this._map, e));
     }
 
     touchstart(e: TouchEvent): HandlerResult | null | undefined {
@@ -77,19 +77,19 @@ export class MapEventHandler implements Handler {
         // - TouchPitch
         // - TapZoom
         // - SwipeZoom
-        return this._firePreventable(new MapTouchEvent(e.type, this._map, e));
+        return this._firePreventable(new MapTouchEvent(e.type as 'touchstart', this._map, e));
     }
 
     touchmove(e: TouchEvent) {
-        this._map.fire(new MapTouchEvent(e.type, this._map, e));
+        this._map.fire(new MapTouchEvent(e.type as 'touchstart', this._map, e));
     }
 
     touchend(e: TouchEvent) {
-        this._map.fire(new MapTouchEvent(e.type, this._map, e));
+        this._map.fire(new MapTouchEvent(e.type as 'touchend', this._map, e));
     }
 
     touchcancel(e: TouchEvent) {
-        this._map.fire(new MapTouchEvent(e.type, this._map, e));
+        this._map.fire(new MapTouchEvent(e.type as 'touchend', this._map, e));
     }
 
     _firePreventable(mapEvent: MapMouseEvent | MapTouchEvent | MapWheelEvent): HandlerResult | null | undefined {
@@ -127,7 +127,7 @@ export class BlockableMapEventHandler {
 
     mousemove(e: MouseEvent) {
         // mousemove map events should not be fired when interaction handlers (pan, rotate, etc) are active
-        this._map.fire(new MapMouseEvent(e.type, this._map, e));
+        this._map.fire(new MapMouseEvent(e.type as 'mousemove', this._map, e));
     }
 
     mousedown() {
@@ -147,7 +147,7 @@ export class BlockableMapEventHandler {
             this._contextMenuEvent = e;
         } else {
             // Windows: contextmenu fired on mouseup, so fire event now
-            this._map.fire(new MapMouseEvent(e.type, this._map, e));
+            this._map.fire(new MapMouseEvent(e.type as 'contextmenu', this._map, e));
         }
 
         // prevent browser context menu when necessary

@@ -5,11 +5,11 @@ import Model from '../data/model';
 import convertModel from './model_loader';
 import {loadGLTF} from '../util/loaders';
 
-import type {ISource} from '../../src/source/source';
 import type Tile from '../../src/source/tile';
-import type {Callback} from '../../src/types/callback';
 import type Dispatcher from '../../src/util/dispatcher';
 import type {Map} from '../../src/ui/map';
+import type {Callback} from '../../src/types/callback';
+import type {ISource, SourceEvents} from '../../src/source/source';
 import type {ModelSourceSpecification} from '../../src/style-spec/types';
 
 /**
@@ -18,7 +18,7 @@ import type {ModelSourceSpecification} from '../../src/style-spec/types';
 // Important Note: ModelSource is legacy and should not be offered in the API, as the only valid official sources to add models
 // are batched-models and via GeoJson/vector sources. We keep this one (for now) just for ease development and get the render-tests
 // passing.
-class ModelSource extends Evented implements ISource {
+class ModelSource extends Evented<SourceEvents> implements ISource {
     type: 'model';
     id: string;
     scope: string;

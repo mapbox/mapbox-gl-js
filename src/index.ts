@@ -35,15 +35,29 @@ export type * from './ui/events';
 export type * from './style-spec/types';
 export type * from './source/source_types';
 export type * from './types/deprecated-aliases';
-export type {Anchor} from './ui/anchor';
+
 export type {PointLike} from './types/point-like';
-export type {PopupOptions} from './ui/popup';
 export type {PluginStatus} from './source/rtl_text_plugin';
-export type {PaddingOptions} from './geo/edge_insets';
+
 export type {Event, ErrorEvent} from './util/evented';
-export type {MapOptions, IControl} from './ui/map';
+export type {GeoJSONFeature} from './util/vectortile_to_geojson';
+export type {PaddingOptions} from './geo/edge_insets';
 export type {LngLatLike, LngLatBoundsLike} from './geo/lng_lat';
-export type {AnimationOptions, CameraOptions} from './ui/camera';
+
+export type {FeatureSelector} from './style/style';
+export type {StyleImageInterface} from './style/style_image';
+export type {CustomLayerInterface} from './style/style_layer/custom_style_layer';
+
+export type {Anchor} from './ui/anchor';
+export type {PopupOptions} from './ui/popup';
+export type {MarkerOptions} from './ui/marker';
+export type {ScaleControlOptions} from './ui/control/scale_control';
+export type {GeolocateControlOptions} from './ui/control/geolocate_control';
+export type {NavigationControlOptions} from './ui/control/navigation_control';
+export type {FullscreenControlOptions} from './ui/control/fullscreen_control';
+export type {AttributionControlOptions} from './ui/control/attribution_control';
+export type {MapOptions, IControl, ControlPosition} from './ui/map';
+export type {AnimationOptions, CameraOptions, EasingOptions} from './ui/camera';
 
 export type {
     Map,

@@ -1,16 +1,16 @@
 import * as DOM from '../../util/dom';
 import {extend, bindAll} from '../../util/util';
 
-import type {Map, ControlPosition} from '../map';
+import type {Map, IControl, ControlPosition} from '../map';
 
 type Unit = 'imperial' | 'metric' | 'nautical';
 
-type Options = {
+export type ScaleControlOptions = {
     maxWidth?: number;
     unit?: Unit;
 };
 
-const defaultOptions: Options = {
+const defaultOptions: ScaleControlOptions = {
     maxWidth: 100,
     unit: 'metric'
 };
@@ -40,14 +40,14 @@ const unitAbbr = {
  *
  * scale.setUnit('metric');
  */
-class ScaleControl {
+class ScaleControl implements IControl {
     _map: Map;
     _container: HTMLElement;
-    _language: string | null | undefined | string[];
+    _language?: string | string[];
     _isNumberFormatSupported: boolean;
-    options: Options;
+    options: ScaleControlOptions;
 
-    constructor(options?: Options) {
+    constructor(options: ScaleControlOptions = {}) {
         this.options = extend({}, defaultOptions, options);
 
         // Some old browsers (e.g., Safari < 14.1) don't support the "unit" style in NumberFormat.
@@ -132,7 +132,7 @@ class ScaleControl {
         this._map = (undefined as any);
     }
 
-    _setLanguage(language: string) {
+    _setLanguage(language?: string | string[]) {
         this._language = language;
         this._update();
     }

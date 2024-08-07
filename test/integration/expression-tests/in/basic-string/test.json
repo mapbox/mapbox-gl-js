@@ -1,8 +1,5 @@
 {
-  "expression": [
-    "boolean",
-    ["in", ["get", "substr"], ["get", "str"]]
-  ],
+  "expression": ["boolean", ["in", ["get", "substr"], ["get", "str"]]],
   "inputs": [
     [{}, {"properties": {"substr": null, "str": "helloworld"}}],
     [{}, {"properties": {"substr": "foo", "str": "helloworld"}}],
@@ -36,9 +33,6 @@
       true,
       true
     ],
-    "serialized": [
-      "boolean",
-      ["in", ["get", "substr"], ["get", "str"]]
-    ]
+    "serialized": ["boolean", ["in", ["get", "substr"], ["get", "str"]]]
   }
 }

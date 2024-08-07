@@ -91,18 +91,18 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
         });
         return ['any'].concat(children);
     } else if (op === 'all') {
-        const children = (filter as any).slice(1).map(f => _convertFilter(f, expectedTypes));
+        const children: any[] = (filter).slice(1).map(f => _convertFilter(f, expectedTypes));
         return children.length > 1 ? ['all'].concat(children) : [].concat(...children);
     } else if (op === 'none') {
-        return ['!', _convertFilter(['any'].concat((filter as any).slice(1)), {})];
+        return ['!', _convertFilter(['any'].concat((filter).slice(1)), {})];
     } else if (op === 'in') {
-        converted = convertInOp((filter[1] as any), filter.slice(2));
+        converted = convertInOp((filter[1]), filter.slice(2));
     } else if (op === '!in') {
-        converted = convertInOp((filter[1] as any), filter.slice(2), true);
+        converted = convertInOp((filter[1]), filter.slice(2), true);
     } else if (op === 'has') {
-        converted = convertHasOp((filter[1] as any));
+        converted = convertHasOp((filter[1]));
     } else if (op === '!has') {
-        converted = ['!', convertHasOp((filter[1] as any))];
+        converted = ['!', convertHasOp((filter[1]))];
     } else {
         converted = true;
     }
@@ -164,7 +164,7 @@ function convertComparisonOp(property: string, value: any, op: string, expectedT
 function convertInOp(property: string, values: Array<any>, negate: boolean = false) {
     if (values.length === 0) return negate;
 
-    let get;
+    let get: string[];
     if (property === '$type') {
         get = ['geometry-type'];
     } else if (property === '$id') {
@@ -192,9 +192,8 @@ function convertInOp(property: string, values: Array<any>, negate: boolean = fal
         return ['match', get, uniqueValues, !negate, negate];
     }
 
-    return [ negate ? 'all' : 'any' ].concat(
-        // @ts-expect-error - TS2769 - No overload matches this call.
-        values.map(v => [negate ? '!=' : '==', get, v])
+    return [negate ? 'all' : 'any'].concat(
+        values.map(v => [negate ? '!=' : '==', get, v]) as any[]
     );
 }
 

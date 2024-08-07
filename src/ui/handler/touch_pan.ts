@@ -153,8 +153,7 @@ export default class TouchPanHandler implements Handler {
 
         clearTimeout(this._alertTimer);
 
-        // @ts-expect-error - TS2322 - Type 'Timeout' is not assignable to type 'number'.
-        this._alertTimer = setTimeout(() => {
+        this._alertTimer = window.setTimeout(() => {
             this._alertContainer.classList.remove('mapboxgl-touch-pan-blocker-show');
             this._alertContainer.removeAttribute("role");
         }, 500);

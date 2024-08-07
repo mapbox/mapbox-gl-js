@@ -1,8 +1,6 @@
 {
   "expression": ["get", "p"],
-  "propertySpec": {
-    "type": "string"
-  },
+  "propertySpec": {"type": "string"},
   "inputs": [
     [{}, {"properties": {}}],
     [{}, {"properties": {"p": 0}}],
@@ -16,9 +14,6 @@
       "type": "string"
     },
     "outputs": ["", "0", "a"],
-    "serialized": [
-      "to-string",
-      ["get", "p"]
-    ]
+    "serialized": ["to-string", ["get", "p"]]
   }
 }

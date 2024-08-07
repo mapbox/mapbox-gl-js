@@ -7,10 +7,9 @@ import {makeFQID} from '../util/fqid';
 
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
-import type {ISource} from './source';
 import type {Callback} from '../types/callback';
 import type {OverscaledTileID} from './tile_id';
-import type {SourceSpecification} from '../style-spec/types';
+import type {ISource, SourceEvents} from './source';
 
 type DataType = 'raster';
 
@@ -172,7 +171,7 @@ export interface CustomSourceInterface<T> extends Evented {
     onRemove: (map: Map) => void | null | undefined;
 }
 
-class CustomSource<T> extends Evented implements ISource {
+class CustomSource<T> extends Evented<SourceEvents> implements ISource {
     id: string;
     scope: string;
     type: 'custom';
@@ -190,7 +189,7 @@ class CustomSource<T> extends Evented implements ISource {
     maxTileCacheSize: number | null | undefined;
     reparseOverscaled: boolean | undefined;
 
-    _map: Map;
+    map: Map;
     _loaded: boolean;
     _dispatcher: Dispatcher;
     _dataType: DataType | null | undefined;
@@ -257,7 +256,7 @@ class CustomSource<T> extends Evented implements ISource {
     }
 
     onAdd(map: Map): void {
-        this._map = map;
+        this.map = map;
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
         if (this._implementation.onAdd) this._implementation.onAdd(map);
@@ -336,7 +335,7 @@ class CustomSource<T> extends Evented implements ISource {
 
     loadTileData(tile: Tile, data: T): void {
         // Only raster data supported at the moment
-        tile.setTexture((data as any), this._map.painter);
+        tile.setTexture((data as any), this.map.painter);
     }
 
     unloadTile(tile: Tile, callback?: Callback<undefined>): void {
@@ -349,7 +348,7 @@ class CustomSource<T> extends Evented implements ISource {
 
             // Save the texture to the cache
             if (tile.texture && tile.texture instanceof Texture) {
-                this._map.painter.saveTileTexture(tile.texture);
+                this.map.painter.saveTileTexture(tile.texture);
             }
         } else {
             tile.destroy();
@@ -381,7 +380,7 @@ class CustomSource<T> extends Evented implements ISource {
         x: number;
         y: number;
     }[] {
-        const tileIDs = this._map.transform.coveringTiles({
+        const tileIDs = this.map.transform.coveringTiles({
             tileSize: this.tileSize,
             minzoom: this.minzoom,
             maxzoom: this.maxzoom,
@@ -393,7 +392,7 @@ class CustomSource<T> extends Evented implements ISource {
 
     _clearTiles() {
         const fqid = makeFQID(this.id, this.scope);
-        this._map.style.clearSource(fqid);
+        this.map.style.clearSource(fqid);
     }
 
     _update() {

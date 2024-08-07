@@ -1,8 +1,5 @@
 {
-  "expression": [
-    "boolean",
-    ["in", ["get", "needle"], ["get", "haystack"]]
-  ],
+  "expression": ["boolean", ["in", ["get", "needle"], ["get", "haystack"]]],
   "inputs": [
     [{}, {"properties": {"needle": {}, "haystack": [9, 8, 7]}}],
     [{}, {"properties": {"needle": {}, "haystack": "helloworld"}}]
@@ -15,12 +12,13 @@
       "type": "boolean"
     },
     "outputs": [
-      {"error":"Expected first argument to be of type boolean, string, number or null, but found object instead."},
-      {"error":"Expected first argument to be of type boolean, string, number or null, but found object instead."}
+      {
+        "error": "Expected first argument to be of type boolean, string, number or null, but found object instead."
+      },
+      {
+        "error": "Expected first argument to be of type boolean, string, number or null, but found object instead."
+      }
     ],
-    "serialized": [
-      "boolean",
-      ["in", ["get", "needle"], ["get", "haystack"]]
-    ]
+    "serialized": ["boolean", ["in", ["get", "needle"], ["get", "haystack"]]]
   }
 }

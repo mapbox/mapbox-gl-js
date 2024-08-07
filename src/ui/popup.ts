@@ -1,6 +1,6 @@
 import {extend, bindAll} from '../util/util';
 import {Event, Evented} from '../util/evented';
-import {MapMouseEvent} from '../ui/events';
+import {MapMouseEvent, type MapEventOf} from '../ui/events';
 import * as DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
@@ -34,6 +34,11 @@ export type PopupOptions = {
     className?: string;
     maxWidth?: string;
 };
+
+type PopupEvents = {
+    'open': void;
+    'close': void;
+}
 
 const focusQuerySelector = [
     "a[href]",
@@ -99,7 +104,7 @@ const focusQuerySelector = [
  * @see [Example: Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  * @see [Example: Attach a popup to a marker instance](https://www.mapbox.com/mapbox-gl-js/example/set-popup/)
  */
-export default class Popup extends Evented {
+export default class Popup extends Evented<PopupEvents> {
     _map: Map | null | undefined;
     options: PopupOptions;
     _content: HTMLElement | null | undefined;
@@ -594,7 +599,7 @@ export default class Popup extends Evented {
         container.className = classes.join(' ');
     }
 
-    _update(cursor?: Point) {
+    _update(cursor?: Point | MapEventOf<'move'>) {
         const hasPosition = this._lngLat || this._trackPointer;
         const map = this._map;
         const content = this._content;
@@ -618,7 +623,7 @@ export default class Popup extends Evented {
         }
 
         if (!this._trackPointer || cursor) {
-            const pos = this._pos = this._trackPointer && cursor ? cursor : map.project(this._lngLat);
+            const pos = this._pos = this._trackPointer && cursor instanceof Point ? cursor : map.project(this._lngLat);
 
             const offsetBottom = normalizeOffset(this.options.offset);
             const anchor = this._anchor = this._getAnchor(offsetBottom.y);

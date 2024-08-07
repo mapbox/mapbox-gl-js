@@ -23,6 +23,10 @@ const wheelZoomRate = 1 / 450;
 // is used to limit zoom rate in the case of very fast scrolling
 const maxScalePerFrame = 2;
 
+export type ScrollZoomHandlerOptions = {
+    around?: 'center';
+};
+
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
  *
@@ -40,24 +44,20 @@ class ScrollZoomHandler implements Handler {
     _aroundCoord: MercatorCoordinate;
     _type: 'wheel' | 'trackpad' | null;
     _lastValue: number;
-    _timeout: number | null | undefined; // used for delayed-handling of a single wheel movement
-    _finishTimeout: number | null | undefined; // used to delay final '{move,zoom}end' events
+    _timeout?: number; // used for delayed-handling of a single wheel movement
+    _finishTimeout: number; // used to delay final '{move,zoom}end' events
 
     _lastWheelEvent: any;
     _lastWheelEventTime: number;
 
-    _startZoom: number | null | undefined;
-    _targetZoom: number | null | undefined;
+    _startZoom?: number;
+    _targetZoom?: number;
     _delta: number;
     _lastDelta: number;
-    _easing: (arg1: number) => number | null | undefined;
-    _prevEase: {
-        start: number;
-        duration: number;
-        easing: (_: number) => number;
-    } | null | undefined;
+    _easing?: (arg1: number) => number;
+    _prevEase?: {start: number; duration: number; easing: (_: number) => number};
 
-    _frameId: boolean | null | undefined;
+    _frameId?: boolean;
     _handler: HandlerManager;
 
     _defaultZoomRate: number;
@@ -143,9 +143,7 @@ class ScrollZoomHandler implements Handler {
      * @example
      * map.scrollZoom.enable({around: 'center'});
      */
-    enable(options?: {
-        around?: 'center';
-    } | null) {
+    enable(options?: ScrollZoomHandlerOptions) {
         if (this.isEnabled()) return;
         this._enabled = true;
         this._aroundCenter = !!options && options.around === 'center';
@@ -201,8 +199,7 @@ class ScrollZoomHandler implements Handler {
             this._lastValue = value;
 
             // Start a timeout in case this was a singular event, and delay it by up to 40ms.
-            // @ts-expect-error - TS2322 - Type 'Timeout' is not assignable to type 'number'.
-            this._timeout = setTimeout(this._onTimeout, 40, e);
+            this._timeout = window.setTimeout(this._onTimeout, 40, e);
 
         } else if (!this._type) {
             // This is a repeating event, but we don't know the type of event just yet.
@@ -346,8 +343,7 @@ class ScrollZoomHandler implements Handler {
 
         if (finished) {
             this._active = false;
-            // @ts-expect-error - TS2322 - Type 'Timeout' is not assignable to type 'number'.
-            this._finishTimeout = setTimeout(() => {
+            this._finishTimeout = window.setTimeout(() => {
                 this._zooming = false;
                 this._handler._triggerRenderFrame();
                 delete this._targetZoom;
@@ -424,8 +420,7 @@ class ScrollZoomHandler implements Handler {
 
         clearTimeout(this._alertTimer);
 
-        // @ts-expect-error - TS2322 - Type 'Timeout' is not assignable to type 'number'.
-        this._alertTimer = setTimeout(() => {
+        this._alertTimer = window.setTimeout(() => {
             this._alertContainer.classList.remove('mapboxgl-scroll-zoom-blocker-show');
             this._alertContainer.removeAttribute("role");
         }, 200);

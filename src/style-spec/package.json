@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/mapbox-gl-style-spec",
-  "version": "14.5.1",
+  "version": "14.6.0-beta.1",
   "description": "a specification for mapbox gl styles",
   "author": "Mapbox",
   "license": "SEE LICENSE IN LICENSE.txt",
@@ -50,8 +50,8 @@
     "csscolorparser": "~1.0.2",
     "json-stringify-pretty-compact": "^4.0.0",
     "minimist": "^1.2.6",
-    "quickselect": "^2.0.0",
+    "quickselect": "^3.0.0",
     "rw": "^1.3.3",
-    "tinyqueue": "^2.0.3"
+    "tinyqueue": "^3.0.0"
   }
 }

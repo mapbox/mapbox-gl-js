@@ -1,10 +1,10 @@
 {
   "expression": ["index-of", ["get", "substr"], ["string", ["get", "str"]]],
   "inputs": [
-    [{}, { "properties": { "substr": null, "str": "helloworld" } }],
-    [{}, { "properties": { "substr": "foo", "str": "helloworld" } }],
-    [{}, { "properties": { "substr": "low", "str": "helloworld" } }],
-    [{}, { "properties": { "substr": "low", "str": null } }]
+    [{}, {"properties": {"substr": null, "str": "helloworld"}}],
+    [{}, {"properties": {"substr": "foo", "str": "helloworld"}}],
+    [{}, {"properties": {"substr": "low", "str": "helloworld"}}],
+    [{}, {"properties": {"substr": "low", "str": null}}]
   ],
   "expected": {
     "compiled": {
@@ -18,7 +18,7 @@
       -1,
       3,
       {
-        "error": "Expected value to be of type string, but found null instead."
+        "error": "The expression [\"get\",\"str\"] evaluated to null but was expected to be of type string."
       }
     ],
     "serialized": ["index-of", ["get", "substr"], ["string", ["get", "str"]]]

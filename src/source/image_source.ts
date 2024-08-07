@@ -14,7 +14,7 @@ import {GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe_constants';
 import {mat3, vec3} from 'gl-matrix';
 import LngLat from '../geo/lng_lat';
 
-import type {ISource} from './source';
+import type {ISource, SourceEvents} from './source';
 import type {CanvasSourceSpecification} from './canvas_source';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -215,8 +215,8 @@ function sortTriangles(centerLatitudes: number[], indices: TriangleIndexArray): 
  * @see [Example: Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  * @see [Example: Animate a series of images](https://www.mapbox.com/mapbox-gl-js/example/animate-images/)
  */
-class ImageSource extends Evented implements ISource {
-    type: string;
+class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Evented<SourceEvents> implements ISource {
+    type: T;
     id: string;
     scope: string;
     minzoom: number;
@@ -242,7 +242,7 @@ class ImageSource extends Evented implements ISource {
     map: Map;
     texture: Texture | UserManagedTexture | null;
     image: HTMLImageElement | ImageBitmap | ImageData;
-    tileID: CanonicalTileID | null | undefined;
+    tileID?: CanonicalTileID;
     onNorthPole: boolean;
     onSouthPole: boolean;
     _unsupportedCoords: boolean;
@@ -276,7 +276,7 @@ class ImageSource extends Evented implements ISource {
         this.dispatcher = dispatcher;
         this.coordinates = options.coordinates;
 
-        this.type = 'image';
+        this.type = 'image' as T;
         this.minzoom = 0;
         this.maxzoom = 22;
         this.tileSize = 512;

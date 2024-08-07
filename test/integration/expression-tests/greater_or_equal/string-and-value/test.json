@@ -15,10 +15,10 @@
     "outputs": [
       true,
       {
-        "error": "Expected value to be of type string, but found number instead."
+        "error": "The expression [\"get\",\"y\"] evaluated to number but was expected to be of type string."
       },
       {
-        "error": "Expected value to be of type string, but found number instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to number but was expected to be of type string."
       }
     ],
     "serialized": [">=", ["string", ["get", "x"]], ["string", ["get", "y"]]]

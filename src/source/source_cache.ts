@@ -1,25 +1,27 @@
+import assert from 'assert';
+import Point from '@mapbox/point-geometry';
+
 import Tile from './tile';
 import RasterArrayTile from './raster_array_tile';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import TileCache from './tile_cache';
 import {asyncAll, keysDifference, values, clamp} from '../util/util';
 import Context from '../gl/context';
-import Point from '@mapbox/point-geometry';
 import browser from '../util/browser';
 import {OverscaledTileID, CanonicalTileID} from './tile_id';
-import assert from 'assert';
 import SourceFeatureState from './source_state';
 import {mercatorXfromLng} from '../geo/mercator_coordinate';
 
-import type {Source} from './source';
+import type {vec3} from 'gl-matrix';
+import type {AJAXError} from '../util/ajax';
+import type {ISource, Source} from './source';
 import type {SourceSpecification} from '../style-spec/types';
 import type {Map as MapboxMap} from '../ui/map';
 import type Transform from '../geo/transform';
 import type {TileState} from './tile';
 import type {Callback} from '../types/callback';
-import type {FeatureStates} from './source_state';
+import type {FeatureState} from '../style-spec/expression/index';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
-import type {vec3} from 'gl-matrix';
 
 /**
  * `SourceCache` is responsible for
@@ -36,7 +38,7 @@ class SourceCache extends Evented {
     id: string;
     map: MapboxMap;
 
-    _source: Source;
+    _source: ISource;
     _sourceLoaded: boolean;
     _sourceErrored: boolean;
     _tiles: Partial<Record<string | number, Tile>>;
@@ -128,14 +130,14 @@ class SourceCache extends Evented {
         if (!this._source.loaded()) { return false; }
         for (const t in this._tiles) {
             const tile = this._tiles[t];
-            if (tile.state !== 'errored' && (tile.state !== 'loaded' || !tile.bucketsLoaded()))
+            if (tile.state !== 'loaded' && tile.state !== 'errored')
                 return false;
         }
         return true;
     }
 
-    getSource(): Source {
-        return this._source;
+    getSource<T extends Source>(): T {
+        return this._source as T;
     }
 
     pause() {
@@ -167,7 +169,7 @@ class SourceCache extends Evented {
             return this._source.abortTile(tile);
     }
 
-    serialize(): SourceSpecification {
+    serialize(): SourceSpecification | {type: 'custom', [key: string]: unknown} {
         return this._source.serialize();
     }
 
@@ -256,21 +258,19 @@ class SourceCache extends Evented {
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded(tile: Tile, id: number, previousState: TileState, err?: Error | null) {
+    _tileLoaded(tile: Tile, id: number, previousState: TileState, err?: AJAXError | null) {
         if (err) {
             tile.state = 'errored';
-            if ((err as any).status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
+            if (err.status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
             // If the requested tile is missing, try to load the parent tile
             // to use it as an overscaled tile instead of the missing one.
             else {
+                // Fire a `data` event with an `error` source data type to trigger map render
+                this._source.fire(new Event('data', {dataType: 'source', sourceDataType: 'error', sourceId: this._source.id, tile}));
+
+                // If there are no parent tiles to load, stop tiles loading fallback
                 const hasParent = tile.tileID.key in this._loadedParentTiles;
-                // If there are no parent tiles to load, fire a `data` event to trigger map render
-                if (!hasParent) {
-                    // We are firing an `error` source type event instead of `content` here because
-                    // the `content` event will reload all tiles and trigger redundant source cache updates
-                    this._source.fire(new Event('data', {dataType: 'source', sourceDataType: 'error', sourceId: this._source.id}));
-                    return;
-                }
+                if (!hasParent) return;
 
                 // Otherwise, continue trying to load the parent tile until we find one that loads successfully
                 const updateForTerrain = this._source.type === 'raster-dem' && this.usedForTerrain;
@@ -532,10 +532,8 @@ class SourceCache extends Evented {
 
         if (!this.used && !this.usedForTerrain) {
             idealTileIDs = [];
-            // @ts-expect-error - TS2339 - Property 'tileID' does not exist on type 'Source'.
         } else if (this._source.tileID) {
-            // @ts-expect-error - TS2339 - Property 'tileID' does not exist on type 'Source'.
-            idealTileIDs = transform.getVisibleUnwrappedCoordinates((this._source.tileID as CanonicalTileID))
+            idealTileIDs = transform.getVisibleUnwrappedCoordinates((this._source.tileID))
                 .map((unwrapped) => new OverscaledTileID(unwrapped.canonical.z, unwrapped.wrap, unwrapped.canonical.z, unwrapped.canonical.x, unwrapped.canonical.y));
         } else if (this.tileCoverLift !== 0.0) {
             // Extended tile cover to load elevated tiles
@@ -1056,7 +1054,7 @@ class SourceCache extends Evented {
      * Set the value of a particular state for a feature
      * @private
      */
-    setFeatureState(sourceLayer: string | null | undefined, featureId: number | string, state: any) {
+    setFeatureState(sourceLayer: string | null | undefined, featureId: number | string, state: FeatureState) {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         this._state.updateState(sourceLayer, featureId, state);
     }
@@ -1074,7 +1072,7 @@ class SourceCache extends Evented {
      * Get the entire state object for a feature
      * @private
      */
-    getFeatureState(sourceLayer: string | null | undefined, featureId: number | string): FeatureStates {
+    getFeatureState(sourceLayer: string | null | undefined, featureId: number | string): FeatureState {
         sourceLayer = sourceLayer || '_geojsonTileLayer';
         return this._state.getState(sourceLayer, featureId);
     }

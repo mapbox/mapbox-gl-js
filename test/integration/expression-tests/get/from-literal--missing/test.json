@@ -7,7 +7,7 @@
       "errors": [
         {
           "key": "",
-          "error": "Expected value to be of type number, but found null instead."
+          "error": "The expression null evaluated to null but was expected to be of type number."
         }
       ]
     }

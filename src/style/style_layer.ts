@@ -27,7 +27,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
-import type {QueryFeature} from '../source/query_features';
+import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 
 const TRANSITION_SUFFIX = '-transition';
@@ -54,7 +54,7 @@ class StyleLayer extends Evented {
     maxzoom: number | null | undefined;
     filter: FilterSpecification | undefined;
     visibility: 'visible' | 'none' | undefined;
-    isConfigDependent: boolean;
+    configDependencies: Set<string>;
 
     _unevaluatedLayout: Layout<any>;
     readonly layout: unknown;
@@ -84,7 +84,7 @@ class StyleLayer extends Evented {
 
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
         this._filterCompiled = false;
-        this.isConfigDependent = false;
+        this.configDependencies = new Set();
 
         if (layer.type === 'custom') return;
 
@@ -104,7 +104,7 @@ class StyleLayer extends Evented {
 
         if (properties.layout) {
             this._unevaluatedLayout = new Layout(properties.layout, this.scope, options);
-            this.isConfigDependent = this.isConfigDependent || this._unevaluatedLayout.isConfigDependent;
+            this.configDependencies = new Set([...this.configDependencies, ...this._unevaluatedLayout.configDependencies]);
         }
 
         if (properties.paint) {
@@ -116,7 +116,7 @@ class StyleLayer extends Evented {
             for (const property in layer.layout) {
                 this.setLayoutProperty(property, layer.layout[property]);
             }
-            this.isConfigDependent = this.isConfigDependent || this._transitionablePaint.isConfigDependent;
+            this.configDependencies = new Set([...this.configDependencies, ...this._transitionablePaint.configDependencies]);
 
             this._transitioningPaint = this._transitionablePaint.untransitioned();
             this.paint = new PossiblyEvaluated(properties.paint);
@@ -152,7 +152,7 @@ class StyleLayer extends Evented {
         if (!specProps[name]) return; // skip unrecognized properties
 
         layout.setValue(name, value);
-        this.isConfigDependent = this.isConfigDependent || layout.isConfigDependent;
+        this.configDependencies = new Set([...this.configDependencies, ...layout.configDependencies]);
 
         if (name === 'visibility') {
             this.possiblyEvaluateVisibility();
@@ -192,7 +192,7 @@ class StyleLayer extends Evented {
         const oldValue = transitionable.value;
 
         paint.setValue(name, value);
-        this.isConfigDependent = this.isConfigDependent || paint.isConfigDependent;
+        this.configDependencies = new Set([...this.configDependencies, ...paint.configDependencies]);
         this._handleSpecialPaintPropertyUpdate(name);
 
         const newValue = paint._values[name].value;
@@ -381,7 +381,7 @@ class StyleLayer extends Evented {
         _transform: Transform,
         // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
     ): {
-        queryFeature: QueryFeature | null | undefined;
+        queryFeature: GeoJSONFeature | null | undefined;
         intersectionZ: number;
     } {}
 }

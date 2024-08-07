@@ -22,15 +22,20 @@ import {vec3} from 'gl-matrix';
 import MercatorCoordinate, {latFromMercatorY, mercatorScale} from '../geo/mercator_coordinate';
 
 import type {Map} from './map';
+import type {MapEvents} from './events';
 import type {Handler, HandlerResult} from './handler';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
+
+type EventsInProgress = {
+    [T in keyof MapEvents]?: MapEvents[T];
+};
 
 const isMoving = (p: {
     [key: string]: any;
 }) => p.zoom || p.drag || p.pitch || p.rotate;
 
-class RenderFrameEvent extends Event {
+class RenderFrameEvent extends Event<{renderFrame: {timeStamp: number}}, 'renderFrame'> {
     type: 'renderFrame';
     timeStamp: number;
 }
@@ -95,7 +100,7 @@ class HandlerManager {
         handler: Handler;
         allowed: any;
     }>;
-    _eventsInProgress: any;
+    _eventsInProgress: EventsInProgress;
     _frameId: number | null | undefined;
     _inertia: HandlerInertia;
     _bearingSnap: number;
@@ -577,14 +582,11 @@ class HandlerManager {
         this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
     }
 
-    _fireEvents(newEventsInProgress: {
-        [key: string]: any;
-    }, deactivatedHandlers: any, allowEndAnimation: boolean) {
-
+    _fireEvents(newEventsInProgress: EventsInProgress, deactivatedHandlers: any, allowEndAnimation: boolean) {
         const wasMoving = isMoving(this._eventsInProgress);
         const nowMoving = isMoving(newEventsInProgress);
 
-        const startEvents: Record<string, any> = {};
+        const startEvents: EventsInProgress = {};
 
         for (const eventName in newEventsInProgress) {
             const {originalEvent} = newEventsInProgress[eventName];
@@ -600,7 +602,7 @@ class HandlerManager {
         }
 
         for (const name in startEvents) {
-            this._fireEvent(name, startEvents[name]);
+            this._fireEvent(name as keyof MapEvents, startEvents[name]);
         }
 
         if (nowMoving) {
@@ -609,10 +611,10 @@ class HandlerManager {
 
         for (const eventName in newEventsInProgress) {
             const {originalEvent} = newEventsInProgress[eventName];
-            this._fireEvent(eventName, originalEvent);
+            this._fireEvent(eventName as keyof MapEvents, originalEvent);
         }
 
-        const endEvents: Record<string, any> = {};
+        const endEvents: EventsInProgress = {};
 
         let originalEndEvent;
         for (const eventName in this._eventsInProgress) {
@@ -625,7 +627,7 @@ class HandlerManager {
         }
 
         for (const name in endEvents) {
-            this._fireEvent(name, endEvents[name]);
+            this._fireEvent(name as keyof MapEvents, endEvents[name]);
         }
 
         const stillMoving = isMoving(this._eventsInProgress);
@@ -651,8 +653,9 @@ class HandlerManager {
 
     }
 
-    _fireEvent(type: string, e: any) {
-        this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
+    _fireEvent(type: keyof MapEvents, event?: {originalEvent: unknown}) {
+        const eventData = (event ? {originalEvent: event} : {});
+        this._map.fire(new Event(type, eventData as MapEvents[keyof MapEvents]));
     }
 
     _requestFrame(): number {

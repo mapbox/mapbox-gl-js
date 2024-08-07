@@ -68,6 +68,7 @@ import type {DynamicDefinesType} from './program/program_uniforms';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
 import type {ContextOptions} from '../gl/context';
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
+import Framebuffer from '../gl/framebuffer';
 
 import {OcclusionBuffers} from './occlusion_static_buffers';
 
@@ -248,6 +249,9 @@ class Painter {
     occlusionBuffers: OcclusionBuffers;
 
     symbolParams: SymbolParams;
+
+    terrainDepthFBO: Framebuffer;
+    terrainDepthTexture: Texture;
 
     constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, tp: ITrackedParameters) {
         this.context = new Context(gl, contextCreateOptions);
@@ -676,6 +680,41 @@ class Painter {
         return this.currentLayer < this.opaquePassCutoff;
     }
 
+    blitDepth() {
+        const gl = this.context.gl;
+
+        const depthWidth = Math.ceil(this.width);
+        const depthHeight = Math.ceil(this.height);
+
+        const fboPrev = this.context.bindFramebuffer.get();
+        const texturePrev = gl.getParameter(gl.TEXTURE_BINDING_2D);
+
+        if (!this.terrainDepthFBO || this.terrainDepthFBO.width !== depthWidth || this.terrainDepthFBO.height !== depthHeight) {
+            if (this.terrainDepthFBO) {
+                this.terrainDepthFBO.destroy();
+                this.terrainDepthFBO = undefined;
+                this.terrainDepthTexture = undefined;
+            }
+
+            if (depthWidth !== 0 && depthHeight !== 0) {
+                this.terrainDepthFBO = new Framebuffer(this.context, depthWidth, depthHeight, false, 'texture');
+
+                this.terrainDepthTexture = new Texture(this.context, {width: depthWidth, height: depthHeight, data: null}, gl.DEPTH_STENCIL);
+                this.terrainDepthFBO.depthAttachment.set(this.terrainDepthTexture.texture);
+            }
+        }
+
+        this.context.bindFramebuffer.set(fboPrev);
+        gl.bindTexture(gl.TEXTURE_2D, texturePrev);
+
+        if (this.terrainDepthFBO) {
+            gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+            gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.terrainDepthFBO.framebuffer);
+            gl.blitFramebuffer(0, 0, depthWidth, depthHeight, 0, 0, depthWidth, depthHeight, gl.DEPTH_BUFFER_BIT, gl.NEAREST);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.context.bindFramebuffer.current);
+        }
+    }
+
     updateAverageFPS() {
         const fps = this._dt === 0 ? 0 : 1000.0 / this._dt;
 
@@ -951,16 +990,6 @@ class Painter {
 
         this.depthRangeFor3D = [0, 1 - ((orderedLayers.length + 2) * this.numSublayers * this.depthEpsilon)];
 
-        // Terrain depth offscreen render pass ==========================
-        // With terrain on, renders the depth buffer into a texture.
-        // This texture is used for occlusion testing (labels).
-        // When orthographic camera is in use we don't really need the depth occlusion testing (see https://mapbox.atlassian.net/browse/MAPS3D-1132)
-        // Therefore we can safely skip the rendering to the depth texture.
-        const terrain = this.terrain;
-        if (terrain && (this.style.hasSymbolLayers() || this.style.hasCircleLayers()) && !this.transform.isOrthographic) {
-            terrain.drawDepth();
-        }
-
         // Shadow pass ==================================================
         if (this._shadowRenderer) {
             this.renderPass = 'shadow';
@@ -1093,6 +1122,8 @@ class Painter {
             shadowLayers = shadowRenderer.getShadowCastingLayerCount();
         }
 
+        let terrainDepthCopied = false;
+
         while (this.currentLayer < layerIds.length) {
             const layer = orderedLayers[this.currentLayer];
             const sourceCache = style.getLayerSourceCache(layer);
@@ -1106,17 +1137,24 @@ class Painter {
             // With terrain on and for draped layers only, issue rendering and progress
             // this.currentLayer until the next non-draped layer.
             // Otherwise we interleave terrain draped render with non-draped layers on top
-            if (terrain && this.style.isLayerDraped(layer)) {
+            if (this.terrain && this.style.isLayerDraped(layer)) {
                 if (layer.isHidden(this.transform.zoom)) {
                     ++this.currentLayer;
                     continue;
                 }
                 const prevLayer = this.currentLayer;
-                this.currentLayer = terrain.renderBatch(this.currentLayer);
+                this.currentLayer = this.terrain.renderBatch(this.currentLayer);
                 this._lastOcclusionLayer = Math.max(this.currentLayer, this._lastOcclusionLayer);
                 assert(this.context.bindFramebuffer.current === null);
                 assert(this.currentLayer > prevLayer);
                 continue;
+            }
+
+            // First layer after terrain
+            if (!terrainDepthCopied && this.terrain && (this.style.hasSymbolLayers() || this.style.hasCircleLayers()) && !this.transform.isOrthographic) {
+                terrainDepthCopied = true;
+
+                this.blitDepth();
             }
 
             if (!layer.is3D() && !this.terrain) {
@@ -1127,7 +1165,7 @@ class Painter {
             this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
 
             // Render ground shadows after the last shadow caster layer
-            if (!terrain && shadowRenderer && shadowLayers > 0 && layer.hasShadowPass() && --shadowLayers === 0) {
+            if (!this.terrain && shadowRenderer && shadowLayers > 0 && layer.hasShadowPass() && --shadowLayers === 0) {
                 shadowRenderer.drawGroundShadows();
 
                 if (this.firstLightBeamLayer <= this.currentLayer) { // render light beams for 3D models (all are before ground shadows)
@@ -1532,6 +1570,12 @@ class Painter {
             this.debugOverlayTexture.destroy();
         }
         this._wireframeDebugCache.destroy();
+
+        if (this.terrainDepthFBO) {
+            this.terrainDepthFBO.destroy();
+            this.terrainDepthFBO = undefined;
+            this.terrainDepthTexture = undefined;
+        }
     }
 
     prepareDrawTile() {

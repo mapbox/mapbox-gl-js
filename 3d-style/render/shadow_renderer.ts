@@ -54,6 +54,7 @@ type ShadowNormalOffsetMode = 'vector-tile' | 'model-tile';
 
 const shadowParameters = {
     cascadeCount: 2,
+    normalOffset: 3,
     shadowMapResolution: 2048
 };
 
@@ -168,6 +169,7 @@ export class ShadowRenderer {
 
         painter.tp.registerParameter(this, ["Shadows"], "_forceDisable", {label: "forceDisable"}, () => { this.painter.style.map.triggerRepaint(); });
         painter.tp.registerParameter(shadowParameters, ["Shadows"], "cascadeCount", {min: 1, max: 2, step: 1});
+        painter.tp.registerParameter(shadowParameters, ["Shadows"], "normalOffset", {min: 0, max: 10, step: 0.05});
         painter.tp.registerParameter(shadowParameters, ["Shadows"], "shadowMapResolution", {min: 32, max: 2048, step: 32});
         painter.tp.registerBinding(this, ["Shadows"], "_numCascadesToRender", {readonly: true, label: 'numCascadesToRender'});
     }
@@ -500,7 +502,7 @@ export class ShadowRenderer {
         this.useNormalOffset = normalOffset;
 
         if (normalOffset) {
-            const scale = 5.0; // Experimentally found value
+            const scale = shadowParameters.normalOffset;
             uniforms["u_shadow_normal_offset"] = [1.0, scale, scale]; // meterToTile isn't used
             uniforms["u_shadow_bias"] = [0.00006, 0.0012, 0.012]; // Reduce constant offset
         } else {

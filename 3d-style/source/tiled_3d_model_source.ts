@@ -9,17 +9,17 @@ import {postTurnstileEvent} from '../../src/util/mapbox';
 // it's registered as a serializable class on the main thread
 import '../data/bucket/tiled_3d_model_bucket';
 
-import type Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket';
-import type {ISource} from '../../src/source/source';
 import type Tile from '../../src/source/tile';
+import type Dispatcher from '../../src/util/dispatcher';
+import type Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket';
+import type {Map} from '../../src/ui/map';
 import type {Callback} from '../../src/types/callback';
 import type {Cancelable} from '../../src/types/cancelable';
-import type Dispatcher from '../../src/util/dispatcher';
-import type {ModelSourceSpecification} from '../../src/style-spec/types';
-import type {Map} from '../../src/ui/map';
 import type {OverscaledTileID} from '../../src/source/tile_id';
+import type {ISource, SourceEvents} from '../../src/source/source';
+import type {ModelSourceSpecification} from '../../src/style-spec/types';
 
-class Tiled3DModelSource extends Evented implements ISource {
+class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     type: 'batched-model';
     id: string;
     scope: string;

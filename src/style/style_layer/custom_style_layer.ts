@@ -7,14 +7,14 @@ import type {ValidationErrors} from '../validate_style';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type SourceCache from '../../source/source_cache';
 
-type CustomRenderMethod = (
+type CustomLayerRenderMethod = (
     gl: WebGL2RenderingContext,
     matrix: Array<number>,
-    projection?: ProjectionSpecification | null | undefined,
-    projectionToMercatorMatrix?: Array<number> | null | undefined,
-    projectionToMercatorTransition?: number | null | undefined,
-    centerInMercator?: Array<number> | null | undefined,
-    pixelsPerMeterRatio?: number | null | undefined,
+    projection?: ProjectionSpecification,
+    projectionToMercatorMatrix?: Array<number>,
+    projectionToMercatorTransition?: number,
+    centerInMercator?: Array<number>,
+    pixelsPerMeterRatio?: number,
 ) => void;
 
 /**
@@ -158,18 +158,18 @@ type CustomRenderMethod = (
  * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLngLat
  * can be used to project a `LngLat` to a mercator coordinate.
  */
-export type CustomLayerInterface = {
+export interface CustomLayerInterface {
     id: string;
     type: 'custom';
-    slot?: string | undefined;
+    slot?: string;
     renderingMode?: '2d' | '3d';
-    render: CustomRenderMethod;
-    prerender?: CustomRenderMethod | undefined;
+    render: CustomLayerRenderMethod;
+    prerender?: CustomLayerRenderMethod;
     renderToTile?: (gl: WebGL2RenderingContext, tileId: MercatorCoordinate) => void;
     shouldRerenderTiles?: () => boolean;
     onAdd?: (map: Map, gl: WebGL2RenderingContext) => void;
     onRemove?: (map: Map, gl: WebGL2RenderingContext) => void;
-};
+}
 
 export function validateCustomStyleLayer(layerObject: CustomLayerInterface): ValidationErrors {
     const errors = [];

@@ -3,11 +3,11 @@ import {bindAll} from '../../util/util';
 import config from '../../util/config';
 import {getHashString} from '../hash';
 
-import type {Map, ControlPosition} from '../map';
+import type {Map, ControlPosition, IControl} from '../map';
 
-type Options = {
+export type AttributionControlOptions = {
     compact?: boolean;
-    customAttribution?: string | null | undefined | Array<string>    ;
+    customAttribution?: string | null | undefined | Array<string>;
 };
 
 /**
@@ -24,18 +24,18 @@ type Options = {
  *         customAttribution: 'Map design by me'
  *     }));
  */
-class AttributionControl {
-    options: Options;
+class AttributionControl implements IControl {
+    options: AttributionControlOptions;
     _map: Map;
     _container: HTMLElement;
     _innerContainer: HTMLElement;
     _compactButton: HTMLButtonElement;
-    _editLink: HTMLAnchorElement | null | undefined;
+    _editLink?: HTMLAnchorElement;
     _attribHTML: string;
     styleId: string;
     styleOwner: string;
 
-    constructor(options: Options = {}) {
+    constructor(options: AttributionControlOptions = {}) {
         this.options = options;
 
         bindAll([

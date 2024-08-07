@@ -14,7 +14,9 @@ vec3 shadow_normal_offset(vec3 normal) {
 }
 
 vec3 shadow_normal_offset_model(vec3 normal) {
-    float dotScale = min(1.0 - dot(normal, u_shadow_direction), 1.0) * 0.5 + 0.5;
+    vec3 transformed_normal = vec3(-normal.xy, normal.z);
+    float NDotL = dot(normalize(transformed_normal), u_shadow_direction);
+    float dotScale = min(1.0 - NDotL, 1.0) * 0.5 + 0.5;
     return normal * dotScale;
 }
 

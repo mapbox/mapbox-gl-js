@@ -1,11 +1,18 @@
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 
-import type {QueryFeature} from '../source/query_features';
-import type {LayerSpecification, SourceSpecification} from '../style-spec/types';
+import type {FeatureState} from '../style-spec/expression/index';
+import type {LayerSpecification} from '../style-spec/types';
 
 const customProps = ['id', 'tile', 'layer', 'source', 'sourceLayer', 'state'] as const;
 
-class Feature {
+export interface GeoJSONFeature extends GeoJSON.Feature {
+    layer?: LayerSpecification;
+    source: string;
+    sourceLayer?: string;
+    state?: FeatureState;
+}
+
+class Feature implements GeoJSONFeature {
     type: 'Feature';
     _geometry?: GeoJSON.Geometry;
     properties: Record<any, any>;
@@ -18,8 +25,8 @@ class Feature {
     layer: LayerSpecification;
     source: string;
     sourceLayer?: string;
-    tile?: unknown;
-    state?: unknown;
+    state?: FeatureState;
+    tile?: {z: number; x: number; y: number};
 
     constructor(vectorTileFeature: VectorTileFeature, z: number, x: number, y: number, id?: string | number) {
         this.type = 'Feature';
@@ -44,7 +51,7 @@ class Feature {
         this._geometry = g;
     }
 
-    toJSON(): QueryFeature {
+    toJSON(): GeoJSONFeature {
         const json = {
             type: 'Feature',
             state: undefined,
@@ -56,7 +63,7 @@ class Feature {
             if (this[key] !== undefined) json[key] = this[key];
         }
 
-        return json as QueryFeature;
+        return json as GeoJSONFeature;
     }
 }
 

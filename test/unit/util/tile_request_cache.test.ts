@@ -54,7 +54,7 @@ describe('tile_request_cache', () => {
     });
 
     test('cacheGet, happy path', async () => {
-        const cachedRequest = new Request(`someurl?language=es&worldview=US&range=${encodeURIComponent('bytes=0-')}`);
+        const cachedRequest = new Request(`someurl?language=es&worldview=US&jobid=12345&range=${encodeURIComponent('bytes=0-')}`);
         const cachedResponse = {
             headers: {get: vi.fn().mockImplementation((name) => {
                 switch (name) {
@@ -78,9 +78,9 @@ describe('tile_request_cache', () => {
         window.caches.open = vi.fn().mockImplementation(() => Promise.resolve(fakeCache));
 
         await new Promise(resolve => {
-            // ensure that the language and worldview query parameters are retained,
+            // ensure that the language, worldview, and jobid query parameters are retained,
             // the Range header is added to the query string, but other query parameters are stripped
-            const request = new Request(`someurl?language=es&worldview=US&accessToken=foo`);
+            const request = new Request(`someurl?language=es&worldview=US&jobid=12345&accessToken=foo`);
             request.headers.set('Range', 'bytes=0-');
 
             cacheGet(request, (error, response, fresh) => {

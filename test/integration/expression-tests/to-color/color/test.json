@@ -1,8 +1,6 @@
 {
   "expression": ["to-color", ["rgba", 0, 0, 0, 1]],
-  "inputs": [
-    [{}, {}]
-  ],
+  "inputs": [[{}, {}]],
   "expected": {
     "compiled": {
       "result": "success",
@@ -10,9 +8,7 @@
       "isZoomConstant": true,
       "type": "color"
     },
-    "outputs": [
-      [0, 0, 0, 1]
-    ],
+    "outputs": [[0, 0, 0, 1]],
     "serialized": ["rgba", 0, 0, 0, 1]
   }
 }

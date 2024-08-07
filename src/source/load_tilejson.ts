@@ -18,7 +18,56 @@ type ExtendedTileJSON = TileJSON & {
 };
 
 type TileJSONLike = {url?: string, tiles?: Array<string>};
-type Options = Extract<SourceSpecification, TileJSONLike> & TileJSONLike;
+type Options = Extract<SourceSpecification, TileJSONLike> & TileJSONLike & {
+    data?: TileJSON
+};
+
+function getInlinedTileJSON(data?: TileJSON, language?: string, worldview?: string): TileJSON | undefined | null {
+    if (!data) {
+        return null;
+    }
+
+    if (!language && !worldview) {
+        return data;
+    }
+
+    worldview = worldview || data.worldview_default;
+
+    const tileJSONLanguages = Object.values(data.language || {});
+
+    if (tileJSONLanguages.length === 0) {
+        return null;
+    }
+
+    const tileJSONWorldviews = Object.values(data.worldview || {});
+
+    if (tileJSONWorldviews.length === 0) {
+        return null;
+    }
+
+    const isLanguageMatched = tileJSONLanguages.every(lang => lang === language);
+    const isWorldviewMatched = tileJSONWorldviews.every(vw => vw === worldview);
+
+    if (isLanguageMatched && isWorldviewMatched) {
+        return data;
+    }
+
+    // If we don't support this language and worldview in TileJSON
+    // or in the same time some of them is not defined
+    // we can safely use inlined default
+    if (!(language in (data.language_options || {})) && !(worldview in (data.worldview_options || {}))) {
+        // There is exception for empty language or worldview options:
+        // If we don't have any language or worldview options
+        // we should always request TileJSON
+        if (!data.language_options || !data.worldview_options) {
+            return null;
+        }
+
+        return data;
+    }
+
+    return null;
+}
 
 export default function(
     options: Options,
@@ -75,10 +124,19 @@ export default function(
         }
     };
 
+    const inlinedTileJSON = getInlinedTileJSON(options.data, language, worldview);
+
+    if (inlinedTileJSON) {
+        return browser.frame(() => loaded(null, inlinedTileJSON));
+    }
+
     if (options.url) {
         // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         return getJSON(requestManager.transformRequest(requestManager.normalizeSourceURL(options.url, null, language, worldview), ResourceType.Source), loaded);
     } else {
-        return browser.frame(() => loaded(null, options));
+        return browser.frame(() => {
+            const {data, ...tileJSON} = options;
+            loaded(null, tileJSON);
+        });
     }
 }

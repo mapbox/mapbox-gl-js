@@ -1,3 +1,4 @@
+import {vec3, vec4, mat4} from 'gl-matrix';
 import {
     bindAll,
     extend,
@@ -27,17 +28,18 @@ import MercatorCoordinate, {
     latFromMercatorY,
     lngFromMercatorX
 } from '../geo/mercator_coordinate';
-import {vec3, vec4, mat4} from 'gl-matrix';
-import type {FreeCameraOptions} from './free_camera';
+import {Aabb} from '../util/primitives';
+
 import type Transform from '../geo/transform';
-import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
-import type {ElevationQueryOptions} from '../terrain/elevation';
 import type {TaskID} from '../util/task_queue';
 import type {Callback} from '../types/callback';
+import type {MapEvents} from './events';
+import type {EventData} from '../util/evented';
 import type {PointLike} from '../types/point-like';
-import {Aabb} from '../util/primitives';
 import type {PaddingOptions} from '../geo/edge_insets';
-import type {MapEvent} from './events';
+import type {FreeCameraOptions} from './free_camera';
+import type {ElevationQueryOptions} from '../terrain/elevation';
+import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo}, controlling the desired location,
@@ -81,7 +83,7 @@ export type CameraOptions = {
     bearing?: number;
     pitch?: number;
     around?: LngLatLike;
-    padding?: PaddingOptions;
+    padding?: number | PaddingOptions;
     maxZoom?: number;
 };
 
@@ -180,7 +182,7 @@ const freeCameraNotSupportedWarning = 'map.setFreeCameraOptions(...) and map.get
  * @see [Example: Fit a map to a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/fitbounds/)
  */
 
-class Camera extends Evented {
+class Camera extends Evented<MapEvents> {
     transform: Transform;
     _moving: boolean;
     _zooming: boolean;
@@ -248,7 +250,7 @@ class Camera extends Evented {
      * @example
      * map.setCenter([-74, 38]);
      */
-    setCenter(center: LngLatLike, eventData?: any): this {
+    setCenter(center: LngLatLike, eventData?: EventData): this {
         return this.jumpTo({center}, eventData);
     }
 
@@ -269,7 +271,7 @@ class Camera extends Evented {
      * map.panBy([-74, 38], {duration: 5000});
      * @see [Example: Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
-    panBy(offset: PointLike, options?: AnimationOptions, eventData?: any): this {
+    panBy(offset: PointLike, options?: AnimationOptions, eventData?: EventData): this {
         offset = Point.convert(offset).mult(-1);
         return this.panTo(this.transform.center, extend({offset}, options), eventData);
     }
@@ -291,7 +293,7 @@ class Camera extends Evented {
      * map.panTo([-74, 38], {duration: 5000});
      * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
-    panTo(lnglat: LngLatLike, options?: AnimationOptions, eventData?: any): this {
+    panTo(lnglat: LngLatLike, options?: AnimationOptions, eventData?: EventData): this {
         return this.easeTo(extend({
             center: lnglat
         }, options), eventData);
@@ -324,7 +326,7 @@ class Camera extends Evented {
      * // Zoom to the zoom level 5 without an animated transition
      * map.setZoom(5);
      */
-    setZoom(zoom: number, eventData?: any): this {
+    setZoom(zoom: number, eventData?: EventData): this {
         this.jumpTo({zoom}, eventData);
         return this;
     }
@@ -352,7 +354,7 @@ class Camera extends Evented {
      *     offset: [100, 50]
      * });
      */
-    zoomTo(zoom: number, options?: AnimationOptions | null, eventData?: any): this {
+    zoomTo(zoom: number, options?: AnimationOptions | null, eventData?: EventData): this {
         return this.easeTo(extend({
             zoom
         }, options), eventData);
@@ -375,7 +377,7 @@ class Camera extends Evented {
      * // zoom the map in one level with a custom animation duration
      * map.zoomIn({duration: 1000});
      */
-    zoomIn(options?: AnimationOptions, eventData?: any): this {
+    zoomIn(options?: AnimationOptions, eventData?: EventData): this {
         this.zoomTo(this.getZoom() + 1, options, eventData);
         return this;
     }
@@ -397,7 +399,7 @@ class Camera extends Evented {
      * // zoom the map out one level with a custom animation offset
      * map.zoomOut({offset: [80, 60]});
      */
-    zoomOut(options?: AnimationOptions, eventData?: any): this {
+    zoomOut(options?: AnimationOptions, eventData?: EventData): this {
         this.zoomTo(this.getZoom() - 1, options, eventData);
         return this;
     }
@@ -432,7 +434,7 @@ class Camera extends Evented {
      * // Rotate the map to 90 degrees.
      * map.setBearing(90);
      */
-    setBearing(bearing: number, eventData?: any): this {
+    setBearing(bearing: number, eventData?: EventData): this {
         this.jumpTo({bearing}, eventData);
         return this;
     }
@@ -462,7 +464,7 @@ class Camera extends Evented {
      * // Sets a left padding of 300px, and a top padding of 50px
      * map.setPadding({left: 300, top: 50});
      */
-    setPadding(padding: PaddingOptions, eventData?: any): this {
+    setPadding(padding: PaddingOptions, eventData?: EventData): this {
         this.jumpTo({padding}, eventData);
         return this;
     }
@@ -485,7 +487,7 @@ class Camera extends Evented {
      * // rotateTo with an animation of 2 seconds.
      * map.rotateTo(30, {duration: 2000});
      */
-    rotateTo(bearing: number, options?: EasingOptions, eventData?: any): this {
+    rotateTo(bearing: number, options?: EasingOptions, eventData?: EventData): this {
         return this.easeTo(extend({
             bearing
         }, options), eventData);
@@ -505,7 +507,7 @@ class Camera extends Evented {
      * // resetNorth with an animation of 2 seconds.
      * map.resetNorth({duration: 2000});
      */
-    resetNorth(options?: EasingOptions, eventData?: any): this {
+    resetNorth(options?: EasingOptions, eventData?: EventData): this {
         this.rotateTo(0, extend({duration: 1000}, options), eventData);
         return this;
     }
@@ -524,7 +526,7 @@ class Camera extends Evented {
      * // resetNorthPitch with an animation of 2 seconds.
      * map.resetNorthPitch({duration: 2000});
      */
-    resetNorthPitch(options?: EasingOptions, eventData?: any): this {
+    resetNorthPitch(options?: EasingOptions, eventData?: EventData): this {
         this.easeTo(extend({
             bearing: 0,
             pitch: 0,
@@ -548,7 +550,7 @@ class Camera extends Evented {
      * // snapToNorth with an animation of 2 seconds.
      * map.snapToNorth({duration: 2000});
      */
-    snapToNorth(options?: EasingOptions, eventData?: any): this {
+    snapToNorth(options?: EasingOptions, eventData?: EventData): this {
         if (Math.abs(this.getBearing()) < this._bearingSnap) {
             return this.resetNorth(options, eventData);
         }
@@ -579,7 +581,7 @@ class Camera extends Evented {
      * // setPitch with an animation of 2 seconds.
      * map.setPitch(80, {duration: 2000});
      */
-    setPitch(pitch: number, eventData?: any): this {
+    setPitch(pitch: number, eventData?: EventData): this {
         this.jumpTo({pitch}, eventData);
         return this;
     }
@@ -988,7 +990,7 @@ class Camera extends Evented {
      * });
      * @see [Example: Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
-    fitBounds(bounds: LngLatBoundsLike, options?: EasingOptions, eventData?: any): this {
+    fitBounds(bounds: LngLatBoundsLike, options?: EasingOptions, eventData?: EventData): this {
         const cameraPlacement = this.cameraForBounds(bounds, options);
         return this._fitInternal(cameraPlacement, options, eventData);
     }
@@ -1029,7 +1031,7 @@ class Camera extends Evented {
         p1: PointLike,
         bearing: number,
         options?: EasingOptions,
-        eventData?: any,
+        eventData?: EventData,
     ): this {
         const screen0 = Point.convert(p0);
         const screen1 = Point.convert(p1);
@@ -1065,7 +1067,7 @@ class Camera extends Evented {
     _fitInternal(
         calculatedOptions?: EasingOptions | null,
         options?: EasingOptions,
-        eventData?: any,
+        eventData?: EventData,
     ): this {
         // cameraForBounds warns + returns undefined if unable to fit:
         if (!calculatedOptions) return this;
@@ -1109,12 +1111,7 @@ class Camera extends Evented {
      * @see [Example: Jump to a series of locations](https://docs.mapbox.com/mapbox-gl-js/example/jump-to/)
      * @see [Example: Update a feature in realtime](https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/)
      */
-    jumpTo(
-        options: CameraOptions & {
-            preloadOnly?: AnimationOptions['preloadOnly'];
-        },
-        eventData?: any,
-    ): this {
+    jumpTo(options: CameraOptions & {preloadOnly?: AnimationOptions['preloadOnly']}, eventData?: EventData): this {
         this.stop();
 
         const tr = options.preloadOnly ? this.transform.clone() : this.transform;
@@ -1141,8 +1138,12 @@ class Camera extends Evented {
             tr.pitch = +options.pitch;
         }
 
-        if (options.padding != null && !tr.isPaddingEqual(options.padding)) {
-            tr.padding = options.padding;
+        if (options.padding != null) {
+            const padding = typeof options.padding === 'number' ?
+                this._extendPadding(options.padding) :
+                options.padding;
+
+            if (!tr.isPaddingEqual(padding)) tr.padding = padding;
         }
 
         if (options.preloadOnly) {
@@ -1234,7 +1235,7 @@ class Camera extends Evented {
      *
      * map.setFreeCameraOptions(camera);
      */
-    setFreeCameraOptions(options: FreeCameraOptions, eventData?: any): this {
+    setFreeCameraOptions(options: FreeCameraOptions, eventData?: EventData): this {
         const tr = this.transform;
 
         if (!tr.projection.supportsFreeCamera) {
@@ -1324,7 +1325,7 @@ class Camera extends Evented {
         options: EasingOptions & {
             easeId?: string;
         },
-        eventData?: any,
+        eventData?: EventData,
     ): this {
         this._stop(false, options.easeId);
 
@@ -1458,7 +1459,7 @@ class Camera extends Evented {
         return this;
     }
 
-    _prepareEase(eventData: any | null | undefined, noMoveStart: boolean, currently: any = {}) {
+    _prepareEase(eventData: EventData | null | undefined, noMoveStart: boolean, currently: any = {}) {
         this._moving = true;
         this.transform.cameraElevationReference = "sea";
         if (this.transform._orthographicProjectionAtLowPitch && this.transform.pitch  === 0 && this.transform.projection.name !== 'globe') {
@@ -1481,7 +1482,7 @@ class Camera extends Evented {
         }
     }
 
-    _fireMoveEvents(eventData?: any) {
+    _fireMoveEvents(eventData?: EventData) {
         this.fire(new Event('move', eventData));
         if (this._zooming) {
             this.fire(new Event('zoom', eventData));
@@ -1494,7 +1495,7 @@ class Camera extends Evented {
         }
     }
 
-    _afterEase(eventData?: any, easeId?: string) {
+    _afterEase(eventData?: EventData, easeId?: string) {
         // if this easing is being stopped to start another easing with
         // the same id then don't fire any events to avoid extra start/stop events
         if (this._easeId && easeId && this._easeId === easeId) {
@@ -1583,7 +1584,7 @@ class Camera extends Evented {
      * @see [Example: Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
      * @see [Example: Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
-    flyTo(options: EasingOptions, eventData?: any): this {
+    flyTo(options: EasingOptions, eventData?: EventData): this {
         // Fall through to jumpTo if user has set prefers-reduced-motion
         if (this._prefersReducedMotion(options)) {
             const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around', 'padding']);
@@ -1889,22 +1890,21 @@ function addAssertions(camera: Camera) { //eslint-disable-line
     Debug.run(() => {
         const inProgress: Record<string, any> = {};
 
-        ['drag', 'zoom', 'rotate', 'pitch', 'move'].forEach(name => {
+        (['drag', 'zoom', 'rotate', 'pitch', 'move'] as const).forEach(name => {
             inProgress[name] = false;
 
-            camera.on((`${name}start` as MapEvent), () => {
+            camera.on(`${name}start`, () => {
                 assert(!inProgress[name], `"${name}start" fired twice without a "${name}end"`);
                 inProgress[name] = true;
                 assert(inProgress.move);
             });
 
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'MapEvent'.
             camera.on(name, () => {
                 assert(inProgress[name]);
                 assert(inProgress.move);
             });
 
-            camera.on((`${name}end` as MapEvent), () => {
+            camera.on(`${name}end`, () => {
                 assert(inProgress.move);
                 assert(inProgress[name]);
                 inProgress[name] = false;

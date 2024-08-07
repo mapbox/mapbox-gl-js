@@ -2,10 +2,7 @@
   "expression": [
     "number-format",
     123456.789,
-    {
-        "locale": ["get", "locale"],
-        "currency": ["get", "currency"]
-    }
+    {"locale": ["get", "locale"], "currency": ["get", "currency"]}
   ],
   "inputs": [
     [{}, {"properties": {"locale": "en-US", "currency": "JPY"}}],
@@ -23,8 +20,8 @@
       "number-format",
       123456.789,
       {
-          "locale": ["string", ["get", "locale"]],
-          "currency": ["string", ["get", "currency"]]
+        "locale": ["string", ["get", "locale"]],
+        "currency": ["string", ["get", "currency"]]
       }
     ]
   }

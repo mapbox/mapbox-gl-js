@@ -25,7 +25,7 @@
       "y",
       "otherwise",
       {
-        "error": "Expected value to be of type boolean, but found string instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to string but was expected to be of type boolean."
       }
     ],
     "serialized": [

@@ -20,7 +20,9 @@
       "type": "string"
     },
     "outputs": [
-      {"error": "Expected value to be of type string, but found null instead."},
+      {
+        "error": "The expression [\"get\",\"p\"] evaluated to null but was expected to be of type string."
+      },
       "a",
       "b",
       "c"

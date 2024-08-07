@@ -172,6 +172,15 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         return properties;
     }
 
+    if (input instanceof Set) {
+        const properties = {'$name': 'Set'};
+        let idx = 0;
+        for (const value of input.values()) {
+            properties[++idx] = serialize(value);
+        }
+        return properties;
+    }
+
     if (typeof input === 'object') {
         const klass = input.constructor as Klass;
         const name = klass._classRegistryKey;
@@ -252,6 +261,17 @@ export function deserialize(input: Serialized): unknown {
                 map.set(key, deserialize(value));
             }
             return map;
+        }
+
+        if (name === 'Set') {
+            const set = new Set();
+            for (const key of Object.keys(input)) {
+                if (key === '$name')
+                    continue;
+                const value = (input as SerializedObject)[key];
+                set.add(deserialize(value));
+            }
+            return set;
         }
 
         const {klass} = registry[name];

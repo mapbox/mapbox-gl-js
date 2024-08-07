@@ -46,7 +46,7 @@ export interface Feature {
 }
 
 export type FeatureState = {
-    [_: string]: any;
+    [_: string]: unknown;
 };
 
 export interface GlobalProperties {
@@ -133,7 +133,7 @@ export class StyleExpression {
             if (!this._warningHistory[e.message]) {
                 this._warningHistory[e.message] = true;
                 if (typeof console !== 'undefined') {
-                    console.warn(e.message);
+                    console.warn(`Failed to evaluate expression "${JSON.stringify(this.expression.serialize())}". ${e.message}`);
                 }
             }
             return this._defaultValue;
@@ -178,7 +178,7 @@ export function createExpression(
 export class ZoomConstantExpression<Kind extends EvaluationKind> {
     kind: Kind;
     isStateDependent: boolean;
-    isConfigDependent: boolean;
+    configDependencies: Set<string>;
     _styleExpression: StyleExpression;
     isLightConstant: boolean | null | undefined;
 
@@ -187,7 +187,7 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         this._styleExpression = expression;
         this.isLightConstant = isLightConstant;
         this.isStateDependent = kind !== ('constant' as EvaluationKind) && !isConstant.isStateConstant(expression.expression);
-        this.isConfigDependent = !isConstant.isConfigConstant(expression.expression);
+        this.configDependencies = isConstant.getConfigDependencies(expression.expression);
     }
 
     evaluateWithoutErrorHandling(
@@ -218,7 +218,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
     zoomStops: Array<number>;
     isStateDependent: boolean;
     isLightConstant: boolean | null | undefined;
-    isConfigDependent: boolean;
+    configDependencies: Set<string>;
 
     _styleExpression: StyleExpression;
     interpolationType: InterpolationType | null | undefined;
@@ -229,7 +229,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         this._styleExpression = expression;
         this.isStateDependent = kind !== ('camera' as EvaluationKind) && !isConstant.isStateConstant(expression.expression);
         this.isLightConstant = isLightConstant;
-        this.isConfigDependent = !isConstant.isConfigConstant(expression.expression);
+        this.configDependencies = isConstant.getConfigDependencies(expression.expression);
         this.interpolationType = interpolationType;
     }
 
@@ -266,7 +266,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
 
 export type ConstantExpression = {
     kind: 'constant';
-    isConfigDependent: boolean;
+    configDependencies: Set<string>;
     readonly evaluate: (
         globals: GlobalProperties,
         feature?: Feature,
@@ -280,7 +280,7 @@ export type SourceExpression = {
     kind: 'source';
     isStateDependent: boolean;
     isLightConstant: boolean | null | undefined;
-    isConfigDependent: boolean;
+    configDependencies: Set<string>;
     readonly evaluate: (
         globals: GlobalProperties,
         feature?: Feature,
@@ -294,7 +294,7 @@ export type SourceExpression = {
 export type CameraExpression = {
     kind: 'camera';
     isStateDependent: boolean;
-    isConfigDependent: boolean;
+    configDependencies: Set<string>;
     readonly evaluate: (
         globals: GlobalProperties,
         feature?: Feature,
@@ -311,7 +311,7 @@ export interface CompositeExpression {
     kind: 'composite';
     isStateDependent: boolean;
     isLightConstant: boolean | null | undefined;
-    isConfigDependent: boolean;
+    configDependencies: Set<string>;
     readonly evaluate: (
         globals: GlobalProperties,
         feature?: Feature,
@@ -449,7 +449,7 @@ export function normalizePropertyExpression<T>(
         }
         return {
             kind: 'constant',
-            isConfigDependent: false,
+            configDependencies: new Set(),
             evaluate: () => constant
         };
     }

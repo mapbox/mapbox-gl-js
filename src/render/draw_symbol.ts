@@ -538,6 +538,8 @@ function drawLayerSymbols(
                 baseDefines.push('Z_OFFSET');
             }
 
+            baseDefines.push('TERRAIN_DEPTH_D24');
+
             if (iconSaturation !== 0 || iconContrast !== 0 || iconBrightnessMin !== 0 || iconBrightnessMax !== 1) {
                 baseDefines.push('COLOR_ADJUSTMENT');
             }
@@ -645,6 +647,8 @@ function drawLayerSymbols(
             if (bucket.text.zOffsetVertexBuffer) {
                 baseDefines.push('Z_OFFSET');
             }
+
+            baseDefines.push('TERRAIN_DEPTH_D24');
 
             const programConfiguration = bucket.text.programConfigurations.get(layer.id);
             const program = painter.getOrCreateProgram(bucket.iconsInText ? 'symbolTextAndIcon' : 'symbolSDF', {config: programConfiguration, defines: baseDefines});

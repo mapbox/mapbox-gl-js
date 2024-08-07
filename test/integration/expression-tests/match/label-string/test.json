@@ -19,13 +19,17 @@
       "match",
       "otherwise",
       {
-        "error": "Expected value to be of type string, but found number instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to number but was expected to be of type string."
       },
       {
-        "error": "Expected value to be of type string, but found boolean instead."
+        "error": "The expression [\"get\",\"x\"] evaluated to boolean but was expected to be of type string."
       },
-      {"error": "Expected value to be of type string, but found null instead."},
-      {"error": "Expected value to be of type string, but found null instead."}
+      {
+        "error": "The expression [\"get\",\"x\"] evaluated to null but was expected to be of type string."
+      },
+      {
+        "error": "The expression [\"get\",\"x\"] evaluated to null but was expected to be of type string."
+      }
     ],
     "serialized": ["match", ["string", ["get", "x"]], "0", "match", "otherwise"]
   }

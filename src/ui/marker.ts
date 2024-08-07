@@ -14,10 +14,10 @@ import type {Anchor} from './anchor';
 import type {Map} from './map';
 import type Popup from './popup';
 import type {LngLatLike} from '../geo/lng_lat';
-import type {MapMouseEvent, MapTouchEvent} from './events';
+import type {MapEventOf, MapMouseEvent, MapTouchEvent} from './events';
 import type {PointLike} from '../types/point-like';
 
-type Options = {
+export type MarkerOptions = {
     element?: HTMLElement;
     offset?: PointLike;
     anchor?: Anchor;
@@ -30,6 +30,12 @@ type Options = {
     pitchAlignment?: string;
     occludedOpacity?: number;
     className?: string;
+};
+
+type MarkerEvents = {
+    'dragstart': void;
+    'drag': void;
+    'dragend': void;
 };
 
 /**
@@ -64,7 +70,7 @@ type Options = {
  * @see [Example: Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
  * @see [Example: Create a draggable Marker](https://www.mapbox.com/mapbox-gl-js/example/drag-a-marker/)
  */
-export default class Marker extends Evented {
+export default class Marker extends Evented<MarkerEvents> {
     _map: Map | null | undefined;
     _anchor: Anchor;
     _offset: Point;
@@ -90,7 +96,7 @@ export default class Marker extends Evented {
     _updateMoving: () => void;
     _occludedOpacity: number;
 
-    constructor(options?: Options, legacyOptions?: Options) {
+    constructor(options?: MarkerOptions, legacyOptions?: MarkerOptions) {
         super();
         // For backward compatibility -- the constructor used to accept the element as a
         // required first argument, before it was made optional.
@@ -557,7 +563,7 @@ export default class Marker extends Evented {
         return rotation ? `rotateZ(${rotation}deg)` : '';
     }
 
-    _update(delaySnap?: boolean) {
+    _update(delaySnap?: MapEventOf<'moveend'> | boolean) {
         cancelAnimationFrame(this._updateFrameId);
         const map = this._map;
         if (!map) return;
@@ -590,8 +596,7 @@ export default class Marker extends Evented {
             }
 
             if ((map._showingGlobe() || map.getTerrain() || map.getFog()) && !this._fadeTimer) {
-                // @ts-expect-error - TS2322 - Type 'Timeout' is not assignable to type 'number'.
-                this._fadeTimer = setTimeout(this._evaluateOpacity.bind(this), 60);
+                this._fadeTimer = window.setTimeout(this._evaluateOpacity.bind(this), 60);
             }
         });
     }

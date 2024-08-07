@@ -1,11 +1,18 @@
 {
-  "expression": ["to-string", ["coalesce", ["image", "foo"], ["image", "bar"], ["image", "monument-15"], "no image found"]],
-  "propertySpec": {
-    "type": "string"
-  },
+  "expression": [
+    "to-string",
+    [
+      "coalesce",
+      ["image", "foo"],
+      ["image", "bar"],
+      ["image", "monument-15"],
+      "no image found"
+    ]
+  ],
+  "propertySpec": {"type": "string"},
   "inputs": [
-    [{"availableImages": ["monument-15"]},{}],
-    [{"availableImages": []},{}]
+    [{"availableImages": ["monument-15"]}, {}],
+    [{"availableImages": []}, {}]
   ],
   "expected": {
     "compiled": {
@@ -14,10 +21,16 @@
       "isZoomConstant": true,
       "type": "string"
     },
-    "outputs": [
-      "monument-15",
-      "no image found"
-    ],
-    "serialized": ["to-string", ["coalesce", ["image", "foo"], ["image", "bar"], ["image", "monument-15"], "no image found"]]
+    "outputs": ["monument-15", "no image found"],
+    "serialized": [
+      "to-string",
+      [
+        "coalesce",
+        ["image", "foo"],
+        ["image", "bar"],
+        ["image", "monument-15"],
+        "no image found"
+      ]
+    ]
   }
 }

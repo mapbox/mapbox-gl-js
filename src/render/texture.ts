@@ -3,8 +3,8 @@ import type {RGBAImage, AlphaImage} from '../util/image';
 import {Float32Image} from '../util/image';
 import assert from 'assert';
 
-export type TextureFormat = WebGL2RenderingContext['RGBA'] | WebGL2RenderingContext['DEPTH_COMPONENT'] | WebGL2RenderingContext['R8'] | WebGL2RenderingContext['R32F'] | WebGL2RenderingContext['RED'];
-export type TextureType = WebGL2RenderingContext['UNSIGNED_BYTE'] | WebGL2RenderingContext['UNSIGNED_SHORT'] | WebGL2RenderingContext['FLOAT'];
+export type TextureFormat = WebGL2RenderingContext['RGBA'] | WebGL2RenderingContext['DEPTH_COMPONENT'] | WebGL2RenderingContext['DEPTH_STENCIL'] | WebGL2RenderingContext['R8'] | WebGL2RenderingContext['R32F'] | WebGL2RenderingContext['RED'];
+export type TextureType = WebGL2RenderingContext['UNSIGNED_INT_24_8'] | WebGL2RenderingContext['UNSIGNED_BYTE'] | WebGL2RenderingContext['UNSIGNED_SHORT'] | WebGL2RenderingContext['FLOAT'];
 export type TextureFilter = WebGL2RenderingContext['LINEAR'] | WebGL2RenderingContext['NEAREST_MIPMAP_NEAREST'] | WebGL2RenderingContext['LINEAR_MIPMAP_NEAREST'] | WebGL2RenderingContext['NEAREST_MIPMAP_LINEAR'] | WebGL2RenderingContext['LINEAR_MIPMAP_LINEAR'] | WebGL2RenderingContext['NEAREST'];
 export type TextureWrap = WebGL2RenderingContext['REPEAT'] | WebGL2RenderingContext['CLAMP_TO_EDGE'] | WebGL2RenderingContext['MIRRORED_REPEAT'];
 
@@ -54,6 +54,8 @@ class Texture {
         context.pixelStoreUnpack.set(1);
         context.pixelStoreUnpackPremultiplyAlpha.set(this.format === gl.RGBA && (!options || options.premultiply !== false));
 
+        this.useMipmap = Boolean(options && options.useMipmap);
+
         if (!position && (!this.size || this.size[0] !== width || this.size[1] !== height)) {
             this.size = [width, height];
 
@@ -67,11 +69,18 @@ class Texture {
                 let internalFormat = this.format;
                 let format = this.format;
                 let type: TextureType = gl.UNSIGNED_BYTE;
+                let preferTexStorage = false;
 
                 if (this.format === gl.DEPTH_COMPONENT) {
                     // @ts-expect-error - TS2322 - Type '33189' is not assignable to type 'TextureFormat'.
                     internalFormat = gl.DEPTH_COMPONENT16;
                     type = gl.UNSIGNED_SHORT;
+                }
+                if (this.format === gl.DEPTH_STENCIL) {
+                    // @ts-expect-error - TS2322 - Type '33189' is not assignable to type 'TextureFormat'.
+                    internalFormat = gl.DEPTH24_STENCIL8;
+                    type = gl.UNSIGNED_INT_24_8;
+                    preferTexStorage = true;
                 }
                 if (this.format === gl.R8) {
                     format = gl.RED;
@@ -81,8 +90,12 @@ class Texture {
                     type = gl.FLOAT;
                     format = gl.RED;
                 }
-                // @ts-expect-error - TS2339 - Property 'data' does not exist on type 'ImageBitmap | RGBAImage | AlphaImage | Float32Image | EmptyImage'.
-                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, image.data);
+                if (!this.useMipmap && preferTexStorage) {
+                    gl.texStorage2D(gl.TEXTURE_2D, 1, internalFormat, width, height);
+                } else {
+                    // @ts-expect-error - TS2339 - Property 'data' does not exist on type 'ImageBitmap | RGBAImage | AlphaImage | Float32Image | EmptyImage'.
+                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, image.data);
+                }
             }
         } else {
             const {x, y} = position || {x: 0, y: 0};
@@ -103,7 +116,6 @@ class Texture {
             }
         }
 
-        this.useMipmap = Boolean(options && options.useMipmap);
         if (this.useMipmap) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }

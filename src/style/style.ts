@@ -97,6 +97,7 @@ const emitValidationErrors = (evented: Evented, errors?: ValidationErrors | null
 import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties';
 import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties';
 import type {vec3} from 'gl-matrix';
+import type {MapEvents} from '../ui/events';
 import type {Map as MapboxMap} from '../ui/map';
 import type Transform from '../geo/transform';
 import type {StyleImage} from './style_image';
@@ -109,11 +110,12 @@ import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator, ValidationErrors} from './validate_style';
 import type {OverscaledTileID} from '../source/tile_id';
-import type {FeatureStates} from '../source/source_state';
+import type {FeatureState} from '../style-spec/expression/index';
 import type {PointLike} from '../types/point-like';
-import type {Source, SourceClass} from '../source/source';
+import type {ISource, Source, SourceClass} from '../source/source';
 import type {TransitionParameters, ConfigOptions} from './properties';
-import type {QueryResult, QueryFeature, QueryRenderedFeaturesParams} from '../source/query_features';
+import type {QueryResult, QueryRenderedFeaturesParams} from '../source/query_features';
+import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 
 const supportedDiffOperations = pick(diffOperations, [
@@ -150,6 +152,22 @@ const ignoredDiffOperations = pick(diffOperations, [
 
 const empty = emptyStyle();
 
+type AnyLayerSource = {
+    source?: LayerSpecification['source'] | SourceSpecification
+}
+
+/**
+ * Helper type that represents user provided layer in addLayer method.
+ * @private
+ */
+export type AnyLayer = Omit<LayerSpecification, 'source'> & AnyLayerSource | CustomLayerInterface;
+
+export type FeatureSelector = {
+    id: string | number;
+    source: string;
+    sourceLayer?: string;
+}
+
 export type StyleOptions = {
     validate?: boolean;
     localFontFamily?: string | null | undefined;
@@ -185,6 +203,7 @@ export type Fragment = {
 type StyleColorTheme = {
     lut: LUT | null;
     lutLoading: boolean;
+    lutLoadingCorrelationID: number;
     colorTheme: ColorThemeSpecification | null;
 };
 
@@ -194,7 +213,7 @@ const defaultTransition = {duration: 300, delay: 0};
 /**
  * @private
  */
-class Style extends Evented {
+class Style extends Evented<MapEvents> {
     map: MapboxMap;
     stylesheet: StyleSpecification;
     dispatcher: Dispatcher;
@@ -367,6 +386,7 @@ class Style extends Evented {
         this._styleColorTheme = {
             lut: null,
             lutLoading: false,
+            lutLoadingCorrelationID: 0,
             colorTheme: null
         };
         this._styleColorThemeForScope = {};
@@ -662,7 +682,7 @@ class Style extends Evented {
             options: this.options
         });
 
-        this._shouldPrecompile = this.isRootStyle();
+        this._shouldPrecompile = this.map._precompilePrograms && this.isRootStyle();
     }
 
     _isInternalStyle(json: StyleSpecification): boolean {
@@ -728,7 +748,7 @@ class Style extends Evented {
             this._serializedLayers = {};
             for (const layer of layers) {
                 const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
-                if (styleLayer.isConfigDependent) this._configDependentLayers.add(styleLayer.fqid);
+                if (styleLayer.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
                 styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
                 this._layers[styleLayer.id] = styleLayer;
                 this._serializedLayers[styleLayer.id] = styleLayer.serialize();
@@ -748,7 +768,7 @@ class Style extends Evented {
             const terrain = this.stylesheet.terrain;
             if (terrain) {
                 this.checkCanvasFingerprintNoise();
-                if (!this.terrainSetForDrapingOnly()) {
+                if (!this.disableElevatedTerrain && !this.terrainSetForDrapingOnly()) {
                     this._createTerrain(terrain, DrapeRenderMode.elevated);
                 }
             }
@@ -1058,18 +1078,21 @@ class Style extends Evented {
         return properties.get('data');
     }
 
-    _loadColorTheme(colorThemeData: string): Promise<void> {
+    _loadColorTheme(inputData: string | null): Promise<void> {
         this._styleColorTheme.lutLoading = true;
+        this._styleColorTheme.lutLoadingCorrelationID += 1;
+        const correlationID = this._styleColorTheme.lutLoadingCorrelationID;
         return new Promise((resolve, reject) => {
             const dataURLPrefix = 'data:image/png;base64,';
 
-            if (colorThemeData.length === 0) {
+            if (!inputData || inputData.length === 0) {
                 this._styleColorTheme.lut = null;
                 this._styleColorTheme.lutLoading = false;
                 resolve();
                 return;
             }
 
+            let colorThemeData = inputData;
             if (!colorThemeData.startsWith(dataURLPrefix)) {
                 colorThemeData = dataURLPrefix + colorThemeData;
             }
@@ -1084,6 +1107,10 @@ class Style extends Evented {
 
             };
             lutImage.onload = () => {
+                if (this._styleColorTheme.lutLoadingCorrelationID !== correlationID) {
+                    resolve();
+                    return;
+                }
                 this._styleColorTheme.lutLoading = false;
                 const {width, height, data} = browser.getImageData(lutImage);
                 if (height > 32) {
@@ -1106,7 +1133,7 @@ class Style extends Evented {
                 } else {
                     this._styleColorTheme.lut = {
                         image: image.data,
-                        data: colorThemeData
+                        data: inputData
                     };
                     resolve();
                 }
@@ -1346,6 +1373,40 @@ class Style extends Evented {
         return source;
     }
 
+    precompilePrograms(layer: StyleLayer, parameters: EvaluationParameters) {
+        const painter = this.map.painter;
+
+        if (!painter) {
+            return;
+        }
+
+        for (let i = (layer.minzoom || DEFAULT_MIN_ZOOM); i < (layer.maxzoom || DEFAULT_MAX_ZOOM); i++) {
+            const programIds = layer.getProgramIds();
+            if (!programIds) continue;
+
+            for (const programId of programIds) {
+                const params = layer.getDefaultProgramParams(programId, parameters.zoom, this._styleColorTheme.lut);
+                if (params) {
+                    painter.style = this;
+                    if (this.fog) {
+                        painter._fogVisible = true;
+                        params.overrideFog = true;
+                        painter.getOrCreateProgram(programId, params);
+                    }
+                    painter._fogVisible = false;
+                    params.overrideFog = false;
+                    painter.getOrCreateProgram(programId, params);
+
+                    if (this.stylesheet.terrain || (this.stylesheet.projection && this.stylesheet.projection.name === 'globe')) {
+                        params.overrideRtt = true;
+                        painter.getOrCreateProgram(programId, params);
+                    }
+                }
+            }
+        }
+
+    }
+
     /**
      * Apply queued style updates in a batch and recalculate zoom-dependent paint properties.
      * @private
@@ -1428,32 +1489,12 @@ class Style extends Evented {
             }
 
             if (!this._precompileDone && this._shouldPrecompile) {
-                for (let i = (layer.minzoom || DEFAULT_MIN_ZOOM); i < (layer.maxzoom || DEFAULT_MAX_ZOOM); i++) {
-                    const painter = this.map.painter;
-                    if (painter) {
-                        const programIds = layer.getProgramIds();
-                        if (!programIds) continue;
-
-                        for (const programId of programIds) {
-                            const params = layer.getDefaultProgramParams(programId, parameters.zoom, this._styleColorTheme.lut);
-                            if (params) {
-                                painter.style = this;
-                                if (this.fog) {
-                                    painter._fogVisible = true;
-                                    params.overrideFog = true;
-                                    painter.getOrCreateProgram(programId, params);
-                                }
-                                painter._fogVisible = false;
-                                params.overrideFog = false;
-                                painter.getOrCreateProgram(programId, params);
-
-                                if (this.stylesheet.terrain || (this.stylesheet.projection && this.stylesheet.projection.name === 'globe')) {
-                                    params.overrideRtt = true;
-                                    painter.getOrCreateProgram(programId, params);
-                                }
-                            }
-                        }
-                    }
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(() => {
+                        this.precompilePrograms(layer, parameters);
+                    });
+                } else {
+                    this.precompilePrograms(layer, parameters);
                 }
             }
         }
@@ -1469,7 +1510,8 @@ class Style extends Evented {
         for (const sourceId in sourcesUsedBefore) {
             const sourceCache = this._mergedSourceCaches[sourceId];
             if (sourcesUsedBefore[sourceId] !== sourceCache.used) {
-                sourceCache.getSource().fire(new Event('data', {sourceDataType: 'visibility', dataType:'source', sourceId: sourceCache.getSource().id}));
+                const source = sourceCache.getSource() as ISource;
+                source.fire(new Event('data', {sourceDataType: 'visibility', dataType:'source', sourceId: sourceCache.getSource().id}));
             }
         }
 
@@ -1740,7 +1782,7 @@ class Style extends Evented {
         this._checkLoaded();
 
         assert(this.getOwnSource(id) !== undefined, 'There is no source with this ID');
-        const geojsonSource: GeoJSONSource = (this.getOwnSource(id) as any);
+        const geojsonSource: GeoJSONSource = this.getOwnSource(id);
         assert(geojsonSource.type === 'geojson');
 
         geojsonSource.setData(data);
@@ -1752,7 +1794,7 @@ class Style extends Evented {
      * @param {string} id ID of the desired source.
      * @returns {?Source} The source object.
      */
-    getOwnSource(id: string): Source | null | undefined {
+    getOwnSource<T extends Source>(id: string): T | undefined {
         const sourceCache = this.getOwnSourceCache(id);
         return sourceCache && sourceCache.getSource();
     }
@@ -1951,7 +1993,7 @@ class Style extends Evented {
             minValue, maxValue, stepValue, type, values
         });
 
-        this.updateConfigDependencies();
+        this.updateConfigDependencies(key);
     }
 
     getConfig(fragmentId: string): ConfigSpecification | null | undefined {
@@ -2040,10 +2082,14 @@ class Style extends Evented {
         }
     }
 
-    updateConfigDependencies() {
+    updateConfigDependencies(configKey?: string) {
         for (const id of this._configDependentLayers) {
             const layer = this.getLayer(id);
             if (layer) {
+                if (configKey && !layer.configDependencies.has(configKey)) {
+                    continue;
+                }
+
                 layer.possiblyEvaluateVisibility();
                 this._updateLayer(layer);
             }
@@ -2064,7 +2110,7 @@ class Style extends Evented {
         this.forEachFragmentStyle((style: Style) => {
             if (style._styleColorTheme.colorTheme) {
                 const data = style._evaluateColorThemeData(style._styleColorTheme.colorTheme);
-                if (!style._styleColorTheme.lut || (style._styleColorTheme.lut && data !== style._styleColorTheme.lut.data)) {
+                if ((!style._styleColorTheme.lut && data !== '') || (style._styleColorTheme.lut && data !== style._styleColorTheme.lut.data)) {
                     style.setColorTheme(style._styleColorTheme.colorTheme);
                 }
             }
@@ -2081,7 +2127,7 @@ class Style extends Evented {
      * @param {Object} options Style setter options.
      * @returns {Map} The {@link Map} object.
      */
-    addLayer(layerObject: LayerSpecification | CustomLayerInterface, before?: string, options: StyleSetterOptions = {}) {
+    addLayer(layerObject: AnyLayer, before?: string, options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const id = layerObject.id;
@@ -2106,14 +2152,14 @@ class Style extends Evented {
             if (this._validate(validateLayer,
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
-            layer = createStyleLayer(layerObject, this.scope, this._styleColorTheme.lut, this.options);
+            layer = createStyleLayer(layerObject as LayerSpecification, this.scope, this._styleColorTheme.lut, this.options);
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});
             this._serializedLayers[layer.id] = layer.serialize();
         }
 
-        if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
+        if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
 
         let index = this._order.length;
         if (before) {
@@ -2271,8 +2317,8 @@ class Style extends Evented {
      * @param {string} id ID of the desired layer.
      * @returns {?StyleLayer} A layer, if one with the given `id` exists.
      */
-    getOwnLayer(id: string): StyleLayer | null | undefined {
-        return this._layers[id];
+    getOwnLayer<T extends StyleLayer>(id: string): T | undefined {
+        return this._layers[id] as T;
     }
 
     /**
@@ -2397,7 +2443,7 @@ class Style extends Evented {
         }
 
         layer.setLayoutProperty(name, value);
-        if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
+        if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
         this._updateLayer(layer);
     }
 
@@ -2436,7 +2482,7 @@ class Style extends Evented {
         }
 
         const requiresRelayout = layer.setPaintProperty(name, value);
-        if (layer.isConfigDependent) this._configDependentLayers.add(layer.fqid);
+        if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
         if (requiresRelayout) {
             this._updateLayer(layer);
         }
@@ -2450,7 +2496,7 @@ class Style extends Evented {
         return layer.getPaintProperty(name);
     }
 
-    setFeatureState(target: {id: string | number; source: string; sourceLayer?: string}, state: any) {
+    setFeatureState(target: FeatureSelector | GeoJSONFeature, state: FeatureState) {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
@@ -2477,11 +2523,7 @@ class Style extends Evented {
         }
     }
 
-    removeFeatureState(target: {
-        source: string;
-        sourceLayer?: string;
-        id?: string | number;
-    }, key?: string) {
+    removeFeatureState(target: Omit<FeatureSelector, 'id'> & {id?: FeatureSelector['id']} | GeoJSONFeature, key?: string) {
         this._checkLoaded();
         const sourceId = target.source;
 
@@ -2507,13 +2549,7 @@ class Style extends Evented {
         }
     }
 
-    getFeatureState(
-        target: {
-            source: string;
-            sourceLayer?: string;
-            id: string | number;
-        },
-    ): FeatureStates | null | undefined {
+    getFeatureState(target: FeatureSelector | GeoJSONFeature): FeatureState | null | undefined {
         this._checkLoaded();
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
@@ -2592,7 +2628,7 @@ class Style extends Evented {
         layer.invalidateCompiledFilter();
     }
 
-    _flattenAndSortRenderedFeatures(sourceResults: Array<QueryResult>): Array<QueryFeature> {
+    _flattenAndSortRenderedFeatures(sourceResults: Array<QueryResult>): Array<GeoJSONFeature> {
         // Feature order is complicated.
         // The order between features in two 2D layers is determined by layer order (subject to draped rendering modification).
         //  - if terrain/globe enabled layers are reordered in a drape-first, immediate-second manner
@@ -2668,7 +2704,7 @@ class Style extends Evented {
         queryGeometry: PointLike | [PointLike, PointLike],
         params: QueryRenderedFeaturesParams,
         transform: Transform,
-    ): Array<QueryFeature> {
+    ): Array<GeoJSONFeature> {
         if (params && params.filter) {
             this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
@@ -2747,10 +2783,10 @@ class Style extends Evented {
         sourceID: string,
         params?: {
             sourceLayer?: string;
-            filter?: FilterSpecification | ExpressionSpecification;
+            filter?: FilterSpecification;
             validate?: boolean;
         },
-    ): Array<QueryFeature> {
+    ): Array<GeoJSONFeature> {
         if (params && params.filter) {
             this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);
         }
@@ -2980,6 +3016,7 @@ class Style extends Evented {
 
         const data = this._evaluateColorThemeData(colorTheme);
         this._loadColorTheme(data).then(() => {
+            this.fire(new Event('colorthemeset'));
             updateStyle();
         }).catch((e) => {
             warnOnce(`Couldn\'t set color theme: ${e}`);

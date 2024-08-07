@@ -2,7 +2,6 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@4.1.3
   browser-tools: circleci/browser-tools@1.4.8
-  win: circleci/windows@5.0.0
 
 workflows:
   default:
@@ -56,7 +55,7 @@ workflows:
               only: /.*/
       - test-typings:
           requires:
-            - build
+            - prepare-linux
           filters:
             tags:
               only: /.*/
@@ -178,7 +177,7 @@ workflows:
 
 linux-defaults: &linux-defaults
   docker:
-    - image: cimg/node:18.20-browsers
+    - image: cimg/node:20.15-browsers
   working_directory: ~/mapbox-gl-js
 
 mac-defaults: &mac-defaults
@@ -191,10 +190,10 @@ mac-defaults: &mac-defaults
   working_directory: ~/mapbox-gl-js
 
 windows-defaults: &windows-defaults
-  executor:
-    # windows-server-2022-gui:current
-    # https://circleci.com/developer/machine/image/windows-server-2022-gui
-    name: win/default
+  resource_class: windows.medium
+  machine:
+      image: default
+      shell: powershell.exe -ExecutionPolicy Bypass
   working_directory: ~/mapbox-gl-js
 
 jobs:
@@ -272,7 +271,6 @@ jobs:
       - run: npm run build-csp
       - run: npm run build-css
       - run: npm run build-style-spec
-      - run: npm run build-dts
       - run: npm run test-build
       - run: npm run prepare-release-pages
       - run:
@@ -344,6 +342,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - run: npm run build-dts
       - run:
           name: Test public typings
           command: |
@@ -436,6 +435,9 @@ jobs:
       - attach_workspace:
           at: ~/
       - aws-cli/install
+      - run:
+          name: Generate release list
+          command: node build/generate-release-list.js
       - run:
           name: Check build file for correct SDK version
           command: |
