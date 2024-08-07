@@ -123,7 +123,6 @@
   "scripts": {
     "build-dev": "rollup -c --environment BUILD:dev",
     "watch-dev": "rollup -c --environment BUILD:dev --watch",
-    "prepare": "npm run build-prod-min && npm run build-css",
     "build-bench": "rollup -c --environment BUILD:bench,MINIFY:true",
     "build-prod": "rollup -c --environment BUILD:production",
     "build-prod-min": "rollup -c --environment BUILD:production,MINIFY:true",
