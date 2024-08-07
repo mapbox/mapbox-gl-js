@@ -74,7 +74,6 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      */
     loadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
         const uid = params.uid;
-
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;
 
@@ -82,8 +81,11 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
         workerTile.abort = this.loadVectorData(params, (err, response) => {
 
             const aborted = !this.loading[uid];
-
             delete this.loading[uid];
+
+            if (workerTile.status === 'done') {
+                return;
+            }
 
             if (aborted || err || !response) {
                 workerTile.status = 'done';
@@ -134,7 +136,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
             this.loaded = this.loaded || {};
             this.loaded[uid] = workerTile;
-        });
+        }, this.deduped);
     }
 
     /**
