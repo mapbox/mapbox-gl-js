@@ -2,7 +2,7 @@ import StyleLayer from '../style_layer';
 import FillExtrusionBucket, {ELEVATION_SCALE, ELEVATION_OFFSET, fillExtrusionHeightLift, resampleFillExtrusionPolygonsForGlobe} from '../../data/bucket/fill_extrusion_bucket';
 import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
 import {translateDistance, tilespaceTranslate} from '../query_utils';
-import properties from './fill_extrusion_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './fill_extrusion_style_layer_properties';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 import Point from '@mapbox/point-geometry';
 import {vec3, vec4} from 'gl-matrix';
@@ -29,6 +29,10 @@ class FillExtrusionStyleLayer extends StyleLayer {
     layout: PossiblyEvaluated<LayoutProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
         this._stats = {numRenderedVerticesInShadowPass : 0, numRenderedVerticesInTransparentPass: 0};
     }

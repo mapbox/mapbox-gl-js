@@ -19,7 +19,6 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 
 export type PaintProps = {};
 
-const paint: Properties<PaintProps> = new Properties({
-});
-
-export default { paint };
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
+}));

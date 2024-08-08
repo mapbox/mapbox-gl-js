@@ -64,8 +64,8 @@ export type LayoutProps = {
     "text-optional": DataConstantProperty<boolean>;
     "visibility": DataConstantProperty<"visible" | "none">;
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "symbol-placement": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-placement"]),
     "symbol-spacing": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-spacing"]),
     "symbol-avoid-edges": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-avoid-edges"]),
@@ -109,7 +109,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "text-ignore-placement": new DataConstantProperty(styleSpec["layout_symbol"]["text-ignore-placement"]),
     "text-optional": new DataConstantProperty(styleSpec["layout_symbol"]["text-optional"]),
     "visibility": new DataConstantProperty(styleSpec["layout_symbol"]["visibility"]),
-});
+}));
 
 export type PaintProps = {
     "icon-opacity": DataDrivenProperty<number>;
@@ -137,7 +137,8 @@ export type PaintProps = {
     "icon-color-brightness-max": DataConstantProperty<number>;
 };
 
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "icon-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-opacity"]),
     "icon-occlusion-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-occlusion-opacity"]),
     "icon-emissive-strength": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-emissive-strength"]),
@@ -161,6 +162,4 @@ const paint: Properties<PaintProps> = new Properties({
     "icon-color-contrast": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-contrast"]),
     "icon-color-brightness-min": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-min"]),
     "icon-color-brightness-max": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-max"]),
-});
-
-export default { paint, layout };
+}));

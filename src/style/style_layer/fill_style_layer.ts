@@ -3,7 +3,7 @@ import StyleLayer from '../style_layer';
 import FillBucket from '../../data/bucket/fill_bucket';
 import {polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
 import {translateDistance, translate} from '../query_utils';
-import properties from './fill_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './fill_style_layer_properties';
 import {Transitionable, Transitioning, Layout, PossiblyEvaluated} from '../properties';
 import ProgramConfiguration from '../../data/program_configuration';
 
@@ -29,6 +29,10 @@ class FillStyleLayer extends StyleLayer {
     paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
     }
 

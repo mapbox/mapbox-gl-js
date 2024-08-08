@@ -1,6 +1,6 @@
 import StyleLayer from '../../../src/style/style_layer';
 import ModelBucket from '../../data/bucket/model_bucket';
-import properties from './model_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './model_style_layer_properties';
 import {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue} from '../../../src/style/properties';
 import Point from '@mapbox/point-geometry';
 import {ZoomDependentExpression} from '../../../src/style-spec/expression/index';
@@ -37,6 +37,10 @@ class ModelStyleLayer extends StyleLayer {
     modelManager: ModelManager;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
         this._stats = {numRenderedVerticesInShadowPass : 0, numRenderedVerticesInTransparentPass: 0};
     }

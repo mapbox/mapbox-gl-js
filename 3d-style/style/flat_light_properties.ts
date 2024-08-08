@@ -19,11 +19,10 @@ export type LightProps = {
     "intensity": DataConstantProperty<number>;
 };
 
-const properties: Properties<LightProps> = new Properties({
+let properties: Properties<LightProps>;
+export const getProperties = (): Properties<LightProps> => properties || (properties = new Properties({
     "anchor": new DataConstantProperty(styleSpec["properties_light_flat"]["anchor"]),
     "position": new DataConstantProperty(styleSpec["properties_light_flat"]["position"]),
     "color": new DataConstantProperty(styleSpec["properties_light_flat"]["color"]),
     "intensity": new DataConstantProperty(styleSpec["properties_light_flat"]["intensity"]),
-});
-
-export {properties}
+}));

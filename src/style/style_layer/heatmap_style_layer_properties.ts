@@ -19,10 +19,10 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 export type LayoutProps = {
     "visibility": DataConstantProperty<"visible" | "none">;
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "visibility": new DataConstantProperty(styleSpec["layout_heatmap"]["visibility"]),
-});
+}));
 
 export type PaintProps = {
     "heatmap-radius": DataDrivenProperty<number>;
@@ -32,12 +32,11 @@ export type PaintProps = {
     "heatmap-opacity": DataConstantProperty<number>;
 };
 
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "heatmap-radius": new DataDrivenProperty(styleSpec["paint_heatmap"]["heatmap-radius"]),
     "heatmap-weight": new DataDrivenProperty(styleSpec["paint_heatmap"]["heatmap-weight"]),
     "heatmap-intensity": new DataConstantProperty(styleSpec["paint_heatmap"]["heatmap-intensity"]),
     "heatmap-color": new ColorRampProperty(styleSpec["paint_heatmap"]["heatmap-color"]),
     "heatmap-opacity": new DataConstantProperty(styleSpec["paint_heatmap"]["heatmap-opacity"]),
-});
-
-export default { paint, layout };
+}));

@@ -25,8 +25,8 @@ export type LayoutProps = {
     "line-z-offset": DataDrivenProperty<number>;
     "visibility": DataConstantProperty<"visible" | "none">;
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "line-cap": new DataDrivenProperty(styleSpec["layout_line"]["line-cap"]),
     "line-join": new DataDrivenProperty(styleSpec["layout_line"]["line-join"]),
     "line-miter-limit": new DataConstantProperty(styleSpec["layout_line"]["line-miter-limit"]),
@@ -34,7 +34,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "line-sort-key": new DataDrivenProperty(styleSpec["layout_line"]["line-sort-key"]),
     "line-z-offset": new DataDrivenProperty(styleSpec["layout_line"]["line-z-offset"]),
     "visibility": new DataConstantProperty(styleSpec["layout_line"]["visibility"]),
-});
+}));
 
 export type PaintProps = {
     "line-opacity": DataDrivenProperty<number>;
@@ -57,7 +57,8 @@ export type PaintProps = {
     "line-occlusion-opacity": DataConstantProperty<number>;
 };
 
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "line-opacity": new DataDrivenProperty(styleSpec["paint_line"]["line-opacity"]),
     "line-color": new DataDrivenProperty(styleSpec["paint_line"]["line-color"]),
     "line-translate": new DataConstantProperty(styleSpec["paint_line"]["line-translate"]),
@@ -76,6 +77,4 @@ const paint: Properties<PaintProps> = new Properties({
     "line-border-width": new DataDrivenProperty(styleSpec["paint_line"]["line-border-width"]),
     "line-border-color": new DataDrivenProperty(styleSpec["paint_line"]["line-border-color"]),
     "line-occlusion-opacity": new DataConstantProperty(styleSpec["paint_line"]["line-occlusion-opacity"]),
-});
-
-export default { paint, layout };
+}));

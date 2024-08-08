@@ -1,7 +1,7 @@
 import StyleLayer from '../style_layer';
 
 import ClipBucket from '../../data/bucket/clip_bucket';
-import properties from './clip_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './clip_style_layer_properties';
 import {Layout, PossiblyEvaluated} from '../properties';
 
 import type {BucketParameters} from '../../data/bucket';
@@ -17,6 +17,10 @@ class ClipStyleLayer extends StyleLayer {
     paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
     }
 

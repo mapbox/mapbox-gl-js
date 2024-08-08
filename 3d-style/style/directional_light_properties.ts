@@ -20,12 +20,11 @@ export type LightProps = {
     "shadow-intensity": DataConstantProperty<number>;
 };
 
-const properties: Properties<LightProps> = new Properties({
+let properties: Properties<LightProps>;
+export const getProperties = (): Properties<LightProps> => properties || (properties = new Properties({
     "direction": new DirectionProperty(styleSpec["properties_light_directional"]["direction"]),
     "color": new DataConstantProperty(styleSpec["properties_light_directional"]["color"]),
     "intensity": new DataConstantProperty(styleSpec["properties_light_directional"]["intensity"]),
     "cast-shadows": new DataConstantProperty(styleSpec["properties_light_directional"]["cast-shadows"]),
     "shadow-intensity": new DataConstantProperty(styleSpec["properties_light_directional"]["shadow-intensity"]),
-});
-
-export {properties}
+}));

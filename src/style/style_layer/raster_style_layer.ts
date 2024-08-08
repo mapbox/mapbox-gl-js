@@ -1,6 +1,6 @@
 import StyleLayer from '../style_layer';
 
-import properties from './raster_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './raster_style_layer_properties';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 import {renderColorRamp} from '../../util/color_ramp';
 import {RGBAImage} from '../../util/image';
@@ -32,6 +32,10 @@ class RasterStyleLayer extends StyleLayer {
     _curRampRange: [number, number];
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
         this.updateColorRamp();
         this._curRampRange = [NaN, NaN];

@@ -1,6 +1,6 @@
 import StyleLayer from '../style_layer';
 import browser from '../../util/browser';
-import properties from './raster_particle_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './raster_particle_style_layer_properties';
 import {PossiblyEvaluated} from '../properties';
 import {renderColorRamp} from '../../util/color_ramp';
 import {RGBAImage} from '../../util/image';
@@ -31,6 +31,10 @@ class RasterParticleStyleLayer extends StyleLayer {
     lastInvalidatedAt: number;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
         this._updateColorRamp();
         this.lastInvalidatedAt = browser.now();

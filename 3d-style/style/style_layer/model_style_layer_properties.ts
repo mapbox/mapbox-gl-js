@@ -20,11 +20,11 @@ export type LayoutProps = {
     "visibility": DataConstantProperty<"visible" | "none">;
     "model-id": DataDrivenProperty<string>;
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "visibility": new DataConstantProperty(styleSpec["layout_model"]["visibility"]),
     "model-id": new DataDrivenProperty(styleSpec["layout_model"]["model-id"]),
-});
+}));
 
 export type PaintProps = {
     "model-opacity": DataConstantProperty<number>;
@@ -44,7 +44,8 @@ export type PaintProps = {
     "model-front-cutoff": DataConstantProperty<[number, number, number]>;
 };
 
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "model-opacity": new DataConstantProperty(styleSpec["paint_model"]["model-opacity"]),
     "model-rotation": new DataDrivenProperty(styleSpec["paint_model"]["model-rotation"]),
     "model-scale": new DataDrivenProperty(styleSpec["paint_model"]["model-scale"]),
@@ -60,6 +61,4 @@ const paint: Properties<PaintProps> = new Properties({
     "model-height-based-emissive-strength-multiplier": new DataDrivenProperty(styleSpec["paint_model"]["model-height-based-emissive-strength-multiplier"]),
     "model-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_model"]["model-cutoff-fade-range"]),
     "model-front-cutoff": new DataConstantProperty(styleSpec["paint_model"]["model-front-cutoff"]),
-});
-
-export default { paint, layout };
+}));

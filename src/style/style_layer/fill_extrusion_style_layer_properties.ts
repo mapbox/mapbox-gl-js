@@ -20,11 +20,11 @@ export type LayoutProps = {
     "visibility": DataConstantProperty<"visible" | "none">;
     "fill-extrusion-edge-radius": DataConstantProperty<number>;
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "visibility": new DataConstantProperty(styleSpec["layout_fill-extrusion"]["visibility"]),
     "fill-extrusion-edge-radius": new DataConstantProperty(styleSpec["layout_fill-extrusion"]["fill-extrusion-edge-radius"]),
-});
+}));
 
 export type PaintProps = {
     "fill-extrusion-opacity": DataConstantProperty<number>;
@@ -51,7 +51,8 @@ export type PaintProps = {
     "fill-extrusion-emissive-strength": DataConstantProperty<number>;
 };
 
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "fill-extrusion-opacity": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-opacity"]),
     "fill-extrusion-color": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-color"]),
     "fill-extrusion-translate": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-translate"]),
@@ -74,6 +75,4 @@ const paint: Properties<PaintProps> = new Properties({
     "fill-extrusion-rounded-roof": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-rounded-roof"]),
     "fill-extrusion-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-cutoff-fade-range"]),
     "fill-extrusion-emissive-strength": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-emissive-strength"]),
-});
-
-export default { paint, layout };
+}));

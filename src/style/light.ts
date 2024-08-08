@@ -30,12 +30,13 @@ type Props = {
     ["intensity"]: DataConstantProperty<number>;
 };
 
-const properties: Properties<Props> = new Properties({
+let properties: Properties<Props>;
+const getProperties = (): Properties<Props> => properties || (properties = new Properties({
     "anchor": new DataConstantProperty(styleSpec.light.anchor),
     "position": new PositionProperty(styleSpec.light.position),
     "color": new DataConstantProperty(styleSpec.light.color),
     "intensity": new DataConstantProperty(styleSpec.light.intensity),
-});
+}));
 
 /*
  * Represents the light used to light extruded features.
@@ -49,7 +50,7 @@ class Light extends Evented {
 
     constructor(lightOptions?: LightSpecification, id: string = "flat") {
         super();
-        this._transitionable = new Transitionable(properties);
+        this._transitionable = new Transitionable(getProperties());
         this.setLight(lightOptions, id);
         this._transitioning = this._transitionable.untransitioned();
     }

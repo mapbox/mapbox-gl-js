@@ -4,14 +4,14 @@ import StyleLayer from '../style_layer';
 import LineBucket from '../../data/bucket/line_bucket';
 import {polygonIntersectsBufferedMultiLine} from '../../util/intersection_tests';
 import {getMaximumPaintValue, translateDistance, translate} from '../query_utils';
-import properties from './line_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './line_style_layer_properties';
 import {extend} from '../../util/util';
 import EvaluationParameters from '../evaluation_parameters';
 import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty} from '../properties';
 import ProgramConfiguration from '../../data/program_configuration';
 
 import Step from '../../style-spec/expression/definitions/step';
-import type {PossiblyEvaluatedValue, PropertyValue, PossiblyEvaluatedPropertyValue, ConfigOptions} from '../properties';
+import type {PossiblyEvaluatedValue, PropertyValue, PossiblyEvaluatedPropertyValue, ConfigOptions, Properties} from '../properties';
 import type {Feature, FeatureState, ZoomConstantExpression, StylePropertyExpression} from '../../style-spec/expression/index';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
@@ -24,6 +24,24 @@ import type {CreateProgramParams} from '../../render/painter';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
 import SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
+
+let properties: {
+    layout: Properties<LayoutProps>;
+    paint: Properties<PaintProps>;
+};
+
+const getProperties = () => {
+    if (properties) {
+        return properties;
+    }
+
+    properties = {
+        layout: getLayoutProperties(),
+        paint: getPaintProperties()
+    };
+
+    return properties;
+};
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
     useIntegerZoom: boolean | null | undefined;
@@ -51,8 +69,19 @@ class LineFloorwidthProperty extends DataDrivenProperty<number> {
     }
 }
 
-const lineFloorwidthProperty = new LineFloorwidthProperty(properties.paint.properties['line-width'].specification);
-lineFloorwidthProperty.useIntegerZoom = true;
+let lineFloorwidthProperty: LineFloorwidthProperty;
+const getLineFloorwidthProperty = () => {
+    if (lineFloorwidthProperty) {
+        return lineFloorwidthProperty;
+    }
+
+    const properties = getProperties();
+
+    lineFloorwidthProperty = new LineFloorwidthProperty(properties.paint.properties['line-width'].specification);
+    lineFloorwidthProperty.useIntegerZoom = true;
+
+    return lineFloorwidthProperty;
+};
 
 class LineStyleLayer extends StyleLayer {
     _unevaluatedLayout: Layout<LayoutProps>;
@@ -66,6 +95,7 @@ class LineStyleLayer extends StyleLayer {
     paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = getProperties();
         super(layer, properties, scope, lut, options);
         if (properties.layout) {
             this.layout = new PossiblyEvaluated(properties.layout);
@@ -91,10 +121,7 @@ class LineStyleLayer extends StyleLayer {
 
     recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
         super.recalculate(parameters, availableImages);
-
-        (this.paint._values as any)['line-floorwidth'] =
-
-            lineFloorwidthProperty.possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
+        (this.paint._values as any)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
     }
 
     createBucket(parameters: BucketParameters<LineStyleLayer>): LineBucket {

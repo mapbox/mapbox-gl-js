@@ -2,7 +2,7 @@ import StyleLayer from '../style_layer';
 
 import HeatmapBucket from '../../data/bucket/heatmap_bucket';
 import {RGBAImage} from '../../util/image';
-import properties from './heatmap_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './heatmap_style_layer_properties';
 import {renderColorRamp} from '../../util/color_ramp';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 import {queryIntersectsCircle} from './circle_style_layer';
@@ -40,6 +40,10 @@ class HeatmapStyleLayer extends StyleLayer {
     }
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
 
         // make sure color ramp texture is generated for default heatmap color too

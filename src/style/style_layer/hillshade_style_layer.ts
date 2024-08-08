@@ -1,6 +1,6 @@
 import StyleLayer from '../style_layer';
 
-import properties from './hillshade_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './hillshade_style_layer_properties';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 
 import type {PaintProps} from './hillshade_style_layer_properties';
@@ -15,6 +15,10 @@ class HillshadeStyleLayer extends StyleLayer {
     paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
     }
 

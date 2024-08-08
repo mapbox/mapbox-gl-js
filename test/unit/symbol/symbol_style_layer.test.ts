@@ -2,7 +2,7 @@
 import {describe, test, expect} from '../../util/vitest';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
 import FormatSectionOverride from '../../../src/style/format_section_override';
-import properties from '../../../src/style/style_layer/symbol_style_layer_properties';
+import {getPaintProperties} from '../../../src/style/style_layer/symbol_style_layer_properties';
 
 function createSymbolLayer(layerProperties) {
     const layer = new SymbolStyleLayer(layerProperties);
@@ -21,7 +21,7 @@ describe('setPaintOverrides', () => {
     test('setPaintOverrides, no overrides', () => {
         const layer = createSymbolLayer({});
         layer._setPaintOverrides();
-        for (const overridable of properties.paint.overridableProperties) {
+        for (const overridable of getPaintProperties().overridableProperties) {
             expect(isOverriden(layer.paint.get(overridable))).toEqual(false);
         }
     });

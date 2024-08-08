@@ -1,5 +1,5 @@
 import StyleLayer from '../style_layer';
-import properties from './sky_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './sky_style_layer_properties';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 import {renderColorRamp} from '../../util/color_ramp';
 import {warnOnce, degToRad} from '../../util/util';
@@ -44,6 +44,10 @@ class SkyLayer extends StyleLayer {
     skyboxGeometry: SkyboxGeometry;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
         this._updateColorRamp();
     }

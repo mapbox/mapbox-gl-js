@@ -18,8 +18,8 @@ import {stripQueryParameters} from '../util/url';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
 import Lights from '../../3d-style/style/lights';
-import {properties as ambientProps} from '../../3d-style/style/ambient_light_properties';
-import {properties as directionalProps} from '../../3d-style/style/directional_light_properties';
+import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_light_properties';
+import {getProperties as getDirectionalProps} from '../../3d-style/style/directional_light_properties';
 import {createExpression} from '../style-spec/expression/index';
 import Painter from '../render/painter';
 import ClipStyleLayer from './style_layer/clip_style_layer';
@@ -1869,7 +1869,7 @@ class Style extends Evented<MapEvents> {
                     ambientLight.set(light);
                     ambientLight.updateTransitions(transitionParameters);
                 } else {
-                    this.ambientLight = new Lights<Ambient>(light, ambientProps, this.scope, this.options);
+                    this.ambientLight = new Lights<Ambient>(light, getAmbientProps(), this.scope, this.options);
                 }
                 break;
             case 'directional':
@@ -1878,7 +1878,7 @@ class Style extends Evented<MapEvents> {
                     directionalLight.set(light);
                     directionalLight.updateTransitions(transitionParameters);
                 } else {
-                    this.directionalLight = new Lights<Directional>(light, directionalProps, this.scope, this.options);
+                    this.directionalLight = new Lights<Directional>(light, getDirectionalProps(), this.scope, this.options);
                 }
                 break;
             default:

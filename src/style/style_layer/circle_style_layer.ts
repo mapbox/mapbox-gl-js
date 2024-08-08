@@ -3,7 +3,7 @@ import StyleLayer from '../style_layer';
 import CircleBucket from '../../data/bucket/circle_bucket';
 import {polygonIntersectsBufferedPoint} from '../../util/intersection_tests';
 import {getMaximumPaintValue, translateDistance, tilespaceTranslate} from '../query_utils';
-import properties from './circle_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './circle_style_layer_properties';
 import {Transitionable, Transitioning, Layout, PossiblyEvaluated} from '../properties';
 import {vec4, vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
@@ -36,6 +36,10 @@ class CircleStyleLayer extends StyleLayer {
     paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
     }
 
