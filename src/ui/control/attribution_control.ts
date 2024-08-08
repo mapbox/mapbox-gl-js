@@ -52,15 +52,20 @@ class AttributionControl implements IControl {
 
     onAdd(map: Map): HTMLElement {
         const compact = this.options && this.options.compact;
+        const title = map._getUIString('AttributionControl.ToggleAttribution');
 
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
         // @ts-expect-error - TS2740 - Type 'HTMLElement' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 15 more.
         this._compactButton = DOM.create('button', 'mapboxgl-ctrl-attrib-button', this._container);
-        DOM.create('span', `mapboxgl-ctrl-icon`, this._compactButton).setAttribute('aria-hidden', 'true');
         this._compactButton.type = 'button';
         this._compactButton.addEventListener('click', this._toggleAttribution);
-        this._setElementTitle(this._compactButton, 'ToggleAttribution');
+        this._compactButton.setAttribute('aria-label', title);
+
+        const buttonIcon = DOM.create('span', `mapboxgl-ctrl-icon`, this._compactButton);
+        buttonIcon.setAttribute('aria-hidden', 'true');
+        buttonIcon.setAttribute('title', title);
+
         this._innerContainer = DOM.create('div', 'mapboxgl-ctrl-attrib-inner', this._container);
 
         if (compact) {
@@ -94,12 +99,6 @@ class AttributionControl implements IControl {
         this._attribHTML = (undefined as any);
     }
 
-    _setElementTitle(element: HTMLElement, title: string) {
-        const str = this._map._getUIString(`AttributionControl.${title}`);
-        element.removeAttribute('title');
-        if (element.firstElementChild) element.firstElementChild.setAttribute('title', str);
-    }
-
     _toggleAttribution() {
         if (this._container.classList.contains('mapboxgl-compact-show')) {
             this._container.classList.remove('mapboxgl-compact-show');
@@ -131,7 +130,6 @@ class AttributionControl implements IControl {
             }, `?`);
             editLink.href = `${config.FEEDBACK_URL}/${paramString}#${getHashString(this._map, true)}`;
             editLink.rel = 'noopener nofollow';
-            this._setElementTitle(editLink, 'MapFeedback');
         }
     }
 
