@@ -20,6 +20,7 @@ type InternalFeature = BBox & {
 };
 
 const PAD = 64 / 4096; // geojson-vt default tile buffer
+const PAD_PX = 128; // the same buffer relative to EXTENT
 
 /*
  * A GeoJSON index tailored to "small data, updated frequently" use cases
@@ -182,10 +183,10 @@ function outputFeature(feature: InternalFeature, z2: number, tx: number, ty: num
     const tileGeom = [];
 
     if (type === 1) {
-        transformLine(geometry as number[], z2, tx, ty, tileGeom);
+        transformPoints(geometry as number[], z2, tx, ty, tileGeom);
     } else {
         for (const ring of geometry) {
-            tileGeom.push(transformLine(ring as number[], z2, tx, ty));
+            transformAndClipLine(ring as number[], z2, tx, ty, tileGeom);
         }
     }
 
@@ -197,18 +198,74 @@ function outputFeature(feature: InternalFeature, z2: number, tx: number, ty: num
     };
 }
 
-function transformLine(line: number[], z2: number, tx: number, ty: number, out: [number, number][] = []) {
+function transformPoints(line: number[], z2: number, tx: number, ty: number, out: [number, number][]) {
     for (let i = 0; i < line.length; i += 2) {
-        out.push(transformPoint(line[i], line[i + 1], z2, tx, ty));
+        const ox = Math.round(EXTENT * (line[i + 0] * z2 - tx));
+        const oy = Math.round(EXTENT * (line[i + 1] * z2 - ty));
+        out.push([ox, oy]);
     }
-    return out;
 }
 
-function transformPoint(x: number, y: number, z2: number, tx: number, ty: number): [number, number] {
-    return [
-        Math.round(EXTENT * (x * z2 - tx)),
-        Math.round(EXTENT * (y * z2 - ty))
-    ];
+function transformAndClipLine(line: number[], z2: number, tx: number, ty: number, out: [number, number][]) {
+    const min = -PAD_PX;
+    const max = EXTENT + PAD_PX;
+    let part;
+
+    for (let i = 0; i < line.length - 2; i += 2) {
+        let x0 = Math.round(EXTENT * (line[i + 0] * z2 - tx));
+        let y0 = Math.round(EXTENT * (line[i + 1] * z2 - ty));
+        let x1 = Math.round(EXTENT * (line[i + 2] * z2 - tx));
+        let y1 = Math.round(EXTENT * (line[i + 3] * z2 - ty));
+        const dx = x1 - x0;
+        const dy = y1 - y0;
+
+        if (x0 < min && x1 < min) {
+            continue;
+        } else if (x0 < min) {
+            y0 = y0 + Math.round(dy * ((min - x0) / dx));
+            x0 = min;
+        } else if (x1 < min) {
+            y1 = y0 + Math.round(dy * ((min - x0) / dx));
+            x1 = min;
+        }
+
+        if (y0 < min && y1 < min) {
+            continue;
+        } else if (y0 < min) {
+            x0 = x0 + Math.round(dx * ((min - y0) / dy));
+            y0 = min;
+        } else if (y1 < min) {
+            x1 = x0 + Math.round(dx * ((min - y0) / dy));
+            y1 = min;
+        }
+
+        if (x0 >= max && x1 >= max) {
+            continue;
+        } else if (x0 >= max) {
+            y0 = y0 + Math.round(dy * ((max - x0) / dx));
+            x0 = max;
+        } else if (x1 >= max) {
+            y1 = y0 + Math.round(dy * ((max - x0) / dx));
+            x1 = max;
+        }
+
+        if (y0 >= max && y1 >= max) {
+            continue;
+        } else if (y0 >= max) {
+            x0 = x0 + Math.round(dx * ((max - y0) / dy));
+            y0 = max;
+        } else if (y1 >= max) {
+            x1 = x0 + Math.round(dx * ((max - y0) / dy));
+            y1 = max;
+        }
+
+        if (!part || x0 !== part[part.length - 1][0] || y0 !== part[part.length - 1][1]) {
+            part = [[x0, y0]];
+            out.push(part);
+        }
+
+        part.push([x1, y1]);
+    }
 }
 
 // rewind a polygon ring to a given winding order (clockwise or anti-clockwise)
