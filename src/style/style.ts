@@ -2888,7 +2888,15 @@ class Style extends Evented<MapEvents> {
         // Disabling
         if (!terrainOptions) {
             // This check prevents removing draping terrain not from #applyProjectionUpdate
-            if (!this.terrainSetForDrapingOnly() || drapeRenderMode === DrapeRenderMode.deferred) {
+            if (!this.terrainSetForDrapingOnly()) {
+                delete this.terrain;
+
+                if (this.map.transform.projection.requiresDraping) {
+                    this.setTerrainForDraping();
+                }
+            }
+
+            if (drapeRenderMode === DrapeRenderMode.deferred) {
                 delete this.terrain;
             }
 
