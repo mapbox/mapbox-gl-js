@@ -43,7 +43,7 @@ import {Debug} from '../util/debug';
 import Tile from '../source/tile';
 import {RGBAImage} from '../util/image';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
-import {ReplacementSource} from '../../3d-style/source/replacement_source';
+import {ReplacementSource, ReplacementOrderLandmark} from '../../3d-style/source/replacement_source';
 import type {Source} from '../source/source';
 import type {CutoffParams} from '../render/cutoff';
 
@@ -870,21 +870,25 @@ class Painter {
                         continue;
                     }
 
-                    let order = Infinity;
+                    let order = ReplacementOrderLandmark;
                     let clipMask = LayerTypeMask.None;
+                    const clipScope = [];
                     if (layer.type === 'clip') {
                         // Landmarks have precedence over fill extrusions regardless of order in the style.
                         // A clip layer however, is taken into account by 3D layers (i.e. fill-extrusion, landmarks, instance trees)
                         // only if those layers appear below the said clip layer.
-                        // Therefore to keep the existing behaviour for landmarks we set the order to infinity.
+                        // Therefore to keep the existing behaviour for landmarks we set the order to ReplacementOrderLandmark.
                         // This order is later used by fill-extrusion and instanced tree's rendering code to know
                         // how to deal with landmarks.
                         order = layerIdx;
                         for (const mask of layer.layout.get('clip-layer-types')) {
                             clipMask |= (mask === 'model' ? LayerTypeMask.Model : (mask === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
                         }
+                        for (const scope of layer.layout.get('clip-layer-scope')) {
+                            clipScope.push(scope);
+                        }
                     }
-                    conflationSources.push({layer: layer.fqid, cache: sourceCache, order, clipMask});
+                    conflationSources.push({layer: layer.fqid, cache: sourceCache, order, clipMask, clipScope});
                 }
 
                 this.replacementSource.setSources(conflationSources);

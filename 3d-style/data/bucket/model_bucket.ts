@@ -11,7 +11,7 @@ import {warnOnce} from '../../../src/util/util';
 import {rotationScaleYZFlipMatrix} from '../../util/model_util';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate';
 import {instanceAttributes} from '../model_attributes';
-import {ReplacementSource, regionsEquals, transformPointToTile, pointInFootprint} from '../../../3d-style/source/replacement_source';
+import {ReplacementSource, regionsEquals, transformPointToTile, pointInFootprint, skipClipping} from '../../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
@@ -237,7 +237,7 @@ class ModelBucket implements Bucket {
         return reuploadNeeded;
     }
 
-    updateReplacement(coord: OverscaledTileID, source: ReplacementSource, layerIndex: number): boolean {
+    updateReplacement(coord: OverscaledTileID, source: ReplacementSource, layerIndex: number, scope: string): boolean {
         // Replacement has to be re-checked if the source has been updated since last time
         if (source.updateTime === this.replacementUpdateTime) {
             return false;
@@ -271,7 +271,7 @@ class ModelBucket implements Bucket {
 
                     let hidden = false;
                     for (const region of this.activeReplacements) {
-                        if (region.order < layerIndex || region.order === Infinity || !(region.clipMask & LayerTypeMask.Model)) continue;
+                        if (skipClipping(region, layerIndex, LayerTypeMask.Model, scope)) continue;
 
                         if (region.min.x > x || x > region.max.x || region.min.y > y || y > region.max.y) {
                             continue;

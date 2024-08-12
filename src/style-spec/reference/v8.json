@@ -1485,6 +1485,24 @@
       },
       "property-type": "data-constant",
       "experimental": true
+    },
+    "clip-layer-scope": {
+      "type": "array",
+      "value": "string",
+      "default": [],
+      "doc": "Removes content from layers with the specified scope. By default all layers are affected. For example specifying `basemap` will only remove content from the Mapbox Standard style layers which have the same scope",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.6.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant",
+      "experimental": true
     }
   },
   "layout_fill": {

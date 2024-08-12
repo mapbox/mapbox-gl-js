@@ -1,6 +1,6 @@
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
-import {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import {ReplacementSource, ReplacementOrderLandmark} from '../../../3d-style/source/replacement_source';
 import {CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import Point from '@mapbox/point-geometry';
 import TriangleGridIndex from '../../../src/util/triangle_grid_index';
@@ -71,11 +71,15 @@ describe('ReplacementSource', () => {
             },
 
             getOrder: () => {
-                return Infinity;
+                return ReplacementOrderLandmark;
             },
 
             getClipMask: () => {
                 return LayerTypeMask.All;
+            },
+
+            getClipScope: () => {
+                return [];
             }
         };
     };
@@ -114,11 +118,15 @@ describe('ReplacementSource', () => {
             },
 
             getOrder: () => {
-                return Infinity;
+                return ReplacementOrderLandmark;
             },
 
             getClipMask: () => {
                 return LayerTypeMask.All;
+            },
+            
+            getClipScope: () => {
+                return [];
             }
         };
     };

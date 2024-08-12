@@ -6,6 +6,9 @@ import {triangleIntersectsTriangle, polygonContainsPoint} from '../../src/util/i
 import type {Bucket} from '../../src/data/bucket';
 import type {Footprint, TileFootprint} from '../util/conflation';
 import type SourceCache from '../../src/source/source_cache';
+import deepEqual from '../../src/style-spec/util/deep_equal';
+
+export const ReplacementOrderLandmark = Number.MAX_SAFE_INTEGER;
 
 // Abstract interface that acts as a source for footprints used in the replacement process
 interface FootprintSource {
@@ -13,6 +16,7 @@ interface FootprintSource {
     getFootprints(): Array<TileFootprint>;
     getOrder(): number;
     getClipMask(): number;
+    getClipScope(): Array<string>;
 }
 
 type Region = {
@@ -23,6 +27,7 @@ type Region = {
     footprintTileId: UnwrappedTileID;
     order: number;
     clipMask: number;
+    clipScope: Array<string>;
 };
 
 type RegionData = {
@@ -34,7 +39,16 @@ type RegionData = {
     footprint: Footprint;
     order: number;
     clipMask: number;
+    clipScope: Array<string>;
 };
+
+function scopeSkipsClipping(scope: string, scopes: Array<string>) : boolean {
+    return (scopes.length !== 0 && scopes.find((el) => { return el === scope; }) === undefined);
+}
+
+export function skipClipping(region: Region, layerIndex: number, mask: number, scope: string): boolean {
+    return region.order < layerIndex || region.order === ReplacementOrderLandmark || !(region.clipMask & mask) || scopeSkipsClipping(scope, region.clipScope);
+}
 
 class ReplacementSource {
     _updateTime: number;
@@ -93,7 +107,8 @@ class ReplacementSource {
                 footprint: region.footprint,
                 footprintTileId: region.tileId,
                 order: region.order,
-                clipMask: region.clipMask
+                clipMask: region.clipMask,
+                clipScope: region.clipScope
             });
         }
 
@@ -105,6 +120,7 @@ class ReplacementSource {
         cache: SourceCache;
         order: number;
         clipMask: number;
+        clipScope: Array<string>;
     }>) {
         this._setSources(sources.map(source => {
             return {
@@ -129,6 +145,9 @@ class ReplacementSource {
                 },
                 getClipMask: () => {
                     return source.clipMask;
+                },
+                getClipScope: () => {
+                    return source.clipScope;
                 }
             };
         }));
@@ -142,6 +161,7 @@ class ReplacementSource {
         }
         const order = source.getOrder();
         const clipMask = source.getClipMask();
+        const clipScope = source.getClipScope();
 
         for (const fp of footprints) {
             if (!fp.footprint) {
@@ -158,7 +178,8 @@ class ReplacementSource {
                 tileId: fp.id,
                 footprint: fp.footprint,
                 order,
-                clipMask
+                clipMask,
+                clipScope
             });
         }
 
@@ -167,7 +188,7 @@ class ReplacementSource {
 
     _computeReplacement() {
         this._activeRegions.sort((a, b) => {
-            return a.priority - b.priority || comparePoint(a.min, b.min) || comparePoint(a.max, b.max);
+            return a.priority - b.priority || comparePoint(a.min, b.min) || comparePoint(a.max, b.max) || a.order - b.order || a.clipMask - b.clipMask || compareClipScopes(a.clipScope, b.clipScope);
         });
 
         // Check if active regions have changed since last update
@@ -180,7 +201,7 @@ class ReplacementSource {
                 const curr = this._activeRegions[idx];
                 const prev = this._prevRegions[idx];
 
-                regionsChanged = curr.priority !== prev.priority || !boundsEquals(curr, prev) || (curr.order !== prev.order) || (curr.clipMask !== prev.clipMask);
+                regionsChanged = curr.priority !== prev.priority || !boundsEquals(curr, prev) || (curr.order !== prev.order) || (curr.clipMask !== prev.clipMask || !deepEqual(curr.clipScope, prev.clipScope));
 
                 ++idx;
             }
@@ -190,7 +211,7 @@ class ReplacementSource {
             ++this._updateTime;
 
             for (const region of this._activeRegions) {
-                if (region.order !== Infinity) {
+                if (region.order !== ReplacementOrderLandmark) {
                     this._globalClipBounds.min.x = Math.min(this._globalClipBounds.min.x, region.min.x);
                     this._globalClipBounds.min.y = Math.min(this._globalClipBounds.min.y, region.min.y);
                     this._globalClipBounds.max.x = Math.max(this._globalClipBounds.max.x, region.max.x);
@@ -241,7 +262,7 @@ class ReplacementSource {
                                 continue;
                             }
 
-                            if (active.order !== Infinity) {
+                            if (active.order !== ReplacementOrderLandmark) {
                                 continue;
                             }
 
@@ -277,6 +298,11 @@ class ReplacementSource {
 
 function comparePoint(a: Point, b: Point): number {
     return a.x - b.x || a.y - b.y;
+}
+
+function compareClipScopes(a: string[], b: string[]) {
+    const concat = (t: string, n: string) => { return t + n; };
+    return a.length - b.length || a.reduce(concat, '').localeCompare(b.reduce(concat, ''));
 }
 
 function boundsEquals(
@@ -315,7 +341,7 @@ function regionsEquals(a: Array<Region>, b: Array<Region>): boolean {
     }
 
     for (let i = 0; i < a.length; i++) {
-        if (a[i].sourceId !== b[i].sourceId || !boundsEquals(a[i], b[i]) || a[i].order !== b[i].order || a[i].clipMask !== b[i].clipMask) {
+        if (a[i].sourceId !== b[i].sourceId || !boundsEquals(a[i], b[i]) || a[i].order !== b[i].order || a[i].clipMask !== b[i].clipMask || !deepEqual(a[i].clipScope, b[i].clipScope)) {
             return false;
         }
     }

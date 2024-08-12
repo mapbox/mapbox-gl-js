@@ -11,7 +11,7 @@ import Point from '@mapbox/point-geometry';
 import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util';
 import BuildingIndex from '../source/building_index';
 import {warnOnce} from '../util/util';
-import {transformPointToTile, pointInFootprint} from '../../3d-style/source/replacement_source';
+import {transformPointToTile, pointInFootprint, skipClipping} from '../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
 
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
@@ -982,7 +982,7 @@ export class Placement {
             const symbolBucket = (tile.getBucket(styleLayer) as SymbolBucket);
             if (symbolBucket && tile.latestFeatureIndex && styleLayer.fqid === symbolBucket.layerIds[0]) {
                 // @ts-expect-error - TS2345 - Argument of type 'Set<unknown>' is not assignable to parameter of type 'Set<number>'.
-                this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile.collisionBoxArray, layerIndex, replacementSource, tile.tileID);
+                this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile.collisionBoxArray, layerIndex, replacementSource, tile.tileID, styleLayer.scope);
                 const layout = symbolBucket.layers[0].layout;
                 if (layout.get('symbol-z-elevate') && this.buildingIndex) {
                     this.buildingIndex.updateZOffset(symbolBucket, tile.tileID);
@@ -992,7 +992,7 @@ export class Placement {
         }
     }
 
-    updateBucketOpacities(bucket: SymbolBucket, seenCrossTileIDs: Set<number>, collisionBoxArray: CollisionBoxArray | null | undefined, layerIndex: number, replacementSource: ReplacementSource | null | undefined, coord: OverscaledTileID) {
+    updateBucketOpacities(bucket: SymbolBucket, seenCrossTileIDs: Set<number>, collisionBoxArray: CollisionBoxArray | null | undefined, layerIndex: number, replacementSource: ReplacementSource | null | undefined, coord: OverscaledTileID, scope: string) {
         if (bucket.hasTextData()) bucket.text.opacityVertexArray.clear();
         if (bucket.hasIconData()) bucket.icon.opacityVertexArray.clear();
         if (bucket.hasIconCollisionBoxData()) bucket.iconCollisionBox.collisionVertexArray.clear();
@@ -1068,7 +1068,8 @@ export class Placement {
             let clippedSymbol = false;
             if ((hasText || hasIcon) && replacementSource) {
                 for (const region of bucket.activeReplacements) {
-                    if (region.order < layerIndex || region.order === Infinity || !(region.clipMask & LayerTypeMask.Symbol)) continue;
+                    if (skipClipping(region, layerIndex, LayerTypeMask.Symbol, scope)) continue;
+
                     if (region.min.x > tileAnchorX || tileAnchorX > region.max.x || region.min.y > tileAnchorY || tileAnchorY > region.max.y) {
                         continue;
                     }

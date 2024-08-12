@@ -994,7 +994,11 @@ export type ClipLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "clip-layer-types"?: ExpressionSpecification
+        "clip-layer-types"?: ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "clip-layer-scope"?: ExpressionSpecification
     },
     "paint"?: never
 }
