@@ -81,7 +81,7 @@
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-html": "^8.1.1",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-jsdoc": "^48.11.0",
+    "eslint-plugin-jsdoc": "^50.0.1",
     "glob": "^11.0.0",
     "is-builtin-module": "^4.0.0",
     "jest-extended": "^4.0.2",
