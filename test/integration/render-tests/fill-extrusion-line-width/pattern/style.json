@@ -1,0 +1,88 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "buffer": 0,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [
+                  -0.00040041314059635624,
+                  0.00020224483651531955
+                ],
+                [
+                  -0.00040041314059635624,
+                  -0.00018595604669258137
+                ],
+                [
+                  -0.000011012200900495372,
+                  -0.00018595604669258137
+                ],
+                [
+                  -0.000011012200900495372,
+                  0.00020224483651531955
+                ],
+                [
+                  -0.00040041314059635624,
+                  0.00020224483651531955
+                ]
+              ],
+              "type": "LineString"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [
+                  0.00012566720590712066,
+                  0.00018192281247308983
+                ],
+                [
+                  0.000018421536083224055,
+                  -0.000055164532795970445
+                ],
+                [
+                  0.000160175243621552,
+                  -0.00020312775697561847
+                ],
+                [
+                  0.00030537196272462097,
+                  -0.00007812970969212074
+                ]                
+              ],
+              "type": "LineString"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "pitch": 60,
+  "zoom": 18,
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-pattern": "generic_icon",
+        "fill-extrusion-height": 10,
+        "fill-extrusion-line-width": 2.0
+      }
+    }
+  ]
+}

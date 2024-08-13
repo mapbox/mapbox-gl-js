@@ -700,7 +700,10 @@ export type FillExtrusionLayerSpecification = {
         "fill-extrusion-rounded-roof"?: PropertyValueSpecification<boolean>,
         "fill-extrusion-cutoff-fade-range"?: ExpressionSpecification,
         "fill-extrusion-emissive-strength"?: PropertyValueSpecification<number>,
-        "fill-extrusion-emissive-strength-transition"?: TransitionSpecification
+        "fill-extrusion-emissive-strength-transition"?: TransitionSpecification,
+        "fill-extrusion-line-width"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-extrusion-line-width-transition"?: TransitionSpecification,
+        "fill-extrusion-line-alignment"?: "inside" | "outside" | "center"
     }
 }
 

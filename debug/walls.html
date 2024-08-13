@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #pane {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='pane'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script src='https://unpkg.com/d3@7.8.5/dist/d3.min.js'></script>
+<script type='module'>
+    /* globals d3 */
+
+    import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
+
+    const PARAMS = {
+      'fill-extrusion-line-width': 0.5,
+      'fill-extrusion-line-alignment': 'inside'
+    };
+    const alignments = ['inside', 'outside', 'center'];
+
+    const pane = new Pane({title: 'Parameters', container: document.querySelector('#pane')});
+
+    pane.addBinding(PARAMS, 'fill-extrusion-line-width', {
+        label: 'fill-extrusion-line-width',
+        min: 0.0,
+        max: 4.0
+    }).on('change', (e) => {
+        map.setPaintProperty('walls', 'fill-extrusion-line-width', PARAMS['fill-extrusion-line-width']);
+    });
+
+    pane.addBinding(PARAMS, 'fill-extrusion-line-alignment', {
+        label: 'fill-extrusion-line-alignment',
+        options: alignments.reduce((acc, item) => ({...acc, [item]: item}), {})
+    }).on('change', (e) => {
+        map.setPaintProperty('walls', 'fill-extrusion-line-alignment', PARAMS['fill-extrusion-line-alignment']);
+    });
+
+    var map = window.map = new mapboxgl.Map({
+        container: 'map',
+        devtools: true,
+        zoom: 17.34,
+        center: [24.944634, 60.170992],
+        pitch: 50.0,
+        bearing: 10.0,
+        hash: true
+    });
+
+    map.on('style.load', () => {
+        map.addSource('walls', {
+          "type": "geojson",
+          "data": {
+            "type": "FeatureCollection",
+            "features": [
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    [
+                      24.94360508261508,
+                      60.171544860666444
+                    ],
+                    [
+                      24.943624592212757,
+                      60.170375487498376
+                    ],
+                    [
+                      24.944439117930415,
+                      60.17039247039406
+                    ],
+                    [
+                      24.944373273036177,
+                      60.17154607368752
+                    ],
+                    [
+                      24.94361883106481,
+                      60.17154490384547
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    [
+                      24.943654281564704,
+                      60.17151102340699
+                    ],
+                    [
+                      24.943973802321835,
+                      60.17150986332419
+                    ],
+                    [
+                      24.943985463664177,
+                      60.17127784593819
+                    ],
+                    [
+                      24.943661278369518,
+                      60.17128016612037
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    [
+                      24.94370325919928,
+                      60.17117459767471
+                    ],
+                    [
+                      24.943705591467506,
+                      60.17082888764358
+                    ],
+                    [
+                      24.944295655348185,
+                      60.17083584828427
+                    ],
+                    [
+                      24.944281661738643,
+                      60.17111775298662
+                    ],
+                    [
+                      24.94382686941924,
+                      60.171107312115026
+                    ],
+                    [
+                      24.943819872614426,
+                      60.17090661471275
+                    ],
+                    [
+                      24.944223355031028,
+                      60.17091589554434
+                    ],
+                    [
+                      24.94418603873777,
+                      60.17104814711209
+                    ],
+                    [
+                      24.943943482834385,
+                      60.17104698701297
+                    ],
+                    [
+                      24.943948147370946,
+                      60.170971580479915
+                    ],
+                    [
+                      24.944060096249586,
+                      60.1709762208869
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    [
+                      24.943749904564555,
+                      60.17074884017154
+                    ],
+                    [
+                      24.94426300359146,
+                      60.17075116039081
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    [
+                      24.9437662304434,
+                      60.170637469450895
+                    ],
+                    [
+                      24.944018115419823,
+                      60.17063862956448
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    [
+                      24.943896837468145,
+                      60.17068271385162
+                    ],
+                    [
+                      24.943896837468145,
+                      60.170588744641776
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    [
+                      24.944181374201236,
+                      60.170637469450895
+                    ],
+                    [
+                      24.944181374201236,
+                      60.170628188540405
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    [
+                      24.94424434544331,
+                      60.170637469451066
+                    ],
+                    [
+                      24.944243179309154,
+                      60.170629928711435
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    [
+                      24.943761782104787,
+                      60.170453683176135
+                    ],
+                    [
+                      24.944341771744888,
+                      60.1704554423182
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              },
+              {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                  "coordinates": [
+                    [
+                      24.94432358714002,
+                      60.171508732066314
+                    ],
+                    [
+                      24.944387224667963,
+                      60.170497558225236
+                    ]
+                  ],
+                  "type": "LineString"
+                }
+              }, 
+              {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              24.942778004603383,
+              60.17074354160201
+            ],
+            [
+              24.943237367092507,
+              60.17074354160201
+            ],
+            [
+              24.943237367092507,
+              60.1710526800488
+            ],
+            [
+              24.942778004603383,
+              60.1710526800488
+            ],
+            [
+              24.942778004603383,
+              60.17074354160201
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              24.942785855260723,
+              60.171149498105876
+            ],
+            [
+              24.943207968449116,
+              60.171149498105876
+            ],
+            [
+              24.943207968449116,
+              60.17151825812721
+            ],
+            [
+              24.942785855260723,
+              60.17151825812721
+            ],
+            [
+              24.942785855260723,
+              60.171149498105876
+            ]
+          ],
+          [
+            [
+              24.942815356855277,
+              60.17144066180481
+            ],
+            [
+              24.942815356855277,
+              60.1711856565351
+            ],
+            [
+              24.943082059793312,
+              60.1711856565351
+            ],
+            [
+              24.943082059793312,
+              60.17144066180481
+            ],
+            [
+              24.942815356855277,
+              60.17144066180481
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "id": 1
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              24.94315443067427,
+              60.17194939272241
+            ],
+            [
+              24.94315795609745,
+              60.171757593060136
+            ],
+            [
+              24.9430071191519,
+              60.17171639477962
+            ],
+            [
+              24.94341176978972,
+              60.17172463122054
+            ],
+            [
+              24.94343101759526,
+              60.17196042787603
+            ],
+            [
+              24.94315443067427,
+              60.17194939272241
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }}
+            ]
+          }
+        });
+    
+        map.addLayer({
+            "type": "fill-extrusion",
+            "id": "walls",
+            "source": "walls",
+            "paint": {
+                "fill-extrusion-line-alignment": "inside",
+                "fill-extrusion-line-width": 0.5,
+                "fill-extrusion-color": "#f0e5de",
+                "fill-extrusion-height": 10.0
+            }
+        });
+    });
+</script>
+</body>
+</html>

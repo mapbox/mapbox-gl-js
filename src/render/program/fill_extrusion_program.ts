@@ -31,6 +31,8 @@ export type FillExtrusionUniformsType = {
     ['u_height_lift']: Uniform1f;
     ['u_ao']: Uniform2f;
     ['u_edge_radius']: Uniform1f;
+    ['u_alignment']: Uniform1f;
+    ['u_width_scale']: Uniform1f;
     ['u_flood_light_color']: Uniform3f;
     ['u_vertical_scale']: Uniform1f;
     ['u_flood_light_intensity']: Uniform1f;
@@ -41,6 +43,8 @@ export type FillExtrusionUniformsType = {
 export type FillExtrusionDepthUniformsType = {
     ['u_matrix']: UniformMatrix4f;
     ['u_edge_radius']: Uniform1f;
+    ['u_alignment']: Uniform1f;
+    ['u_width_scale']: Uniform1f;
     ['u_vertical_scale']: Uniform1f;
 };
 
@@ -53,6 +57,8 @@ export type FillExtrusionPatternUniformsType = {
     ['u_vertical_gradient']: Uniform1f;
     ['u_ao']: Uniform2f;
     ['u_edge_radius']: Uniform1f;
+    ['u_alignment']: Uniform1f;
+    ['u_width_scale']: Uniform1f;
     // globe uniforms:
     ['u_tile_id']: Uniform3f;
     ['u_zoom_transition']: Uniform1f;
@@ -90,6 +96,8 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
     'u_vertical_gradient': new Uniform1f(context),
     'u_opacity': new Uniform1f(context),
     'u_edge_radius': new Uniform1f(context),
+    'u_alignment': new Uniform1f(context),
+    'u_width_scale': new Uniform1f(context),
     'u_ao': new Uniform2f(context),
     // globe uniforms:
     'u_tile_id': new Uniform3f(context),
@@ -108,6 +116,8 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
 const fillExtrusionDepthUniforms = (context: Context): FillExtrusionDepthUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_edge_radius': new Uniform1f(context),
+    'u_alignment': new Uniform1f(context),
+    'u_width_scale': new Uniform1f(context),
     'u_vertical_scale': new Uniform1f(context)
 });
 
@@ -119,6 +129,8 @@ const fillExtrusionPatternUniforms = (context: Context): FillExtrusionPatternUni
     'u_vertical_gradient': new Uniform1f(context),
     'u_height_factor': new Uniform1f(context),
     'u_edge_radius': new Uniform1f(context),
+    'u_alignment': new Uniform1f(context),
+    'u_width_scale': new Uniform1f(context),
     'u_ao': new Uniform2f(context),
     // globe uniforms:
     'u_tile_id': new Uniform3f(context),
@@ -159,6 +171,8 @@ const fillExtrusionUniformValues = (
     opacity: number,
     aoIntensityRadius: [number, number],
     edgeRadius: number,
+    lineAlignment: number,
+    lineWidthScale: number,
     coord: OverscaledTileID,
     heightLift: number,
     zoomTransition: number,
@@ -199,6 +213,8 @@ const fillExtrusionUniformValues = (
         'u_height_lift': 0,
         'u_ao': aoIntensityRadius,
         'u_edge_radius': edgeRadius,
+        'u_alignment': lineAlignment,
+        'u_width_scale': lineWidthScale,
         'u_flood_light_color': floodLightColor,
         'u_vertical_scale': verticalScale,
         'u_flood_light_intensity': floodLightIntensity,
@@ -218,10 +234,12 @@ const fillExtrusionUniformValues = (
     return uniformValues;
 };
 
-const fillExtrusionDepthUniformValues = (matrix: Float32Array, edgeRadius: number, verticalScale: number): UniformValues<FillExtrusionDepthUniformsType> => {
+const fillExtrusionDepthUniformValues = (matrix: Float32Array, edgeRadius: number, lineAlignment: number, lineWidthScale: number, verticalScale: number): UniformValues<FillExtrusionDepthUniformsType> => {
     return {
         'u_matrix': matrix,
         'u_edge_radius': edgeRadius,
+        'u_alignment': lineAlignment,
+        'u_width_scale': lineWidthScale,
         'u_vertical_scale': verticalScale
     };
 };
@@ -233,6 +251,8 @@ const fillExtrusionPatternUniformValues = (
     opacity: number,
     aoIntensityRadius: [number, number],
     edgeRadius: number,
+    lineAlignment: number,
+    lineWidthScale: number,
     coord: OverscaledTileID,
     tile: Tile,
     heightLift: number,
@@ -243,7 +263,7 @@ const fillExtrusionPatternUniformValues = (
     verticalScale: number,
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
-        matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, edgeRadius, coord,
+        matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, edgeRadius, lineAlignment, lineWidthScale, coord,
         heightLift, zoomTransition, mercatorCenter, invMatrix, floodLightColor, verticalScale, 1.0, [0, 0, 0], 0);
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8

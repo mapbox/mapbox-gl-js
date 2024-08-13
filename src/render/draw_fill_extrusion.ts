@@ -29,6 +29,7 @@ import Tile from '../source/tile';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
 import {RGBAImage} from '../util/image';
 import Texture from './texture';
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -37,6 +38,7 @@ import {Frustum} from '../util/primitives';
 import {mat4} from "gl-matrix";
 import {getCutoffParams} from './cutoff';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
+import {warnOnce} from '../util/util';
 
 export default draw;
 
@@ -282,6 +284,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(layer.lut).toArray01().slice(0, 3) as any);
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
+    const wallMode = layer.paint.get('fill-extrusion-line-width').constantOr(1.0) !== 0.0;
 
     const cutoffParams = getCutoffParams(painter, layer.paint.get('fill-extrusion-cutoff-fade-range'));
     const emissiveStrength = layer.paint.get('fill-extrusion-emissive-strength');
@@ -306,6 +309,24 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     if (cutoffParams.shouldRenderCutoff) {
         baseDefines.push('RENDER_CUTOFF');
     }
+    if (wallMode) {
+        baseDefines.push('RENDER_WALL_MODE');
+    }
+
+    const lineAlignmentValue = (() => {
+        const alignmentEnumValue = layer.paint.get('fill-extrusion-line-alignment');
+        switch (alignmentEnumValue) {
+        case 'inside':
+            return 1.0;
+        case 'outside':
+            return -1.0;
+        case 'center':
+            return 0.0;
+        default:
+            warnOnce(`Unsupported value for fill-extrusion-line-alignment: ${alignmentEnumValue}`);
+            return 0.0;
+        }
+    })();
 
     let singleCascadeDefines;
 
@@ -372,6 +393,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         }
 
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
+        const lineWidthScale = 1.0 / bucket.tileToMeter;
         let uniformValues;
         if (isShadowPass && shadowRenderer) {
             if (frustumCullShadowCaster(tile.tileID, bucket, painter)) {
@@ -379,7 +401,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             }
             const tileMatrix = shadowRenderer.calculateShadowPassMatrixFromTile(tile.tileID.toUnwrapped());
 
-            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, roofEdgeRadius, verticalScale);
+            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, roofEdgeRadius, lineAlignmentValue, lineWidthScale, verticalScale);
         } else {
             const matrix = painter.translatePosMatrix(
                 coord.expandedProjMatrix,
@@ -389,14 +411,13 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
                 layer.paint.get('fill-extrusion-translate-anchor'));
 
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
-
             if (image) {
                 // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'boolean'.
-                uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
+                uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineAlignmentValue, lineWidthScale, coord,
                     tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
             } else {
                 // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'boolean'.
-                uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, coord,
+                uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineAlignmentValue, lineWidthScale, coord,
                     heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor, emissiveStrength);
             }
         }
@@ -426,6 +447,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         const dynamicBuffers = [];
         if (painter.terrain || replacementActive) dynamicBuffers.push(bucket.centroidVertexBuffer);
         if (isGlobeProjection) dynamicBuffers.push(bucket.layoutVertexExtBuffer);
+        if (wallMode) dynamicBuffers.push(bucket.wallVertexBuffer);
 
         program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,

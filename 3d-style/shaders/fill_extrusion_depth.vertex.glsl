@@ -2,19 +2,27 @@
 
 uniform mat4 u_matrix;
 uniform float u_edge_radius;
+uniform float u_alignment;
+uniform float u_width_scale;
 uniform float u_vertical_scale;
 
 in vec4 a_pos_normal_ed;
 in vec2 a_centroid_pos;
 
+#ifdef RENDER_WALL_MODE
+in vec4 a_join_normal_inside_polygon;
+#endif
+
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
+#pragma mapbox: define highp float line_width
 
 out highp float v_depth;
 
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
+    #pragma mapbox: initialize highp float line_width
 
     base *= u_vertical_scale;
     height *= u_vertical_scale;
@@ -48,6 +56,16 @@ vec3 pos;
     pos = vec3(pos_nx.xy, t > 0.0 ? height : base);
 #endif
 
+#ifdef RENDER_WALL_MODE
+    // If u_alignment is zero: offsets the wall to both direction with 0.5 * wall_offset
+    // If u_alignment is -1: offsets the wall inwards with 1.0 * wall_offset
+    // If u_alignment is 1: offsets the wall outwards with 1.0 * wall_offset
+    vec2 wall_offset = u_width_scale * line_width * (a_join_normal_inside_polygon.xy / EXTENT);
+    float isPolygon = a_join_normal_inside_polygon.w;
+    float sideAlignment = abs(isPolygon * u_alignment); // Result is zero if center alignment is used
+    pos.xy += (1.0 - a_join_normal_inside_polygon.z) * mix(wall_offset * 0.5, wall_offset * mix(1.0, 0.0, max(u_alignment, 0.0)), sideAlignment);
+    pos.xy -= a_join_normal_inside_polygon.z * mix(wall_offset * 0.5, wall_offset * mix(0.0, 1.0, max(u_alignment, 0.0)), sideAlignment);
+#endif
     float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
     gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
     v_depth = gl_Position.z / gl_Position.w;

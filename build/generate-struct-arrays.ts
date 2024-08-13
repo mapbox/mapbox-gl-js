@@ -141,7 +141,7 @@ import lineAttributesPattern from '../src/data/bucket/line_attributes_pattern';
 import patternAttributes from '../src/data/bucket/pattern_attributes';
 import dashAttributes from '../src/data/bucket/dash_attributes';
 import skyboxAttributes from '../src/render/skybox_attributes';
-import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes} from '../src/data/bucket/fill_extrusion_attributes';
+import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes, wallAttributes} from '../src/data/bucket/fill_extrusion_attributes';
 import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, instanceAttributes, featureAttributes} from '../3d-style/data/model_attributes';
 
 // layout vertex arrays
@@ -280,6 +280,7 @@ createStructArrayLayoutType(createLayout([{
 
 // Fill extrusion specific array
 createStructArrayType(`fill_extrusion_centroid`, centroidAttributes, true);
+createStructArrayType(`fill_extrusion_wall`, wallAttributes, true);
 
 // Fill extrusion ground effect specific array
 createStructArrayType('fill_extrusion_hidden_by_landmark', hiddenByLandmarkAttributes);
