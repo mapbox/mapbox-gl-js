@@ -1132,4 +1132,3 @@ MapboxRasterTile.performDecoding = function (buf, decodingBatch) {
 };
 
 export { MRTDecodingBatch, MRTError, MapboxRasterTile, RasterLayer, VERSION, deltaDecode };
-//# sourceMappingURL=mrt.esm.js.map
