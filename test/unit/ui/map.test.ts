@@ -816,7 +816,9 @@ describe('Map', () => {
         // Wait for render to trigger
         await waitFor(map, "render");
         // Wait for idle state (final frame rendered)
+        expect(map.idle()).toBeFalsy();
         await waitFor(map, "idle");
+        expect(map.idle()).toBeTruthy();
         if (timer) clearTimeout(timer);
         await new Promise(resolve => {
             timer = setTimeout(() => {
@@ -829,7 +831,9 @@ describe('Map', () => {
     test('no render after idle event', async () => {
         const style = createStyle();
         const map = createMap({style});
+        expect(map.idle()).toBeFalsy();
         await waitFor(map, "idle");
+        expect(map.idle()).toBeTruthy();
         map.on('render', expect.unreachable);
         setTimeout(() => {}, 100);
     });
@@ -839,8 +843,10 @@ describe('Map', () => {
         const map = createMap({style, fadeDuration: 0});
         await waitFor(map, "idle");
         map.zoomTo(0.5, {duration: 100});
+        expect(map.idle()).toBeFalsy();
         expect(map.isMoving()).toBeTruthy();
         await waitFor(map, "idle");
+        expect(map.idle()).toBeTruthy();
         expect(!map.isMoving()).toBeTruthy();
     });
 

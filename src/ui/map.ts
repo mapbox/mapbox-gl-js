@@ -3868,6 +3868,25 @@ export class Map extends Camera {
     /** @section {Lifecycle} */
 
     /**
+     * Returns a Boolean indicating whether the map is in idle state:
+     * - No camera transitions are in progress.
+     * - All currently requested tiles have loaded.
+     * - All fade/transition animations have completed.
+     *
+     * Returns `false` if there are any camera or animation transitions in progress,
+     * if the style is not yet fully loaded, or if there has been a change to the sources or style that has not yet fully loaded.
+     *
+     * If the map.repaint is set to `true`, the map will never be idle.
+     *
+     * @returns {boolean} A Boolean indicating whether the map is idle.
+     * @example
+     * const isIdle = map.idle();
+     */
+    idle(): boolean {
+        return !this.isMoving() && this.loaded();
+    }
+
+    /**
      * Returns a Boolean indicating whether the map is fully loaded.
      *
      * Returns `false` if the style is not yet fully loaded,
@@ -4130,7 +4149,7 @@ export class Map extends Camera {
         if (somethingDirty || this._repaint) {
             this.triggerRepaint();
         } else {
-            const willIdle = !this.isMoving() && this.loaded();
+            const willIdle = this.idle();
             if (willIdle) {
                 // Before idling, we perform one last sample so that if the average elevation
                 // does not exactly match the terrain, we skip idle and ease it to its final state.
@@ -4669,6 +4688,7 @@ export class Map extends Camera {
     /**
      * Gets and sets a Boolean indicating whether the map will
      * continuously repaint. This information is useful for analyzing performance.
+     * The map will never be idle when this option is set to `true`.
      *
      * @name repaint
      * @type {boolean}
