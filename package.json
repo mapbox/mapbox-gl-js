@@ -57,7 +57,7 @@
     "@types/geojson-vt": "^3.2.5",
     "@types/jest": "^29.5.12",
     "@types/mapbox__point-geometry": "^0.1.4",
-    "@types/node": "^22.1.0",
+    "@types/node": "^22.2.0",
     "@types/offscreencanvas": "^2019.7.3",
     "@types/pbf": "^3.0.5",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
