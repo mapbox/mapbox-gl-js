@@ -1731,7 +1731,6 @@ const symbolLayout: mapboxgl.SymbolLayout = {
     "icon-rotation-alignment": eitherType("map", "viewport", "auto"),
     "icon-size": eitherType(0, styleFunction, expression),
     "icon-text-fit": eitherType("none", "both", "width", "height"),
-    // @ts-expect-error - incompatible
     "icon-text-fit-padding": eitherType([0], expression),
     "icon-image": eitherType("#000", styleFunction, expression),
     "icon-rotate": eitherType(0, styleFunction, expression),
@@ -1755,7 +1754,6 @@ const symbolLayout: mapboxgl.SymbolLayout = {
     "text-padding": eitherType(0, expression),
     "text-keep-upright": false,
     "text-transform": eitherType("none", "uppercase", "lowercase", styleFunction, expression),
-    // @ts-expect-error - incompatible
     "text-offset": eitherType([0], expression),
     "text-allow-overlap": false,
     "text-ignore-placement": false,

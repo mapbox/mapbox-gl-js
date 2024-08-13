@@ -71,7 +71,8 @@ export type DataDrivenPropertyValueSpecification<T> =
     | CameraFunctionSpecification<T>
     | SourceFunctionSpecification<T>
     | CompositeFunctionSpecification<T>
-    | ExpressionSpecification;
+    | ExpressionSpecification
+    | (T extends Array<infer U> ? Array<U | ExpressionSpecification> : never);
 
 export type StyleSpecification = {
     "version": 8,
