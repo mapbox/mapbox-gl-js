@@ -8877,9 +8877,6 @@
       "default": true,
       "doc": "Enable/Disable shadow casting for this layer",
       "transition": false,
-      "expression": {
-        "interpolated": false
-      },
       "sdk-support": {
           "basic functionality": {
           "js": "3.0.0",
@@ -8894,9 +8891,6 @@
       "default": true,
       "doc": "Enable/Disable shadow receiving for this layer",
       "transition": false,
-      "expression": {
-        "interpolated": false
-      },
       "sdk-support": {
           "basic functionality": {
           "js": "3.0.0",

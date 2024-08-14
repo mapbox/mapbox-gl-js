@@ -327,6 +327,23 @@ const highlightLayer: mapboxgl.CustomLayerInterface = {
 map.addLayer(highlightLayer);
 
 //
+// Add model layer
+//
+
+map.addLayer({
+    'id': 'model',
+    'type': 'model',
+    'source': 'model',
+    'layout': {
+        'model-id': ['get', 'model-uri']
+    },
+    'paint': {
+        'model-cast-shadows': false,
+        'model-receive-shadows': false
+    }
+});
+
+//
 // Add 3D terrain
 //
 
