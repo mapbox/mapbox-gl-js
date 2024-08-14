@@ -793,7 +793,9 @@ export type RasterParticleLayerSpecification = {
         "raster-particle-speed-factor-transition"?: TransitionSpecification,
         "raster-particle-fade-opacity-factor"?: PropertyValueSpecification<number>,
         "raster-particle-fade-opacity-factor-transition"?: TransitionSpecification,
-        "raster-particle-reset-rate-factor"?: number
+        "raster-particle-reset-rate-factor"?: number,
+        "raster-particle-elevation"?: PropertyValueSpecification<number>,
+        "raster-particle-elevation-transition"?: TransitionSpecification
     }
 }
 

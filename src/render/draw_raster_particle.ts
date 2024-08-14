@@ -33,6 +33,8 @@ import Transform from '../geo/transform';
 import rasterFade from './raster_fade';
 import assert from 'assert';
 import {RGBAImage} from '../util/image';
+import {smoothstep} from '../util/util';
+import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
 
 export default drawRasterParticle;
 
@@ -425,7 +427,10 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
     const context = painter.context;
     const gl = context.gl;
 
-    const rasterElevation = 250.0;
+    // Add minimum elevation for globe zoom level to avoid clipping with globe tiles
+    const tileSize = sourceCache.getSource().tileSize;
+    const minLiftForZoom = (1.0 - smoothstep(GLOBE_ZOOM_THRESHOLD_MAX, GLOBE_ZOOM_THRESHOLD_MAX + 1.0, painter.transform.zoom)) * 5.0 * tileSize;
+    const rasterElevation = minLiftForZoom + layer.paint.get('raster-particle-elevation');
     const align = !painter.options.moving;
     const isGlobeProjection = painter.transform.projection.name === 'globe';
 
@@ -516,7 +521,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 
         if (isGlobeProjection) {
-            const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+            const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
             const skirtHeightValue = 0;
             const sharedBuffers = painter.globeSharedBuffers;
             if (sharedBuffers) {
@@ -525,7 +530,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
                 assert(indexBuffer);
                 assert(segments);
                 // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
-                program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.backCCW, uniformValues, layer.id, buffer, indexBuffer, segments);
+                program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, painter.renderElevatedRasterBackface ? CullFaceMode.frontCCW : CullFaceMode.backCCW, uniformValues, layer.id, buffer, indexBuffer, segments);
             }
         } else {
             const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);

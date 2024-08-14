@@ -101,6 +101,10 @@ class RasterParticleStyleLayer extends StyleLayer {
     _invalidateAnimationState() {
         this.lastInvalidatedAt = browser.now();
     }
+
+    tileCoverLift(): number {
+        return this.paint.get('raster-particle-elevation');
+    }
 }
 
 export {COLOR_RAMP_RES};

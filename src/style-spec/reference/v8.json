@@ -8210,6 +8210,27 @@
         }
       },
       "property-type": "data-constant"
+    },
+    "raster-particle-elevation": {
+      "type": "number",
+      "doc": "Specifies an uniform elevation from the ground, in meters.",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_hillshade": {

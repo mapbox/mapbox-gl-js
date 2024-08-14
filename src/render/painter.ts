@@ -1129,7 +1129,7 @@ class Painter {
             this.currentLayer = 0;
             while (this.currentLayer < layerIds.length) {
                 const layer = orderedLayers[this.currentLayer];
-                if (layer.type === "raster") {
+                if (layer.type === "raster" || layer.type === "raster-particle") {
                     const sourceCache = style.getLayerSourceCache(layer);
                     // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'. | TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                     this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
