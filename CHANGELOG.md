@@ -1,6 +1,7 @@
-## 3.6.0-beta.1
+## 3.6.0
 
 ### Features and improvements ✨
+- Add wall rendering mode to the `fill-exturion` layer by introducing `fill-extrusion-line-width` and `fill-extrusion-line-alignment` properties. Set `fill-extrusion-line-width` to a non-zero value to render walls instead of a solid extrusion.
 - Improve initial load performance.
 - Add inner glow effect for negative `circle-blur` values.
 - Add support for inlining TileJSON in style source definitions using `data` field.
@@ -8,13 +9,23 @@
 - Improve performance of updating config values of a style.
 - Add more descriptive expression evaluation error messages.
 - Improve TypeScript typings.
+- Improve performance of symbol occlusion (visibility checks against terrain and 3D objects).
+- Add `clip-layer-scope` property to limit `clip` layer to a specific style fragment.
+- Add `Map` `idle` method to check whether a map is idle.
 
 ### Bug fixes 🐞
 - Fix `isSourceLoaded` flag on `sourcedata` event for already loaded sources.
 - Fix firing `load` event when all tiles fail to load.
 - Fix performance issues when GeoJSON in `dynamic` mode is updated too frequently.
+- Fix GeoJSON line rendering in `dynamic` mode.
 - Fix rasterarray layer flickering from stale tiles cache.
 - Fix spikes when viewing terrain-enabled maps in certain environments.
+- Fix `Map` `getLayer` not working properly with custom layers.
+- Fix custom layer rendering issues on globe with high pitch.
+- Fix an issue with `line-trim-offset` on very long lines.
+- Fix rendering issues when ground effects overlap with line layers.
+- Fix landmark visibility issues near tile borders.
+- Fix accessibility issues with compact attribution button and logo.
 
 ## 3.5.2
 
