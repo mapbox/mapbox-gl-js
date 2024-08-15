@@ -5845,7 +5845,7 @@
       "experimental": true,
       "units": "meters",
       "default": 0,
-      "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters.",
+      "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters. Note: this experimental property is evaluated once per tile, during tile initialization. Changing the property value could trigger tile reload. The `feature-state` styling is deprecated and will get removed soon.",
       "requires": [
         "lights"
       ],
