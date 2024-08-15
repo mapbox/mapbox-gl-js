@@ -321,6 +321,12 @@ function getSuperclusterOptions({
         }
     };
 
+    // convert String option value into a TypedArray constructor
+    const arrayTypes = {
+        Float32Array, Float64Array
+    };
+    superclusterOptions.arrayType = arrayTypes[superclusterOptions.arrayType];
+
     return superclusterOptions;
 }
 

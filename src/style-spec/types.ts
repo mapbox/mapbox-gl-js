@@ -255,6 +255,7 @@ export type GeoJSONSourceSpecification = {
     "clusterMaxZoom"?: number,
     "clusterMinPoints"?: number,
     "clusterProperties"?: unknown,
+    "clusterArrayType"?: "Float32Array" | "Float64Array",
     "lineMetrics"?: boolean,
     "generateId"?: boolean,
     "promoteId"?: PromoteIdSpecification,

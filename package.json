@@ -39,7 +39,7 @@
     "quickselect": "^3.0.0",
     "rw": "^1.3.3",
     "serialize-to-js": "^3.1.2",
-    "supercluster": "^8.0.1",
+    "supercluster": "andrewharvey/supercluster#244",
     "tinyqueue": "^3.0.0",
     "tweakpane": "^4.0.4",
     "vt-pbf": "^3.1.3"

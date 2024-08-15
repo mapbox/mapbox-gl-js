@@ -1005,6 +1005,19 @@
       "type": "*",
       "doc": "An object defining custom properties on the generated clusters if clustering is enabled, aggregating values from clustered points. Has the form `{\"property_name\": [operator, map_expression]}`. `operator` is any expression function that accepts at least 2 operands (e.g. `\"+\"` or `\"max\"`) — it accumulates the property value from clusters/points the cluster contains; `map_expression` produces the value of a single point.\n\nExample: `{\"sum\": [\"+\", [\"get\", \"scalerank\"]]}`.\n\nFor more advanced use cases, in place of `operator`, you can use a custom reduce expression that references a special `[\"accumulated\"]` value, e.g.:\n`{\"sum\": [[\"+\", [\"accumulated\"], [\"get\", \"sum\"]], [\"get\", \"scalerank\"]]}`"
     },
+    "clusterArrayType": {
+      "type": "enum",
+      "default": "Float32Array",
+      "values": {
+        "Float32Array": {
+          "doc": "A Float32Array"
+        },
+        "Float64Array": {
+          "doc": "A Float64Array"
+        }
+      },
+      "doc": "TypedArray to use for clustering, for clusterMaxZoom values and lower clusterRadius values you may need to increase this to Float64Array for more accurate clusters."
+    },
     "lineMetrics": {
       "type": "boolean",
       "default": false,
