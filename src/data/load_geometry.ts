@@ -33,7 +33,7 @@ function preparePoint(point: Point, scale: number) {
 interface FeatureWithGeometry {
     extent: number;
     type: 1 | 2 | 3;
-    loadGeometry(): Array<Array<Point>>;
+    loadGeometry: () => Array<Array<Point>>;
 }
 
 /**

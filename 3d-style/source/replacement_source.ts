@@ -12,11 +12,11 @@ export const ReplacementOrderLandmark = Number.MAX_SAFE_INTEGER;
 
 // Abstract interface that acts as a source for footprints used in the replacement process
 interface FootprintSource {
-    getSourceId(): string;
-    getFootprints(): Array<TileFootprint>;
-    getOrder(): number;
-    getClipMask(): number;
-    getClipScope(): Array<string>;
+    getSourceId: () => string;
+    getFootprints: () => Array<TileFootprint>;
+    getOrder: () => number;
+    getClipMask: () => number;
+    getClipScope: () => Array<string>;
 }
 
 type Region = {

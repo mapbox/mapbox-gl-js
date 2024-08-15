@@ -47,6 +47,7 @@
         "@typescript-eslint/no-redundant-type-constituents": "off",
 
         // TypeScript specific rules
+        "@typescript-eslint/method-signature-style": "error",
         "@typescript-eslint/no-floating-promises": "off",
         "@typescript-eslint/consistent-type-exports": "off",
         "@typescript-eslint/consistent-type-imports": "off",

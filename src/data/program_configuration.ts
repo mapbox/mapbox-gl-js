@@ -86,7 +86,7 @@ function packColor(color: RenderColor): [number, number] {
 
 interface AttributeBinder {
     context: ProgramConfigurationContext;
-    populatePaintArray(
+    populatePaintArray: (
         length: number,
         feature: Feature,
         imagePositions: SpritePositions,
@@ -94,8 +94,8 @@ interface AttributeBinder {
         canonical?: CanonicalTileID,
         brightness?: number | null | undefined,
         formattedSection?: FormattedSection,
-    ): void;
-    updatePaintArray(
+    ) => void;
+    updatePaintArray: (
         start: number,
         length: number,
         feature: Feature,
@@ -103,22 +103,22 @@ interface AttributeBinder {
         availableImages: Array<string>,
         imagePositions: SpritePositions,
         brightness: number,
-    ): void;
-    upload(arg1: Context): void;
-    destroy(): void;
+    ) => void;
+    upload: (arg1: Context) => void;
+    destroy: () => void;
 }
 
 interface UniformBinder {
     uniformNames: Array<string>;
     context: ProgramConfigurationContext;
-    setUniform(
+    setUniform: (
         program: WebGLProgram,
         uniform: IUniform<any>,
         globals: GlobalProperties,
         currentValue: PossiblyEvaluatedPropertyValue<any>,
         uniformName: string,
-    ): void;
-    getBinding(context: Context, name: string): Partial<IUniform<any>>;
+    ) => void;
+    getBinding: (context: Context, name: string) => Partial<IUniform<any>>;
 }
 
 class ConstantBinder implements UniformBinder {

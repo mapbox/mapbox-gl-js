@@ -11,8 +11,8 @@ export interface IUniform<T> {
     location: WebGLUniformLocation | null | undefined;
     current: T;
     initialized: boolean;
-    fetchUniformLocation(program: WebGLProgram, name: string): boolean;
-    set(program: WebGLProgram, name: string, v: T): void;
+    fetchUniformLocation: (program: WebGLProgram, name: string) => boolean;
+    set: (program: WebGLProgram, name: string, v: T) => void;
 }
 
 class Uniform<T> implements IUniform<T> {

@@ -11,14 +11,14 @@ type MessageListener = (
 // The main thread interface. Provided by Worker in a browser environment,
 // and MessageBus below in a node environment.
 export interface WorkerInterface {
-    addEventListener(type: 'message', listener: MessageListener): void;
-    removeEventListener(type: 'message', listener: MessageListener): void;
-    postMessage(message?: any): void;
-    terminate(): void;
+    addEventListener: (type: 'message', listener: MessageListener) => void;
+    removeEventListener: (type: 'message', listener: MessageListener) => void;
+    postMessage: (message?: any) => void;
+    terminate: () => void;
 }
 
 export interface WorkerGlobalScopeInterface {
-    importScripts(...urls: Array<string>): void;
+    importScripts: (...urls: Array<string>) => void;
     registerWorkerSource?: (arg1: string, arg2: Class<WorkerSource>) => void;
     registerRTLTextPlugin?: (_?: any) => void;
 }

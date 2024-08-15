@@ -42,11 +42,11 @@ export type LoadGeoJSONParameters = GeoJSONWorkerOptions & {
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<any>) => void;
 
 export interface GeoJSONIndex {
-    getTile(z: number, x: number, y: number): any;
+    getTile: (z: number, x: number, y: number) => any;
     // supercluster methods
-    getClusterExpansionZoom?(clusterId: number): number;
-    getChildren?(clusterId: number): Array<GeoJSON.Feature>;
-    getLeaves?(clusterId: number, limit: number, offset: number): Array<GeoJSON.Feature>;
+    getClusterExpansionZoom?: (clusterId: number) => number;
+    getChildren?: (clusterId: number) => Array<GeoJSON.Feature>;
+    getLeaves?: (clusterId: number, limit: number, offset: number) => Array<GeoJSON.Feature>;
 }
 
 function loadGeoJSONTile(params: RequestedTileParameters, callback: LoadVectorDataCallback) {

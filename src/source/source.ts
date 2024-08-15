@@ -91,17 +91,17 @@ export interface ISource extends Evented<SourceEvents> {
     vectorLayerIds?: Array<string>;
     rasterLayers?: Array<SourceRasterLayer>;
     rasterLayerIds?: Array<string>;
-    hasTransition(): boolean;
-    loaded(): boolean;
+    hasTransition: () => boolean;
+    loaded: () => boolean;
     readonly onAdd?: (map: Map) => void;
     readonly onRemove?: (map: Map) => void;
-    loadTile(
+    loadTile: (
         tile: Tile,
         callback: Callback<undefined>,
         tileWorkers?: {
             [key: string]: Actor;
         },
-    ): void;
+    ) => void;
     readonly hasTile?: (tileID: OverscaledTileID) => boolean;
     readonly abortTile?: (tile: Tile, callback?: Callback<undefined>) => void;
     readonly unloadTile?: (tile: Tile, callback?: Callback<undefined>) => void;
@@ -112,7 +112,7 @@ export interface ISource extends Evented<SourceEvents> {
      * equivalent to this one.
      * @private
      */
-    serialize(): SourceSpecification | {type: 'custom', [key: string]: unknown};
+    serialize: () => SourceSpecification | {type: 'custom', [key: string]: unknown};
     readonly prepare?: () => void;
     readonly afterUpdate?: () => void;
     readonly _clear?: () => void;
@@ -177,5 +177,5 @@ export const setType = function (name: string, type: Class<ISource>) {
 };
 
 export interface Actor {
-    send(type: string, data: unknown, callback: Callback<unknown>): void;
+    send: (type: string, data: unknown, callback: Callback<unknown>) => void;
 }

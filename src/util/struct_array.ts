@@ -65,9 +65,9 @@ export type StructArrayLayout = {
 };
 
 export interface IStructArrayLayout {
-    _refreshViews(): void;
-    emplace(...args: number[]): number;
-    emplaceBack(...args: number[]): number;
+    _refreshViews: () => void;
+    emplace: (...args: number[]) => number;
+    emplaceBack: (...args: number[]) => number;
 }
 
 export type SerializedStructArray = {

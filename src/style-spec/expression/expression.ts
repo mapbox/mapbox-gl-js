@@ -7,14 +7,14 @@ export type SerializedExpression = Array<unknown> | Array<string> | string | num
 export interface Expression {
     readonly type: Type;
     value?: any;
-    evaluate(ctx: EvaluationContext): any;
-    eachChild(fn: (arg1: Expression) => void): void;
+    evaluate: (ctx: EvaluationContext) => any;
+    eachChild: (fn: (arg1: Expression) => void) => void;
     /**
       * Statically analyze the expression, attempting to enumerate possible outputs. Returns
       * false if the complete set of outputs is statically undecidable, otherwise true.
       */
-    outputDefined(): boolean;
-    serialize(): SerializedExpression;
+    outputDefined: () => boolean;
+    serialize: () => SerializedExpression;
 }
 
 export type ExpressionParser = (args: ReadonlyArray<unknown>, context: ParsingContext) => Expression | void;

@@ -63,13 +63,13 @@ type TimePoint = number;
  */
 export interface Property<T, R> {
     specification: StylePropertySpecification;
-    possiblyEvaluate(
+    possiblyEvaluate: (
         value: PropertyValue<T, R>,
         parameters: EvaluationParameters,
         canonical?: CanonicalTileID,
         availableImages?: Array<string>,
-    ): R;
-    interpolate(a: R, b: R, t: number): R;
+    ) => R;
+    interpolate: (a: R, b: R, t: number) => R;
 }
 
 /**

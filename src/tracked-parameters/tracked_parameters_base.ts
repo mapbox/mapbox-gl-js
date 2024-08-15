@@ -4,28 +4,28 @@ import {warnOnce} from '../util/util';
 export type Description = any;
 
 export interface ITrackedParameters {
-  registerParameter(
+  registerParameter: (
     containerObject: any,
     scope: Array<string>,
     name: string,
     description?: Description | null,
     changeValueCallback?: any | null
-  ): void;
+  ) => void;
 
-  registerButton(
+  registerButton: (
     scope: Array<string>,
     buttonTitle: string,
     onClick: any
-  ): void;
+  ) => void;
 
-  registerBinding(
+  registerBinding: (
     containerObject: any,
     scope: Array<string>,
     name: string,
     description?: object,
-  ): void;
+  ) => void;
 
-  refreshUI(): void;
+  refreshUI: () => void;
 }
 
 // For fast prototyping in case of only one map present

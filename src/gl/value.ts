@@ -21,9 +21,9 @@ export interface Value<T> {
     current: T;
     default: T;
     dirty: boolean;
-    get(): T;
-    setDefault(): void;
-    set(value: T): void;
+    get: () => T;
+    setDefault: () => void;
+    set: (value: T) => void;
 }
 
 class BaseValue<T> implements Value<T> {

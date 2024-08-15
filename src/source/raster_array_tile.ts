@@ -82,10 +82,10 @@ export type MRT = {
     layers: {
         [_: string]: MRTLayer;
     };
-    getLayer(arg1: string): MRTLayer | null | undefined;
-    parseHeader(arg1: ArrayBuffer): MRT;
-    getHeaderLength(arg1: ArrayBuffer): number;
-    createDecodingTask(arg1: MRTDataRange): MRTDecodingBatch;
+    getLayer: (arg1: string) => MRTLayer | null | undefined;
+    parseHeader: (arg1: ArrayBuffer) => MRT;
+    getHeaderLength: (arg1: ArrayBuffer) => number;
+    createDecodingTask: (arg1: MRTDataRange) => MRTDecodingBatch;
 };
 
 const FIRST_TRY_HEADER_LENGTH = 16384;
