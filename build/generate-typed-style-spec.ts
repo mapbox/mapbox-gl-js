@@ -225,7 +225,8 @@ const lightTypes = Object.keys(spec['light-3d'].type.values);
 const layerTypes = Object.keys(spec.layer.type.values);
 
 fs.writeFileSync('src/style-spec/types.ts', `// Generated code; do not edit. Edit build/generate-typed-style-spec.ts instead.
-/* eslint-disable */
+
+import type {UnionToIntersection} from './union-to-intersection';
 
 export type ColorSpecification = string;
 
@@ -358,6 +359,10 @@ ${layerTypes.map(key => tsLayer(key)).join('\n\n')}
 export type LayerSpecification =
 ${layerTypes.map(key => `    | ${tsLayerSpecificationTypeName(key)}`).join('\n')};
 
+export type LayoutSpecification = UnionToIntersection<NonNullable<LayerSpecification['layout']>>;
+
+export type PaintSpecification = UnionToIntersection<NonNullable<LayerSpecification['paint']>>;
+
 // Aliases for easier migration from @types/mapbox-gl
 
 export type Layer = Pick<
@@ -381,17 +386,9 @@ ${alias('AnyLayer', 'LayerSpecification')}
 
 ${layerTypes.map(key => alias(tsLayerTypeName(key), tsLayerSpecificationTypeName(key))).join('\n\n')}
 
-/**
- * @deprecated
- */
-export type AnyLayout =
-${layerTypes.filter(key => !!spec[`layout_${key}`]).map(key => `    | ${tsLayerName(key)}Layout`).join('\n')};
+${alias('AnyLayout', 'LayoutSpecification')}
 
-/**
- * @deprecated
- */
-export type AnyPaint =
-${layerTypes.filter(key => !!spec[`paint_${key}`]).map(key => `    | ${tsLayerName(key)}Paint`).join('\n')};
+${alias('AnyPaint', 'PaintSpecification')}
 
 ${alias('Expression', 'ExpressionSpecification')}
 

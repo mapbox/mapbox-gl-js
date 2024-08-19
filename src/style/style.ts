@@ -69,6 +69,8 @@ import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import {RGBAImage} from '../util/image';
 import type {ColorThemeSpecification,
     LayerSpecification,
+    LayoutSpecification,
+    PaintSpecification,
     FilterSpecification,
     ExpressionSpecification,
     StyleSpecification,
@@ -2441,7 +2443,7 @@ class Style extends Evented<MapEvents> {
         return clone(layer.filter);
     }
 
-    setLayoutProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
+    setLayoutProperty<T extends keyof LayoutSpecification>(layerId: string, name: T, value: LayoutSpecification[T], options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this._checkLayer(layerId);
@@ -2476,13 +2478,13 @@ class Style extends Evented<MapEvents> {
      * @param {string} name The name of the layout property.
      * @returns {*} The property value.
      */
-    getLayoutProperty(layerId: string, name: string): PropertyValueSpecification<unknown> | null | undefined {
+    getLayoutProperty<T extends keyof LayoutSpecification>(layerId: string, name: T): LayoutSpecification[T] | undefined {
         const layer = this._checkLayer(layerId);
         if (!layer) return;
         return layer.getLayoutProperty(name);
     }
 
-    setPaintProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
+    setPaintProperty<T extends keyof PaintSpecification>(layerId: string, name: T, value: PaintSpecification[T], options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this._checkLayer(layerId);
@@ -2513,7 +2515,7 @@ class Style extends Evented<MapEvents> {
         this._changes.updatePaintProperties(layer);
     }
 
-    getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<unknown> {
+    getPaintProperty<T extends keyof PaintSpecification>(layerId: string, name: T): PaintSpecification[T] | undefined {
         const layer = this._checkLayer(layerId);
         if (!layer) return;
         return layer.getPaintProperty(name);

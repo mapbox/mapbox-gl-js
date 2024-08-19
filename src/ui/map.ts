@@ -69,6 +69,8 @@ import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
 import type {
     LayerSpecification,
+    LayoutSpecification,
+    PaintSpecification,
     FilterSpecification,
     StyleSpecification,
     LightSpecification,
@@ -78,8 +80,6 @@ import type {
     FogSpecification,
     SourceSpecification,
     ProjectionSpecification,
-    PropertyValueSpecification,
-    TransitionSpecification,
     CameraSpecification,
     ImportSpecification,
     ConfigSpecification,
@@ -3173,10 +3173,10 @@ export class Map extends Camera {
      * @see [Example: Adjust a layer's opacity](https://www.mapbox.com/mapbox-gl-js/example/adjust-layer-opacity/)
      * @see [Example: Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    setPaintProperty(
+    setPaintProperty<T extends keyof PaintSpecification>(
         layerId: string,
-        name: string,
-        value: any,
+        name: T,
+        value: PaintSpecification[T],
         options: StyleSetterOptions = {},
     ): this {
         if (!this._isValidId(layerId)) {
@@ -3196,7 +3196,7 @@ export class Map extends Camera {
      * @example
      * const paintProperty = map.getPaintProperty('mySymbolLayer', 'icon-color');
      */
-    getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<unknown> {
+    getPaintProperty<T extends keyof PaintSpecification>(layerId: string, name: T): PaintSpecification[T] | undefined {
         if (!this._isValidId(layerId)) {
             return null;
         }
@@ -3217,10 +3217,10 @@ export class Map extends Camera {
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
      * @see [Example: Show and hide layers](https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/)
      */
-    setLayoutProperty(
+    setLayoutProperty<T extends keyof LayoutSpecification>(
         layerId: string,
-        name: string,
-        value: any,
+        name: T,
+        value: LayoutSpecification[T],
         options: StyleSetterOptions = {},
     ): this {
         if (!this._isValidId(layerId)) {
@@ -3240,7 +3240,7 @@ export class Map extends Camera {
      * @example
      * const layoutProperty = map.getLayoutProperty('mySymbolLayer', 'icon-anchor');
      */
-    getLayoutProperty(layerId: string, name: string): PropertyValueSpecification<unknown> | null | undefined {
+    getLayoutProperty<T extends keyof LayoutSpecification>(layerId: string, name: T): LayoutSpecification[T] | undefined {
         if (!this._isValidId(layerId)) {
             return null;
         }

@@ -188,8 +188,8 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         this.configDependencies = new Set();
     }
 
-    getValue<S extends keyof Props, T>(name: S): PropertyValueSpecification<T> | void {
-        return clone(this._values[name].value.value as PropertyValueSpecification<T> | void);
+    getValue<S extends keyof Props, T>(name: S): PropertyValueSpecification<T> | undefined {
+        return clone(this._values[name].value.value as PropertyValueSpecification<T> | undefined);
     }
 
     setValue<S extends keyof Props, T>(name: S, value?: PropertyValueSpecification<T>) {
@@ -223,7 +223,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         }
     }
 
-    getTransition<S extends keyof Props>(name: S): TransitionSpecification | void {
+    getTransition<S extends keyof Props>(name: S): TransitionSpecification | undefined {
         return clone(this._values[name].transition);
     }
 

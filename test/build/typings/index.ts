@@ -1,7 +1,6 @@
 /* eslint-disable */
 
 import mapboxgl from 'mapbox-gl';
-import process from 'process';
 
 mapboxgl.accessToken = 'accessToken';
 localStorage.setItem('accessToken', mapboxgl.accessToken);
@@ -320,6 +319,34 @@ const customLayer: mapboxgl.CustomLayerInterface | undefined = map.getLayer<mapb
 if (customLayer) {
     customLayer.render satisfies mapboxgl.CustomLayerInterface['render'];
 }
+
+//
+// Layout Properties
+//
+
+map.setLayoutProperty('id', 'text-offset', [0, 0]);
+map.setLayoutProperty('id', 'visibility', 'visible');
+// @ts-expect-error
+map.setLayoutProperty('id', 'visebility', 'visible');
+// @ts-expect-error
+map.setLayoutProperty('id', 'visibility', 'viseble');
+
+map.getLayoutProperty('id', 'text-offset') satisfies NonNullable<mapboxgl.SymbolLayerSpecification['layout']>['text-offset'] | undefined;
+map.getLayoutProperty('id', 'visibility') satisfies NonNullable<mapboxgl.SymbolLayerSpecification['layout']>['visibility'] | undefined;
+
+//
+// Paint Properties
+//
+
+map.setPaintProperty('id', 'background-color', '#f08');
+// @ts-expect-error
+map.setPaintProperty('id', 'background-kolor', '#f08');
+map.setPaintProperty('id', 'background-opacity', 0.4);
+map.setPaintProperty('id', 'background-color-transition', {duration: 300, delay: 0});
+
+map.getPaintProperty('id', 'background-color') satisfies NonNullable<mapboxgl.BackgroundLayerSpecification['paint']>['background-color'] | undefined;
+map.getPaintProperty('id', 'background-opacity') satisfies NonNullable<mapboxgl.BackgroundLayerSpecification['paint']>['background-opacity'] | undefined;
+map.getPaintProperty('id', 'background-color-transition') satisfies mapboxgl.TransitionSpecification | undefined;
 
 //
 // Add Custom Layer

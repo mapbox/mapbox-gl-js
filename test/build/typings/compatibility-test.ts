@@ -999,17 +999,17 @@ map.getPadding() satisfies mapboxgl.PaddingOptions;
 
 map.setPadding({top: 10, bottom: 20, left: 30, right: 40}, {myData: "MY DATA"}) satisfies mapboxgl.Map;
 
-map.setPaintProperty("layerId", "layerName", null, {validate: true});
-map.setPaintProperty("layerId", "layerName", null, {validate: false});
-map.setPaintProperty("layerId", "layerName", null, {});
+map.setPaintProperty("layerId", "background-color", 'red', {validate: true});
+map.setPaintProperty("layerId", "background-color", 'red', {validate: false});
+map.setPaintProperty("layerId", "background-color", 'red', {});
 // @ts-expect-error
-map.setPaintProperty("layerId", "layerName", null, {some_option: "some_string"});
+map.setPaintProperty("layerId", "background-color", null, {some_option: "some_string"});
 
-map.setLayoutProperty("layerId", "layerName", null, {validate: true});
-map.setLayoutProperty("layerId", "layerName", null, {validate: false});
-map.setLayoutProperty("layerId", "layerName", null, {});
+map.setLayoutProperty("layerId", "visibility", 'visible', {validate: true});
+map.setLayoutProperty("layerId", "visibility", 'visible', {validate: false});
+map.setLayoutProperty("layerId", "visibility", 'none', {});
 // @ts-expect-error
-map.setLayoutProperty("layerId", "layerName", null, {some_option: "some_string"});
+map.setLayoutProperty("layerId", "visibility", null, {some_option: "some_string"});
 
 map.setLight({anchor: "viewport", color: "blue", intensity: 0.5}, {validate: true});
 map.setLight({anchor: "viewport", color: "blue", intensity: 0.5}, {validate: false});
@@ -1644,7 +1644,7 @@ const backgroundLayout: mapboxgl.BackgroundLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const backgroundPaint: mapboxgl.BackgroundPaint = {
+const backgroundPaint: NonNullable<mapboxgl.BackgroundPaint> = {
     "background-color": eitherType("#000", expression),
     "background-color-transition": transition,
     "background-pattern": "pattern",
@@ -1658,7 +1658,7 @@ const fillLayout: mapboxgl.FillLayout = {
     "fill-sort-key": eitherType(0, expression),
 };
 
-const fillPaint: mapboxgl.FillPaint = {
+const fillPaint: NonNullable<mapboxgl.FillPaint> = {
     "fill-antialias": eitherType(false, expression),
     "fill-opacity": eitherType(0, styleFunction, expression),
     "fill-opacity-transition": transition,
@@ -1678,7 +1678,7 @@ const fillExtrusionLayout: mapboxgl.FillExtrusionLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const fillExtrusionPaint: mapboxgl.FillExtrusionPaint = {
+const fillExtrusionPaint: NonNullable<mapboxgl.FillExtrusionPaint> = {
     "fill-extrusion-opacity": eitherType(0, expression),
     "fill-extrusion-opacity-transition": transition,
     "fill-extrusion-color": eitherType("#000", styleFunction, expression),
@@ -1704,7 +1704,7 @@ const lineLayout: mapboxgl.LineLayout = {
     "line-sort-key": eitherType(0, expression),
 };
 
-const linePaint: mapboxgl.LinePaint = {
+const linePaint: NonNullable<mapboxgl.LinePaint> = {
     "line-opacity": eitherType(0, styleFunction, expression),
     "line-opacity-transition": transition,
     "line-color": eitherType("#000", styleFunction, expression),
@@ -1776,7 +1776,7 @@ const symbolLayout: mapboxgl.SymbolLayout = {
     "symbol-sort-key": eitherType(0, expression),
 };
 
-const symbolPaint: mapboxgl.SymbolPaint = {
+const symbolPaint: NonNullable<mapboxgl.SymbolPaint> = {
     "icon-opacity": eitherType(0, styleFunction, expression),
     "icon-opacity-transition": transition,
     "icon-color": eitherType("#000", styleFunction, expression),
@@ -1811,7 +1811,7 @@ const rasterLayout: mapboxgl.RasterLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const rasterPaint: mapboxgl.RasterPaint = {
+const rasterPaint: NonNullable<mapboxgl.RasterPaint> = {
     "raster-opacity": eitherType(0, expression),
     "raster-opacity-transition": transition,
     "raster-hue-rotate": eitherType(0, expression),
@@ -1833,7 +1833,7 @@ const circleLayout: mapboxgl.CircleLayout = {
     "circle-sort-key": eitherType(0, expression),
 };
 
-const circlePaint: mapboxgl.CirclePaint = {
+const circlePaint: NonNullable<mapboxgl.CirclePaint> = {
     "circle-radius": eitherType(0, styleFunction, expression),
     "circle-radius-transition": transition,
     "circle-color": eitherType("#000", styleFunction, expression),
@@ -1860,7 +1860,7 @@ const heatmapLayout: mapboxgl.HeatmapLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const heatmapPaint: mapboxgl.HeatmapPaint = {
+const heatmapPaint: NonNullable<mapboxgl.HeatmapPaint> = {
     "heatmap-radius": eitherType(0, styleFunction, expression),
     "heatmap-radius-transition": transition,
     "heatmap-weight": eitherType(0, styleFunction, expression),
@@ -1875,7 +1875,7 @@ const hillshadeLayout: mapboxgl.HillshadeLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const hillshadePaint: mapboxgl.HillshadePaint = {
+const hillshadePaint: NonNullable<mapboxgl.HillshadePaint> = {
     "hillshade-illumination-direction": eitherType(0, expression),
     "hillshade-illumination-anchor": eitherType("map", "viewport"),
     "hillshade-exaggeration": eitherType(0, expression),
@@ -1892,7 +1892,7 @@ const skyLayout: mapboxgl.SkyLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const skyPaint: mapboxgl.SkyPaint = {
+const skyPaint: NonNullable<mapboxgl.SkyPaint> = {
     // @ts-expect-error - incompatible
     "sky-atmosphere-color": eitherType("white", expression),
     // @ts-expect-error - incompatible

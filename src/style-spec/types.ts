@@ -1,5 +1,6 @@
 // Generated code; do not edit. Edit build/generate-typed-style-spec.ts instead.
-/* eslint-disable */
+
+import type {UnionToIntersection} from './union-to-intersection';
 
 export type ColorSpecification = string;
 
@@ -1062,6 +1063,10 @@ export type LayerSpecification =
     | SlotLayerSpecification
     | ClipLayerSpecification;
 
+export type LayoutSpecification = UnionToIntersection<NonNullable<LayerSpecification['layout']>>;
+
+export type PaintSpecification = UnionToIntersection<NonNullable<LayerSpecification['paint']>>;
+
 // Aliases for easier migration from @types/mapbox-gl
 
 export type Layer = Pick<
@@ -1160,39 +1165,14 @@ export type SlotLayer = SlotLayerSpecification;
 export type ClipLayer = ClipLayerSpecification;
 
 /**
- * @deprecated
+ * @deprecated Use `LayoutSpecification` instead.
  */
-export type AnyLayout =
-    | FillLayout
-    | LineLayout
-    | SymbolLayout
-    | CircleLayout
-    | HeatmapLayout
-    | FillExtrusionLayout
-    | RasterLayout
-    | RasterParticleLayout
-    | HillshadeLayout
-    | ModelLayout
-    | BackgroundLayout
-    | SkyLayout
-    | ClipLayout;
+export type AnyLayout = LayoutSpecification;
 
 /**
- * @deprecated
+ * @deprecated Use `PaintSpecification` instead.
  */
-export type AnyPaint =
-    | FillPaint
-    | LinePaint
-    | SymbolPaint
-    | CirclePaint
-    | HeatmapPaint
-    | FillExtrusionPaint
-    | RasterPaint
-    | RasterParticlePaint
-    | HillshadePaint
-    | ModelPaint
-    | BackgroundPaint
-    | SkyPaint;
+export type AnyPaint = PaintSpecification;
 
 /**
  * @deprecated Use `ExpressionSpecification` instead.
