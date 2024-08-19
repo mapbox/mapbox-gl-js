@@ -200,6 +200,60 @@
         "spruce1-lod1": "asset://spruce1-lod1.glb",
         "spruce1-lod2": "asset://spruce1-lod2.glb"
       }
+    },
+   "featuresets": {
+      "experimental": true,
+      "type": "featuresets",
+      "doc": "Defines sets of features for querying, interaction, and feature state manipulation.",
+      "example": {
+        "poi": {
+          "selectors": [
+            {
+              "layer": "poi",
+              "properties": {
+                "type": ["get", "type"],
+                "name": ["get", "name"],
+                "brand": "ABC"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "featuresets": {
+    "experimental": true, 
+    "*": {
+      "type": "featureset",
+      "doc": "Defines a combined set of features from one or more underlying layers within the current style. Features in a style featureset can be queried, interacted with, and their states can be queried and updated."
+    }
+  },
+  "featureset": {
+    "experimental": true, 
+    "selectors": {
+      "type": "array",
+      "value": "selector",
+      "doc": "A collection of categorized selectors."
+    }
+  },
+  "selector": {
+    "experimental": true, 
+    "layer": {
+      "type": "string",
+      "doc": "The ID of a layer that exists in the current style.",
+      "required": true
+    },
+    "properties": {
+      "type": "selectorProperty",
+      "required": false, 
+      "doc": "Properties accessible to the end user through queried feautures. If properties are empty, no feature properties are exposed. If undefined, all original feature properties will be accessible."
+    }
+  },
+  "selectorProperty": {
+    "experimental": true, 
+    "*": {
+      "type": "*",
+      "doc": "The value of the property. It can be an expression that generates the returned value from the feature, or a constant value specifying the returned value."
     }
   },
   "model": {

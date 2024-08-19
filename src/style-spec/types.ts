@@ -97,7 +97,11 @@ export type StyleSpecification = {
     "transition"?: TransitionSpecification,
     "projection"?: ProjectionSpecification,
     "layers": Array<LayerSpecification>,
-    "models"?: ModelsSpecification
+    "models"?: ModelsSpecification,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
+    "featuresets"?: FeaturesetsSpecification
 }
 
 export type SourcesSpecification = {
@@ -180,6 +184,35 @@ export type OptionSpecification = {
     "stepValue"?: number,
     "values"?: Array<unknown>,
     "metadata"?: unknown
+}
+
+/**
+ * @experimental This is experimental and subject to change in future versions.
+ */
+export type FeaturesetsSpecification = {
+    [_: string]: FeaturesetSpecification
+}
+
+/**
+ * @experimental This is experimental and subject to change in future versions.
+ */
+export type FeaturesetSpecification = {
+    "selectors"?: Array<SelectorSpecification>
+}
+
+/**
+ * @experimental This is experimental and subject to change in future versions.
+ */
+export type SelectorSpecification = {
+    "layer": string,
+    "properties"?: SelectorPropertySpecification
+}
+
+/**
+ * @experimental This is experimental and subject to change in future versions.
+ */
+export type SelectorPropertySpecification = {
+    [_: string]: unknown
 }
 
 export type VectorSourceSpecification = {

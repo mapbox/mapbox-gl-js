@@ -326,6 +326,14 @@ ${tsObjectDeclaration('SchemaSpecification', spec.schema)}
 
 ${tsObjectDeclaration('OptionSpecification', spec.option)}
 
+${tsObjectDeclaration('FeaturesetsSpecification', spec.featuresets)}
+
+${tsObjectDeclaration('FeaturesetSpecification', spec.featureset)}
+
+${tsObjectDeclaration('SelectorSpecification', spec.selector)}
+
+${tsObjectDeclaration('SelectorPropertySpecification', spec.selectorProperty)}
+
 ${spec.source.map(key => {
         const sourceSpecName = tsSourceSpecificationTypeName(key);
         if (sourceSpecName === 'GeoJSONSourceSpecification') {
