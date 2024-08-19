@@ -1419,20 +1419,19 @@ register(FillExtrusionCentroidArray, 'FillExtrusionCentroidArray');
 
 class FillExtrusionWallStruct extends Struct {
     _structArray: FillExtrusionWallArray;
-    get a_join_normal_inside_polygon0(): number { return this._structArray.int16[this._pos2 + 0]; }
-    get a_join_normal_inside_polygon1(): number { return this._structArray.int16[this._pos2 + 1]; }
-    get a_join_normal_inside_polygon2(): number { return this._structArray.int16[this._pos2 + 2]; }
-    get a_join_normal_inside_polygon3(): number { return this._structArray.int16[this._pos2 + 3]; }
+    get a_join_normal_inside0(): number { return this._structArray.int16[this._pos2 + 0]; }
+    get a_join_normal_inside1(): number { return this._structArray.int16[this._pos2 + 1]; }
+    get a_join_normal_inside2(): number { return this._structArray.int16[this._pos2 + 2]; }
 }
 
-FillExtrusionWallStruct.prototype.size = 8;
+FillExtrusionWallStruct.prototype.size = 6;
 
 export type FillExtrusionWall = FillExtrusionWallStruct;
 
 /**
  * @private
  */
-export class FillExtrusionWallArray extends StructArrayLayout4i8 {
+export class FillExtrusionWallArray extends StructArrayLayout3i6 {
     /**
      * Return the FillExtrusionWallStruct at the given location in the array.
      * @param {number} index The index of the element.

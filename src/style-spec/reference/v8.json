@@ -6046,6 +6046,7 @@
       "default": 0,
       "minimum": 0,
       "transition": true,
+      "experimental": true,
       "units": "meters",
       "doc": "If a non-zero value is provided, it sets the fill-extrusion layer into wall rendering mode. The value is used to render the feature with the given width over the outlines of the geometry. Note: This property is experimental and some other fill-extrusion properties might not be supported with non-zero line width.",
       "sdk-support": {
@@ -6066,31 +6067,6 @@
         ]
       },
       "property-type": "data-driven"
-    },
-    "fill-extrusion-line-alignment": {
-      "type": "enum",
-      "values": {
-        "inside": {
-          "doc": "Aligns the wall inside of the outline."
-        },
-        "outside": {
-          "doc": "Aligns the wall outside of the outline."
-        },
-        "center": {
-          "doc": "Aligns the wall relative to the center of the outline."
-        }
-      },
-      "default": "center",
-      "doc": "Specifies the alignment for offset of the walls relative to the outlines of the geometry. For open-ended line string geometries the positioning is considered based on the ordering of the points, where inside is in clockwise order and outside is counter-clockwise. This property only has an effect if a non-zero fill-extrusion-line-width is used. Center alignment is automatically used for non-closed lines.",
-      "requires": [
-        "fill-extrusion-line-width"
-      ],
-      "sdk-support": {
-        "basic functionality": {
-          "js": "3.7.0"
-        }
-      },
-      "property-type": "data-constant"
     }
   },
   "paint_line": {

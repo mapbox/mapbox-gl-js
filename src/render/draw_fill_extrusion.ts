@@ -313,21 +313,6 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         baseDefines.push('RENDER_WALL_MODE');
     }
 
-    const lineAlignmentValue = (() => {
-        const alignmentEnumValue = layer.paint.get('fill-extrusion-line-alignment');
-        switch (alignmentEnumValue) {
-        case 'inside':
-            return 1.0;
-        case 'outside':
-            return -1.0;
-        case 'center':
-            return 0.0;
-        default:
-            warnOnce(`Unsupported value for fill-extrusion-line-alignment: ${alignmentEnumValue}`);
-            return 0.0;
-        }
-    })();
-
     let singleCascadeDefines;
 
     const isShadowPass = painter.renderPass === 'shadow';
@@ -401,7 +386,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             }
             const tileMatrix = shadowRenderer.calculateShadowPassMatrixFromTile(tile.tileID.toUnwrapped());
 
-            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, roofEdgeRadius, lineAlignmentValue, lineWidthScale, verticalScale);
+            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, roofEdgeRadius, lineWidthScale, verticalScale);
         } else {
             const matrix = painter.translatePosMatrix(
                 coord.expandedProjMatrix,
@@ -413,11 +398,11 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
             if (image) {
                 // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'boolean'.
-                uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineAlignmentValue, lineWidthScale, coord,
+                uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
                     tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
             } else {
                 // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'boolean'.
-                uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineAlignmentValue, lineWidthScale, coord,
+                uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
                     heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor, emissiveStrength);
             }
         }

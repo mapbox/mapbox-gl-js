@@ -16,7 +16,7 @@ export const centroidAttributes: StructArrayLayout = createLayout([
 ]);
 
 export const wallAttributes: StructArrayLayout = createLayout([
-    {name: 'a_join_normal_inside_polygon', components: 4, type: 'Int16'}
+    {name: 'a_join_normal_inside', components: 3, type: 'Int16'}
 ]);
 
 export const hiddenByLandmarkAttributes: StructArrayLayout = createLayout([

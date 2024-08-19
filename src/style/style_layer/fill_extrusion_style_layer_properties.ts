@@ -50,7 +50,6 @@ export type PaintProps = {
     "fill-extrusion-cutoff-fade-range": DataConstantProperty<number>;
     "fill-extrusion-emissive-strength": DataConstantProperty<number>;
     "fill-extrusion-line-width": DataDrivenProperty<number>;
-    "fill-extrusion-line-alignment": DataConstantProperty<"inside" | "outside" | "center">;
 };
 
 let paint: Properties<PaintProps>;
@@ -78,5 +77,4 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-extrusion-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-cutoff-fade-range"]),
     "fill-extrusion-emissive-strength": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-emissive-strength"]),
     "fill-extrusion-line-width": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-line-width"]),
-    "fill-extrusion-line-alignment": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-line-alignment"]),
 }));

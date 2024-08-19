@@ -29,8 +29,7 @@
     import {Pane} from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js';
 
     const PARAMS = {
-      'fill-extrusion-line-width': 0.5,
-      'fill-extrusion-line-alignment': 'inside'
+      'fill-extrusion-line-width': 0.5
     };
     const alignments = ['inside', 'outside', 'center'];
 
@@ -42,13 +41,6 @@
         max: 4.0
     }).on('change', (e) => {
         map.setPaintProperty('walls', 'fill-extrusion-line-width', PARAMS['fill-extrusion-line-width']);
-    });
-
-    pane.addBinding(PARAMS, 'fill-extrusion-line-alignment', {
-        label: 'fill-extrusion-line-alignment',
-        options: alignments.reduce((acc, item) => ({...acc, [item]: item}), {})
-    }).on('change', (e) => {
-        map.setPaintProperty('walls', 'fill-extrusion-line-alignment', PARAMS['fill-extrusion-line-alignment']);
     });
 
     var map = window.map = new mapboxgl.Map({
@@ -421,7 +413,6 @@
             "id": "walls",
             "source": "walls",
             "paint": {
-                "fill-extrusion-line-alignment": "inside",
                 "fill-extrusion-line-width": 0.5,
                 "fill-extrusion-color": "#f0e5de",
                 "fill-extrusion-height": 10.0
