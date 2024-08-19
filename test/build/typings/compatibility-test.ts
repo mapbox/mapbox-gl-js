@@ -355,7 +355,7 @@ const features = map.queryRenderedFeatures([0, 0], {layers: ["custom"], validate
 const features2 = map.querySourceFeatures("some_source", {
     sourceLayer: "source_layer",
     filter: ["all"],
-    validate: null,
+    validate: false,
 }) satisfies mapboxgl.GeoJSONFeature[];
 
 /**
@@ -380,8 +380,8 @@ var geoJSONSource: mapboxgl.GeoJSONSourceSpecification = {
 map.addSource("some id", geoJSONSource); // add
 map.removeSource("some id"); // remove
 
-var geoJSONSourceObj: mapboxgl.GeoJSONSource = map.getSource("some id"); // get
-geoJSONSourceObj.setData(geoJSONSource["data"]);
+var geoJSONSourceObj: mapboxgl.GeoJSONSource | undefined = map.getSource("some id"); // get
+if (geoJSONSourceObj) geoJSONSourceObj.setData(geoJSONSource["data"] || 'url');
 
 /**
  * ImageSource
@@ -399,24 +399,26 @@ var imageSource: mapboxgl.ImageSourceSpecification = {
 
 map.addSource("some id", imageSource); // add
 map.removeSource("some id"); // remove
-var imageSourceObj: mapboxgl.ImageSource = map.getSource("some id"); // get
+var imageSourceObj: mapboxgl.ImageSource | undefined = map.getSource("some id"); // get
 
-imageSourceObj.updateImage({
-    url: "/foo.png",
-    coordinates: [
+if (imageSourceObj) {
+    imageSourceObj.updateImage({
+        url: "/foo.png",
+        coordinates: [
+            [-76.54335737228394, 39.18579907229748],
+            [-76.52803659439087, 39.1838364847587],
+            [-76.5295386314392, 39.17683392507606],
+            [-76.54520273208618, 39.17876344106642],
+        ],
+    });
+
+    imageSourceObj.setCoordinates([
         [-76.54335737228394, 39.18579907229748],
         [-76.52803659439087, 39.1838364847587],
         [-76.5295386314392, 39.17683392507606],
         [-76.54520273208618, 39.17876344106642],
-    ],
-});
-
-imageSourceObj.setCoordinates([
-    [-76.54335737228394, 39.18579907229748],
-    [-76.52803659439087, 39.1838364847587],
-    [-76.5295386314392, 39.17683392507606],
-    [-76.54520273208618, 39.17876344106642],
-]);
+    ]);
+}
 
 /**
  * Video Source
@@ -435,25 +437,31 @@ var videoSource: mapboxgl.VideoSourceSpecification = {
 map.addSource("some id", videoSource); // add
 map.removeSource("some id"); // remove
 
-var videoSourceObj: mapboxgl.VideoSource = map.getSource("some id"); // get
-videoSourceObj.pause();
-videoSourceObj.play();
+var videoSourceObj: mapboxgl.VideoSource | undefined = map.getSource("some id"); // get
+if (videoSourceObj) {
+    videoSourceObj.pause();
+    videoSourceObj.play();
+}
 
 /**
  * Raster Source
  */
-const rasterSource: mapboxgl.RasterTileSource = map.getSource("tile-source");
-rasterSource.reload() satisfies void;
-rasterSource.setTiles(["a", "b"]) satisfies mapboxgl.RasterTileSource;
-rasterSource.setUrl("https://github.com") satisfies mapboxgl.RasterTileSource;
+const rasterSource: mapboxgl.RasterTileSource | undefined = map.getSource("tile-source");
+if (rasterSource) {
+    rasterSource.reload() satisfies void;
+    rasterSource.setTiles(["a", "b"]) satisfies mapboxgl.RasterTileSource;
+    rasterSource.setUrl("https://github.com") satisfies mapboxgl.RasterTileSource;
+}
 
 /**
  * Vector Source
  */
-const vectorSource: mapboxgl.VectorTileSource = map.getSource("tile-source");
-vectorSource.reload() satisfies void;
-vectorSource.setTiles(["a", "b"]) satisfies mapboxgl.VectorTileSource;
-vectorSource.setUrl("https://github.com") satisfies mapboxgl.VectorTileSource;
+const vectorSource: mapboxgl.VectorTileSource | undefined = map.getSource("tile-source");
+if (vectorSource) {
+    vectorSource.reload() satisfies void;
+    vectorSource.setTiles(["a", "b"]) satisfies mapboxgl.VectorTileSource;
+    vectorSource.setUrl("https://github.com") satisfies mapboxgl.VectorTileSource;
+}
 
 /**
  * Add Raster Source /// made URL optional to allow only tiles.
@@ -511,7 +519,7 @@ const popup = new mapboxgl.Popup(popupOptions)
     .setMaxWidth("none")
     .addTo(map);
 popup.getMaxWidth();
-popup.getElement() satisfies HTMLElement;
+popup.getElement() satisfies HTMLElement | undefined;
 popup.addClassName("class1");
 popup.removeClassName("class2");
 popup.toggleClassName("class3");
@@ -1057,7 +1065,7 @@ map.setFog({
 map.setFog(null) satisfies mapboxgl.Map;
 map.setFog(undefined) satisfies mapboxgl.Map;
 
-map.getFog() satisfies mapboxgl.FogSpecification | null;
+map.getFog() satisfies mapboxgl.FogSpecification | null | undefined;
 
 /*
  * Map Events
@@ -1282,14 +1290,14 @@ expectType<mapboxgl.Map>(
     map.on("webglcontextlost", ev => {
         expectType<mapboxgl.MapContextEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
-        expectType<WebGLContextEvent>(ev.originalEvent);
+        expectType<WebGLContextEvent | undefined>(ev.originalEvent);
     }),
 );
 expectType<mapboxgl.Map>(
     map.on("webglcontextrestored", ev => {
         expectType<mapboxgl.MapContextEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
-        expectType<WebGLContextEvent>(ev.originalEvent);
+        expectType<WebGLContextEvent | undefined>(ev.originalEvent);
     }),
 );
 

@@ -108,7 +108,7 @@ export default class Popup extends Evented<PopupEvents> {
     _map: Map | null | undefined;
     options: PopupOptions;
     _content: HTMLElement | null | undefined;
-    _container: HTMLElement | null | undefined;
+    _container: HTMLElement | undefined;
     _closeButton: HTMLElement | null | undefined;
     _tip: HTMLElement | null | undefined;
     _lngLat: LngLat;
@@ -339,7 +339,7 @@ export default class Popup extends Evented<PopupEvents> {
      * popupElem.style.fontSize = "25px";
      * @returns {HTMLElement} Returns container element.
      */
-    getElement(): HTMLElement | null | undefined {
+    getElement(): HTMLElement | undefined {
         return this._container;
     }
 
@@ -402,7 +402,7 @@ export default class Popup extends Evented<PopupEvents> {
      * @example
      * const maxWidth = popup.getMaxWidth();
      */
-    getMaxWidth(): string | null | undefined {
+    getMaxWidth(): string | undefined {
         return this._container && this._container.style.maxWidth;
     }
 

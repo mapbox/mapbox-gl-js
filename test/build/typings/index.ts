@@ -1,8 +1,9 @@
 /* eslint-disable */
 
 import mapboxgl from 'mapbox-gl';
+import process from 'process';
 
-mapboxgl.accessToken = localStorage.getItem('accessToken') || window.prompt('Enter access token');
+mapboxgl.accessToken = 'accessToken';
 localStorage.setItem('accessToken', mapboxgl.accessToken);
 
 //
@@ -37,7 +38,7 @@ map.on('click', (event) => {
 
     event.point satisfies mapboxgl.Point;
     event.lngLat satisfies mapboxgl.LngLat;
-    event.features satisfies mapboxgl.GeoJSONFeature[];
+    event.features satisfies mapboxgl.GeoJSONFeature[] | undefined;
     event.originalEvent satisfies MouseEvent;
 
     event.preventDefault();
@@ -49,7 +50,7 @@ map.on('touchstart', 'layerId', (event) => {
 
     event.point satisfies mapboxgl.Point;
     event.lngLat satisfies mapboxgl.LngLat;
-    event.features satisfies mapboxgl.GeoJSONFeature[];
+    event.features satisfies mapboxgl.GeoJSONFeature[] | undefined;
     event.originalEvent satisfies TouchEvent;
 
     event.preventDefault();
@@ -175,39 +176,41 @@ map.addSource('points', {
 //
 
 const source = map.getSource('id');
-const geojsonSource: mapboxgl.GeoJSONSource = map.getSource('id');
+const geojsonSource: mapboxgl.GeoJSONSource | undefined = map.getSource('id');
 
-switch (source.type) {
-    case 'geojson':
-        source satisfies mapboxgl.GeoJSONSource;
-        break;
-    case 'raster-array':
-        source satisfies mapboxgl.RasterArrayTileSource;
-        break;
-    case 'raster-dem':
-        source satisfies mapboxgl.RasterDemTileSource;
-        break;
-    case 'raster':
-        source satisfies mapboxgl.RasterTileSource;
-        break;
-    case 'vector':
-        source satisfies mapboxgl.VectorTileSource;
-        break;
-    case 'image':
-        source satisfies mapboxgl.ImageSource;
-        break;
-    case 'video':
-        source satisfies mapboxgl.VideoSource;
-        break;
-    case 'canvas':
-        source satisfies mapboxgl.CanvasSource;
-        break;
-    case 'custom':
-        source satisfies mapboxgl.CustomSource<ImageData | ImageBitmap | HTMLCanvasElement | HTMLImageElement>;
-        break;
-    case 'model':
-        source satisfies mapboxgl.ModelSource;
-        break;
+if (source) {
+    switch (source.type) {
+        case 'geojson':
+            source satisfies mapboxgl.GeoJSONSource;
+            break;
+        case 'raster-array':
+            source satisfies mapboxgl.RasterArrayTileSource;
+            break;
+        case 'raster-dem':
+            source satisfies mapboxgl.RasterDemTileSource;
+            break;
+        case 'raster':
+            source satisfies mapboxgl.RasterTileSource;
+            break;
+        case 'vector':
+            source satisfies mapboxgl.VectorTileSource;
+            break;
+        case 'image':
+            source satisfies mapboxgl.ImageSource;
+            break;
+        case 'video':
+            source satisfies mapboxgl.VideoSource;
+            break;
+        case 'canvas':
+            source satisfies mapboxgl.CanvasSource;
+            break;
+        case 'custom':
+            source satisfies mapboxgl.CustomSource<ImageData | ImageBitmap | HTMLCanvasElement | HTMLImageElement>;
+            break;
+        case 'model':
+            source satisfies mapboxgl.ModelSource;
+            break;
+    }
 }
 
 //
@@ -271,47 +274,51 @@ map.addLayer({
 
 
 const layer = map.getLayer('id');
-layer.id satisfies string;
-layer.slot satisfies string;
-layer.paint satisfies mapboxgl.LayerSpecification['paint'];
-layer.layout satisfies mapboxgl.LayerSpecification['layout'];
+if (layer) {
+    layer.id satisfies string;
+    layer.slot satisfies string | undefined;
+    layer.paint satisfies mapboxgl.LayerSpecification['paint'];
+    layer.layout satisfies mapboxgl.LayerSpecification['layout'];
 
-const backgroundLayer: mapboxgl.BackgroundLayerSpecification = map.getLayer('background');
+    switch (layer.type) {
+        case 'background':
+            layer satisfies mapboxgl.BackgroundLayerSpecification;
+            break;
+        case 'circle':
+            layer satisfies mapboxgl.CircleLayerSpecification;
+            break;
+        case 'fill':
+            layer satisfies mapboxgl.FillLayerSpecification;
+            break;
+        case 'fill-extrusion':
+            layer satisfies mapboxgl.FillExtrusionLayerSpecification;
+            break;
+        case 'heatmap':
+            layer satisfies mapboxgl.HeatmapLayerSpecification;
+            break;
+        case 'hillshade':
+            layer satisfies mapboxgl.HillshadeLayerSpecification;
+            break;
+        case 'line':
+            layer satisfies mapboxgl.LineLayerSpecification;
+            break;
+        case 'raster':
+            layer satisfies mapboxgl.RasterLayerSpecification;
+            break;
+        case 'symbol':
+            layer satisfies mapboxgl.SymbolLayerSpecification;
+            break;
+        case 'custom':
+            layer satisfies mapboxgl.CustomLayerInterface;
+            break;
+    }
+}
 
-const customLayer: mapboxgl.CustomLayerInterface = map.getLayer<mapboxgl.CustomLayerInterface>('custom');
-customLayer.render satisfies mapboxgl.CustomLayerInterface['render'];
+const backgroundLayer: mapboxgl.BackgroundLayerSpecification | undefined = map.getLayer('background');
 
-switch (layer.type) {
-    case 'background':
-        layer satisfies mapboxgl.BackgroundLayerSpecification;
-        break;
-    case 'circle':
-        layer satisfies mapboxgl.CircleLayerSpecification;
-        break;
-    case 'fill':
-        layer satisfies mapboxgl.FillLayerSpecification;
-        break;
-    case 'fill-extrusion':
-        layer satisfies mapboxgl.FillExtrusionLayerSpecification;
-        break;
-    case 'heatmap':
-        layer satisfies mapboxgl.HeatmapLayerSpecification;
-        break;
-    case 'hillshade':
-        layer satisfies mapboxgl.HillshadeLayerSpecification;
-        break;
-    case 'line':
-        layer satisfies mapboxgl.LineLayerSpecification;
-        break;
-    case 'raster':
-        layer satisfies mapboxgl.RasterLayerSpecification;
-        break;
-    case 'symbol':
-        layer satisfies mapboxgl.SymbolLayerSpecification;
-        break;
-    case 'custom':
-        layer satisfies mapboxgl.CustomLayerInterface;
-        break;
+const customLayer: mapboxgl.CustomLayerInterface | undefined = map.getLayer<mapboxgl.CustomLayerInterface>('custom');
+if (customLayer) {
+    customLayer.render satisfies mapboxgl.CustomLayerInterface['render'];
 }
 
 //
@@ -355,6 +362,8 @@ map.addSource('mapbox-dem', {
 });
 
 map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
+map.setTerrain(undefined);
+map.setTerrain(null);
 
 //
 // Query features

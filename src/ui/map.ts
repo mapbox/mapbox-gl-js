@@ -3451,7 +3451,7 @@ export class Map extends Camera {
      * // update the exaggeration for the existing terrain
      * map.setTerrain({'exaggeration': 2});
      */
-    setTerrain(terrain?: TerrainSpecification): this {
+    setTerrain(terrain?: TerrainSpecification | null): this {
         this._lazyInitEmptyStyle();
         if (!terrain && this.transform.projection.requiresDraping) {
             this.style.setTerrainForDraping();
@@ -3490,7 +3490,7 @@ export class Map extends Camera {
      * });
      * @see [Example: Add fog to a map](https://docs.mapbox.com/mapbox-gl-js/example/add-fog/)
      */
-    setFog(fog?: FogSpecification): this {
+    setFog(fog?: FogSpecification | null): this {
         this._lazyInitEmptyStyle();
         this.style.setFog(fog);
         return this._update(true);
