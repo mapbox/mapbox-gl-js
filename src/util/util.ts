@@ -394,6 +394,7 @@ export function uuid(): string {
     function b(a: undefined) {
         return a ? (a ^ Math.random() * (16 >> a / 4)).toString(16) :
         // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'number[]' and 'number'.
+        // eslint-disable-next-line
             ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
     }
     // @ts-expect-error - TS2554 - Expected 1 arguments, but got 0.

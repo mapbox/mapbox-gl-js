@@ -643,8 +643,7 @@ function addTextVertices(bucket: SymbolBucket,
 function getDefaultHorizontalShaping(horizontalShaping: Partial<Record<TextJustify, Shaping>>): Shaping | null {
     // We don't care which shaping we get because this is used for collision purposes
     // and all the justifications have the same collision box
-// @ts-expect-error - TS2404 - The left-hand side of a 'for...in' statement cannot use a type annotation.
-    for (const justification: any in horizontalShaping) {
+    for (const justification in horizontalShaping) {
         return horizontalShaping[justification];
     }
     return null;
@@ -887,8 +886,7 @@ function addSymbol(bucket: SymbolBucket,
         }
     }
 
-    // @ts-expect-error - TS2404 - The left-hand side of a 'for...in' statement cannot use a type annotation.
-    for (const justification: any in shapedTextOrientations.horizontal) {
+    for (const justification in shapedTextOrientations.horizontal) {
         const shaping = shapedTextOrientations.horizontal[justification];
 
         if (!textBoxIndex) {

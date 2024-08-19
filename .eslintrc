@@ -7,7 +7,10 @@
         "plugin:@typescript-eslint/recommended-type-checked"
     ],
     "parserOptions": {
-        "EXPERIMENTAL_useProjectService": true
+        "projectService": {
+            "defaultProject": "./tsconfig.json",
+            "allowDefaultProject": ["*.js"]
+        }
     },
     "plugins": [
         "jsdoc",
@@ -33,6 +36,7 @@
     },
     "rules": {
         // temporarily disabled for easier migration to TypeScript
+        "no-loss-of-precision": "off",
         "@typescript-eslint/no-this-alias": "off",
         "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/unbound-method": "off",
@@ -45,6 +49,7 @@
         "@typescript-eslint/no-loss-of-precision": "off",
         "@typescript-eslint/no-unsafe-member-access": "off",
         "@typescript-eslint/no-redundant-type-constituents": "off",
+        "@typescript-eslint/only-throw-error": "off",
 
         // TypeScript specific rules
         "@typescript-eslint/method-signature-style": "error",
@@ -62,6 +67,7 @@
         "import/default": "off",
         "import/no-named-as-default-member": "off",
         "import/no-unresolved": "off",
+        "import/no-named-as-default": "off",
 
         // Import plugin rules
         "no-duplicate-imports": "off",
@@ -125,7 +131,7 @@
         }],
         "no-multiple-empty-lines": ["error", {
             "max": 1
-        }],
+        }]
     },
     "overrides": [
         {
@@ -257,6 +263,7 @@
         "es6": true
     },
     "ignorePatterns": [
-        "dist/**/*"
+        "dist/**/*",
+        "src/style-spec/bin/*"
     ]
 }
