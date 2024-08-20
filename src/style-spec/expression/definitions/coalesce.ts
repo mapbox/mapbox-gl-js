@@ -50,7 +50,7 @@ class Coalesce implements Expression {
             new Coalesce((outputType as any), parsedArgs);
     }
 
-    evaluate(ctx: EvaluationContext): any | null {
+    evaluate(ctx: EvaluationContext): any {
         let result = null;
         let argCount = 0;
         let firstImage;

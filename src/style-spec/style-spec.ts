@@ -26,8 +26,9 @@ export type StylePropertySpecification = {
     'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     transition?: boolean,
+    overridable?: boolean,
     default?: boolean,
-    tokens: never
+    tokens?: never
 } | {
     type: 'enum',
     'property-type': ExpressionType,

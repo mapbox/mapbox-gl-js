@@ -112,9 +112,9 @@ export class RetainedQueryData {
     }
 }
 
-type CollisionGroup = {
+export type CollisionGroup = {
     ID: number;
-    predicate?: any;
+    predicate?: (key: {collisionGroupID: number}) => boolean;
 };
 
 class CollisionGroups {

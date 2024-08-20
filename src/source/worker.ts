@@ -419,7 +419,7 @@ export default class Worker {
         enforceCacheSizeLimit(limit);
     }
 
-    getWorkerPerformanceMetrics(mapId: string, params: any, callback: (error?: Error | null | undefined, result?: any | null | undefined) => void) {
+    getWorkerPerformanceMetrics(mapId: string, params: any, callback: (error?: Error, result?: any) => void) {
         callback(undefined, PerformanceUtils.getWorkerPerformanceMetrics());
     }
 }

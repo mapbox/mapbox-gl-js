@@ -3,7 +3,7 @@
  *
  * @private
  */
-function deepEqual(a?: unknown | null, b?: unknown | null): boolean {
+function deepEqual(a?: unknown, b?: unknown): boolean {
     if (Array.isArray(a)) {
         if (!Array.isArray(b) || a.length !== b.length) return false;
         for (let i = 0; i < a.length; i++) {

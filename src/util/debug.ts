@@ -28,7 +28,7 @@ export const Debug: {
     _initializeCanvas: (tr: Transform) => HTMLCanvasElement;
 } =
 {
-    extend(dest: any, ...sources: Array<any | null | undefined>): any {
+    extend(dest: any, ...sources: Array<any>): any {
         return extend(dest, ...sources);
     },
 

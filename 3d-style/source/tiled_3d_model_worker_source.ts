@@ -17,6 +17,7 @@ import type {
     WorkerTileResult
 } from '../../src/source/worker_source';
 import type {Bucket} from '../../src/data/bucket';
+import type {LoadVectorData} from '../../src/source/load_vector_tile';
 import type Projection from '../../src/geo/projection/projection';
 
 class Tiled3dWorkerTile {
@@ -106,8 +107,8 @@ class Tiled3dModelWorkerSource implements WorkerSource {
     loaded: {
         [_: number]: Tiled3dWorkerTile;
     };
-    brightness: number | null | undefined;
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadVectorData?: any | null, brightness?: number | null) {
+    brightness?: number;
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadVectorData?: LoadVectorData, brightness?: number) {
         this.actor = actor;
         this.layerIndex = layerIndex;
         this.brightness = brightness;

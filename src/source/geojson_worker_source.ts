@@ -18,7 +18,7 @@ import type {
 
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
-
+import type {Feature} from '../style-spec/expression/index';
 import type {LoadVectorDataCallback} from './load_vector_tile';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {Callback} from '../types/callback';
@@ -132,7 +132,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;
 
-        this.loadGeoJSON(params, (err?: Error | null, data?: any | null) => {
+        this.loadGeoJSON(params, (err?: Error, data?: GeoJSON.FeatureCollection | GeoJSON.Feature) => {
             if (err || !data) {
                 return callback(err);
 
@@ -142,12 +142,11 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             } else {
                 try {
                     if (params.filter) {
-                        // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'overridable' does not exist in type '{ type: "boolean"; 'property-type': ExpressionType; expression?: ExpressionSpecification; transition?: boolean; default?: boolean; }'.
                         const compiled = createExpression(params.filter, {type: 'boolean', 'property-type': 'data-driven', overridable: false, transition: false});
                         if (compiled.result === 'error')
                             throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
 
-                        data.features = data.features.filter(feature => compiled.value.evaluate({zoom: 0}, feature));
+                        (data as GeoJSON.FeatureCollection).features = (data as GeoJSON.FeatureCollection).features.filter(feature => compiled.value.evaluate({zoom: 0}, feature as unknown as Feature));
                     }
 
                     // for GeoJSON sources that are marked as dynamic, we retain the GeoJSON data
@@ -162,14 +161,14 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
 
                         this._dynamicIndex.load(data.features, this.loaded);
 
-                        if (params.cluster) data.features = this._dynamicIndex.getFeatures();
+                        if (params.cluster) data.features = this._dynamicIndex.getFeatures() as unknown as GeoJSON.Feature[];
 
                     } else {
                         this.loaded = {};
                     }
 
                     this._geoJSONIndex =
-                        params.cluster ? new Supercluster(getSuperclusterOptions(params)).load(data.features) :
+                        params.cluster ? new Supercluster(getSuperclusterOptions(params)).load((data as GeoJSON.FeatureCollection).features as Array<GeoJSON.Feature<GeoJSON.Point, object>>) :
                         params.dynamic ? this._dynamicIndex :
                         geojsonvt(data, params.geojsonVtOptions);
 

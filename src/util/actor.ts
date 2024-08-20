@@ -4,6 +4,9 @@ import Scheduler from './scheduler';
 
 import type {Transferable} from '../types/transferable';
 import type {Cancelable} from '../types/cancelable';
+import type {Callback} from '../types/callback';
+
+type ActorCallback = Callback<any> & {metadata?: any};
 
 /**
  * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)
@@ -21,7 +24,7 @@ class Actor {
     parent: any;
     mapId: number | null | undefined;
     callbacks: {
-        number: any;
+        number: ActorCallback;
     };
     name: string;
     cancelCallbacks: {
@@ -53,10 +56,10 @@ class Actor {
     send(
         type: string,
         data: unknown,
-        callback?: any | null,
+        callback?: ActorCallback,
         targetMapId?: string | null,
         mustQueue: boolean = false,
-        callbackMetadata?: any,
+        callbackMetadata?: ActorCallback['metadata'],
     ): Cancelable | null | undefined {
         // We're using a string ID instead of numbers because they are being used as object keys
         // anyway, and thus stringified implicitly. We use random IDs because an actor may receive

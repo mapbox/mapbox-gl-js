@@ -473,7 +473,7 @@ export class TrackedParameters implements ITrackedParameters {
         return {currentScope, fullScopeName};
     }
 
-    registerParameter(containerObject: any, scope: Array<string>, name: string, description?: Description | null, changeValueCallback?: any | null) {
+    registerParameter(containerObject: any, scope: Array<string>, name: string, description?: Description, changeValueCallback?: any) {
         const {currentScope, fullScopeName} = this.createFoldersChainAndSelectScope(scope);
 
         const folderStateObj: FolderState = (this._paneState.folders.get(fullScopeName) as any);
@@ -524,7 +524,7 @@ export class TrackedParameters implements ITrackedParameters {
         });
     }
 
-    registerBinding(containerObject: any, scope: Array<string>, name: string, description?: any | null) {
+    registerBinding(containerObject: any, scope: Array<string>, name: string, description?: Description) {
         const {currentScope} = this.createFoldersChainAndSelectScope(scope);
 
         const modifiedLabel = `  ${(() => {

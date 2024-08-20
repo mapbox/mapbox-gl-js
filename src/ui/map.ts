@@ -1229,13 +1229,11 @@ export class Map extends Camera {
      * @example
      * const language = map.getLanguage();
      */
-    getLanguage(): string | null | undefined | string[]     {
+    getLanguage(): string | null | undefined | string[] {
         return this._language;
     }
 
-    _parseLanguage(
-        language?: 'auto' | string | null | undefined | string[],
-    ): string | null | undefined | string[]     {
+    _parseLanguage(language?: 'auto' | (string & NonNullable<unknown>) | string[]): string | null | undefined | string[] {
         if (language === 'auto') return navigator.language;
         if (Array.isArray(language)) return language.length === 0 ?
             undefined :
@@ -1267,9 +1265,7 @@ export class Map extends Camera {
      * @example
      * map.setLanguage();
      */
-    setLanguage(
-        language?: 'auto' | string | null | undefined | string[],
-    ): this {
+    setLanguage(language?: 'auto' | (string & NonNullable<unknown>) | string[]): this {
         const newLanguage = this._parseLanguage(language);
         if (!this.style || newLanguage === this._language) return this;
         this._language = newLanguage;
@@ -1308,10 +1304,10 @@ export class Map extends Camera {
      *  If param is set to `undefined` or `null`, it will cause the map to fall back to the TileJSON's default worldview.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
-     * map.setWorldView('JP');
+     * map.setWorldview('JP');
      *
      * @example
-     * map.setWorldView();
+     * map.setWorldview();
      */
     setWorldview(worldview?: string | null): this {
         if (!this.style || worldview === this._worldview) return this;
@@ -2553,7 +2549,6 @@ export class Map extends Camera {
      * @see [Example: Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
      */
     loadImage(url: string, callback: Callback<ImageBitmap | HTMLImageElement | ImageData>) {
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         getImage(this._requestManager.transformRequest(url, ResourceType.Image), (err, img) => {
             callback(err, img instanceof HTMLImageElement ? browser.getImageData(img) : img);
         });
@@ -3315,7 +3310,7 @@ export class Map extends Camera {
      * @example
      * map.getConfigProperty('basemap', 'showLabels');
      */
-    getConfigProperty(importId: string, configName: string): any | null | undefined {
+    getConfigProperty(importId: string, configName: string): any {
         return this.style.getConfigProperty(importId, configName);
     }
 

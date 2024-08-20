@@ -225,7 +225,6 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
 
     loadTile(tile: Tile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme));
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
         const lutForScope = this.map.style ? this.map.style.getLut(this.scope) : null;
         const params = {

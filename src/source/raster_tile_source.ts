@@ -198,7 +198,6 @@ class RasterTileSource<T extends 'raster' | 'raster-dem' | 'raster-array' = 'ras
     loadTile(tile: Tile, callback: Callback<undefined>) {
         const use2x = browser.devicePixelRatio >= 2;
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), use2x, this.tileSize);
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (error, data, cacheControl, expires) => {
             delete tile.request;
 

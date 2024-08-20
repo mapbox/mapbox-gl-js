@@ -32,7 +32,7 @@ class Length implements Expression {
         return new Length(input);
     }
 
-    evaluate(ctx: EvaluationContext): any | number {
+    evaluate(ctx: EvaluationContext): number {
         const input = this.input.evaluate(ctx);
         if (typeof input === 'string') {
             return input.length;

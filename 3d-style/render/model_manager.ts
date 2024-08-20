@@ -37,7 +37,6 @@ class ModelManager extends Evented {
     }
 
     loadModel(id: string, url: string): Promise<Model | null | undefined> {
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         return loadGLTF(this.requestManager.transformRequest(url, ResourceType.Model).url)
             .then(gltf => {
                 if (!gltf) return;

@@ -305,7 +305,6 @@ class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Event
             return;
         }
 
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         this._imageRequest = getImage(this.map._requestManager.transformRequest(this.url, ResourceType.Image), (err, image) => {
             this._imageRequest = null;
             this._loaded = true;

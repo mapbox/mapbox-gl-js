@@ -32,7 +32,6 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
 
     loadTile(tile: Tile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
         function imageLoaded(
@@ -97,11 +96,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
         }
     }
 
-    _getNeighboringTiles(tileID: OverscaledTileID): {
-        [key: number]: {
-            backfilled: boolean;
-        };
-    } {
+    _getNeighboringTiles(tileID: OverscaledTileID): {[key: number]: {backfilled: boolean}} {
         const canonical = tileID.canonical;
         const dim = Math.pow(2, canonical.z);
 

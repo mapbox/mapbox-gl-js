@@ -24,7 +24,8 @@ const ResourceType = {
     SpriteJSON: 'SpriteJSON',
     Image: 'Image',
     Model: 'Model'
-};
+} as const;
+
 export {ResourceType};
 
 if (typeof Object.freeze == 'function') {

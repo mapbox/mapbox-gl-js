@@ -18,8 +18,7 @@ export default function(
     let json: any, image, error;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
-    // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
-    let jsonRequest: Cancelable | null | undefined = getJSON(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err?: Error | null, data?: any | null) => {
+    let jsonRequest: Cancelable | null | undefined = getJSON(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.json'), ResourceType.SpriteJSON), (err?: Error | null, data?: object) => {
         jsonRequest = null;
         if (!error) {
             error = err;
@@ -28,7 +27,6 @@ export default function(
         }
     });
 
-    // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
     let imageRequest: Cancelable | null | undefined = getImage(requestManager.transformRequest(requestManager.normalizeSpriteURL(baseURL, format, '.png'), ResourceType.SpriteImage), (err, img) => {
         imageRequest = null;
         if (!error) {

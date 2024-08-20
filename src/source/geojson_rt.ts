@@ -17,6 +17,7 @@ type InternalFeature = BBox & {
     tags: {[_: string]: string | number | boolean},
     type: 1 | 2 | 3,
     geometry: number[] | number[][]
+    properties?: object
 };
 
 const PAD = 64 / 4096; // geojson-vt default tile buffer

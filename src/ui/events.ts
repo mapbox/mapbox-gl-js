@@ -1618,6 +1618,7 @@ export type MapEvents = {
 /**
  * Utility type that represents all possible Map event types.
  */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type MapEventType = keyof MapEvents & string;
 
 /**

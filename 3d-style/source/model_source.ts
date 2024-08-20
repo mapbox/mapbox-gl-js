@@ -68,7 +68,6 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
             // @ts-expect-error - TS2339 - Property 'models' does not exist on type 'ModelSourceSpecification'.
             const modelSpec = this._options.models[modelId];
 
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
             const modelPromise = loadGLTF(this.map._requestManager.transformRequest(modelSpec.uri, ResourceType.Model).url).then(gltf => {
                 if (!gltf) return;
                 const nodes = convertModel(gltf);

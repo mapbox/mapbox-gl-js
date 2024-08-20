@@ -102,9 +102,9 @@ export const downloadRTLTextPlugin = function() {
 };
 
 export const plugin: {
-    applyArabicShaping: any | null | undefined;
-    processBidirectionalText: (arg1: string, arg2: Array<number>) => Array<string> | null | undefined;
-    processStyledBidirectionalText: (arg1: string, arg2: Array<number>, arg3: Array<number>) => Array<[string, Array<number>]> | null | undefined;
+    applyArabicShaping?: (arg1: string) => string;
+    processBidirectionalText?: (arg1: string, arg2: Array<number>) => Array<string>;
+    processStyledBidirectionalText?: (arg1: string, arg2: Array<number>, arg3: Array<number>) => Array<[string, Array<number>]>;
     isLoaded: () => boolean;
     isLoading: () => boolean;
     setState: (state: PluginState) => void;

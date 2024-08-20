@@ -14,6 +14,8 @@ import type {PromoteIdSpecification} from '../style-spec/types';
 import type Projection from '../geo/projection/projection';
 import type {LUT} from "../util/lut";
 
+type TDecodingResult = any;
+
 export type TileParameters = {
     source: string;
     scope: string;
@@ -90,12 +92,9 @@ export type WorkerTileResult = {
     glyphPositions?: GlyphPositions | null;
 };
 
-export type WorkerTileCallback = (
-    error?: Error | null | undefined,
-    result?: WorkerTileResult | null | undefined,
-) => void;
-export type WorkerDEMTileCallback = (err?: Error | null | undefined, result?: DEMData | null | undefined) => void;
-export type WorkerRasterArrayTileCallback = (err?: Error | null | undefined, result?: any | null | undefined) => void;
+export type WorkerTileCallback = (error?: Error, result?: WorkerTileResult) => void;
+export type WorkerDEMTileCallback = (err?: Error, result?: DEMData) => void;
+export type WorkerRasterArrayTileCallback = (err?: Error, result?: TDecodingResult) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on

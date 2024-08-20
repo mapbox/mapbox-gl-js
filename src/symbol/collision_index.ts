@@ -10,13 +10,14 @@ import assert from 'assert';
 import {OverscaledTileID} from '../source/tile_id';
 import * as symbolProjection from '../symbol/projection';
 
+import type {vec3} from 'gl-matrix';
 import type Transform from '../geo/transform';
 import type Projection from '../geo/projection/projection';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type {SingleCollisionBox} from '../data/bucket/symbol_bucket';
 import type {GlyphOffsetArray, SymbolLineVertexArray, PlacedSymbol} from '../data/array_types';
 import type {FogState} from '../style/fog_helpers';
-import type {vec3} from 'gl-matrix';
+import type {CollisionGroup} from '../symbol/placement';
 
 export type PlacedCollisionBox = {
     box: Array<number>;
@@ -159,7 +160,7 @@ class CollisionIndex {
         labelToScreenMatrix: mat4 | null | undefined,
         showCollisionCircles: boolean,
         pitchWithMap: boolean,
-        collisionGroupPredicate: any | null | undefined,
+        collisionGroupPredicate: CollisionGroup['predicate'],
         circlePixelDiameter: number,
         textPixelPadding: number,
         tileID: OverscaledTileID,

@@ -83,7 +83,7 @@ class Assertion implements Expression {
         return new Assertion(type, parsed);
     }
 
-    evaluate(ctx: EvaluationContext): any | null {
+    evaluate(ctx: EvaluationContext): any {
         for (let i = 0; i < this.args.length; i++) {
             const value = this.args[i].evaluate(ctx);
             const error = checkSubtype(this.type, typeOf(value));

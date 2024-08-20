@@ -42,8 +42,7 @@ export default function validateProperty(options: PropertyValidationOptions, pro
         return [new ValidationWarning(key, value, `unknown property "${propertyKey}"`)];
     }
 
-    // @ts-expect-error - TS2702 - 'RegExp' only refers to a type, but is being used as a namespace here.
-    let tokenMatch: RegExp.matchResult | null | undefined;
+    let tokenMatch: RegExpExecArray | undefined;
     if (getType(value) === 'string' && supportsPropertyExpression(valueSpec) && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
         const example = `\`{ "type": "identity", "property": ${tokenMatch ? JSON.stringify(tokenMatch[1]) : '"_"'} }\``;
         return [new ValidationError(

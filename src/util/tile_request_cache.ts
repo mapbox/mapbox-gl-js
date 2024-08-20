@@ -124,11 +124,7 @@ export function cachePut(request: Request, response: Response, requestTime: numb
 
 export function cacheGet(
     request: Request,
-    callback: (
-        error?: any | null | undefined,
-        response?: Response | null | undefined,
-        fresh?: boolean | null | undefined,
-    ) => void,
+    callback: (error?: Error, response?: Response, fresh?: boolean) => void,
 ): void {
     cacheOpen();
     if (!sharedCache) return callback(null);

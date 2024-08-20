@@ -64,7 +64,6 @@ class VideoSource extends ImageSource<'video'> {
 
         this.urls = [];
         for (const url of options.urls) {
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
             this.urls.push(this.map._requestManager.transformRequest(url, ResourceType.Source).url);
         }
 

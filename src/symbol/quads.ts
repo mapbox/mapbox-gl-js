@@ -48,7 +48,7 @@ export type SymbolQuad = {
     texSecondary: TextureCoordinate | null | undefined;
     pixelOffsetTL: Point;
     pixelOffsetBR: Point;
-    writingMode: any | undefined;
+    writingMode: Shaping['writingMode'];
     glyphOffset: [number, number];
     sectionIndex: number;
     isSDF: boolean;

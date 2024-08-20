@@ -119,6 +119,7 @@ import type {TransitionParameters, ConfigOptions} from './properties';
 import type {QueryResult, QueryRenderedFeaturesParams} from '../source/query_features';
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
+import type {SerializedExpression} from '../style-spec/expression/expression';
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -496,9 +497,8 @@ class Style extends Evented<MapEvents> {
 
         if (typeof style === 'string') {
             const url = this.map._requestManager.normalizeStyleURL(style);
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
             const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
-            getJSON(request, (error?: Error | null, json?: any | null) => {
+            getJSON(request, (error?: Error | null, json?: StyleSpecification) => {
                 if (error) {
                     this.fire(new ErrorEvent(error));
                 } else if (json) {
@@ -529,9 +529,8 @@ class Style extends Evented<MapEvents> {
         const cachedImport = this.importsCache.get(url);
         if (cachedImport) return this._load(cachedImport, validate);
 
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
-        this._request = getJSON(request, (error?: Error | null, json?: any | null) => {
+        this._request = getJSON(request, (error?: Error, json?: StyleSpecification) => {
             this._request = null;
             if (error) {
                 this.fire(new ErrorEvent(error));
@@ -1971,7 +1970,7 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    getConfigProperty(fragmentId: string, key: string): unknown {
+    getConfigProperty(fragmentId: string, key: string): SerializedExpression | null {
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return null;
         const fqid = makeFQID(key, fragmentStyle.scope);

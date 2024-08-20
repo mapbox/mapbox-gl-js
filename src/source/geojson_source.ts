@@ -385,7 +385,6 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         options.scope = this.scope;
         const data = this._data;
         if (typeof data === 'string') {
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
             options.request = this.map._requestManager.transformRequest(browser.resolveURL(data), ResourceType.Source);
             options.request.collectResourceTiming = this._collectResourceTiming;
         } else {

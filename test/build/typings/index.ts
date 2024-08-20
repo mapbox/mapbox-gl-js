@@ -458,3 +458,18 @@ map.fitBounds([[-73.9876, 40.7661], [-73.9397, 40.8002]], {
     padding: 20,
     maxZoom: 12,
 });
+
+//
+// Set Language
+//
+
+map.setLanguage('auto');
+map.setLanguage('es');
+map.setLanguage(['en-GB', 'en-US']);
+
+//
+// Set Worldview
+//
+
+map.setWorldview();
+map.setWorldview('JP');

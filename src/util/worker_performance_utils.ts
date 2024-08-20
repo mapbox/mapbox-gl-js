@@ -2,11 +2,14 @@ import Dispatcher from './dispatcher';
 import getWorkerPool from './global_worker_pool';
 import {PerformanceUtils} from './performance';
 
+import type {Callback} from '../types/callback';
+import type {PerformanceMetrics} from './performance';
+
 // separate from PerformanceUtils to avoid circular dependency
 
 export const WorkerPerformanceUtils = {
 
-    getPerformanceMetricsAsync(callback: (error?: Error | null | undefined, result?: any | null | undefined) => void) {
+    getPerformanceMetricsAsync(callback: Callback<PerformanceMetrics>) {
         const metrics = PerformanceUtils.getPerformanceMetrics();
         const dispatcher = new Dispatcher(getWorkerPool(), WorkerPerformanceUtils);
 

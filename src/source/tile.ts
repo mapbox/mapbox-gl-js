@@ -125,7 +125,9 @@ class Tile {
     isRaster: boolean | null | undefined;
     _tileTransform: TileTransform;
 
-    neighboringTiles: any | null | undefined;
+    neighboringTiles?: {
+        [key: number]: {backfilled: boolean}
+    };
     dem: DEMData | null | undefined;
     aborted: boolean | null | undefined;
     needsHillshadePrepare: boolean | null | undefined;
