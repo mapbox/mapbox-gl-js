@@ -6,7 +6,7 @@ import {
     backgroundUniformValues,
     backgroundPatternUniformValues
 } from './program/background_program';
-import {OverscaledTileID} from '../source/tile_id';
+import type {OverscaledTileID} from '../source/tile_id';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';

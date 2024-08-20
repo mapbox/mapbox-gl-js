@@ -2,7 +2,8 @@ import Texture from '../render/texture';
 import RasterTileSource from './raster_tile_source';
 import {extend} from '../util/util';
 import {ResourceType} from '../util/ajax';
-import {Evented, ErrorEvent} from '../util/evented';
+import type {Evented} from '../util/evented';
+import {ErrorEvent} from '../util/evented';
 import RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
 

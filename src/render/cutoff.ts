@@ -1,4 +1,4 @@
-import Context from '../gl/context';
+import type Context from '../gl/context';
 import type {UniformValues} from './uniform_binding';
 import {Uniform4f} from './uniform_binding';
 import {smoothstep, warnOnce} from '../util/util';

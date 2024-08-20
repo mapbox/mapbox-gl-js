@@ -1,10 +1,10 @@
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
-import Program from './program';
+import type Program from './program';
 import {circleUniformValues, circleDefinesValues} from './program/circle_program';
 import SegmentVector from '../data/segment';
-import {OverscaledTileID} from '../source/tile_id';
+import type {OverscaledTileID} from '../source/tile_id';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 
 import type Painter from './painter';

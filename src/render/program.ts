@@ -6,9 +6,9 @@ import {
     includeMap,
 } from '../shaders/shaders';
 import assert from 'assert';
-import ProgramConfiguration from '../data/program_configuration';
+import type ProgramConfiguration from '../data/program_configuration';
 import VertexArrayObject from './vertex_array_object';
-import Context from '../gl/context';
+import type Context from '../gl/context';
 import {terrainUniforms, globeUniforms} from '../terrain/terrain';
 import type {TerrainUniformsType, GlobeUniformsType} from '../terrain/terrain';
 import {fogUniforms} from './fog';
@@ -22,7 +22,7 @@ import type {ShadowUniformsType} from '../../3d-style/render/shadow_uniforms';
 
 import type SegmentVector from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
-import IndexBuffer from '../gl/index_buffer';
+import type IndexBuffer from '../gl/index_buffer';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';

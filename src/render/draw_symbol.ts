@@ -15,7 +15,7 @@ import {addDynamicAttributes} from '../data/bucket/symbol_bucket';
 import {getAnchorAlignment, WritingMode} from '../symbol/shaping';
 import ONE_EM from '../symbol/one_em';
 import {evaluateVariableOffset} from '../symbol/symbol_layout';
-import Tile from '../source/tile';
+import type Tile from '../source/tile';
 import type Transform from '../geo/transform';
 import {
     mercatorXfromLng,
@@ -34,9 +34,9 @@ import type SourceCache from '../source/source_cache';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type {SymbolBuffers} from '../data/bucket/symbol_bucket';
-import Texture from '../render/texture';
-import ColorMode from '../gl/color_mode';
-import {OverscaledTileID} from '../source/tile_id';
+import type Texture from '../render/texture';
+import type ColorMode from '../gl/color_mode';
+import type {OverscaledTileID} from '../source/tile_id';
 import type {UniformValues} from './uniform_binding';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';

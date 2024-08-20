@@ -1,6 +1,6 @@
 import Point from '@mapbox/point-geometry';
 import EXTENT from '../../src/style-spec/data/extent';
-import {UnwrappedTileID, CanonicalTileID} from '../../src/source/tile_id';
+import type {UnwrappedTileID, CanonicalTileID} from '../../src/source/tile_id';
 import {triangleIntersectsTriangle, polygonContainsPoint} from '../../src/util/intersection_tests';
 
 import type {Bucket} from '../../src/data/bucket';

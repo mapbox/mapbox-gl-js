@@ -1,15 +1,14 @@
 import StyleLayer from '../style_layer';
 
 import {getLayoutProperties, getPaintProperties} from './raster_style_layer_properties';
-import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
+import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import {renderColorRamp} from '../../util/color_ramp';
-import {RGBAImage} from '../../util/image';
+import type {RGBAImage} from '../../util/image';
 import ImageSource from '../../source/image_source';
 
 import type {PaintProps} from './raster_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
 import type Texture from '../../render/texture';
-import type {ConfigOptions} from '../properties';
 import type SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
 

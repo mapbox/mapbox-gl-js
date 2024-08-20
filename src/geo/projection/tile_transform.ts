@@ -1,5 +1,6 @@
 import Point from '@mapbox/point-geometry';
-import MercatorCoordinate, {altitudeFromMercatorZ, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate';
+import type MercatorCoordinate from '../mercator_coordinate';
+import {altitudeFromMercatorZ, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate';
 import EXTENT from '../../style-spec/data/extent';
 import {vec3} from 'gl-matrix';
 import {Aabb} from '../../util/primitives';

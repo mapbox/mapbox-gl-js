@@ -10,7 +10,7 @@ import type SymbolStyleLayer from './style_layer/symbol_style_layer';
 import type Tile from '../source/tile';
 import type {BucketPart} from '../symbol/placement';
 import type {FogState} from './fog_helpers';
-import BuildingIndex from '../source/building_index';
+import type BuildingIndex from '../source/building_index';
 
 class LayerPlacement {
     _sortAcrossTiles: boolean;

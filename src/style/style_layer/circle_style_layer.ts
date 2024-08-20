@@ -4,11 +4,11 @@ import CircleBucket from '../../data/bucket/circle_bucket';
 import {polygonIntersectsBufferedPoint} from '../../util/intersection_tests';
 import {getMaximumPaintValue, translateDistance, tilespaceTranslate} from '../query_utils';
 import {getLayoutProperties, getPaintProperties} from './circle_style_layer_properties';
-import {Transitionable, Transitioning, Layout, PossiblyEvaluated} from '../properties';
+import type {Transitionable, Transitioning, Layout, PossiblyEvaluated, ConfigOptions} from '../properties';
 import {vec4, vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration';
-import {Ray} from '../../util/primitives';
+import type {Ray} from '../../util/primitives';
 import assert from 'assert';
 import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordinate';
 import EXTENT from '../../style-spec/data/extent';
@@ -24,7 +24,6 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import {circleDefinesValues} from '../../render/program/circle_program';
 import type {CreateProgramParams} from '../../render/painter';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
-import type {ConfigOptions} from '../properties';
 import type {LUT} from "../../util/lut";
 
 class CircleStyleLayer extends StyleLayer {

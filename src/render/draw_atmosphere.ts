@@ -12,7 +12,7 @@ import {atmosphereUniformValues} from '../terrain/globe_raster_program';
 import {AtmosphereBuffer} from '../render/atmosphere_buffer';
 import {degToRad, mapValue, clamp} from '../util/util';
 import {mat3, vec3, mat4, quat} from 'gl-matrix';
-import Fog from '../style/fog';
+import type Fog from '../style/fog';
 import SegmentVector from '../data/segment';
 import {TriangleIndexArray, StarsVertexArray} from '../data/array_types';
 import {starsLayout} from './stars_attributes';

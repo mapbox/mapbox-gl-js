@@ -1,4 +1,4 @@
-import Tile from './tile';
+import type Tile from './tile';
 import Texture from '../render/texture';
 import TileBounds from './tile_bounds';
 import {extend, pick} from '../util/util';

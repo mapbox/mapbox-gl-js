@@ -1,6 +1,6 @@
 import EXTENT from '../style-spec/data/extent';
 
-import {SymbolInstanceArray} from '../data/array_types';
+import type {SymbolInstanceArray} from '../data/array_types';
 import KDBush from 'kdbush';
 
 import type Projection from '../geo/projection/projection';

@@ -9,7 +9,7 @@ import {PosArray, TileBoundsArray, TriangleIndexArray, LineStripIndexArray} from
 import {isMapAuthenticated} from '../util/mapbox';
 import posAttributes from '../data/pos_attributes';
 import boundsAttributes from '../data/bounds_attributes';
-import ProgramConfiguration from '../data/program_configuration';
+import type ProgramConfiguration from '../data/program_configuration';
 import shaders from '../shaders/shaders';
 import Program from './program';
 import {programUniforms} from './program/program_uniforms';
@@ -68,7 +68,7 @@ import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
 import type {ContextOptions} from '../gl/context';
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 import Framebuffer from '../gl/framebuffer';
-import SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 
 import {OcclusionParams} from './occlusion_params';
 

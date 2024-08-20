@@ -1,5 +1,5 @@
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
-import DEMData from '../data/dem_data';
+import type DEMData from '../data/dem_data';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../style-spec/data/extent';
 import {vec3} from 'gl-matrix';

@@ -11,15 +11,16 @@ import {computeColorAdjustmentMatrix} from '../../util/util';
 import type {FormattedSection} from '../../style-spec/expression/types/formatted';
 import type {FormattedSectionExpression} from '../../style-spec/expression/definitions/format';
 import type {CreateProgramParams} from '../../render/painter';
-import type {ConfigOptions, Properties} from '../properties';
-
-import {
+import type {ConfigOptions, Properties,
     Transitionable,
     Transitioning,
     Layout,
     PossiblyEvaluated,
-    PossiblyEvaluatedPropertyValue,
     PropertyValue
+} from '../properties';
+
+import {
+    PossiblyEvaluatedPropertyValue
 } from '../properties';
 
 import {

@@ -3,7 +3,7 @@ import {register} from '../../../src/util/web_worker_transfer';
 import loadGeometry from '../../../src/data/load_geometry';
 import toEvaluationFeature from '../../../src/data/evaluation_feature';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
-import Point from '@mapbox/point-geometry';
+import type Point from '@mapbox/point-geometry';
 import {vec3} from 'gl-matrix';
 import {InstanceVertexArray} from '../../../src/data/array_types';
 import assert from 'assert';
@@ -11,7 +11,8 @@ import {warnOnce} from '../../../src/util/util';
 import {rotationScaleYZFlipMatrix} from '../../util/model_util';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate';
 import {instanceAttributes} from '../model_attributes';
-import {ReplacementSource, regionsEquals, transformPointToTile, pointInFootprint, skipClipping} from '../../../3d-style/source/replacement_source';
+import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import {regionsEquals, transformPointToTile, pointInFootprint, skipClipping} from '../../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';

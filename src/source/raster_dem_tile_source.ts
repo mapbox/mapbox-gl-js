@@ -1,6 +1,6 @@
 import {getImage, ResourceType} from '../util/ajax';
 import {extend, prevPowerOfTwo} from '../util/util';
-import {Evented} from '../util/evented';
+import type {Evented} from '../util/evented';
 import browser from '../util/browser';
 import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
 import {OverscaledTileID} from './tile_id';

@@ -1,10 +1,11 @@
-import {RGBAImage, Float32Image} from '../util/image';
+import type {RGBAImage} from '../util/image';
+import {Float32Image} from '../util/image';
 
 import {warnOnce, clamp} from '../util/util';
 import {register} from '../util/web_worker_transfer';
 import DemMinMaxQuadTree from './dem_tree';
 import assert from 'assert';
-import {CanonicalTileID} from '../source/tile_id';
+import type {CanonicalTileID} from '../source/tile_id';
 import browser from '../util/browser';
 
 import type {DEMSourceEncoding} from '../source/worker_source';

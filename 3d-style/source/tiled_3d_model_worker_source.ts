@@ -3,7 +3,8 @@ import FeatureIndex from '../../src/data/feature_index';
 import {process3DTile} from './model_loader';
 import {tileToMeter} from '../../src/geo/mercator_coordinate';
 import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket';
-import {CanonicalTileID, OverscaledTileID} from '../../src/source/tile_id';
+import type {CanonicalTileID} from '../../src/source/tile_id';
+import {OverscaledTileID} from '../../src/source/tile_id';
 import {load3DTile} from '../util/loaders';
 import EvaluationParameters from '../../src/style/evaluation_parameters';
 

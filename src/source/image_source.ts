@@ -12,7 +12,7 @@ import browser from '../util/browser';
 import tileTransform, {getTilePoint} from '../geo/projection/tile_transform';
 import {GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe_constants';
 import {mat3, vec3} from 'gl-matrix';
-import LngLat from '../geo/lng_lat';
+import type LngLat from '../geo/lng_lat';
 
 import type {ISource, SourceEvents} from './source';
 import type {CanvasSourceSpecification} from './canvas_source';

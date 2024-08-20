@@ -1,7 +1,7 @@
 import {toString} from './types';
 
 import ParsingContext from './parsing_context';
-import EvaluationContext from './evaluation_context';
+import type EvaluationContext from './evaluation_context';
 import assert from 'assert';
 
 import type {Expression, ExpressionRegistry} from './expression';

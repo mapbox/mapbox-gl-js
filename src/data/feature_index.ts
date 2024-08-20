@@ -1,4 +1,4 @@
-import Point from '@mapbox/point-geometry';
+import type Point from '@mapbox/point-geometry';
 
 import loadGeometry from './load_geometry';
 import toEvaluationFeature from './evaluation_feature';
@@ -10,10 +10,10 @@ import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import Feature from '../util/vectortile_to_geojson';
 import {arraysIntersect, mapObject, extend} from '../util/util';
-import {OverscaledTileID} from '../source/tile_id';
+import type {OverscaledTileID} from '../source/tile_id';
 import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from '../style/evaluation_parameters';
-import SourceFeatureState from '../source/source_state';
+import type SourceFeatureState from '../source/source_state';
 import {polygonIntersectsBox} from '../util/intersection_tests';
 import {PossiblyEvaluated} from '../style/properties';
 import {FeatureIndexArray} from './array_types';

@@ -1,19 +1,18 @@
 import StyleLayer from '../../../src/style/style_layer';
 import ModelBucket from '../../data/bucket/model_bucket';
 import {getLayoutProperties, getPaintProperties} from './model_style_layer_properties';
-import {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue} from '../../../src/style/properties';
-import Point from '@mapbox/point-geometry';
+import type {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue, ConfigOptions} from '../../../src/style/properties';
+import type Point from '@mapbox/point-geometry';
 import {ZoomDependentExpression} from '../../../src/style-spec/expression/index';
 import {mat4} from 'gl-matrix';
 
 import type {LayerSpecification} from '../../../src/style-spec/types';
 import type {PaintProps, LayoutProps} from './model_style_layer_properties';
 import type {BucketParameters, Bucket} from '../../../src/data/bucket';
-import type {ConfigOptions} from '../../../src/style/properties';
 import type {TilespaceQueryGeometry} from '../../../src/style/query_geometry';
 import type {FeatureState} from '../../../src/style-spec/expression/index';
 import type Transform from '../../../src/geo/transform';
-import ModelManager from '../../render/model_manager';
+import type ModelManager from '../../render/model_manager';
 import {calculateModelMatrix} from '../../data/model';
 import type {Node} from '../../data/model';
 import LngLat from '../../../src/geo/lng_lat';
@@ -25,7 +24,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
 import type {FeatureFilter} from '../../../src/style-spec/feature_filter/index';
 import type {GeoJSONFeature} from '../../../src/util/vectortile_to_geojson';
-import {CanonicalTileID} from '../../../src/source/tile_id';
+import type {CanonicalTileID} from '../../../src/source/tile_id';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
 import type {LUT} from "../../../src/util/lut";
 

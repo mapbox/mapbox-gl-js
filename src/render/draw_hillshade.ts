@@ -14,7 +14,7 @@ import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer
 import ColorMode from '../gl/color_mode';
 import type {OverscaledTileID} from '../source/tile_id';
 import assert from 'assert';
-import DEMData from '../data/dem_data';
+import type DEMData from '../data/dem_data';
 import type {DynamicDefinesType} from './program/program_uniforms';
 
 export default drawHillshade;

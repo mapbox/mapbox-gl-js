@@ -1,5 +1,5 @@
 import browser from '../util/browser';
-import Context from '../gl/context';
+import type Context from '../gl/context';
 import {ParticleIndexLayoutArray} from '../data/array_types';
 import particleAttributes from '../data/particle_attributes';
 import SegmentVector from '../data/segment';

@@ -3,10 +3,11 @@ import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import EXTENT from '../style-spec/data/extent';
-import FillExtrusionBucket, {
+import type {
     GroundEffect,
+    PartData} from '../data/bucket/fill_extrusion_bucket';
+import FillExtrusionBucket, {
     fillExtrusionHeightLift,
-    PartData,
     ELEVATION_SCALE,
     ELEVATION_OFFSET,
     HIDDEN_BY_REPLACEMENT,
@@ -18,14 +19,15 @@ import {
     fillExtrusionGroundEffectUniformValues
 } from './program/fill_extrusion_program';
 import Point from '@mapbox/point-geometry';
-import {OverscaledTileID, neighborCoord} from '../source/tile_id';
+import type {OverscaledTileID} from '../source/tile_id';
+import {neighborCoord} from '../source/tile_id';
 import assert from 'assert';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 import Color from '../style-spec/util/color';
-import Context from '../gl/context';
-import {Terrain} from '../terrain/terrain';
-import Tile from '../source/tile';
+import type Context from '../gl/context';
+import type {Terrain} from '../terrain/terrain';
+import type Tile from '../source/tile';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
 import {RGBAImage} from '../util/image';
 import Texture from './texture';

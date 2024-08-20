@@ -1,4 +1,4 @@
-import Context from '../../src/gl/context';
+import type Context from '../../src/gl/context';
 import {Uniform1f, Uniform1i, Uniform2f, Uniform3f, UniformMatrix4f} from '../../src/render/uniform_binding';
 import type {UniformValues} from '../../src/render/uniform_binding';
 

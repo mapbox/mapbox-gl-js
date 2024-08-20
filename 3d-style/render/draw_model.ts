@@ -1,7 +1,7 @@
 import {modelUniformValues, modelDepthUniformValues} from './program/model_program';
 import {ModelTraits, DefaultModelScale} from '../data/model';
 
-import Transform from '../../src/geo/transform';
+import type Transform from '../../src/geo/transform';
 import EXTENT from '../../src/style-spec/data/extent';
 import StencilMode from '../../src/gl/stencil_mode';
 import ColorMode from '../../src/gl/color_mode';
@@ -12,15 +12,15 @@ import {getMetersPerPixelAtLatitude, mercatorZfromAltitude} from '../../src/geo/
 import TextureSlots from './texture_slots';
 import {convertModelMatrixForGlobe} from '../util/model_util';
 import {clamp, warnOnce} from '../../src/util/util';
-import ModelBucket from '../data/bucket/model_bucket';
+import type ModelBucket from '../data/bucket/model_bucket';
 import assert from 'assert';
 import {DEMSampler} from '../../src/terrain/elevation';
-import {OverscaledTileID} from '../../src/source/tile_id';
+import type {OverscaledTileID} from '../../src/source/tile_id';
 import {Aabb} from '../../src/util/primitives';
 import {getCutoffParams} from '../../src/render/cutoff';
 import {FOG_OPACITY_THRESHOLD} from '../../src/style/fog_helpers';
 import {ZoomDependentExpression} from '../../src/style-spec/expression/index';
-import {Tiled3dModelFeature} from '../data/bucket/tiled_3d_model_bucket';
+import type {Tiled3dModelFeature} from '../data/bucket/tiled_3d_model_bucket';
 
 import type ModelSource from '../source/model_source';
 import type Tiled3DModelSource from '../source/tiled_3d_model_source';

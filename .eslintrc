@@ -53,8 +53,8 @@
         // TypeScript specific rules
         "@typescript-eslint/method-signature-style": "error",
         "@typescript-eslint/no-floating-promises": "off",
-        "@typescript-eslint/consistent-type-exports": "off",
-        "@typescript-eslint/consistent-type-imports": "off",
+        "@typescript-eslint/consistent-type-exports": "error",
+        "@typescript-eslint/consistent-type-imports": "error",
         "@typescript-eslint/restrict-template-expressions": ["off", { "allowNever": true }],
         "@typescript-eslint/no-unnecessary-type-constraint": "off",
         "@typescript-eslint/no-unused-vars": ["off", { "argsIgnorePattern": "^_" }],

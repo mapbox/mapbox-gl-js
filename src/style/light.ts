@@ -7,19 +7,19 @@ import {
     validateLight,
     emitValidationErrors
 } from './validate_style';
-import Color from '../style-spec/util/color';
+import type Color from '../style-spec/util/color';
 import {
     Properties,
     Transitionable,
-    Transitioning,
-    PossiblyEvaluated,
     DataConstantProperty,
     PositionProperty
 } from './properties';
 
 import type EvaluationParameters from './evaluation_parameters';
 import type {StyleSetterOptions} from '../style/style';
-import type {TransitionParameters} from './properties';
+import type {TransitionParameters,
+    Transitioning,
+    PossiblyEvaluated} from './properties';
 
 import type {LightSpecification} from '../style-spec/types';
 

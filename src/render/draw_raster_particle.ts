@@ -17,7 +17,8 @@ import type {DynamicDefinesType} from "./program/program_uniforms";
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
-import {OverscaledTileID, neighborCoord} from '../source/tile_id';
+import type {OverscaledTileID} from '../source/tile_id';
+import {neighborCoord} from '../source/tile_id';
 import {
     calculateGlobeMercatorMatrix,
     getGridMatrix,
@@ -29,7 +30,7 @@ import {
 import RasterParticleState from './raster_particle_state';
 import Texture from './texture';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
-import Transform from '../geo/transform';
+import type Transform from '../geo/transform';
 import rasterFade from './raster_fade';
 import assert from 'assert';
 import {RGBAImage} from '../util/image';

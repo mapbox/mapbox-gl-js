@@ -1,14 +1,13 @@
 import assert from 'assert';
-import {
+import type {
     Uniform1i,
     Uniform1f,
     Uniform2f
-} from '../uniform_binding';
+    , UniformValues} from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 
 import type Painter from '../painter';
 import type {OverscaledTileID} from '../../source/tile_id';
-import type {UniformValues} from '../uniform_binding';
 import type Tile from '../../source/tile';
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
 import type {ImagePosition} from "../image_atlas";

@@ -4,7 +4,7 @@ import {clone, extend, endsWith, easeCubicInOut, sphericalDirectionToCartesian, 
 import * as interpolate from '../style-spec/util/interpolate';
 import {number as interpolateValue} from '../style-spec/util/interpolate';
 import {normalizePropertyExpression} from '../style-spec/expression/index';
-import Color from '../style-spec/util/color';
+import type Color from '../style-spec/util/color';
 import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from './evaluation_parameters';
 import type {CanonicalTileID} from '../source/tile_id';

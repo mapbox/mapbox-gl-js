@@ -1,11 +1,10 @@
 import StyleLayer from '../style_layer';
 import browser from '../../util/browser';
 import {getLayoutProperties, getPaintProperties} from './raster_particle_style_layer_properties';
-import {PossiblyEvaluated} from '../properties';
+import type {PossiblyEvaluated, ConfigOptions} from '../properties';
 import {renderColorRamp} from '../../util/color_ramp';
-import {RGBAImage} from '../../util/image';
+import type {RGBAImage} from '../../util/image';
 
-import type {ConfigOptions} from "../properties";
 import type {Map as MapboxMap} from '../../ui/map';
 import type {PaintProps} from './raster_particle_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';

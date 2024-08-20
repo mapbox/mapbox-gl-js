@@ -2,13 +2,12 @@ import StyleLayer from '../style_layer';
 
 import ClipBucket from '../../data/bucket/clip_bucket';
 import {getLayoutProperties, getPaintProperties} from './clip_style_layer_properties';
-import {Layout, PossiblyEvaluated} from '../properties';
+import type {Layout, PossiblyEvaluated, ConfigOptions} from '../properties';
 
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './clip_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';
 import type {LayerSpecification} from '../../style-spec/types';
-import type {ConfigOptions} from '../properties';
 import type {LUT} from "../../util/lut";
 
 class ClipStyleLayer extends StyleLayer {

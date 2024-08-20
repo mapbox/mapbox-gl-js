@@ -6,9 +6,10 @@ import RasterArrayTile from './raster_array_tile';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import TileCache from './tile_cache';
 import {asyncAll, keysDifference, values, clamp} from '../util/util';
-import Context from '../gl/context';
+import type Context from '../gl/context';
 import browser from '../util/browser';
-import {OverscaledTileID, CanonicalTileID} from './tile_id';
+import type {CanonicalTileID} from './tile_id';
+import {OverscaledTileID} from './tile_id';
 import SourceFeatureState from './source_state';
 import {mercatorXfromLng} from '../geo/mercator_coordinate';
 

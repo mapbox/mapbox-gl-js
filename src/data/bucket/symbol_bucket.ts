@@ -39,7 +39,7 @@ import toEvaluationFeature from '../evaluation_feature';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
-import Anchor from '../../symbol/anchor';
+import type Anchor from '../../symbol/anchor';
 import {getSizeData} from '../../symbol/symbol_size';
 import {MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
 import {register} from '../../util/web_worker_transfer';
@@ -52,7 +52,8 @@ import {tileCoordToECEF} from '../../geo/projection/globe_util';
 import {getProjection} from '../../geo/projection/index';
 import {mat4, vec3} from 'gl-matrix';
 import assert from 'assert';
-import {ReplacementSource, regionsEquals} from '../../../3d-style/source/replacement_source';
+import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import {regionsEquals} from '../../../3d-style/source/replacement_source';
 
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
 

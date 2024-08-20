@@ -1,8 +1,8 @@
 import LngLat from '../../src/geo/lng_lat';
-import Color from '../../src/style-spec/util/color';
+import type Color from '../../src/style-spec/util/color';
 import Texture from '../../src/render/texture';
-import {ModelLayoutArray, TriangleIndexArray, NormalLayoutArray, TexcoordLayoutArray, FeatureVertexArray} from '../../src/data/array_types';
-import {StructArray} from '../../src/util/struct_array';
+import type {ModelLayoutArray, TriangleIndexArray, NormalLayoutArray, TexcoordLayoutArray, FeatureVertexArray} from '../../src/data/array_types';
+import type {StructArray} from '../../src/util/struct_array';
 import {Aabb} from '../../src/util/primitives';
 import {mat4, vec4} from 'gl-matrix';
 import {modelAttributes, normalAttributes, texcoordAttributes, color3fAttributes, color4fAttributes, featureAttributes} from './model_attributes';

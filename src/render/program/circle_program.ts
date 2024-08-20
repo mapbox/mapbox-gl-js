@@ -2,7 +2,8 @@ import {Uniform1f, Uniform2f, Uniform3f, UniformMatrix2f, UniformMatrix4f} from 
 
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';
-import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id';
+import type {OverscaledTileID} from '../../source/tile_id';
+import {CanonicalTileID} from '../../source/tile_id';
 import type Tile from '../../source/tile';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
 import type Painter from '../painter';

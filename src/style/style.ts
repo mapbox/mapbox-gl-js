@@ -2,7 +2,7 @@ import assert from 'assert';
 import murmur3 from 'murmurhash-js';
 
 import {Event, ErrorEvent, Evented} from '../util/evented';
-import StyleLayer from './style_layer';
+import type StyleLayer from './style_layer';
 import StyleChanges from './style_changes';
 import createStyleLayer from './create_style_layer';
 import loadSprite from './load_sprite';
@@ -21,10 +21,10 @@ import Lights from '../../3d-style/style/lights';
 import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_light_properties';
 import {getProperties as getDirectionalProps} from '../../3d-style/style/directional_light_properties';
 import {createExpression} from '../style-spec/expression/index';
-import Painter from '../render/painter';
-import ClipStyleLayer from './style_layer/clip_style_layer';
+import type Painter from '../render/painter';
+import type ClipStyleLayer from './style_layer/clip_style_layer';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
-import SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 
 import {
     validateStyle,
@@ -47,7 +47,7 @@ import {
 import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '../source/query_features';
 import SourceCache from '../source/source_cache';
 import BuildingIndex from '../source/building_index';
-import GeoJSONSource from '../source/geojson_source';
+import type GeoJSONSource from '../source/geojson_source';
 import styleSpec from '../style-spec/reference/latest';
 import getWorkerPool from '../util/global_worker_pool';
 import deref from '../style-spec/deref';

@@ -9,7 +9,7 @@ import {mat4} from 'gl-matrix';
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
 import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util';
-import BuildingIndex from '../source/building_index';
+import type BuildingIndex from '../source/building_index';
 import {warnOnce} from '../util/util';
 import {transformPointToTile, pointInFootprint, skipClipping} from '../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../3d-style/util/conflation';

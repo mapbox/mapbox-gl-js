@@ -1,5 +1,5 @@
 import extend from '../util/extend';
-import ValidationError from '../error/validation_error';
+import type ValidationError from '../error/validation_error';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import {isExpression} from '../expression/index';
 import {isFunction} from '../function/index';

@@ -4,7 +4,7 @@ import * as interpolate from '../../util/interpolate';
 import {toString, NumberType, ColorType} from '../types';
 import {findStopLessThanOrEqualTo} from '../stops';
 import {hcl, lab} from '../../util/color_spaces';
-import Color from '../../util/color';
+import type Color from '../../util/color';
 
 import type {Stops} from '../stops';
 import type {Expression, SerializedExpression} from '../expression';

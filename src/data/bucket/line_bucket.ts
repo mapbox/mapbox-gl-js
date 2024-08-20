@@ -28,7 +28,7 @@ import '../../render/line_atlas';
 
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
-import Point from "@mapbox/point-geometry";
+import type Point from "@mapbox/point-geometry";
 import type {
     Bucket,
     BucketParameters,

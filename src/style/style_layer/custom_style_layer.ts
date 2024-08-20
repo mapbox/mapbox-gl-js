@@ -1,5 +1,5 @@
 import StyleLayer from '../style_layer';
-import MercatorCoordinate from '../../geo/mercator_coordinate';
+import type MercatorCoordinate from '../../geo/mercator_coordinate';
 import type {Map} from '../../ui/map';
 import assert from 'assert';
 

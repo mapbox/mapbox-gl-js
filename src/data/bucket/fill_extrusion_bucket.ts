@@ -28,11 +28,13 @@ import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../../style-spec/util/interpolate';
 import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, tileToMeter} from '../../geo/mercator_coordinate';
 import {subdividePolygons} from '../../util/polygon_clipping';
-import {ReplacementSource, regionsEquals, footprintTrianglesIntersect} from '../../../3d-style/source/replacement_source';
+import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import {regionsEquals, footprintTrianglesIntersect} from '../../../3d-style/source/replacement_source';
 import {clamp, warnOnce} from '../../util/util';
 import {earthRadius} from '../../geo/lng_lat';
-import {Aabb, Frustum} from '../../util/primitives';
-import {Elevation} from '../../terrain/elevation';
+import type {Frustum} from '../../util/primitives';
+import {Aabb} from '../../util/primitives';
+import type {Elevation} from '../../terrain/elevation';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import {dropBufferConnectionLines, createLineWallGeometry} from '../../geo/line_geometry';
 

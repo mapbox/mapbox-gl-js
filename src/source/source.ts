@@ -1,5 +1,5 @@
 import {bindAll} from '../util/util';
-import {CanonicalTileID} from './tile_id';
+import type {CanonicalTileID, OverscaledTileID} from './tile_id';
 
 import vector from '../source/vector_tile_source';
 import raster from '../source/raster_tile_source';
@@ -21,7 +21,6 @@ import type {Source} from './source_types';
 import type {Evented} from '../util/evented';
 import type {Callback} from '../types/callback';
 import type {MapEvents} from '../ui/events';
-import type {OverscaledTileID} from './tile_id';
 import type {SourceSpecification} from '../style-spec/types';
 
 export type {Source};

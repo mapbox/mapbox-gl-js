@@ -18,11 +18,11 @@ import {isMapboxHTTPURL, isMapboxURL} from './mapbox_url';
 import {createSkuToken, SKU_ID} from './sku_token';
 import {version as sdkVersion} from '../../package.json';
 import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util';
-import {postData, ResourceType, getData} from './ajax';
+import {postData, getData} from './ajax';
 import {getLivePerformanceMetrics} from '../util/live_performance';
 
 import type {LivePerformanceData} from '../util/live_performance';
-import type {RequestParameters} from './ajax';
+import type {RequestParameters, ResourceType} from './ajax';
 import type {Cancelable} from '../types/cancelable';
 import type {TileJSON} from '../types/tilejson';
 import type {Map as MapboxMap} from "../ui/map";

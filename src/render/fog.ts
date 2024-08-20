@@ -1,5 +1,5 @@
-import Context from '../gl/context';
-import Fog from '../style/fog';
+import type Context from '../gl/context';
+import type Fog from '../style/fog';
 import {Uniform1f, Uniform1i, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from './uniform_binding';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 

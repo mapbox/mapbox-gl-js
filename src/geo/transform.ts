@@ -7,7 +7,8 @@ import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestT
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../style-spec/data/extent';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import {Frustum, FrustumCorners, Ray, Aabb} from '../util/primitives';
+import type {Aabb} from '../util/primitives';
+import {Frustum, FrustumCorners, Ray} from '../util/primitives';
 import EdgeInsets from './edge_insets';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
 import assert from 'assert';

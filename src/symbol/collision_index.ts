@@ -7,7 +7,7 @@ import {mat4, vec4} from 'gl-matrix';
 import ONE_EM from '../symbol/one_em';
 import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/fog_helpers';
 import assert from 'assert';
-import {OverscaledTileID} from '../source/tile_id';
+import type {OverscaledTileID} from '../source/tile_id';
 import * as symbolProjection from '../symbol/projection';
 
 import type {vec3} from 'gl-matrix';

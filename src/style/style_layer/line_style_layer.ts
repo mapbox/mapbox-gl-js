@@ -7,11 +7,11 @@ import {getMaximumPaintValue, translateDistance, translate} from '../query_utils
 import {getLayoutProperties, getPaintProperties} from './line_style_layer_properties';
 import {extend} from '../../util/util';
 import EvaluationParameters from '../evaluation_parameters';
-import {Transitionable, Transitioning, Layout, PossiblyEvaluated, DataDrivenProperty} from '../properties';
+import {PossiblyEvaluated, DataDrivenProperty} from '../properties';
 import ProgramConfiguration from '../../data/program_configuration';
 
 import Step from '../../style-spec/expression/definitions/step';
-import type {PossiblyEvaluatedValue, PropertyValue, PossiblyEvaluatedPropertyValue, ConfigOptions, Properties} from '../properties';
+import type {PossiblyEvaluatedValue, PropertyValue, PossiblyEvaluatedPropertyValue, ConfigOptions, Properties, Transitionable, Transitioning, Layout} from '../properties';
 import type {Feature, FeatureState, ZoomConstantExpression, StylePropertyExpression} from '../../style-spec/expression/index';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './line_style_layer_properties';
@@ -22,7 +22,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import {lineDefinesValues} from '../../render/program/line_program';
 import type {CreateProgramParams} from '../../render/painter';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
-import SourceCache from '../../source/source_cache';
+import type SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
 
 let properties: {

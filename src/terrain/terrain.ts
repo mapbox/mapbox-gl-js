@@ -28,7 +28,7 @@ import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
 import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type Program from '../render/program';
 import {Elevation} from './elevation';
-import Framebuffer from '../gl/framebuffer';
+import type Framebuffer from '../gl/framebuffer';
 import ColorMode from '../gl/color_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';

@@ -1,10 +1,10 @@
 import StyleLayer from '../style_layer';
 
 import HeatmapBucket from '../../data/bucket/heatmap_bucket';
-import {RGBAImage} from '../../util/image';
+import type {RGBAImage} from '../../util/image';
 import {getLayoutProperties, getPaintProperties} from './heatmap_style_layer_properties';
 import {renderColorRamp} from '../../util/color_ramp';
-import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
+import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import {queryIntersectsCircle} from './circle_style_layer';
 import {getMaximumPaintValue} from '../query_utils';
 import Point from '@mapbox/point-geometry';
@@ -22,7 +22,6 @@ import type Transform from '../../geo/transform';
 import type CircleBucket from '../../data/bucket/circle_bucket';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../../render/painter';
-import type {ConfigOptions} from '../properties';
 import type {LUT} from "../../util/lut";
 
 class HeatmapStyleLayer extends StyleLayer {

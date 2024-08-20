@@ -1,9 +1,9 @@
 import styleSpec from '../style-spec/reference/latest';
 import {Evented} from '../util/evented';
-import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties';
+import {Properties, Transitionable, DataConstantProperty} from './properties';
 
 import EvaluationParameters from './evaluation_parameters';
-import type {ConfigOptions, TransitionParameters} from './properties';
+import type {ConfigOptions, TransitionParameters, Transitioning, PossiblyEvaluated} from './properties';
 import type {TerrainSpecification} from '../style-spec/types';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
 

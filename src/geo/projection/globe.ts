@@ -1,6 +1,7 @@
 import {mat4, vec3} from 'gl-matrix';
 import EXTENT from '../../style-spec/data/extent';
-import LngLat, {latLngToECEF} from '../lng_lat';
+import type LngLat from '../lng_lat';
+import {latLngToECEF} from '../lng_lat';
 import {degToRad} from '../../util/util';
 import MercatorCoordinate, {
     mercatorZfromAltitude,

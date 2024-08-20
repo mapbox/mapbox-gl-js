@@ -12,7 +12,8 @@ import type Context from '../../gl/context';
 import type Painter from '../painter';
 import type {UniformValues} from '../uniform_binding';
 import type Tile from '../../source/tile';
-import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id';
+import type {OverscaledTileID} from '../../source/tile_id';
+import {CanonicalTileID} from '../../source/tile_id';
 import EXTENT from '../../style-spec/data/extent';
 
 export type FillExtrusionUniformsType = {

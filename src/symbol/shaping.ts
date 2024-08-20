@@ -13,7 +13,8 @@ import type {StyleGlyph, GlyphMetrics} from '../style/style_glyph';
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
 import type {ImagePosition} from '../render/image_atlas';
 import type {GlyphRect, GlyphPositions} from '../render/glyph_atlas';
-import Formatted, {FormattedSection} from '../style-spec/expression/types/formatted';
+import type {FormattedSection} from '../style-spec/expression/types/formatted';
+import type Formatted from '../style-spec/expression/types/formatted';
 
 const WritingMode = {
     horizontal: 1,

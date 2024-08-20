@@ -1,7 +1,7 @@
 import {endsWith, filterObject} from '../util/util';
 
 import {Evented} from '../util/evented';
-import {Layout, Transitionable, Transitioning, Properties, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties';
+import {Layout, Transitionable, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties';
 import {supportsPropertyExpression} from '../style-spec/util/properties';
 import featureFilter from '../style-spec/feature_filter/index';
 import {makeFQID} from '../util/fqid';
@@ -10,7 +10,7 @@ import type {FeatureState} from '../style-spec/expression/index';
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter, FilterExpression} from '../style-spec/feature_filter/index';
-import type {TransitionParameters, PropertyValue, ConfigOptions} from './properties';
+import type {TransitionParameters, PropertyValue, ConfigOptions, Transitioning, Properties} from './properties';
 import type EvaluationParameters from './evaluation_parameters';
 import type Transform from '../geo/transform';
 import type {

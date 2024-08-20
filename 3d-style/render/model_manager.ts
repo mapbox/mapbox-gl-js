@@ -3,7 +3,7 @@ import {Event, ErrorEvent, Evented} from '../../src/util/evented';
 import Model from '../data/model';
 import convertModel from '../source/model_loader';
 
-import {RequestManager} from '../../src/util/mapbox';
+import type {RequestManager} from '../../src/util/mapbox';
 import {ResourceType} from '../../src/util/ajax';
 
 import {loadGLTF} from '../util/loaders';
