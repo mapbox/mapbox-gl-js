@@ -254,6 +254,8 @@ class Painter {
 
     occlusionParams: OcclusionParams;
 
+    _clippingActiveLastFrame: boolean;
+
     constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, tp: ITrackedParameters) {
         this.context = new Context(gl, contextCreateOptions);
 
@@ -336,6 +338,8 @@ class Painter {
 
         const emptyDepth = new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0));
         this.emptyDepthTexture = new Texture(this.context, emptyDepth, gl.RGBA);
+
+        this._clippingActiveLastFrame = false;
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {
@@ -799,11 +803,11 @@ class Painter {
             }
         }
 
-        let clippingActive = false;
+        let clippingActiveThisFrame = false;
         for (const layer of orderedLayers) {
             if (layer.isHidden(this.transform.zoom)) continue;
             if (layer.type === 'clip') {
-                clippingActive = true;
+                clippingActiveThisFrame = true;
             }
             this.prepareLayer(layer);
         }
@@ -839,7 +843,7 @@ class Painter {
             return cache.getSource();
         };
 
-        if (conflationSourcesInStyle || clippingActive) {
+        if (conflationSourcesInStyle || clippingActiveThisFrame || this._clippingActiveLastFrame) {
             const conflationLayersInStyle = [];
             const conflationLayerIndicesInStyle = [];
 
@@ -853,13 +857,13 @@ class Painter {
             }
 
             // Check we have more than one conflation layer
-            if (conflationLayersInStyle && (clippingActive || conflationLayersInStyle.length > 1)) {
+            if ((conflationLayersInStyle && (clippingActiveThisFrame || conflationLayersInStyle.length > 1)) || this._clippingActiveLastFrame) {
+                clippingActiveThisFrame = false;
                 // Some layer types such as fill extrusions and models might have interdependencies
                 // where certain features should be replaced by overlapping features from another layer with higher
                 // precedence. A special data structure 'replacementSource' is used to compute regions
                 // on visible tiles where potential overlap might occur between features of different layers.
                 const conflationSources = [];
-
                 for (let i = 0; i < conflationLayersInStyle.length; i++) {
                     const layer = conflationLayersInStyle[i];
                     const layerIdx = conflationLayerIndicesInStyle[i];
@@ -873,6 +877,7 @@ class Painter {
                     let order = ReplacementOrderLandmark;
                     let clipMask = LayerTypeMask.None;
                     const clipScope = [];
+                    let addToSources = true;
                     if (layer.type === 'clip') {
                         // Landmarks have precedence over fill extrusions regardless of order in the style.
                         // A clip layer however, is taken into account by 3D layers (i.e. fill-extrusion, landmarks, instance trees)
@@ -887,14 +892,23 @@ class Painter {
                         for (const scope of layer.layout.get('clip-layer-scope')) {
                             clipScope.push(scope);
                         }
+                        if (layer.isHidden(this.transform.zoom)) {
+                            addToSources = false;
+                        } else {
+                            clippingActiveThisFrame = true;
+                        }
                     }
-                    conflationSources.push({layer: layer.fqid, cache: sourceCache, order, clipMask, clipScope});
+
+                    if (addToSources) {
+                        conflationSources.push({layer: layer.fqid, cache: sourceCache, order, clipMask, clipScope});
+                    }
                 }
 
                 this.replacementSource.setSources(conflationSources);
                 conflationActiveThisFrame = true;
             }
         }
+        this._clippingActiveLastFrame = clippingActiveThisFrame;
 
         if (!conflationActiveThisFrame) {
             this.replacementSource.clear();
@@ -1750,6 +1764,10 @@ class Painter {
             return false;
         }
 
+        if (layer.type === "clip") {
+            return true;
+        }
+
         if (layer.minzoom && layer.minzoom > this.transform.zoom) {
             return false;
         }
@@ -1757,14 +1775,10 @@ class Painter {
         // Note: The reasoning behind the logic here is that if no clip layer is present, then in order to perform
         // conflation both fill-extrusion and landmarks must be present.
         // In short this is just an optimisation and we intend to keep the existing behaviour intact.
-        if (!this.style._clipLayerIndices.length) {
+        if (!this.style._clipLayerPresent) {
             if (layer.sourceLayer === "building") {
                 return true;
             }
-        }
-
-        if (layer.type === "clip") {
-            return true;
         }
 
         return !!source && source.type === "batched-model";

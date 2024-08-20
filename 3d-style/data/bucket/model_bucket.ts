@@ -250,10 +250,10 @@ class ModelBucket implements Bucket {
         if (regionsEquals(this.activeReplacements, newReplacements)) {
             return false;
         }
+
         this.activeReplacements = newReplacements;
 
         let reuploadNeeded = false;
-
         for (const modelId in this.instancesPerModel) {
             const perModelVertexArray: PerModelAttributes = this.instancesPerModel[modelId];
             const va = perModelVertexArray.instancedDataArray;
@@ -266,7 +266,8 @@ class ModelBucket implements Bucket {
                     const i16 = (i + offset) * 16;
 
                     let x_ = va.float32[i16 + 0];
-                    x_ = x_ > EXTENT ? x_ - EXTENT : x_;
+                    const wasHidden = x_ > EXTENT;
+                    x_ = wasHidden ? x_ - EXTENT : x_;
                     const x = Math.floor(x_);
                     const y = va.float32[i16 + 1];
 
@@ -285,7 +286,7 @@ class ModelBucket implements Bucket {
                     }
 
                     va.float32[i16] = hidden ? x_ + EXTENT : x_;
-                    reuploadNeeded = reuploadNeeded || hidden;
+                    reuploadNeeded = reuploadNeeded || (hidden !== wasHidden);
                 }
             }
         }

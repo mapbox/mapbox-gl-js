@@ -257,7 +257,7 @@ class Style extends Evented<MapEvents> {
     _mergedSourceCaches: Record<string, SourceCache>;
     _mergedOtherSourceCaches: Record<string, SourceCache>;
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
-    _clipLayerIndices: Array<number>;
+    _clipLayerPresent: boolean;
 
     _request: Cancelable | null | undefined;
     _spriteRequest: Cancelable | null | undefined;
@@ -336,7 +336,7 @@ class Style extends Evented<MapEvents> {
         this._mergedSourceCaches = {};
         this._mergedOtherSourceCaches = {};
         this._mergedSymbolSourceCaches = {};
-        this._clipLayerIndices = [];
+        this._clipLayerPresent = false;
 
         this._has3DLayers = false;
         this._hasCircleLayers = false;
@@ -1027,7 +1027,6 @@ class Style extends Evented<MapEvents> {
         });
 
         this._mergedOrder = [];
-        this._clipLayerIndices = [];
 
         let i = 0;
         const sort = (layers: StyleLayer[] = []) => {
@@ -1045,7 +1044,7 @@ class Style extends Evented<MapEvents> {
                     if (layer.is3D()) this._has3DLayers = true;
                     if (layer.type === 'circle') this._hasCircleLayers = true;
                     if (layer.type === 'symbol') this._hasSymbolLayers = true;
-                    if (layer.type === 'clip') this._clipLayerIndices.push(i);
+                    if (layer.type === 'clip') this._clipLayerPresent = true;
                     i++;
                 }
             }
@@ -3308,7 +3307,7 @@ class Style extends Evented<MapEvents> {
                 const layerId = this._mergedOrder[i];
                 const styleLayer = this._mergedLayers[layerId];
                 if (styleLayer.type !== 'symbol') continue;
-                const checkAgainstClipLayer = this.isLayerClipped(styleLayer) && this._clipLayerIndices.some(c => i < c);
+                const checkAgainstClipLayer = this.isLayerClipped(styleLayer);
                 this.placement.updateLayerOpacities(styleLayer, layerTiles[makeFQID(styleLayer.source, styleLayer.scope)], i, checkAgainstClipLayer ? replacementSource : null);
             }
         }
@@ -3692,34 +3691,16 @@ class Style extends Evented<MapEvents> {
 
     isLayerClipped(layer: StyleLayer, source?: Source | null): boolean {
         // fill-extrusions can be conflated by landmarks.
-        if (this._clipLayerIndices.length === 0 && layer.type !== 'fill-extrusion') return false;
+        if (!this._clipLayerPresent && layer.type !== 'fill-extrusion') return false;
         const isFillExtrusion = layer.type === 'fill-extrusion' && layer.sourceLayer === 'building';
 
-        let layerMask = 0;
         if (layer.is3D()) {
             if (isFillExtrusion || (!!source && source.type === 'batched-model')) return true;
             if (layer.type === 'model') {
-                layerMask = LayerTypeMask.Model;
+                return true;
             }
-        } else {
-            if (layer.type === 'symbol') {
-                layerMask = LayerTypeMask.Symbol;
-            }
-        }
-
-        for (const i of this._clipLayerIndices) {
-            assert(i < this._mergedOrder.length);
-            const clipLayer: ClipStyleLayer = (this._mergedLayers[this._mergedOrder[i]] as any);
-            if (!clipLayer) continue;
-
-            const extraLayersToBeClipped = [];
-
-            for (const extra of clipLayer.layout.get('clip-layer-types'))
-                extraLayersToBeClipped.push(extra === 'model' ? LayerTypeMask.Model : (extra === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
-
-            for (const mask of extraLayersToBeClipped)
-                if (layerMask & mask)
-                    return true;
+        } else if (layer.type === 'symbol') {
+            return true;
         }
 
         return false;
