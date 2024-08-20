@@ -189,7 +189,7 @@ function polygonIntersectsBox(ring: Ring, boxX1: number, boxY1: number, boxX2: n
     return false;
 }
 
-function edgeIntersectsBox(e1: Point, e2: Point, corners: Array<Point>) {
+export function edgeIntersectsBox(e1: Point, e2: Point, corners: Array<Point>) {
     const tl = corners[0];
     const br = corners[2];
     // the edge and box do not intersect in either the x or y dimensions

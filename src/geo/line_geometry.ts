@@ -1,7 +1,8 @@
 import Point from '@mapbox/point-geometry';
+import EXTENT from '../style-spec/data/extent';
+import {edgeIntersectsBox} from '../../src/util/intersection_tests';
 
 export type WallGeometry = {
-    isPolygon: boolean;
     geometry: Array<Point>;
     joinNormals: Array<Point>;
 };
@@ -30,7 +31,6 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         vertices = vertices.reverse();
     }
     const wallGeometry: WallGeometry = {
-        isPolygon,
         geometry: [],
         joinNormals: []
     };
@@ -151,3 +151,48 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
     return wallGeometry;
 }
 
+const tileCorners = [
+    new Point(0, 0),
+    new Point(EXTENT, 0),
+    new Point(EXTENT, EXTENT),
+    new Point(0, EXTENT)];
+
+// Removes connection lines outside of the tile bounds if they don't intersect with the original tile
+export function dropBufferConnectionLines(polygon: Array<Point>, isPolygon: boolean) {
+    const lineSegments = [];
+    let lineSegment = [];
+    if (!isPolygon || polygon.length < 2) {
+        return [polygon];
+    } else if (polygon.length === 2) {
+        if (edgeIntersectsBox(polygon[0], polygon[1], tileCorners)) {
+            return [polygon];
+        }
+        return [];
+    } else {
+        for (let i = 0; i < polygon.length + 2; i++) {
+            const p0 = i === 0 ? polygon[polygon.length - 1] : polygon[(i - 1) % polygon.length];
+            const p1 = polygon[i % polygon.length];
+            const p2 = polygon[(i + 1) % polygon.length];
+            const intersectsPrev = edgeIntersectsBox(p0, p1, tileCorners);
+            const intersectsNext = edgeIntersectsBox(p1, p2, tileCorners);
+            const addPoint = intersectsPrev || intersectsNext;
+
+            if (addPoint) {
+                lineSegment.push(p1);
+            }
+            if (!addPoint || !intersectsNext) {
+                // Close segment and start new
+                if (lineSegment.length > 0) {
+                    if (lineSegment.length > 1) {
+                        lineSegments.push(lineSegment);
+                    }
+                    lineSegment = [];
+                }
+            }
+        }
+    }
+    if (lineSegment.length > 1) {
+        lineSegments.push(lineSegment);
+    }
+    return lineSegments;
+}

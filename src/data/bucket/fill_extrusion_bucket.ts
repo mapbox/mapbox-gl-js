@@ -34,7 +34,7 @@ import {earthRadius} from '../../geo/lng_lat';
 import {Aabb, Frustum} from '../../util/primitives';
 import {Elevation} from '../../terrain/elevation';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
-import {createLineWallGeometry} from '../../geo/line_geometry';
+import {dropBufferConnectionLines, createLineWallGeometry} from '../../geo/line_geometry';
 
 import type {Feature} from "../../style-spec/expression";
 import type {ClippedPolygon} from '../../util/polygon_clipping';
@@ -750,12 +750,15 @@ class FillExtrusionBucket implements Bucket {
             };
 
             const vertexArrayOffset = this.layoutVertexArray.length;
+            const featureIsPolygon = vectorTileFeatureTypes[bucketFeature.type] === 'Polygon';
             if (this.hasPattern) {
                 this.features.push(addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, options));
             } else {
                 if (this.wallMode) {
                     for (const polygon of bucketFeature.geometry) {
-                        this.addFeature(bucketFeature, [polygon], index, canonical, {}, options.availableImages, tileTransform, options.brightness);
+                        for (const line of dropBufferConnectionLines(polygon, featureIsPolygon)) {
+                            this.addFeature(bucketFeature, [line], index, canonical, {}, options.availableImages, tileTransform, options.brightness);
+                        }
                     }
                 } else {
                     this.addFeature(bucketFeature, bucketFeature.geometry, index, canonical, {}, options.availableImages, tileTransform, options.brightness);
@@ -775,10 +778,13 @@ class FillExtrusionBucket implements Bucket {
 
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform, brightness?: number | null) {
         for (const feature of this.features) {
+            const featureIsPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
             const {geometry} = feature;
             if (this.wallMode) {
                 for (const polygon of geometry) {
-                    this.addFeature(feature, [polygon], feature.index, canonical, imagePositions, availableImages, tileTransform, brightness);
+                    for (const line of dropBufferConnectionLines(polygon, featureIsPolygon)) {
+                        this.addFeature(feature, [line], feature.index, canonical, imagePositions, availableImages, tileTransform, brightness);
+                    }
                 }
             } else {
                 this.addFeature(feature, geometry, feature.index, canonical, imagePositions, availableImages, tileTransform, brightness);
