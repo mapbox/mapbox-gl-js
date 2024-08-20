@@ -1,5 +1,4 @@
 import Point from "@mapbox/point-geometry";
-
 import {clamp} from '../util/util';
 import {number} from '../style-spec/util/interpolate';
 

@@ -4,7 +4,6 @@ import {
     LinePatternLayoutArray,
     ZOffsetVertexArray,
 } from '../array_types';
-
 import {members as layoutAttributes} from './line_attributes';
 import {members as layoutAttributesExt} from './line_attributes_ext';
 import {members as layoutAttributesPattern} from './line_attributes_pattern';
@@ -21,7 +20,8 @@ import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import {zOffsetAttributes} from './symbol_attributes';
 import assert from 'assert';
-
+import {Point4D, clipLine} from '../../util/polygon_clipping';
+import {warnOnce} from '../../util/util';
 // Import LineAtlas as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../../render/line_atlas';
@@ -48,8 +48,6 @@ import type LineAtlas from '../../render/line_atlas';
 import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
-import {Point4D, clipLine} from '../../util/polygon_clipping';
-import {warnOnce} from '../../util/util';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.

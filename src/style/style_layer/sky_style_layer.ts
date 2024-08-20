@@ -1,11 +1,11 @@
 import StyleLayer from '../style_layer';
 import {getLayoutProperties, getPaintProperties} from './sky_style_layer_properties';
-import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import {renderColorRamp} from '../../util/color_ramp';
 import {warnOnce, degToRad} from '../../util/util';
 import {vec3, quat} from 'gl-matrix';
 import assert from 'assert';
 
+import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {PaintProps} from './sky_style_layer_properties';
 import type Texture from '../../render/texture';
 import type Painter from '../../render/painter';

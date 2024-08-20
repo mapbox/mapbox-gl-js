@@ -1,5 +1,4 @@
 import type {VectorTileFeature} from '@mapbox/vector-tile';
-
 import type {FeatureState} from '../style-spec/expression/index';
 import type {LayerSpecification} from '../style-spec/types';
 

@@ -1,5 +1,4 @@
 import ImageSource from './image_source';
-
 import Texture, {UserManagedTexture} from '../render/texture';
 import {ErrorEvent} from '../util/evented';
 import ValidationError from '../style-spec/error/validation_error';

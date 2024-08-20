@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import {BooleanType} from '../types';
 
 import type {Expression, SerializedExpression} from '../expression';

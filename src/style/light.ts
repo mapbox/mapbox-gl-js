@@ -1,5 +1,4 @@
 import styleSpec from '../style-spec/reference/latest';
-
 import {extend} from '../util/util';
 import {Evented} from '../util/evented';
 import {
@@ -7,7 +6,6 @@ import {
     validateLight,
     emitValidationErrors
 } from './validate_style';
-import type Color from '../style-spec/util/color';
 import {
     Properties,
     Transitionable,
@@ -15,12 +13,12 @@ import {
     PositionProperty
 } from './properties';
 
+import type Color from '../style-spec/util/color';
 import type EvaluationParameters from './evaluation_parameters';
 import type {StyleSetterOptions} from '../style/style';
 import type {TransitionParameters,
     Transitioning,
     PossiblyEvaluated} from './properties';
-
 import type {LightSpecification} from '../style-spec/types';
 
 type Props = {

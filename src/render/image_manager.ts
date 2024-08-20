@@ -1,5 +1,4 @@
 import potpack from 'potpack';
-
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import {RGBAImage} from '../util/image';
 import {ImagePosition} from './image_atlas';

@@ -1,5 +1,4 @@
 import {getJSON} from '../util/ajax';
-
 import {getPerformanceMeasurement} from '../util/performance';
 import GeoJSONWrapper from './geojson_wrapper';
 import GeoJSONRT from './geojson_rt';
@@ -15,7 +14,6 @@ import type {
     WorkerTileParameters,
     WorkerTileCallback,
 } from '../source/worker_source';
-
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {Feature} from '../style-spec/expression/index';

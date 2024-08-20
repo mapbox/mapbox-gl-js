@@ -1,15 +1,14 @@
 import {getImage, ResourceType} from '../util/ajax';
 import {extend, prevPowerOfTwo} from '../util/util';
-import type {Evented} from '../util/evented';
 import browser from '../util/browser';
 import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
 import {OverscaledTileID} from './tile_id';
 import RasterTileSource from './raster_tile_source';
-
 // Import DEMData as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../data/dem_data';
 
+import type {Evented} from '../util/evented';
 import type DEMData from '../data/dem_data';
 import type {ISource} from './source';
 import type Dispatcher from '../util/dispatcher';

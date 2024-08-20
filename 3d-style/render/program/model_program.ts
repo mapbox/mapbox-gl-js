@@ -6,11 +6,10 @@ import {
     Uniform4f,
     UniformMatrix4f
 } from '../../../src/render/uniform_binding';
-
 import Color from '../../../src/style-spec/util/color';
-import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import TextureSlots from '../texture_slots';
 
+import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {UniformValues} from '../../../src/render/uniform_binding';
 import type Context from '../../../src/gl/context';
 import type Painter from '../../../src/render/painter';

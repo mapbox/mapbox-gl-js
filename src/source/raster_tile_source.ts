@@ -1,5 +1,4 @@
 import {extend, pick} from '../util/util';
-
 import {getImage, ResourceType} from '../util/ajax';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import loadTileJSON from './load_tilejson';
@@ -8,6 +7,7 @@ import TileBounds from './tile_bounds';
 import browser from '../util/browser';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 import {makeFQID} from '../util/fqid';
+import Texture from '../render/texture';
 
 import type {ISource, SourceEvents} from './source';
 import type {OverscaledTileID} from './tile_id';
@@ -21,7 +21,6 @@ import type {
     RasterDEMSourceSpecification,
     RasterArraySourceSpecification
 } from '../style-spec/types';
-import Texture from '../render/texture';
 
 /**
  * A source containing raster tiles.

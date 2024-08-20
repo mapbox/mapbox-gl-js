@@ -1,11 +1,12 @@
-import type {PossiblyEvaluated, ConfigOptions} from '../style/properties';
 import {DataConstantProperty, Properties, Transitionable} from '../style/properties';
 import {extend} from './util';
+import styleSpec from '../style-spec/reference/latest';
+import EvaluationParameters from '../../src/style/evaluation_parameters';
+
+import type {PossiblyEvaluated, ConfigOptions} from '../style/properties';
 import type {RGBAImage} from "./image";
 import type {Texture3D} from '../../src/render/texture';
 import type {ColorThemeSpecification} from "../style-spec/types";
-import styleSpec from '../style-spec/reference/latest';
-import EvaluationParameters from '../../src/style/evaluation_parameters';
 
 export type LUT = {
     image: RGBAImage;

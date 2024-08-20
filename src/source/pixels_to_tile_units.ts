@@ -1,5 +1,4 @@
 import {mat2} from 'gl-matrix';
-
 import EXTENT from '../style-spec/data/extent';
 
 import type {OverscaledTileID} from './tile_id';

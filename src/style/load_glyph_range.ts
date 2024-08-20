@@ -1,5 +1,4 @@
 import {getArrayBuffer, ResourceType} from '../util/ajax';
-
 import parseGlyphPBF from './parse_glyph_pbf';
 
 import type {StyleGlyph} from './style_glyph';

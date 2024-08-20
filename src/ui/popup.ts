@@ -1,6 +1,5 @@
 import {extend, bindAll} from '../util/util';
 import {Event, Evented} from '../util/evented';
-import type {MapMouseEvent, MapEventOf} from '../ui/events';
 import * as DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
@@ -8,6 +7,7 @@ import smartWrap from '../util/smart_wrap';
 import {anchorTranslate} from './anchor';
 import {isLngLatBehindGlobe} from '../geo/projection/globe_util';
 
+import type {MapMouseEvent, MapEventOf} from '../ui/events';
 import type {Map} from './map';
 import type {Anchor} from './anchor';
 import type {LngLatLike} from '../geo/lng_lat';

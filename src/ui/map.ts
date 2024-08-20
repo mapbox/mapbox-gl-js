@@ -34,16 +34,19 @@ import TaskQueue from '../util/task_queue';
 import webpSupported from '../util/webp_supported';
 import {PerformanceUtils, PerformanceMarkers} from '../util/performance';
 import {LivePerformanceMarkers, LivePerformanceUtils} from '../util/live_performance';
-import type Marker from '../ui/marker';
-import type Popup from '../ui/popup';
 import EasedVariable from '../util/eased_variable';
-import type SourceCache from '../source/source_cache';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
 import {setCacheLimits} from '../util/tile_request_cache';
 import {Debug} from '../util/debug';
 import config from '../util/config';
 import {isFQID} from '../util/fqid';
+import defaultLocale from './default_locale';
+import {TrackedParameters} from '../tracked-parameters/tracked_parameters';
+import {TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
 
+import type Marker from '../ui/marker';
+import type Popup from '../ui/popup';
+import type SourceCache from '../source/source_cache';
 import type {MapEventType, MapEventOf} from './events';
 import type {PointLike} from '../types/point-like';
 import type {FeatureState} from '../style-spec/expression/index';
@@ -64,7 +67,6 @@ import type KeyboardHandler from './handler/keyboard';
 import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
 import type {TouchZoomRotateHandlerOptions} from './handler/shim/touch_zoom_rotate';
-import defaultLocale from './default_locale';
 import type {TaskID} from '../util/task_queue';
 import type {Cancelable} from '../types/cancelable';
 import type {
@@ -91,9 +93,6 @@ import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
 import type {QueryRenderedFeaturesParams} from '../source/query_features';
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
-
-import {TrackedParameters} from '../tracked-parameters/tracked_parameters';
-import {TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 import type {Callback} from 'src/types/callback';
 

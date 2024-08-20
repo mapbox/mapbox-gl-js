@@ -4,7 +4,6 @@ import type {
     StructArray,
     StructArrayMember
 } from '../util/struct_array';
-
 import type Program from '../render/program';
 import type Context from '../gl/context';
 

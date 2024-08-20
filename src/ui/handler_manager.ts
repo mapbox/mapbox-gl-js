@@ -19,9 +19,9 @@ import {bindAll, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 import {vec3} from 'gl-matrix';
-import type MercatorCoordinate from '../geo/mercator_coordinate';
 import {latFromMercatorY, mercatorScale} from '../geo/mercator_coordinate';
 
+import type MercatorCoordinate from '../geo/mercator_coordinate';
 import type {Map} from './map';
 import type {MapEvents} from './events';
 import type {Handler, HandlerResult} from './handler';

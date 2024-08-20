@@ -1,9 +1,8 @@
 import StyleLayer from '../style_layer';
-
 import ClipBucket from '../../data/bucket/clip_bucket';
 import {getLayoutProperties, getPaintProperties} from './clip_style_layer_properties';
-import type {Layout, PossiblyEvaluated, ConfigOptions} from '../properties';
 
+import type {Layout, PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './clip_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';

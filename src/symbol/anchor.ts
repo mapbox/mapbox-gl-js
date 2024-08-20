@@ -1,5 +1,4 @@
 import Point from '@mapbox/point-geometry';
-
 import {register} from '../util/web_worker_transfer';
 
 class Anchor extends Point {

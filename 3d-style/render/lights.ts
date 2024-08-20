@@ -1,9 +1,9 @@
-import type Context from '../../src/gl/context';
 import {Uniform3f} from '../../src/render/uniform_binding';
 import {sRGBToLinearAndScale, linearVec3TosRGB, clamp} from '../../src/util/util';
 import {vec3} from 'gl-matrix';
-import type Style from '../../src/style/style';
 
+import type Context from '../../src/gl/context';
+import type Style from '../../src/style/style';
 import type Lights from '../style/lights';
 import type {UniformValues} from '../../src/render/uniform_binding';
 import type {LightProps as Ambient} from '../style/ambient_light_properties';

@@ -1,6 +1,4 @@
 import {bindAll} from '../util/util';
-import type {CanonicalTileID, OverscaledTileID} from './tile_id';
-
 import vector from '../source/vector_tile_source';
 import raster from '../source/raster_tile_source';
 import rasterDem from '../source/raster_dem_tile_source';
@@ -13,6 +11,7 @@ import custom from '../source/custom_source';
 import model from '../../3d-style/source/model_source';
 import tiled3DModel from '../../3d-style/source/tiled_3d_model_source';
 
+import type {CanonicalTileID, OverscaledTileID} from './tile_id';
 import type Tile from './tile';
 import type Dispatcher from '../util/dispatcher';
 import type {Map} from '../ui/map';

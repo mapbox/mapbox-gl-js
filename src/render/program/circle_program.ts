@@ -1,16 +1,16 @@
 import {Uniform1f, Uniform2f, Uniform3f, UniformMatrix2f, UniformMatrix4f} from '../uniform_binding';
-
-import type Context from '../../gl/context';
-import type {UniformValues} from '../uniform_binding';
-import type {OverscaledTileID} from '../../source/tile_id';
 import {CanonicalTileID} from '../../source/tile_id';
-import type Tile from '../../source/tile';
-import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
-import type Painter from '../painter';
 import browser from '../../util/browser';
 import {mat4} from 'gl-matrix';
 import {globeToMercatorTransition, globePixelsToTileUnits} from '../../geo/projection/globe_util';
 import EXTENT from '../../style-spec/data/extent';
+
+import type Context from '../../gl/context';
+import type {UniformValues} from '../uniform_binding';
+import type {OverscaledTileID} from '../../source/tile_id';
+import type Tile from '../../source/tile';
+import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
+import type Painter from '../painter';
 
 export type CircleUniformsType = {
     ['u_camera_to_center_distance']: Uniform1f;

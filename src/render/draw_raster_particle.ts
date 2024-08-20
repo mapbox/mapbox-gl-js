@@ -12,12 +12,6 @@ import {computeRasterColorMix, computeRasterColorOffset} from './raster';
 import {COLOR_RAMP_RES} from '../style/style_layer/raster_particle_style_layer';
 import RasterArrayTile from '../source/raster_array_tile';
 import RasterArrayTileSource from '../source/raster_array_tile_source';
-
-import type {DynamicDefinesType} from "./program/program_uniforms";
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
-import type {OverscaledTileID} from '../source/tile_id';
 import {neighborCoord} from '../source/tile_id';
 import {
     calculateGlobeMercatorMatrix,
@@ -30,12 +24,18 @@ import {
 import RasterParticleState from './raster_particle_state';
 import Texture from './texture';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
-import type Transform from '../geo/transform';
 import rasterFade from './raster_fade';
 import assert from 'assert';
 import {RGBAImage} from '../util/image';
 import {smoothstep} from '../util/util';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
+
+import type Transform from '../geo/transform';
+import type {OverscaledTileID} from '../source/tile_id';
+import type RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
+import type SourceCache from '../source/source_cache';
+import type Painter from './painter';
+import type {DynamicDefinesType} from "./program/program_uniforms";
 
 export default drawRasterParticle;
 

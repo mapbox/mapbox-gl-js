@@ -1,17 +1,16 @@
 import Point from '@mapbox/point-geometry';
-
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
-
-import type Anchor from './anchor';
-import type {PositionedIcon, Shaping} from './shaping';
 import {IMAGE_PADDING} from '../render/image_atlas';
 import {SDF_SCALE} from '../render/glyph_manager';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-import type {Feature} from '../style-spec/expression/index';
-import type {StyleImage} from '../style/style_image';
 import {isVerticalClosePunctuation, isVerticalOpenPunctuation} from '../util/verticalize_punctuation';
 import ONE_EM from './one_em';
 import {warnOnce} from '../util/util';
+
+import type Anchor from './anchor';
+import type {PositionedIcon, Shaping} from './shaping';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
+import type {Feature} from '../style-spec/expression/index';
+import type {StyleImage} from '../style/style_image';
 
 export type TextureCoordinate = {
     x: number;

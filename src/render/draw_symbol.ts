@@ -1,12 +1,9 @@
 import Point from '@mapbox/point-geometry';
 import drawCollisionDebug from './draw_collision_debug';
-
 import SegmentVector from '../data/segment';
 import * as symbolProjection from '../symbol/projection';
 import * as symbolSize from '../symbol/symbol_size';
 import {mat4, vec3, vec4} from 'gl-matrix';
-import {OcclusionQuery} from '../gl/query';
-import {warnOnce} from '../util/util';
 const identityMat4 = mat4.create();
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
@@ -15,20 +12,20 @@ import {addDynamicAttributes} from '../data/bucket/symbol_bucket';
 import {getAnchorAlignment, WritingMode} from '../symbol/shaping';
 import ONE_EM from '../symbol/one_em';
 import {evaluateVariableOffset} from '../symbol/symbol_layout';
-import type Tile from '../source/tile';
-import type Transform from '../geo/transform';
 import {
     mercatorXfromLng,
     mercatorYfromLat
 } from '../geo/mercator_coordinate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
-
 import {
     symbolIconUniformValues,
     symbolSDFUniformValues,
     symbolTextAndIconUniformValues
 } from './program/symbol_program';
 import {getSymbolTileProjectionMatrix} from '../geo/projection/projection_util';
+
+import type Tile from '../source/tile';
+import type Transform from '../geo/transform';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
@@ -41,8 +38,8 @@ import type {UniformValues} from './uniform_binding';
 import type {SymbolSDFUniformsType} from '../render/program/symbol_program';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
 import type {InterpolatedSize} from '../symbol/symbol_size';
+
 export default drawSymbols;
-import {occlusionUniformValues} from './program/occlusion_program';
 
 type SymbolTileRenderState = {
     segments: SegmentVector;

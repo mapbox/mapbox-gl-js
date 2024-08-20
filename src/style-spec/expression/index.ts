@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import extend from '../util/extend';
 import ParsingError from './parsing_error';
 import ParsingContext from './parsing_context';
@@ -19,6 +18,9 @@ import {
     supportsLightExpression,
     supportsInterpolation
 } from '../util/properties';
+import {isFunction, createFunction} from '../function/index';
+import {Color} from './values';
+import {ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, ResolvedImageType, array} from './types';
 
 import type {Type, EvaluationKind} from './types';
 import type {Value} from './values';
@@ -385,9 +387,6 @@ export function createPropertyExpression(
         (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType, isLightConstant) as CompositeExpression));
 }
 
-import {isFunction, createFunction} from '../function/index';
-import {Color} from './values';
-
 // serialization wrapper for old-style stop functions normalized to the
 // expression interface
 export class StylePropertyFunction<T> {
@@ -493,8 +492,6 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
 
     return result;
 }
-
-import {ColorType, StringType, NumberType, BooleanType, ValueType, FormattedType, ResolvedImageType, array} from './types';
 
 function getExpectedType(spec: StylePropertySpecification): Type {
     const types = {

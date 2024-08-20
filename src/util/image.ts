@@ -1,7 +1,7 @@
 import assert from 'assert';
-
 import {register} from './web_worker_transfer';
 import Color from '../style-spec/util/color';
+
 import type {LUT} from "./lut";
 
 export type Size = {

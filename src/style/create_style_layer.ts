@@ -1,4 +1,3 @@
-import type StyleLayer from './style_layer';
 import circle from './style_layer/circle_style_layer';
 import heatmap from './style_layer/heatmap_style_layer';
 import hillshade from './style_layer/hillshade_style_layer';
@@ -13,9 +12,10 @@ import rasterParticle from './style_layer/raster_particle_style_layer';
 import CustomStyleLayer from './style_layer/custom_style_layer';
 import sky from './style_layer/sky_style_layer';
 import slot from './style_layer/slot_style_layer';
-import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import model from '../../3d-style/style/style_layer/model_style_layer';
 
+import type {CustomLayerInterface} from './style_layer/custom_style_layer';
+import type StyleLayer from './style_layer';
 import type {LayerSpecification} from '../style-spec/types';
 import type {ConfigOptions} from './properties';
 import type {LUT} from "../util/lut";

@@ -1,28 +1,25 @@
 import Texture from '../../src/render/texture';
-import type Framebuffer from '../../src/gl/framebuffer';
 import ColorMode from '../../src/gl/color_mode';
 import DepthMode from '../../src/gl/depth_mode';
 import StencilMode from '../../src/gl/stencil_mode';
 import CullFaceMode from '../../src/gl/cull_face_mode';
-import type Transform from '../../src/geo/transform';
 import {Frustum, Aabb} from '../../src/util/primitives';
 import Color from '../../src/style-spec/util/color';
 import {FreeCamera} from '../../src/ui/free_camera';
-import type {OverscaledTileID, UnwrappedTileID} from '../../src/source/tile_id';
 import {mercatorZfromAltitude, tileToMeter} from '../../src/geo/mercator_coordinate';
 import {cartesianPositionToSpherical, sphericalPositionToCartesian, clamp, linearVec3TosRGB} from '../../src/util/util';
-
-import type Lights from '../style/lights';
 import {defaultShadowUniformValues} from '../render/shadow_uniforms';
 import TextureSlots from './texture_slots';
-
 import assert from 'assert';
-
 import {mat4, vec3} from 'gl-matrix';
 import {groundShadowUniformValues} from './program/ground_shadow_program';
 import EXTENT from '../../src/style-spec/data/extent';
 import {getCutoffParams} from '../../src/render/cutoff';
 
+import type Lights from '../style/lights';
+import type {OverscaledTileID, UnwrappedTileID} from '../../src/source/tile_id';
+import type Transform from '../../src/geo/transform';
+import type Framebuffer from '../../src/gl/framebuffer';
 import type Painter from '../../src/render/painter';
 import type Program from '../../src/render/program';
 import type Style from '../../src/style/style';

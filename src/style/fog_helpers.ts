@@ -1,6 +1,7 @@
 import {vec3} from 'gl-matrix';
 import MercatorCoordinate from '../geo/mercator_coordinate';
 import {smoothstep} from '../util/util';
+
 import type LngLat from '../geo/lng_lat';
 import type {UnwrappedTileID} from '../source/tile_id';
 import type Transform from '../geo/transform';

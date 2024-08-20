@@ -1,5 +1,4 @@
 import {getVideo, ResourceType} from '../util/ajax';
-
 import ImageSource from './image_source';
 import Texture from '../render/texture';
 import {ErrorEvent} from '../util/evented';

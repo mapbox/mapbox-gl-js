@@ -3,6 +3,7 @@ import {getArrayBuffer} from '../util/ajax';
 import browser from '../util/browser';
 import assert from 'assert';
 import {isWorker} from '../util/util';
+
 import type {Callback} from '../types/callback';
 
 const status = {

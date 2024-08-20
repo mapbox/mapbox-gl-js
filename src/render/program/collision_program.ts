@@ -1,5 +1,6 @@
 import {Uniform1f, Uniform2f, UniformMatrix4f} from '../uniform_binding';
 import EXTENT from '../../style-spec/data/extent';
+
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';
 import type Transform from '../../geo/transform';

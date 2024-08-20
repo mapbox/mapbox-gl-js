@@ -1,6 +1,5 @@
 import {mat4, vec3} from 'gl-matrix';
 import EXTENT from '../../style-spec/data/extent';
-import type LngLat from '../lng_lat';
 import {latLngToECEF} from '../lng_lat';
 import {degToRad} from '../../util/util';
 import MercatorCoordinate, {
@@ -22,6 +21,7 @@ import {
 } from './globe_util';
 import {GLOBE_SCALE_MATCH_LATITUDE} from './globe_constants';
 
+import type LngLat from '../lng_lat';
 import type Transform from '../transform';
 import type {ElevationScale} from './projection';
 import type {ProjectionSpecification} from '../../style-spec/types';

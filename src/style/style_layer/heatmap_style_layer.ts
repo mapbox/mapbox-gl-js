@@ -1,20 +1,19 @@
 import StyleLayer from '../style_layer';
-
 import HeatmapBucket from '../../data/bucket/heatmap_bucket';
-import type {RGBAImage} from '../../util/image';
 import {getLayoutProperties, getPaintProperties} from './heatmap_style_layer_properties';
 import {renderColorRamp} from '../../util/color_ramp';
-import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import {queryIntersectsCircle} from './circle_style_layer';
 import {getMaximumPaintValue} from '../query_utils';
 import Point from '@mapbox/point-geometry';
+import ProgramConfiguration from '../../data/program_configuration';
 
+import type {RGBAImage} from '../../util/image';
+import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {Bucket, BucketParameters} from '../../data/bucket';
 import type Texture from '../../render/texture';
 import type Framebuffer from '../../gl/framebuffer';
 import type {PaintProps} from './heatmap_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
-import ProgramConfiguration from '../../data/program_configuration';
 import type {TilespaceQueryGeometry} from '../query_geometry';
 import type {DEMSampler} from '../../terrain/elevation';
 import type {FeatureState} from '../../style-spec/expression/index';

@@ -8,6 +8,10 @@ import {
     lineDefinesValues
 } from './program/line_program';
 import browser from '../util/browser';
+import {clamp, nextPowerOfTwo, warnOnce} from '../util/util';
+import {renderColorRamp} from '../util/color_ramp';
+import EXTENT from '../style-spec/data/extent';
+import assert from 'assert';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -15,10 +19,6 @@ import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type LineBucket from '../data/bucket/line_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {DynamicDefinesType} from './program/program_uniforms';
-import {clamp, nextPowerOfTwo, warnOnce} from '../util/util';
-import {renderColorRamp} from '../util/color_ramp';
-import EXTENT from '../style-spec/data/extent';
-import assert from 'assert';
 
 export default function drawLine(painter: Painter, sourceCache: SourceCache, layer: LineStyleLayer, coords: Array<OverscaledTileID>) {
     if (painter.renderPass !== 'translucent') return;

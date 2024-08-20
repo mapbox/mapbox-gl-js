@@ -1,5 +1,4 @@
 import {CircleLayoutArray, CircleGlobeExtArray} from '../array_types';
-
 import {circleAttributes, circleGlobeAttributesExt} from './circle_attributes';
 import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';

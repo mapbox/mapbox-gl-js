@@ -1,5 +1,4 @@
 import {Event, ErrorEvent, Evented} from '../util/evented';
-
 import {extend} from '../util/util';
 import EXTENT from '../style-spec/data/extent';
 import {ResourceType} from '../util/ajax';

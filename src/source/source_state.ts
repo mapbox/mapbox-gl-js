@@ -1,4 +1,5 @@
 import {extend} from '../util/util';
+
 import type Tile from './tile';
 import type Painter from '../render/painter';
 import type {FeatureState} from '../style-spec/expression/index';

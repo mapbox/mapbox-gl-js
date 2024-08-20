@@ -5,9 +5,9 @@ import {isFunction} from '../function/index';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import {supportsLightExpression, supportsPropertyExpression, supportsZoomExpression} from '../util/properties';
 import {isGlobalPropertyConstant, isFeatureConstant, isStateConstant} from '../expression/is_constant';
+import {createPropertyExpression} from '../expression/index';
 
 import type {ValidationOptions} from './validate';
-import {createPropertyExpression} from '../expression/index';
 
 export type PropertyValidationOptions = ValidationOptions & {
     objectKey: string;

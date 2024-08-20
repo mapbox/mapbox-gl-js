@@ -297,6 +297,7 @@ fs.writeFileSync('src/data/array_types.ts',
 import assert from 'assert';
 import {Struct, StructArray} from '../util/struct_array';
 import {register} from '../util/web_worker_transfer';
+
 import type {IStructArrayLayout} from '../util/struct_array';
 
 ${layouts.map(structArrayLayoutJs).join('\n')}

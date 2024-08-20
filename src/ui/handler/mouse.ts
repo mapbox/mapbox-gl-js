@@ -1,4 +1,5 @@
 import * as DOM from '../../util/dom';
+
 import type Point from '@mapbox/point-geometry';
 import type {Handler, HandlerResult} from '../handler';
 

@@ -10,7 +10,7 @@ import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {OverscaledTileID} from './tile_id';
 import type {RetainedQueryData} from '../symbol/placement';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
-import type {FilterSpecification, ExpressionSpecification} from '../style-spec/types';
+import type {FilterSpecification} from '../style-spec/types';
 
 export type QueryResult = {
     [_: string]: Array<{

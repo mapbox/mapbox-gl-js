@@ -2,10 +2,10 @@ import {isValue} from '../values';
 import {NumberType} from '../types';
 import {classifyRings, updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util';
 import CheapRuler from "cheap-ruler";
-import type Point from "@mapbox/point-geometry";
 import TinyQueue from "tinyqueue";
 import EXTENT from '../../data/extent';
 
+import type Point from "@mapbox/point-geometry";
 import type ParsingContext from '../parsing_context';
 import type {BBox} from '../../util/geometry_util';
 import type {Type} from '../types';

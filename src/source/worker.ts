@@ -1,5 +1,4 @@
 import Actor from '../util/actor';
-
 import StyleLayerIndex from '../style/style_layer_index';
 import VectorTileWorkerSource from './vector_tile_worker_source';
 import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source';
@@ -14,7 +13,6 @@ import {Event} from '../util/evented';
 import {getProjection} from '../geo/projection/index';
 
 import type {Class} from '../types/class';
-
 import type {
     WorkerSource,
     WorkerTileParameters,
@@ -25,7 +23,6 @@ import type {
     WorkerRasterArrayTileParameters,
     WorkerRasterArrayTileCallback
 } from '../source/worker_source';
-
 import type {WorkerGlobalScopeInterface} from '../util/web_worker';
 import type {Callback} from '../types/callback';
 import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types';

@@ -1,5 +1,4 @@
 import {Event} from '../util/evented';
-
 import * as DOM from '../util/dom';
 import Point from '@mapbox/point-geometry';
 import {extend} from '../util/util';

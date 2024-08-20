@@ -1,5 +1,4 @@
 import {FillLayoutArray} from '../array_types';
-
 import {members as layoutAttributes} from './fill_attributes';
 import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';

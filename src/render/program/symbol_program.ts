@@ -2,13 +2,13 @@ import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, UniformMatrix4f} from '../un
 import {mat4} from 'gl-matrix';
 import {extend} from '../../util/util';
 import browser from '../../util/browser';
+import {globeECEFOrigin} from '../../geo/projection/globe_util';
+
 import type {OverscaledTileID} from '../../source/tile_id';
 import type Context from '../../gl/context';
 import type Painter from '../painter';
 import type {UniformValues} from '../uniform_binding';
-import {globeECEFOrigin} from '../../geo/projection/globe_util';
 import type Projection from '../../geo/projection/projection';
-
 import type {InterpolatedSize} from '../../symbol/symbol_size';
 
 export type SymbolIconUniformsType = {

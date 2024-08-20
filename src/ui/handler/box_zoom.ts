@@ -1,5 +1,4 @@
 import * as DOM from '../../util/dom';
-
 import {Event} from '../../util/evented';
 
 import type {Map} from '../map';

@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import {typeOf} from '../values';
 import {ValueType} from '../types';
 

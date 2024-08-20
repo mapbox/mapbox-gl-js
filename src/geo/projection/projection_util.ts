@@ -1,9 +1,10 @@
+import {mat4} from 'gl-matrix';
+import assert from 'assert';
+
 import type {OverscaledTileID} from '../../source/tile_id';
 import type SymbolBucket from '../../data/bucket/symbol_bucket';
 import type Transform from '../../geo/transform';
 import type Projection from './projection';
-import {mat4} from 'gl-matrix';
-import assert from 'assert';
 
 function reconstructTileMatrix(transform: Transform, projection: Projection, coord: OverscaledTileID) {
     // Bucket being rendered is built for different map projection

@@ -1,9 +1,8 @@
 import {mat4} from 'gl-matrix';
-
 import UnitBezier from '@mapbox/unitbezier';
-
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
+import deepEqual from '../style-spec/util/deep_equal';
 
 import type {vec4} from 'gl-matrix';
 import type {UnionToIntersection} from 'utility-types';
@@ -503,9 +502,6 @@ export function filterObject(input: any, iterator: any, context?: any): any {
     return output;
 }
 
-import deepEqual from '../style-spec/util/deep_equal';
-export {deepEqual};
-
 /**
  * Deeply clones two objects.
  *
@@ -905,3 +901,5 @@ export function computeColorAdjustmentMatrix(
     // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
     return m;
 }
+
+export {deepEqual};

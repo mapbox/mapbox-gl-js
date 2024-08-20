@@ -1,4 +1,5 @@
 import WorkerClass from './worker_class';
+
 import type {Class} from '../types/class';
 import type {WorkerSource} from '../source/worker_source';
 

@@ -1,5 +1,4 @@
 import Color from '../style-spec/util/color';
-
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import {default as ColorMode, ZERO, ONE, ONE_MINUS_SRC_ALPHA} from '../gl/color_mode';
@@ -12,12 +11,13 @@ import {atmosphereUniformValues} from '../terrain/globe_raster_program';
 import {AtmosphereBuffer} from '../render/atmosphere_buffer';
 import {degToRad, mapValue, clamp} from '../util/util';
 import {mat3, vec3, mat4, quat} from 'gl-matrix';
-import type Fog from '../style/fog';
 import SegmentVector from '../data/segment';
 import {TriangleIndexArray, StarsVertexArray} from '../data/array_types';
 import {starsLayout} from './stars_attributes';
 import {starsUniformValues} from '../terrain/stars_program';
 import {mulberry32} from '../style-spec/util/random';
+
+import type Fog from '../style/fog';
 import type Painter from './painter';
 import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';

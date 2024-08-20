@@ -1,13 +1,13 @@
+import {isWorker} from '../util/util';
 import {LivePerformanceMarkers} from '../util/live_performance';
+
+import type {RequestParameters} from '../util/ajax';
 
 export const PerformanceMarkers = {
     libraryEvaluate: 'library-evaluate',
     frameGPU: 'frame-gpu',
     frame: 'frame'
 } as const;
-
-import {isWorker} from '../util/util';
-import type {RequestParameters} from '../util/ajax';
 
 export type PerformanceMetrics = {
     loadTime: number;

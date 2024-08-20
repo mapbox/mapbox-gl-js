@@ -1,6 +1,7 @@
-import type SourceCache from '../source/source_cache';
 import {clamp} from '../util/util';
 import browser from '../util/browser';
+
+import type SourceCache from '../source/source_cache';
 import type Tile from '../source/tile';
 import type Transform from '../geo/transform';
 

@@ -1,8 +1,6 @@
 import assert from 'assert';
 import murmur3 from 'murmurhash-js';
-
 import {Event, ErrorEvent, Evented} from '../util/evented';
-import type StyleLayer from './style_layer';
 import StyleChanges from './style_changes';
 import createStyleLayer from './create_style_layer';
 import loadSprite from './load_sprite';
@@ -21,11 +19,7 @@ import Lights from '../../3d-style/style/lights';
 import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_light_properties';
 import {getProperties as getDirectionalProps} from '../../3d-style/style/directional_light_properties';
 import {createExpression} from '../style-spec/expression/index';
-import type Painter from '../render/painter';
-import type ClipStyleLayer from './style_layer/clip_style_layer';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-
 import {
     validateStyle,
     validateLayoutProperty,
@@ -47,7 +41,6 @@ import {
 import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '../source/query_features';
 import SourceCache from '../source/source_cache';
 import BuildingIndex from '../source/building_index';
-import type GeoJSONSource from '../source/geojson_source';
 import styleSpec from '../style-spec/reference/latest';
 import getWorkerPool from '../util/global_worker_pool';
 import deref from '../style-spec/deref';
@@ -65,14 +58,21 @@ import {isFQID, makeFQID, getNameFromFQID, getScopeFromFQID} from '../util/fqid'
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_renderer';
 import ModelManager from '../../3d-style/render/model_manager';
 import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform';
-import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import {RGBAImage} from '../util/image';
+import {evaluateColorThemeProperties} from '../util/lut';
+import EvaluationParameters from './evaluation_parameters';
+
+import type GeoJSONSource from '../source/geojson_source';
+import type {ReplacementSource} from "../../3d-style/source/replacement_source";
+import type Painter from '../render/painter';
+import type StyleLayer from './style_layer';
+import type ClipStyleLayer from './style_layer/clip_style_layer';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {ColorThemeSpecification,
     LayerSpecification,
     LayoutSpecification,
     PaintSpecification,
     FilterSpecification,
-    ExpressionSpecification,
     StyleSpecification,
     ImportSpecification,
     LightSpecification,
@@ -83,29 +83,19 @@ import type {ColorThemeSpecification,
     FogSpecification,
     ProjectionSpecification,
     TransitionSpecification,
-    PropertyValueSpecification,
     ConfigSpecification,
     SchemaSpecification,
     CameraSpecification
 } from '../style-spec/types';
-import {evaluateColorThemeProperties} from '../util/lut';
-
-// We're skipping validation errors with the `source.canvas` identifier in order
-// to continue to allow canvas sources to be added at runtime/updated in
-// smart setStyle (see https://github.com/mapbox/mapbox-gl-js/pull/6424):
-const emitValidationErrors = (evented: Evented, errors?: ValidationErrors | null) =>
-    _emitValidationErrors(evented, errors && errors.filter(error => error.identifier !== 'source.canvas'));
-
-import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties';
-import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties';
-import type {vec3} from 'gl-matrix';
-import type {MapEvents} from '../ui/events';
-import type {Map as MapboxMap} from '../ui/map';
-import type Transform from '../geo/transform';
-import type {StyleImage} from './style_image';
-import type {StyleGlyph} from './style_glyph';
 import type {Callback} from '../types/callback';
-import EvaluationParameters from './evaluation_parameters';
+import type {StyleGlyph} from './style_glyph';
+import type {StyleImage} from './style_image';
+import type Transform from '../geo/transform';
+import type {Map as MapboxMap} from '../ui/map';
+import type {MapEvents} from '../ui/events';
+import type {vec3} from 'gl-matrix';
+import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties';
+import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties';
 import type {Placement} from '../symbol/placement';
 import type {Cancelable} from '../types/cancelable';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
@@ -120,6 +110,12 @@ import type {QueryResult, QueryRenderedFeaturesParams} from '../source/query_fea
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
+
+// We're skipping validation errors with the `source.canvas` identifier in order
+// to continue to allow canvas sources to be added at runtime/updated in
+// smart setStyle (see https://github.com/mapbox/mapbox-gl-js/pull/6424):
+const emitValidationErrors = (evented: Evented, errors?: ValidationErrors | null) =>
+    _emitValidationErrors(evented, errors && errors.filter(error => error.identifier !== 'source.canvas'));
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',

@@ -1,5 +1,6 @@
-import type Point from '@mapbox/point-geometry';
 import quickselect from 'quickselect';
+
+import type Point from '@mapbox/point-geometry';
 
 type GeoJSONPosition = [number, number] | [number, number, number];
 

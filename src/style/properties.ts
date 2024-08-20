@@ -1,19 +1,19 @@
 import assert from 'assert';
-import type {Direction, Position} from '../util/util';
 import {clone, extend, endsWith, easeCubicInOut, sphericalDirectionToCartesian, sphericalPositionToCartesian} from '../util/util';
 import * as interpolate from '../style-spec/util/interpolate';
 import {number as interpolateValue} from '../style-spec/util/interpolate';
 import {normalizePropertyExpression} from '../style-spec/expression/index';
-import type Color from '../style-spec/util/color';
 import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from './evaluation_parameters';
+
+import type Color from '../style-spec/util/color';
+import type {Direction, Position} from '../util/util';
 import type {CanonicalTileID} from '../source/tile_id';
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type {
     TransitionSpecification,
     PropertyValueSpecification
 } from '../style-spec/types';
-
 import type {
     Feature,
     FeatureState,
@@ -21,7 +21,6 @@ import type {
     SourceExpression,
     CompositeExpression
 } from '../style-spec/expression/index';
-
 import type {ConfigOptions} from '../style-spec/types/config_options';
 export type {ConfigOptions};
 

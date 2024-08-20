@@ -1,12 +1,12 @@
 import Point from '@mapbox/point-geometry';
 import EXTENT from '../../src/style-spec/data/extent';
-import type {UnwrappedTileID, CanonicalTileID} from '../../src/source/tile_id';
 import {triangleIntersectsTriangle, polygonContainsPoint} from '../../src/util/intersection_tests';
+import deepEqual from '../../src/style-spec/util/deep_equal';
 
+import type {UnwrappedTileID, CanonicalTileID} from '../../src/source/tile_id';
 import type {Bucket} from '../../src/data/bucket';
 import type {Footprint, TileFootprint} from '../util/conflation';
 import type SourceCache from '../../src/source/source_cache';
-import deepEqual from '../../src/style-spec/util/deep_equal';
 
 export const ReplacementOrderLandmark = Number.MAX_SAFE_INTEGER;
 

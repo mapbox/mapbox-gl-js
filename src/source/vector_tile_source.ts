@@ -1,5 +1,4 @@
 import {Event, ErrorEvent, Evented} from '../util/evented';
-
 import {extend, pick} from '../util/util';
 import loadTileJSON from './load_tilejson';
 import {postTurnstileEvent} from '../util/mapbox';

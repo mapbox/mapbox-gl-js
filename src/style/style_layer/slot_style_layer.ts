@@ -1,5 +1,4 @@
 import StyleLayer from '../style_layer';
-
 import {getPaintProperties} from './slot_style_layer_properties';
 
 import type {LayerSpecification} from '../../style-spec/types';

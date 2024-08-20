@@ -3,7 +3,6 @@ import Point from '@mapbox/point-geometry';
 import browser from '../../../src/util/browser';
 import {register} from '../../../src/util/web_worker_transfer';
 import {uploadNode, destroyNodeArrays, destroyBuffers, ModelTraits, HEIGHTMAP_DIM} from '../model';
-import type {OverscaledTileID, CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import {FeatureVertexArray} from '../../../src/data/array_types';
 import {number as interpolate} from '../../../src/style-spec/util/interpolate';
 import {clamp} from '../../../src/util/util';
@@ -12,6 +11,7 @@ import {ZoomConstantExpression} from '../../../src/style-spec/expression/index';
 import {Aabb} from '../../../src/util/primitives';
 import {vec3, mat4} from 'gl-matrix';
 
+import type {OverscaledTileID, CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {ReplacementSource} from '../../source/replacement_source';
 import type {Bucket} from '../../../src/data/bucket';

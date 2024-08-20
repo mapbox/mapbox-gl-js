@@ -2,7 +2,6 @@ import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 import earcut from 'earcut';
 import {mat4, vec3} from 'gl-matrix';
-
 import {Aabb} from '../../src/util/primitives';
 import Color from '../../src/style-spec/util/color';
 import {TriangleIndexArray,

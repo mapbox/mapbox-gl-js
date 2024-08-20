@@ -1,5 +1,4 @@
 import FeatureIndex from '../data/feature_index';
-
 import {performSymbolLayout} from '../symbol/symbol_layout';
 import {CollisionBoxArray} from '../data/array_types';
 import DictionaryCoder from '../util/dictionary_coder';
@@ -13,10 +12,11 @@ import LineAtlas from '../render/line_atlas';
 import ImageAtlas from '../render/image_atlas';
 import GlyphAtlas from '../render/glyph_atlas';
 import EvaluationParameters from '../style/evaluation_parameters';
-import type {CanonicalTileID} from './tile_id';
 import {OverscaledTileID} from './tile_id';
 import {PerformanceUtils} from '../util/performance';
 import tileTransform from '../geo/projection/tile_transform';
+
+import type {CanonicalTileID} from './tile_id';
 import type Projection from '../geo/projection/projection';
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';

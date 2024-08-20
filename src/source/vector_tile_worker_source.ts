@@ -14,7 +14,6 @@ import type {
     WorkerTileCallback,
     TileParameters
 } from './worker_source';
-
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type Scheduler from '../util/scheduler';

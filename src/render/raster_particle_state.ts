@@ -1,11 +1,11 @@
 import browser from '../util/browser';
-import type Context from '../gl/context';
 import {ParticleIndexLayoutArray} from '../data/array_types';
 import particleAttributes from '../data/particle_attributes';
 import SegmentVector from '../data/segment';
 import Texture from './texture';
 import assert from 'assert';
 
+import type Context from '../gl/context';
 import type {OverscaledTileID} from "../source/tile_id";
 import type {TextureImage} from './texture';
 import type VertexBuffer from '../gl/vertex_buffer';

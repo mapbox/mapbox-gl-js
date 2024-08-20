@@ -8,7 +8,6 @@ import {
     iconTransitioningAttributes,
     zOffsetAttributes
 } from './symbol_attributes';
-
 import {SymbolLayoutArray,
     SymbolGlobeExtArray,
     SymbolDynamicLayoutArray,
@@ -23,7 +22,6 @@ import {SymbolLayoutArray,
     SymbolIconTransitioningArray,
     ZOffsetVertexArray
 } from '../array_types';
-
 import ONE_EM from '../../symbol/one_em';
 import * as symbolSize from '../../symbol/symbol_size';
 import Point from '@mapbox/point-geometry';
@@ -39,7 +37,6 @@ import toEvaluationFeature from '../evaluation_feature';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
-import type Anchor from '../../symbol/anchor';
 import {getSizeData} from '../../symbol/symbol_size';
 import {MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
 import {register} from '../../util/web_worker_transfer';
@@ -52,11 +49,11 @@ import {tileCoordToECEF} from '../../geo/projection/globe_util';
 import {getProjection} from '../../geo/projection/index';
 import {mat4, vec3} from 'gl-matrix';
 import assert from 'assert';
-import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
 import {regionsEquals} from '../../../3d-style/source/replacement_source';
 
+import type Anchor from '../../symbol/anchor';
+import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
-
 import type {Class} from '../../types/class';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type Projection from '../../geo/projection/projection';
@@ -78,6 +75,8 @@ import type {FeatureStates} from '../../source/source_state';
 import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {LUT} from '../../util/lut';
+import type {SpritePositions} from '../../util/image';
+import type {VectorTileLayer} from '@mapbox/vector-tile';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -93,11 +92,6 @@ export type SingleCollisionBox = {
     elevation?: number;
     tileID?: OverscaledTileID;
 };
-
-import type {SpritePositions} from '../../util/image';
-import type {VectorTileLayer} from '@mapbox/vector-tile';
-
-import {clamp} from '../../util/util';
 
 export type CollisionArrays = {
     textBox?: SingleCollisionBox;

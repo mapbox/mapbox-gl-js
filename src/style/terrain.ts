@@ -1,11 +1,11 @@
 import styleSpec from '../style-spec/reference/latest';
 import {Evented} from '../util/evented';
 import {Properties, Transitionable, DataConstantProperty} from './properties';
-
 import EvaluationParameters from './evaluation_parameters';
+import {ZoomDependentExpression} from '../style-spec/expression/index';
+
 import type {ConfigOptions, TransitionParameters, Transitioning, PossiblyEvaluated} from './properties';
 import type {TerrainSpecification} from '../style-spec/types';
-import {ZoomDependentExpression} from '../style-spec/expression/index';
 
 type Props = {
     ["source"]: DataConstantProperty<string>;

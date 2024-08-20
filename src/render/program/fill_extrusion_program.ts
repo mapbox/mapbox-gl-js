@@ -8,13 +8,14 @@ import {
 } from '../uniform_binding';
 import {mat3, mat4, vec3} from 'gl-matrix';
 import {extend} from '../../util/util';
+import {CanonicalTileID} from '../../source/tile_id';
+import EXTENT from '../../style-spec/data/extent';
+
 import type Context from '../../gl/context';
 import type Painter from '../painter';
 import type {UniformValues} from '../uniform_binding';
 import type Tile from '../../source/tile';
 import type {OverscaledTileID} from '../../source/tile_id';
-import {CanonicalTileID} from '../../source/tile_id';
-import EXTENT from '../../style-spec/data/extent';
 
 export type FillExtrusionUniformsType = {
     ['u_matrix']: UniformMatrix4f;

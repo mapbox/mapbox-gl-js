@@ -83,7 +83,6 @@ import starsFrag from './stars.fragment.glsl';
 import starsVert from './stars.vertex.glsl';
 import occlusionFrag from './occlusion.fragment.glsl';
 import occlusionVert from './occlusion.vertex.glsl';
-
 // 3d-style related shaders
 import fillExtrusionDepthFrag from '../../3d-style/shaders/fill_extrusion_depth.fragment.glsl';
 import fillExtrusionDepthVert from '../../3d-style/shaders/fill_extrusion_depth.vertex.glsl';

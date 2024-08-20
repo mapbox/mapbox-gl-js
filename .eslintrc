@@ -72,6 +72,11 @@
         "no-duplicate-imports": "off",
         "import/no-duplicates": "error",
 
+        "import/order": ["error", {
+            "groups": [["builtin", "external", "internal", "unknown", "parent", "sibling", "index", "object"], "type"],
+            "newlines-between": "always"
+        }],
+
         // Restrict imports outside of the style-spec
         "import/no-restricted-paths": ["error", {
             "zones": [{

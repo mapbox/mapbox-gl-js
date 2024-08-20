@@ -1,9 +1,9 @@
-import type Point from '@mapbox/point-geometry';
 
 import * as DOM from '../../util/dom';
 import {extend, bindAll} from '../../util/util';
 import {MouseRotateHandler, MousePitchHandler} from '../handler/mouse';
 
+import type Point from '@mapbox/point-geometry';
 import type {Map, IControl} from '../map';
 
 export type NavigationControlOptions = {

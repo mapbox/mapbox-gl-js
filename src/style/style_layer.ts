@@ -1,5 +1,4 @@
 import {endsWith, filterObject} from '../util/util';
-
 import {Evented} from '../util/evented';
 import {Layout, Transitionable, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties';
 import {supportsPropertyExpression} from '../style-spec/util/properties';
@@ -18,7 +17,6 @@ import type {
     LayoutSpecification,
     PaintSpecification,
     FilterSpecification,
-    TransitionSpecification,
     PropertyValueSpecification
 } from '../style-spec/types';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';

@@ -7,9 +7,9 @@ import {collisionCircleLayout} from '../data/bucket/symbol_attributes';
 import SegmentVector from '../data/segment';
 import {mat4} from 'gl-matrix';
 import {getCollisionDebugTileProjectionMatrix} from '../geo/projection/projection_util';
+
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
-
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type StyleLayer from '../style/style_layer';

@@ -12,8 +12,9 @@ import browser from '../util/browser';
 import tileTransform, {getTilePoint} from '../geo/projection/tile_transform';
 import {GLOBE_VERTEX_GRID_SIZE} from '../geo/projection/globe_constants';
 import {mat3, vec3} from 'gl-matrix';
-import type LngLat from '../geo/lng_lat';
+import assert from "assert";
 
+import type LngLat from '../geo/lng_lat';
 import type {ISource, SourceEvents} from './source';
 import type {CanvasSourceSpecification} from './canvas_source';
 import type {Map} from '../ui/map';
@@ -29,7 +30,6 @@ import type {
     VideoSourceSpecification
 } from '../style-spec/types';
 import type Context from '../gl/context';
-import assert from "assert";
 
 type Coordinates = [[number, number], [number, number], [number, number], [number, number]];
 type ImageSourceTexture = {

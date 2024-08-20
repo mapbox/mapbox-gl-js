@@ -1,9 +1,9 @@
 import {vec3, vec4} from 'gl-matrix';
 import assert from 'assert';
-import type {UnwrappedTileID} from '../source/tile_id';
-
-import type {mat4} from 'gl-matrix';
 import {register} from './web_worker_transfer';
+
+import type {UnwrappedTileID} from '../source/tile_id';
+import type {mat4} from 'gl-matrix';
 
 class Ray {
     pos: vec3;

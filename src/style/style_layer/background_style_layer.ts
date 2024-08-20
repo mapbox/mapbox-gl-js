@@ -1,8 +1,7 @@
 import StyleLayer from '../style_layer';
-
 import {getLayoutProperties, getPaintProperties} from './background_style_layer_properties';
-import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 
+import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {PaintProps} from './background_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {CreateProgramParams} from '../../render/painter';

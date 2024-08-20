@@ -1,13 +1,13 @@
 import {isValue} from '../values';
-import type {Type} from '../types';
 import {BooleanType} from '../types';
+import {updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util';
+
+import type {Type} from '../types';
 import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../types/tile_id';
-
-import {updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util';
 import type {BBox} from '../../util/geometry_util';
 
 type GeoJSONPolygons = GeoJSON.Polygon | GeoJSON.MultiPolygon;

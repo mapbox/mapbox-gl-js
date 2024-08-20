@@ -1,5 +1,4 @@
 import browser from '../util/browser';
-
 import {Placement} from '../symbol/placement';
 import {PerformanceUtils} from '../util/performance';
 import {makeFQID} from '../util/fqid';

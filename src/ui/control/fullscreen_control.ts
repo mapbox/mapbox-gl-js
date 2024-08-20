@@ -1,5 +1,4 @@
 import * as DOM from '../../util/dom';
-
 import {bindAll, warnOnce} from '../../util/util';
 
 import type {Map, IControl} from '../map';

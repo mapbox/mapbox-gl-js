@@ -3,9 +3,6 @@ import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import EXTENT from '../style-spec/data/extent';
-import type {
-    GroundEffect,
-    PartData} from '../data/bucket/fill_extrusion_bucket';
 import FillExtrusionBucket, {
     fillExtrusionHeightLift,
     ELEVATION_SCALE,
@@ -19,28 +16,29 @@ import {
     fillExtrusionGroundEffectUniformValues
 } from './program/fill_extrusion_program';
 import Point from '@mapbox/point-geometry';
-import type {OverscaledTileID} from '../source/tile_id';
 import {neighborCoord} from '../source/tile_id';
 import assert from 'assert';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 import Color from '../style-spec/util/color';
-import type Context from '../gl/context';
-import type {Terrain} from '../terrain/terrain';
-import type Tile from '../source/tile';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
 import {RGBAImage} from '../util/image';
 import Texture from './texture';
-import pixelsToTileUnits from '../source/pixels_to_tile_units';
-
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
 import {Frustum} from '../util/primitives';
 import {mat4} from "gl-matrix";
 import {getCutoffParams} from './cutoff';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
-import {warnOnce} from '../util/util';
+
+import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
+import type SourceCache from '../source/source_cache';
+import type Painter from './painter';
+import type Tile from '../source/tile';
+import type {Terrain} from '../terrain/terrain';
+import type Context from '../gl/context';
+import type {OverscaledTileID} from '../source/tile_id';
+import type {
+    GroundEffect,
+    PartData} from '../data/bucket/fill_extrusion_bucket';
 
 export default draw;
 

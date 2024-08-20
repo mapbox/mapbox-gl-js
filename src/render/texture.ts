@@ -1,7 +1,8 @@
-import type Context from '../gl/context';
-import type {RGBAImage, AlphaImage} from '../util/image';
 import {Float32Image} from '../util/image';
 import assert from 'assert';
+
+import type Context from '../gl/context';
+import type {RGBAImage, AlphaImage} from '../util/image';
 
 export type TextureFormat = WebGL2RenderingContext['RGBA'] | WebGL2RenderingContext['DEPTH_COMPONENT'] | WebGL2RenderingContext['DEPTH_STENCIL'] | WebGL2RenderingContext['R8'] | WebGL2RenderingContext['R32F'] | WebGL2RenderingContext['RED'];
 export type TextureType = WebGL2RenderingContext['UNSIGNED_INT_24_8'] | WebGL2RenderingContext['UNSIGNED_BYTE'] | WebGL2RenderingContext['UNSIGNED_SHORT'] | WebGL2RenderingContext['FLOAT'];

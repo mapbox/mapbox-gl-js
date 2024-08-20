@@ -2,6 +2,7 @@ import CompoundExpression from './compound_expression';
 import Within from './definitions/within';
 import Distance from './definitions/distance';
 import Config from './definitions/config';
+
 import type {Expression} from './expression';
 
 function isFeatureConstant(e: Expression): boolean {

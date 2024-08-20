@@ -1,15 +1,14 @@
-import path from 'path';
 import replace from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import unassert from 'rollup-plugin-unassert';
 import json from '@rollup/plugin-json';
 import esbuild from 'rollup-plugin-esbuild';
+import {fileURLToPath} from 'url';
 
 // Build es modules?
 const esm = 'esm' in process.env;
 
-import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const config = [{

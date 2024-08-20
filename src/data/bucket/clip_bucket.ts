@@ -6,6 +6,7 @@ import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import TriangleGridIndex from '../../util/triangle_grid_index';
+import Point from "@mapbox/point-geometry";
 
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
 import type {
@@ -22,8 +23,6 @@ import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {Footprint, TileFootprint} from '../../../3d-style/util/conflation';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {SpritePositions} from '../../util/image';
-
-import Point from "@mapbox/point-geometry";
 
 class ClipBucket implements Bucket {
     index: number;

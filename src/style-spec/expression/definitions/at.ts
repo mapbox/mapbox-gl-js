@@ -1,5 +1,4 @@
 import {array, ValueType, NumberType} from '../types';
-
 import RuntimeError from '../runtime_error';
 
 import type {Expression, SerializedExpression} from '../expression';

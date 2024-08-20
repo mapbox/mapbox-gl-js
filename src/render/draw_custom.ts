@@ -4,13 +4,13 @@ import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import {warnOnce} from '../util/util';
 import {globeToMercatorTransition} from './../geo/projection/globe_util';
+import MercatorCoordinate from '../geo/mercator_coordinate';
+import assert from 'assert';
 
 import type Painter from './painter';
 import type {OverscaledTileID} from '../source/tile_id';
 import type SourceCache from '../source/source_cache';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
-import MercatorCoordinate from '../geo/mercator_coordinate';
-import assert from 'assert';
 
 function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomStyleLayer, coords: Array<OverscaledTileID>) {
 

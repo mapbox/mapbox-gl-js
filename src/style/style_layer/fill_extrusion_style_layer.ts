@@ -3,12 +3,13 @@ import FillExtrusionBucket, {ELEVATION_SCALE, ELEVATION_OFFSET, fillExtrusionHei
 import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
 import {translateDistance, tilespaceTranslate} from '../query_utils';
 import {getLayoutProperties, getPaintProperties} from './fill_extrusion_style_layer_properties';
-import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import Point from '@mapbox/point-geometry';
 import {vec3, vec4} from 'gl-matrix';
 import EXTENT from '../../style-spec/data/extent';
-import type {CanonicalTileID} from '../../source/tile_id';
+import {Point3D} from '../../util/polygon_clipping';
 
+import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
+import type {CanonicalTileID} from '../../source/tile_id';
 import type {FeatureState} from '../../style-spec/expression/index';
 import type {BucketParameters} from '../../data/bucket';
 import type {PaintProps, LayoutProps} from './fill_extrusion_style_layer_properties';
@@ -18,7 +19,6 @@ import type {TilespaceQueryGeometry} from '../query_geometry';
 import type {DEMSampler} from '../../terrain/elevation';
 import type {vec2} from 'gl-matrix';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
-import {Point3D} from '../../util/polygon_clipping';
 import type {LUT} from "../../../src/util/lut";
 
 class FillExtrusionStyleLayer extends StyleLayer {

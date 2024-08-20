@@ -1,5 +1,6 @@
 import assert from 'assert';
 import offscreenCanvasSupported from './offscreen_canvas_supported';
+
 import type {Cancelable} from '../types/cancelable';
 
 let linkEl;

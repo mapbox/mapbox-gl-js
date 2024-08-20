@@ -1,5 +1,4 @@
 import Point from '@mapbox/point-geometry';
-import type MercatorCoordinate from '../mercator_coordinate';
 import {altitudeFromMercatorZ, lngFromMercatorX, latFromMercatorY} from '../mercator_coordinate';
 import EXTENT from '../../style-spec/data/extent';
 import {vec3} from 'gl-matrix';
@@ -8,6 +7,7 @@ import {aabbForTileOnGlobe} from './globe_util';
 import assert from 'assert';
 import {CanonicalTileID} from '../../source/tile_id';
 
+import type MercatorCoordinate from '../mercator_coordinate';
 import type Projection from './projection';
 import type {ProjectedPoint} from './projection';
 import type Transform from '../transform';

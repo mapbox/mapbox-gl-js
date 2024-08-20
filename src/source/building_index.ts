@@ -1,10 +1,10 @@
+import EXTENT from '../style-spec/data/extent';
+
 import type FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
 import type StyleLayer from '../style/style_layer';
-import EXTENT from '../style-spec/data/extent';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
 import type {OverscaledTileID} from './tile_id';
-
 import type Style from '../style/style';
 import type Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket';
 import type {Bucket} from '../data/bucket';

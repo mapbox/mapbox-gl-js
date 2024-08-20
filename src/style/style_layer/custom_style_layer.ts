@@ -1,8 +1,8 @@
 import StyleLayer from '../style_layer';
-import type MercatorCoordinate from '../../geo/mercator_coordinate';
-import type {Map} from '../../ui/map';
 import assert from 'assert';
 
+import type MercatorCoordinate from '../../geo/mercator_coordinate';
+import type {Map} from '../../ui/map';
 import type {ValidationErrors} from '../validate_style';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type SourceCache from '../../source/source_cache';

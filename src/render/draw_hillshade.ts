@@ -6,14 +6,14 @@ import {
     hillshadeUniformValues,
     hillshadeUniformPrepareValues
 } from './program/hillshade_program';
+import ColorMode from '../gl/color_mode';
+import assert from 'assert';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type Tile from '../source/tile';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
-import ColorMode from '../gl/color_mode';
 import type {OverscaledTileID} from '../source/tile_id';
-import assert from 'assert';
 import type DEMData from '../data/dem_data';
 import type {DynamicDefinesType} from './program/program_uniforms';
 

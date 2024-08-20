@@ -1,11 +1,10 @@
 import assert from 'assert';
 import * as DOM from '../../util/dom';
-
 import {ease as _ease, bindAll, bezier, isFullscreen} from '../../util/util';
 import browser from '../../util/browser';
 import {number as interpolate} from '../../style-spec/util/interpolate';
-import type Point from '@mapbox/point-geometry';
 
+import type Point from '@mapbox/point-geometry';
 import type {Map} from '../map';
 import type HandlerManager from '../handler_manager';
 import type {Handler, HandlerResult} from '../handler';

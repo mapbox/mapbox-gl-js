@@ -1,4 +1,5 @@
 import Color from '../style-spec/util/color';
+
 import type Context from '../gl/context';
 import type {RenderColor} from "../style-spec/util/color";
 

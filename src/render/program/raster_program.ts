@@ -7,7 +7,6 @@ import {
     UniformMatrix3f,
     UniformMatrix4f,
 } from '../uniform_binding';
-
 import {computeRasterColorMix, computeRasterColorOffset} from '../raster';
 import {COLOR_RAMP_RES} from '../../style/style_layer/raster_style_layer';
 import {contrastFactor, saturationFactor} from '../../util/util';

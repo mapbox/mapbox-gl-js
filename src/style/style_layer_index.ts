@@ -1,5 +1,4 @@
 import createStyleLayer from './create_style_layer';
-
 import {values} from '../util/util';
 import groupByLayout from '../style-spec/group_by_layout';
 

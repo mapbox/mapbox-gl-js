@@ -1,11 +1,11 @@
 import Reference from './reference/v8.json';
+
 import type {StylePropertySpecification} from './style-spec';
 import type {
     StyleSpecification,
     SourceSpecification,
     LayerSpecification,
-    PropertyValueSpecification,
-    DataDrivenPropertyValueSpecification
+    PropertyValueSpecification
 } from './types';
 
 function getPropertyReference(propertyName: string): StylePropertySpecification {

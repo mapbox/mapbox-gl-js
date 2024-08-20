@@ -1,8 +1,9 @@
-import type Point from '@mapbox/point-geometry';
 import * as DOM from '../../util/dom';
+import {isFullscreen} from '../../util/util';
+
+import type Point from '@mapbox/point-geometry';
 import type {Map} from '../map';
 import type {Handler, HandlerResult} from '../handler';
-import {isFullscreen} from '../../util/util';
 
 export type TouchPitchHandlerOptions = {
     around?: 'center';

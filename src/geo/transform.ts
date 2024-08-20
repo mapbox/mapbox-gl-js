@@ -7,7 +7,6 @@ import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestT
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../style-spec/data/extent';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import type {Aabb} from '../util/primitives';
 import {Frustum, FrustumCorners, Ray} from '../util/primitives';
 import EdgeInsets from './edge_insets';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
@@ -27,6 +26,7 @@ import {
 } from '../geo/projection/globe_util';
 import {projectClamped} from '../symbol/projection';
 
+import type {Aabb} from '../util/primitives';
 import type Projection from '../geo/projection/projection';
 import type {Elevation} from '../terrain/elevation';
 import type {PaddingOptions} from './edge_insets';

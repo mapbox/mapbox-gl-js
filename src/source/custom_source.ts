@@ -1,10 +1,10 @@
-import type Tile from './tile';
 import Texture from '../render/texture';
 import TileBounds from './tile_bounds';
 import {extend, pick} from '../util/util';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import {makeFQID} from '../util/fqid';
 
+import type Tile from './tile';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type {Callback} from '../types/callback';

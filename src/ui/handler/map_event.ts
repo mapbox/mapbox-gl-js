@@ -3,7 +3,6 @@ import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../events';
 
 import type Point from '@mapbox/point-geometry';
 import type {Mutable} from 'utility-types';
-
 import type {Map} from '../map';
 import type {Handler, HandlerResult} from '../handler';
 

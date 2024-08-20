@@ -1,7 +1,5 @@
 import {modelUniformValues, modelDepthUniformValues} from './program/model_program';
 import {ModelTraits, DefaultModelScale} from '../data/model';
-
-import type Transform from '../../src/geo/transform';
 import EXTENT from '../../src/style-spec/data/extent';
 import StencilMode from '../../src/gl/stencil_mode';
 import ColorMode from '../../src/gl/color_mode';
@@ -12,20 +10,18 @@ import {getMetersPerPixelAtLatitude, mercatorZfromAltitude} from '../../src/geo/
 import TextureSlots from './texture_slots';
 import {convertModelMatrixForGlobe} from '../util/model_util';
 import {clamp, warnOnce} from '../../src/util/util';
-import type ModelBucket from '../data/bucket/model_bucket';
 import assert from 'assert';
 import {DEMSampler} from '../../src/terrain/elevation';
-import type {OverscaledTileID} from '../../src/source/tile_id';
 import {Aabb} from '../../src/util/primitives';
 import {getCutoffParams} from '../../src/render/cutoff';
 import {FOG_OPACITY_THRESHOLD} from '../../src/style/fog_helpers';
 import {ZoomDependentExpression} from '../../src/style-spec/expression/index';
-import type {Tiled3dModelFeature} from '../data/bucket/tiled_3d_model_bucket';
+import {Texture3D} from '../../src/render/texture';
 
-import type ModelSource from '../source/model_source';
-import type Tiled3DModelSource from '../source/tiled_3d_model_source';
-import type GeoJSONSource from '../../src/source/geojson_source';
-import type VectorTileSource from '../../src/source/vector_tile_source';
+import type Transform from '../../src/geo/transform';
+import type ModelBucket from '../data/bucket/model_bucket';
+import type {OverscaledTileID} from '../../src/source/tile_id';
+import type {Tiled3dModelFeature} from '../data/bucket/tiled_3d_model_bucket';
 import type Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket';
 import type Painter from '../../src/render/painter';
 import type {CreateProgramParams} from '../../src/render/painter';
@@ -35,7 +31,6 @@ import type {Mesh, Node, ModelTexture} from '../data/model';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms';
 import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type {CutoffParams} from '../../src/render/cutoff';
-import {Texture3D} from '../../src/render/texture';
 import type {LUT} from "../../src/util/lut";
 import type EvaluationParameters from '../../src/style/evaluation_parameters';
 

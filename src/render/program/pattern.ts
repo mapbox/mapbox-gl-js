@@ -1,11 +1,11 @@
 import assert from 'assert';
+import pixelsToTileUnits from '../../source/pixels_to_tile_units';
+
 import type {
     Uniform1i,
     Uniform1f,
     Uniform2f
     , UniformValues} from '../uniform_binding';
-import pixelsToTileUnits from '../../source/pixels_to_tile_units';
-
 import type Painter from '../painter';
 import type {OverscaledTileID} from '../../source/tile_id';
 import type Tile from '../../source/tile';

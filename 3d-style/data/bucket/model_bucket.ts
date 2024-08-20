@@ -3,7 +3,6 @@ import {register} from '../../../src/util/web_worker_transfer';
 import loadGeometry from '../../../src/data/load_geometry';
 import toEvaluationFeature from '../../../src/data/evaluation_feature';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
-import type Point from '@mapbox/point-geometry';
 import {vec3} from 'gl-matrix';
 import {InstanceVertexArray} from '../../../src/data/array_types';
 import assert from 'assert';
@@ -11,12 +10,13 @@ import {warnOnce} from '../../../src/util/util';
 import {rotationScaleYZFlipMatrix} from '../../util/model_util';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate';
 import {instanceAttributes} from '../model_attributes';
-import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
 import {regionsEquals, transformPointToTile, pointInFootprint, skipClipping} from '../../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
+import {isValidUrl} from '../../../src/style-spec/validate/validate_model';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
-import {isValidUrl} from '../../../src/style-spec/validate/validate_model';
+import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import type Point from '@mapbox/point-geometry';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type {mat4} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../../src/source/tile_id';
@@ -27,7 +27,6 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../../../src/data/bucket';
-
 import type Context from '../../../src/gl/context';
 import type VertexBuffer from '../../../src/gl/vertex_buffer';
 import type {FeatureState} from '../../../src/style-spec/expression/index';

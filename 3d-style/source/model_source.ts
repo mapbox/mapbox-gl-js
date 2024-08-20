@@ -1,6 +1,5 @@
 import {Evented, ErrorEvent, Event} from '../../src/util/evented';
 import {ResourceType} from '../../src/util/ajax';
-
 import Model from '../data/model';
 import convertModel from './model_loader';
 import {loadGLTF} from '../util/loaders';

@@ -2,16 +2,11 @@ import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {terrainRasterUniformValues} from './terrain_raster_program';
 import {globeRasterUniformValues} from './globe_raster_program';
-import type Tile from '../source/tile';
 import assert from 'assert';
 import {easeCubicInOut} from '../util/util';
 import browser from '../util/browser';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
-import type Painter from '../render/painter';
-import type SourceCache from '../source/source_cache';
-import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
 import StencilMode from '../gl/stencil_mode';
-import ColorMode from '../gl/color_mode';
 import {mat4} from 'gl-matrix';
 import {
     calculateGlobeMercatorMatrix,
@@ -25,11 +20,16 @@ import {
     getLatitudinalLod
 } from '../geo/projection/globe_util';
 import extend from '../style-spec/util/extend';
+import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
+import {getCutoffParams} from '../render/cutoff';
+
 import type Program from '../render/program';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {Terrain} from './terrain';
-import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
-import {getCutoffParams} from '../render/cutoff';
+import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
+import type SourceCache from '../source/source_cache';
+import type Painter from '../render/painter';
+import type Tile from '../source/tile';
 
 export {
     drawTerrainRaster

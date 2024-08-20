@@ -1,5 +1,4 @@
 import Point from '@mapbox/point-geometry';
-
 import StyleLayer from '../style_layer';
 import LineBucket from '../../data/bucket/line_bucket';
 import {polygonIntersectsBufferedMultiLine} from '../../util/intersection_tests';
@@ -9,8 +8,9 @@ import {extend} from '../../util/util';
 import EvaluationParameters from '../evaluation_parameters';
 import {PossiblyEvaluated, DataDrivenProperty} from '../properties';
 import ProgramConfiguration from '../../data/program_configuration';
-
 import Step from '../../style-spec/expression/definitions/step';
+import {lineDefinesValues} from '../../render/program/line_program';
+
 import type {PossiblyEvaluatedValue, PropertyValue, PossiblyEvaluatedPropertyValue, ConfigOptions, Properties, Transitionable, Transitioning, Layout} from '../properties';
 import type {Feature, FeatureState, ZoomConstantExpression, StylePropertyExpression} from '../../style-spec/expression/index';
 import type {Bucket, BucketParameters} from '../../data/bucket';
@@ -19,7 +19,6 @@ import type Transform from '../../geo/transform';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {TilespaceQueryGeometry} from '../query_geometry';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
-import {lineDefinesValues} from '../../render/program/line_program';
 import type {CreateProgramParams} from '../../render/painter';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
 import type SourceCache from '../../source/source_cache';

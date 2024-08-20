@@ -1,5 +1,6 @@
 import {vec3} from 'gl-matrix';
 import {Ray} from '../../util/primitives';
+
 import type Transform from '../transform';
 
 export function farthestPixelDistanceOnPlane(tr: Transform, pixelsPerMeter: number): number {

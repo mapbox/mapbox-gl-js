@@ -1,6 +1,6 @@
-import type {LayerSpecification} from './types';
-
 import refProperties from './util/ref_properties';
+
+import type {LayerSpecification} from './types';
 
 function stringify(obj: any) {
     if (typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'string' || obj === undefined || obj === null)

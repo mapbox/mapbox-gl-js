@@ -1,5 +1,4 @@
 import browser from '../util/browser';
-
 import {mat4} from 'gl-matrix';
 import SourceCache from '../source/source_cache';
 import EXTENT from '../style-spec/data/extent';
@@ -9,7 +8,6 @@ import {PosArray, TileBoundsArray, TriangleIndexArray, LineStripIndexArray} from
 import {isMapAuthenticated} from '../util/mapbox';
 import posAttributes from '../data/pos_attributes';
 import boundsAttributes from '../data/bounds_attributes';
-import type ProgramConfiguration from '../data/program_configuration';
 import shaders from '../shaders/shaders';
 import Program from './program';
 import {programUniforms} from './program/program_uniforms';
@@ -38,21 +36,23 @@ import custom from './draw_custom';
 import sky from './draw_sky';
 import Atmosphere from './draw_atmosphere';
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util';
-import {Terrain, defaultTerrainUniforms, type TerrainUniformsType} from '../terrain/terrain';
+import {Terrain, defaultTerrainUniforms} from '../terrain/terrain';
 import {Debug} from '../util/debug';
 import Tile from '../source/tile';
 import {RGBAImage} from '../util/image';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
 import {ReplacementSource, ReplacementOrderLandmark} from '../../3d-style/source/replacement_source';
-import type {Source} from '../source/source';
-import type {CutoffParams} from '../render/cutoff';
-
-// 3D-style related
 import model, {prepare as modelPrepare} from '../../3d-style/render/draw_model';
 import {lightsUniformValues} from '../../3d-style/render/lights';
 import {ShadowRenderer} from '../../3d-style/render/shadow_renderer';
 import {WireframeDebugCache} from './wireframe_cache';
+import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
+import Framebuffer from '../gl/framebuffer';
+import {OcclusionParams} from './occlusion_params';
 
+// 3D-style related
+import type {Source} from '../source/source';
+import type {CutoffParams} from '../render/cutoff';
 import type Transform from '../geo/transform';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
 import type Style from '../style/style';
@@ -64,13 +64,10 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
 import type {DynamicDefinesType} from './program/program_uniforms';
-import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
 import type {ContextOptions} from '../gl/context';
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
-import Framebuffer from '../gl/framebuffer';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-
-import {OcclusionParams} from './occlusion_params';
+import type ProgramConfiguration from '../data/program_configuration';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 

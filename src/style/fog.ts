@@ -3,14 +3,14 @@ import {extend, smoothstep} from '../util/util';
 import {Evented} from '../util/evented';
 import {validateStyle, validateFog, emitValidationErrors} from './validate_style';
 import {Properties, Transitionable, PossiblyEvaluated, DataConstantProperty} from './properties';
-import type Color from '../style-spec/util/color';
 import {FOG_PITCH_START, FOG_PITCH_END, FOG_OPACITY_THRESHOLD, getFogOpacityAtLngLat, getFogOpacityAtMercCoord, getFovAdjustedFogRange, getFogOpacityForBounds} from './fog_helpers';
 import {number as interpolate, array as vecInterpolate} from '../style-spec/util/interpolate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
-import type {Frustum} from '../util/primitives';
-import type {OverscaledTileID} from '../source/tile_id';
 import EXTENT from '../style-spec/data/extent';
 
+import type {Frustum} from '../util/primitives';
+import type {OverscaledTileID} from '../source/tile_id';
+import type Color from '../style-spec/util/color';
 import type {FogSpecification} from '../style-spec/types';
 import type EvaluationParameters from './evaluation_parameters';
 import type {TransitionParameters, ConfigOptions, Transitioning} from './properties';

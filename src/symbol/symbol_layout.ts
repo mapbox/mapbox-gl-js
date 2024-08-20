@@ -1,5 +1,4 @@
 import Anchor from './anchor';
-
 import {getAnchors, getCenterAnchor} from './get_anchors';
 import clipLine from './clip_line';
 import {shapeText, shapeIcon, WritingMode, fitIconToText} from './shaping';

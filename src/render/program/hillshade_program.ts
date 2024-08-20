@@ -1,5 +1,4 @@
 import {mat4} from 'gl-matrix';
-
 import {
     Uniform1i,
     Uniform1f,
