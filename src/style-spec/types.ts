@@ -206,7 +206,8 @@ export type FeaturesetSpecification = {
  */
 export type SelectorSpecification = {
     "layer": string,
-    "properties"?: SelectorPropertySpecification
+    "properties"?: SelectorPropertySpecification,
+    "featureNamespace"?: string
 }
 
 /**

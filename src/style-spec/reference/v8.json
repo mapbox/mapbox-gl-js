@@ -247,6 +247,11 @@
       "type": "selectorProperty",
       "required": false, 
       "doc": "Properties accessible to the end user through queried feautures. If properties are empty, no feature properties are exposed. If undefined, all original feature properties will be accessible."
+    },
+    "featureNamespace": {
+      "type": "string",
+      "required": false,
+      "doc": "An optional field that represents the feature namespace defined by the selector within a featureset to which this feature belongs. If the underlying source is the same for multiple selectors within a featureset, the same featureNamespace should be used across those selectors."
     }
   },
   "selectorProperty": {
