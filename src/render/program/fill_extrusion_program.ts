@@ -85,6 +85,7 @@ export type FillExtrusionGroundEffectUniformsType = {
     ['u_edge_radius']: Uniform1f;
     ['u_fb']: Uniform1i;
     ['u_fb_size']: Uniform1f;
+    ['u_dynamic_offset']: Uniform1f;
 };
 
 const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => ({
@@ -155,7 +156,8 @@ const fillExtrusionGroundEffectUniforms = (context: Context): FillExtrusionGroun
     'u_attenuation': new Uniform1f(context),
     'u_edge_radius': new Uniform1f(context),
     'u_fb': new Uniform1i(context),
-    'u_fb_size': new Uniform1f(context)
+    'u_fb_size': new Uniform1f(context),
+    'u_dynamic_offset': new Uniform1f(context)
 });
 
 const identityMatrix = mat4.create() as Float32Array;
@@ -287,7 +289,8 @@ const fillExtrusionGroundEffectUniformValues = (
         'u_attenuation': attenuation,
         'u_edge_radius': edgeRadius,
         'u_fb': 0,
-        'u_fb_size': fbSize
+        'u_fb_size': fbSize,
+        'u_dynamic_offset': 1
     };
     return uniformValues;
 };
