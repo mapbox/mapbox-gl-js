@@ -2,8 +2,6 @@ import quickselect from 'quickselect';
 
 import type Point from '@mapbox/point-geometry';
 
-type GeoJSONPosition = [number, number] | [number, number, number];
-
 // minX, minY, maxX, maxY
 export type BBox = [number, number, number, number];
 

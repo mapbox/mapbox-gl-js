@@ -100,8 +100,6 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         // as the inverse of cosine of the angle between next and join normals
         const miterLength = cosHalfAngle !== 0 ? 1 / cosHalfAngle : Infinity;
 
-        // approximate angle from cosine
-        const approxAngle = 2 * Math.sqrt(2 - 2 * cosHalfAngle);
         const lineTurnsLeft = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0;
 
         // Note: Currently only mitter join is supported for walls,

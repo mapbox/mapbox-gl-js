@@ -57,7 +57,7 @@ map.on('touchstart', 'layerId', (event) => {
 
 // Custom events
 map.fire('flystart' as mapboxgl.MapEventType, {});
-map.on('flystart' as mapboxgl.MapEventType, () => {})
+map.on('flystart' as mapboxgl.MapEventType, () => {});
 
 await new Promise((resolve) => map.on('style.load', resolve));
 

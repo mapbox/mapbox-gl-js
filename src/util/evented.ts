@@ -130,9 +130,9 @@ export class Evented<R extends EventRegistry = EventRegistry> {
         return this;
     }
 
-    fire<T extends keyof R & string, E>(event: Event<R, T>): this;
-    fire<T extends keyof R & string>(event: ErrorEvent): this;
+    fire<T extends keyof R & string>(event: Event<R, T>): this;
     fire<T extends keyof R & string>(type: T, eventData?: R[T]): this;
+    fire(event: ErrorEvent): this;
     fire<T extends keyof R & string>(e: Event<R, T> | T, eventData?: R[T]): this {
         // Compatibility with (type: string, properties: Object) signature from previous versions.
         // See https://github.com/mapbox/mapbox-gl-js/issues/6522,

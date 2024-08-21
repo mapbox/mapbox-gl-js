@@ -19,7 +19,6 @@ import Lights from '../../3d-style/style/lights';
 import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_light_properties';
 import {getProperties as getDirectionalProps} from '../../3d-style/style/directional_light_properties';
 import {createExpression} from '../style-spec/expression/index';
-import {LayerTypeMask} from '../../3d-style/util/conflation';
 import {
     validateStyle,
     validateLayoutProperty,
@@ -66,7 +65,6 @@ import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import type Painter from '../render/painter';
 import type StyleLayer from './style_layer';
-import type ClipStyleLayer from './style_layer/clip_style_layer';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {ColorThemeSpecification,
     LayerSpecification,
@@ -1024,7 +1022,6 @@ class Style extends Evented<MapEvents> {
 
         this._mergedOrder = [];
 
-        let i = 0;
         const sort = (layers: StyleLayer[] = []) => {
             for (const layer of layers) {
                 if (layer.type === 'slot') {
@@ -1041,7 +1038,6 @@ class Style extends Evented<MapEvents> {
                     if (layer.type === 'circle') this._hasCircleLayers = true;
                     if (layer.type === 'symbol') this._hasSymbolLayers = true;
                     if (layer.type === 'clip') this._clipLayerPresent = true;
-                    i++;
                 }
             }
         };

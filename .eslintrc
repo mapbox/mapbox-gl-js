@@ -57,7 +57,12 @@
         "@typescript-eslint/consistent-type-imports": "error",
         "@typescript-eslint/restrict-template-expressions": ["off", { "allowNever": true }],
         "@typescript-eslint/no-unnecessary-type-constraint": "off",
-        "@typescript-eslint/no-unused-vars": ["off", { "argsIgnorePattern": "^_" }],
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": ["error", {
+            "args": "none",
+            "caughtErrors": "none",
+            "ignoreRestSiblings": true
+        }],
 
         // Disable those rules since TypeScript provides the same checks as part of standard type checking
         // See https://typescript-eslint.io/troubleshooting/performance-troubleshooting/#eslint-plugin-import

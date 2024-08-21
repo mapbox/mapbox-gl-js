@@ -394,9 +394,7 @@ export class Transitioning<Props extends {
  * @private
  */
 type PropertyValues<Props> = {
-    [Key in keyof Props]: Props[Key] extends Property<infer T, infer R>
-    ? PropertyValue<T, R>
-    : never;
+    [Key in keyof Props]: Props[Key] extends Property<infer T, infer R> ? PropertyValue<T, R> : never;
 };
 
 /**
@@ -406,9 +404,7 @@ type PropertyValues<Props> = {
  * @private
  */
 type PropertyValueSpecifications<Props> = {
-    [Key in keyof Props]: Props[Key] extends Property<infer T, infer R>
-    ? PropertyValueSpecification<T>
-    : never;
+    [Key in keyof Props]: Props[Key] extends Property<infer T, any> ? PropertyValueSpecification<T> : never;
 };
 
 /**
@@ -559,9 +555,7 @@ export class PossiblyEvaluatedPropertyValue<T> {
  * @private
  */
 type PossiblyEvaluatedPropertyValues<Properties> = {
-    [Key in keyof Properties]: Properties[Key] extends Property<infer T, infer R>
-    ? R
-    : never;
+    [Key in keyof Properties]: Properties[Key] extends Property<any, infer R> ? R : never;
 };
 
 /**

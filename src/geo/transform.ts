@@ -1118,7 +1118,6 @@ class Transform {
         let result = [];
         const maxZoom = z;
         const overscaledZ = options.reparseOverscaled ? actualZ : z;
-        const square = (a: number) => a * a;
         const cameraHeight = (cameraAltitude - this._centerAltitude) * meterToTile; // in tile coordinates.
 
         const getAABBFromElevation = (it: RootTile) => {

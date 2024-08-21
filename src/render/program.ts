@@ -77,7 +77,7 @@ class Program<Us extends UniformBindings> {
     configuration: ProgramConfiguration | null | undefined;
     fixedDefines: string[];
 
-    static cacheKey<Us extends UniformBindings>(
+    static cacheKey(
         source: ShaderSource,
         name: string,
         defines: string[],

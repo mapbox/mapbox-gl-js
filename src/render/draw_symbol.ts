@@ -298,7 +298,6 @@ function drawLayerSymbols(
     const iconBrightnessMin = layer.paint.get('icon-color-brightness-min');
     const iconBrightnessMax = layer.paint.get('icon-color-brightness-max');
 
-    const iconOccludedOpacityMultiplier = layer.paint.get('icon-occlusion-opacity').constantOr(0);
     const textOccludedOpacityMultiplier = layer.paint.get('text-occlusion-opacity').constantOr(0);
 
     const context = painter.context;
@@ -309,9 +308,6 @@ function drawLayerSymbols(
     const textRotateWithMap = textRotationAlignment === 'map';
     const iconPitchWithMap = iconPitchAlignment === 'map';
     const textPitchWithMap = textPitchAlignment === 'map';
-
-    const iconHasOcclusionOpacity = iconOccludedOpacityMultiplier !== 1;
-    const textHasOcclusionOpacity = textOccludedOpacityMultiplier !== 1;
 
     const hasSortKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
     let sortFeaturesByKey = false;
