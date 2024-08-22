@@ -185,9 +185,9 @@ void main() {
     float out_fade_opacity = interpolated_fade_opacity * projection_transition_fade;
 
     #ifdef DEPTH_OCCLUSION
-        float depthOcclusion = occlusionFadeMultiSample(projected_point);
-        float depthOcclusionMultplier = mix(occlusion_opacity, 1.0, depthOcclusion);
-        out_fade_opacity *= depthOcclusionMultplier;
+        float depth_occlusion = occlusionFadeMultiSample(projected_point);
+        float depth_occlusion_multplier = mix(occlusion_opacity, 1.0, depth_occlusion);
+        out_fade_opacity *= depth_occlusion_multplier;
     #endif
 
 #ifdef OCCLUSION_QUERIES

@@ -9,7 +9,7 @@ import {hillshadeUniforms, hillshadePrepareUniforms} from './hillshade_program';
 import {lineUniforms, linePatternUniforms} from './line_program';
 import {rasterUniforms} from './raster_program';
 import {rasterParticleUniforms, rasterParticleTextureUniforms, rasterParticleDrawUniforms, rasterParticleUpdateUniforms} from './raster_particle_program';
-import {symbolIconUniforms, symbolSDFUniforms, symbolTextAndIconUniforms} from './symbol_program';
+import {symbolUniforms, symbolTextAndIconUniforms} from './symbol_program';
 import {backgroundUniforms, backgroundPatternUniforms} from './background_program';
 import {terrainRasterUniforms} from '../../terrain/terrain_raster_program';
 import {skyboxUniforms, skyboxGradientUniforms} from './skybox_program';
@@ -58,8 +58,7 @@ export const programUniforms = {
     rasterParticleTexture: rasterParticleTextureUniforms,
     rasterParticleDraw: rasterParticleDrawUniforms,
     rasterParticleUpdate: rasterParticleUpdateUniforms,
-    symbolIcon: symbolIconUniforms,
-    symbolSDF: symbolSDFUniforms,
+    symbol: symbolUniforms,
     symbolTextAndIcon: symbolTextAndIconUniforms,
     background: backgroundUniforms,
     backgroundPattern: backgroundPatternUniforms,

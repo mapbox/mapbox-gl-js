@@ -54,10 +54,8 @@ import rasterParticleTextureFrag from './raster_particle_texture.fragment.glsl';
 import rasterParticleTextureVert from './raster_particle_texture.vertex.glsl';
 import rasterParticleUpdateFrag from './raster_particle_update.fragment.glsl';
 import rasterParticleUpdateVert from './raster_particle_update.vertex.glsl';
-import symbolIconFrag from './symbol_icon.fragment.glsl';
-import symbolIconVert from './symbol_icon.vertex.glsl';
-import symbolSDFFrag from './symbol_sdf.fragment.glsl';
-import symbolSDFVert from './symbol_sdf.vertex.glsl';
+import symbolFrag from './symbol.fragment.glsl';
+import symbolVert from './symbol.vertex.glsl';
 import symbolTextAndIconFrag from './symbol_text_and_icon.fragment.glsl';
 import symbolTextAndIconVert from './symbol_text_and_icon.vertex.glsl';
 import skyboxFrag from './skybox.fragment.glsl';
@@ -159,8 +157,7 @@ export default {
     rasterParticleDraw: compile(rasterParticleDrawFrag, rasterParticleDrawVert),
     rasterParticleTexture: compile(rasterParticleTextureFrag, rasterParticleTextureVert),
     rasterParticleUpdate: compile(rasterParticleUpdateFrag, rasterParticleUpdateVert),
-    symbolIcon: compile(symbolIconFrag, symbolIconVert),
-    symbolSDF: compile(symbolSDFFrag, symbolSDFVert),
+    symbol: compile(symbolFrag, symbolVert),
     symbolTextAndIcon: compile(symbolTextAndIconFrag, symbolTextAndIconVert),
     terrainRaster: compile(terrainRasterFrag, terrainRasterVert),
     terrainDepth: compile(terrainDepthFrag, terrainDepthVert),

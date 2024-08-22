@@ -6,10 +6,6 @@ in vec4 a_pixeloffset;
 in vec4 a_projected_pos;
 in float a_fade_opacity;
 
-#ifdef OCCLUSION_QUERIES
-in float a_occlusion_query_opacity;
-#endif
-
 #ifdef Z_OFFSET
 in float a_z_offset;
 #endif
@@ -17,28 +13,38 @@ in float a_z_offset;
 in vec3 a_globe_anchor;
 in vec3 a_globe_normal;
 #endif
+
 #ifdef ICON_TRANSITION
 in vec2 a_texb;
 #endif
 
+#ifdef OCCLUSION_QUERIES
+in float a_occlusion_query_opacity;
+#endif
+
+// contents of a_size vary based on the type of property value
+// used for {text,icon}-size.
+// For constants, a_size is disabled.
+// For source functions, we bind only one value per vertex: the value of {text,icon}-size evaluated for the current feature.
+// For composite functions:
+// [ text-size(lowerZoomStop, feature),
+//   text-size(upperZoomStop, feature) ]
 uniform bool u_is_size_zoom_constant;
 uniform bool u_is_size_feature_constant;
 uniform highp float u_size_t; // used to interpolate between zoom stops when size is a composite function
 uniform highp float u_size; // used when size is both zoom and feature constant
-uniform highp float u_camera_to_center_distance;
-uniform bool u_rotate_symbol;
-uniform highp float u_aspect_ratio;
-uniform float u_fade_change;
-
 uniform mat4 u_matrix;
 uniform mat4 u_label_plane_matrix;
 uniform mat4 u_coord_matrix;
-
 uniform bool u_is_text;
 uniform bool u_pitch_with_map;
-
+uniform bool u_rotate_symbol;
+uniform highp float u_aspect_ratio;
+uniform highp float u_camera_to_center_distance;
+uniform float u_fade_change;
 uniform vec2 u_texsize;
 uniform vec3 u_up_vector;
+uniform bool u_is_halo;
 
 #ifdef PROJECTION_GLOBE_VIEW
 uniform vec3 u_tile_id;
@@ -54,14 +60,24 @@ out vec2 v_tex_a;
 #ifdef ICON_TRANSITION
 out vec2 v_tex_b;
 #endif
-out float v_fade_opacity;
 
+out float v_draw_halo;
+out vec3 v_gamma_scale_size_fade_opacity;
+
+#pragma mapbox: define highp vec4 fill_color
+#pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity
+#pragma mapbox: define lowp float halo_width
+#pragma mapbox: define lowp float halo_blur
 #pragma mapbox: define lowp float emissive_strength
 #pragma mapbox: define lowp float occlusion_opacity
 
 void main() {
+    #pragma mapbox: initialize highp vec4 fill_color
+    #pragma mapbox: initialize highp vec4 halo_color
     #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize lowp float halo_width
+    #pragma mapbox: initialize lowp float halo_blur
     #pragma mapbox: initialize lowp float emissive_strength
     #pragma mapbox: initialize lowp float occlusion_opacity
 
@@ -115,14 +131,19 @@ void main() {
     vec4 projected_point = u_matrix * vec4(world_pos, 1);
 
     highp float camera_to_anchor_distance = projected_point.w;
-    // See comments in symbol_sdf.vertex
+    // If the label is pitched with the map, layout is done in pitched space,
+    // which makes labels in the distance smaller relative to viewport space.
+    // We counteract part of that effect by multiplying by the perspective ratio.
+    // If the label isn't pitched with the map, we do layout in viewport space,
+    // which makes labels in the distance larger relative to the features around
+    // them. We counteract part of that effect by dividing by the perspective ratio.
     highp float distance_ratio = u_pitch_with_map ?
         camera_to_anchor_distance / u_camera_to_center_distance :
         u_camera_to_center_distance / camera_to_anchor_distance;
     highp float perspective_ratio = clamp(
-            0.5 + 0.5 * distance_ratio,
-            0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
-            1.5);
+        0.5 + 0.5 * distance_ratio,
+        0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
+        1.5);
 
     size *= perspective_ratio;
 
@@ -130,19 +151,23 @@ void main() {
 
     highp float symbol_rotation = 0.0;
     if (u_rotate_symbol) {
-        // See comments in symbol_sdf.vertex
-        vec4 offsetProjected_point;
+        // Point labels with 'rotation-alignment: map' are horizontal with respect to tile units
+        // To figure out that angle in projected space, we draw a short horizontal line in tile
+        // space, project it, and measure its angle in projected space.
+        vec4 offsetprojected_point;
         vec2 a;
 #ifdef PROJECTION_GLOBE_VIEW
+        // Use x-axis of the label plane for displacement (x_axis = cross(normal, vec3(0, -1, 0)))
         vec3 displacement = vec3(a_globe_normal.z, 0, -a_globe_normal.x);
-        offsetProjected_point = u_matrix * vec4(a_globe_anchor + displacement, 1);
+        offsetprojected_point = u_matrix * vec4(a_globe_anchor + displacement, 1);
         vec4 projected_point_globe = u_matrix * vec4(world_pos_globe, 1);
         a = projected_point_globe.xy / projected_point_globe.w;
 #else
-        offsetProjected_point = u_matrix * vec4(tile_anchor + vec2(1, 0), 0, 1);
+        offsetprojected_point = u_matrix * vec4(tile_anchor + vec2(1, 0), 0, 1);
         a = projected_point.xy / projected_point.w;
 #endif
-        vec2 b = offsetProjected_point.xy / offsetProjected_point.w;
+        vec2 b = offsetprojected_point.xy / offsetprojected_point.w;
+
         symbol_rotation = atan((b.y - a.y) / u_aspect_ratio, b.x - a.x);
     }
 
@@ -175,7 +200,21 @@ void main() {
 #endif
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
-    float out_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change)) * projection_transition_fade;
+    float interpolated_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
+
+    float out_fade_opacity = interpolated_fade_opacity * projection_transition_fade;
+
+#ifdef DEPTH_OCCLUSION
+    float depth_occlusion = occlusionFadeMultiSample(projected_point);
+    float depth_occlusion_multplier = mix(occlusion_opacity, 1.0, depth_occlusion);
+    out_fade_opacity *= depth_occlusion_multplier;
+#endif
+
+#ifdef OCCLUSION_QUERIES
+    float occludedFadeMultiplier = mix(occlusion_opacity, 1.0, a_occlusion_query_opacity);
+    out_fade_opacity *= occludedFadeMultiplier;
+#endif
+
     float alpha = opacity * out_fade_opacity;
     float hidden = float(alpha == 0.0 || projected_point.w <= 0.0 || occlusion_fade == 0.0);
 
@@ -188,21 +227,16 @@ void main() {
 #else
     gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, hidden);
 #endif
+    float gamma_scale = gl_Position.w;
+
+    // Cast to float is required to fix a rendering error in Swiftshader
+    v_draw_halo = (u_is_halo && float(gl_InstanceID) == 0.0) ? 1.0 : 0.0;
+
+    v_gamma_scale_size_fade_opacity = vec3(gamma_scale, size, out_fade_opacity);
 
     v_tex_a = a_tex / u_texsize;
 #ifdef ICON_TRANSITION
     v_tex_b = a_texb / u_texsize;
 #endif
-    v_fade_opacity = out_fade_opacity;
 
-#ifdef DEPTH_OCCLUSION
-    float depthOcclusion = occlusionFadeMultiSample(projected_point);
-    float depthOcclusionMultplier = mix(occlusion_opacity, 1.0, depthOcclusion);
-    v_fade_opacity *= depthOcclusionMultplier;
-#endif
-
-#ifdef OCCLUSION_QUERIES
-    float occludedFadeMultiplier = mix(occlusion_opacity, 1.0, a_occlusion_query_opacity);
-    v_fade_opacity *= occludedFadeMultiplier;
-#endif
 }

@@ -262,18 +262,7 @@ class SymbolStyleLayer extends StyleLayer {
     }
 
     getProgramIds(): string[] {
-
-        const hasIcon = (this.paint.get('icon-opacity').constantOr(1) !== 0);
-
-        const hasText = (this.paint.get('text-opacity').constantOr(1) !== 0);
-        const ids = [];
-        if (hasIcon) {
-            ids.push('symbolIcon');
-        }
-        if (hasText) {
-            ids.push('symbolSDF');
-        }
-        return ids;
+        return ['symbol'];
     }
 
     getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
