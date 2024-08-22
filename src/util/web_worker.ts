@@ -24,6 +24,7 @@ export interface WorkerGlobalScopeInterface {
     registerRTLTextPlugin?: (_?: any) => void;
 }
 
-export default function(): WorkerInterface {
-    return (WorkerClass.workerClass != null) ? new WorkerClass.workerClass() : (new self.Worker(WorkerClass.workerUrl, WorkerClass.workerParams) as any); // eslint-disable-line new-cap
+export function createWorker(): Worker {
+    // eslint-disable-next-line new-cap
+    return WorkerClass.workerClass != null ? new WorkerClass.workerClass() : new self.Worker(WorkerClass.workerUrl, WorkerClass.workerParams);
 }

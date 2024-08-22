@@ -401,7 +401,7 @@ class Style extends Evented<MapEvents> {
                 pluginStatus: event.pluginStatus,
                 pluginURL: event.pluginURL
             };
-            self.dispatcher.broadcast('syncRTLPluginState', state, (err, results) => {
+            self.dispatcher.broadcast('syncRTLPluginState', state, (err, results: boolean[]) => {
                 triggerPluginCompletionEvent(err);
                 if (results) {
                     const allComplete = results.every((elem) => elem);

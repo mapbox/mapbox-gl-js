@@ -302,7 +302,7 @@ export default class Worker {
         try {
             this.self.importScripts(params.url);
             callback();
-        } catch (e: any) {
+        } catch (e) {
             callback(e.toString());
         }
     }

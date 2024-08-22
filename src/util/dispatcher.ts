@@ -4,6 +4,7 @@ import assert from 'assert';
 
 import type WorkerPool from './worker_pool';
 import type {Class} from '../types/class';
+import type {Callback} from '../types/callback';
 
 /**
  * Responsible for sending messages from a {@link Source} to an associated
@@ -45,7 +46,7 @@ class Dispatcher {
      * Broadcast a message to all Workers.
      * @private
      */
-    broadcast(type: string, data: unknown, cb?: any) {
+    broadcast(type: string, data: unknown, cb?: Callback<unknown>) {
         assert(this.actors.length);
         cb = cb || function () {};
         asyncAll(this.actors, (actor, done) => {

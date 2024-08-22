@@ -77,7 +77,7 @@ Grid.deserialize = function deserialize(serialized: SerializedGrid): GridIndex {
 
 Object.defineProperty(Grid, 'name', {value: 'Grid'});
 
-register(Grid, 'Grid');
+register(Grid as Class<Grid>, 'Grid');
 
 register(Color, 'Color');
 register(Error, 'Error');

@@ -28,6 +28,8 @@ import {FreeCameraOptions} from './ui/free_camera';
 import {getDracoUrl, setDracoUrl, setMeshoptUrl, getMeshoptUrl} from '../3d-style/util/loaders';
 import browser from './util/browser';
 
+import type {Class} from './types/class';
+
 // Explicit type re-exports
 export type * from './ui/events';
 export type * from './style-spec/types';
@@ -257,19 +259,19 @@ const exported = {
      *
      * mapboxgl.workerClass = MapboxGLWorker;
      */
-    get workerClass(): any {
+    get workerClass(): Class<Worker> {
         return WorkerClass.workerClass;
     },
 
-    set workerClass(klass: any) {
+    set workerClass(klass: Class<Worker>) {
         WorkerClass.workerClass = klass;
     },
 
-    get workerParams(): any {
+    get workerParams(): WorkerOptions {
         return WorkerClass.workerParams;
     },
 
-    set workerParams(params: any) {
+    set workerParams(params: WorkerOptions) {
         WorkerClass.workerParams = params;
     },
 

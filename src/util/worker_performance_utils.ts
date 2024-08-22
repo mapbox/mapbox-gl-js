@@ -3,7 +3,7 @@ import getWorkerPool from './global_worker_pool';
 import {PerformanceUtils} from './performance';
 
 import type {Callback} from '../types/callback';
-import type {PerformanceMetrics} from './performance';
+import type {PerformanceMetrics, WorkerPerformanceMetrics} from './performance';
 
 // separate from PerformanceUtils to avoid circular dependency
 
@@ -15,7 +15,7 @@ export const WorkerPerformanceUtils = {
 
         const createTime = performance.getEntriesByName('create', 'mark')[0].startTime;
 
-        dispatcher.broadcast('getWorkerPerformanceMetrics', {}, (err, results) => {
+        dispatcher.broadcast('getWorkerPerformanceMetrics', {}, (err, results: WorkerPerformanceMetrics[]) => {
             dispatcher.remove();
             if (err) return callback(err);
 
