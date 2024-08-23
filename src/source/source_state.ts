@@ -86,19 +86,29 @@ class SourceFeatureState {
         }
     }
 
-    getState(sourceLayer: string, featureId: number | string): FeatureState {
-        const feature = String(featureId);
+    getState(sourceLayer: string, featureId: number | string | undefined): FeatureState {
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};
-
-        const reconciledState = extend({}, base[feature], changes[feature]);
-
+        const deletedStates = this.deletedStates[sourceLayer];
         //return empty object if the whole source layer is awaiting deletion
-        if (this.deletedStates[sourceLayer] === null) return {};
-        else if (this.deletedStates[sourceLayer]) {
-            const featureDeletions = this.deletedStates[sourceLayer][featureId];
-            if (featureDeletions === null) return {};
-            for (const prop in featureDeletions) delete reconciledState[prop];
+        if (deletedStates === null) return {};
+
+        if (featureId !== undefined) {
+            const feature = String(featureId);
+
+            const reconciledState = extend({}, base[feature], changes[feature]);
+
+            if (deletedStates) {
+                const featureDeletions = deletedStates[featureId];
+                if (featureDeletions === null) return {};
+                for (const prop in featureDeletions) delete reconciledState[prop];
+            }
+            return reconciledState;
+        }
+
+        const reconciledState = extend({}, base, changes);
+        if (deletedStates) {
+            for (const feature in deletedStates) delete reconciledState[feature];
         }
         return reconciledState;
     }

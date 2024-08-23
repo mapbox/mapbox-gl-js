@@ -432,7 +432,7 @@ class Tile {
             return;
         }
         this._lastUpdatedBrightness = brightness;
-        this.updateBuckets(undefined, painter);
+        this.updateBuckets(painter);
     }
 
     // Queries non-symbol features rendered for this tile.
@@ -596,10 +596,10 @@ class Tile {
             return;
         }
 
-        this.updateBuckets(states, painter);
+        this.updateBuckets(painter);
     }
 
-    updateBuckets(states: LayerFeatureStates | null | undefined, painter: Painter) {
+    updateBuckets(painter: Painter) {
         if (!this.latestFeatureIndex) return;
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
         const availableImages = painter.style.listImages();
@@ -612,16 +612,15 @@ class Tile {
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
             const sourceLayer = vtLayers[sourceLayerId];
+            const sourceCache = painter.style.getOwnSourceCache(bucket.layers[0].source);
             let sourceLayerStates: Record<string, any> = {};
-            if (states) {
-                sourceLayerStates = states[sourceLayerId];
-                if (!sourceLayer || !sourceLayerStates || Object.keys(sourceLayerStates).length === 0) continue;
+            if (sourceCache) {
+                sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined);
             }
 
             const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
             bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, brightness);
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
-                const sourceCache = painter.style.getOwnSourceCache(bucket.layers[0].source);
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {
                     painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);
                 }
