@@ -55,7 +55,7 @@ const debugWireframe3DLayerProgramNames = [
     "stars",
     "fillExtrusion",  "fillExtrusionGroundEffect",
     "model",
-    "symbol", "symbolTextAndIcon"];
+    "symbol"];
 
 class Program<Us extends UniformBindings> {
     program: WebGLProgram;

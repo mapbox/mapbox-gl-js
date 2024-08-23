@@ -18,8 +18,7 @@ import {
 } from '../geo/mercator_coordinate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 import {
-    symbolUniformValues,
-    symbolTextAndIconUniformValues
+    symbolUniformValues
 } from './program/symbol_program';
 import {getSymbolTileProjectionMatrix} from '../geo/projection/projection_util';
 
@@ -435,7 +434,7 @@ function drawLayerSymbols(
             const colorAdjustmentMatrix = layer.getColorAdjustmentMatrix(iconSaturation, iconContrast, iconBrightnessMin, iconBrightnessMax);
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
                 // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
-                matrix, uLabelPlaneMatrix, uglCoordMatrix, false, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorAdjustmentMatrix, transitionProgress);
+                matrix, uLabelPlaneMatrix, uglCoordMatrix, false, texSize, [0, 0], true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorAdjustmentMatrix, transitionProgress);
 
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
 
@@ -490,12 +489,16 @@ function drawLayerSymbols(
                 baseDefines.push('Z_OFFSET');
             }
 
+            if (bucket.iconsInText) {
+                baseDefines.push('RENDER_TEXT_AND_SYMBOL');
+            }
+
             baseDefines.push('RENDER_SDF');
 
             setOcclusionDefines(baseDefines);
 
             const programConfiguration = bucket.text.programConfigurations.get(layer.id);
-            const program = painter.getOrCreateProgram(bucket.iconsInText ? 'symbolTextAndIcon' : 'symbol', {config: programConfiguration, defines: baseDefines});
+            const program = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
 
             let texSizeIcon: [number, number] = [0, 0];
             let atlasTextureIcon: Texture | null = null;
@@ -539,17 +542,9 @@ function drawLayerSymbols(
 
             const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
 
-            let uniformValues;
-
-            if (!bucket.iconsInText) {
-                uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
-                    // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, true, texSize, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), textOccludedOpacityMultiplier);
-            } else {
-                uniformValues = symbolTextAndIconUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
-                    // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
-                    matrix, uLabelPlaneMatrix, uglCoordMatrix, texSize, texSizeIcon, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), textOccludedOpacityMultiplier);
-            }
+            const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
+                // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
+                matrix, uLabelPlaneMatrix, uglCoordMatrix, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), textOccludedOpacityMultiplier);
 
             const atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
             const atlasInterpolation = gl.LINEAR;

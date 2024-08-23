@@ -44,6 +44,7 @@ uniform highp float u_camera_to_center_distance;
 uniform float u_fade_change;
 uniform vec2 u_texsize;
 uniform vec3 u_up_vector;
+uniform vec2 u_texsize_icon;
 uniform bool u_is_halo;
 
 #ifdef PROJECTION_GLOBE_VIEW
@@ -63,6 +64,10 @@ out vec2 v_tex_b;
 
 out float v_draw_halo;
 out vec3 v_gamma_scale_size_fade_opacity;
+#ifdef RENDER_TEXT_AND_SYMBOL
+out float is_sdf;
+out vec2 v_tex_a_icon;
+#endif
 
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
@@ -233,8 +238,11 @@ void main() {
     v_draw_halo = (u_is_halo && float(gl_InstanceID) == 0.0) ? 1.0 : 0.0;
 
     v_gamma_scale_size_fade_opacity = vec3(gamma_scale, size, out_fade_opacity);
-
     v_tex_a = a_tex / u_texsize;
+#ifdef RENDER_TEXT_AND_SYMBOL
+    is_sdf = a_size[0] - 2.0 * a_size_min;
+    v_tex_a_icon = a_tex / u_texsize_icon;
+#endif
 #ifdef ICON_TRANSITION
     v_tex_b = a_texb / u_texsize;
 #endif

@@ -1,8 +1,11 @@
 #include "_prelude_lighting.glsl"
 
 #define SDF_PX 8.0
+#define SDF 1.0
+#define ICON 0.0
 
 uniform sampler2D u_texture;
+uniform sampler2D u_texture_icon;
 uniform highp float u_gamma_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_text;
@@ -22,6 +25,10 @@ in vec2 v_tex_b;
 
 in float v_draw_halo;
 in vec3 v_gamma_scale_size_fade_opacity;
+#ifdef RENDER_TEXT_AND_SYMBOL
+in float is_sdf;
+in vec2 v_tex_a_icon;
+#endif
 
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
@@ -39,6 +46,20 @@ void main() {
     #pragma mapbox: initialize lowp float emissive_strength
 
     vec4 out_color;
+    float fade_opacity = v_gamma_scale_size_fade_opacity[2];
+
+#ifdef RENDER_TEXT_AND_SYMBOL
+    if (is_sdf == ICON) {
+        vec2 tex_icon = v_tex_a_icon;
+        lowp float alpha = opacity * fade_opacity;
+        glFragColor = texture(u_texture_icon, tex_icon) * alpha;
+
+#ifdef OVERDRAW_INSPECTOR
+        glFragColor = vec4(1.0);
+#endif
+        return;
+    }
+#endif
 
 #ifdef RENDER_SDF
     float EDGE_GAMMA = 0.105 / u_device_pixel_ratio;
@@ -78,7 +99,6 @@ void main() {
     #endif
 #endif
 
-    float fade_opacity = v_gamma_scale_size_fade_opacity[2];
     out_color *= opacity * fade_opacity;
 
     #ifdef LIGHTING_3D_MODE

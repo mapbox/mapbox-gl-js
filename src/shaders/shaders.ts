@@ -56,8 +56,6 @@ import rasterParticleUpdateFrag from './raster_particle_update.fragment.glsl';
 import rasterParticleUpdateVert from './raster_particle_update.vertex.glsl';
 import symbolFrag from './symbol.fragment.glsl';
 import symbolVert from './symbol.vertex.glsl';
-import symbolTextAndIconFrag from './symbol_text_and_icon.fragment.glsl';
-import symbolTextAndIconVert from './symbol_text_and_icon.vertex.glsl';
 import skyboxFrag from './skybox.fragment.glsl';
 import skyboxGradientFrag from './skybox_gradient.fragment.glsl';
 import skyboxVert from './skybox.vertex.glsl';
@@ -158,7 +156,6 @@ export default {
     rasterParticleTexture: compile(rasterParticleTextureFrag, rasterParticleTextureVert),
     rasterParticleUpdate: compile(rasterParticleUpdateFrag, rasterParticleUpdateVert),
     symbol: compile(symbolFrag, symbolVert),
-    symbolTextAndIcon: compile(symbolTextAndIconFrag, symbolTextAndIconVert),
     terrainRaster: compile(terrainRasterFrag, terrainRasterVert),
     terrainDepth: compile(terrainDepthFrag, terrainDepthVert),
     skybox: compile(skyboxFrag, skyboxVert),
