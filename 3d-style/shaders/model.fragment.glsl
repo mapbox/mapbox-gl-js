@@ -71,11 +71,11 @@ uniform highp sampler3D u_lutTexture;
 #ifdef TERRAIN_FRAGMENT_OCCLUSION
 in highp float v_depth;
 uniform highp sampler2D u_depthTexture;
-uniform vec2 u_inv_depth_size;
-uniform vec2 u_depth_range_unpack;
+uniform highp vec2 u_inv_depth_size;
+uniform highp vec2 u_depth_range_unpack;
 
 #ifdef DEPTH_D24
-    float unpack_depth(float depth) {
+    highp float unpack_depth(highp float depth) {
         return  depth * u_depth_range_unpack.x + u_depth_range_unpack.y;
     }
 #else
@@ -90,7 +90,7 @@ uniform vec2 u_depth_range_unpack;
 #endif
 
 bool isOccluded() {
-    vec2 coord = gl_FragCoord.xy * u_inv_depth_size;
+    highp vec2 coord = gl_FragCoord.xy * u_inv_depth_size;
 
     #ifdef DEPTH_D24
         highp float depth = unpack_depth(texture(u_depthTexture, coord).r);
