@@ -8,11 +8,11 @@
     "line": 53
   },
   {
-    "message": "layers[6].layout.text-field[1]: Expected number but found string instead.",
+    "message": "layers[6].layout.text-field[2]['font-scale']: Expected number but found string instead.",
     "line": 99
   },
   {
-    "message": "layers[10].layout.text-field[1]: Expected array<string> but found number instead.",
+    "message": "layers[10].layout.text-field[2]['text-font']: Expected array<string> but found number instead.",
     "line": 147
   },
   {

@@ -23,7 +23,7 @@ import type {ConfigOptions} from '../types/config_options';
  */
 class ParsingContext {
     registry: ExpressionRegistry;
-    path: Array<number>;
+    path: Array<number | string>;
     key: string;
     scope: Scope;
     errors: Array<ParsingError>;
@@ -38,7 +38,7 @@ class ParsingContext {
 
     constructor(
         registry: ExpressionRegistry,
-        path: Array<number> = [],
+        path: Array<number | string> = [],
         expectedType?: Type | null,
         scope: Scope = new Scope(),
         errors: Array<ParsingError> = [],
@@ -47,7 +47,7 @@ class ParsingContext {
     ) {
         this.registry = registry;
         this.path = path;
-        this.key = path.map(part => `[${part}]`).join('');
+        this.key = path.map(part => { if (typeof part === 'string') { return `['${part}']`; } return `[${part}]`; }).join('');
         this.scope = scope;
         this.errors = errors;
         this.expectedType = expectedType;
@@ -72,9 +72,30 @@ class ParsingContext {
         } = {},
     ): Expression | null | undefined {
         if (index || expectedType) {
-            return this.concat(index, expectedType, bindings)._parse(expr, options);
+            return this.concat(index, null, expectedType, bindings)._parse(expr, options);
         }
         return this._parse(expr, options);
+    }
+
+    /**
+     * @param expr the JSON expression to parse
+     * @param index the optional argument index if parent object being is an argument of another expression
+     * @param key key of parent object being parsed
+     * @param options
+     * @param options.omitTypeAnnotations set true to omit inferred type annotations.  Caller beware: with this option set, the parsed expression's type will NOT satisfy `expectedType` if it would normally be wrapped in an inferred annotation.
+     * @private
+     */
+    parseObjectValue(
+        expr: unknown,
+        index: number,
+        key: string,
+        expectedType?: Type | null,
+        bindings?: Array<[string, Expression]>,
+        options: {
+            typeAnnotation?: 'assert' | 'coerce' | 'omit';
+        } = {},
+    ): Expression | null | undefined {
+        return this.concat(index, key, expectedType, bindings)._parse(expr, options);
     }
 
     _parse(
@@ -170,10 +191,12 @@ class ParsingContext {
      */
     concat(
         index?: number | null,
+        key?: string | null,
         expectedType?: Type | null,
         bindings?: Array<[string, Expression]>,
     ): ParsingContext {
-        const path = typeof index === 'number' ? this.path.concat(index) : this.path;
+        let path = typeof index === 'number' ? this.path.concat(index) : this.path;
+        path = typeof key === 'string' ? path.concat(key) : path;
         const scope = bindings ? this.scope.concat(bindings) : this.scope;
         return new ParsingContext(
             this.registry,

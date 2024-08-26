@@ -44,31 +44,31 @@ export default class NumberFormat implements Expression {
 
         let locale = null;
         if (options['locale']) {
-            locale = context.parse(options['locale'], 1, StringType);
+            locale = context.parseObjectValue(options['locale'], 2, 'locale', StringType);
             if (!locale) return null;
         }
 
         let currency = null;
         if (options['currency']) {
-            currency = context.parse(options['currency'], 1, StringType);
+            currency = context.parseObjectValue(options['currency'], 2, 'currency', StringType);
             if (!currency) return null;
         }
 
         let unit = null;
         if (options['unit']) {
-            unit = context.parse(options['unit'], 1, StringType);
+            unit = context.parseObjectValue(options['unit'], 2, 'unit', StringType);
             if (!unit) return null;
         }
 
         let minFractionDigits = null;
         if (options['min-fraction-digits']) {
-            minFractionDigits = context.parse(options['min-fraction-digits'], 1, NumberType);
+            minFractionDigits = context.parseObjectValue(options['min-fraction-digits'], 2, 'min-fraction-digits', NumberType);
             if (!minFractionDigits) return null;
         }
 
         let maxFractionDigits = null;
         if (options['max-fraction-digits']) {
-            maxFractionDigits = context.parse(options['max-fraction-digits'], 1, NumberType);
+            maxFractionDigits = context.parseObjectValue(options['max-fraction-digits'], 2, 'max-fraction-digits', NumberType);
             if (!maxFractionDigits) return null;
         }
 
