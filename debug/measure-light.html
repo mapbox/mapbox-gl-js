@@ -28,6 +28,7 @@
 
 var Demo3D = function() {
     this.enableTerrain = false;
+    this.terrainExaggeration = 3.0;
     this.enable3dLights = true;
     this.style = 'mapbox/streets-v12';
     this.ambientLightColor = [ 255, 255, 255 ];
@@ -36,6 +37,9 @@ var Demo3D = function() {
     this.directionalLightIntensity = 0.2;
     this.directionalLightAzimuth = 90;
     this.directionalLightAltitude = 2;
+
+    this.symbolZOffset = 100.0;
+    this.symbolElevationReference = 'terrain';
 };
 
 var demo3d = new Demo3D();
@@ -128,6 +132,22 @@ window.onload = function() {
     enableTerrain.onFinishChange((value) => {
         map.setTerrain(value ? {"source": 'mapbox-dem', "exaggeration": demo3d.terrainExaggeration} : null);
     });
+    var terrainExaggeration = terrain.add(demo3d, 'terrainExaggeration', 0.0, 10.0);
+    terrainExaggeration.onFinishChange((value) => {
+        map.setTerrain(demo3d.enableTerrain ? {"source": 'mapbox-dem', "exaggeration": demo3d.terrainExaggeration} : null);
+    });
+
+    var symbolElevationGroup = gui.addFolder('Symbol Elevation');
+    var symbolElevation = symbolElevationGroup.add(demo3d, 'symbolZOffset', 0.0, 1000.0);
+    symbolElevation.onChange((value) => {
+        map.setPaintProperty('icon-variant-label-demo', 'symbol-z-offset', demo3d.symbolZOffset);
+    });
+
+    var symbolElevationReference = symbolElevationGroup.add(demo3d, 'symbolElevationReference', ['sea', 'terrain']);
+    symbolElevationReference.onChange((value) => {
+        map.setPaintProperty('icon-variant-label-demo', 'symbol-elevation-reference', demo3d.symbolElevationReference);
+    });
+
 };
 
 var map = window.map = new mapboxgl.Map({
@@ -138,6 +158,8 @@ var map = window.map = new mapboxgl.Map({
     style: 'mapbox://styles/' + demo3d.style,
     hash: true
 });
+
+map.showCollisionBoxes = true;
 
 map.on('style.load', function() {
     map.addSource('mapbox-dem', {
@@ -325,6 +347,7 @@ map.on('style.load', function() {
                 "text-size": 8
             },
             "paint": {
+                "symbol-z-offset": 100.0,
                 "icon-image-cross-fade": [
                     "interpolate",
                     ["linear"],

@@ -37,6 +37,7 @@ uniform mat4 u_matrix;
 uniform mat4 u_label_plane_matrix;
 uniform mat4 u_coord_matrix;
 uniform bool u_is_text;
+uniform bool u_elevation_from_sea;
 uniform bool u_pitch_with_map;
 uniform bool u_rotate_symbol;
 uniform highp float u_aspect_ratio;
@@ -76,6 +77,7 @@ out vec2 v_tex_a_icon;
 #pragma mapbox: define lowp float halo_blur
 #pragma mapbox: define lowp float emissive_strength
 #pragma mapbox: define lowp float occlusion_opacity
+#pragma mapbox: define lowp float elevation_meters
 
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
@@ -85,6 +87,7 @@ void main() {
     #pragma mapbox: initialize lowp float halo_blur
     #pragma mapbox: initialize lowp float emissive_strength
     #pragma mapbox: initialize lowp float occlusion_opacity
+    #pragma mapbox: initialize lowp float elevation_meters
 
     vec2 a_pos = a_pos_offset.xy;
     vec2 a_offset = a_pos_offset.zw;
@@ -108,10 +111,11 @@ void main() {
     }
 
     vec2 tile_anchor = a_pos;
-    float e = elevation(tile_anchor);
+    float e = u_elevation_from_sea ? elevation_meters : elevation_meters + elevation(tile_anchor);
 #ifdef Z_OFFSET
     e += a_z_offset;
 #endif
+
     vec3 h = elevationVector(tile_anchor) * e;
 
     float globe_occlusion_fade;
@@ -196,6 +200,13 @@ void main() {
     z = elevation(tile_pos.xy);
 #endif
 #endif
+
+#ifdef Z_OFFSET
+    z += u_pitch_with_map ? a_z_offset + (u_elevation_from_sea ? elevation_meters : elevation_meters) : 0.0;
+#else
+    z += u_pitch_with_map ? (u_elevation_from_sea ? elevation_meters : elevation_meters) : 0.0;
+#endif
+
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = globe_occlusion_fade;
 

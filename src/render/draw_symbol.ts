@@ -295,6 +295,7 @@ function drawLayerSymbols(
     const iconContrast = layer.paint.get('icon-color-contrast');
     const iconBrightnessMin = layer.paint.get('icon-color-brightness-min');
     const iconBrightnessMax = layer.paint.get('icon-color-brightness-max');
+    const elevationFromSea = layer.paint.get('symbol-elevation-reference') === 'sea';
 
     const textOccludedOpacityMultiplier = layer.paint.get('text-occlusion-opacity').constantOr(0);
 
@@ -434,7 +435,7 @@ function drawLayerSymbols(
             const colorAdjustmentMatrix = layer.getColorAdjustmentMatrix(iconSaturation, iconContrast, iconBrightnessMin, iconBrightnessMax);
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
                 // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
-                matrix, uLabelPlaneMatrix, uglCoordMatrix, false, texSize, [0, 0], true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorAdjustmentMatrix, transitionProgress);
+                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, false, texSize, [0, 0], true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorAdjustmentMatrix, transitionProgress);
 
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
 
@@ -544,7 +545,7 @@ function drawLayerSymbols(
 
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
                 // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
-                matrix, uLabelPlaneMatrix, uglCoordMatrix, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), textOccludedOpacityMultiplier);
+                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), textOccludedOpacityMultiplier);
 
             const atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
             const atlasInterpolation = gl.LINEAR;

@@ -23,6 +23,7 @@ export type SymbolUniformsType = {
     ['u_label_plane_matrix']: UniformMatrix4f;
     ['u_coord_matrix']: UniformMatrix4f;
     ['u_is_text']: Uniform1i;
+    ['u_elevation_from_sea']: Uniform1i;
     ['u_pitch_with_map']: Uniform1i;
     ['u_texsize']: Uniform2f;
     ['u_texsize_icon']: Uniform2f;
@@ -58,6 +59,7 @@ const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_label_plane_matrix': new UniformMatrix4f(context),
     'u_coord_matrix': new UniformMatrix4f(context),
     'u_is_text': new Uniform1i(context),
+    'u_elevation_from_sea': new Uniform1i(context),
     'u_pitch_with_map': new Uniform1i(context),
     'u_texsize': new Uniform2f(context),
     'u_texsize_icon': new Uniform2f(context),
@@ -89,6 +91,7 @@ const symbolUniformValues = (
     matrix: Float32Array,
     labelPlaneMatrix: Float32Array,
     glCoordMatrix: Float32Array,
+    elevationFromSea: boolean,
     isText: boolean,
     texSize: [number, number],
     texSizeIcon: [number, number],
@@ -117,6 +120,7 @@ const symbolUniformValues = (
         'u_label_plane_matrix': labelPlaneMatrix,
         'u_coord_matrix': glCoordMatrix,
         'u_is_text': +isText,
+        'u_elevation_from_sea': elevationFromSea ? 1.0 : 0.0,
         'u_pitch_with_map': +pitchWithMap,
         'u_texsize': texSize,
         'u_texsize_icon': texSizeIcon,

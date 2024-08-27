@@ -135,6 +135,8 @@ export type PaintProps = {
     "icon-color-contrast": DataConstantProperty<number>;
     "icon-color-brightness-min": DataConstantProperty<number>;
     "icon-color-brightness-max": DataConstantProperty<number>;
+    "symbol-z-offset": DataDrivenProperty<number>;
+    "symbol-elevation-reference": DataConstantProperty<"sea" | "ground">;
 };
 
 let paint: Properties<PaintProps>;
@@ -162,4 +164,6 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "icon-color-contrast": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-contrast"]),
     "icon-color-brightness-min": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-min"]),
     "icon-color-brightness-max": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-max"]),
+    "symbol-z-offset": new DataDrivenProperty(styleSpec["paint_symbol"]["symbol-z-offset"]),
+    "symbol-elevation-reference": new DataConstantProperty(styleSpec["paint_symbol"]["symbol-elevation-reference"]),
 }));

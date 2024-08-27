@@ -7782,6 +7782,56 @@
         "interpolated": false
       },
       "property-type": "data-constant"
+    },
+    "symbol-z-offset": {
+      "type": "number",
+      "doc": "Specifies an uniform elevation from the ground, in meters.",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "experimental": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.7.0"
+        },
+        "data-driven styling": {
+          "js": "3.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "symbol-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of symbol-elevation.",
+      "values": {
+        "sea": {
+          "doc": "Elevate symbols relative to the sea level."
+        },
+        "ground": {
+          "doc": "Elevate symbols relative to the ground's height below them."
+        }
+      },
+      "default": "ground",
+      "experimental": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_raster": {

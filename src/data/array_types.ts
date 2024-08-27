@@ -645,11 +645,11 @@ register(StructArrayLayout2f1f2i16, 'StructArrayLayout2f1f2i16');
 /**
  * Implementation of the StructArray layout:
  * [0]: Uint8[2]
- * [4]: Float32[2]
+ * [4]: Float32[4]
  *
  * @private
  */
-class StructArrayLayout2ub2f12 extends StructArray implements IStructArrayLayout {
+class StructArrayLayout2ub4f20 extends StructArray implements IStructArrayLayout {
     uint8: Uint8Array;
     float32: Float32Array;
 
@@ -658,25 +658,27 @@ class StructArrayLayout2ub2f12 extends StructArray implements IStructArrayLayout
         this.float32 = new Float32Array(this.arrayBuffer);
     }
 
-    emplaceBack(v0: number, v1: number, v2: number, v3: number): number {
+    emplaceBack(v0: number, v1: number, v2: number, v3: number, v4: number, v5: number): number {
         const i = this.length;
         this.resize(i + 1);
-        return this.emplace(i, v0, v1, v2, v3);
+        return this.emplace(i, v0, v1, v2, v3, v4, v5);
     }
 
-    emplace(i: number, v0: number, v1: number, v2: number, v3: number): number {
-        const o1 = i * 12;
-        const o4 = i * 3;
+    emplace(i: number, v0: number, v1: number, v2: number, v3: number, v4: number, v5: number): number {
+        const o1 = i * 20;
+        const o4 = i * 5;
         this.uint8[o1 + 0] = v0;
         this.uint8[o1 + 1] = v1;
         this.float32[o4 + 1] = v2;
         this.float32[o4 + 2] = v3;
+        this.float32[o4 + 3] = v4;
+        this.float32[o4 + 4] = v5;
         return i;
     }
 }
 
-StructArrayLayout2ub2f12.prototype.bytesPerElement = 12;
-register(StructArrayLayout2ub2f12, 'StructArrayLayout2ub2f12');
+StructArrayLayout2ub4f20.prototype.bytesPerElement = 20;
+register(StructArrayLayout2ub4f20, 'StructArrayLayout2ub4f20');
 
 /**
  * Implementation of the StructArray layout:
@@ -1466,7 +1468,7 @@ export {
     StructArrayLayout5i4f1i1ul2ui40,
     StructArrayLayout3i2i2i16,
     StructArrayLayout2f1f2i16,
-    StructArrayLayout2ub2f12,
+    StructArrayLayout2ub4f20,
     StructArrayLayout3ui6,
     StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1ub60,
     StructArrayLayout2f9i15ui1ul4f1ub80,
@@ -1501,7 +1503,7 @@ export {
     StructArrayLayout2ui4 as SymbolIconTransitioningArray,
     StructArrayLayout3i2i2i16 as CollisionBoxLayoutArray,
     StructArrayLayout2f1f2i16 as CollisionCircleLayoutArray,
-    StructArrayLayout2ub2f12 as CollisionVertexArray,
+    StructArrayLayout2ub4f20 as CollisionVertexArray,
     StructArrayLayout4f16 as CollisionVertexExtArray,
     StructArrayLayout3ui6 as QuadTriangleArray,
     StructArrayLayout1f4 as ZOffsetVertexArray,

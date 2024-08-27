@@ -32,6 +32,7 @@ export const iconTransitioningAttributes: StructArrayLayout = createLayout([
 export const collisionVertexAttributes: StructArrayLayout = createLayout([
     {name: 'a_placed', components: 2, type: 'Uint8'},
     {name: 'a_shift', components: 2, type: 'Float32'},
+    {name: 'a_elevation_from_sea', components: 2, type: 'Float32'}
 ]);
 
 export const collisionVertexAttributesExt: StructArrayLayout = createLayout([

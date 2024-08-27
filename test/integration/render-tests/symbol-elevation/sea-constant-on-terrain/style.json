@@ -1,0 +1,116 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 200,
+      "width": 200,
+      "operations": [
+        [
+          "wait", 1500
+        ]
+      ]
+    }
+  },
+  "center": [-113.2697514325975, 35.962383122262054],
+  "zoom": 12.49,
+  "pitch": 65,
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 1.0
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 256
+    },
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -113.2697514325975, 
+                35.982383122262054
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -113.2697514325975, 
+                35.972383122262054
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -113.2697514325975, 
+                35.962383122262054
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -113.2697514325975, 
+                35.952383122262054
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": ["<=", ["distance-from-center"], 0.0001],
+      "layout": {
+        "symbol-placement": "point",
+        "icon-image": "music-12"
+      },
+      "paint": {
+        "symbol-z-offset": 100.0,
+        "symbol-elevation-reference": "sea"
+      }
+    }
+  ]
+}

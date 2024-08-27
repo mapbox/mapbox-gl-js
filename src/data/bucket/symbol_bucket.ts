@@ -506,8 +506,12 @@ class SymbolBucket implements Bucket {
     }
 
     createArrays() {
-        this.text = new SymbolBuffers(new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => /^text/.test(property)));
-        this.icon = new SymbolBuffers(new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => /^icon/.test(property)));
+        this.text = new SymbolBuffers(new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => {
+            return property.startsWith('text') || property.startsWith('symbol');
+        }));
+        this.icon = new SymbolBuffers(new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => {
+            return property.startsWith('icon') || property.startsWith('symbol');
+        }));
 
         this.glyphOffsetArray = new GlyphOffsetArray();
         this.lineVertexArray = new SymbolLineVertexArray();
@@ -953,7 +957,7 @@ class SymbolBucket implements Bucket {
         const symbolTileAnchorY = symbolInstance.tileAnchorY;
 
         for (let i = 0; i < 4; i++) {
-            arrays.collisionVertexArray.emplaceBack(0, 0, 0, 0);
+            arrays.collisionVertexArray.emplaceBack(0, 0, 0, 0, 0, 0);
         }
 
         this._commitDebugCollisionVertexUpdate(arrays.collisionVertexArrayExt, scale, box.padding, symbolInstance.zOffset);

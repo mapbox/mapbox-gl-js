@@ -578,7 +578,13 @@ export type SymbolLayerSpecification = {
         "icon-color-saturation"?: ExpressionSpecification,
         "icon-color-contrast"?: ExpressionSpecification,
         "icon-color-brightness-min"?: ExpressionSpecification,
-        "icon-color-brightness-max"?: ExpressionSpecification
+        "icon-color-brightness-max"?: ExpressionSpecification,
+        "symbol-z-offset"?: DataDrivenPropertyValueSpecification<number>,
+        "symbol-z-offset-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "symbol-elevation-reference"?: PropertyValueSpecification<"sea" | "ground">
     }
 }
 
