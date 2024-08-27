@@ -4,7 +4,7 @@ import {
     LinePatternLayoutArray,
     ZOffsetVertexArray,
 } from '../array_types';
-import {members as layoutAttributes} from './line_attributes';
+import {members as layoutAttributes, zOffsetAttributes} from './line_attributes';
 import {members as layoutAttributesExt} from './line_attributes_ext';
 import {members as layoutAttributesPattern} from './line_attributes_pattern';
 import SegmentVector from '../segment';
@@ -18,7 +18,6 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
-import {zOffsetAttributes} from './symbol_attributes';
 import assert from 'assert';
 import {Point4D, clipLine} from '../../util/polygon_clipping';
 import {warnOnce} from '../../util/util';

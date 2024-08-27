@@ -724,7 +724,7 @@ const attributeNameExceptions = {
     'icon-halo-blur': ['halo_blur'],
     'text-halo-width': ['halo_width'],
     'icon-halo-width': ['halo_width'],
-    'symbol-z-offset': ['elevation_meters'],
+    'symbol-z-offset': ['z_offset'],
     'line-gap-width': ['gapwidth'],
     'line-pattern': ['pattern', 'pixel_ratio'],
     'fill-pattern': ['pattern', 'pixel_ratio'],
