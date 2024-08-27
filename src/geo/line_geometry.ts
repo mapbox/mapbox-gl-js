@@ -89,7 +89,7 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         // prevNormal + nextNormal = (0, 0), its magnitude is 0, so the unit vector would be
         // undefined. In that case, we're keeping the joinNormal at (0, 0), so that the cosHalfAngle
         // below will also become 0 and miterLength will become Infinity.
-        const joinNormal = prevNormal.add(nextNormal);
+        let joinNormal = prevNormal.add(nextNormal);
         if (joinNormal.x !== 0 || joinNormal.y !== 0) {
             joinNormal._unit();
         }
@@ -111,6 +111,15 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
             currentJoin = 'bevel';
         }
 
+        if (currentJoin === 'bevel') {
+            // Note: In contrast to line_bucket, only >100 miter length is handled
+            if (miterLength > 100) currentJoin = 'flipbevel';
+
+            // If the miterLength is really small and the line bevel wouldn't be visible,
+            // just draw a miter join to save a triangle.
+            if (miterLength < miterLimit) currentJoin = 'miter';
+        }
+
         const addWallJoin = (vert, normal, outerOffset, innerOffset) => {
             const innerPoint = new Point(vert.x, vert.y);
             const outerPoint = new Point(vert.x, vert.y);
@@ -127,6 +136,12 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         if (currentJoin === 'miter') {
             joinNormal._mult(miterLength);
             addWallJoin(currentVertex, joinNormal, 1, 0);
+        } else if (currentJoin === 'flipbevel') {
+            // miter is too big, flip the direction to make a beveled join
+            // Almost parallel lines
+            joinNormal = nextNormal.mult(-1);
+            addWallJoin(currentVertex, joinNormal, 1, 0);
+            addWallJoin(currentVertex, joinNormal.mult(-1), 1, 0);
         } else { // bevel join
             const offset = -Math.sqrt(miterLength * miterLength - 1);
             const offsetA = lineTurnsLeft ? offset : 0;
