@@ -105,6 +105,7 @@ void main() {
     mediump float t = 1.0 - abs(u);
     mediump vec2 offset2 = offset * a_extrude * EXTRUDE_SCALE * normal.y * mat2(t, -u, u, t);
 
+    float hidden = float(opacity == 0.0);
     vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
 #if defined(ELEVATED)
     vec2 offsetTile = offset2 * u_pixels_to_tile_units;
@@ -121,8 +122,9 @@ void main() {
     float z = clamp(gl_Position.z / gl_Position.w, 0.5, 1.0);
     float zbias = max(0.00005, (pow(z, 0.8) - z) * 0.1 * u_exaggeration);
     gl_Position.z -= (gl_Position.w * zbias);
+    gl_Position = mix(gl_Position, AWAY, hidden);
 #else
-    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude;
+    gl_Position = mix(u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude, AWAY, hidden);
 #endif
 
 #ifndef RENDER_TO_TEXTURE
