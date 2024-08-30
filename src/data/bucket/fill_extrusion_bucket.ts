@@ -112,7 +112,7 @@ function addWallVertex(vertexArray: FillExtrusionWallArray, joinNormal: Point, i
         // a_join_normal_inside:
         joinNormal.x * EXTENT,
         joinNormal.y * EXTENT,
-        inside ? 0.0 : 1.0
+        inside ? 1.0 : 0.0
     );
 }
 
@@ -1025,7 +1025,7 @@ class FillExtrusionBucket implements Bucket {
                         if (this.wallMode) {
                             const isInside = isPointOnInnerWall(i, ring);
                             const joinNormal = wallGeometry.joinNormals[i];
-                            addWallVertex(this.wallVertexArray, joinNormal, isInside);
+                            addWallVertex(this.wallVertexArray, joinNormal, !isInside);
                         }
 
                         segment.vertexLength++;
@@ -1162,8 +1162,8 @@ class FillExtrusionBucket implements Bucket {
                     if (this.wallMode) {
                         const isInside = isPointOnInnerWall(i - 1, ring);
                         const joinNormal = wallGeometry.joinNormals[i - 1];
-                        addWallVertex(this.wallVertexArray, joinNormal, !isInside);
-                        addWallVertex(this.wallVertexArray, joinNormal, !isInside);
+                        addWallVertex(this.wallVertexArray, joinNormal, isInside);
+                        addWallVertex(this.wallVertexArray, joinNormal, isInside);
                     }
 
                     edgeDistance += dist;
@@ -1175,8 +1175,8 @@ class FillExtrusionBucket implements Bucket {
                     if (this.wallMode) {
                         const isInside = isPointOnInnerWall(i, ring);
                         const joinNormal = wallGeometry.joinNormals[i];
-                        addWallVertex(this.wallVertexArray, joinNormal, !isInside);
-                        addWallVertex(this.wallVertexArray, joinNormal, !isInside);
+                        addWallVertex(this.wallVertexArray, joinNormal, isInside);
+                        addWallVertex(this.wallVertexArray, joinNormal, isInside);
                     }
 
                     segment.vertexLength += 4;
