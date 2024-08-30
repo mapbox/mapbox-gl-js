@@ -1104,7 +1104,7 @@ export class Placement {
                     }
 
                     const p = transformPointToTile(tileAnchorX, tileAnchorY, coord.canonical, region.footprintTileId.canonical);
-                    clippedSymbol = pointInFootprint(p, region);
+                    clippedSymbol = pointInFootprint(p, region.footprint);
 
                     if (clippedSymbol) break;
                 }

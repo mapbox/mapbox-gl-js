@@ -279,7 +279,7 @@ class ModelBucket implements Bucket {
                         }
 
                         const p = transformPointToTile(x, y, coord.canonical, region.footprintTileId.canonical);
-                        hidden = pointInFootprint(p, region);
+                        hidden = pointInFootprint(p, region.footprint);
 
                         if (hidden) break;
                     }

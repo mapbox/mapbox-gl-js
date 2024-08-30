@@ -79,6 +79,7 @@ export class Tiled3dModelFeature {
     node: Node;
     aabb: Aabb;
     emissionHeightBasedParams: Array<[number, number, number, number, number]>;
+    cameraCollisionOpacity: number;
     constructor(node: Node) {
         this.node = node;
         this.evaluatedRMEA = [[1, 0, 0, 1],
@@ -92,6 +93,7 @@ export class Tiled3dModelFeature {
         this.evaluatedScale = [1, 1, 1];
         this.evaluatedColor = [];
         this.emissionHeightBasedParams = [];
+        this.cameraCollisionOpacity = 1;
         // Needs to calculate geometry
         this.feature = {type: 'Point', id: node.id, geometry: [], properties: {'height' : getNodeHeight(node)}};
         this.aabb = this._getLocalBounds();
@@ -554,7 +556,7 @@ class Tiled3dModelBucket implements Bucket {
             const mesh = nodeInfo.node.meshes[0];
             const meshAabb = mesh.transformedAabb;
             if (x < meshAabb.min[0] || y < meshAabb.min[1] || x > meshAabb.max[0] || y > meshAabb.max[1]) continue;
-            if (nodeInfo.node.hidden === true) return {height: 0.0, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
+            if (nodeInfo.node.hidden === true) return {height: Infinity, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
 
             assert(mesh.heightmap);
 

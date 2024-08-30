@@ -460,14 +460,14 @@ function transformPointToTile(x: number, y: number, src: CanonicalTileID, dst: C
     return new Point(xf, yf);
 }
 
-function pointInFootprint(p: Point, region: Region): boolean {
+function pointInFootprint(p: Point, footprint: Footprint): boolean {
     // get a list of all triangles that potentially cover this point.
     const candidateTriangles = [];
-    region.footprint.grid.queryPoint(p, candidateTriangles);
+    footprint.grid.queryPoint(p, candidateTriangles);
 
     // finally check if the point is in any of the triangles.
-    const fpIndices: Array<number> = region.footprint.indices;
-    const fpVertices: Array<Point> = region.footprint.vertices;
+    const fpIndices: Array<number> = footprint.indices;
+    const fpVertices: Array<Point> = footprint.vertices;
     for (let j = 0; j < candidateTriangles.length; j++) {
         const triIdx = candidateTriangles[j];
         const triangle = [
