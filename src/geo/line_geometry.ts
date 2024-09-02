@@ -5,6 +5,7 @@ import {edgeIntersectsBox} from '../../src/util/intersection_tests';
 export type WallGeometry = {
     geometry: Array<Point>;
     joinNormals: Array<Point>;
+    indices: Array<number>;
 };
 
 function isClockWise(vertices: Array<Point>) {
@@ -32,7 +33,8 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
     }
     const wallGeometry: WallGeometry = {
         geometry: [],
-        joinNormals: []
+        joinNormals: [],
+        indices: []
     };
     const innerWall = [];
     const outerWall = [];
@@ -123,8 +125,8 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         const addWallJoin = (vert, normal, outerOffset, innerOffset) => {
             const innerPoint = new Point(vert.x, vert.y);
             const outerPoint = new Point(vert.x, vert.y);
-            innerPoint.x -= normal.x * innerOffset;
-            innerPoint.y -= normal.y * innerOffset;
+            innerPoint.x += normal.x * innerOffset;
+            innerPoint.y += normal.y * innerOffset;
             outerPoint.x -= normal.x * Math.max(outerOffset, 1.0);
             outerPoint.y -= normal.y * Math.max(outerOffset, 1.0);
 
@@ -135,13 +137,13 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
 
         if (currentJoin === 'miter') {
             joinNormal._mult(miterLength);
-            addWallJoin(currentVertex, joinNormal, 1, 0);
+            addWallJoin(currentVertex, joinNormal, 0, 0);
         } else if (currentJoin === 'flipbevel') {
             // miter is too big, flip the direction to make a beveled join
             // Almost parallel lines
             joinNormal = nextNormal.mult(-1);
-            addWallJoin(currentVertex, joinNormal, 1, 0);
-            addWallJoin(currentVertex, joinNormal.mult(-1), 1, 0);
+            addWallJoin(currentVertex, joinNormal, 0, 0);
+            addWallJoin(currentVertex, joinNormal.mult(-1), 0, 0);
         } else { // bevel join
             const offset = -Math.sqrt(miterLength * miterLength - 1);
             const offsetA = lineTurnsLeft ? offset : 0;
@@ -161,6 +163,33 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
 
     wallGeometry.geometry = [...innerWall, ...outerWall.reverse(), innerWall[0]];
     wallGeometry.joinNormals = [...joinNormals, ...joinNormals.reverse(), joinNormals[joinNormals.length - 1]];
+
+    // Build index buffer
+    const numPoints = wallGeometry.geometry.length - 1;
+    // Line points are in pairs on the inner and outer side, so we can build quads from them
+    for (let i = 0; i < numPoints / 2; i++) {
+        if (i + 1 < numPoints / 2) {
+            let indexA = i;
+            let indexB = i + 1;
+            let indexC = numPoints - 1 - i;
+            let indexD = numPoints - 2 - i;
+
+            // Shift it by the first element to match order in bucket
+            indexA = indexA === 0 ? numPoints - 1 : indexA - 1;
+            indexB = indexB === 0 ? numPoints - 1 : indexB - 1;
+            indexC = indexC === 0 ? numPoints - 1 : indexC - 1;
+            indexD = indexD === 0 ? numPoints - 1 : indexD - 1;
+
+            wallGeometry.indices.push(indexC);
+            wallGeometry.indices.push(indexB);
+            wallGeometry.indices.push(indexA);
+
+            wallGeometry.indices.push(indexC);
+            wallGeometry.indices.push(indexD);
+            wallGeometry.indices.push(indexB);
+        }
+    }
+
     return wallGeometry;
 }
 

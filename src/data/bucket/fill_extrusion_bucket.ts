@@ -1051,7 +1051,7 @@ class FillExtrusionBucket implements Bucket {
                     }
                 }
 
-                const indices = earcut(flattened, holeIndices);
+                const indices = this.wallMode ? wallGeometry.indices : earcut(flattened, holeIndices);
                 assert(indices.length % 3 === 0);
 
                 for (let j = 0; j < indices.length; j += 3) {
