@@ -9,7 +9,7 @@ in vec4 a_pos_normal_ed;
 in vec2 a_centroid_pos;
 
 #ifdef RENDER_WALL_MODE
-in vec4 a_join_normal_inside;
+in vec3 a_join_normal_inside;
 #endif
 
 #pragma mapbox: define highp float base
