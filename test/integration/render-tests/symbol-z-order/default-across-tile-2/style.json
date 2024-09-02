@@ -1,0 +1,85 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "debug": true,
+            "height": 250,
+            "width": 250
+        }
+    },
+    "center": [
+        -97.097122,32.767287
+    ],
+    "zoom": 14,
+    "bearing": -90,
+    "sources": {
+        "icon-source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates":[-97.097122,32.767287]
+                        },
+                        "properties": {
+                            "icon": "restaurant",
+                            "text": "A"
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates":[-97.097504,32.76728 ]
+                        },
+                        "properties": {
+                            "icon": "restaurant",
+                            "text": "B"
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates":[ -97.097904,32.767283]
+                        },
+                        "properties": {
+                            "icon": "restaurant",
+                            "text": "C"
+                        }
+                    }
+                
+                ]
+            }
+        }
+    },
+    "sprite": "local://sprites/sprite",
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+        {
+            "id": "icons",
+            "type": "symbol",
+            "source": "icon-source",
+            "layout": {
+                "text-allow-overlap":false,
+                "icon-image": "circle-12",
+                "icon-size": 2.5,
+                "icon-allow-overlap": true,
+                "text-field": ["get","text"],
+                "text-offset": [-0.6, -0.85],
+                "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+            }
+        }
+    ]
+}

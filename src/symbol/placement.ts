@@ -462,7 +462,6 @@ export class Placement {
         const iconAllowOverlap = layout.get('icon-allow-overlap');
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
-        const zOrderByViewportY = layout.get('symbol-z-order') === 'viewport-y';
         const zOffset = layout.get('symbol-z-elevate');
         const symbolZOffset = paint.get('symbol-z-offset');
         const elevationFromSea = paint.get('symbol-elevation-reference') === 'sea';
@@ -858,7 +857,7 @@ export class Placement {
             bucket.updateZOffset();
         }
 
-        if (zOrderByViewportY) {
+        if (bucket.sortFeaturesByY) {
             assert(bucketPart.symbolInstanceStart === 0);
             const symbolIndexes = bucket.getSortedSymbolIndexes(this.transform.angle);
             for (let i = symbolIndexes.length - 1; i >= 0; --i) {

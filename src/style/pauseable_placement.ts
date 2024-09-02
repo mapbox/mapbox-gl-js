@@ -117,10 +117,23 @@ class PauseablePlacement {
 
                 const symbolLayer = (layer as SymbolStyleLayer);
                 const zOffset = symbolLayer.layout.get('symbol-z-elevate');
+
+                const hasSymbolSortKey = symbolLayer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
+                const symbolZOrder = symbolLayer.layout.get('symbol-z-order');
+                const sortSymbolByKey = symbolZOrder !== 'viewport-y' && hasSymbolSortKey;
+                const zOrderByViewportY = symbolZOrder === 'viewport-y' || (symbolZOrder === 'auto' && !sortSymbolByKey);
+                const canOverlap =
+                    symbolLayer.layout.get('text-allow-overlap') ||
+                    symbolLayer.layout.get('icon-allow-overlap') ||
+                    symbolLayer.layout.get('text-ignore-placement') ||
+                    symbolLayer.layout.get('icon-ignore-placement');
+                const sortSymbolByViewportY = zOrderByViewportY && canOverlap;
+
                 const inProgressLayer = this._inProgressLayer = this._inProgressLayer || new LayerPlacement(symbolLayer);
 
                 const sourceId = makeFQID(layer.source, layer.scope);
-                const pausePlacement = inProgressLayer.continuePlacement(zOffset ? layerTilesInYOrder[sourceId] : layerTiles[sourceId], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement);
+                const sortTileByY = zOffset || sortSymbolByViewportY;
+                const pausePlacement = inProgressLayer.continuePlacement(sortTileByY ? layerTilesInYOrder[sourceId] : layerTiles[sourceId], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement);
 
                 if (pausePlacement) {
                     PerformanceUtils.recordPlacementTime(browser.now() - startTime);
