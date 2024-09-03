@@ -8,7 +8,7 @@ uniform float u_tile_units_to_pixels;
 
 in vec2 a_pos;
 
-out vec2 v_pos;
+out highp vec2 v_pos;
 
 void main() {
     gl_Position = u_matrix * vec4(a_pos, 0, 1);

@@ -52,14 +52,14 @@ void main() {
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 
     highp float pattern_x = v_linesofar / pattern_size * aspect;
-    float x = mod(pattern_x, 1.0);
+    highp float x = mod(pattern_x, 1.0);
 
-    float y = 0.5 * v_normal.y + 0.5;
+    highp float y = 0.5 * v_normal.y + 0.5;
 
     vec2 texel_size = 1.0 / u_texsize;
 
-    vec2 pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(x, y));
-    vec2 lod_pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(pattern_x, y));
+    highp vec2 pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(x, y));
+    highp vec2 lod_pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(pattern_x, y));
     vec4 color = textureLodCustom(u_image, pos, lod_pos);
 
 #ifdef RENDER_LINE_TRIM_OFFSET

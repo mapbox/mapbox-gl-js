@@ -34,7 +34,7 @@ uniform vec3 u_up_dir;
 uniform float u_height_lift;
 #endif
 
-out vec2 v_pos;
+out highp vec2 v_pos;
 out vec4 v_lighting;
 
 #ifdef FAUX_AO

@@ -9,11 +9,11 @@ uniform float u_emissive_strength;
 
 uniform sampler2D u_image;
 
-in vec2 v_pos;
+in highp vec2 v_pos;
 
 void main() {
-    vec2 imagecoord = mod(v_pos, 1.0);
-    vec2 pos = mix(u_pattern_tl / u_texsize, u_pattern_br / u_texsize, imagecoord);
+    highp vec2 imagecoord = mod(v_pos, 1.0);
+    highp vec2 pos = mix(u_pattern_tl / u_texsize, u_pattern_br / u_texsize, imagecoord);
     vec4 out_color = textureLodCustom(u_image, pos, v_pos);
 
 #ifdef LIGHTING_3D_MODE

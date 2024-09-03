@@ -56,12 +56,12 @@ in float v_cutoff_opacity;
 // This function should be used in cases where mipmap usage is expected and
 // the sampling coordinates are not continous. The lod_parameter should be
 // a continous function derived from the sampling coordinates.
-vec4 textureLodCustom(sampler2D image, vec2 pos, vec2 lod_coord) {
-    vec2 size = vec2(textureSize(image, 0));
-    vec2 dx = dFdx(lod_coord.xy * size);
-    vec2 dy = dFdy(lod_coord.xy * size);
-    float delta_max_sqr = max(dot(dx, dx), dot(dy, dy));
-    float lod = 0.5 * log2(delta_max_sqr);
+vec4 textureLodCustom(sampler2D image, highp vec2 pos, highp vec2 lod_coord) {
+    highp vec2 size = vec2(textureSize(image, 0));
+    highp vec2 dx = dFdx(lod_coord.xy * size);
+    highp vec2 dy = dFdy(lod_coord.xy * size);
+    highp float delta_max_sqr = max(dot(dx, dx), dot(dy, dy));
+    highp float lod = 0.5 * log2(delta_max_sqr);
     // Note: textureLod doesn't support anisotropic filtering
     // We could use textureGrad instead which supports it, but it's discouraged
     // in the ARM Developer docs:

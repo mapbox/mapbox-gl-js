@@ -5,7 +5,7 @@ uniform vec2 u_texsize;
 
 uniform sampler2D u_image;
 
-in vec2 v_pos;
+in highp vec2 v_pos;
 
 uniform float u_emissive_strength;
 
@@ -19,9 +19,9 @@ void main() {
     vec2 pattern_tl = pattern.xy;
     vec2 pattern_br = pattern.zw;
 
-    vec2 imagecoord = mod(v_pos, 1.0);
-    vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
-    vec2 lod_pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, v_pos);
+    highp vec2 imagecoord = mod(v_pos, 1.0);
+    highp vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
+    highp vec2 lod_pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, v_pos);
     vec4 out_color = textureLodCustom(u_image, pos, lod_pos);
 
 #ifdef LIGHTING_3D_MODE
