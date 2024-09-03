@@ -419,7 +419,7 @@ export class Map extends Camera {
     _canvasContainer: HTMLElement;
     _controlContainer: HTMLElement;
     _controlPositions: {
-        [_: string]: HTMLElement;
+        [P in ControlPosition]: HTMLElement;
     };
     _interactive?: boolean;
     _showTileBoundaries?: boolean;
