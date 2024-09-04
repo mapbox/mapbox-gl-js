@@ -6,6 +6,9 @@ uniform vec2 u_pixel_coord_lower;
 uniform float u_tile_units_to_pixels;
 
 in vec2 a_pos;
+#ifdef ELEVATED_ROADS
+in float a_z_offset;
+#endif
 
 out highp vec2 v_pos;
 
@@ -22,8 +25,11 @@ void main() {
     vec2 pattern_br = pattern.zw;
 
     vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
+#ifdef ELEVATED_ROADS
+    gl_Position = u_matrix * vec4(a_pos, a_z_offset, 1);
+#else
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
-
+#endif
     v_pos = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, display_size, u_tile_units_to_pixels, a_pos);
 
 #ifdef FOG

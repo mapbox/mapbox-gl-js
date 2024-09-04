@@ -1,6 +1,9 @@
 #include "_prelude_fog.vertex.glsl"
 
 in vec2 a_pos;
+#ifdef ELEVATED_ROADS
+in float a_z_offset;
+#endif
 
 uniform mat4 u_matrix;
 uniform vec2 u_world;
@@ -14,7 +17,11 @@ void main() {
     #pragma mapbox: initialize highp vec4 outline_color
     #pragma mapbox: initialize lowp float opacity
 
+#ifdef ELEVATED_ROADS
+    gl_Position = u_matrix * vec4(a_pos, a_z_offset, 1);
+#else
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
+#endif
     v_pos = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world;
 
 #ifdef FOG
