@@ -1,6 +1,6 @@
 import Point from '@mapbox/point-geometry';
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
-import {IMAGE_PADDING} from '../render/image_atlas';
+import {ICON_PADDING} from '../render/image_atlas';
 import {SDF_SCALE} from '../render/glyph_manager';
 import {isVerticalClosePunctuation, isVerticalOpenPunctuation} from '../util/verticalize_punctuation';
 import ONE_EM from './one_em';
@@ -58,7 +58,7 @@ export type SymbolQuad = {
 // If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
 // pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
 // on one edge in some cases.
-const border = IMAGE_PADDING;
+const border = ICON_PADDING;
 
 /**
  * Create the quads used for rendering an icon.
@@ -306,7 +306,7 @@ export function getGlyphQuads(
                 }
                 isSDF = false;
                 pixelRatio = image.pixelRatio;
-                rectBuffer = IMAGE_PADDING / pixelRatio;
+                rectBuffer = ICON_PADDING / pixelRatio;
             }
 
             const rotateVerticalGlyph = (alongLine || allowVerticalPlacement) && positionedGlyph.vertical;

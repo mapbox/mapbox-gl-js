@@ -3,7 +3,7 @@ import {describe, test, expect} from '../../util/vitest';
 import * as shaping from '../../../src/symbol/shaping';
 import Formatted, {FormattedSection} from '../../../src/style-spec/expression/types/formatted';
 import ResolvedImage from '../../../src/style-spec/expression/types/resolved_image';
-import {ImagePosition} from '../../../src/render/image_atlas';
+import {ICON_PADDING, ImagePosition} from '../../../src/render/image_atlas';
 import fontstackGlyphs from '../../fixtures/fontstack-glyphs.json';
 
 const WritingMode = shaping.WritingMode;
@@ -25,9 +25,9 @@ describe('shaping', () => {
     }
 
     const images = {
-        'square': new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}),
-        'tall': new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}),
-        'wide': new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}),
+        'square': new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        'tall': new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        'wide': new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
     };
 
     const sectionForImage = (name) => {
@@ -134,14 +134,15 @@ describe('shaping', () => {
 });
 
 describe('shapeIcon', () => {
-    const imagePosition = new ImagePosition({x: 0, y: 0, w: 22, h: 22}, {pixelRatio: 1, version: 1});
+    const imagePosition = new ImagePosition({x: 0, y: 0, w: 22, h: 22}, {pixelRatio: 1, version: 1}, ICON_PADDING);
     const imagePrimary = Object.freeze({
         content: undefined,
         stretchX: undefined,
         stretchY: undefined,
         paddedRect: Object.freeze({x: 0, y: 0, w: 22, h: 22}),
         pixelRatio: 1,
-        version: 1
+        version: 1,
+        padding: ICON_PADDING
     });
 
     test('text-anchor: center', () => {
