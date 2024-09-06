@@ -1,3 +1,4 @@
+import assert from 'assert';
 import {RGBAImage} from '../util/image';
 import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
@@ -105,14 +106,18 @@ export default class ImageAtlas {
         for (const id in patterns) {
             const src = patterns[id];
             const bin = patternPositions[id].paddedRect;
-            const padding = patternPositions[id].padding;
+            let padding = patternPositions[id].padding;
             const x = bin.x + padding,
                 y = bin.y + padding,
                 w = src.data.width,
                 h = src.data.height;
 
+            assert(padding > 1);
+            padding = padding > 1 ? padding - 1 : padding;
+
             RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x, y}, src.data, lut);
             // Add wrapped padding on each side of the image.
+            // Leave one pixel transparent to avoid bleeding to neighbouring images
             RGBAImage.copy(src.data, image, {x: 0, y: h - padding}, {x, y: y - padding}, {width: w, height: padding}, lut); // T
             RGBAImage.copy(src.data, image, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: padding}, lut); // B
             RGBAImage.copy(src.data, image, {x: w - padding, y: 0}, {x: x - padding, y}, {width: padding, height: h}, lut); // L

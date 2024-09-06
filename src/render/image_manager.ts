@@ -1,7 +1,7 @@
 import potpack from 'potpack';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import {RGBAImage} from '../util/image';
-import {ICON_PADDING, ImagePosition} from './image_atlas';
+import {ImagePosition, PATTERN_PADDING} from './image_atlas';
 import Texture from './texture';
 import assert from 'assert';
 import {renderStyleImage} from '../style/style_image';
@@ -279,10 +279,10 @@ class ImageManager extends Evented {
         }
 
         if (!pattern) {
-            const w = image.data.width + ICON_PADDING * 2;
-            const h = image.data.height + ICON_PADDING * 2;
+            const w = image.data.width + PATTERN_PADDING * 2;
+            const h = image.data.height + PATTERN_PADDING * 2;
             const bin = {w, h, x: 0, y: 0};
-            const position = new ImagePosition(bin, image, ICON_PADDING);
+            const position = new ImagePosition(bin, image, PATTERN_PADDING);
             this.patterns[scope][id] = {bin, position};
         } else {
             pattern.position.version = image.version;
@@ -321,16 +321,20 @@ class ImageManager extends Evented {
 
         for (const id in this.patterns[scope]) {
             const {bin, position} = this.patterns[scope][id];
-            const padding = position.padding;
+            let padding = position.padding;
             const x = bin.x + padding;
             const y = bin.y + padding;
             const src = this.images[scope][id].data;
             const w = src.width;
             const h = src.height;
 
+            assert(padding > 1);
+            padding = padding > 1 ? padding - 1 : padding;
+
             RGBAImage.copy(src, dst, {x: 0, y: 0}, {x, y}, {width: w, height: h}, lut);
 
             // Add wrapped padding on each side of the image.
+            // Leave one pixel transparent to avoid bleeding to neighbouring images
             RGBAImage.copy(src, dst, {x: 0, y: h - padding}, {x, y: y - padding}, {width: w, height: padding}, lut); // T
             RGBAImage.copy(src, dst, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: padding}, lut); // B
             RGBAImage.copy(src, dst, {x: w - padding, y: 0}, {x: x - padding, y}, {width: padding, height: h}, lut); // L
