@@ -6056,10 +6056,15 @@
       "doc": "If a non-zero value is provided, it sets the fill-extrusion layer into wall rendering mode. The value is used to render the feature with the given width over the outlines of the geometry. Note: This property is experimental and some other fill-extrusion properties might not be supported with non-zero line width.",
       "sdk-support": {
         "basic functionality": {
-          "js": "3.7.0"
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
+          
         },
         "data-driven styling": {
-          "js": "3.7.0"
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
         }
       },
       "expression": {
@@ -6080,7 +6085,9 @@
       "transition": false,
       "sdk-support": {
           "basic functionality": {
-          "js": "3.7.0"
+          "js": "3.7.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
         }
       },
       "property-type": "data-constant"
@@ -7804,10 +7811,14 @@
       "experimental": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "3.7.0"
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
         },
         "data-driven styling": {
-          "js": "3.7.0"
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
         }
       },
       "expression": {
@@ -7834,7 +7845,9 @@
       "experimental": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "3.7.0"
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
         }
       },
       "expression": {
