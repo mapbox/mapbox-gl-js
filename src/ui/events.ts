@@ -10,7 +10,7 @@ import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {EventData, EventOf} from '../util/evented';
 import type {SourceSpecification} from '../style-spec/types';
 
-type MapMouseEventType =
+export type MapMouseEventType =
     | 'mousedown'
     | 'mouseup'
     | 'preclick'

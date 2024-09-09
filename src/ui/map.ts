@@ -43,6 +43,7 @@ import {isFQID} from '../util/fqid';
 import defaultLocale from './default_locale';
 import {TrackedParameters} from '../tracked-parameters/tracked_parameters';
 import {TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
+import {InteractionSet} from './interactions';
 
 import type Marker from '../ui/marker';
 import type Popup from '../ui/popup';
@@ -95,6 +96,7 @@ import type {QueryRenderedFeaturesParams} from '../source/query_features';
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 import type {Callback} from 'src/types/callback';
+import type {Interaction} from './interactions';
 
 export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 /* eslint-disable no-use-before-define */
@@ -486,6 +488,7 @@ export class Map extends Camera {
     _performanceMetricsCollection: boolean;
     _tessellationStep?: number;
     _precompilePrograms: boolean;
+    _interactions: InteractionSet;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -771,6 +774,8 @@ export class Map extends Camera {
         this.on('dataloading', (event) => {
             this.fire(new Event(`${event.dataType}dataloading`, event));
         });
+
+        this._interactions = new InteractionSet(this);
     }
 
     /*
@@ -2036,6 +2041,44 @@ export class Map extends Camera {
         }
 
         return this.transform.isPointOnSurface(Point.convert(point));
+    }
+
+    /**
+     * Add an interaction — a named gesture handler of a given type.
+     *
+     * @param {string} id The ID of the interaction.
+     * @param {Object} interaction The interaction object with the following properties.
+     * @param {string} interaction.type The type of gesture to handle (e.g. 'click').
+     * @param {Object} [interaction.filter] Filter expression to narrow down the interaction to a subset of features under the pointer.
+     * @param {string[]} [interaction.layers] A list of layer IDs to narrow down features to.
+     * @param {Function} interaction.handler A handler function that will be invoked on the gesture and receive a `{feature, interaction}` object as a parameter.
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * map.addInteraction('poi-click', {
+     *   type: 'click',
+     *   handler(e) {
+     *     console.log(e.feature);
+     *   }
+     * });
+     */
+    addInteraction(id: string, interaction: Interaction) {
+        this._interactions.add(id, interaction);
+        return this;
+    }
+
+    /**
+     * Remove an interaction previously added with `addInteraction`.
+     *
+     * @param {string} id The id of the interaction to remove.
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * map.removeInteraction('poi-click');
+     */
+    removeInteraction(id: string) {
+        this._interactions.remove(id);
+        return this;
     }
 
     /** @section {Working with styles} */
