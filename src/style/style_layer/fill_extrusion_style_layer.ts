@@ -50,7 +50,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 
     hasShadowPass(): boolean {
-        return true;
+        return this.paint.get('fill-extrusion-cast-shadows');
     }
 
     cutoffRange(): number {
