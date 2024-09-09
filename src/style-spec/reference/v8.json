@@ -6072,6 +6072,18 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "fill-extrusion-cast-shadows": {
+      "type": "boolean",
+      "default": true,
+      "doc": "Enable/Disable shadow casting for this layer",
+      "transition": false,
+      "sdk-support": {
+          "basic functionality": {
+          "js": "3.7.0"
+        }
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_line": {

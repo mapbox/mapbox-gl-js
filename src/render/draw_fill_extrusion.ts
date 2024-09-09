@@ -73,7 +73,11 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         }
     }
 
+    const castShadows = layer.paint.get('fill-extrusion-cast-shadows');
     if (painter.renderPass === 'shadow' && painter.shadowRenderer) {
+        if (!castShadows) {
+            return;
+        }
         const shadowRenderer = painter.shadowRenderer;
         if (terrain) {
             const noShadowCutoff = 0.65;

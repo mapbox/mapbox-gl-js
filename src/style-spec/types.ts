@@ -743,7 +743,8 @@ export type FillExtrusionLayerSpecification = {
         "fill-extrusion-emissive-strength"?: PropertyValueSpecification<number>,
         "fill-extrusion-emissive-strength-transition"?: TransitionSpecification,
         "fill-extrusion-line-width"?: DataDrivenPropertyValueSpecification<number>,
-        "fill-extrusion-line-width-transition"?: TransitionSpecification
+        "fill-extrusion-line-width-transition"?: TransitionSpecification,
+        "fill-extrusion-cast-shadows"?: boolean
     }
 }
 
