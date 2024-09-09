@@ -50,7 +50,7 @@
         center: [24.944634, 60.170992],
         pitch: 50.0,
         bearing: 10.0,
-        style: 'mapbox://styles/mapbox/streets-v12',
+        style: 'mapbox://styles/mapbox/standard',
         hash: true
     });
 
@@ -386,6 +386,39 @@
         ],
         "type": "LineString"
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "hidden": "true"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              24.94276396487402,
+              60.17169411702608
+            ],
+            [
+              24.94276396487402,
+              60.17145874424378
+            ],
+            [
+              24.943086769383626,
+              60.17145874424378
+            ],
+            [
+              24.943086769383626,
+              60.17169411702608
+            ],
+            [
+              24.94276396487402,
+              60.17169411702608
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
     }
             ]
           }
@@ -402,7 +435,12 @@
                   15.0,
                   0.5
                 ],
-                "fill-extrusion-color": "#f0e5de",
+                "fill-extrusion-color": [
+                  "case",
+                  ["==", ["get", "hidden"], "true"],
+                  ["rgba", 0,0,0,0],
+                  "#f0e5de"
+                ],
                 "fill-extrusion-height": [
                   "case",
                   ["==", ["get", "type"], "bigwall"],

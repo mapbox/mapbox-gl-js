@@ -15,6 +15,7 @@ in vec3 a_join_normal_inside;
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 #pragma mapbox: define highp float line_width
+#pragma mapbox: define highp vec4 color
 
 out highp float v_depth;
 
@@ -22,6 +23,7 @@ void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp float line_width
+    #pragma mapbox: initialize highp vec4 color
 
     base *= u_vertical_scale;
     height *= u_vertical_scale;
@@ -60,7 +62,7 @@ vec3 pos;
     pos.xy += (1.0 - a_join_normal_inside.z) * wall_offset * 0.5;
     pos.xy -= a_join_normal_inside.z * wall_offset * 0.5;
 #endif
-    float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
+    float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (color.a == 0.0));
     gl_Position = mix(u_matrix * vec4(pos, 1), AWAY, hidden);
     v_depth = gl_Position.z / gl_Position.w;
 }

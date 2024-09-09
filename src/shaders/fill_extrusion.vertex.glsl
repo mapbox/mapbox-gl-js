@@ -155,7 +155,7 @@ void main() {
 
     scaled_pos.z = mix(c_ele, h, cutoff_scale);
 #endif
-    float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (cutoff == 0.0 && centroid_pos.x != 0.0));
+    float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (cutoff == 0.0 && centroid_pos.x != 0.0) || (color.a == 0.0));
 
 #ifdef RENDER_WALL_MODE
     vec2 wall_offset = u_width_scale * line_width * (a_join_normal_inside.xy / EXTENT);
