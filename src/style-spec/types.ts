@@ -400,7 +400,9 @@ export type FillLayerSpecification = {
         "fill-translate-anchor"?: PropertyValueSpecification<"map" | "viewport">,
         "fill-pattern"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
         "fill-emissive-strength"?: PropertyValueSpecification<number>,
-        "fill-emissive-strength-transition"?: TransitionSpecification
+        "fill-emissive-strength-transition"?: TransitionSpecification,
+        "fill-z-offset"?: DataDrivenPropertyValueSpecification<number>,
+        "fill-z-offset-transition"?: TransitionSpecification
     }
 }
 

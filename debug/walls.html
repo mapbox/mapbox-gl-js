@@ -288,7 +288,9 @@
               }, 
               {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "hasFloor": "true"
+      },
       "geometry": {
         "coordinates": [
           [
@@ -424,6 +426,21 @@
           }
         });
     
+        map.addLayer({
+            "type": "fill",
+            "id": "floors",
+            "source": "walls",
+            "filter": [
+              "==",
+              ["get", "hasFloor"],
+              "true"
+            ],
+            "paint": {
+              "fill-z-offset": 8.0,
+              "fill-color": "#f0e5de"
+            }
+        });
+
         map.addLayer({
             "type": "fill-extrusion",
             "id": "walls",

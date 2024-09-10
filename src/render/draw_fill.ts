@@ -20,6 +20,8 @@ export default drawFill;
 function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<OverscaledTileID>) {
     const color = layer.paint.get('fill-color');
     const opacity = layer.paint.get('fill-opacity');
+    const is3D = layer.is3D();
+    const depthModeFor3D = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
 
     if (opacity.constantOr(1) === 0) {
         return;
@@ -40,13 +42,13 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 
     // Draw fill
     if (painter.renderPass === pass) {
-        const depthMode = painter.depthModeForSublayer(
+        const depthMode = is3D ? depthModeFor3D : painter.depthModeForSublayer(
             1, painter.renderPass === 'opaque' ? DepthMode.ReadWrite : DepthMode.ReadOnly);
         drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode, false);
     }
 
     // Draw stroke
-    if (painter.renderPass === 'translucent' && layer.paint.get('fill-antialias')) {
+    if (!is3D && painter.renderPass === 'translucent' && layer.paint.get('fill-antialias')) {
 
         // If we defined a different color for the fill outline, we are
         // going to ignore the bits in 0x07 and just care about the global
@@ -56,7 +58,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         // or stroke color is translucent. If we wouldn't clip to outside
         // the current shape, some pixels from the outline stroke overlapped
         // the (non-antialiased) fill.
-        const depthMode = painter.depthModeForSublayer(
+        const depthMode = is3D ? depthModeFor3D : painter.depthModeForSublayer(
             layer.getPaintProperty('fill-outline-color') ? 2 : 0, DepthMode.ReadOnly);
         drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode, true);
     }
@@ -66,6 +68,8 @@ function drawFillTiles(painter: Painter, sourceCache: SourceCache, layer: FillSt
     const gl = painter.context.gl;
 
     const patternProperty = layer.paint.get('fill-pattern');
+    const is3D = layer.is3D();
+    const stencilFor3D = painter.stencilModeFor3D();
 
     const image = patternProperty && patternProperty.constantOr((1 as any));
     let drawMode, programName, uniformValues, indexBuffer, segments;
@@ -133,7 +137,7 @@ function drawFillTiles(painter: Painter, sourceCache: SourceCache, layer: FillSt
         painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
 
         program.draw(painter, drawMode, depthMode,
-            painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+            is3D ? stencilFor3D : painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
             layer.id, bucket.layoutVertexBuffer, indexBuffer, segments,
             layer.paint, painter.transform.zoom, programConfiguration, undefined);
     }

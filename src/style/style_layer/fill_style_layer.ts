@@ -95,6 +95,10 @@ class FillStyleLayer extends StyleLayer {
     isTileClipped(): boolean {
         return true;
     }
+
+    is3D(): boolean {
+        return this.paint.get('fill-z-offset').constantOr(1.0) !== 0.0;
+    }
 }
 
 export default FillStyleLayer;

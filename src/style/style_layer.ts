@@ -130,7 +130,7 @@ class StyleLayer extends Evented {
     onRemove(_map: MapboxMap): void {}
 
     isDraped(_sourceCache?: SourceCache): boolean {
-        return drapedLayers.has(this.type);
+        return !this.is3D() && drapedLayers.has(this.type);
     }
 
     getLayoutProperty<T extends keyof LayoutSpecification>(name: T): LayoutSpecification[T] | undefined {

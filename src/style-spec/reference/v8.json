@@ -5468,6 +5468,30 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "fill-z-offset": {
+      "type": "number",
+      "doc": "Specifies an uniform elevation in meters. Note: If the value is zero, the layer will be rendered on the ground. Non-zero values will elevate the layer from the sea level, which can cause it to be rendered below the terrain.",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "experimental": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.7.0"
+        },
+        "data-driven styling": {
+          "js": "3.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
     }
   },
   "paint_fill-extrusion": {

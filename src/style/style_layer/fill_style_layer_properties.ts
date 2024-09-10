@@ -35,6 +35,7 @@ export type PaintProps = {
     "fill-translate-anchor": DataConstantProperty<"map" | "viewport">;
     "fill-pattern": DataDrivenProperty<ResolvedImage | null | undefined>;
     "fill-emissive-strength": DataConstantProperty<number>;
+    "fill-z-offset": DataDrivenProperty<number>;
 };
 
 let paint: Properties<PaintProps>;
@@ -47,4 +48,5 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-translate-anchor": new DataConstantProperty(styleSpec["paint_fill"]["fill-translate-anchor"]),
     "fill-pattern": new DataDrivenProperty(styleSpec["paint_fill"]["fill-pattern"]),
     "fill-emissive-strength": new DataConstantProperty(styleSpec["paint_fill"]["fill-emissive-strength"]),
+    "fill-z-offset": new DataDrivenProperty(styleSpec["paint_fill"]["fill-z-offset"]),
 }));
