@@ -222,14 +222,14 @@
     }
   },
   "featuresets": {
-    "experimental": true, 
+    "experimental": true,
     "*": {
       "type": "featureset",
       "doc": "Defines a combined set of features from one or more underlying layers within the current style. Features in a style featureset can be queried, interacted with, and their states can be queried and updated."
     }
   },
   "featureset": {
-    "experimental": true, 
+    "experimental": true,
     "selectors": {
       "type": "array",
       "value": "selector",
@@ -237,7 +237,7 @@
     }
   },
   "selector": {
-    "experimental": true, 
+    "experimental": true,
     "layer": {
       "type": "string",
       "doc": "The ID of a layer that exists in the current style.",
@@ -245,7 +245,7 @@
     },
     "properties": {
       "type": "selectorProperty",
-      "required": false, 
+      "required": false,
       "doc": "Properties accessible to the end user through queried feautures. If properties are empty, no feature properties are exposed. If undefined, all original feature properties will be accessible."
     },
     "featureNamespace": {
@@ -255,7 +255,7 @@
     }
   },
   "selectorProperty": {
-    "experimental": true, 
+    "experimental": true,
     "*": {
       "type": "*",
       "doc": "The value of the property. It can be an expression that generates the returned value from the feature, or a constant value specifying the returned value."
@@ -1738,7 +1738,6 @@
     "fill-extrusion-edge-radius": {
       "type": "number",
       "experimental": true,
-      "private": true,
       "default": 0,
       "minimum": 0,
       "maximum": 1,
@@ -5692,7 +5691,6 @@
     "fill-extrusion-ambient-occlusion-intensity": {
       "property-type": "data-constant",
       "type": "number",
-      "private": true,
       "default": 0.0,
       "minimum": 0,
       "maximum": 1,
@@ -5715,7 +5713,6 @@
     "fill-extrusion-ambient-occlusion-radius": {
       "property-type": "data-constant",
       "type": "number",
-      "private": true,
       "default": 3.0,
       "minimum": 0,
       "expression": {
@@ -6059,7 +6056,7 @@
           "js": "3.7.0",
           "android": "11.7.0",
           "ios": "11.7.0"
-          
+
         },
         "data-driven styling": {
           "js": "3.7.0",
