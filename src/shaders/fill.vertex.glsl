@@ -19,7 +19,8 @@ void main() {
 #ifdef ELEVATED_ROADS
     z_offset += a_road_z_offset;
 #endif
-    gl_Position = u_matrix * vec4(a_pos, z_offset, 1);
+    float hidden = float(opacity == 0.0);
+    gl_Position = mix(u_matrix * vec4(a_pos, z_offset, 1), AWAY, hidden);
 
 #ifdef FOG
     v_fog_pos = fog_position(a_pos);
