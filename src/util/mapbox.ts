@@ -37,7 +37,7 @@ type UrlObject = {
     params: Array<string>;
 };
 
-type EventCallback = (err?: Error | null | undefined) => void;
+type EventCallback = (err?: Error | null) => void;
 
 export const AUTH_ERR_MSG: string = 'NO_ACCESS_TOKEN';
 
@@ -724,7 +724,7 @@ export class TurnstileEvent extends TelemetryEvent {
 }
 
 const turnstileEvent_ = new TurnstileEvent();
-export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: string | null | undefined) => void = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
+export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: string | null) => void = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
 
 export const mapLoadEvent: MapLoadEvent = new MapLoadEvent();
 export const postMapLoadEvent: (

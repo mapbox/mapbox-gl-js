@@ -59,7 +59,7 @@ export type MRTDataRange = {
 export type MRTDecodingBatch = {
     tasks: Array<MRTDecodingTask>;
     cancel: () => void;
-    complete: (arg1?: Error | null | undefined, arg2?: ArrayBuffer | null | undefined) => void;
+    complete: (arg1?: Error | null, arg2?: ArrayBuffer | null) => void;
 };
 
 export type MRTDecodingTask = {

@@ -92,7 +92,7 @@ interface AttributeBinder {
         imagePositions: SpritePositions,
         availableImages: Array<string>,
         canonical?: CanonicalTileID,
-        brightness?: number | null | undefined,
+        brightness?: number | null,
         formattedSection?: FormattedSection,
     ) => void;
     updatePaintArray: (

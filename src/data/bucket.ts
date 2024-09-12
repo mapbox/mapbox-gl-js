@@ -103,7 +103,7 @@ export interface Bucket {
         vtLayer: VectorTileLayer,
         availableImages: Array<string>,
         imagePositions: SpritePositions,
-        brightness?: number | null | undefined,
+        brightness?: number | null,
     ) => void;
     isEmpty: () => boolean;
     upload: (context: Context) => void;

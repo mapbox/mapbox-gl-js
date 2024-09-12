@@ -48,7 +48,7 @@ export function cacheClose() {
 }
 
 let responseConstructorSupportsReadableStream;
-function prepareBody(response: Response, callback: (body?: Blob | ReadableStream | null | undefined) => void) {
+function prepareBody(response: Response, callback: (body?: Blob | ReadableStream | null) => void) {
     if (responseConstructorSupportsReadableStream === undefined) {
         try {
             new Response(new ReadableStream()); // eslint-disable-line no-undef
@@ -196,7 +196,7 @@ export function enforceCacheSizeLimit(limit: number) {
         });
 }
 
-export function clearTileCache(callback?: (err?: Error | null | undefined) => void) {
+export function clearTileCache(callback?: (err?: Error | null) => void) {
     const caches = getCaches();
     if (!caches) return;
 

@@ -72,10 +72,10 @@ export type RequestParameters = {
 };
 
 export type ResponseCallback<T> = (
-    error?: Error | null | undefined,
-    data?: T | null | undefined,
-    cacheControl?: string | null | undefined,
-    expires?: string | null | undefined,
+    error?: Error | null,
+    data?: T | null,
+    cacheControl?: string | null,
+    expires?: string | null,
 ) => void;
 
 export class AJAXError extends Error {

@@ -217,7 +217,7 @@ const exported = {
      * @example
      * mapboxgl.clearStorage();
      */
-    clearStorage(callback?: (err?: Error | null | undefined) => void) {
+    clearStorage(callback?: (err?: Error | null) => void) {
         clearTileCache(callback);
     },
     /**

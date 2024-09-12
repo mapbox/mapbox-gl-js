@@ -1365,7 +1365,7 @@ export class Map extends Camera {
      * @see [Example: Display a web map using an alternate projection](https://docs.mapbox.com/mapbox-gl-js/example/map-projection/)
      * @see [Example: Use different map projections for web maps](https://docs.mapbox.com/mapbox-gl-js/example/projections/)
      */
-    setProjection(projection?: ProjectionSpecification | null | undefined | string): this {
+    setProjection(projection?: ProjectionSpecification | null | string): this {
         this._lazyInitEmptyStyle();
 
         if (!projection) {

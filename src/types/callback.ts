@@ -12,4 +12,4 @@
 //    });
 //
 // See https://github.com/facebook/flow/issues/2123 for more.
-export type Callback<T> = (error?: Error | null | undefined, result?: T | null | undefined) => void;
+export type Callback<T> = (error?: Error | null, result?: T | null) => void;
