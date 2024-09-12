@@ -7,6 +7,7 @@ import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../types/tile_id';
 import type {GlobalProperties, Feature} from '../expression/index';
 import type {FilterSpecification, ExpressionSpecification} from '../types';
+import type {ConfigOptions} from '../types/config_options';
 
 export type FeatureDistanceData = {
     bearing: [number, number];
@@ -82,7 +83,7 @@ function isExpressionFilter(filter: unknown): boolean {
  * @param {string} layerType the type of the layer this filter will be applied to.
  * @returns {Function} filter-evaluating function
  */
-function createFilter(filter?: FilterSpecification, layerType: string = 'fill'): FeatureFilter {
+function createFilter(filter?: FilterSpecification, scope: string = "", options: ConfigOptions | null = null, layerType: string = 'fill'): FeatureFilter {
     if (filter === null || filter === undefined) {
         return {filter: () => true, needGeometry: false, needFeature: false};
     }
@@ -109,7 +110,7 @@ ${JSON.stringify(filterExp, null, 2)}
 
     // Compile the static component of the filter
     const filterSpec = latest[`filter_${layerType}`];
-    const compiledStaticFilter = createExpression(staticFilter, filterSpec);
+    const compiledStaticFilter = createExpression(staticFilter, filterSpec, scope, options);
 
     let filterFunc = null;
     if (compiledStaticFilter.result === 'error') {
@@ -123,7 +124,7 @@ ${JSON.stringify(filterExp, null, 2)}
     let dynamicFilterFunc = null;
     let needFeature = null;
     if (staticFilter !== filterExp) {
-        const compiledDynamicFilter = createExpression(filterExp, filterSpec);
+        const compiledDynamicFilter = createExpression(filterExp, filterSpec, scope, options);
 
         if (compiledDynamicFilter.result === 'error') {
             throw new Error(compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));

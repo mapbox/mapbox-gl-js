@@ -1,0 +1,81 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "center": [0, 0],
+  "zoom": 0,
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+        "schema": {
+          "sample": {
+            "default": "some"
+          }
+        },
+        "sources": {
+          "point": {
+            "type": "geojson",
+            "data": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {
+              "background-color": "violet"
+            }
+          },
+          {
+            "id": "circle",
+            "type": "circle",
+            "source": "point",
+            "filter": [
+              "==",
+              ["config","sample"],
+              "some"
+            ],
+            "paint": {
+              "circle-radius": 18,
+              "circle-color": "yellow"
+            }
+          },
+          {
+            "id": "text",
+            "type": "symbol",
+            "source": "point",
+            "layout": {
+              "text-field": "Test",
+              "text-font": [
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+              ]
+            },
+            "paint": {
+              "text-color": "Black"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {},
+  "layers": []
+}

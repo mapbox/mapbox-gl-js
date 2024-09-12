@@ -327,9 +327,9 @@ class StyleLayer extends Evented {
         return false;
     }
 
-    compileFilter() {
+    compileFilter(options?: ConfigOptions | null) {
         if (!this._filterCompiled) {
-            this._featureFilter = featureFilter(this.filter);
+            this._featureFilter = featureFilter(this.filter, this.scope, options);
             this._filterCompiled = true;
         }
     }
