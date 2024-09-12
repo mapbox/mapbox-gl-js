@@ -17,6 +17,8 @@ const map = new mapboxgl.Map({
     attributionControl: false,
 });
 
+const transformRequest: mapboxgl.RequestTransformFunction = (url: string, resourceTypeEnum: mapboxgl.ResourceType): mapboxgl.RequestParameters => {return {url}};
+
 //
 // Events
 //

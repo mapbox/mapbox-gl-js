@@ -6,15 +6,14 @@ import {clamp, smoothstep} from '../../util/util';
 import type Projection from './projection';
 import type Transform from '../transform';
 
-export default function getProjectionAdjustments(transform: Transform, withoutRotation?: boolean): Array<number> {
+export default function getProjectionAdjustments(transform: Transform, withoutRotation?: boolean): number[] {
     const interpT = getProjectionInterpolationT(transform.projection, transform.zoom, transform.width, transform.height);
     const matrix = getShearAdjustment(transform.projection, transform.zoom, transform.center, interpT, withoutRotation);
 
     const scaleAdjustment = getScaleAdjustment(transform);
     mat4.scale(matrix, matrix, [scaleAdjustment, scaleAdjustment, 1]);
 
-    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'number[]'.
-    return matrix;
+    return matrix as number[];
 }
 
 export function getScaleAdjustment(transform: Transform): number {
@@ -26,12 +25,12 @@ export function getScaleAdjustment(transform: Transform): number {
     return scaleAdjustment;
 }
 
-export function getProjectionAdjustmentInverted(transform: Transform): Array<number> {
+export function getProjectionAdjustmentInverted(transform: Transform): number[] {
     const m = getProjectionAdjustments(transform, true);
-    // @ts-expect-error - TS2322 - Type 'mat2' is not assignable to type 'number[]'.
-    return mat2.invert([] as any, [
+    return mat2.invert([] as unknown as mat2, [
         m[0], m[1],
-        m[4], m[5]]);
+        m[4], m[5]]
+    ) as number[];
 }
 
 export function getProjectionInterpolationT(

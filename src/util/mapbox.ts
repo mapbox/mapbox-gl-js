@@ -22,13 +22,13 @@ import {postData, getData} from './ajax';
 import {getLivePerformanceMetrics} from '../util/live_performance';
 
 import type {LivePerformanceData} from '../util/live_performance';
-import type {RequestParameters, ResourceType} from './ajax';
+import type {RequestParameters, ResourceType as ResourceTypeEnum} from './ajax';
 import type {Cancelable} from '../types/cancelable';
 import type {TileJSON} from '../types/tilejson';
 import type {Map as MapboxMap} from "../ui/map";
 
-type ResourceTypeEnum = keyof typeof ResourceType;
-export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
+export type ResourceType = keyof typeof ResourceTypeEnum;
+export type RequestTransformFunction = (url: string, resourceTypeEnum?: ResourceType) => RequestParameters;
 
 type UrlObject = {
     protocol: string;
@@ -65,7 +65,7 @@ export class RequestManager {
         return Date.now() > this._skuTokenExpiresAt;
     }
 
-    transformRequest(url: string, type: ResourceTypeEnum): RequestParameters {
+    transformRequest(url: string, type: ResourceType): RequestParameters {
         if (this._transformRequestFn) {
             return this._transformRequestFn(url, type) || {url};
         }

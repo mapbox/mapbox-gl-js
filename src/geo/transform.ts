@@ -2309,8 +2309,7 @@ class Transform {
             const mc = this.locationCoordinate(this.center);
             const adjustments = mat4.identity([] as any);
             mat4.translate(adjustments, adjustments, [mc.x * this.worldSize, mc.y * this.worldSize, 0]);
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyMat4'.
-            mat4.multiply(adjustments, adjustments, getProjectionAdjustments(this));
+            mat4.multiply(adjustments, adjustments, getProjectionAdjustments(this) as mat4);
             mat4.translate(adjustments, adjustments, [-mc.x * this.worldSize, -mc.y * this.worldSize, 0]);
             mat4.multiply(m, m, adjustments);
             // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array' is not assignable to parameter of type 'mat4'.
