@@ -934,6 +934,55 @@ describe('camera', () => {
         });
     });
 
+    describe('#cameraForBounds with Albers', () => {
+        test('no options passed', () => {
+            const camera = createCamera({projection: {name: 'albers'}});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb);
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -93.2842, lat: 37.4884});
+            expect(fixedNum(transform.zoom, 3)).toEqual(2.459);
+        });
+
+        test('bearing positive number', () => {
+            const camera = createCamera({projection: {name: 'albers'}});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: 175});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -93.2842, lat: 37.4884});
+            expect(fixedNum(transform.zoom, 3)).toEqual(2.383);
+            expect(transform.bearing).toEqual(175);
+        });
+
+        test('bearing negative number', () => {
+            const camera = createCamera({projection: {name: 'albers'}});
+            const bb = [[-133, 16], [-68, 50]];
+
+            const transform = camera.cameraForBounds(bb, {bearing: -30});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: -93.2842, lat: 37.4884});
+            expect(fixedNum(transform.zoom, 3)).toEqual(2.197);
+            expect(transform.bearing).toEqual(-30);
+        });
+
+        test('entire longitude range: -180 to 180', () => {
+            const camera = createCamera({projection: {name: 'albers'}});
+            const bb = [[-180, 10], [180, 50]];
+
+            const transform = camera.cameraForBounds(bb);
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: 180, lat: 85.0511});
+            expect(fixedNum(transform.zoom, 3)).toEqual(0.014);
+        });
+
+        test('entire longitude range: -180 to 180 with asymmetrical padding', () => {
+            const camera = createCamera({projection: {name: 'albers'}});
+            const bb = [[-180, 10], [180, 50]];
+
+            const transform = camera.cameraForBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}});
+            expect(fixedLngLat(transform.center, 4)).toEqual({lng: 180, lat: 85.0511});
+            expect(fixedNum(transform.zoom, 3)).toEqual(-0.166);
+        });
+    });
+
     describe('#fitBounds', () => {
         test('no padding passed', () => {
             const camera = createCamera();

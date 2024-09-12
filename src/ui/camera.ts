@@ -25,10 +25,9 @@ import MercatorCoordinate, {
     mercatorZfromAltitude,
     mercatorXfromLng,
     mercatorYfromLat,
-    latFromMercatorY,
-    lngFromMercatorX
 } from '../geo/mercator_coordinate';
 import {Aabb} from '../util/primitives';
+import {getZoomAdjustment} from '../geo/projection/adjustments';
 
 import type Transform from '../geo/transform';
 import type {TaskID} from '../util/task_queue';
@@ -942,14 +941,12 @@ class Camera extends Evented<MapEvents> {
         vec3.transformMat4(aabb.center, aabb.center, cameraToWorld);
         vec3.transformMat4(cameraPosition, cameraPosition, cameraToWorld);
 
-        const mercator = [aabb.center[0], aabb.center[1], cameraPosition[2] * tr.pixelsPerMeter];
-        vec3.scale(mercator as [number, number, number], mercator as [number, number, number], 1.0 / tr.worldSize);
+        const center = tr.unproject(new Point(aabb.center[0], aabb.center[1]));
 
-        const lng = lngFromMercatorX(mercator[0]);
-        const lat = latFromMercatorY(mercator[1]);
-
-        const zoom = Math.min(tr._zoomFromMercatorZ(mercator[2]), eOptions.maxZoom);
-        const center = new LngLat(lng, lat);
+        const zoomAdjustment = getZoomAdjustment(tr.projection, center);
+        const scaleAdjustment = Math.pow(2, zoomAdjustment);
+        const mercatorZ = (cameraPosition[2] * tr.pixelsPerMeter * scaleAdjustment) / tr.worldSize;
+        const zoom = Math.min(tr._zoomFromMercatorZ(mercatorZ), eOptions.maxZoom);
 
         const halfZoomTransition = (GLOBE_ZOOM_THRESHOLD_MIN + GLOBE_ZOOM_THRESHOLD_MAX) * 0.5;
 

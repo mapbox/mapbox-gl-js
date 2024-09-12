@@ -61,7 +61,7 @@ const offset = 1 / 40000;
 /*
  * Calculates the scale difference between Mercator and the given projection at a certain location.
  */
-function getZoomAdjustment(projection: Projection, loc: LngLat) {
+export function getZoomAdjustment(projection: Projection, loc: LngLat) {
     // make sure we operate within mercator space for adjustments (they can go over for other projections)
     const lat = clamp(loc.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
 
