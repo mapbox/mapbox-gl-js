@@ -483,9 +483,6 @@
       "default": false,
       "doc": "Enable/Disable shadow casting for this light",
       "transition": false,
-      "expression": {
-        "interpolated": false
-      },
       "property-type": "data-constant",
       "sdk-support": {
         "basic functionality": {

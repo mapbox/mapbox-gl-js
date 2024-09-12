@@ -395,6 +395,20 @@ map.setTerrain(undefined);
 map.setTerrain(null);
 
 //
+// 3D Lights
+//
+
+map.setLights([
+    {
+        "id": "directional",
+        "type": "directional",
+        "properties": {
+            "cast-shadows": true,
+        }
+    }
+]);
+
+//
 // Query features
 //
 

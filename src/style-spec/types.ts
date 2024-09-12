@@ -347,7 +347,7 @@ export type DirectionalLightSpecification = {
         "color-transition"?: TransitionSpecification,
         "intensity"?: PropertyValueSpecification<number>,
         "intensity-transition"?: TransitionSpecification,
-        "cast-shadows"?: ExpressionSpecification,
+        "cast-shadows"?: boolean,
         "shadow-intensity"?: PropertyValueSpecification<number>,
         "shadow-intensity-transition"?: TransitionSpecification
     },
