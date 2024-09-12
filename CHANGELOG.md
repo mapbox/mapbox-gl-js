@@ -1,3 +1,28 @@
+## v3.7.0-beta.1
+
+### Features and improvements ✨
+
+- Add `config` expression support in layer filter.
+- Add symbol elevation properties: `symbol-z-offset` and `symbol-elevation-reference`.
+- Add the `fill-z-offset` property for fill layers.
+- Improve `Map#fitBounds` for the alternative projections.
+- Improve terrain hillshade lighting anchored to viewport.
+- Improve shadow casting from 3D models.
+- Improve error messages for invalid expressions.
+- Skip landmarks rendering when the camera is inside them.
+- Improve type checking for the `Map#setPaintProperty` and `Map#setLayoutProperty` methods.
+- Allow the `string` event type in Map event handlers.
+- Expose `RequestTransformFunction`, `ResourceType`, and `RequestParameters` types.
+
+### Bug fixes 🐞
+- Fix feature filtering when using 3D lights.
+- Fix pattern rendering issues on some devices at high zoom levels.
+- Fix `fill-extrusion-line-width` rendering for large polygons
+- Fix symbol placement ordering when `symbol-z-order` is set to `auto`.
+- Fix the issue where `minzoom` and `maxzoom` properties were ignored by `clip` layers.
+- Fix handling previously hidden models in `clip` layers.
+- Fix directional light `cast-shadows` property type.
+
 ## 3.6.0
 
 ### Features and improvements ✨
