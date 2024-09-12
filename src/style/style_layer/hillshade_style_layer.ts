@@ -20,6 +20,10 @@ class HillshadeStyleLayer extends StyleLayer {
         super(layer, properties, scope, lut, options);
     }
 
+    shouldRedrape(): boolean {
+        return this.hasOffscreenPass() && this.paint.get('hillshade-illumination-anchor') === 'viewport';
+    }
+
     hasOffscreenPass(): boolean {
         return this.paint.get('hillshade-exaggeration') !== 0 && this.visibility !== 'none';
     }

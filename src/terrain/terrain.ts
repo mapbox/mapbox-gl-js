@@ -52,6 +52,7 @@ import type Context from '../gl/context';
 import type {UniformValues} from '../render/uniform_binding';
 import type Transform from '../geo/transform';
 import type {CanonicalTileID} from '../source/tile_id';
+import type HillshadeStyleLayer from 'src/style/style_layer/hillshade_style_layer';
 
 const GRID_DIM = 128;
 
@@ -1085,6 +1086,9 @@ export class Terrain extends Elevation {
         const isTransitioning = (id: string) => {
             const layer = this._style._mergedLayers[id];
             const isHidden = layer.isHidden(this.painter.transform.zoom);
+            if (layer.type === 'hillshade') {
+                return !isHidden && (layer as HillshadeStyleLayer).shouldRedrape();
+            }
             if (layer.type === 'custom') {
                 return !isHidden && (layer as CustomStyleLayer).shouldRedrape();
             }
@@ -1458,7 +1462,7 @@ export class Terrain extends Elevation {
             }
         }
         let hasOverlap = false;
-        const proxiesToSort = new Set();
+        const proxiesToSort = new Set<ProxiedTileID[]>();
         for (let i = 0; i < sourceCoords.length; i++) {
             const tile = sourceCache.getTile(sourceCoords[i]);
             if (!tile || !tile.hasData()) continue;
@@ -1483,7 +1487,6 @@ export class Terrain extends Elevation {
         this._sourceTilesOverlap[sourceCache.id] = hasOverlap;
         if (hasOverlap && this._debugParams.sortTilesHiZFirst) {
             for (const arr of proxiesToSort) {
-                // @ts-expect-error - TS2339 - Property 'sort' does not exist on type 'unknown'.
                 arr.sort((a, b) => {
                     return b.overscaledZ - a.overscaledZ;
                 });
