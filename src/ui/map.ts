@@ -1682,12 +1682,11 @@ export class Map extends Camera {
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
-    on<T extends MapEventType>(type: T, listener: Listener<T>): this;
-    on<T extends MapEventType>(type: T, layerIds: string | string[], listener: Listener<T>): this;
-
-    on<T extends MapEventType>(type: T, layerIds: string | string[] | Listener<T>, listener?: Listener<T>): this {
+    on<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
+    on<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[], listener: Listener<Extract<T, MapEventType>>): this;
+    on<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[] | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this {
         if (typeof layerIds === 'function' || listener === undefined) {
-            return super.on(type, layerIds as Listener<MapEventType>);
+            return super.on(type as MapEventType, layerIds as Listener<MapEventType>);
         }
 
         if (!Array.isArray(layerIds)) {
@@ -1702,7 +1701,7 @@ export class Map extends Camera {
             }
         }
 
-        const delegatedListener = this._createDelegatedListener(type, layerIds, listener);
+        const delegatedListener = this._createDelegatedListener(type as MapEventType, layerIds, listener);
 
         this._delegatedListeners = this._delegatedListeners || {};
         this._delegatedListeners[type] = this._delegatedListeners[type] || [];
@@ -1754,14 +1753,13 @@ export class Map extends Camera {
      * @see [Example: Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Example: Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-    once<T extends MapEventType>(type: T): Promise<MapEventOf<T>>;
-    once<T extends MapEventType>(type: T, listener: Listener<T>): this;
-    once<T extends MapEventType>(type: T, layerIds: string | string[]): Promise<MapEventOf<T>>;
-    once<T extends MapEventType>(type: T, layerIds: string | string[], listener: Listener<T>): this;
-
-    once<T extends MapEventType>(type: T, layerIds?: string | string[] | Listener<T>, listener?: Listener<T>): this | Promise<MapEventOf<T>> {
+    once<T extends MapEventType | (string & {})>(type: T): Promise<MapEventOf<Extract<T, MapEventType>>>;
+    once<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
+    once<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[]): Promise<MapEventOf<Extract<T, MapEventType>>>;
+    once<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[], listener: Listener<Extract<T, MapEventType>>): this;
+    once<T extends MapEventType | (string & {})>(type: T, layerIds?: string | string[] | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this | Promise<MapEventOf<Extract<T, MapEventType>>> {
         if (typeof layerIds === 'function' || listener === undefined) {
-            return super.once(type, layerIds as Listener<T>);
+            return super.once(type as MapEventType, layerIds as Listener<MapEventType>);
         }
 
         if (!Array.isArray(layerIds)) {
@@ -1776,7 +1774,7 @@ export class Map extends Camera {
             }
         }
 
-        const delegatedListener = this._createDelegatedListener(type, layerIds, listener);
+        const delegatedListener = this._createDelegatedListener(type as MapEventType, layerIds, listener);
 
         for (const event in delegatedListener.delegates) {
             this.once(event as T, delegatedListener.delegates[event]);
@@ -1810,12 +1808,11 @@ export class Map extends Camera {
      * });
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    off<T extends MapEventType>(type: T, listener: Listener<T>): this;
-    off<T extends MapEventType>(type: T, layerIds: string | string[], listener: Listener<T>): this;
-
-    off<T extends MapEventType>(type: T, layerIds: string | string[] | Listener<T>, listener?: Listener<T>): this {
+    off<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
+    off<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[], listener: Listener<Extract<T, MapEventType>>): this;
+    off<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[] | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this {
         if (typeof layerIds === 'function' || listener === undefined) {
-            return super.off(type, layerIds as Listener<T>);
+            return super.off(type as MapEventType, layerIds as Listener<MapEventType>);
         }
 
         const uniqLayerIds = new Set(Array.isArray(layerIds) ? layerIds : [layerIds]);

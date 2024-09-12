@@ -1319,10 +1319,9 @@ expectType<mapboxgl.Map>(
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.on("tiledataloading", ev => {
-        // @ts-expect-error - incompatible
         expectType<mapboxgl.MapDataEvent>(ev);
+        // @ts-expect-error - incompatible
         expectType<mapboxgl.Map>(ev.target);
 
         // @ts-expect-error - incompatible
