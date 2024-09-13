@@ -7,6 +7,7 @@ import {
     fillOutlineUniformValues,
     fillOutlinePatternUniformValues
 } from './program/fill_program';
+import StencilMode from '../gl/stencil_mode';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -69,7 +70,7 @@ function drawFillTiles(painter: Painter, sourceCache: SourceCache, layer: FillSt
 
     const patternProperty = layer.paint.get('fill-pattern');
     const is3D = layer.is3D();
-    const stencilFor3D = painter.stencilModeFor3D();
+    const stencilFor3D = is3D ? painter.stencilModeFor3D() : StencilMode.disabled;
 
     const image = patternProperty && patternProperty.constantOr((1 as any));
     let drawMode, programName, uniformValues, indexBuffer, segments;
