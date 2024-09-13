@@ -11,6 +11,7 @@ import {mat4} from 'gl-matrix';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type {OverscaledTileID} from '../source/tile_id';
+import type {DynamicDefinesType} from './program/program_uniforms';
 
 const topColor = new Color(1, 0, 0, 1);
 const btmColor = new Color(0, 1, 0, 1);
@@ -63,7 +64,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const gl = context.gl;
 
     const isGlobeProjection = tr.projection.name === 'globe';
-    const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : [];
+    const definesValues: DynamicDefinesType[] = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : [];
 
     let posMatrix = mat4.clone(coord.projMatrix);
 
@@ -86,7 +87,6 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
 
     mat4.multiply(posMatrix, jitterMatrix, posMatrix);
 
-    // @ts-expect-error - TS2322 - Type 'string[]' is not assignable to type 'DynamicDefinesType[]'.
     const program = painter.getOrCreateProgram('debug', {defines: definesValues});
     const tile = sourceCache.getTileByID(coord.key);
     if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);

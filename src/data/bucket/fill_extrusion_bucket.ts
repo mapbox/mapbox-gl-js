@@ -741,10 +741,8 @@ class FillExtrusionBucket implements Bucket {
                 id,
                 sourceLayerIndex,
                 index,
-                // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
                 geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
                 properties: feature.properties,
-                // @ts-expect-error - TS2322 - Type '0 | 2 | 1 | 3' is not assignable to type '2 | 1 | 3'.
                 type: feature.type,
                 patterns: {}
             };
@@ -863,7 +861,7 @@ class FillExtrusionBucket implements Bucket {
         const floodLightRadius = this.layers[0].paint.get('fill-extrusion-flood-light-ground-radius').evaluate(feature, {});
         const maxRadius = floodLightRadius / this.tileToMeter;
 
-        const tileBounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
+        const tileBounds: [Point, Point] = [new Point(0, 0), new Point(EXTENT, EXTENT)];
         const projection = tileTransform.projection;
         const isGlobe = projection.name === 'globe';
         // If wallMode is used, LineString geometries will be converted into polygons
@@ -923,12 +921,10 @@ class FillExtrusionBucket implements Bucket {
             // for a tile depends on the zoom level. For example tile with z=0 requires 2⁴
             // subdivisions, tile with z=1 2³ etc. The subdivision is done in polar coordinates
             // instead of tile coordinates.
-            // @ts-expect-error - TS2345 - Argument of type 'Point[]' is not assignable to parameter of type '[Point, Point]'.
             clippedPolygons = resampleFillExtrusionPolygonsForGlobe(polygons, tileBounds, canonical);
         } else {
             clippedPolygons = [];
             for (const polygon of polygons) {
-                // @ts-expect-error - TS2322 - Type 'Point[]' is not assignable to type '[Point, Point]'.
                 clippedPolygons.push({polygon, bounds: tileBounds});
             }
         }

@@ -243,8 +243,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
 
         if (this._map._cooperativeGestures && !isFullscreen() && e.touches.length < 3) return;
 
-        // @ts-expect-error - TS2322 - Type 'boolean | void' is not assignable to type 'boolean'.
-        this._valid = this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
+        this._valid = !!this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
 
         if (!this._valid) return;
 

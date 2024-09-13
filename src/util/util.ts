@@ -39,7 +39,7 @@ export function radToDeg(a: number): number {
     return a * RAD_TO_DEG;
 }
 
-const TILE_CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]];
+const TILE_CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]] as const;
 
 /**
  * Given a particular bearing, returns the corner of the tile thats farthest
@@ -49,10 +49,9 @@ const TILE_CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]];
  * @returns {QuadCorner}
  * @private
  */
-export function furthestTileCorner(bearing: number): [number, number] {
+export function furthestTileCorner(bearing: number): Readonly<[number, number]> {
     const alignedBearing = ((bearing + 45) + 360) % 360;
     const cornerIdx = Math.round(alignedBearing / 90) % 4;
-    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number]'.
     return TILE_CORNERS[cornerIdx];
 }
 
@@ -871,7 +870,7 @@ export function computeColorAdjustmentMatrix(
 
     const sa = saturation / 3.0;
     const sb = 1.0 - 2.0 * sa;
-    const saturationMatrix = [
+    const saturationMatrix: mat4 = [
         sb,  sa,  sa,  0.0,
         sa,  sb,  sa,  0.0,
         sa,  sa,  sb,  0.0,
@@ -879,7 +878,7 @@ export function computeColorAdjustmentMatrix(
     ];
 
     const cs = 0.5 - 0.5 * contrast;
-    const contrastMatrix = [
+    const contrastMatrix: mat4 = [
         contrast, 0.0,      0.0,      0.0,
         0.0,      contrast, 0.0,      0.0,
         0.0,      0.0,      contrast, 0.0,
@@ -887,19 +886,16 @@ export function computeColorAdjustmentMatrix(
     ];
 
     const hl = brightnessMax - brightnessMin;
-    const brightnessMatrix = [
+    const brightnessMatrix: mat4 = [
         hl,            0.0,           0.0,           0.0,
         0.0,           hl,            0.0,           0.0,
         0.0,           0.0,           hl,            0.0,
         brightnessMin, brightnessMin, brightnessMin, 1.0
     ];
 
-    mat4.multiply(m, brightnessMatrix as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number], contrastMatrix as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]);
-    mat4.multiply(m, m, saturationMatrix as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]);
-    // mat4.multiply(m, m, hueMatrix);
-
-    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
-    return m;
+    mat4.multiply(m, brightnessMatrix, contrastMatrix);
+    mat4.multiply(m, m, saturationMatrix);
+    return m as Float32Array;
 }
 
 export {deepEqual};

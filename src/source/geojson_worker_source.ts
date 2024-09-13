@@ -47,16 +47,18 @@ export interface GeoJSONIndex {
     getLeaves?: (clusterId: number, limit: number, offset: number) => Array<GeoJSON.Feature>;
 }
 
-function loadGeoJSONTile(params: RequestedTileParameters, callback: LoadVectorDataCallback) {
+function loadGeoJSONTile(params: RequestedTileParameters, callback: LoadVectorDataCallback): undefined {
     const canonical = params.tileID.canonical;
 
     if (!this._geoJSONIndex) {
-        return callback(null, null);  // we couldn't load the file
+        callback(null, null); // we couldn't load the file
+        return;
     }
 
     const geoJSONTile = this._geoJSONIndex.getTile(canonical.z, canonical.x, canonical.y);
     if (!geoJSONTile) {
-        return callback(null, null); // nothing in the given tile
+        callback(null, null); // nothing in the given tile
+        return;
     }
 
     const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
@@ -97,7 +99,6 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @private
      */
     constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadGeoJSON?: LoadGeoJSON | null, brightness?: number | null) {
-        // @ts-expect-error - TS2345 - Argument of type '(params: RequestedTileParameters, callback: LoadVectorDataCallback) => void' is not assignable to parameter of type 'LoadVectorData'.
         super(actor, layerIndex, availableImages, isSpriteLoaded, loadGeoJSONTile, brightness);
         if (loadGeoJSON) {
             this.loadGeoJSON = loadGeoJSON;

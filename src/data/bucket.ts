@@ -55,7 +55,7 @@ export type BucketFeature = {
     sourceLayerIndex: number;
     geometry: Array<Array<Point>>;
     properties: any;
-    type: 1 | 2 | 3;
+    type: 0 | 1 | 2 | 3;
     id?: any;
     readonly patterns: {
         [_: string]: string;

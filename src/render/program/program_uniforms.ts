@@ -28,10 +28,22 @@ import type {SymbolDefinesType} from './symbol_program';
 import type {RasterParticleDefinesType} from './raster_particle_program';
 import type {RasterDefinesType} from './raster_program';
 import type {CircleDefinesType} from './circle_program';
+import type {ModelDefinesType} from '../../../3d-style/render/program/model_program';
 
 export type FogDefinesType = ['FOG', 'FOG_DITHERING'];
 export type TerrainDepthAccessDefinesType = 'DEPTH_D24' | 'DEPTH_OCCLUSION';
-export type DynamicDefinesType = CircleDefinesType | SymbolDefinesType | LineDefinesType | HeatmapDefinesType   | GlobeDefinesType | RasterDefinesType | RasterParticleDefinesType | FogDefinesType | HillshadeDefinesType | TerrainDepthAccessDefinesType;
+export type DynamicDefinesType =
+    | CircleDefinesType
+    | SymbolDefinesType
+    | LineDefinesType
+    | HeatmapDefinesType
+    | GlobeDefinesType
+    | RasterDefinesType
+    | RasterParticleDefinesType
+    | FogDefinesType
+    | HillshadeDefinesType
+    | TerrainDepthAccessDefinesType
+    | ModelDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,

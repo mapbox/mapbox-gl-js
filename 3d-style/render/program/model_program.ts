@@ -45,6 +45,8 @@ export type ModelUniformsType = {
     ['u_occlusionTextureTransform']: Uniform4f;
 };
 
+export type ModelDefinesType = 'DIFFUSE_SHADED' | 'SHADOWS_SINGLE_CASCADE' | 'OCCLUSION_TEXTURE_TRANSFORM';
+
 const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_lighting_matrix': new UniformMatrix4f(context),

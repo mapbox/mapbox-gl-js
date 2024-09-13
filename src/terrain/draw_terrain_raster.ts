@@ -30,6 +30,7 @@ import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
 import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
 import type Tile from '../source/tile';
+import type {DynamicDefinesType} from '../render/program/program_uniforms';
 
 export {
     drawTerrainRaster
@@ -233,10 +234,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
     // Render the poles.
     if (sharedBuffers && (painter.renderDefaultNorthPole || painter.renderDefaultSouthPole)) {
-        const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
+        const defines: DynamicDefinesType[] = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
-        // @ts-expect-error - TS2322 - Type 'string[]' is not assignable to type 'DynamicDefinesType[]'.
         program = painter.getOrCreateProgram('globeRaster', {defines});
         for (const coord of tileIDs) {
             // Fill poles by extrapolating adjacent border tiles

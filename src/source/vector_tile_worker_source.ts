@@ -79,7 +79,6 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
         const workerTile = this.loading[uid] = new WorkerTile(params);
         workerTile.abort = this.loadVectorData(params, (err, response) => {
-
             const aborted = !this.loading[uid];
 
             delete this.loading[uid];

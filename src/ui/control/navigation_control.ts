@@ -152,11 +152,9 @@ class NavigationControl implements IControl {
     }
 
     _createButton(className: string, fn: () => unknown): HTMLButtonElement {
-        const a = DOM.create('button', className, this._container);
-        // @ts-expect-error - TS2339 - Property 'type' does not exist on type 'HTMLElement'.
+        const a = DOM.create('button', className, this._container) as HTMLButtonElement;
         a.type = 'button';
         a.addEventListener('click', fn);
-        // @ts-expect-error - TS2322 - Type 'HTMLElement' is not assignable to type 'HTMLButtonElement'.
         return a;
     }
 

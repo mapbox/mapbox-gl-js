@@ -990,12 +990,10 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     const dynamicBuffers = [];
                     setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
                     if (!hasMapboxFeatures) {
-                        // @ts-expect-error
                         programOptions.defines.push('DIFFUSE_SHADED');
                     }
 
                     if (singleCascade) {
-                        // @ts-expect-error
                         programOptions.defines.push('SHADOWS_SINGLE_CASCADE');
                     }
 
@@ -1030,7 +1028,6 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     // Handle Texture transform
                     if (material.occlusionTexture && material.occlusionTexture.offsetScale) {
                         occlusionTextureTransform = material.occlusionTexture.offsetScale;
-                        // @ts-expect-error
                         programOptions.defines.push('OCCLUSION_TEXTURE_TRANSFORM');
                     }
 

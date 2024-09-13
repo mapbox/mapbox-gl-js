@@ -896,11 +896,9 @@ export class Terrain extends Elevation {
                 const coords = (proxiedCoords as Array<OverscaledTileID>);
                 context.viewport.set([0, 0, fbo.fb.width, fbo.fb.height]);
                 if (currentStencilSource !== (sourceCache ? sourceCache.id : null)) {
-                    // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                     this._setupStencil(fbo, proxiedCoords, layer, sourceCache);
                     currentStencilSource = sourceCache ? sourceCache.id : null;
                 }
-                // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                 painter.renderLayer(painter, sourceCache, layer, coords);
             }
 
@@ -917,11 +915,9 @@ export class Terrain extends Elevation {
                     const coords = (proxiedCoords as Array<OverscaledTileID>);
                     context.viewport.set([0, 0, fbo.fb.width, fbo.fb.height]);
                     if (currentStencilSource !== (sourceCache ? sourceCache.id : null)) {
-                        // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                         this._setupStencil(fbo, proxiedCoords, layer, sourceCache);
                         currentStencilSource = sourceCache ? sourceCache.id : null;
                     }
-                    // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                     painter.renderLayer(painter, sourceCache, layer, coords);
                 }
             }

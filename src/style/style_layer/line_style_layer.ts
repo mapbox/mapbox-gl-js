@@ -170,11 +170,8 @@ class LineStyleLayer extends StyleLayer {
             this.paint.get('line-translate-anchor'),
             transform.angle, queryGeometry.pixelToTileUnitsFactor);
         const halfWidth = queryGeometry.pixelToTileUnitsFactor / 2 * getLineWidth(
-            // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
             this.paint.get('line-width').evaluate(feature, featureState),
-            // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
             this.paint.get('line-gap-width').evaluate(feature, featureState));
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
         const lineOffset = this.paint.get('line-offset').evaluate(feature, featureState);
         if (lineOffset) {
             geometry = offsetLine(geometry, lineOffset * queryGeometry.pixelToTileUnitsFactor);

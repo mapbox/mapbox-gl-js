@@ -134,18 +134,13 @@ class FeatureIndex {
     // Finds non-symbol features in this tile at a particular position.
     query(
         args: QueryParameters,
-        styleLayers: {
-            [_: string]: StyleLayer;
-        },
-        serializedLayers: {
-            [_: string]: any;
-        },
+        styleLayers: {[_: string]: StyleLayer},
+        serializedLayers: {[_: string]: any},
         sourceFeatureState: SourceFeatureState,
     ): QueryResult {
         this.loadVTLayers();
-        const params = args.params || {},
-            // @ts-expect-error - TS2339 - Property 'filter' does not exist on type '{}'.
-            filter = featureFilter(params.filter);
+        const params = args.params || ({} as Partial<QueryParameters['params']>);
+        const filter = featureFilter(params.filter);
         const tilespaceGeometry = args.tileResult;
         const transform = args.transform;
 
@@ -189,16 +184,13 @@ class FeatureIndex {
                 result,
                 match,
                 filter,
-                // @ts-expect-error - TS2339 - Property 'layers' does not exist on type '{}'.
                 params.layers,
-                // @ts-expect-error - TS2339 - Property 'availableImages' does not exist on type '{}'.
                 params.availableImages,
                 styleLayers,
                 serializedLayers,
                 sourceFeatureState,
                 (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: any, layoutVertexArrayOffset: number = 0) => {
                     if (!featureGeometry) {
-                        // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
                         featureGeometry = loadGeometry(feature, this.tileID.canonical, args.tileTransform);
                     }
 
@@ -244,7 +236,6 @@ class FeatureIndex {
             if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
                 return;
             }
-            // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'Feature'.
         } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
             return;
         }

@@ -112,7 +112,7 @@ export type SymbolFeature = {
     sourceLayerIndex: number;
     geometry: Array<Array<Point>>;
     properties: any;
-    type: 'Point' | 'LineString' | 'Polygon';
+    type: 'Unknown' | 'Point' | 'LineString' | 'Polygon';
     id?: any;
 };
 
@@ -597,7 +597,6 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
-            // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
             if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, canonical, tileTransform);
 
             if (isGlobe && feature.type !== 1 && canonical.z <= 5) {
@@ -668,7 +667,6 @@ class SymbolBucket implements Bucket {
                 sourceLayerIndex,
                 geometry: evaluationFeature.geometry,
                 properties: feature.properties,
-                // @ts-expect-error - TS2322 - Type '"Polygon" | "Point" | "LineString" | "Unknown"' is not assignable to type '"Polygon" | "Point" | "LineString"'.
                 type: vectorTileFeatureTypes[feature.type],
                 sortKey
             };

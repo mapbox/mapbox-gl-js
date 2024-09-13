@@ -80,14 +80,11 @@ class FillExtrusionStyleLayer extends StyleLayer {
         elevationHelper: DEMSampler | null | undefined,
         layoutVertexArrayOffset: number,
     ): boolean | number {
-
         const translation = tilespaceTranslate(this.paint.get('fill-extrusion-translate'),
                                 this.paint.get('fill-extrusion-translate-anchor'),
                                 transform.angle,
                                 queryGeometry.pixelToTileUnitsFactor);
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
         const height = this.paint.get('fill-extrusion-height').evaluate(feature, featureState);
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
         const base = this.paint.get('fill-extrusion-base').evaluate(feature, featureState);
 
         const centroid = [0, 0];

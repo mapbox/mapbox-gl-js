@@ -129,8 +129,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         input instanceof String ||
         input instanceof Date ||
         input instanceof RegExp) {
-        // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type 'Serialized'.
-        return input;
+        return input as Serialized;
     }
 
     if (isArrayBuffer(input) || isImageBitmap(input)) {

@@ -17,6 +17,7 @@ import type SourceCache from '../source/source_cache';
 import type HeatmapStyleLayer from '../style/style_layer/heatmap_style_layer';
 import type HeatmapBucket from '../data/bucket/heatmap_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
+import type {DynamicDefinesType} from './program/program_uniforms';
 
 export default drawHeatmap;
 
@@ -44,10 +45,10 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
         const isGlobeProjection = tr.projection.name === 'globe';
 
-        const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : [];
+        const definesValues: DynamicDefinesType[] = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : [];
         const cullMode = isGlobeProjection ? CullFaceMode.frontCCW : CullFaceMode.disabled;
 
-        const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+        const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
         for (let i = 0; i < coords.length; i++) {
             const coord = coords[i];
@@ -63,7 +64,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
             const affectedByFog = painter.isTileAffectedByFog(coord);
             const programConfiguration = bucket.programConfigurations.get(layer.id);
-            // @ts-expect-error - TS2322 - Type 'string[]' is not assignable to type 'DynamicDefinesType[]'.
             const program = painter.getOrCreateProgram('heatmap', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
             const {zoom} = painter.transform;
             if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
@@ -74,7 +74,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, cullMode,
                 heatmapUniformValues(painter, coord,
-                    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
                     tile, invMatrix, mercatorCenter, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
                 bucket.segments, layer.paint, painter.transform.zoom,

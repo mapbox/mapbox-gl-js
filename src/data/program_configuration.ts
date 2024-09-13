@@ -525,7 +525,6 @@ export default class ProgramConfiguration {
                     const state = featureStates[id.toString()];
                     featureMap.eachPosition(id, (index, start, end) => {
                         const feature = vtLayer.feature(index);
-                        // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'Feature'.
                         (binder as AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness);
                     });
                 }
@@ -534,7 +533,6 @@ export default class ProgramConfiguration {
                         const state = featureStates[id.toString()];
                         featureMapWithoutIds.eachPosition(id, (index, start, end) => {
                             const feature = vtLayer.feature(index);
-                            // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'Feature'.
                             (binder as AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness);
                         });
                     }
@@ -609,8 +607,7 @@ export default class ProgramConfiguration {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguration's binder members.
         for (const {name, property, binding} of binderUniforms) {
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'keyof Properties'.
-            (this.binders[property] as any).setUniform(program, binding, globals, properties.get(property), name);
+            (this.binders[property] as any).setUniform(program, binding, globals, properties.get(property as keyof Properties), name);
         }
     }
 

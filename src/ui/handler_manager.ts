@@ -113,7 +113,7 @@ class HandlerManager {
     _previousActiveHandlers: {
         [key: string]: Handler;
     };
-    _listeners: Array<[HTMLElement | Document, string, undefined | AddEventListenerOptions]>;
+    _listeners: Array<[HTMLElement | Document | Window, string, undefined | AddEventListenerOptions]>;
     _trackingEllipsoid: TrackingEllipsoid;
     _dragOrigin: vec3 | null | undefined;
     _originalZoom: number | null | undefined;
@@ -181,7 +181,6 @@ class HandlerManager {
             [el, 'wheel', {passive: false}],
             [el, 'contextmenu', undefined],
 
-            // @ts-expect-error - TS2322 - Type 'Window & typeof globalThis' is not assignable to type 'Document | HTMLElement'.
             [window, 'blur', undefined]
         ];
 

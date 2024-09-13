@@ -63,16 +63,13 @@ class CircleStyleLayer extends StyleLayer {
         pixelPosMatrix: Float32Array,
         elevationHelper?: DEMSampler | null,
     ): boolean {
-
         const translation = tilespaceTranslate(
-
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
-            transform.angle, queryGeometry.pixelToTileUnitsFactor);
+            transform.angle, queryGeometry.pixelToTileUnitsFactor
+        );
 
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
         const size = this.paint.get('circle-radius').evaluate(feature, featureState) +
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
             this.paint.get('circle-stroke-width').evaluate(feature, featureState);
 
         return queryIntersectsCircle(queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,

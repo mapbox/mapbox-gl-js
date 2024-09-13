@@ -153,7 +153,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
                 if (!showOverdraw) {
                     // Mark the alpha channel with the DF values (that determine the intensity of the effects). No color is written.
-                    // @ts-expect-error - TS2345 - Argument of type '{ func: 519; mask: 255; }' is not assignable to parameter of type 'StencilTest'.
                     const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
                     const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
 
@@ -187,7 +186,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
                     {
                         // Mark the alpha channel with the DF values (that determine the intensity of the effects). No color is written.
-                        // @ts-expect-error - TS2345 - Argument of type '{ func: 519; mask: 255; }' is not assignable to parameter of type 'StencilTest'.
                         const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
                         const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
 

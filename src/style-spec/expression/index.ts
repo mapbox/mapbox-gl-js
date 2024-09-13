@@ -36,7 +36,7 @@ import type {FeatureDistanceData} from '../feature_filter/index';
 import type {ConfigOptions} from '../types/config_options';
 
 export interface Feature {
-    readonly type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
+    readonly type: 0 | 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
     readonly id?: number | null;
     readonly properties: {
         [_: string]: any;

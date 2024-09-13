@@ -948,8 +948,7 @@ mercatorcoordinate.meterInMercatorCoordinateUnits() satisfies number;
  */
 
 expectType<mapboxgl.TransformRequestFunction>((url: string) => ({url}));
-// @ts-expect-error - incompatible
-expectType<mapboxgl.TransformRequestFunction>((url: string, resourceTypeEnum: mapboxgl.ResourceTypeEnum) => ({
+expectType<mapboxgl.TransformRequestFunction>((url: string, resourceType: mapboxgl.ResourceType) => ({
     url,
     credentials: "same-origin",
     headers: {"Accept-Encoding": "compress"},

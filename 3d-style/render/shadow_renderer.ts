@@ -357,7 +357,6 @@ export class ShadowRenderer {
                 const coords = sourceCache ? sourceCoords[sourceCache.id] : undefined;
                 if (layer.type !== 'model' && !(coords && coords.length)) continue;
 
-                // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                 painter.renderLayer(painter, sourceCache, layer, coords);
             }
         }

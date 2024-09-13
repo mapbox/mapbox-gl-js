@@ -1360,7 +1360,6 @@ class Style extends Evented<MapEvents> {
 
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;
-        // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
         return layer.isDraped(this.getLayerSourceCache(layer));
     }
 
@@ -3537,7 +3536,7 @@ class Style extends Evented<MapEvents> {
         return this._mergedOtherSourceCaches[fqid];
     }
 
-    getLayerSourceCache(layer: StyleLayer): SourceCache | void {
+    getLayerSourceCache(layer: StyleLayer): SourceCache | undefined {
         const fqid = makeFQID(layer.source, layer.scope);
         return layer.type === 'symbol' ?
             this._mergedSymbolSourceCaches[fqid] :

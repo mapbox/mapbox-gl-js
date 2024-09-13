@@ -31,7 +31,7 @@ function preparePoint(point: Point, scale: number) {
 // a subset of VectorTileGeometry
 interface FeatureWithGeometry {
     extent: number;
-    type: 1 | 2 | 3;
+    type: 0 | 1 | 2 | 3;
     loadGeometry: () => Array<Array<Point>>;
 }
 
