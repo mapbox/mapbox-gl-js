@@ -56,7 +56,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@tweakpane/core": "^2.0.4",
     "@types/jest": "^29.5.13",
-    "@types/node": "^22.5.4",
+    "@types/node": "^22.5.5",
     "@types/offscreencanvas": "^2019.7.3",
     "@typescript-eslint/eslint-plugin": "^8.6.0",
     "@typescript-eslint/parser": "^8.6.0",
