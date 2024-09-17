@@ -102,7 +102,7 @@
     "rollup": "^4.18.0",
     "rollup-plugin-esbuild": "^6.1.1",
     "rollup-plugin-unassert": "^0.6.0",
-    "serve-static": "^1.15.0",
+    "serve-static": "^1.16.2",
     "shuffle-seed": "^1.1.6",
     "st": "^3.0.0",
     "stylelint": "^16.9.0",
