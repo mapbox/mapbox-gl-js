@@ -40,7 +40,7 @@ export type PaintProps = {
     "fill-extrusion-ambient-occlusion-wall-radius": DataConstantProperty<number>;
     "fill-extrusion-ambient-occlusion-ground-radius": DataConstantProperty<number>;
     "fill-extrusion-ambient-occlusion-ground-attenuation": DataConstantProperty<number>;
-    "fill-extrusion-flood-light-color": DataConstantProperty<Color>;
+    "fill-extrusion-flood-light-color": DataDrivenProperty<Color>;
     "fill-extrusion-flood-light-intensity": DataConstantProperty<number>;
     "fill-extrusion-flood-light-wall-radius": DataDrivenProperty<number>;
     "fill-extrusion-flood-light-ground-radius": DataDrivenProperty<number>;
@@ -48,7 +48,7 @@ export type PaintProps = {
     "fill-extrusion-vertical-scale": DataConstantProperty<number>;
     "fill-extrusion-rounded-roof": DataConstantProperty<boolean>;
     "fill-extrusion-cutoff-fade-range": DataConstantProperty<number>;
-    "fill-extrusion-emissive-strength": DataConstantProperty<number>;
+    "fill-extrusion-emissive-strength": DataDrivenProperty<number>;
     "fill-extrusion-line-width": DataDrivenProperty<number>;
     "fill-extrusion-cast-shadows": DataConstantProperty<boolean>;
 };
@@ -68,7 +68,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-extrusion-ambient-occlusion-wall-radius": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ambient-occlusion-wall-radius"]),
     "fill-extrusion-ambient-occlusion-ground-radius": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ambient-occlusion-ground-radius"]),
     "fill-extrusion-ambient-occlusion-ground-attenuation": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ambient-occlusion-ground-attenuation"]),
-    "fill-extrusion-flood-light-color": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-flood-light-color"]),
+    "fill-extrusion-flood-light-color": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-flood-light-color"]),
     "fill-extrusion-flood-light-intensity": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-flood-light-intensity"]),
     "fill-extrusion-flood-light-wall-radius": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-flood-light-wall-radius"]),
     "fill-extrusion-flood-light-ground-radius": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-flood-light-ground-radius"]),
@@ -76,7 +76,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-extrusion-vertical-scale": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-vertical-scale"]),
     "fill-extrusion-rounded-roof": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-rounded-roof"]),
     "fill-extrusion-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-cutoff-fade-range"]),
-    "fill-extrusion-emissive-strength": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-emissive-strength"]),
+    "fill-extrusion-emissive-strength": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-emissive-strength"]),
     "fill-extrusion-line-width": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-line-width"]),
     "fill-extrusion-cast-shadows": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-cast-shadows"]),
 }));

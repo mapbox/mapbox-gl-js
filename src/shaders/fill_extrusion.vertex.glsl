@@ -71,6 +71,8 @@ out float v_height;
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define highp float flood_light_wall_radius
 #pragma mapbox: define highp float line_width
+#pragma mapbox: define highp float emissive_strength
+#pragma mapbox: define highp vec4 flood_light_color
 
 void main() {
     #pragma mapbox: initialize highp float base
@@ -78,7 +80,9 @@ void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize highp float flood_light_wall_radius
     #pragma mapbox: initialize highp float line_width
-    
+    #pragma mapbox: initialize highp float emissive_strength
+    #pragma mapbox: initialize highp vec4 flood_light_color
+
     base *= u_vertical_scale;
     height *= u_vertical_scale;
     

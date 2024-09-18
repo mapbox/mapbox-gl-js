@@ -25,7 +25,6 @@ in vec4 v_roof_color;
 in highp vec3 v_normal;
 #endif
 
-uniform vec3 u_flood_light_color;
 uniform highp float u_vertical_scale;
 uniform float u_flood_light_intensity;
 uniform vec3 u_ground_shadow_factor;
@@ -35,11 +34,14 @@ in float v_flood_radius;
 in float v_has_floodlight;
 #endif
 
-uniform float u_emissive_strength;
-
 in float v_height;
 
+#pragma mapbox: define highp float emissive_strength
+#pragma mapbox: define highp vec4 flood_light_color
+
 void main() {
+    #pragma mapbox: initialize highp float emissive_strength
+    #pragma mapbox: initialize highp vec4 flood_light_color
 
 #if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS) || defined(LIGHTING_3D_MODE)
     vec3 normal = normalize(v_normal);
@@ -98,7 +100,7 @@ float flood_radiance = 0.0;
     // Compute both FE and flood lights separately and interpolate between the two.
     // "litColor" uses pretty much "shadowed_light_factor_normal" as the directional component.
     vec3 litColor = apply_lighting(color.rgb, normal, (1.0 - u_shadow_intensity * occlusion) * ndotl);
-    vec3 floodLitColor = compute_flood_lighting(u_flood_light_color * u_opacity, 1.0 - u_shadow_intensity, occlusion, u_ground_shadow_factor);
+    vec3 floodLitColor = compute_flood_lighting(flood_light_color.rgb * u_opacity, 1.0 - u_shadow_intensity, occlusion, u_ground_shadow_factor);
 
     color.rgb = mix(litColor, floodLitColor, flood_radiance);
 #else // FLOOD_LIGHT
@@ -116,11 +118,11 @@ float flood_radiance = 0.0;
 #else // RENDER_SHADOWS
     color.rgb = apply_lighting(color.rgb, normal);
 #ifdef FLOOD_LIGHT
-    color.rgb = mix(color.rgb, u_flood_light_color * u_opacity, flood_radiance);
+    color.rgb = mix(color.rgb, flood_light_color.rgb * u_opacity, flood_radiance);
 #endif // FLOOD_LIGHT
 #endif // !RENDER_SHADOWS
 
-    color.rgb = mix(color.rgb, v_flat.rgb, u_emissive_strength);
+    color.rgb = mix(color.rgb, v_flat.rgb, emissive_strength);
     color *= u_opacity;
 #endif // LIGHTING_3D_MODE
 

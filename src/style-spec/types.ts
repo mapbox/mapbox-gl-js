@@ -725,7 +725,7 @@ export type FillExtrusionLayerSpecification = {
         "fill-extrusion-ambient-occlusion-ground-radius-transition"?: TransitionSpecification,
         "fill-extrusion-ambient-occlusion-ground-attenuation"?: PropertyValueSpecification<number>,
         "fill-extrusion-ambient-occlusion-ground-attenuation-transition"?: TransitionSpecification,
-        "fill-extrusion-flood-light-color"?: PropertyValueSpecification<ColorSpecification>,
+        "fill-extrusion-flood-light-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-extrusion-flood-light-color-transition"?: TransitionSpecification,
         "fill-extrusion-flood-light-intensity"?: PropertyValueSpecification<number>,
         "fill-extrusion-flood-light-intensity-transition"?: TransitionSpecification,
@@ -742,7 +742,7 @@ export type FillExtrusionLayerSpecification = {
          */
         "fill-extrusion-rounded-roof"?: PropertyValueSpecification<boolean>,
         "fill-extrusion-cutoff-fade-range"?: ExpressionSpecification,
-        "fill-extrusion-emissive-strength"?: PropertyValueSpecification<number>,
+        "fill-extrusion-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-emissive-strength-transition"?: TransitionSpecification,
         "fill-extrusion-line-width"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-line-width-transition"?: TransitionSpecification,

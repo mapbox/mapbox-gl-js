@@ -26,12 +26,14 @@ uniform highp float u_dynamic_offset;
 uniform highp vec2 u_ao;
 
 #pragma mapbox: define highp float flood_light_ground_radius
+#pragma mapbox: define highp vec4 flood_light_color
 
 const float TANGENT_CUTOFF = 4.0;
 const float NORM = 32767.0;
 
 void main() {
     #pragma mapbox: initialize highp float flood_light_ground_radius
+    #pragma mapbox: initialize highp vec4 flood_light_color
 
     vec2 p = a_pos_end.xy;
     vec2 q = floor(a_pos_end.zw * 0.5);

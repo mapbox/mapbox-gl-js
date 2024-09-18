@@ -5833,7 +5833,7 @@
       }
     },
     "fill-extrusion-flood-light-color": {
-      "property-type": "data-constant",
+      "property-type": "data-driven",
       "type": "color",
       "experimental": true,
       "default": "#ffffff",
@@ -5846,7 +5846,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "measure-light"
+          "measure-light",
+          "feature-state"
         ]
       },
       "sdk-support": {
@@ -5854,6 +5855,11 @@
           "js": "3.0.0",
           "android": "11.0.0",
           "ios": "11.0.0"
+        },
+        "data-driven styling": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
         }
       }
     },
@@ -6053,16 +6059,22 @@
           "js": "3.0.0",
           "android": "11.0.0",
           "ios": "11.0.0"
+        },
+        "data-driven styling": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
         }
       },
       "expression": {
         "interpolated": true,
         "parameters": [
           "zoom",
-          "measure-light"
+          "measure-light",
+          "feature-state"
         ]
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "fill-extrusion-line-width": {
       "type": "number",
@@ -7232,7 +7244,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "measure-light"
+          "measure-light",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -7263,7 +7276,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "measure-light"
+          "measure-light",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"

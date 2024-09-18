@@ -66,11 +66,14 @@ export const fillExtrusionDefaultDataDrivenProperties: Array<string> = [
     'fill-extrusion-color',
     'fill-extrusion-pattern',
     'fill-extrusion-flood-light-wall-radius',
-    'fill-extrusion-line-width'
+    'fill-extrusion-line-width',
+    'fill-extrusion-emissive-strength',
+    'fill-extrusion-flood-light-color'
 ];
 
 export const fillExtrusionGroundDataDrivenProperties: Array<string> = [
-    'fill-extrusion-flood-light-ground-radius'
+    'fill-extrusion-flood-light-ground-radius',
+    'fill-extrusion-flood-light-color'
 ];
 
 const FACTOR = Math.pow(2, 13);
