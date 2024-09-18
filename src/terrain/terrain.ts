@@ -686,23 +686,13 @@ export class Terrain extends Elevation {
         context.activeTexture.set(gl.TEXTURE2);
 
         const min = this._getLoadedAreaMinimum();
-
-        const getTextureParameters = () => {
-            const image = new Float32Image(
-                {width: 1, height: 1},
-                new Float32Array([min]));
-            return [gl.R32F, image];
-        };
-
-        const [internalFormat, image] = getTextureParameters();
+        const image = new Float32Image({width: 1, height: 1}, new Float32Array([min]));
 
         this._emptyDEMTextureDirty = false;
         let texture = this._emptyDEMTexture;
         if (!texture) {
-            // @ts-expect-error - TS2345 - Argument of type '33326 | Float32Image' is not assignable to parameter of type 'TextureImage'.
-            texture = this._emptyDEMTexture = new Texture(context, image, internalFormat, {premultiply: false});
+            texture = this._emptyDEMTexture = new Texture(context, image, gl.R32F, {premultiply: false});
         } else {
-            // @ts-expect-error - TS2345 - Argument of type '33326 | Float32Image' is not assignable to parameter of type 'TextureImage'.
             texture.update(image, {premultiply: false});
         }
         return texture;
@@ -1033,7 +1023,7 @@ export class Terrain extends Elevation {
         const gl = context.gl;
         const bufferSize = this.drapeBufferSize;
         context.activeTexture.set(gl.TEXTURE0);
-        const tex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, gl.RGBA);
+        const tex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, gl.RGBA8);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         const fb = context.createFramebuffer(bufferSize[0], bufferSize[1], true, null);
         fb.colorAttachment.set(tex.texture);

@@ -514,7 +514,7 @@ function configureRaster(
         layer.updateColorRamp(range);
 
         let tex = layer.colorRampTexture;
-        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA8);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 

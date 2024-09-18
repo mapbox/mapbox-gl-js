@@ -114,7 +114,7 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
     context.activeTexture.set(gl.TEXTURE0);
     let fbo = tile.hillshadeFBO;
     if (!fbo) {
-        const renderTexture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
+        const renderTexture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA8);
         renderTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
         fbo = tile.hillshadeFBO = context.createFramebuffer(tileSize, tileSize, true, 'renderbuffer');

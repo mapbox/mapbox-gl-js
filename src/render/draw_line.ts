@@ -167,7 +167,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                 if (layerGradient.texture) {
                     layerGradient.texture.update(layerGradient.gradient);
                 } else {
-                    layerGradient.texture = new Texture(context, layerGradient.gradient, gl.RGBA);
+                    layerGradient.texture = new Texture(context, layerGradient.gradient, gl.RGBA8);
                 }
                 layerGradient.version = layer.gradientVersion;
                 gradientTexture = layerGradient.texture;

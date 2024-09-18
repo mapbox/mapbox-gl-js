@@ -177,7 +177,7 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
         // Allocate a texture if not allocated
         context.activeTexture.set(gl.TEXTURE0 + RASTER_COLOR_TEXTURE_UNIT);
         let tex = layer.colorRampTexture;
-        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA8);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 

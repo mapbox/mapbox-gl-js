@@ -701,7 +701,7 @@ class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Event
 
         if (this._dirty && !(this.texture instanceof UserManagedTexture)) {
             if (!this.texture) {
-                this.texture = new Texture(context, this.image, gl.RGBA);
+                this.texture = new Texture(context, this.image, gl.RGBA8);
                 this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             } else {
                 this.texture.update(this.image);

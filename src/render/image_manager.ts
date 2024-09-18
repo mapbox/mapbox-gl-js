@@ -298,7 +298,7 @@ class ImageManager extends Evented {
         let atlasTexture = this.atlasTexture[scope];
 
         if (!atlasTexture) {
-            atlasTexture = new Texture(context, this.atlasImage[scope], gl.RGBA);
+            atlasTexture = new Texture(context, this.atlasImage[scope], gl.RGBA8);
             this.atlasTexture[scope] = atlasTexture;
         } else if (this.dirty) {
             atlasTexture.update(this.atlasImage[scope]);

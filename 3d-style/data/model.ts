@@ -316,7 +316,7 @@ export default class Model {
 }
 
 export function uploadTexture(texture: ModelTexture, context: Context, useSingleChannelTexture: boolean = false) {
-    const textureFormat = useSingleChannelTexture ? context.gl.R8 : context.gl.RGBA;
+    const textureFormat = useSingleChannelTexture ? context.gl.R8 : context.gl.RGBA8;
     if (!texture.uploaded) {
         const useMipmap = texture.sampler.minFilter >= context.gl.NEAREST_MIPMAP_NEAREST;
         texture.gfxTexture = new Texture(context, texture.image, textureFormat, {useMipmap});

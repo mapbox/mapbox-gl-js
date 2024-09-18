@@ -34,8 +34,8 @@ class RasterParticleState {
             data: null
         };
         const gl = context.gl;
-        this.targetColorTexture = new Texture(context, emptyImage, gl.RGBA, {useMipmap: false});
-        this.backgroundColorTexture = new Texture(context, emptyImage, gl.RGBA, {useMipmap: false});
+        this.targetColorTexture = new Texture(context, emptyImage, gl.RGBA8, {useMipmap: false});
+        this.backgroundColorTexture = new Texture(context, emptyImage, gl.RGBA8, {useMipmap: false});
         this.context = context;
 
         this.updateParticleTexture(id, RGBAPositions);
@@ -60,8 +60,8 @@ class RasterParticleState {
 
         const numParticles = RGBAPositions.width * RGBAPositions.height;
 
-        this.particleTexture0 = new Texture(this.context, RGBAPositions, gl.RGBA, {premultiply: false, useMipmap: false});
-        this.particleTexture1 = new Texture(this.context, RGBAPositions, gl.RGBA, {premultiply: false, useMipmap: false});
+        this.particleTexture0 = new Texture(this.context, RGBAPositions, gl.RGBA8, {premultiply: false, useMipmap: false});
+        this.particleTexture1 = new Texture(this.context, RGBAPositions, gl.RGBA8, {premultiply: false, useMipmap: false});
 
         const particleIndices = new ParticleIndexLayoutArray();
         particleIndices.reserve(numParticles);

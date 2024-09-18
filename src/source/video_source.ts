@@ -204,11 +204,10 @@ class VideoSource extends ImageSource<'video'> {
         const gl = context.gl;
 
         if (!this.texture) {
-            this.texture = new Texture(context, this.video, gl.RGBA);
+            this.texture = new Texture(context, this.video, gl.RGBA8);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             this.width = this.video.videoWidth;
             this.height = this.video.videoHeight;
-
         } else if (!this.video.paused) {
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);

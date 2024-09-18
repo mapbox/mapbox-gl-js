@@ -119,9 +119,9 @@ class RasterArrayTile extends Tile {
         this.texture = this.texture || painter.getTileTexture(img.width);
 
         if (this.texture && this.texture instanceof Texture) {
-            this.texture.update(img, {useMipmap: false, premultiply: false});
+            this.texture.update(img, {premultiply: false});
         } else {
-            this.texture = new Texture(context, img, gl.RGBA, {useMipmap: false, premultiply: false});
+            this.texture = new Texture(context, img, gl.RGBA8, {premultiply: false});
         }
     }
 
@@ -289,7 +289,7 @@ class RasterArrayTile extends Tile {
 
         const texture = this.texture;
         if (texture && texture instanceof Texture) {
-            texture.update(img, {useMipmap: false, premultiply: false});
+            texture.update(img, {premultiply: false});
         }
 
         this.textureDescriptor = {

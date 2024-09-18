@@ -225,7 +225,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         if (!framebufferCopyTexture || (framebufferCopyTexture && (framebufferCopyTexture.size[0] !== width || framebufferCopyTexture.size[1] !== height))) {
                             if (framebufferCopyTexture) framebufferCopyTexture.destroy();
                             framebufferCopyTexture = terrain.framebufferCopyTexture = new Texture(context,
-                                new RGBAImage({width, height}), gl.RGBA);
+                                new RGBAImage({width, height}), gl.RGBA8);
                         }
                         framebufferCopyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
                         gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, width, height, 0);

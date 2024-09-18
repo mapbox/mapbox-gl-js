@@ -63,7 +63,7 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
     context.activeTexture.set(gl.TEXTURE0);
     let colorRampTexture = layer.colorRampTexture;
     if (!colorRampTexture) {
-        colorRampTexture = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        colorRampTexture = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA8);
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     const uniformValues = skyboxGradientUniformValues(

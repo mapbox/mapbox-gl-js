@@ -142,7 +142,7 @@ function renderTextureToMap(painter: Painter, layer: HeatmapStyleLayer) {
     context.activeTexture.set(gl.TEXTURE1);
     let colorRampTexture = layer.colorRampTexture;
     if (!colorRampTexture) {
-        colorRampTexture = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        colorRampTexture = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA8);
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 

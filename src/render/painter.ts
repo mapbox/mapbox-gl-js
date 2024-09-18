@@ -334,7 +334,7 @@ class Painter {
         this.layersWithOcclusionOpacity = [];
 
         const emptyDepth = new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0));
-        this.emptyDepthTexture = new Texture(this.context, emptyDepth, gl.RGBA);
+        this.emptyDepthTexture = new Texture(this.context, emptyDepth, gl.RGBA8);
 
         this._clippingActiveLastFrame = false;
     }
@@ -468,7 +468,7 @@ class Painter {
         this.debugIndexBuffer = context.createIndexBuffer(tileLineStripIndices);
 
         this.emptyTexture = new Texture(context,
-            new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0)), context.gl.RGBA);
+            new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0)), context.gl.RGBA8);
 
         // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
         this.identityMat = mat4.create();
@@ -702,7 +702,7 @@ class Painter {
             if (depthWidth !== 0 && depthHeight !== 0) {
                 this.depthFBO = new Framebuffer(this.context, depthWidth, depthHeight, false, 'texture');
 
-                this.depthTexture = new Texture(this.context, {width: depthWidth, height: depthHeight, data: null}, gl.DEPTH_STENCIL);
+                this.depthTexture = new Texture(this.context, {width: depthWidth, height: depthHeight, data: null}, gl.DEPTH24_STENCIL8);
                 this.depthFBO.depthAttachment.set(this.depthTexture.texture);
             }
         }
@@ -1599,7 +1599,7 @@ class Painter {
             this.debugOverlayCanvas.width = 512;
             this.debugOverlayCanvas.height = 512;
             const gl = this.context.gl;
-            this.debugOverlayTexture = new Texture(this.context, this.debugOverlayCanvas, gl.RGBA);
+            this.debugOverlayTexture = new Texture(this.context, this.debugOverlayCanvas, gl.RGBA8);
         }
     }
 

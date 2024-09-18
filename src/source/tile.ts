@@ -401,7 +401,7 @@ class Tile {
         const atlas = this.imageAtlas;
         if (atlas && !atlas.uploaded) {
             const hasPattern = !!Object.keys(atlas.patternPositions).length;
-            this.imageAtlasTexture = new Texture(context, atlas.image, gl.RGBA, {useMipmap: hasPattern});
+            this.imageAtlasTexture = new Texture(context, atlas.image, gl.RGBA8, {useMipmap: hasPattern});
             (this.imageAtlas).uploaded = true;
         }
 
@@ -652,9 +652,9 @@ class Tile {
         const gl = context.gl;
         this.texture = this.texture || painter.getTileTexture(img.width);
         if (this.texture && this.texture instanceof Texture) {
-            this.texture.update(img, {useMipmap: true});
+            this.texture.update(img);
         } else {
-            this.texture = new Texture(context, img, gl.RGBA, {useMipmap: true});
+            this.texture = new Texture(context, img, gl.RGBA8, {useMipmap: true});
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         }
     }

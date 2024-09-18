@@ -110,7 +110,7 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
     setupTexture(emissionTexture, 'HAS_TEXTURE_u_emissionTexture', TextureSlots.Emission);
     if (lut) {
         if (!lut.texture) {
-            lut.texture = new Texture3D(painter.context, lut.image, [lut.image.height, lut.image.height, lut.image.height], context.gl.RGBA);
+            lut.texture = new Texture3D(painter.context, lut.image, [lut.image.height, lut.image.height, lut.image.height], context.gl.RGBA8);
         }
         context.activeTexture.set(context.gl.TEXTURE0 + TextureSlots.LUT);
         if (lut.texture) {
