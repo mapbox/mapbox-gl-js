@@ -1,0 +1,20 @@
+{
+  "expression": ["to-boolean", ["image", "first", "second"]],
+  "propertySpec": {"type": "boolean"},
+  "inputs": [
+    [{}, {}],
+    [{"availableImages": ["first"]}, {}],
+    [{"availableImages": ["second"]}, {}],
+    [{"availableImages": ["first", "second"]}, {}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [false, false, false, true],
+    "serialized": ["to-boolean", ["image", "first", "second"]]
+  }
+}

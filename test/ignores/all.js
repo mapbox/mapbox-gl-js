@@ -198,7 +198,10 @@ const skip = [
     "render-tests/raster-color/categorical",
 
     // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
-    "render-tests/clip-layer/clip-layer-keep-fill-extrusions"
+    "render-tests/clip-layer/clip-layer-keep-fill-extrusions",
+
+    // Not ported from GL Native, https://mapbox.atlassian.net/browse/GLJS-1005
+    "expression-tests/image/two-arguments/available"
 ];
 
 export default {todo, skip};
