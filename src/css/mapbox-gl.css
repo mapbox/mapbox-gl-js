@@ -54,11 +54,19 @@
 .mapboxgl-ctrl-top-left,
 .mapboxgl-ctrl-top-right,
 .mapboxgl-ctrl-bottom-left,
-.mapboxgl-ctrl-bottom-right { position: absolute; pointer-events: none; z-index: 2; }
+.mapboxgl-ctrl-bottom-right,
+.mapboxgl-ctrl-top,
+.mapboxgl-ctrl-right,
+.mapboxgl-ctrl-bottom,
+.mapboxgl-ctrl-left { position: absolute; pointer-events: none; z-index: 2; }
 .mapboxgl-ctrl-top-left     { top: 0; left: 0; }
+.mapboxgl-ctrl-top { top:0; left: 50%; transform: translateX(-50%); }
 .mapboxgl-ctrl-top-right    { top: 0; right: 0; }
-.mapboxgl-ctrl-bottom-left  { bottom: 0; left: 0; }
+.mapboxgl-ctrl-right { top:50%; transform: translateY(-50%); right:0; }
 .mapboxgl-ctrl-bottom-right { right: 0; bottom: 0; }
+.mapboxgl-ctrl-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+.mapboxgl-ctrl-bottom-left  { bottom: 0; left: 0; }
+.mapboxgl-ctrl-left { top: 50%; transform: translateY(-50%); left: 0 }
 
 .mapboxgl-ctrl {
     clear: both;
@@ -67,10 +75,14 @@
     /* workaround for a Safari bug https://github.com/mapbox/mapbox-gl-js/issues/8185 */
     transform: translate(0, 0);
 }
-.mapboxgl-ctrl-top-left .mapboxgl-ctrl     { margin: 10px 0 0 10px; float: left; }
-.mapboxgl-ctrl-top-right .mapboxgl-ctrl    { margin: 10px 10px 0 0; float: right; }
-.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl  { margin: 0 0 10px 10px; float: left; }
-.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl { margin: 0 10px 10px 0; float: right; }
+.mapboxgl-ctrl-top-left .mapboxgl-ctrl      { margin: 10px 0 0 10px; float: left; }
+.mapboxgl-ctrl-top .mapboxgl-ctrl    { margin: 10px 0; float: left;}
+.mapboxgl-ctrl-top-right .mapboxgl-ctrl     { margin: 10px 10px 0 0; float: right; }
+.mapboxgl-ctrl-right .mapboxgl-ctrl  { margin: 0 10px 10px 0; float: right; }
+.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl  { margin: 0 10px 10px 0; float: right; }
+.mapboxgl-ctrl-bottom .mapboxgl-ctrl { margin: 10px 0;  float: left; }
+.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl   { margin: 0 0 10px 10px; float: left; }
+.mapboxgl-ctrl-left .mapboxgl-ctrl   { margin: 0 0 10px 10px; float: left;}
 
 .mapboxgl-ctrl-group {
     border-radius: 4px;
@@ -418,7 +430,8 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     }
 
     .mapboxgl-ctrl-top-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show,
-    .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show {
+    .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show,
+    .mapboxgl-ctrl-left > .mapboxgl-ctrl-attrib.mapboxgl-compact-show {
         padding: 2px 8px 2px 28px;
         border-radius: 12px;
     }
@@ -444,7 +457,8 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
     }
 
     .mapboxgl-ctrl-top-left .mapboxgl-ctrl-attrib-button,
-    .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib-button {
+    .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib-button,
+    .mapboxgl-ctrl-left .mapboxgl-ctrl-attrib-button {
         left: 0;
     }
 
@@ -462,6 +476,10 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
         right: 0;
     }
 
+    .mapboxgl-ctrl-right > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
+        right: 0;
+    }
+
     .mapboxgl-ctrl-top-right > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
         top: 0;
         right: 0;
@@ -474,6 +492,10 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 
     .mapboxgl-ctrl-bottom-left > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
         bottom: 0;
+        left: 0;
+    }
+
+    .mapboxgl-ctrl-left > .mapboxgl-ctrl-attrib.mapboxgl-compact::after {
         left: 0;
     }
 }

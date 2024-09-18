@@ -98,7 +98,7 @@ import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_
 import type {Callback} from 'src/types/callback';
 import type {Interaction} from './interactions';
 
-export type ControlPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
 /* eslint-disable no-use-before-define */
 export interface IControl {
     readonly onAdd: (map: Map) => HTMLElement;
@@ -795,7 +795,8 @@ export class Map extends Camera {
      *
      * @param {IControl} control The {@link IControl} to add.
      * @param {string} [position] Position on the map to which the control will be added.
-     * Valid values are `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`. Defaults to `'top-right'`.
+     * Valid values are `'top-left'`, `'top'`, `'top-right'`, `'right'`, `'bottom-right'`,
+     * `'bottom'`, `'bottom-left'`, and `'left'`. Defaults to `'top-right'`.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
      * // Add zoom and rotation controls to the map.
@@ -3807,7 +3808,7 @@ export class Map extends Camera {
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         const positions = this._controlPositions = {};
-        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((positionName) => {
+        ['top-left', 'top', 'top-right', 'right', 'bottom-right', 'bottom', 'bottom-left', 'left'].forEach((positionName) => {
             positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
         });
 
