@@ -34,6 +34,7 @@ export type FillExtrusionUniformsType = {
     ['u_ao']: Uniform2f;
     ['u_edge_radius']: Uniform1f;
     ['u_width_scale']: Uniform1f;
+    ['u_flood_light_color']: Uniform3f;
     ['u_vertical_scale']: Uniform1f;
     ['u_flood_light_intensity']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
@@ -78,6 +79,7 @@ export type FillExtrusionGroundEffectUniformsType = {
     ['u_meter_to_tile']: Uniform1f;
     ['u_ao']: Uniform2f;
     ['u_flood_light_intensity']: Uniform1f;
+    ['u_flood_light_color']: Uniform3f;
     ['u_attenuation']: Uniform1f;
     ['u_edge_radius']: Uniform1f;
     ['u_fb']: Uniform1i;
@@ -102,6 +104,7 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
     'u_merc_center': new Uniform2f(context),
     'u_up_dir': new Uniform3f(context),
     'u_height_lift': new Uniform1f(context),
+    'u_flood_light_color': new Uniform3f(context),
     'u_vertical_scale': new Uniform1f(context),
     'u_flood_light_intensity': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context)
@@ -147,6 +150,7 @@ const fillExtrusionGroundEffectUniforms = (context: Context): FillExtrusionGroun
     'u_meter_to_tile': new Uniform1f(context),
     'u_ao': new Uniform2f(context),
     'u_flood_light_intensity': new Uniform1f(context),
+    'u_flood_light_color': new Uniform3f(context),
     'u_attenuation': new Uniform1f(context),
     'u_edge_radius': new Uniform1f(context),
     'u_fb': new Uniform1i(context),
@@ -169,6 +173,7 @@ const fillExtrusionUniformValues = (
     zoomTransition: number,
     mercatorCenter: [number, number],
     invMatrix: Float32Array,
+    floodLightColor: [number, number, number],
     verticalScale: number,
     floodLightIntensity: number,
     groundShadowFactor: [number, number, number]
@@ -203,6 +208,7 @@ const fillExtrusionUniformValues = (
         'u_ao': aoIntensityRadius,
         'u_edge_radius': edgeRadius,
         'u_width_scale': lineWidthScale,
+        'u_flood_light_color': floodLightColor,
         'u_vertical_scale': verticalScale,
         'u_flood_light_intensity': floodLightIntensity,
         'u_ground_shadow_factor': groundShadowFactor
@@ -243,11 +249,12 @@ const fillExtrusionPatternUniformValues = (
     zoomTransition: number,
     mercatorCenter: [number, number],
     invMatrix: Float32Array,
+    floodLightColor: [number, number, number],
     verticalScale: number,
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
         matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, edgeRadius, lineWidthScale, coord,
-        heightLift, zoomTransition, mercatorCenter, invMatrix, verticalScale, 1.0, [0, 0, 0]);
+        heightLift, zoomTransition, mercatorCenter, invMatrix, floodLightColor, verticalScale, 1.0, [0, 0, 0]);
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
     };
@@ -262,6 +269,7 @@ const fillExtrusionGroundEffectUniformValues = (
     meterToTile: number,
     ao: [number, number],
     floodLightIntensity: number,
+    floodLightColor: [number, number, number],
     attenuation: number,
     edgeRadius: number,
     fbSize: number,
@@ -273,6 +281,7 @@ const fillExtrusionGroundEffectUniformValues = (
         'u_meter_to_tile': meterToTile,
         'u_ao': ao,
         'u_flood_light_intensity': floodLightIntensity,
+        'u_flood_light_color': floodLightColor,
         'u_attenuation': attenuation,
         'u_edge_radius': edgeRadius,
         'u_fb': 0,

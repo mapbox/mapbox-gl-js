@@ -2,6 +2,7 @@ uniform highp float u_ao_pass;
 uniform highp float u_opacity;
 
 uniform highp float u_flood_light_intensity;
+uniform highp vec3 u_flood_light_color;
 
 uniform highp float u_attenuation;
 
@@ -26,11 +27,7 @@ in highp float v_fog;
 #endif // FOG
 #endif // SDF_SUBPASS
 
-#pragma mapbox: define highp vec4 flood_light_color
-
 void main() {
-    #pragma mapbox: initialize highp vec4 flood_light_color
-
 // Note that these are used in only in draped mode. The simple clear to white is needed to ensure that the alpha channel is set to 1. 
 // This is necessary because the subsequent steps in both ground flood light and AO
 // encode DF values in tandem with gl.MIN blending mode where a value of 0 indicates the effect is fully present.
@@ -59,7 +56,7 @@ void main() {
 #endif // RENDER_CUTOFF
     glFragColor = vec4(vec3(0.0), mix(1.0, d, effect_intensity * u_opacity * fog));
 #else // SDF_SUBPASS
-vec4 color = mix(vec4(flood_light_color.rgb, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass);
+vec4 color = mix(vec4(u_flood_light_color, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass);
 #ifdef OVERDRAW_INSPECTOR
     color = vec4(1.0);
 #endif
