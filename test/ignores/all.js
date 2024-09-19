@@ -34,6 +34,10 @@ const todo = [
 
     // https://mapbox.atlassian.net/browse/MAPS3D-987
     "render-tests/model-layer/landmark-shadows-terrain",
+
+    // https://mapbox.atlassian.net/browse/GLJS-1005
+    "expression-tests/image/two-arguments/available",
+    "render-tests/image-fallback-nested/add-image-after"
 ];
 
 const skip = [
@@ -198,10 +202,7 @@ const skip = [
     "render-tests/raster-color/categorical",
 
     // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
-    "render-tests/clip-layer/clip-layer-keep-fill-extrusions",
-
-    // Not ported from GL Native, https://mapbox.atlassian.net/browse/GLJS-1005
-    "expression-tests/image/two-arguments/available"
+    "render-tests/clip-layer/clip-layer-keep-fill-extrusions"
 ];
 
 export default {todo, skip};

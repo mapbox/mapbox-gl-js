@@ -1,0 +1,76 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 128,
+      "operations": [
+        [
+          "addLayer",
+          {
+            "id": "text",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+              "text-allow-overlap": true,
+              "icon-allow-overlap": true,
+              "icon-image": [
+                "coalesce",
+                ["image", "rocket"],
+                ["image", "fav-bicycle-18"]
+              ],
+              "text-field": [
+                "case",
+                ["to-boolean", ["coalesce", ["image", "rocket"], ""]],
+                "beta sprite",
+                "fallback sprite"
+              ],
+              "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+              "text-offset": [0, 0.6],
+              "text-anchor": "top"
+            },
+            "paint": {
+              "text-color": [
+                "case",
+                ["to-boolean", ["coalesce", ["image", "rocket"], ""]],
+                "blue",
+                "red"
+              ],
+              "text-opacity": [
+                "case",
+                ["to-boolean", ["coalesce", ["image", "rocket"], ""]],
+                0.2,
+                1
+              ]
+            }
+          }
+        ],
+        ["wait"],
+        ["addImage", "rocket", "./image/rocket.png"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 0,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [0, 0]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": []
+}
