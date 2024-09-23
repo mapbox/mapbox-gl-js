@@ -23,6 +23,7 @@ native SDKs. For code and issues specific to the native SDKs, see the
 - [Style documentation](https://docs.mapbox.com/mapbox-gl-js/style-spec/)
 - [Open source styles](https://github.com/mapbox/mapbox-gl-styles)
 - [Contributor documentation](./CONTRIBUTING.md)
+- [Browser Data Storage](./STORAGE.md)
 
 [<img width="600" alt="Mapbox GL JS gallery of map images" src="https://static-assets.mapbox.com/www/mapbox-gl-js-gallery.png">](https://www.mapbox.com/mapbox-gljs)
 
