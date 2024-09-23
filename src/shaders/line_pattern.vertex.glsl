@@ -11,7 +11,7 @@
 
 in vec2 a_pos_normal;
 in vec4 a_data;
-#if defined(ELEVATED)
+#if defined(ELEVATED) || defined(ELEVATED_ROADS)
 in float a_z_offset;
 #endif
 // Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
@@ -100,7 +100,11 @@ void main() {
 
     float hidden = float(opacity == 0.0);
     vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
-#if defined(ELEVATED)
+#ifdef ELEVATED_ROADS
+    // Apply slight vertical offset (1cm) for elevated vertices above the ground plane
+    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset + 0.01 * step(0.01, a_z_offset), 1.0) + projected_extrude;
+#else // ELEVATED_ROADS
+#ifdef ELEVATED
     vec2 offsetTile = offset2 * u_pixels_to_tile_units;
     // forward or backward along the line, perpendicular to offset
     vec2 halfCellProgress = normal.yx * 32.0;
@@ -116,10 +120,10 @@ void main() {
     float zbias = max(0.00005, (pow(z, 0.8) - z) * 0.1 * u_exaggeration);
     gl_Position.z -= (gl_Position.w * zbias);
     gl_Position = mix(gl_Position, AWAY, hidden);
-#else
+#else // ELEVATED
     gl_Position = mix(u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude, AWAY, hidden);
-#endif
-
+#endif // ELEVATED
+#endif // ELEVATED_ROADS
 
 #ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude
