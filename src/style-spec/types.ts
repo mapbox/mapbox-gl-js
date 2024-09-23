@@ -958,6 +958,7 @@ export type BackgroundLayerSpecification = {
         "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
+        "background-pitch-alignment"?: "map" | "viewport" | ExpressionSpecification,
         "background-color"?: PropertyValueSpecification<ColorSpecification>,
         "background-color-transition"?: TransitionSpecification,
         "background-pattern"?: PropertyValueSpecification<ResolvedImageSpecification>,

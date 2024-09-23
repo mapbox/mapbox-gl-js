@@ -427,6 +427,16 @@
         });
     
         map.addLayer({
+            "type": "background",
+            "id": "dimming-background",
+            "paint": {
+              "background-pitch-alignment": "viewport",
+              "background-color": "black",
+              "background-opacity": 0.5
+            }
+        });
+
+        map.addLayer({
             "type": "fill",
             "id": "floors",
             "source": "walls",

@@ -25,6 +25,7 @@ export const getLayoutProperties = (): Properties<LayoutProps> => layout || (lay
 }));
 
 export type PaintProps = {
+    "background-pitch-alignment": DataConstantProperty<"map" | "viewport">;
     "background-color": DataConstantProperty<Color>;
     "background-pattern": DataConstantProperty<ResolvedImage | null | undefined>;
     "background-opacity": DataConstantProperty<number>;
@@ -33,6 +34,7 @@ export type PaintProps = {
 
 let paint: Properties<PaintProps>;
 export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
+    "background-pitch-alignment": new DataConstantProperty(styleSpec["paint_background"]["background-pitch-alignment"]),
     "background-color": new DataConstantProperty(styleSpec["paint_background"]["background-color"]),
     "background-pattern": new DataConstantProperty(styleSpec["paint_background"]["background-pattern"]),
     "background-opacity": new DataConstantProperty(styleSpec["paint_background"]["background-opacity"]),

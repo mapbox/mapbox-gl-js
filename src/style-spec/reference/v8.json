@@ -8532,6 +8532,31 @@
     }
   },
   "paint_background": {
+    "background-pitch-alignment": {
+      "type": "enum",
+      "values": {
+        "map": {
+          "doc": "The background is aligned to the plane of the map."
+        },
+        "viewport": {
+          "doc": "The background is aligned to the plane of the viewport, covering the whole screen."
+        }
+      },
+      "default": "map",
+      "doc": "Orientation of background layer.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": []
+      },
+      "property-type": "data-constant"
+    },
     "background-color": {
       "type": "color",
       "default": "#000000",

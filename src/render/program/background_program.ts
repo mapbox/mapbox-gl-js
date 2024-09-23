@@ -35,7 +35,7 @@ export type BackgroundPatternUniformsType = {
     ['u_pattern_size']: Uniform2f;
     ['u_pixel_coord_upper']: Uniform2f;
     ['u_pixel_coord_lower']: Uniform2f;
-    ['u_tile_units_to_pixels']: Uniform1f;
+    ['u_pattern_units_to_pixels']: Uniform2f;
 };
 
 const backgroundUniforms = (context: Context): BackgroundUniformsType => ({
@@ -56,7 +56,7 @@ const backgroundPatternUniforms = (context: Context): BackgroundPatternUniformsT
     'u_pattern_size': new Uniform2f(context),
     'u_pixel_coord_upper': new Uniform2f(context),
     'u_pixel_coord_lower': new Uniform2f(context),
-    'u_tile_units_to_pixels': new Uniform1f(context)
+    'u_pattern_units_to_pixels': new Uniform2f(context)
 });
 
 const backgroundUniformValues = (
@@ -79,12 +79,13 @@ const backgroundPatternUniformValues = (
     image: ResolvedImage,
     scope: string,
     patternPosition: ImagePosition | null | undefined,
+    isViewport: boolean,
     tile: {
         tileID: OverscaledTileID;
         tileSize: number;
     },
 ): UniformValues<BackgroundPatternUniformsType> => extend(
-    bgPatternUniformValues(image, scope, patternPosition, painter, tile),
+    bgPatternUniformValues(image, scope, patternPosition, painter, isViewport, tile),
     {
         'u_matrix': matrix,
         'u_emissive_strength': emissiveStrength,

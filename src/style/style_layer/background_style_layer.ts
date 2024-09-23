@@ -31,6 +31,10 @@ class BackgroundStyleLayer extends StyleLayer {
             overrideFog: false
         };
     }
+
+    is3D(): boolean {
+        return this.paint.get('background-pitch-alignment') === 'viewport';
+    }
 }
 
 export default BackgroundStyleLayer;
