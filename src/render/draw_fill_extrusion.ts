@@ -730,7 +730,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 const saveIb = ib;
                 let count = 0;
                 while (true) {
-                    // Collect all parts overlapping parta on the edge, to make sure it is only one.
+                    // Collect all parts overlapping parts on the edge, to make sure it is only one.
                     assert(partB.borders);
                     const partBBorderRange = (partB.borders)[j];
                     if (partBBorderRange[0] > partABorderRange[1] - error) {
@@ -743,7 +743,8 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     partB = nBucket.featuresOnBorder[b[ib]];
                 }
                 partB = nBucket.featuresOnBorder[b[saveIb]];
-                if (count > 1) {
+                let doReconcile = false;
+                if (count >= 1) {
                     // if it can be concluded that it is the piece of the same feature,
                     // use it, even following features (inner details) overlap on border edge.
                     assert(partB.borders);
@@ -751,6 +752,9 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     if (Math.abs(partABorderRange[0] - partBBorderRange[0]) < error &&
                         Math.abs(partABorderRange[1] - partBBorderRange[1]) < error) {
                         count = 1;
+                        // In some cases count could be 1 but a different feature, here we make sure
+                        // we are reconciling the same feature
+                        doReconcile = true;
                         ib = saveIb + 1;
                     }
                 } else if (count === 0) {
@@ -760,7 +764,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 }
 
                 const centroidB = nBucket.centroidData[partB.centroidDataIndex];
-                if (reconcileReplacementState && count === 1) {
+                if (reconcileReplacementState && doReconcile) {
                     reconcileReplacement(centroidA, centroidB);
                 }
 
