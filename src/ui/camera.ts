@@ -60,7 +60,8 @@ import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
  * `center` is ignored if `around` is included.
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
  * Note that when `padding` is used with `jumpTo`, `easeTo`, and `flyTo`, it also sets the global map padding as a side effect,
- * affecting all subsequent camera movements until the padding is reset.
+ * affecting all subsequent camera movements until the padding is reset. To avoid this, add the `retainPadding: false` option.
+ * @property {boolean} retainPadding If `false`, the value provided with the `padding` option will not be retained as the global map padding. This is `true` by default.
  * @example
  * // set the map's initial perspective with CameraOptions
  * const map = new mapboxgl.Map({
@@ -85,6 +86,7 @@ export type CameraOptions = {
     padding?: number | PaddingOptions;
     minZoom?: number;
     maxZoom?: number;
+    retainPadding?: boolean;
 };
 
 export type FullCameraOptions = CameraOptions & {
@@ -1123,12 +1125,18 @@ class Camera extends Evented<MapEvents> {
             tr.pitch = +options.pitch;
         }
 
-        if (options.padding != null) {
-            const padding = typeof options.padding === 'number' ?
-                this._extendPadding(options.padding) :
-                options.padding;
+        const padding = typeof options.padding === 'number' ?
+            this._extendPadding(options.padding) :
+            options.padding;
 
-            if (!tr.isPaddingEqual(padding)) tr.padding = padding;
+        if (options.padding != null && !tr.isPaddingEqual(padding)) {
+            if (options.retainPadding === false) {
+                const transformForPadding = tr.clone();
+                transformForPadding.padding = padding;
+                tr.setLocationAtPoint(tr.center, transformForPadding.centerPoint);
+            } else {
+                tr.padding = padding;
+            }
         }
 
         if (options.preloadOnly) {
@@ -1378,6 +1386,8 @@ class Camera extends Evented<MapEvents> {
         const pitchChanged = this._pitching || (pitch !== startPitch);
         const paddingChanged = !tr.isPaddingEqual(padding);
 
+        const transformForPadding = options.retainPadding === false ? tr.clone() : tr;
+
         const frame = (tr: Transform) => (k: number) => {
             if (zoomChanged) {
                 tr.zoom = interpolate(startZoom, zoom, k);
@@ -1389,10 +1399,10 @@ class Camera extends Evented<MapEvents> {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
             if (paddingChanged) {
-                tr.interpolatePadding(startPadding, padding, k);
+                transformForPadding.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every fra,e
-                pointAtOffset = tr.centerPoint.add(offsetAsPoint);
+                pointAtOffset = transformForPadding.centerPoint.add(offsetAsPoint);
             }
 
             if (around) {
@@ -1571,7 +1581,7 @@ class Camera extends Evented<MapEvents> {
     flyTo(options: EasingOptions, eventData?: EventData): this {
         // Fall through to jumpTo if user has set prefers-reduced-motion
         if (this._prefersReducedMotion(options)) {
-            const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around', 'padding']);
+            const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around', 'padding', 'retainPadding']);
             return this.jumpTo(coercedOptions, eventData);
         }
 
@@ -1695,6 +1705,8 @@ class Camera extends Evented<MapEvents> {
         const pitchChanged = (pitch !== startPitch);
         const paddingChanged = !tr.isPaddingEqual(padding);
 
+        const transformForPadding = options.retainPadding === false ? tr.clone() : tr;
+
         const frame = (tr: Transform) => (k: number) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
@@ -1708,10 +1720,10 @@ class Camera extends Evented<MapEvents> {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
             if (paddingChanged) {
-                tr.interpolatePadding(startPadding, padding, k);
+                transformForPadding.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every frame
-                pointAtOffset = tr.centerPoint.add(offsetAsPoint);
+                pointAtOffset = transformForPadding.centerPoint.add(offsetAsPoint);
             }
 
             const newCenter = k === 1 ? center : tr.unproject(from.add(delta.mult(u(s))).mult(scale));

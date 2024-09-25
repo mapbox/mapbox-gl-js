@@ -135,6 +135,15 @@ describe('camera', () => {
             camera.jumpTo({center: [1, 2]});
             expect(!camera.isEasing()).toBeTruthy();
         });
+
+        test('retain or not padding based on passed option', () => {
+            camera.jumpTo({padding: {top: 10, right: 10, bottom: 10, left: 10}});
+            expect(camera.getPadding()).toEqual({top: 10, right: 10, bottom: 10, left: 10});
+            camera.jumpTo({padding: {top: 20, right: 20, bottom: 20, left: 20}, retainPadding: true});
+            expect(camera.getPadding()).toEqual({top: 20, right: 20, bottom: 20, left: 20});
+            camera.jumpTo({padding: {top: 30, right: 30, bottom: 30, left: 30}, retainPadding: false});
+            expect(camera.getPadding()).toEqual({top: 20, right: 20, bottom: 20, left: 20});
+        });
     });
 
     describe('#setCenter', () => {
@@ -1034,6 +1043,21 @@ describe('camera', () => {
 
             camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0});
             expect(camera.transform.padding).toEqual({top: 10, right: 75, bottom: 50, left: 25});
+        });
+
+        test('retain or not padding based on provided padding option', () => {
+            const bb1 = [[-133, 11], [-68, 50]];
+            const bb2 = [[-133, 13], [-68, 50]];
+            const bb3 = [[-133, 17], [-68, 50]];
+            const camera = createCamera();
+            camera.fitBounds(bb1, {duration: 0, padding: {top: 100}});
+            expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+
+            camera.fitBounds(bb2, {duration: 0, padding: {top: 200}, retainPadding: false});
+            expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+
+            camera.fitBounds(bb3, {duration: 0, padding: {top: 300}, retainPadding: true});
+            expect(camera.getPadding()).toEqual({top:300, bottom:0, left:0, right:0});
         });
 
         test('#12450', () => {
