@@ -19,10 +19,16 @@ export function farthestPixelDistanceOnPlane(tr: Transform, pixelsPerMeter: numb
     const topHalfSurfaceDistance = Math.sin(fovAboveCenter) * cameraToSeaLevelDistance / Math.sin(Math.max(Math.PI / 2.0 - tr._pitch - fovAboveCenter, 0.01));
 
     // Calculate z distance of the farthest fragment that should be rendered.
-    const furthestDistance = Math.sin(tr._pitch) * topHalfSurfaceDistance + cameraToSeaLevelDistance;
+    let furthestDistance = Math.sin(tr._pitch) * topHalfSurfaceDistance + cameraToSeaLevelDistance;
     const horizonDistance = cameraToSeaLevelDistance * (1 / tr._horizonShift);
 
     // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
+    // Due to precision of sources with low maxZoom, content is prone to flickering on zoom above 18.
+    // Use larger furthest distance also on pitch before the horizon, especially on higher zoom to limit
+    // the performance and depth range resolution impact.
+    if (!tr.elevation || tr.elevation.exaggeration() === 0) {
+        furthestDistance *= (1.0 + Math.max(tr.zoom - 17, 0));
+    }
     return Math.min(furthestDistance * 1.01, horizonDistance);
 }
 
