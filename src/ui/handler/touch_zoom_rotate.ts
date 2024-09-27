@@ -243,7 +243,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
 
         if (this._map._cooperativeGestures && !isFullscreen() && e.touches.length < 3) return;
 
-        this._valid = !!this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
+        this._valid = this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
 
         if (!this._valid) return;
 
@@ -256,7 +256,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
         };
     }
 
-    gestureBeginsVertically(vectorA: Point, vectorB: Point, timeStamp: number): void | boolean {
+    gestureBeginsVertically(vectorA: Point, vectorB: Point, timeStamp: number): undefined | boolean {
         if (this._valid !== undefined) return this._valid;
 
         const threshold = 2;
