@@ -34,8 +34,8 @@ import type {RasterArraySourceSpecification} from '../style-spec/types';
  * @see [Example: Create a wind particle animation](https://docs.mapbox.com/mapbox-gl-js/example/raster-particle-layer/)
  */
 class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource {
-    type: 'raster-array';
-    map: Map;
+    override type: 'raster-array';
+    override map: Map;
     rasterLayers: Array<SourceRasterLayer> | undefined;
     rasterLayerIds: Array<string> | undefined;
 
@@ -58,7 +58,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         this.map.triggerRepaint();
     }
 
-    loadTile(tile: Tile, callback: Callback<undefined>) {
+    override loadTile(tile: Tile, callback: Callback<undefined>) {
         tile = (tile as RasterArrayTile);
 
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
@@ -93,7 +93,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         });
     }
 
-    unloadTile(tile: Tile, _?: Callback<undefined> | null) {
+    override unloadTile(tile: Tile, _?: Callback<undefined> | null) {
         tile = (tile as RasterArrayTile);
 
         const texture = tile.texture;

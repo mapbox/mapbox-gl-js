@@ -113,17 +113,17 @@ export class TouchZoomHandler extends TwoTouchHandler {
     _distance: number;
     _startDistance: number;
 
-    reset() {
+    override reset() {
         super.reset();
         this._distance = 0;
         this._startDistance = 0;
     }
 
-    _start(points: [Point, Point]) {
+    override _start(points: [Point, Point]) {
         this._startDistance = this._distance = points[0].dist(points[1]);
     }
 
-    _move(points: [Point, Point], pinchAround?: Point | null): HandlerResult | null | undefined {
+    override _move(points: [Point, Point], pinchAround?: Point | null): HandlerResult | null | undefined {
         const lastDistance = this._distance;
         this._distance = points[0].dist(points[1]);
         if (!this._active && Math.abs(getZoomDelta(this._distance, this._startDistance)) < ZOOM_THRESHOLD) return;
@@ -146,19 +146,19 @@ function getBearingDelta(a: Point, b: Point) {
 export class TouchRotateHandler extends TwoTouchHandler {
     _minDiameter: number;
 
-    reset() {
+    override reset() {
         super.reset();
         this._minDiameter = 0;
         this._startVector = undefined;
         this._vector = undefined;
     }
 
-    _start(points: [Point, Point]) {
+    override _start(points: [Point, Point]) {
         this._startVector = this._vector = points[0].sub(points[1]);
         this._minDiameter = points[0].dist(points[1]);
     }
 
-    _move(points: [Point, Point], pinchAround?: Point | null): HandlerResult | null | undefined {
+    override _move(points: [Point, Point], pinchAround?: Point | null): HandlerResult | null | undefined {
         const lastVector = this._vector;
         this._vector = points[0].sub(points[1]);
 
@@ -219,14 +219,14 @@ export class TouchPitchHandler extends TwoTouchHandler {
         this._map = map;
     }
 
-    reset() {
+    override reset() {
         super.reset();
         this._valid = undefined;
         this._firstMove = undefined;
         this._lastPoints = undefined;
     }
 
-    _start(points: [Point, Point]) {
+    override _start(points: [Point, Point]) {
         this._lastPoints = points;
         if (isVertical(points[0].sub(points[1]))) {
             // fingers are more horizontal than vertical
@@ -235,7 +235,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
 
     }
 
-    _move(points: [Point, Point], center: Point | null | undefined, e: TouchEvent): HandlerResult | null | undefined {
+    override _move(points: [Point, Point], center: Point | null | undefined, e: TouchEvent): HandlerResult | null | undefined {
         const lastPoints = this._lastPoints;
         if (!lastPoints) return;
         const vectorA = points[0].sub(lastPoints[0]);

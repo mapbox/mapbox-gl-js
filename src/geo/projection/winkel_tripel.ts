@@ -9,7 +9,7 @@ const maxPhi = degToRad(MAX_MERCATOR_LATITUDE);
 
 export default class WinkelTripel extends Projection {
 
-    project(lng: number, lat: number): ProjectedPoint {
+    override project(lng: number, lat: number): ProjectedPoint {
         lat = degToRad(lat);
         lng = degToRad(lng);
         const cosLat = Math.cos(lat);
@@ -25,7 +25,7 @@ export default class WinkelTripel extends Projection {
         };
     }
 
-    unproject(x: number, y: number): LngLat {
+    override unproject(x: number, y: number): LngLat {
         // based on https://github.com/d3/d3-geo-projection, MIT-licensed
         x = (2 * x - 0.5) * Math.PI;
         y = (2 * (1 - y) - 1) * Math.PI;

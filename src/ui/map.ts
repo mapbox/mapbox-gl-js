@@ -95,7 +95,7 @@ import type {ContextOptions} from '../gl/context';
 import type {QueryRenderedFeaturesParams} from '../source/query_features';
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
-import type {Callback} from 'src/types/callback';
+import type {Callback} from '../types/callback';
 import type {Interaction} from './interactions';
 
 export type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
@@ -1683,9 +1683,9 @@ export class Map extends Camera {
      * @see [Example: Create a hover effect](https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/)
      * @see [Example: Display popup on click](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/)
      */
-    on<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
-    on<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[], listener: Listener<Extract<T, MapEventType>>): this;
-    on<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[] | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this {
+    override on<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
+    override on<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[], listener: Listener<Extract<T, MapEventType>>): this;
+    override on<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[] | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this {
         if (typeof layerIds === 'function' || listener === undefined) {
             return super.on(type as MapEventType, layerIds as Listener<MapEventType>);
         }
@@ -1754,11 +1754,11 @@ export class Map extends Camera {
      * @see [Example: Animate the camera around a point with 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
      * @see [Example: Play map locations as a slideshow](https://docs.mapbox.com/mapbox-gl-js/example/playback-locations/)
      */
-    once<T extends MapEventType | (string & {})>(type: T): Promise<MapEventOf<Extract<T, MapEventType>>>;
-    once<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
-    once<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[]): Promise<MapEventOf<Extract<T, MapEventType>>>;
-    once<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[], listener: Listener<Extract<T, MapEventType>>): this;
-    once<T extends MapEventType | (string & {})>(type: T, layerIds?: string | string[] | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this | Promise<MapEventOf<Extract<T, MapEventType>>> {
+    override once<T extends MapEventType | (string & {})>(type: T): Promise<MapEventOf<Extract<T, MapEventType>>>;
+    override once<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
+    override once<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[]): Promise<MapEventOf<Extract<T, MapEventType>>>;
+    override once<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[], listener: Listener<Extract<T, MapEventType>>): this;
+    override once<T extends MapEventType | (string & {})>(type: T, layerIds?: string | string[] | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this | Promise<MapEventOf<Extract<T, MapEventType>>> {
         if (typeof layerIds === 'function' || listener === undefined) {
             return super.once(type as MapEventType, layerIds as Listener<MapEventType>);
         }
@@ -1809,9 +1809,9 @@ export class Map extends Camera {
      * });
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
-    off<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
-    off<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[], listener: Listener<Extract<T, MapEventType>>): this;
-    off<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[] | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this {
+    override off<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
+    override off<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[], listener: Listener<Extract<T, MapEventType>>): this;
+    override off<T extends MapEventType | (string & {})>(type: T, layerIds: string | string[] | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this {
         if (typeof layerIds === 'function' || listener === undefined) {
             return super.off(type as MapEventType, layerIds as Listener<MapEventType>);
         }
@@ -3971,12 +3971,12 @@ export class Map extends Camera {
      * @returns An id that can be used to cancel the callback
      * @private
      */
-    _requestRenderFrame(callback: () => void): TaskID {
+    override _requestRenderFrame(callback: () => void): TaskID {
         this._update();
         return this._renderTaskQueue.add(callback);
     }
 
-    _cancelRenderFrame(id: TaskID) {
+    override _cancelRenderFrame(id: TaskID) {
         this._renderTaskQueue.remove(id);
     }
 
@@ -4508,7 +4508,7 @@ export class Map extends Camera {
      * @private
      * @returns {Object} Returns `this` | Promise.
      */
-    _preloadTiles(transform: Transform | Array<Transform>): this {
+    override _preloadTiles(transform: Transform | Array<Transform>): this {
         const sourceCaches: Array<SourceCache> = this.style ? this.style.getSourceCaches() : [];
         asyncAll(sourceCaches, (sourceCache, done) => sourceCache._preloadTiles(transform, done), () => {
             this.triggerRepaint();

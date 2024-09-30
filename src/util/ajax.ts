@@ -90,7 +90,7 @@ export class AJAXError extends Error {
         this.url = url;
     }
 
-    toString(): string {
+    override toString(): string {
         return `${this.name}: ${this.message} (${this.status}): ${this.url}`;
     }
 }

@@ -8,9 +8,9 @@ import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
 
 class BackgroundStyleLayer extends StyleLayer {
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {
@@ -20,19 +20,18 @@ class BackgroundStyleLayer extends StyleLayer {
         super(layer, properties, scope, lut, options);
     }
 
-    getProgramIds(): Array<string> {
+    override getProgramIds(): Array<string> {
         const image = this.paint.get('background-pattern');
         return [image ? 'backgroundPattern' : 'background'];
     }
 
-    // eslint-disable-next-line no-unused-vars
-    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         return {
             overrideFog: false
         };
     }
 
-    is3D(): boolean {
+    override is3D(): boolean {
         return this.paint.get('background-pitch-alignment') === 'viewport';
     }
 }

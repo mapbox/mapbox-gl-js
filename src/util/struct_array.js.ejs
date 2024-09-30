@@ -34,7 +34,7 @@ const useComponentGetters =
 if (includeStructAccessors && !useComponentGetters) {
 -%>
 class <%=StructTypeClass%> extends Struct {
-    _structArray: <%=StructArrayClass%>;
+    override _structArray: <%=StructArrayClass%>;
 <%
 for (const {name, member, component} of components) {
     const elementOffset = `this._pos${member.size.toFixed(0)}`;

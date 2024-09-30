@@ -418,7 +418,7 @@ export class PerformanceEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
@@ -468,7 +468,7 @@ export class MapLoadEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) return;
         const {id, timestamp} = this.queue.shift();
 
@@ -574,7 +574,7 @@ export class StyleLoadEvent extends TelemetryEvent {
         }, customAccessToken);
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
@@ -632,7 +632,7 @@ export class MapSessionAPI extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) return;
         const {id, timestamp} = this.queue.shift();
 
@@ -670,7 +670,7 @@ export class TurnstileEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }

@@ -92,7 +92,7 @@ const FIRST_TRY_HEADER_LENGTH = 16384;
 const MRT_DECODED_BAND_CACHE_SIZE = 30;
 
 class RasterArrayTile extends Tile {
-    texture: Texture | null | undefined;
+    override texture: Texture | null | undefined;
     entireBuffer: ArrayBuffer | null | undefined;
     requestParams: RequestParameters | null | undefined;
 
@@ -113,7 +113,7 @@ class RasterArrayTile extends Tile {
         this._isHeaderLoaded = false;
     }
 
-    setTexture(img: TextureImage, painter: Painter) {
+    override setTexture(img: TextureImage, painter: Painter) {
         const context = painter.context;
         const gl = context.gl;
         this.texture = this.texture || painter.getTileTexture(img.width);

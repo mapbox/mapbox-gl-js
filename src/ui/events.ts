@@ -60,12 +60,12 @@ export class MapMouseEvent extends Event<MapEvents, MapMouseEventType> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    type: MapMouseEventType;
+    override type: MapMouseEventType;
 
     /**
      * The `Map` object that fired the event.
      */
-    target: Map;
+    override target: Map;
 
     /**
      * The DOM event which caused the map event.
@@ -202,12 +202,12 @@ export class MapTouchEvent extends Event<MapEvents, MapTouchEventType> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    type: MapTouchEventType;
+    override type: MapTouchEventType;
 
     /**
      * The `Map` object that fired the event.
      */
-    target: Map;
+    override target: Map;
 
     /**
      * The DOM event which caused the map event.
@@ -329,12 +329,12 @@ export class MapWheelEvent extends Event<MapEvents, 'wheel'> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    type: 'wheel';
+    override type: 'wheel';
 
     /**
      * The `Map` object that fired the event.
      */
-    target: Map;
+    override target: Map;
 
     /**
      * The DOM event which caused the map event.

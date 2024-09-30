@@ -60,12 +60,12 @@ const getProperties = () => {
 };
 
 class SymbolStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     _colorAdjustmentMatrix: Float32Array;
     _saturation: number;
@@ -83,7 +83,7 @@ class SymbolStyleLayer extends StyleLayer {
         this.hasInitialOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
     }
 
-    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
         super.recalculate(parameters, availableImages);
 
         if (this.layout.get('icon-rotation-alignment') === 'auto') {
@@ -170,11 +170,11 @@ class SymbolStyleLayer extends StyleLayer {
         return new SymbolBucket(parameters);
     }
 
-    queryRadius(): number {
+    override queryRadius(): number {
         return 0;
     }
 
-    queryIntersectsFeature(): boolean {
+    override queryIntersectsFeature(): boolean {
         assert(false); // Should take a different path in FeatureIndex
         return false;
     }
@@ -212,7 +212,7 @@ class SymbolStyleLayer extends StyleLayer {
         }
     }
 
-    _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
+    override _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
         if (!this.layout || oldValue.isDataDriven() || newValue.isDataDriven()) {
             return false;
         }
@@ -261,11 +261,11 @@ class SymbolStyleLayer extends StyleLayer {
         return hasOverrides;
     }
 
-    getProgramIds(): string[] {
+    override getProgramIds(): string[] {
         return ['symbol'];
     }
 
-    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),
             overrideFog: false

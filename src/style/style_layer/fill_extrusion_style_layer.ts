@@ -22,10 +22,10 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {LUT} from "../../../src/util/lut";
 
 class FillExtrusionStyleLayer extends StyleLayer {
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {
@@ -40,36 +40,34 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return new FillExtrusionBucket(parameters);
     }
 
-    queryRadius(): number {
-
+    override queryRadius(): number {
         return translateDistance(this.paint.get('fill-extrusion-translate'));
     }
 
-    is3D(): boolean {
+    override is3D(): boolean {
         return true;
     }
 
-    hasShadowPass(): boolean {
+    override hasShadowPass(): boolean {
         return this.paint.get('fill-extrusion-cast-shadows');
     }
 
-    cutoffRange(): number {
-
+    override cutoffRange(): number {
         return this.paint.get('fill-extrusion-cutoff-fade-range');
     }
 
-    canCastShadows(): boolean {
+    override canCastShadows(): boolean {
         return true;
     }
 
-    getProgramIds(): string[] {
+    override getProgramIds(): string[] {
         const patternProperty = this.paint.get('fill-extrusion-pattern');
 
         const image = patternProperty.constantOr((1 as any));
         return [image ? 'fillExtrusionPattern' : 'fillExtrusion'];
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,

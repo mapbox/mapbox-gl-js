@@ -9,7 +9,7 @@ const maxPhi = degToRad(MAX_MERCATOR_LATITUDE);
 
 export default class NaturalEarth extends Projection {
 
-    project(lng: number, lat: number): ProjectedPoint {
+    override project(lng: number, lat: number): ProjectedPoint {
         // based on https://github.com/d3/d3-geo, MIT-licensed
         lat = degToRad(lat);
         lng = degToRad(lng);
@@ -26,7 +26,7 @@ export default class NaturalEarth extends Projection {
         };
     }
 
-    unproject(x: number, y: number): LngLat {
+    override unproject(x: number, y: number): LngLat {
         // based on https://github.com/d3/d3-geo, MIT-licensed
         x = (2 * x - 0.5) * Math.PI;
         y = (2 * (1 - y) - 1) * Math.PI;

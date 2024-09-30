@@ -200,7 +200,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     * @param params.uid The UID for this tile.
     * @private
     */
-    reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void {
+    override reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void {
         const loaded = this.loaded,
             uid = params.uid;
 

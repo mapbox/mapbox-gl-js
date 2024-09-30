@@ -11,6 +11,8 @@
     "moduleResolution": "bundler",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
     "resolveJsonModule": true,
     "strict": false,
     "target": "es2022",
@@ -27,7 +29,6 @@
       "geojson",
       "offscreencanvas"
     ],
-    "baseUrl": ".",
   },
   "include": [
     "./src/**/*",

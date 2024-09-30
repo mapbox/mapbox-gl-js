@@ -19,12 +19,12 @@ import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
 
 class FillStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {
@@ -34,7 +34,7 @@ class FillStyleLayer extends StyleLayer {
         super(layer, properties, scope, lut, options);
     }
 
-    getProgramIds(): string[] {
+    override getProgramIds(): string[] {
         const pattern = this.paint.get('fill-pattern');
 
         const image = pattern && pattern.constantOr((1 as any));
@@ -48,14 +48,14 @@ class FillStyleLayer extends StyleLayer {
         return ids;
     }
 
-    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),
             overrideFog: false
         };
     }
 
-    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
         super.recalculate(parameters, availableImages);
 
         const outlineColor = this.paint._values['fill-outline-color'];
@@ -69,12 +69,11 @@ class FillStyleLayer extends StyleLayer {
         return new FillBucket(parameters);
     }
 
-    queryRadius(): number {
-
+    override queryRadius(): number {
         return translateDistance(this.paint.get('fill-translate'));
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,
@@ -92,11 +91,11 @@ class FillStyleLayer extends StyleLayer {
         return polygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
 
-    isTileClipped(): boolean {
+    override isTileClipped(): boolean {
         return true;
     }
 
-    is3D(): boolean {
+    override is3D(): boolean {
         return this.paint.get('fill-z-offset').constantOr(1.0) !== 0.0;
     }
 }

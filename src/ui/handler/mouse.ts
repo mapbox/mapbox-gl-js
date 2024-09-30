@@ -112,16 +112,16 @@ class MouseHandler implements Handler {
 }
 
 export class MousePanHandler extends MouseHandler {
-
-    mousedown(e: MouseEvent, point: Point) {
+    override mousedown(e: MouseEvent, point: Point) {
         super.mousedown(e, point);
         if (this._lastPoint) this._active = true;
     }
-    _correctButton(e: MouseEvent, button: number): boolean {
+
+    override _correctButton(e: MouseEvent, button: number): boolean {
         return button === LEFT_BUTTON && !e.ctrlKey;
     }
 
-    _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
+    override _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
         return {
             around: point,
             panDelta: point.sub(lastPoint)
@@ -130,11 +130,11 @@ export class MousePanHandler extends MouseHandler {
 }
 
 export class MouseRotateHandler extends MouseHandler {
-    _correctButton(e: MouseEvent, button: number): boolean {
+    override _correctButton(e: MouseEvent, button: number): boolean {
         return (button === LEFT_BUTTON && e.ctrlKey) || (button === RIGHT_BUTTON);
     }
 
-    _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
+    override _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
         const degreesPerPixelMoved = 0.8;
         const bearingDelta = (point.x - lastPoint.x) * degreesPerPixelMoved;
         if (bearingDelta) {
@@ -151,11 +151,11 @@ export class MouseRotateHandler extends MouseHandler {
 }
 
 export class MousePitchHandler extends MouseHandler {
-    _correctButton(e: MouseEvent, button: number): boolean {
+    override _correctButton(e: MouseEvent, button: number): boolean {
         return (button === LEFT_BUTTON && e.ctrlKey) || (button === RIGHT_BUTTON);
     }
 
-    _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
+    override _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
         const degreesPerPixelMoved = -0.5;
         const pitchDelta = (point.y - lastPoint.y) * degreesPerPixelMoved;
         if (pitchDelta) {

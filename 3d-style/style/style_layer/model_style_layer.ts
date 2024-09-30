@@ -28,10 +28,10 @@ import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type {LUT} from "../../../src/util/lut";
 
 class ModelStyleLayer extends StyleLayer {
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
     modelManager: ModelManager;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
@@ -47,36 +47,35 @@ class ModelStyleLayer extends StyleLayer {
         return new ModelBucket(parameters);
     }
 
-    getProgramIds(): Array<string> {
+    override getProgramIds(): Array<string> {
         return ['model'];
     }
 
-    is3D(): boolean {
+    override is3D(): boolean {
         return true;
     }
 
-    hasShadowPass(): boolean {
+    override hasShadowPass(): boolean {
         return true;
     }
 
-    canCastShadows(): boolean {
+    override canCastShadows(): boolean {
         return true;
     }
 
-    hasLightBeamPass(): boolean {
+    override hasLightBeamPass(): boolean {
         return true;
     }
 
-    cutoffRange(): number {
-
+    override cutoffRange(): number {
         return this.paint.get('model-cutoff-fade-range');
     }
 
-    queryRadius(bucket: Bucket): number {
+    override queryRadius(bucket: Bucket): number {
         return (bucket instanceof Tiled3dModelBucket) ? EXTENT - 1 : 0;
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,
@@ -147,7 +146,7 @@ class ModelStyleLayer extends StyleLayer {
         return false;
     }
 
-    _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
+    override _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
         if (!this.layout || oldValue.isDataDriven() || newValue.isDataDriven()) {
             return false;
         }
@@ -169,7 +168,7 @@ class ModelStyleLayer extends StyleLayer {
             this._isPropertyZoomDependent('model-translation');
     }
 
-    queryIntersectsMatchingFeature(
+    override queryIntersectsMatchingFeature(
         queryGeometry: TilespaceQueryGeometry,
         featureIndex: number,
         filter: FeatureFilter,

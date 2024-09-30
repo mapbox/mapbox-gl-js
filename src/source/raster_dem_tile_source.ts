@@ -18,7 +18,7 @@ import type {TextureImage} from '../render/texture';
 import type {RasterDEMSourceSpecification} from '../style-spec/types';
 
 class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISource {
-    type: 'raster-dem';
+    override type: 'raster-dem';
     encoding: 'mapbox' | 'terrarium';
 
     constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
@@ -29,7 +29,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
         this.encoding = options.encoding || "mapbox";
     }
 
-    loadTile(tile: Tile, callback: Callback<undefined>) {
+    override loadTile(tile: Tile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 

@@ -26,12 +26,12 @@ import type {DynamicDefinesType} from '../../render/program/program_uniforms';
 import type {LUT} from "../../util/lut";
 
 class CircleStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {
@@ -45,7 +45,7 @@ class CircleStyleLayer extends StyleLayer {
         return new CircleBucket(parameters);
     }
 
-    queryRadius(bucket: Bucket): number {
+    override queryRadius(bucket: Bucket): number {
         const circleBucket: CircleBucket<CircleStyleLayer> = (bucket as any);
         return getMaximumPaintValue('circle-radius', this, circleBucket) +
             getMaximumPaintValue('circle-stroke-width', this, circleBucket) +
@@ -53,7 +53,7 @@ class CircleStyleLayer extends StyleLayer {
             translateDistance(this.paint.get('circle-translate'));
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,
@@ -77,11 +77,11 @@ class CircleStyleLayer extends StyleLayer {
             this.paint.get('circle-pitch-scale') === 'map', translation, size);
     }
 
-    getProgramIds(): Array<string> {
+    override getProgramIds(): Array<string> {
         return ['circle'];
     }
 
-    getDefaultProgramParams(_: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(_: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         const definesValues = (circleDefinesValues(this) as DynamicDefinesType[]);
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),

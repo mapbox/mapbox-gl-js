@@ -52,7 +52,7 @@ import type Context from '../gl/context';
 import type {UniformValues} from '../render/uniform_binding';
 import type Transform from '../geo/transform';
 import type {CanonicalTileID} from '../source/tile_id';
-import type HillshadeStyleLayer from 'src/style/style_layer/hillshade_style_layer';
+import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
 
 const GRID_DIM = 128;
 
@@ -78,7 +78,7 @@ class MockSourceCache extends SourceCache {
         this._sourceLoaded = true;
     }
 
-    _loadTile(tile: Tile, callback: Callback<undefined>) {
+    override _loadTile(tile: Tile, callback: Callback<undefined>) {
         tile.state = 'loaded';
         callback(null);
     }
@@ -120,7 +120,7 @@ class ProxySourceCache extends SourceCache {
     }
 
     // Override for transient nature of cover here: don't cache and retain.
-    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) { // eslint-disable-line no-unused-vars
+    override update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) { // eslint-disable-line no-unused-vars
         if (transform.freezeTileCoverage) { return; }
         this.transform = transform;
         const idealTileIDs = transform.coveringTiles({
@@ -513,20 +513,20 @@ export class Terrain extends Elevation {
     }
 
     // Implements Elevation::_source.
-    _source(): SourceCache | null | undefined {
+    override _source(): SourceCache | null | undefined {
         return this.enabled ? this.sourceCache : null;
     }
 
-    isUsingMockSource(): boolean {
+    override isUsingMockSource(): boolean {
         return this.sourceCache === this._mockSourceCache;
     }
 
     // Implements Elevation::exaggeration.
-    exaggeration(): number {
+    override exaggeration(): number {
         return this.enabled ? this._exaggeration : 0;
     }
 
-    get visibleDemTiles(): Array<Tile> {
+    override get visibleDemTiles(): Array<Tile> {
         return this._visibleDemTiles;
     }
 
@@ -957,7 +957,7 @@ export class Terrain extends Elevation {
         return immediateMin > drapedMax;
     }
 
-    getMinElevationBelowMSL(): number {
+    override getMinElevationBelowMSL(): number {
         let min = 0.0;
         // The maximum DEM error in meters to be conservative (SRTM).
         const maxDEMError = 30.0;
@@ -970,7 +970,7 @@ export class Terrain extends Elevation {
 
     // Performs raycast against visible DEM tiles on the screen and returns the distance travelled along the ray.
     // x & y components of the position are expected to be in normalized mercator coordinates [0, 1] and z in meters.
-    raycast(pos: vec3, dir: vec3, exaggeration: number): number | null | undefined {
+    override raycast(pos: vec3, dir: vec3, exaggeration: number): number | null | undefined {
         if (!this._visibleDemTiles)
             return null;
 
@@ -1388,7 +1388,7 @@ export class Terrain extends Elevation {
     // Casts a ray from a point on screen and returns the intersection point with the terrain.
     // The returned point contains the mercator coordinates in its first 3 components, and elevation
     // in meter in its 4th coordinate.
-    pointCoordinate(screenPoint: Point): vec4 | null | undefined {
+    override pointCoordinate(screenPoint: Point): vec4 | null | undefined {
         const transform = this.painter.transform;
         if (screenPoint.x < 0 || screenPoint.x > transform.width ||
             screenPoint.y < 0 || screenPoint.y > transform.height) {
@@ -1630,7 +1630,7 @@ export class Terrain extends Elevation {
         return tile && tile.hasData() ? tile : null;
     }
 
-    findDEMTileFor(tileID: OverscaledTileID): Tile | null | undefined {
+    override findDEMTileFor(tileID: OverscaledTileID): Tile | null | undefined {
         return this.enabled ? this._findTileCoveringTileID(tileID, this.sourceCache) : null;
     }
 
