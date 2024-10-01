@@ -147,7 +147,7 @@
     "test-build": "tsx ./node_modules/.bin/tape test/build/**/*.test.js",
     "watch-render": "cross-env SUITE_NAME=render testem -f test/integration/testem/testem.js",
     "watch-query": "SUITE_NAME=query testem -f test/integration/testem/testem.js",
-    "test-csp": "vitest --config vitest.config.csp.js --run",
+    "test-csp": "npm run build-token && vitest --config vitest.config.csp.ts --run",
     "test-render": "cross-env SUITE_NAME=render testem ci -f test/integration/testem/testem.js",
     "test-render-firefox": "cross-env BROWSER=Firefox SUITE_NAME=render testem ci -f test/integration/testem/testem.js",
     "test-render-safari": "cross-env BROWSER=Safari SUITE_NAME=render testem ci -f test/integration/testem/testem.js",

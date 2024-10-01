@@ -9,7 +9,7 @@
     "parserOptions": {
         "projectService": {
             "defaultProject": "./tsconfig.json",
-            "allowDefaultProject": ["*.js", "debug/*.html"]
+            "allowDefaultProject": ["*.js", "debug/*", "build/*"]
         }
     },
     "plugins": [
