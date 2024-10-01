@@ -17,11 +17,6 @@ export const DrapeRenderMode = {
     elevated: 1
 } as const;
 
-const properties: Properties<Props> = new Properties({
-    "source": new DataConstantProperty(styleSpec.terrain.source),
-    "exaggeration": new DataConstantProperty(styleSpec.terrain.exaggeration),
-});
-
 class Terrain extends Evented {
     scope: string;
     _transitionable: Transitionable<Props>;
@@ -32,7 +27,10 @@ class Terrain extends Evented {
     constructor(terrainOptions: TerrainSpecification, drapeRenderMode: number, scope: string, configOptions?: ConfigOptions | null) {
         super();
         this.scope = scope;
-        this._transitionable = new Transitionable(properties, scope, configOptions);
+        this._transitionable = new Transitionable(new Properties({
+            "source": new DataConstantProperty(styleSpec.terrain.source),
+            "exaggeration": new DataConstantProperty(styleSpec.terrain.exaggeration),
+        }), scope, configOptions);
         // @ts-expect-error - TS2345 - Argument of type 'TerrainSpecification' is not assignable to parameter of type 'PropertyValueSpecifications<Props>'.
         this._transitionable.setTransitionOrValue(terrainOptions, configOptions);
         this._transitioning = this._transitionable.untransitioned();

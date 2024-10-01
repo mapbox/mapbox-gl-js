@@ -30,16 +30,6 @@ type Props = {
     ["vertical-range"]: DataConstantProperty<[number, number]>;
 };
 
-const fogProperties: Properties<Props> = new Properties({
-    "range": new DataConstantProperty(styleSpec.fog.range),
-    "color": new DataConstantProperty(styleSpec.fog.color),
-    "high-color": new DataConstantProperty(styleSpec.fog["high-color"]),
-    "space-color": new DataConstantProperty(styleSpec.fog["space-color"]),
-    "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
-    "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
-    "vertical-range": new DataConstantProperty(styleSpec.fog["vertical-range"]),
-});
-
 class Fog extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
@@ -53,6 +43,17 @@ class Fog extends Evented {
 
     constructor(fogOptions: FogSpecification | null | undefined, transform: Transform, scope: string, configOptions?: ConfigOptions | null) {
         super();
+
+        const fogProperties: Properties<Props> = new Properties({
+            "range": new DataConstantProperty(styleSpec.fog.range),
+            "color": new DataConstantProperty(styleSpec.fog.color),
+            "high-color": new DataConstantProperty(styleSpec.fog["high-color"]),
+            "space-color": new DataConstantProperty(styleSpec.fog["space-color"]),
+            "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
+            "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
+            "vertical-range": new DataConstantProperty(styleSpec.fog["vertical-range"]),
+        });
+
         this._transitionable = new Transitionable(fogProperties, scope, new Map(configOptions));
         this.set(fogOptions, configOptions);
         this._transitioning = this._transitionable.untransitioned();
