@@ -35,7 +35,7 @@ import {dropBufferConnectionLines, createLineWallGeometry} from '../../geo/line_
 
 import type {Elevation} from '../../terrain/elevation';
 import type {Frustum} from '../../util/primitives';
-import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import type {Region, ReplacementSource} from '../../../3d-style/source/replacement_source';
 import type {Feature} from "../../style-spec/expression";
 import type {ClippedPolygon} from '../../util/polygon_clipping';
 import type {vec3} from 'gl-matrix';
@@ -672,7 +672,7 @@ class FillExtrusionBucket implements Bucket {
     needsCentroidUpdate: boolean;
     tileToMeter: number; // cache conversion.
     projection: ProjectionSpecification;
-    activeReplacements: Array<any>;
+    activeReplacements: Array<Region>;
     replacementUpdateTime: number;
 
     groundEffect: GroundEffect;
@@ -1575,12 +1575,11 @@ class FillExtrusionBucket implements Bucket {
 
         // Hide all centroids that are overlapping with footprints from the replacement source
         for (const region of this.activeReplacements) {
-            // if ((region.order < layerIndex) || (region.order !== ReplacementOrderLandmark && region.order > layerIndex && !(region.clipMask & LayerTypeMask.FillExtrusion))) continue;
             if ((region.order < layerIndex)) continue; // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
 
-            // Apply slight padding (one unit) to fill extrusion footprints. This reduces false positives where
-            // two adjacent lines would be reported overlapping due to limited precision (16 bit) of tile units.
-            const padding = Math.pow(2.0, region.footprintTileId.canonical.z - coord.canonical.z);
+            // Apply slight padding to fill extrusion footprints. This reduces false positives where two adjacent lines
+            // would be reported overlapping due to limited precision (16 bit) of tile units.
+            const padding = Math.max(1.0, Math.pow(2.0, region.footprintTileId.canonical.z - coord.canonical.z));
 
             for (const centroid of this.centroidData) {
                 if (centroid.flags & HIDDEN_BY_REPLACEMENT) {

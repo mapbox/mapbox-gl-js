@@ -3,9 +3,9 @@
   "metadata": {
     "test": {
       "standardDerivatives": true,
-      "height": 1024,
-      "width": 1024,
-      "allowed": 0.0011,
+      "height": 512,
+      "width": 512,
+      "allowed": 0.0014,
       "operations": [
         ["wait"]
       ]
@@ -19,13 +19,6 @@
         "local://tiles/{z}-{x}-{y}.vector.pbf"
       ]
     },
-    "landmark": {
-      "type": "batched-model",
-      "maxzoom": 14,
-      "tiles": [
-        "local://models/landmark/diffuse/{x}-{y}-{z}.b3dm"
-      ]
-    },
     "landmark-mbx": {
       "type": "batched-model",
       "maxzoom": 14,
@@ -35,11 +28,11 @@
     }
   },
   "pitch": 17.8,
-  "zoom": 15.68,
+  "zoom": 15.05,
   "bearing": 4,
   "center": [
-    -122.4031,
-    37.7912
+    -122.4054,
+    37.7867
   ],
   "layers": [
     {
@@ -135,11 +128,6 @@
       ],
       "source-layer": "building",
       "type": "fill-extrusion"
-    },
-    {
-      "id": "landmark",
-      "type": "model",
-      "source": "landmark"
     },
     {
       "id": "landmark-mbx",
