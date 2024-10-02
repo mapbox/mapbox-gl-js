@@ -230,6 +230,10 @@
   },
   "featureset": {
     "experimental": true,
+    "metadata": {
+      "type": "*",
+      "doc": "Arbitrary properties useful to track with the stylesheet, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
+    },
     "selectors": {
       "type": "array",
       "value": "selector",

@@ -198,6 +198,7 @@ export type FeaturesetsSpecification = {
  * @experimental This is experimental and subject to change in future versions.
  */
 export type FeaturesetSpecification = {
+    "metadata"?: unknown,
     "selectors"?: Array<SelectorSpecification>
 }
 
