@@ -60,7 +60,7 @@ const hillshadeUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: HillshadeStyleLayer,
-    matrix?: Float32Array | null,
+    matrix?: mat4 | null,
 ): UniformValues<HillshadeUniformsType> => {
     const shadow = layer.paint.get("hillshade-shadow-color");
     const highlight = layer.paint.get("hillshade-highlight-color");
@@ -82,7 +82,7 @@ const hillshadeUniformValues = (
     }
     const align = !painter.options.moving;
     return {
-        'u_matrix': matrix ? matrix : painter.transform.calculateProjMatrix(tile.tileID.toUnwrapped(), align),
+        'u_matrix': (matrix ? matrix : painter.transform.calculateProjMatrix(tile.tileID.toUnwrapped(), align)) as Float32Array,
         'u_image': 0,
         'u_latrange': getTileLatRange(painter, tile.tileID),
         'u_light': [layer.paint.get('hillshade-exaggeration'), azimuthal],
@@ -97,7 +97,6 @@ const hillshadeUniformValues = (
 };
 
 const hillshadeUniformPrepareValues = (tileID: OverscaledTileID, dem: DEMData): UniformValues<HillshadePrepareUniformsType> => {
-
     const stride = dem.stride;
     const matrix = mat4.create() as Float32Array;
     // Flip rendering at y axis.

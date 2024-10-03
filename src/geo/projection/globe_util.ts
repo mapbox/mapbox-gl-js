@@ -51,23 +51,21 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
 ];
 
 export function globePointCoordinate(tr: Transform, x: number, y: number, clampToHorizon: boolean = true): MercatorCoordinate | null | undefined {
-    const point0 = vec3.scale([] as any, tr._camera.position, tr.worldSize);
-    const point1 = [x, y, 1, 1];
+    const point0 = vec3.scale([] as unknown as vec3, tr._camera.position, tr.worldSize);
+    const point1: vec4 = [x, y, 1, 1];
 
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-    vec4.transformMat4(point1 as [number, number, number, number], point1 as [number, number, number, number], tr.pixelMatrixInverse);
-    vec4.scale(point1 as [number, number, number, number], point1 as [number, number, number, number], 1 / point1[3]);
+    vec4.transformMat4(point1, point1, tr.pixelMatrixInverse);
+    vec4.scale(point1, point1, 1 / point1[3]);
 
-    // @ts-expect-error - TS2345 - Argument of type '[number, number, number, number]' is not assignable to parameter of type 'ReadonlyVec3'.
-    const p0p1 = vec3.sub([] as any, point1 as [number, number, number, number], point0);
-    const dir = vec3.normalize([] as any, p0p1);
+    const p0p1 = vec3.sub([] as unknown as vec3, point1 as unknown as vec3, point0);
+    const dir = vec3.normalize([] as unknown as vec3, p0p1);
 
     // Find closest point on the sphere to the ray. This is a bit more involving operation
     // if the ray is not intersecting with the sphere, in which case we "clamp" the ray
     // to the surface of the sphere, i.e. find a tangent vector that originates from the camera position
     const m = tr.globeMatrix;
-    const globeCenter = [m[12], m[13], m[14]];
-    const p0toCenter = vec3.sub([] as any, globeCenter as [number, number, number], point0);
+    const globeCenter: vec3 = [m[12], m[13], m[14]];
+    const p0toCenter = vec3.sub([] as any, globeCenter, point0);
     const p0toCenterDist = vec3.length(p0toCenter);
     const centerDir = vec3.normalize([] as any, p0toCenter);
     const radius = tr.worldSize / (2.0 * Math.PI);
@@ -82,36 +80,27 @@ export function globePointCoordinate(tr: Transform, x: number, y: number, clampT
         // Find the tangent vector by interpolating between camera-to-globe and camera-to-click vectors.
         // First we'll find a point P1 on the clicked ray that forms a right-angled triangle with the camera position
         // and the center of the globe. Angle of the tanget vector is then used as the interpolation factor
-        const clampedP1 = [], origoToP1 = [];
+        const clampedP1 = [] as unknown as vec3;
+        const origoToP1 = [] as unknown as vec3;
 
-        // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'vec3'.
-        vec3.scale(clampedP1 as [], dir, p0toCenterDist / cosAngle);
-        // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'vec3'. | TS2345 - Argument of type '[]' is not assignable to parameter of type 'vec3'.
-        vec3.normalize(origoToP1 as [], vec3.sub(origoToP1 as [], clampedP1 as [], p0toCenter));
-        // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'ReadonlyVec3'.
-        vec3.normalize(dir, vec3.add(dir, p0toCenter, vec3.scale(dir, origoToP1 as [], Math.tan(origoTangentAngle) * p0toCenterDist)));
+        vec3.scale(clampedP1, dir, p0toCenterDist / cosAngle);
+        vec3.normalize(origoToP1, vec3.sub(origoToP1, clampedP1, p0toCenter));
+        vec3.normalize(dir, vec3.add(dir, p0toCenter, vec3.scale(dir, origoToP1, Math.tan(origoTangentAngle) * p0toCenterDist)));
     }
 
-    const pointOnGlobe = [];
+    const pointOnGlobe = [] as unknown as vec3;
     const ray = new Ray(point0, dir);
 
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
     ray.closestPointOnSphere(globeCenter, radius, pointOnGlobe);
 
     // Transform coordinate axes to find lat & lng of the position
-    // @ts-expect-error - TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'ReadonlyVec3'. | TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-    const xa = vec3.normalize([] as any, getColumn(m, 0));
-    // @ts-expect-error - TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'ReadonlyVec3'. | TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-    const ya = vec3.normalize([] as any, getColumn(m, 1));
-    // @ts-expect-error - TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'ReadonlyVec3'. | TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-    const za = vec3.normalize([] as any, getColumn(m, 2));
+    const xa = vec3.normalize([] as unknown as vec3, getColumn(m, 0) as unknown as vec3);
+    const ya = vec3.normalize([] as unknown as vec3, getColumn(m, 1) as unknown as vec3);
+    const za = vec3.normalize([] as unknown as vec3, getColumn(m, 2) as unknown as vec3);
 
-    // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'ReadonlyVec3'.
-    const xp = vec3.dot(xa, pointOnGlobe as []);
-    // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'ReadonlyVec3'.
-    const yp = vec3.dot(ya, pointOnGlobe as []);
-    // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'ReadonlyVec3'.
-    const zp = vec3.dot(za, pointOnGlobe as []);
+    const xp = vec3.dot(xa, pointOnGlobe);
+    const yp = vec3.dot(ya, pointOnGlobe);
+    const zp = vec3.dot(za, pointOnGlobe);
 
     const lat = radToDeg(Math.asin(-yp / radius));
     let lng = radToDeg(Math.atan2(xp, zp));
@@ -127,11 +116,11 @@ export function globePointCoordinate(tr: Transform, x: number, y: number, clampT
 
 export class Arc {
     constructor(p0: vec3, p1: vec3, center: vec3) {
-        this.a = vec3.sub([] as any, p0, center);
-        this.b = vec3.sub([] as any, p1, center);
+        this.a = vec3.sub([] as unknown as vec3, p0, center);
+        this.b = vec3.sub([] as unknown as vec3, p1, center);
         this.center = center;
-        const an = vec3.normalize([] as any, this.a);
-        const bn = vec3.normalize([] as any, this.b);
+        const an = vec3.normalize([] as unknown as vec3, this.a);
+        const bn = vec3.normalize([] as unknown as vec3, this.b);
         this.angle = Math.acos(vec3.dot(an, bn));
     }
 
@@ -203,25 +192,20 @@ export function transitionTileAABBinECEF(id: CanonicalTileID, tr: Transform): Aa
     const n = mercatorYfromLat(bounds.getNorth()) * tr.worldSize;
     const s = mercatorYfromLat(bounds.getSouth()) * tr.worldSize;
     // Mercator bounds globeCorners in world/pixel space
-    const nw = [w, n, 0];
-    const ne = [e, n, 0];
-    const sw = [w, s, 0];
-    const se = [e, s, 0];
+    const nw: vec3 = [w, n, 0];
+    const ne: vec3 = [e, n, 0];
+    const sw: vec3 = [w, s, 0];
+    const se: vec3 = [e, s, 0];
     // Transform Mercator globeCorners to ECEF
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-    const worldToECEFMatrix = mat4.invert([] as any, tr.globeMatrix);
-    vec3.transformMat4(nw as [number, number, number], nw as [number, number, number], worldToECEFMatrix);
-    vec3.transformMat4(ne as [number, number, number], ne as [number, number, number], worldToECEFMatrix);
-    vec3.transformMat4(sw as [number, number, number], sw as [number, number, number], worldToECEFMatrix);
-    vec3.transformMat4(se as [number, number, number], se as [number, number, number], worldToECEFMatrix);
+    const worldToECEFMatrix = mat4.invert([] as unknown as mat4, tr.globeMatrix);
+    vec3.transformMat4(nw, nw, worldToECEFMatrix);
+    vec3.transformMat4(ne, ne, worldToECEFMatrix);
+    vec3.transformMat4(sw, sw, worldToECEFMatrix);
+    vec3.transformMat4(se, se, worldToECEFMatrix);
     // Interpolate Mercator corners and globe corners
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
     corners[0] = interpolateVec3(corners[0], sw, phase);
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
     corners[1] = interpolateVec3(corners[1], se, phase);
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
     corners[2] = interpolateVec3(corners[2], ne, phase);
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
     corners[3] = interpolateVec3(corners[3], nw, phase);
 
     return Aabb.fromPoints(corners);
@@ -249,7 +233,6 @@ export function aabbForTileOnGlobe(
         // Compute world/pixel space AABB that fully encapsulates
         // transformed corners of the ECEF AABB
         const corners = globeTileBounds(tileId).getCorners();
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
         transformPoints(corners, m, scale);
         return Aabb.fromPoints(corners);
     }
@@ -271,44 +254,41 @@ export function aabbForTileOnGlobe(
     const corners = boundsToECEF(bounds, GLOBE_RADIUS + globeMetersToEcef(tr._tileCoverLift));
 
     // Transform the corners to world space
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     transformPoints(corners, m, scale);
 
     const mx = Number.MAX_VALUE;
-    const cornerMax = [-mx, -mx, -mx];
-    const cornerMin = [mx, mx, mx];
+    const cornerMax: vec3 = [-mx, -mx, -mx];
+    const cornerMin: vec3 = [mx, mx, mx];
 
     // Extend the aabb by including the center point. There are some corner cases where center point is inside the
     // tile but due to curvature aabb computed from corner points does not cover the curved area.
     if (bounds.contains(tr.center)) {
 
         for (const corner of corners) {
-            vec3.min(cornerMin as [number, number, number], cornerMin as [number, number, number], corner);
-            vec3.max(cornerMax as [number, number, number], cornerMax as [number, number, number], corner);
+            vec3.min(cornerMin, cornerMin, corner);
+            vec3.max(cornerMax, cornerMax, corner);
         }
         cornerMax[2] = 0.0;
         const point = tr.point;
-        const center = [point.x * scale, point.y * scale, 0];
-        vec3.min(cornerMin as [number, number, number], cornerMin as [number, number, number], center as [number, number, number]);
-        vec3.max(cornerMax as [number, number, number], cornerMax as [number, number, number], center as [number, number, number]);
+        const center: vec3 = [point.x * scale, point.y * scale, 0];
+        vec3.min(cornerMin, cornerMin, center);
+        vec3.max(cornerMax, cornerMax, center);
 
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
         return new Aabb(cornerMin, cornerMax);
     }
 
     if (tr._tileCoverLift > 0.0) {
         // Early return for elevated globe tiles, where the tile cover optimization is ignored
         for (const corner of corners) {
-            vec3.min(cornerMin as [number, number, number], cornerMin as [number, number, number], corner);
-            vec3.max(cornerMax as [number, number, number], cornerMax as [number, number, number], corner);
+            vec3.min(cornerMin, cornerMin, corner);
+            vec3.max(cornerMax, cornerMax, corner);
         }
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
         return new Aabb(cornerMin, cornerMax);
     }
 
     // Compute arcs describing edges of the tile on the globe surface.
     // Vertical edges revolves around the globe origin whereas horizontal edges revolves around the y-axis.
-    const arcCenter = [m[12] * scale, m[13] * scale, m[14] * scale];
+    const arcCenter: vec3 = [m[12] * scale, m[13] * scale, m[14] * scale];
 
     const tileCenter = bounds.getCenter();
     const centerLat = clamp(tr.center.lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
@@ -335,17 +315,16 @@ export function aabbForTileOnGlobe(
         closestArcIdx = dx >= 0 ? 1 : 3;
     } else {
         closestArcIdx = dy >= 0 ? 0 : 2;
-        const yAxis = [m[4] * scale, m[5] * scale, m[6] * scale];
+        const yAxis: vec3 = [m[4] * scale, m[5] * scale, m[6] * scale];
         const shift = -Math.sin(degToRad(dy >= 0 ? bounds.getSouth() : bounds.getNorth())) * GLOBE_RADIUS;
-        vec3.scaleAndAdd(arcCenter as [number, number, number], arcCenter as [number, number, number], yAxis as [number, number, number], shift);
+        vec3.scaleAndAdd(arcCenter, arcCenter, yAxis, shift);
     }
 
     const arcStart = corners[closestArcIdx];
     const arcEnd = corners[(closestArcIdx + 1) % 4];
 
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
     const closestArc = new Arc(arcStart, arcEnd, arcCenter);
-    const arcExtremum = [
+    const arcExtremum: vec3 = [
         (localExtremum(closestArc, 0) || arcStart[0]),
         (localExtremum(closestArc, 1) || arcStart[1]),
         (localExtremum(closestArc, 2) || arcStart[2])];
@@ -361,13 +340,12 @@ export function aabbForTileOnGlobe(
         const mercatorMidpoint = vec3.add([] as any, mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
         vec3.scale(mercatorMidpoint, mercatorMidpoint, .5);
         // Interpolate globe extremum toward Mercator midpoint
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
         interpolateVec3(arcExtremum, mercatorMidpoint, phase);
     }
 
     for (const corner of corners) {
-        vec3.min(cornerMin as [number, number, number], cornerMin as [number, number, number], corner);
-        vec3.max(cornerMax as [number, number, number], cornerMax as [number, number, number], corner);
+        vec3.min(cornerMin, cornerMin, corner);
+        vec3.max(cornerMax, cornerMax, corner);
     }
 
     // Reduce height of the aabb to match height of the closest arc. This reduces false positives
@@ -375,10 +353,9 @@ export function aabbForTileOnGlobe(
     // of the view frustum
     cornerMin[2] = Math.min(arcStart[2], arcEnd[2]);
 
-    vec3.min(cornerMin as [number, number, number], cornerMin as [number, number, number], arcExtremum as [number, number, number]);
-    vec3.max(cornerMax as [number, number, number], cornerMax as [number, number, number], arcExtremum as [number, number, number]);
+    vec3.min(cornerMin, cornerMin, arcExtremum);
+    vec3.max(cornerMax, cornerMax, arcExtremum);
 
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
     return new Aabb(cornerMin, cornerMax);
 }
 
@@ -467,13 +444,11 @@ export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID, radiu
 }
 
 export function globeECEFOrigin(tileMatrix: mat4, id: UnwrappedTileID): [number, number, number] {
-    const origin = [0, 0, 0];
+    const origin: vec3 = [0, 0, 0];
     const bounds = globeTileBounds(id.canonical);
     const normalizationMatrix = globeNormalizeECEF(bounds);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-    vec3.transformMat4(origin as [number, number, number], origin as [number, number, number], normalizationMatrix);
-    vec3.transformMat4(origin as [number, number, number], origin as [number, number, number], tileMatrix);
-    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number, number]'.
+    vec3.transformMat4(origin, origin, normalizationMatrix);
+    vec3.transformMat4(origin, origin, tileMatrix);
     return origin;
 }
 
@@ -488,21 +463,17 @@ export function globeECEFNormalizationScale(
 
 // avoid redundant allocations by sharing the same typed array for normalization/denormalization matrices;
 // we never use multiple instances of these at the same time, but this might change, so let's be careful here!
-const tempMatrix = new Float64Array(16);
+const tempMatrix = new Float64Array(16) as unknown as mat4;
 
-export function globeNormalizeECEF(bounds: Aabb): Float64Array {
+export function globeNormalizeECEF(bounds: Aabb): mat4 {
     const scale = globeECEFNormalizationScale(bounds);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     const m = mat4.fromScaling(tempMatrix, [scale, scale, scale]);
-    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float64Array'.
     return mat4.translate(m, m, vec3.negate([] as any, bounds.min));
 }
 
-export function globeDenormalizeECEF(bounds: Aabb): Float64Array {
-// @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
+export function globeDenormalizeECEF(bounds: Aabb): mat4 {
     const m = mat4.fromTranslation(tempMatrix, bounds.min);
     const scale = 1.0 / globeECEFNormalizationScale(bounds);
-    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float64Array'.
     return mat4.scale(m, m, [scale, scale, scale]);
 }
 
@@ -519,27 +490,25 @@ export function globePixelsToTileUnits(zoom: number, id: CanonicalTileID): numbe
     return ecefPerPixel * normCoeff;
 }
 
-function calculateGlobePosMatrix(x: number, y: number, worldSize: number, lng: number, lat: number): Float64Array {
+function calculateGlobePosMatrix(x: number, y: number, worldSize: number, lng: number, lat: number): mat4 {
     // transform the globe from reference coordinate space to world space
     const scale = globeECEFUnitsToPixelScale(worldSize);
-    const offset = [x, y, -worldSize / (2.0 * Math.PI)];
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-    const m = mat4.identity(new Float64Array(16));
-    mat4.translate(m, m, offset as [number, number, number]);
+    const offset: vec3 = [x, y, -worldSize / (2.0 * Math.PI)];
+    const m = mat4.identity(new Float64Array(16) as unknown as mat4);
+    mat4.translate(m, m, offset);
     mat4.scale(m, m, [scale, scale, scale]);
     mat4.rotateX(m, m, degToRad(-lat));
     mat4.rotateY(m, m, degToRad(-lng));
-    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float64Array'.
     return m;
 }
 
-export function calculateGlobeMatrix(tr: Transform): Float64Array {
+export function calculateGlobeMatrix(tr: Transform): mat4 {
     const {x, y} = tr.point;
     const {lng, lat} = tr._center;
     return calculateGlobePosMatrix(x, y, tr.worldSize, lng, lat);
 }
 
-export function calculateGlobeLabelMatrix(tr: Transform, id: CanonicalTileID): Float64Array {
+export function calculateGlobeLabelMatrix(tr: Transform, id: CanonicalTileID): mat4 {
     const {x, y} = tr.point;
 
     // Map aligned label space for globe view is the non-rotated globe itself in pixel coordinates.
@@ -549,16 +518,14 @@ export function calculateGlobeLabelMatrix(tr: Transform, id: CanonicalTileID): F
     // map aligned label space. Whithout this logic map aligned symbols
     // would appear larger than intended.
     const m = calculateGlobePosMatrix(x, y, tr.worldSize / tr._pixelsPerMercatorPixel, 0, 0);
-    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float64Array'. | TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     return mat4.multiply(m, m, globeDenormalizeECEF(globeTileBounds(id)));
 }
 
-export function calculateGlobeMercatorMatrix(tr: Transform): Float32Array {
+export function calculateGlobeMercatorMatrix(tr: Transform): mat4 {
     const zScale = tr.pixelsPerMeter;
     const ws = zScale / mercatorZfromAltitude(1, tr.center.lat);
 
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-    const posMatrix = mat4.identity(new Float64Array(16));
+    const posMatrix = mat4.identity(new Float64Array(16) as unknown as mat4);
     mat4.translate(posMatrix, posMatrix, [tr.point.x, tr.point.y, 0.0]);
     mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
 
@@ -569,20 +536,17 @@ export function globeToMercatorTransition(zoom: number): number {
     return smoothstep(GLOBE_ZOOM_THRESHOLD_MIN, GLOBE_ZOOM_THRESHOLD_MAX, zoom);
 }
 
-export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: Float64Array): Float32Array {
+export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4): mat4 {
     const decode = globeDenormalizeECEF(globeTileBounds(id));
-    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'. | TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
     return mat4.mul(mat4.create(), globeMatrix, decode);
 }
 
-export function globePoleMatrixForTile(z: number, x: number, tr: Transform): Float32Array {
-// @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-    const poleMatrix = mat4.identity(new Float64Array(16));
+export function globePoleMatrixForTile(z: number, x: number, tr: Transform): mat4 {
+    const poleMatrix = mat4.identity(new Float64Array(16) as unknown as mat4);
 
     // Rotate the pole triangle fan to the correct location
     const numTiles = 1 << z;
     const xOffsetAngle = (x / numTiles - 0.5) * Math.PI * 2.0;
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
     mat4.rotateY(poleMatrix, tr.globeMatrix, xOffsetAngle);
 
     return Float32Array.from(poleMatrix);
@@ -613,7 +577,7 @@ export function getGridMatrix(
     const tileToLng = tileWidth / GLOBE_VERTEX_GRID_SIZE;
     const tileToLat = -tileHeight / GLOBE_LATITUDINAL_GRID_LOD_TABLE[latitudinalLod];
 
-    const matrix = [0, tileToLng, 0, tileToLat, 0, 0, n, w, 0];
+    const matrix: mat3 = [0, tileToLng, 0, tileToLat, 0, 0, n, w, 0];
 
     if (id.z > 0) {
         // Add slight padding to patch seams between tiles.
@@ -625,9 +589,9 @@ export function getGridMatrix(
 
         const xScale = padding / tileWidth + 1;
         const yScale = padding / tileHeight + 1;
-        const padMatrix = [xScale, 0, 0, 0, yScale, 0, -0.5 * padding / tileToLng, 0.5 * padding / tileToLat, 1];
+        const padMatrix: mat3 = [xScale, 0, 0, 0, yScale, 0, -0.5 * padding / tileToLng, 0.5 * padding / tileToLat, 1];
 
-        mat3.multiply(matrix as [number, number, number, number, number, number, number, number, number], matrix as [number, number, number, number, number, number, number, number, number], padMatrix as [number, number, number, number, number, number, number, number, number]);
+        mat3.multiply(matrix, matrix, padMatrix);
     }
 
     // Embed additional variables to the last row of the matrix
@@ -635,8 +599,7 @@ export function getGridMatrix(
     matrix[5] = id.x;
     matrix[8] = id.y;
 
-    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'mat4'.
-    return matrix;
+    return matrix as unknown as mat4;
 }
 
 export function getLatitudinalLod(lat: number): number {
@@ -649,16 +612,14 @@ export function getLatitudinalLod(lat: number): number {
 }
 
 export function globeCenterToScreenPoint(tr: Transform): Point {
-    const pos = [0, 0, 0];
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-    const matrix = mat4.identity(new Float64Array(16));
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
+    const pos: vec3 = [0, 0, 0];
+    const matrix = mat4.identity(new Float64Array(16) as unknown as mat4);
     mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
-    vec3.transformMat4(pos as [number, number, number], pos as [number, number, number], matrix);
+    vec3.transformMat4(pos, pos, matrix);
     return new Point(pos[0], pos[1]);
 }
 
-function cameraPositionInECEF(tr: Transform): Array<number> {
+function cameraPositionInECEF(tr: Transform): vec3 {
     // Here "center" is the center of the globe. We refer to transform._center
     // (the surface of the map on the center of the screen) as "pivot" to avoid confusion.
     const centerToPivot = latLngToECEF(tr._center.lat, tr._center.lng);
@@ -678,8 +639,7 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
     vec3.scale(pivotToCamera, pivotToCamera, globeMetersToEcef(tr.cameraToCenterDistance / tr.pixelsPerMeter));
     vec3.transformMat4(pivotToCamera, pivotToCamera, rotation);
 
-    // @ts-expect-error - TS2322 - Type 'vec3' is not assignable to type 'number[]'.
-    return vec3.add([] as any, centerToPivot, pivotToCamera);
+    return vec3.add([] as unknown as vec3, centerToPivot, pivotToCamera);
 }
 
 // Return the angle of the normal vector at a point on the globe relative to the camera.
@@ -687,8 +647,7 @@ function cameraPositionInECEF(tr: Transform): Array<number> {
 export function globeTiltAtLngLat(tr: Transform, lngLat: LngLat): number {
     const centerToPoint = latLngToECEF(lngLat.lat, lngLat.lng);
     const centerToCamera = cameraPositionInECEF(tr);
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
-    const pointToCamera = vec3.subtract([] as any, centerToCamera, centerToPoint);
+    const pointToCamera = vec3.subtract([] as unknown as vec3, centerToCamera, centerToPoint);
     return vec3.angle(pointToCamera, centerToPoint);
 }
 
@@ -705,17 +664,15 @@ export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
  */
 export function polesInViewport(tr: Transform): [boolean, boolean] {
     // Create matrix from ECEF to screen coordinates
-// @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-    const ecefToScreenMatrix = mat4.identity(new Float64Array(16));
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
+    const ecefToScreenMatrix = mat4.identity(new Float64Array(16) as unknown as mat4);
     mat4.multiply(ecefToScreenMatrix, tr.pixelMatrix, tr.globeMatrix);
 
-    const north = [0, GLOBE_MIN, 0];
-    const south = [0, GLOBE_MAX, 0];
+    const north: vec3 = [0, GLOBE_MIN, 0];
+    const south: vec3 = [0, GLOBE_MAX, 0];
 
     // Translate the poles from ECEF to screen coordinates
-    vec3.transformMat4(north as [number, number, number], north as [number, number, number], ecefToScreenMatrix);
-    vec3.transformMat4(south as [number, number, number], south as [number, number, number], ecefToScreenMatrix);
+    vec3.transformMat4(north, north, ecefToScreenMatrix);
+    vec3.transformMat4(south, south, ecefToScreenMatrix);
 
     // Check if the poles are inside the viewport and not behind the globe surface
     const northInViewport =
@@ -905,8 +862,7 @@ export class GlobeSharedBuffers {
     }
 
     _createGrid(context: Context) {
-        // @ts-expect-error - TS2345 - Argument of type 'readonly [64, number, number]' is not assignable to parameter of type 'number[]'.
-        const gridWithLods = this._fillGridMeshWithLods(GLOBE_VERTEX_GRID_SIZE, GLOBE_LATITUDINAL_GRID_LOD_TABLE);
+        const gridWithLods = this._fillGridMeshWithLods(GLOBE_VERTEX_GRID_SIZE, GLOBE_LATITUDINAL_GRID_LOD_TABLE as unknown as number[]);
         this._gridSegments = gridWithLods.segments;
 
         this._gridBuffer = context.createVertexBuffer(gridWithLods.vertices, posAttributes.members);

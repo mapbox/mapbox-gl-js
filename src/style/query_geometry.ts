@@ -410,7 +410,6 @@ export function unwrapQueryPolygon(polygon: Point[], tr: Transform): {
 // Finding projection of these kind of polygons is more involving as projecting just the corners will
 // produce a degenerate (self-intersecting, non-continuous, etc.) polygon in mercator coordinates
 export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): CachedPolygon | null | undefined {
-// @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
     const matrix = mat4.multiply([] as any, tr.pixelMatrix, tr.globeMatrix);
 
     // Transform north and south pole coordinates to the screen to see if they're

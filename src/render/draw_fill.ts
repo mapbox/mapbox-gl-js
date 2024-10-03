@@ -111,7 +111,6 @@ function drawFillTiles(painter: Painter, sourceCache: SourceCache, layer: FillSt
         }
 
         const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
-
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
         const emissiveStrength = layer.paint.get('fill-emissive-strength');
@@ -120,18 +119,14 @@ function drawFillTiles(painter: Painter, sourceCache: SourceCache, layer: FillSt
             indexBuffer = bucket.indexBuffer;
             segments = bucket.segments;
             uniformValues = image ?
-
                 fillPatternUniformValues(tileMatrix, emissiveStrength, painter, tile) :
-
                 fillUniformValues(tileMatrix, emissiveStrength);
         } else {
             indexBuffer = bucket.indexBuffer2;
             segments = bucket.segments2;
-            const drawingBufferSize = (painter.terrain && painter.terrain.renderingToTexture) ? painter.terrain.drapeBufferSize : [gl.drawingBufferWidth, gl.drawingBufferHeight];
+            const drawingBufferSize: [number, number] = (painter.terrain && painter.terrain.renderingToTexture) ? painter.terrain.drapeBufferSize : [gl.drawingBufferWidth, gl.drawingBufferHeight];
             uniformValues = (programName === 'fillOutlinePattern' && image) ?
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'number'.
                 fillOutlinePatternUniformValues(tileMatrix, emissiveStrength, painter, tile, drawingBufferSize) :
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'number'.
                 fillOutlineUniformValues(tileMatrix, emissiveStrength, drawingBufferSize);
         }
 

@@ -158,10 +158,10 @@ const fillExtrusionGroundEffectUniforms = (context: Context): FillExtrusionGroun
     'u_dynamic_offset': new Uniform1f(context)
 });
 
-const identityMatrix = mat4.create() as Float32Array;
+const identityMatrix = mat4.create();
 
 const fillExtrusionUniformValues = (
-    matrix: Float32Array,
+    matrix: mat4,
     painter: Painter,
     shouldUseVerticalGradient: boolean,
     opacity: number,
@@ -172,7 +172,7 @@ const fillExtrusionUniformValues = (
     heightLift: number,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    invMatrix: Float32Array,
+    invMatrix: mat4,
     floodLightColor: [number, number, number],
     verticalScale: number,
     floodLightIntensity: number,
@@ -192,7 +192,7 @@ const fillExtrusionUniformValues = (
     const tr = painter.transform;
 
     const uniformValues = {
-        'u_matrix': matrix,
+        'u_matrix': matrix as Float32Array,
         'u_lightpos': lightPos,
         'u_lightintensity': light.properties.get('intensity'),
 
@@ -201,7 +201,7 @@ const fillExtrusionUniformValues = (
         'u_opacity': opacity,
         'u_tile_id': [0, 0, 0] as [number, number, number],
         'u_zoom_transition': 0,
-        'u_inv_rot_matrix': identityMatrix,
+        'u_inv_rot_matrix': identityMatrix as Float32Array,
         'u_merc_center': [0, 0] as [number, number],
         'u_up_dir': [0, 0, 0] as [number, number, number],
         'u_height_lift': 0,
@@ -217,7 +217,7 @@ const fillExtrusionUniformValues = (
     if (tr.projection.name === 'globe') {
         uniformValues['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         uniformValues['u_zoom_transition'] = zoomTransition;
-        uniformValues['u_inv_rot_matrix'] = invMatrix;
+        uniformValues['u_inv_rot_matrix'] = invMatrix as Float32Array;
         uniformValues['u_merc_center'] = mercatorCenter;
         uniformValues['u_up_dir'] = (tr.projection.upVector(new CanonicalTileID(0, 0, 0), mercatorCenter[0] * EXTENT, mercatorCenter[1] * EXTENT) as any);
         uniformValues['u_height_lift'] = heightLift;
@@ -226,9 +226,9 @@ const fillExtrusionUniformValues = (
     return uniformValues;
 };
 
-const fillExtrusionDepthUniformValues = (matrix: Float32Array, edgeRadius: number, lineWidthScale: number, verticalScale: number): UniformValues<FillExtrusionDepthUniformsType> => {
+const fillExtrusionDepthUniformValues = (matrix: mat4, edgeRadius: number, lineWidthScale: number, verticalScale: number): UniformValues<FillExtrusionDepthUniformsType> => {
     return {
-        'u_matrix': matrix,
+        'u_matrix': matrix as Float32Array,
         'u_edge_radius': edgeRadius,
         'u_width_scale': lineWidthScale,
         'u_vertical_scale': verticalScale
@@ -236,7 +236,7 @@ const fillExtrusionDepthUniformValues = (matrix: Float32Array, edgeRadius: numbe
 };
 
 const fillExtrusionPatternUniformValues = (
-    matrix: Float32Array,
+    matrix: mat4,
     painter: Painter,
     shouldUseVerticalGradient: boolean,
     opacity: number,
@@ -248,7 +248,7 @@ const fillExtrusionPatternUniformValues = (
     heightLift: number,
     zoomTransition: number,
     mercatorCenter: [number, number],
-    invMatrix: Float32Array,
+    invMatrix: mat4,
     floodLightColor: [number, number, number],
     verticalScale: number,
 ): UniformValues<FillExtrusionPatternUniformsType> => {
@@ -263,7 +263,7 @@ const fillExtrusionPatternUniformValues = (
 
 const fillExtrusionGroundEffectUniformValues = (
     painter: Painter,
-    matrix: Float32Array,
+    matrix: mat4,
     opacity: number,
     aoPass: boolean,
     meterToTile: number,
@@ -275,7 +275,7 @@ const fillExtrusionGroundEffectUniformValues = (
     fbSize: number,
 ): UniformValues<FillExtrusionGroundEffectUniformsType> => {
     const uniformValues = {
-        'u_matrix': matrix,
+        'u_matrix': matrix as Float32Array,
         'u_opacity': opacity,
         'u_ao_pass': aoPass ? 1 : 0,
         'u_meter_to_tile': meterToTile,

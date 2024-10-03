@@ -39,12 +39,13 @@ import type {TileFootprint} from '../../../3d-style/util/conflation';
 
 class ModelFeature {
     feature: EvaluationFeature;
+    featureStates: FeatureState;
     instancedDataOffset: number;
     instancedDataCount: number;
 
-    rotation: Array<number>;
-    scale: Array<number>;
-    translation: Array<number>;
+    rotation: vec3;
+    scale: vec3;
+    translation: vec3;
 
     constructor(feature: EvaluationFeature, offset: number) {
         this.feature = feature;
@@ -83,9 +84,7 @@ class ModelBucket implements Bucket {
     stateDependentLayerIds: Array<string>;
     hasPattern: boolean;
 
-    instancesPerModel: {
-        string: PerModelAttributes;
-    };
+    instancesPerModel: Record<string, PerModelAttributes>;
 
     uploaded: boolean;
 
@@ -128,7 +127,6 @@ class ModelBucket implements Bucket {
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.hasPattern = false;
-        // @ts-expect-error - TS2741 - Property 'string' is missing in type '{}' but required in type '{ string: PerModelAttributes; }'.
         this.instancesPerModel = {};
         this.validForExaggeration = 0;
         this.maxVerticalOffset = 0;
@@ -419,8 +417,7 @@ class ModelBucket implements Bucket {
         const color = layer.paint.get('model-color').evaluate(evaluationFeature, featureState, canonical);
 
         color.a = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
-        // @ts-expect-error - TS2322 - Type '[]' is not assignable to type 'mat4'.
-        const rotationScaleYZFlip: mat4 = [];
+        const rotationScaleYZFlip = [] as unknown as mat4;
         if (this.maxVerticalOffset < translation[2]) this.maxVerticalOffset = translation[2];
         this.maxScale = Math.max(Math.max(this.maxScale, scale[0]), Math.max(scale[1], scale[2]));
 

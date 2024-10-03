@@ -1,6 +1,7 @@
 import {Uniform1i, Uniform1f, Uniform2f, Uniform4f, UniformMatrix2f, UniformMatrix4f} from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 
+import type {mat4} from 'gl-matrix';
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';
 import type Transform from '../../geo/transform';
@@ -72,7 +73,7 @@ const lineUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: LineStyleLayer,
-    matrix: Float32Array | null | undefined,
+    matrix: mat4 | null | undefined,
     imageHeight: number,
     pixelRatio: number,
     trimOffset: [number, number],
@@ -80,8 +81,8 @@ const lineUniformValues = (
     const transform = painter.transform;
     const pixelsToTileUnits = transform.calculatePixelsToTileUnitsMatrix(tile);
     return {
-        'u_matrix': calculateMatrix(painter, tile, layer, matrix),
-        'u_pixels_to_tile_units': pixelsToTileUnits,
+        'u_matrix': calculateMatrix(painter, tile, layer, matrix) as Float32Array,
+        'u_pixels_to_tile_units': pixelsToTileUnits as Float32Array,
         'u_device_pixel_ratio': pixelRatio,
         'u_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
@@ -104,16 +105,16 @@ const linePatternUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: LineStyleLayer,
-    matrix: Float32Array | null | undefined,
+    matrix: mat4 | null | undefined,
     pixelRatio: number,
     trimOffset: [number, number],
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
     return {
-        'u_matrix': calculateMatrix(painter, tile, layer, matrix),
+        'u_matrix': calculateMatrix(painter, tile, layer, matrix) as Float32Array,
         'u_texsize': tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0],
         // camera zoom ratio
-        'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile),
+        'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile) as Float32Array,
         'u_device_pixel_ratio': pixelRatio,
         'u_image': 0,
         'u_tile_units_to_pixels': calculateTileRatio(tile, transform),
@@ -130,7 +131,7 @@ function calculateTileRatio(tile: Tile, transform: Transform) {
     return 1 / pixelsToTileUnits(tile, 1, transform.tileZoom);
 }
 
-function calculateMatrix(painter: Painter, tile: Tile, layer: LineStyleLayer, matrix?: Float32Array | null) {
+function calculateMatrix(painter: Painter, tile: Tile, layer: LineStyleLayer, matrix?: mat4) {
     return painter.translatePosMatrix(
         matrix ? matrix : tile.tileID.projMatrix,
         tile,
@@ -141,7 +142,7 @@ function calculateMatrix(painter: Painter, tile: Tile, layer: LineStyleLayer, ma
 }
 
 const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
-    const values = [];
+    const values: LineDefinesType[] = [];
     if (hasDash(layer)) values.push('RENDER_LINE_DASH');
     if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
 
@@ -164,7 +165,6 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
 };
 
 function hasDash(layer: LineStyleLayer) {
-
     const dashPropertyValue = layer.paint.get('line-dasharray').value;
     // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'PossiblyEvaluatedValue<number[]>'.
     return dashPropertyValue.value || dashPropertyValue.kind !== "constant";

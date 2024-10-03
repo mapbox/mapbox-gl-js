@@ -53,7 +53,7 @@ type SymbolTileRenderState = {
         isSDF: boolean;
         hasHalo: boolean;
         tile: Tile;
-        labelPlaneMatrixInv: Float32Array | null | undefined;
+        labelPlaneMatrixInv: mat4 | null | undefined;
     } | null;
 };
 
@@ -109,19 +109,17 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
 
 function computeGlobeCameraUp(transform: Transform): [number, number, number] {
     const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
     const viewToEcef = mat4.multiply([] as any, viewMatrix, transform.globeMatrix);
     mat4.invert(viewToEcef, viewToEcef);
 
-    const cameraUpVector = [0, 0, 0];
-    const up = [0, 1, 0, 0];
-    vec4.transformMat4(up as [number, number, number, number], up as [number, number, number, number], viewToEcef);
+    const cameraUpVector: vec3 = [0, 0, 0];
+    const up: vec4 = [0, 1, 0, 0];
+    vec4.transformMat4(up, up, viewToEcef);
     cameraUpVector[0] = up[0];
     cameraUpVector[1] = up[1];
     cameraUpVector[2] = up[2];
-    vec3.normalize(cameraUpVector as [number, number, number], cameraUpVector as [number, number, number]);
+    vec3.normalize(cameraUpVector, cameraUpVector);
 
-    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number, number]'.
     return cameraUpVector;
 }
 
@@ -168,7 +166,7 @@ function updateVariableAnchors(coords: Array<OverscaledTileID>, painter: Painter
         if (size) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
             updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
-                tr, labelPlaneMatrix, coord, tileScale, size, updateTextFitIcon);
+                tr, labelPlaneMatrix as Float32Array, coord, tileScale, size, updateTextFitIcon);
         }
     }
 }
@@ -297,8 +295,6 @@ function drawLayerSymbols(
     const iconBrightnessMax = layer.paint.get('icon-color-brightness-max');
     const elevationFromSea = layer.paint.get('symbol-elevation-reference') === 'sea';
 
-    const textOccludedOpacityMultiplier = layer.paint.get('text-occlusion-opacity').constantOr(0);
-
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -312,7 +308,7 @@ function drawLayerSymbols(
     let sortFeaturesByKey = false;
 
     const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
-    const mercatorCenter = [
+    const mercatorCenter: [number, number] = [
         mercatorXfromLng(tr.center.lng),
         mercatorYfromLat(tr.center.lat)
     ];
@@ -320,7 +316,7 @@ function drawLayerSymbols(
     const isGlobeProjection = tr.projection.name === 'globe';
     const tileRenderState: Array<SymbolTileRenderState> = [];
 
-    const mercatorCameraUp = [0, -1, 0];
+    const mercatorCameraUp: [number, number, number] = [0, -1, 0];
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -405,7 +401,7 @@ function drawLayerSymbols(
             const programConfiguration = bucket.icon.programConfigurations.get(layer.id);
             const program = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
 
-            const texSize = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
+            const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
             const sizeData = bucket.iconSizeData;
             const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
             const transformed = iconPitchWithMap || tr.pitch !== 0;
@@ -420,8 +416,7 @@ function drawLayerSymbols(
             const uLabelPlaneMatrix = projectedPosOnLabelSpace ? identityMat4 : labelPlaneMatrixRendering;
             const rotateInShader = iconRotateWithMap && !iconPitchWithMap && !alongLine;
 
-            // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number, number]'.
-            let globeCameraUp: [number, number, number] = mercatorCameraUp;
+            let globeCameraUp = mercatorCameraUp;
             if ((isGlobeProjection || tr.mercatorFromTransition) && !iconRotateWithMap) {
                 // Each symbol rotating with the viewport requires per-instance information about
                 // how to align with the viewport. In 2D case rotation is shared between all of the symbols and
@@ -434,7 +429,6 @@ function drawLayerSymbols(
 
             const colorAdjustmentMatrix = layer.getColorAdjustmentMatrix(iconSaturation, iconContrast, iconBrightnessMin, iconBrightnessMax);
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
-                // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
                 matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, false, texSize, [0, 0], true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorAdjustmentMatrix, transitionProgress);
 
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
@@ -515,7 +509,7 @@ function drawLayerSymbols(
                 atlasInterpolationIcon = transformed || painter.options.rotating || painter.options.zooming || zoomDependentSize ? gl.LINEAR : gl.NEAREST;
             }
 
-            const texSize = tile.glyphAtlasTexture ? tile.glyphAtlasTexture.size : [0, 0];
+            const texSize: [number, number] = tile.glyphAtlasTexture ? tile.glyphAtlasTexture.size : [0, 0];
             const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
             const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
             // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
@@ -531,8 +525,7 @@ function drawLayerSymbols(
             // Unpitched point labels need to have their rotation applied after projection
             const rotateInShader = textRotateWithMap && !textPitchWithMap && !alongLine;
 
-            // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number, number]'.
-            let globeCameraUp: [number, number, number] = mercatorCameraUp;
+            let globeCameraUp = mercatorCameraUp;
             if ((isGlobeProjection || tr.mercatorFromTransition) && !textRotateWithMap) {
                 // Each symbol rotating with the viewport requires per-instance information about
                 // how to align with the viewport. In 2D case rotation is shared between all of the symbols and
@@ -544,8 +537,7 @@ function drawLayerSymbols(
             const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
 
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
-                // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
-                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), textOccludedOpacityMultiplier);
+                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
 
             const atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
             const atlasInterpolation = gl.LINEAR;
@@ -594,7 +586,6 @@ function drawLayerSymbols(
                 tileRenderState.push({
                     segments: new SegmentVector([segment]),
                     sortKey: (segment.sortKey),
-                    // @ts-expect-error - TS2322 - Type '{ program: Program<any>; buffers: SymbolBuffers; uniformValues: any; atlasTexture: Texture; atlasTextureIcon: any; atlasInterpolation: 9728 | 9729; ... 4 more ...; labelPlaneMatrixInv: mat4; }' is not assignable to type '{ program: any; buffers: SymbolBuffers; uniformValues: any; atlasTexture: Texture; atlasTextureIcon: Texture; atlasInterpolation: any; atlasInterpolationIcon: any; isSDF: boolean; hasHalo: boolean; tile: Tile; labelPlaneMatrixInv: Float32Array; }'.
                     state: iconState
                 });
             }
@@ -603,7 +594,6 @@ function drawLayerSymbols(
                 tileRenderState.push({
                     segments: new SegmentVector([segment]),
                     sortKey: (segment.sortKey),
-                    // @ts-expect-error - TS2322 - Type '{ program: Program<any>; buffers: SymbolBuffers; uniformValues: any; atlasTexture: Texture; atlasTextureIcon: Texture; atlasInterpolation: 9729; ... 4 more ...; labelPlaneMatrixInv: mat4; }' is not assignable to type '{ program: any; buffers: SymbolBuffers; uniformValues: any; atlasTexture: Texture; atlasTextureIcon: Texture; atlasInterpolation: any; atlasInterpolationIcon: any; isSDF: boolean; hasHalo: boolean; tile: Tile; labelPlaneMatrixInv: Float32Array; }'.
                     state: textState
                 });
             }
@@ -612,7 +602,6 @@ function drawLayerSymbols(
                 tileRenderState.push({
                     segments: iconOpacity ? bucket.icon.segments : new SegmentVector([]),
                     sortKey: 0,
-                    // @ts-expect-error - TS2322 - Type '{ program: Program<any>; buffers: SymbolBuffers; uniformValues: any; atlasTexture: Texture; atlasTextureIcon: any; atlasInterpolation: 9728 | 9729; ... 4 more ...; labelPlaneMatrixInv: mat4; }' is not assignable to type '{ program: any; buffers: SymbolBuffers; uniformValues: any; atlasTexture: Texture; atlasTextureIcon: Texture; atlasInterpolation: any; atlasInterpolationIcon: any; isSDF: boolean; hasHalo: boolean; tile: Tile; labelPlaneMatrixInv: Float32Array; }'.
                     state: iconState
                 });
             }
@@ -621,7 +610,6 @@ function drawLayerSymbols(
                 tileRenderState.push({
                     segments: textOpacity ? bucket.text.segments : new SegmentVector([]),
                     sortKey: 0,
-                    // @ts-expect-error - TS2322 - Type '{ program: Program<any>; buffers: SymbolBuffers; uniformValues: any; atlasTexture: Texture; atlasTextureIcon: Texture; atlasInterpolation: 9729; ... 4 more ...; labelPlaneMatrixInv: mat4; }' is not assignable to type '{ program: any; buffers: SymbolBuffers; uniformValues: any; atlasTexture: Texture; atlasTextureIcon: Texture; atlasInterpolation: any; atlasInterpolationIcon: any; isSDF: boolean; hasHalo: boolean; tile: Tile; labelPlaneMatrixInv: Float32Array; }'.
                     state: textState
                 });
             }

@@ -32,7 +32,25 @@ import type {ModelDefinesType} from '../../../3d-style/render/program/model_prog
 
 export type FogDefinesType = ['FOG', 'FOG_DITHERING'];
 export type TerrainDepthAccessDefinesType = 'DEPTH_D24' | 'DEPTH_OCCLUSION';
+
+type GlobalDefinesType =
+    | 'DEBUG_WIREFRAME'
+    | 'DEPTH_TEXTURE'
+    | 'FOG_DITHERING'
+    | 'FOG'
+    | 'GLOBE'
+    | 'LIGHTING_3D_ALPHA_EMISSIVENESS'
+    | 'LIGHTING_3D_MODE'
+    | 'NORMAL_OFFSET'
+    | 'OVERDRAW_INSPECTOR'
+    | 'RENDER_CUTOFF'
+    | 'RENDER_SHADOWS'
+    | 'RENDER_TO_TEXTURE'
+    | 'TERRAIN_DEM_FLOAT_FORMAT'
+    | 'TERRAIN';
+
 export type DynamicDefinesType =
+    | GlobalDefinesType
     | CircleDefinesType
     | SymbolDefinesType
     | LineDefinesType

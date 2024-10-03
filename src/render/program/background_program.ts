@@ -8,6 +8,7 @@ import {
 } from '../uniform_binding';
 import {extend} from '../../util/util';
 
+import type {mat4} from 'gl-matrix';
 import type Painter from '../painter';
 import type {UniformValues} from '../uniform_binding';
 import type Context from '../../gl/context';
@@ -60,19 +61,19 @@ const backgroundPatternUniforms = (context: Context): BackgroundPatternUniformsT
 });
 
 const backgroundUniformValues = (
-    matrix: Float32Array,
+    matrix: mat4,
     emissiveStrength: number,
     opacity: number,
     color: RenderColor,
 ): UniformValues<BackgroundUniformsType> => ({
-    'u_matrix': matrix,
+    'u_matrix': matrix as Float32Array,
     'u_emissive_strength': emissiveStrength,
     'u_opacity': opacity,
     'u_color': color
 });
 
 const backgroundPatternUniformValues = (
-    matrix: Float32Array,
+    matrix: mat4,
     emissiveStrength: number,
     opacity: number,
     painter: Painter,
@@ -87,7 +88,7 @@ const backgroundPatternUniformValues = (
 ): UniformValues<BackgroundPatternUniformsType> => extend(
     bgPatternUniformValues(image, scope, patternPosition, painter, isViewport, tile),
     {
-        'u_matrix': matrix,
+        'u_matrix': matrix as Float32Array,
         'u_emissive_strength': emissiveStrength,
         'u_opacity': opacity
     }

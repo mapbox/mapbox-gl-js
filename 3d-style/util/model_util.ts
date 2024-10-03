@@ -83,39 +83,37 @@ export function rotationFor3Points(
     h2: number,
     meterToMercator: number,
 ): quat {
-    const p0p1 = [p1[0] - p0[0], p1[1] - p0[1], 0.0];
-    const p0p2 = [p2[0] - p0[0], p2[1] - p0[1], 0.0];
+    const p0p1: vec3 = [p1[0] - p0[0], p1[1] - p0[1], 0.0];
+    const p0p2: vec3 = [p2[0] - p0[0], p2[1] - p0[1], 0.0];
     // If model scale is zero, all bounding box points are identical and no rotation can be calculated
-    if (vec3.length(p0p1 as [number, number, number]) < 1e-12 || vec3.length(p0p2 as [number, number, number]) < 1e-12) {
+    if (vec3.length(p0p1) < 1e-12 || vec3.length(p0p2) < 1e-12) {
         return quat.identity(out);
     }
-    const from = vec3.cross([] as any, p0p1 as [number, number, number], p0p2 as [number, number, number]);
+    const from = vec3.cross([] as any, p0p1, p0p2);
     vec3.normalize(from, from);
-    vec3.subtract(p0p2 as [number, number, number], p2, p0);
+    vec3.subtract(p0p2, p2, p0);
     p0p1[2] = (h1 - h0) * meterToMercator;
     p0p2[2] = (h2 - h0) * meterToMercator;
     const to = p0p1;
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
-    vec3.cross(to, p0p1 as [number, number, number], p0p2 as [number, number, number]);
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
+    vec3.cross(to, p0p1, p0p2);
     vec3.normalize(to, to);
     return quat.rotationTo(out, from, to);
 }
 
 export function coordinateFrameAtEcef(ecef: vec3): mat4 {
-    const zAxis = [ecef[0], ecef[1], ecef[2]];
-    let yAxis = [0.0, 1.0, 0.0];
-    const xAxis = vec3.cross([] as any, yAxis as [number, number, number], zAxis as [number, number, number]);
-    vec3.cross(yAxis as [number, number, number], zAxis as [number, number, number], xAxis);
-    if (vec3.squaredLength(yAxis as [number, number, number]) === 0.0) {
+    const zAxis: vec3 = [ecef[0], ecef[1], ecef[2]];
+    let yAxis: vec3 = [0.0, 1.0, 0.0];
+    const xAxis: vec3 = vec3.cross([] as unknown as vec3, yAxis, zAxis);
+    vec3.cross(yAxis, zAxis, xAxis);
+    if (vec3.squaredLength(yAxis) === 0.0) {
         // Coordinate space is ambiguous if the model is placed directly at north or south pole
         yAxis = [0.0, 1.0, 0.0];
-        vec3.cross(xAxis, zAxis as [number, number, number], yAxis as [number, number, number]);
+        vec3.cross(xAxis, zAxis, yAxis);
         assert(vec3.squaredLength(xAxis) > 0.0);
     }
     vec3.normalize(xAxis, xAxis);
-    vec3.normalize(yAxis as [number, number, number], yAxis as [number, number, number]);
-    vec3.normalize(zAxis as [number, number, number], zAxis as [number, number, number]);
+    vec3.normalize(yAxis, yAxis);
+    vec3.normalize(zAxis, zAxis);
     return [xAxis[0], xAxis[1], xAxis[2], 0.0,
         yAxis[0], yAxis[1], yAxis[2], 0.0,
         zAxis[0], zAxis[1], zAxis[2], 0.0,
@@ -157,7 +155,6 @@ export function convertModelMatrix(matrix: mat4, transform: Transform, scaleWith
     const ecefFrame = coordinateFrameAtEcef(ecefCoord);
     mat4.scale(mercToEcef, mercToEcef, [scale, scale, scale * sourcePixelsPerMeter]);
     mat4.translate(mercToEcef, mercToEcef, [-position[0], -position[1], -position[2]]);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
     const result = mat4.multiply([] as any, transform.globeMatrix, ecefFrame);
     mat4.multiply(result, result, mercToEcef);
     mat4.multiply(result, result, matrix);
@@ -181,7 +178,6 @@ export function mercatorToGlobeMatrix(matrix: mat4, transform: Transform): mat4 
 
     mat4.translate(m, m, [transform.point.x - 0.5 * worldSize, transform.point.y - 0.5 * worldSize, 0.0]);
     mat4.multiply(m, m, matrix);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
     return mat4.multiply(m, transform.globeMatrix, m);
 }
 

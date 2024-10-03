@@ -46,7 +46,7 @@ export function farthestPixelDistanceOnSphere(tr: Transform, pixelsPerMeter: num
     const cameraPosition = vec3.add([] as any, vec3.scale([] as any, forward, -cameraDistance), [0, 0, centerPixelAltitude]);
 
     const globeRadius = tr.worldSize / (2.0 * Math.PI);
-    const globeCenter = [0, 0, -globeRadius];
+    const globeCenter: vec3 = [0, 0, -globeRadius];
 
     const aspectRatio = tr.width / tr.height;
     const tanFovAboveCenter = Math.tan(tr.fovAboveCenter);
@@ -55,23 +55,21 @@ export function farthestPixelDistanceOnSphere(tr: Transform, pixelsPerMeter: num
     const right = vec3.scale([] as any, camera.right(), tanFovAboveCenter * aspectRatio);
     const dir = vec3.normalize([] as any, vec3.add([] as any, vec3.add([] as any, forward, up), right));
 
-    const pointOnGlobe = [];
+    const pointOnGlobe = [] as unknown as vec3;
     const ray = new Ray(cameraPosition, dir);
 
     let pixelDistance;
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
     if (ray.closestPointOnSphere(globeCenter, globeRadius, pointOnGlobe)) {
-        // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'ReadonlyVec3'.
-        const p0 = vec3.add([] as any, pointOnGlobe as [], globeCenter as [number, number, number]);
-        const p1 = vec3.sub([] as any, p0, cameraPosition);
+        const p0 = vec3.add([] as unknown as vec3, pointOnGlobe, globeCenter);
+        const p1 = vec3.sub([] as unknown as vec3, p0, cameraPosition);
         // Globe is fully covering the view frustum. Project the intersection
         // point to the camera view vector in order to find the pixel distance
         pixelDistance = Math.cos(tr.fovAboveCenter) * vec3.length(p1);
     } else {
         // Background space is visible. Find distance to the point of the
         // globe where surface normal is parallel to the view vector
-        const globeCenterToCamera = vec3.sub([] as any, cameraPosition, globeCenter as [number, number, number]);
-        const cameraToGlobe = vec3.sub([] as any, globeCenter as [number, number, number], cameraPosition);
+        const globeCenterToCamera = vec3.sub([] as unknown as vec3, cameraPosition, globeCenter);
+        const cameraToGlobe = vec3.sub([] as unknown as vec3, globeCenter, cameraPosition);
         vec3.normalize(cameraToGlobe, cameraToGlobe);
 
         const cameraHeight = vec3.length(globeCenterToCamera) - globeRadius;

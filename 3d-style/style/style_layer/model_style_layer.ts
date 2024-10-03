@@ -11,6 +11,7 @@ import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '
 import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
 
+import type {vec3} from 'gl-matrix';
 import type {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue, ConfigOptions} from '../../../src/style/properties';
 import type Point from '@mapbox/point-geometry';
 import type {LayerSpecification} from '../../../src/style-spec/types';
@@ -92,7 +93,7 @@ class ModelStyleLayer extends StyleLayer {
         for (const modelId in bucket.instancesPerModel) {
             const instances = bucket.instancesPerModel[modelId];
             const featureId = feature.id !== undefined ? feature.id :
-                (feature.properties && feature.properties.hasOwnProperty("id")) ? feature.properties["id"] : undefined;
+                (feature.properties && feature.properties.hasOwnProperty("id")) ? (feature.properties["id"] as string | number) : undefined;
             if (instances.idToFeaturesIndex.hasOwnProperty(featureId)) {
                 const modelFeature = instances.features[instances.idToFeaturesIndex[featureId]];
                 const model = modelManager.getModel(modelId, this.scope);
@@ -107,7 +108,7 @@ class ModelStyleLayer extends StyleLayer {
                     const offset = instanceOffset * 16;
 
                     const va = instances.instancedDataArray.float32;
-                    const translation = [va[offset + 4], va[offset + 5], va[offset + 6]];
+                    const translation: vec3 = [va[offset + 4], va[offset + 5], va[offset + 6]];
                     const pointX = va[offset];
                     const pointY = va[offset + 1] | 0; // point.y stored in integer part
 
@@ -119,7 +120,6 @@ class ModelStyleLayer extends StyleLayer {
                                          position,
                                          modelFeature.rotation,
                                          modelFeature.scale,
-                                         // @ts-expect-error - TS2345 - Argument of type 'any[]' is not assignable to parameter of type 'vec3'.
                                          translation,
                                          false,
                                          false,
@@ -127,7 +127,6 @@ class ModelStyleLayer extends StyleLayer {
                     if (transform.projection.name === 'globe') {
                         matrix = convertModelMatrixForGlobe(matrix, transform);
                     }
-                    // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
                     const worldViewProjection = mat4.multiply([] as any, transform.projMatrix, matrix);
                     // Collision checks are performed in screen space. Corners are in ndc space.
                     const screenQuery = queryGeometry.queryGeometry;
@@ -205,14 +204,11 @@ class ModelStyleLayer extends StyleLayer {
         const anchorX = node.anchor ? node.anchor[0] : 0;
         const anchorY = node.anchor ? node.anchor[1] : 0;
 
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
         mat4.translate(modelMatrix, modelMatrix, [anchorX * (scale[0] - 1),
             anchorY * (scale[1] - 1),
             elevation]);
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
         mat4.scale(modelMatrix, modelMatrix, scale);
 
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
         mat4.multiply(modelMatrix, modelMatrix, node.matrix);
 
         // Collision checks are performed in screen space. Corners are in ndc space.
@@ -220,9 +216,7 @@ class ModelStyleLayer extends StyleLayer {
         const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
 
         const checkNode = function(n: Node) {
-            // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
             const nodeModelMatrix = mat4.multiply([] as any, modelMatrix, n.matrix);
-            // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
             const worldViewProjection = mat4.multiply(nodeModelMatrix, transform.expandedFarZProjMatrix, nodeModelMatrix);
             for (let i = 0; i < n.meshes.length; ++i) {
                 const mesh = n.meshes[i];

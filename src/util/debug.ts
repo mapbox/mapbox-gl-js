@@ -99,12 +99,9 @@ export const Debug: {
     drawAabbs(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
         const tr = painter.transform;
 
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-        const worldToECEFMatrix = mat4.invert(new Float64Array(16), tr.globeMatrix);
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-        const ecefToPixelMatrix = mat4.multiply([] as any, tr.pixelMatrix, tr.globeMatrix);
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-        const ecefToCameraMatrix = mat4.multiply([] as any,  tr._camera.getWorldToCamera(tr.worldSize, 1), tr.globeMatrix);
+        const worldToECEFMatrix = mat4.invert(new Float64Array(16) as unknown as mat4, tr.globeMatrix);
+        const ecefToPixelMatrix = mat4.multiply([] as unknown as mat4, tr.pixelMatrix, tr.globeMatrix);
+        const ecefToCameraMatrix = mat4.multiply([] as unknown as mat4, tr._camera.getWorldToCamera(tr.worldSize, 1), tr.globeMatrix);
 
         if (!tr.freezeTileCoverage) {
             // @ts-expect-error - TS2322 - Type 'vec3[][]' is not assignable to type 'vec3[]'.

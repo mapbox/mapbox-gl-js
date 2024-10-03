@@ -195,7 +195,7 @@ class Painter {
     gpuTimers: GPUTimers;
     deferredRenderGpuTimeQueries: Array<any>;
     emptyTexture: Texture;
-    identityMat: Float32Array;
+    identityMat: mat4;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: Terrain | null | undefined;
@@ -470,7 +470,6 @@ class Painter {
         this.emptyTexture = new Texture(context,
             new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0)), context.gl.RGBA8);
 
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
         this.identityMat = mat4.create();
 
         const gl = this.context.gl;
@@ -1435,12 +1434,12 @@ class Painter {
      * @private
      */
     translatePosMatrix(
-        matrix: Float32Array,
+        matrix: mat4,
         tile: Tile,
         translate: [number, number],
         translateAnchor: 'map' | 'viewport',
         inViewportPixelUnitsUnits?: boolean,
-    ): Float32Array {
+    ): mat4 {
         if (!translate[0] && !translate[1]) return matrix;
 
         const angle = inViewportPixelUnitsUnits ?
@@ -1505,9 +1504,9 @@ class Painter {
      * @returns {string[]}
      * @private
      */
-    currentGlobalDefines(name: string, overrideFog?: boolean | null, overrideRtt?: boolean | null): string[] {
+    currentGlobalDefines(name: string, overrideFog?: boolean | null, overrideRtt?: boolean | null): DynamicDefinesType[] {
         const rtt = (overrideRtt === undefined) ? this.terrain && this.terrain.renderingToTexture : overrideRtt;
-        const defines = [];
+        const defines: DynamicDefinesType[] = [];
 
         if (this.style && this.style.enable3dLights()) {
             // In case of terrain and map optimized for terrain mode flag
@@ -1547,7 +1546,7 @@ class Painter {
 
     getOrCreateProgram(name: string, options?: CreateProgramParams): Program<any> {
         this.cache = this.cache || {};
-        const defines = (((options && options.defines) || []) as string[]);
+        const defines = ((options && options.defines) || []);
         const config = options && options.config;
         const overrideFog = options && options.overrideFog;
         const overrideRtt = options && options.overrideRtt;

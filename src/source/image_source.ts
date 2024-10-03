@@ -67,7 +67,7 @@ function getTextureToTileTransformMatrix(x1: number, y1: number, x2: number, y2:
     return mat3.multiply(b, b, adjA);
 }
 
-function getPerspectiveTransform(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
+function getPerspectiveTransform(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): [number, number] {
     const m = getTextureToTileTransformMatrix(x1, y1, x2, y2, x3, y3, x4, y4);
     return [
         m[2] / m[8] / EXTENT,
@@ -94,11 +94,11 @@ function isConvex(coords: [ProjectedPoint, ProjectedPoint, ProjectedPoint, Proje
         (crossProduct1 < 0 && crossProduct2 < 0 && crossProduct3 < 0 && crossProduct4 < 0);
 }
 
-function constrainCoordinates(coords: [number, number]) {
+function constrainCoordinates(coords: [number, number]): [number, number] {
     return [coords[0], Math.min(Math.max(coords[1], -MAX_MERCATOR_LATITUDE), MAX_MERCATOR_LATITUDE)];
 }
 
-function constrain(coords: Coordinates) {
+function constrain(coords: Coordinates): Coordinates {
     return [
         constrainCoordinates(coords[0]),
         constrainCoordinates(coords[1]),
@@ -522,14 +522,13 @@ class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Event
 
         const globalTileTr = tileTransform(new CanonicalTileID(0, 0, 0), this.map.transform.projection);
 
-        const globalTileCoords = [
+        const globalTileCoords: [ProjectedPoint, ProjectedPoint, ProjectedPoint, ProjectedPoint] = [
             globalTileTr.projection.project(this.coordinates[0][0], this.coordinates[0][1]),
             globalTileTr.projection.project(this.coordinates[1][0], this.coordinates[1][1]),
             globalTileTr.projection.project(this.coordinates[2][0], this.coordinates[2][1]),
             globalTileTr.projection.project(this.coordinates[3][0], this.coordinates[3][1])
         ];
 
-        // @ts-expect-error - TS2345 - Argument of type 'ProjectedPoint[]' is not assignable to parameter of type '[ProjectedPoint, ProjectedPoint, ProjectedPoint, ProjectedPoint]'.
         if (!isConvex(globalTileCoords)) {
             console.warn('Image source coordinates are defining non-convex area in the Mercator projection');
             this._unsupportedCoords = true;
@@ -544,7 +543,6 @@ class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Event
             return getTilePoint(tileTr, projectedCoord)._round();
         });
 
-        // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number]'.
         this.perspectiveTransform = getPerspectiveTransform(tl.x, tl.y, tr.x, tr.y, br.x, br.y, bl.x, bl.y);
 
         const boundsArray = this._boundsArray = new RasterBoundsArray();
@@ -592,7 +590,6 @@ class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Event
         const triangleCount = cellCount * cellCount * 2;
         const verticesLongitudes = [];
         const constrainedCoordinates = constrain(this.coordinates);
-        // @ts-expect-error - TS2345 - Argument of type 'number[][]' is not assignable to parameter of type 'Coordinates'.
         const [minLng, minLat, lngDiff, latDiff] = calculateMinAndSize(constrainedCoordinates);
 
         // Vertices
@@ -606,7 +603,6 @@ class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Event
             };
             const [p0, p1, p2, p3] = globalTileCoords.map(transformToImagePoint);
             const toUV = getTileToTextureTransformMatrix(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
-            // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number]'.
             this.elevatedGlobePerspectiveTransform = getPerspectiveTransform(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
 
             const addVertex = (point: LngLat, tilePoint: ProjectedPoint) => {

@@ -771,13 +771,13 @@ class Tile {
         y: number,
         id: CanonicalTileID,
         tr: Transform,
-        normalizationMatrix: Float64Array,
-        worldToECEFMatrix: Float64Array | null | undefined,
+        normalizationMatrix: mat4,
+        worldToECEFMatrix: mat4 | null | undefined,
         phase: number,
     ): vec3 {
         // The following is equivalent to doing globe.projectTilePoint.
         // This way we don't recompute the normalization matrix everytime since it remains the same for all points.
-        let ecef = tileCoordToECEF(x, y, id);
+        let ecef = tileCoordToECEF(x, y, id) as vec3;
         if (worldToECEFMatrix) {
             // When in globe-to-Mercator transition, interpolate between globe and Mercator positions in ECEF
             const tileCount = 1 << id.z;
@@ -799,18 +799,15 @@ class Tile {
             let mercatorY = (y / EXTENT + id.y) / tileCount;
             mercatorX = (mercatorX - camX) * tr._pixelsPerMercatorPixel + camX;
             mercatorY = (mercatorY - camY) * tr._pixelsPerMercatorPixel + camY;
-            const mercatorPos = [mercatorX * tr.worldSize, mercatorY * tr.worldSize, 0];
-            // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-            vec3.transformMat4(mercatorPos as [number, number, number], mercatorPos as [number, number, number], worldToECEFMatrix);
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
+            const mercatorPos: vec3 = [mercatorX * tr.worldSize, mercatorY * tr.worldSize, 0];
+            vec3.transformMat4(mercatorPos, mercatorPos, worldToECEFMatrix as unknown as mat4);
             ecef = interpolateVec3(ecef, mercatorPos, phase);
         }
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-        const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
+        const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix as unknown as mat4);
         return gp;
     }
 
-    _makeGlobeTileDebugBorderBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: Float64Array, worldToECEFMatrix: Float64Array | null | undefined, phase: number) {
+    _makeGlobeTileDebugBorderBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: mat4, worldToECEFMatrix: mat4 | null | undefined, phase: number) {
         const vertices = new PosArray();
         const indices = new LineStripIndexArray();
         const extraGlobe = new PosGlobeExtArray();
@@ -845,7 +842,7 @@ class Tile {
         this._tileDebugSegments = SegmentVector.simpleSegment(0, 0, vertices.length, indices.length);
     }
 
-    _makeGlobeTileDebugTextBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: Float64Array, worldToECEFMatrix: Float64Array | null | undefined, phase: number) {
+    _makeGlobeTileDebugTextBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: mat4, worldToECEFMatrix: mat4 | null | undefined, phase: number) {
         const SEGMENTS = 4;
         const numVertices = SEGMENTS + 1;
         const step = EXTENT / SEGMENTS;

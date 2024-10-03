@@ -2,6 +2,8 @@ import {getTileBBox} from '@mapbox/whoots-js';
 import assert from 'assert';
 import {register} from '../util/web_worker_transfer';
 
+import type {mat4} from 'gl-matrix';
+
 export class CanonicalTileID {
     z: number;
     x: number;
@@ -58,8 +60,8 @@ export class OverscaledTileID {
     wrap: number;
     canonical: CanonicalTileID;
     key: number;
-    projMatrix: Float32Array;
-    expandedProjMatrix: Float32Array;
+    projMatrix: mat4;
+    expandedProjMatrix: mat4;
     visibleQuadrants?: number;
 
     constructor(overscaledZ: number, wrap: number, z: number, x: number, y: number) {

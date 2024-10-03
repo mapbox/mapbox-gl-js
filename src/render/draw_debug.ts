@@ -74,10 +74,8 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
         // except we use transitionTileAABBinECEF instead of globeTileBounds to account for the transition.
         const bounds = transitionTileAABBinECEF(coord.canonical, tr);
         const decode = globeDenormalizeECEF(bounds);
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
         posMatrix = mat4.multiply(new Float32Array(16), tr.globeMatrix, decode);
 
-        // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
         mat4.multiply(posMatrix, tr.projMatrix, posMatrix);
     }
 
@@ -111,7 +109,6 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const debugSegments = tile._tileDebugSegments || painter.debugSegments;
 
     program.draw(painter, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
         debugUniformValues(posMatrix, color), id,
         debugBuffer, debugIndexBuffer, debugSegments,
         null, null, null, [tile._globeTileDebugBorderBuffer]);
@@ -136,7 +133,6 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const debugTextSegments = tile._tileDebugTextSegments || painter.debugSegments;
 
     program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
-        // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
         debugUniformValues(posMatrix, Color.transparent, scaleRatio), id,
         debugTextBuffer, debugTextIndexBuffer, debugTextSegments,
         null, null, null, [tile._globeTileDebugTextBuffer]);

@@ -566,7 +566,7 @@ export class Terrain extends Elevation {
 
         const coords = this.proxyCoords = proxySourceCache.getIds().map((id) => {
             const tileID = proxySourceCache.getTileByID(id).tileID;
-            tileID.projMatrix = tr.calculateProjMatrix(tileID.toUnwrapped());
+            tileID.projMatrix = tr.calculateProjMatrix(tileID.toUnwrapped()) as Float32Array;
             return tileID;
         });
         sortByDistanceToCamera(coords, this.painter);
@@ -705,7 +705,7 @@ export class Terrain extends Elevation {
         options?: {
             useDepthForOcclusion?: boolean;
             useMeterToDem?: boolean;
-            labelPlaneMatrixInv?: Float32Array | null | undefined;
+            labelPlaneMatrixInv?: mat4 | null;
             morphing?: {
                 srcDemTile: Tile;
                 dstDemTile: Tile;
@@ -776,7 +776,7 @@ export class Terrain extends Elevation {
             uniforms['u_meter_to_dem'] = meterToDEM;
         }
         if (options && options.labelPlaneMatrixInv) {
-            uniforms['u_label_plane_matrix_inv'] = options.labelPlaneMatrixInv;
+            uniforms['u_label_plane_matrix_inv'] = options.labelPlaneMatrixInv as Float32Array;
         }
         program.setTerrainUniformValues(context, uniforms);
 
@@ -1396,7 +1396,6 @@ export class Terrain extends Elevation {
         }
 
         const far = [screenPoint.x, screenPoint.y, 1, 1];
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
         vec4.transformMat4(far as [number, number, number, number], far as [number, number, number, number], transform.pixelMatrixInverse);
         vec4.scale(far as [number, number, number, number], far as [number, number, number, number], 1.0 / far[3]);
         // x & y in pixel coordinates, z is altitude in meters
@@ -1405,8 +1404,7 @@ export class Terrain extends Elevation {
         const camera = transform._camera.position;
         const mercatorZScale = mercatorZfromAltitude(1, transform.center.lat);
         const p = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
-        const dir = vec3.subtract([] as any, far.slice(0, 3), p as [number, number, number, number]);
+        const dir = vec3.subtract([] as any, far.slice(0, 3) as vec3, p as vec3);
         vec3.normalize(dir, dir);
 
         const exaggeration = this._exaggeration;

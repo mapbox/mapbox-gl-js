@@ -184,7 +184,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
             const tr = painter.transform;
             let perspectiveTransform: [number, number];
-            const cutoffParams = renderingWithElevation ? cutoffParamsForElevation(tr) : [0, 0, 0, 0];
+            const cutoffParams: [number, number, number, number] = renderingWithElevation ? cutoffParamsForElevation(tr) : [0, 0, 0, 0];
 
             let normalizeMatrix: Float32Array;
             let globeMatrix: Float32Array;
@@ -227,7 +227,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 parentTL || [0, 0],
                 globeToMercatorTransition(painter.transform.zoom),
                 mercatorCenter,
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number, number, number]'.
                 cutoffParams,
                 parentScaleBy || 1,
                 fade,
@@ -473,7 +472,7 @@ function configureRaster(
     let range = layer.paint.get('raster-color-range');
 
     // Unpack the offset for use in a separate uniform
-    const mix = [inputMix[0], inputMix[1], inputMix[2], 0];
+    const mix: [number, number, number, number] = [inputMix[0], inputMix[1], inputMix[2], 0];
     const offset = inputMix[3];
 
     let resampling = inputResampling === 'nearest' ? gl.NEAREST : gl.LINEAR;
@@ -519,9 +518,7 @@ function configureRaster(
     }
 
     return {
-        // @ts-expect-error - TS2322 - Type 'any[]' is not assignable to type '[number, number, number, number]'.
         mix,
-
         range,
         offset,
         defines,

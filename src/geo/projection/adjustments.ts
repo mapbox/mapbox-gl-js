@@ -25,12 +25,12 @@ export function getScaleAdjustment(transform: Transform): number {
     return scaleAdjustment;
 }
 
-export function getProjectionAdjustmentInverted(transform: Transform): number[] {
+export function getProjectionAdjustmentInverted(transform: Transform): mat2 {
     const m = getProjectionAdjustments(transform, true);
     return mat2.invert([] as unknown as mat2, [
         m[0], m[1],
         m[4], m[5]]
-    ) as number[];
+    );
 }
 
 export function getProjectionInterpolationT(

@@ -47,7 +47,6 @@ export default class Globe extends Mercator {
         const pos = tileCoordToECEF(x, y, id);
         const bounds = globeTileBounds(id);
         const normalizationMatrix = globeNormalizeECEF(bounds);
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
         vec3.transformMat4(pos, pos, normalizationMatrix);
 
         return {x: pos[0], y: pos[1], z: pos[2]};
@@ -63,9 +62,7 @@ export default class Globe extends Mercator {
 
         const upScale = mercatorZfromAltitude(1, 0) * EXTENT * elevation;
         vec3.scaleAndAdd(pos, pos, up, upScale);
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-        const matrix = mat4.identity(new Float64Array(16));
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
+        const matrix = mat4.identity(new Float64Array(16) as unknown as mat4);
         mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
         vec3.transformMat4(pos, pos, matrix);
 
@@ -90,20 +87,16 @@ export default class Globe extends Mercator {
         return this.pixelsPerMeter(lat, worldSize) / combinedScale;
     }
 
-    override createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
+    override createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): mat4 {
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float64Array'. | TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-        return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
+        return mat4.multiply(new Float64Array(16) as unknown as mat4, tr.globeMatrix, decode);
     }
 
     override createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
         const {center} = tr;
         const matrix = globeNormalizeECEF(globeTileBounds(id));
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
         mat4.scale(matrix, matrix, [tr._pixelsPerMercatorPixel, tr._pixelsPerMercatorPixel, 1.0]);
         return Float32Array.from(matrix);
     }

@@ -90,9 +90,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundTiles ? backgroundTiles[tileID.key] : new Tile(tileID, tileSize, transform.zoom, painter);
 
         const uniformValues = image ?
-
             backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
-
             backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(layer.lut));
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);

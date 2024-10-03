@@ -32,6 +32,7 @@ import type {UniformBindings, UniformValues} from './uniform_binding';
 import type {BinderUniform} from '../data/program_configuration';
 import type Painter from './painter';
 import type {Segment} from "../data/segment";
+import type {DynamicDefinesType} from '../render/program/program_uniforms';
 
 export type DrawMode = WebGL2RenderingContext['POINTS'] | WebGL2RenderingContext['LINES'] | WebGL2RenderingContext['TRIANGLES'] | WebGL2RenderingContext['LINE_STRIP'];
 
@@ -39,7 +40,7 @@ type ShaderSource = {
     fragmentSource: string;
     vertexSource: string;
     staticAttributes: Array<string>;
-    usedDefines: Array<string>;
+    usedDefines: Array<DynamicDefinesType>;
     vertexIncludes: Array<string>;
     fragmentIncludes: Array<string>;
 };
@@ -75,12 +76,12 @@ class Program<Us extends UniformBindings> {
 
     name: string;
     configuration: ProgramConfiguration | null | undefined;
-    fixedDefines: string[];
+    fixedDefines: DynamicDefinesType[];
 
     static cacheKey(
         source: ShaderSource,
         name: string,
-        defines: string[],
+        defines: DynamicDefinesType[],
         programConfiguration?: ProgramConfiguration | null,
     ): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
@@ -97,7 +98,7 @@ class Program<Us extends UniformBindings> {
                 source: ShaderSource,
                 configuration: ProgramConfiguration | null | undefined,
                 fixedUniforms: (arg1: Context) => Us,
-                fixedDefines: string[]) {
+                fixedDefines: DynamicDefinesType[]) {
         const gl = context.gl;
         this.program = (gl.createProgram());
 
@@ -319,9 +320,8 @@ class Program<Us extends UniformBindings> {
             return;
         }
 
-        const debugDefines = [...this.fixedDefines];
-        debugDefines.push("DEBUG_WIREFRAME");
-        // @ts-expect-error - TS2322 - Type 'string[]' is not assignable to type 'DynamicDefinesType[]'.
+        const debugDefines = [...this.fixedDefines] as DynamicDefinesType[];
+        debugDefines.push('DEBUG_WIREFRAME');
         const debugProgram = painter.getOrCreateProgram(this.name, {config: this.configuration, defines: debugDefines});
 
         context.program.set(debugProgram.program);

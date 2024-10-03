@@ -67,7 +67,7 @@ class SymbolStyleLayer extends StyleLayer {
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;
 
-    _colorAdjustmentMatrix: Float32Array;
+    _colorAdjustmentMatrix: mat4;
     _saturation: number;
     _contrast: number;
     _brightnessMin: number;
@@ -77,9 +77,7 @@ class SymbolStyleLayer extends StyleLayer {
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         super(layer, getProperties(), scope, lut, options);
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
-        this._colorAdjustmentMatrix = mat4.identity([] as any);
-
+        this._colorAdjustmentMatrix = mat4.identity([] as unknown as mat4);
         this.hasInitialOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
     }
 
@@ -135,7 +133,7 @@ class SymbolStyleLayer extends StyleLayer {
         contrast: number,
         brightnessMin: number,
         brightnessMax: number,
-    ): Float32Array {
+    ): mat4 {
         if (this._saturation !== saturation ||
             this._contrast !== contrast ||
             this._brightnessMin !== brightnessMin ||

@@ -849,7 +849,7 @@ export function computeColorAdjustmentMatrix(
     contrast: number,
     brightnessMin: number,
     brightnessMax: number,
-): Float32Array {
+): mat4 {
     saturation = saturationFactor(saturation);
     contrast = contrastFactor(contrast);
 
@@ -895,7 +895,7 @@ export function computeColorAdjustmentMatrix(
 
     mat4.multiply(m, brightnessMatrix, contrastMatrix);
     mat4.multiply(m, m, saturationMatrix);
-    return m as Float32Array;
+    return m;
 }
 
 export {deepEqual};
