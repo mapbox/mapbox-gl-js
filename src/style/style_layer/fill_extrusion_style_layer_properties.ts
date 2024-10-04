@@ -34,6 +34,8 @@ export type PaintProps = {
     "fill-extrusion-pattern": DataDrivenProperty<ResolvedImage | null | undefined>;
     "fill-extrusion-height": DataDrivenProperty<number>;
     "fill-extrusion-base": DataDrivenProperty<number>;
+    "fill-extrusion-height-alignment": DataConstantProperty<"terrain" | "flat">;
+    "fill-extrusion-base-alignment": DataConstantProperty<"terrain" | "flat">;
     "fill-extrusion-vertical-gradient": DataConstantProperty<boolean>;
     "fill-extrusion-ambient-occlusion-intensity": DataConstantProperty<number>;
     "fill-extrusion-ambient-occlusion-radius": DataConstantProperty<number>;
@@ -62,6 +64,8 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-extrusion-pattern": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-pattern"]),
     "fill-extrusion-height": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-height"]),
     "fill-extrusion-base": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-base"]),
+    "fill-extrusion-height-alignment": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-height-alignment"]),
+    "fill-extrusion-base-alignment": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-base-alignment"]),
     "fill-extrusion-vertical-gradient": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-vertical-gradient"]),
     "fill-extrusion-ambient-occlusion-intensity": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ambient-occlusion-intensity"]),
     "fill-extrusion-ambient-occlusion-radius": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-ambient-occlusion-radius"]),

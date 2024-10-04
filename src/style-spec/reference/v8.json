@@ -5693,6 +5693,56 @@
       },
       "property-type": "data-driven"
     },
+    "fill-extrusion-height-alignment": {
+      "type": "enum",
+      "experimental": true,
+      "values": {
+        "terrain": {
+          "doc": "The fill extrusion height follows terrain slope."
+        },
+        "flat": {
+          "doc": "The fill extrusion height is flat over terrain."
+        }
+      },
+      "doc": "Controls the behavior of fill extrusion height over terrain",
+      "default": "flat",
+      "requires": [
+        "fill-extrusion-height"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "fill-extrusion-base-alignment": {
+      "type": "enum",
+      "experimental": true,
+      "values": {
+        "terrain": {
+          "doc": "The fill extrusion base follows terrain slope."
+        },
+        "flat": {
+          "doc": "The fill extrusion base is flat over terrain."
+        }
+      },
+      "doc": "Controls the behavior of fill extrusion base over terrain",
+      "default": "terrain",
+      "requires": [
+        "fill-extrusion-base"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
     "fill-extrusion-vertical-gradient": {
       "type": "boolean",
       "default": true,
