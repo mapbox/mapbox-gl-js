@@ -104,7 +104,7 @@ export default function(
 
             const result = pick(
                 // explicit source options take precedence over TileJSON
-                extend(tileJSON, options),
+                extend({}, tileJSON, options),
                 ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding']
             ) as ExtendedTileJSON;
 
