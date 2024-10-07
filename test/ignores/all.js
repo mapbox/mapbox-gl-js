@@ -202,7 +202,12 @@ const skip = [
     "render-tests/raster-color/categorical",
 
     // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
-    "render-tests/clip-layer/clip-layer-keep-fill-extrusions"
+    "render-tests/clip-layer/clip-layer-keep-fill-extrusions",
+
+    // Backport https://mapbox.atlassian.net/browse/MAPS3D-1476
+    "render-tests/depth-occlusion/line-fill-extrusion-dynamic-terrain-disabled",
+    "render-tests/terrain/lines-elevated-dynamic-terrain",
+    "render-tests/terrain/lines-elevated-hillshade-dynamic-terrain-disabled"
 ];
 
 export default {todo, skip};
