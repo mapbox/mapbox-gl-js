@@ -63,7 +63,7 @@
     "@vitest/browser": "^2.1.1",
     "@vitest/ui": "^2.0.3",
     "address": "^2.0.3",
-    "browserify": "^17.0.0",
+    "browserify": "^17.0.1",
     "chalk": "^5.0.1",
     "chokidar": "^4.0.1",
     "cross-env": "^7.0.3",
