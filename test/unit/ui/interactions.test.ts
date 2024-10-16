@@ -63,7 +63,7 @@ describe('InteractionSet', () => {
         expect(clickHandled).toBeFalsy();
     });
 
-    test('respects layers and filter', () => {
+    test('respects featuresetId and filter', () => {
         const map = new Evented();
         const interactions = new InteractionSet(map);
 
@@ -79,7 +79,7 @@ describe('InteractionSet', () => {
 
         interactions.add('test', {
             type: 'click',
-            layers: ['bar'],
+            featuresetId: 'bar',
             filter: ['==', ['get', 'cool'], true],
             handler(e) {
                 expect(e.feature.id).toEqual(3);

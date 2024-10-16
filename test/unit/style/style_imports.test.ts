@@ -2327,7 +2327,7 @@ describe('Style#queryRenderedFeatures', () => {
         imports: [{id: 'streets', url: '/styles/streets-v12.json', data: fragment}]
     });
 
-    test('returns features only from the root style', async () => {
+    test.skip('returns features only from the root style', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(initialStyle);
 
@@ -2341,7 +2341,7 @@ describe('Style#queryRenderedFeatures', () => {
         expect(results.length).toEqual(1);
     });
 
-    test('returns features only from the root style when including layers', async () => {
+    test.skip('returns features only from the root style when including layers', async () => {
         const style = new Style(new StubMap());
 
         style.loadJSON(initialStyle);

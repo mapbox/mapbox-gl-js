@@ -6,6 +6,7 @@ import Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket';
 import {OverscaledTileID} from '../../src/source/tile_id';
 import {load3DTile} from '../util/loaders';
 import EvaluationParameters from '../../src/style/evaluation_parameters';
+import {makeFQID} from "../../src/util/fqid";
 
 import type {CanonicalTileID} from '../../src/source/tile_id';
 import type Actor from '../../src/util/actor';
@@ -78,7 +79,7 @@ class Tiled3dWorkerTile {
                 for (const sourceLayerId in layerFamilies) {
                     for (const family of layerFamilies[sourceLayerId]) {
                         const layer = family[0];
-                        featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
+                        featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
                         layer.recalculate(parameters, []);
                         const bucket = new Tiled3dModelBucket(nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex);
                         // Upload to GPU without waiting for evaluation if we are in diffuse path

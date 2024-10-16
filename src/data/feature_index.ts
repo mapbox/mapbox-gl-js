@@ -24,8 +24,7 @@ import type {QueryResult} from '../source/query_features';
 import type {FeatureStates} from '../source/source_state';
 import type {FeatureFilter} from '../style-spec/feature_filter/index';
 import type Transform from '../geo/transform';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
-import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types';
+import type {FilterSpecification, PromoteIdSpecification, LayerSpecification} from '../style-spec/types';
 import type {TilespaceQueryGeometry} from '../style/query_geometry';
 import type {FeatureIndex as FeatureIndexStruct} from './array_types';
 import type {TileTransform} from '../geo/projection/tile_transform';
@@ -37,11 +36,9 @@ type QueryParameters = {
     transform: Transform;
     tileResult: TilespaceQueryGeometry;
     tileTransform: TileTransform;
-    params: {
-        filter: FilterSpecification;
-        layers: Array<string>;
-        availableImages: Array<string>;
-    };
+    availableImages: Array<string>;
+    layers?: string[];
+    filter?: FilterSpecification;
 };
 
 type FeatureIndices = {
@@ -71,6 +68,7 @@ class FeatureIndex {
     };
     sourceLayerCoder: DictionaryCoder;
     is3DTile: boolean; // no vector source layers
+    serializedLayersCache: Map<string, LayerSpecification>;
 
     constructor(tileID: OverscaledTileID, promoteId?: PromoteIdSpecification | null) {
         this.tileID = tileID;
@@ -81,6 +79,7 @@ class FeatureIndex {
         this.featureIndexArray = new FeatureIndexArray();
         this.promoteId = promoteId;
         this.is3DTile = false;
+        this.serializedLayersCache = new Map();
     }
 
     insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, layoutVertexArrayOffset: number = 0, envelopePadding: number = 0) {
@@ -135,12 +134,11 @@ class FeatureIndex {
     query(
         args: QueryParameters,
         styleLayers: {[_: string]: StyleLayer},
-        serializedLayers: {[_: string]: any},
         sourceFeatureState: SourceFeatureState,
     ): QueryResult {
         this.loadVTLayers();
-        const params = args.params || ({} as Partial<QueryParameters['params']>);
-        const filter = featureFilter(params.filter);
+        this.serializedLayersCache.clear();
+        const filter = featureFilter(args.filter);
         const tilespaceGeometry = args.tileResult;
         const transform = args.transform;
 
@@ -184,10 +182,9 @@ class FeatureIndex {
                 result,
                 match,
                 filter,
-                params.layers,
-                params.availableImages,
+                args.layers,
+                args.availableImages,
                 styleLayers,
-                serializedLayers,
                 sourceFeatureState,
                 (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: any, layoutVertexArrayOffset: number = 0) => {
                     if (!featureGeometry) {
@@ -211,9 +208,6 @@ class FeatureIndex {
         styleLayers: {
             [_: string]: StyleLayer;
         },
-        serializedLayers: {
-            [_: string]: any;
-        },
         sourceFeatureState?: SourceFeatureState,
         intersectionTest?: (
             feature: VectorTileFeature,
@@ -224,7 +218,7 @@ class FeatureIndex {
 
         const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
         const layerIDs = this.bucketLayerIDs[bucketIndex];
-        if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs))
+        if (filterLayerIDs.length && !arraysIntersect(filterLayerIDs, layerIDs))
             return;
 
         const sourceLayerName = this.sourceLayerCoder.decode(sourceLayerIndex);
@@ -245,7 +239,7 @@ class FeatureIndex {
         for (let l = 0; l < layerIDs.length; l++) {
             const layerID = layerIDs[l];
 
-            if (filterLayerIDs && filterLayerIDs.indexOf(layerID) < 0) {
+            if (filterLayerIDs.length && filterLayerIDs.indexOf(layerID) < 0) {
                 continue;
             }
 
@@ -267,17 +261,21 @@ class FeatureIndex {
 
             const geojsonFeature = new Feature(feature, this.z, this.x, this.y, id);
 
-            const serializedLayer = extend({}, serializedLayers[layerID]);
-
-            serializedLayer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
-            serializedLayer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
-
-            geojsonFeature.layer = serializedLayer;
+            let serializedLayer = this.serializedLayersCache.get(layerID);
+            if (!serializedLayer) {
+                serializedLayer = styleLayer.serialize();
+                serializedLayer.id = layerID;
+                this.serializedLayersCache.set(layerID, serializedLayer);
+            }
+            geojsonFeature.layer = extend({}, serializedLayer);
+            geojsonFeature.tile = this.tileID.canonical;
+            geojsonFeature.layer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
+            geojsonFeature.layer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
             this.appendToResult(result, layerID, featureIndex, geojsonFeature, intersectionZ);
         }
     }
 
-    appendToResult(result: QueryResult, layerID: string, featureIndex: number, geojsonFeature: GeoJSONFeature, intersectionZ: boolean | number) {
+    appendToResult(result: QueryResult, layerID: string, featureIndex: number, geojsonFeature: Feature, intersectionZ: boolean | number) {
         let layerResult = result[layerID];
         if (layerResult === undefined) {
             layerResult = result[layerID] = [];
@@ -290,9 +288,6 @@ class FeatureIndex {
     // return a matching set of GeoJSONFeatures
     lookupSymbolFeatures(
         symbolFeatureIndexes: Array<number>,
-        serializedLayers: {
-            [key: string]: StyleLayer;
-        },
         bucketIndex: number,
         sourceLayerIndex: number,
         filterSpec: FilterSpecification,
@@ -318,8 +313,7 @@ class FeatureIndex {
                 filter,
                 filterLayerIDs,
                 availableImages,
-                styleLayers,
-                serializedLayers
+                styleLayers
             );
 
         }

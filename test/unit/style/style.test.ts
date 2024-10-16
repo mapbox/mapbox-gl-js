@@ -1784,7 +1784,7 @@ describe('Style#queryRenderedFeatures', () => {
         transform = new Transform();
         transform.resize(512, 512);
 
-        function queryMapboxFeatures(layers, serializedLayers, getFeatureState, queryGeom, params) {
+        function queryMapboxFeatures(layers, getFeatureState, queryGeom, filter, layerIds) {
             const features = {
                 'land': [{
                     type: 'Feature',
@@ -1814,9 +1814,9 @@ describe('Style#queryRenderedFeatures', () => {
                     ({feature, featureIndex}));
             }
 
-            if (params.layers) {
+            if (layerIds.length) {
                 for (const l in features) {
-                    if (params.layers.indexOf(l) < 0) {
+                    if (layerIds.indexOf(l) < 0) {
                         delete features[l];
                     }
                 }
@@ -2053,7 +2053,7 @@ describe('Style#query*Features', () => {
         vi.spyOn(style, 'fire').mockImplementation((event) => {
             if (event.error) errors++;
         });
-        style.querySourceFeatures([{x: 0, y: 0}], {filter: "invalidFilter", validate: false}, transform);
+        style.querySourceFeatures('foo', {filter: "invalidFilter", validate: false}, transform);
         expect(errors).toEqual(0);
     });
 });

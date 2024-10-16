@@ -1,12 +1,13 @@
 import assert from 'assert';
 import {mat4} from 'gl-matrix';
+import {isFQID} from '../util/fqid';
 
 import type Point from '@mapbox/point-geometry';
 import type SourceCache from './source_cache';
 import type StyleLayer from '../style/style_layer';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
+import type Feature from '../util/vectortile_to_geojson';
 import type {OverscaledTileID} from './tile_id';
 import type {RetainedQueryData} from '../symbol/placement';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
@@ -15,7 +16,7 @@ import type {FilterSpecification} from '../style-spec/types';
 export type QueryResult = {
     [_: string]: Array<{
         featureIndex: number;
-        feature: GeoJSONFeature;
+        feature: Feature;
         intersectionZ: boolean | number;
     }>;
 };
@@ -24,17 +25,6 @@ export type RenderedFeatureLayers = Array<{
     wrappedTileID: number;
     queryResults: QueryResult;
 }>;
-
-export type QueryRenderedFeaturesParams = {
-    scope?: string;
-    layers?: string[];
-    filter?: FilterSpecification;
-    validate?: boolean;
-    availableImages?: string[];
-    serializedLayers?: {
-        [key: string]: StyleLayer;
-    };
-};
 
 /*
  * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
@@ -52,15 +42,10 @@ export function queryRenderedFeatures(
     styleLayers: {
         [_: string]: StyleLayer;
     },
-    serializedLayers: {
-        [_: string]: any;
-    },
     queryGeometry: QueryGeometry,
-    params: {
-        filter: FilterSpecification;
-        layers: Array<string>;
-        availableImages: Array<string>;
-    },
+    filter: FilterSpecification,
+    layers: string[],
+    availableImages: Array<string>,
     transform: Transform,
     use3DQuery: boolean,
     visualizeQueryGeometry: boolean = false,
@@ -73,10 +58,11 @@ export function queryRenderedFeatures(
             wrappedTileID: tileResult.tile.tileID.wrapped().key,
             queryResults: tileResult.tile.queryRenderedFeatures(
                 styleLayers,
-                serializedLayers,
                 sourceCache._state,
                 tileResult,
-                params,
+                filter,
+                layers,
+                availableImages,
                 transform,
                 getPixelPosMatrix(sourceCache.transform, tileResult.tile.tileID),
                 visualizeQueryGeometry)
@@ -93,9 +79,11 @@ export function queryRenderedFeatures(
 
             if (!layer || layer.type === 'background' || layer.type === 'sky' || layer.type === 'slot') return;
 
-            feature.source = layer.source;
-            if (layer['source-layer']) {
-                feature.sourceLayer = layer['source-layer'];
+            if (!isFQID(layerID)) {
+                feature.source = layer.source;
+                if (layer['source-layer']) {
+                    feature.sourceLayer = layer['source-layer'];
+                }
             }
             feature.state = feature.id !== undefined ? sourceCache.getFeatureState(layer['source-layer'], feature.id) : {};
         });
@@ -107,16 +95,11 @@ export function queryRenderedSymbols(
     styleLayers: {
         [_: string]: StyleLayer;
     },
-    serializedLayers: {
-        [_: string]: StyleLayer;
-    },
     getLayerSourceCache: (layer: StyleLayer) => SourceCache | void,
     queryGeometry: Array<Point>,
-    params: {
-        filter: FilterSpecification;
-        layers: Array<string>;
-        availableImages: Array<string>;
-    },
+    filter: FilterSpecification,
+    layers: string[],
+    availableImages: Array<string>,
     collisionIndex: CollisionIndex,
     retainedQueryData: {
         [_: number]: RetainedQueryData;
@@ -133,12 +116,11 @@ export function queryRenderedSymbols(
     for (const queryData of bucketQueryData) {
         const bucketSymbols = queryData.featureIndex.lookupSymbolFeatures(
                 renderedSymbols[queryData.bucketInstanceId],
-                serializedLayers,
                 queryData.bucketIndex,
                 queryData.sourceLayerIndex,
-                params.filter,
-                params.layers,
-                params.availableImages,
+                filter,
+                layers,
+                availableImages,
                 styleLayers);
 
         for (const layerID in bucketSymbols) {
@@ -179,11 +161,14 @@ export function queryRenderedSymbols(
             if (!sourceCache) return;
 
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
-            feature.source = feature.layer.source;
-            if (feature.layer['source-layer']) {
-                feature.sourceLayer = feature.layer['source-layer'];
-            }
             feature.state = state;
+
+            if (!isFQID(layer.id)) {
+                feature.source = feature.layer.source;
+                if (feature.layer['source-layer']) {
+                    feature.sourceLayer = feature.layer['source-layer'];
+                }
+            }
         });
     }
     return result;
@@ -193,7 +178,7 @@ export function querySourceFeatures(sourceCache: SourceCache, params?: {
     sourceLayer?: string;
     filter?: FilterSpecification;
     validate?: boolean;
-}): Array<GeoJSONFeature> {
+}): Array<Feature> {
     const tiles = sourceCache.getRenderableIds().map((id) => {
         return sourceCache.getTileByID(id);
     });

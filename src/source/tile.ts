@@ -43,7 +43,6 @@ import type Context from '../gl/context';
 import type {CanonicalTileID, OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
 import type Transform from '../geo/transform';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {LayerFeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
 import type {FilterSpecification} from '../style-spec/types';
@@ -441,16 +440,11 @@ class Tile {
         layers: {
             [_: string]: StyleLayer;
         },
-        serializedLayers: {
-            [key: string]: any;
-        },
         sourceFeatureState: SourceFeatureState,
         tileResult: TilespaceQueryGeometry,
-        params: {
-            filter: FilterSpecification;
-            layers: Array<string>;
-            availableImages: Array<string>;
-        },
+        filter: FilterSpecification,
+        layerIds: string[],
+        availableImages: Array<string>,
         transform: Transform,
         pixelPosMatrix: Float32Array,
         visualizeQueryGeometry: boolean,
@@ -478,12 +472,14 @@ class Tile {
             tileResult,
             pixelPosMatrix,
             transform,
-            params,
+            filter,
+            layers: layerIds,
+            availableImages,
             tileTransform: this.tileTransform
-        }, layers, serializedLayers, sourceFeatureState);
+        }, layers, sourceFeatureState);
     }
 
-    querySourceFeatures(result: Array<GeoJSONFeature>, params?: {
+    querySourceFeatures(result: Array<Feature>, params?: {
         sourceLayer?: string;
         filter?: FilterSpecification;
         validate?: boolean;

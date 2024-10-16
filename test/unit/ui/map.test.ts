@@ -552,7 +552,7 @@ describe('Map', () => {
     });
 
     describe('#queryRenderedFeatures', () => {
-        const defaultParams = {scope: '', availableImages: [], serializedLayers: {}};
+        const defaultParams = {};
         test('if no arguments provided', async () => {
             await new Promise(resolve => {
                 createMap({}, (err, map) => {

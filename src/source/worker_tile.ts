@@ -15,6 +15,7 @@ import EvaluationParameters from '../style/evaluation_parameters';
 import {OverscaledTileID} from './tile_id';
 import {PerformanceUtils} from '../util/performance';
 import tileTransform from '../geo/projection/tile_transform';
+import {makeFQID} from "../util/fqid";
 
 import type {CanonicalTileID} from './tile_id';
 import type Projection from '../geo/projection/projection';
@@ -193,7 +194,7 @@ class WorkerTile {
 
                 assert(this.tileTransform.projection.name === this.projection.name);
                 bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
-                featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
+                featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
             }
         }
 

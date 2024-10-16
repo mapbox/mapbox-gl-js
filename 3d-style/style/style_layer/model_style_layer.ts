@@ -24,7 +24,7 @@ import type ModelManager from '../../render/model_manager';
 import type {Node} from '../../data/model';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {FeatureFilter} from '../../../src/style-spec/feature_filter/index';
-import type {GeoJSONFeature} from '../../../src/util/vectortile_to_geojson';
+import type Feature from '../../../src/util/vectortile_to_geojson';
 import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type {LUT} from "../../../src/util/lut";
 
@@ -173,7 +173,7 @@ class ModelStyleLayer extends StyleLayer {
         filter: FeatureFilter,
         transform: Transform,
     ): {
-        queryFeature: GeoJSONFeature | null | undefined;
+        queryFeature: Feature | null | undefined;
         intersectionZ: number;
     } {
 

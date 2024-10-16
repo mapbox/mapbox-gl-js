@@ -1,24 +1,46 @@
 
 import {createExpression} from '../style-spec/expression/index';
+import {getNameFromFQID, getScopeFromFQID} from '../util/fqid';
+import {Event} from '../util/evented';
 
-import type {MapMouseEventType, MapMouseEvent} from './events';
+import type {MapEvents, MapMouseEventType, MapMouseEvent} from './events';
 import type {Map as MapboxMap} from './map';
+import type {FeaturesetDescriptor} from '../style/style';
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {ExpressionSpecification} from '../style-spec/types';
 import type {StyleExpression, Feature} from '../style-spec/expression/index';
-
-type InteractionEvent = {
-    id: string;
-    interaction: Interaction;
-    feature: GeoJSONFeature;
-};
+import type LngLat from '../geo/lng_lat';
+import type Point from '@mapbox/point-geometry';
 
 export type Interaction = {
     type: MapMouseEventType;
     filter?: ExpressionSpecification;
-    layers?: string[];
+    featuresetId?: FeaturesetDescriptor;
     handler: (event: InteractionEvent) => boolean;
 };
+
+export class InteractionEvent extends Event<MapEvents, MapMouseEventType> {
+    override type: MapMouseEventType;
+    override target: MapboxMap;
+    originalEvent: MouseEvent;
+    point: Point;
+    lngLat: LngLat;
+    preventDefault: () => void;
+
+    id: string;
+    interaction: Interaction;
+    feature?: GeoJSONFeature;
+
+    constructor(e: MapMouseEvent, id: string, interaction: Interaction, feature?: GeoJSONFeature) {
+        const {point, lngLat, originalEvent, target} = e;
+        super(e.type, {point, lngLat, originalEvent, target} as MapEvents[MapMouseEventType]);
+        this.preventDefault = () => { e.preventDefault(); };
+
+        this.id = id;
+        this.interaction = interaction;
+        this.feature = feature;
+    }
+}
 
 export class InteractionSet {
     map: MapboxMap;
@@ -89,16 +111,30 @@ export class InteractionSet {
 
         for (const [id, interaction] of interactions) {
             const filter = this.filters.get(id);
-            const {handler, layers} = interaction;
+            const {handler, featuresetId} = interaction;
+            let handled = false;
 
             for (const feature of features) {
                 // narrow down features through filter and layers
-                if (layers && !layers.includes(feature.layer.id)) continue;
+                if (featuresetId) {
+                    const targetLayerId = feature.layer.id;
+                    const targetLayerName = getNameFromFQID(targetLayerId);
+                    const targetLayerScope = getScopeFromFQID(targetLayerId);
+                    if (!(typeof featuresetId === 'string' ? featuresetId === targetLayerId :
+                        featuresetId.id === targetLayerName && featuresetId.importId === targetLayerScope)) continue;
+                }
                 if (filter && !filter.evaluate(ctx, feature as unknown as Feature)) continue;
 
                 // if we explicitly returned false in a feature handler, pass through to the feature below it
-                const stop = handler({id, feature, interaction});
-                if (stop !== false) break;
+                const stop = handler(new InteractionEvent(event, id, interaction, feature));
+                if (stop !== false) {
+                    handled = true;
+                    break;
+                }
+            }
+            if (!handled) {
+                // if no features handled the interactions, propagate to map
+                handler(new InteractionEvent(event, id, interaction, null));
             }
         }
     }

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script src='/debug/dynamic.js'></script>
+<script>
+
+dynamic.featuresets = {
+    "poi": {
+        "selectors": [
+            {
+                "layer": "poi-label",
+                "properties": {
+                    "id": ["get", "id"],
+                    "type": ["get", "type"],
+                    "name": ["get", "name"],
+                    "brand": ["get", "brand"]
+                }
+            }
+        ]
+    },
+    "buildings": {
+        "selectors": [
+            {
+                "layer": "3d-building",
+                "properties": {
+                    "id": ["get", "id"],
+                    "type": ["get", "type"],
+                    "height": ["get", "height"]
+                }
+            },
+            {
+                "layer": "building-models"
+            }
+        ]
+    },
+    "transit": {
+        "selectors": [
+            {
+                "layer": "transit-label",
+                "properties": {
+                    "id": ["get", "id"],
+                    "category": ["get", "class"]
+                }
+            },
+            {
+                "layer": "airport-label"
+            }
+        ]
+    },
+    "places": {
+        "selectors": [
+            {
+                "layer": "country-label",
+                "properties": {
+                    "id": ["get", "id"],
+                    "category": ["get", "class"]
+                }
+            },
+            {
+                "layer": "state-label"
+            },
+            {
+                "layer": "settlement-major-label"
+            },
+            {
+                "layer": "settlement-minor-label"
+            },
+            {
+                "layer": "settlement-subdivision-label"
+            }
+        ]
+    }
+};
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    devtools: true,
+    zoom: 12.5,
+    center: [-122.4194, 37.7749],
+    hash: true,
+    style: window.dynamic
+});
+
+map.addInteraction('poiclick', {
+    type: 'click',
+    featuresetId: {id: 'poi', importId: 'basemap'},
+    handler: (e) => console.log(e)
+});
+
+// map.on('click', (e) => {
+//     const features = map.queryRenderedFeatures(e.point);//, {layers: [{id: 'poi', importId: 'basemap'}]});
+
+//     if (features.length) {
+//         map.setFeatureState(features[0], {hover: true});
+//     }
+
+//     console.log(features);
+// });
+
+</script>
+</body>
+</html>

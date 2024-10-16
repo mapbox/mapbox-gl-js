@@ -100,14 +100,22 @@ import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator, ValidationErrors} from './validate_style';
 import type {OverscaledTileID} from '../source/tile_id';
-import type {FeatureState} from '../style-spec/expression/index';
+import type {FeatureState, StyleExpression} from '../style-spec/expression/index';
 import type {PointLike} from '../types/point-like';
 import type {ISource, Source, SourceClass} from '../source/source';
 import type {TransitionParameters, ConfigOptions} from './properties';
-import type {QueryResult, QueryRenderedFeaturesParams} from '../source/query_features';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
+import type {QueryResult} from '../source/query_features';
+import type {GeoJSONFeature, default as Feature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
+
+export type FeaturesetDescriptor = string | {id: string, importId?: string};
+
+export type QueryRenderedFeaturesParams = {
+    layers?: FeaturesetDescriptor[];
+    filter?: FilterSpecification;
+    validate?: boolean;
+};
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -251,15 +259,13 @@ class Style extends Evented<MapEvents> {
     _mergedSourceCaches: Record<string, SourceCache>;
     _mergedOtherSourceCaches: Record<string, SourceCache>;
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
+    _featuresets: Map<string, Array<{id: string, properties?: Record<string, StyleExpression>}>>;
     _clipLayerPresent: boolean;
 
     _request: Cancelable | null | undefined;
     _spriteRequest: Cancelable | null | undefined;
     _layers: {
         [_: string]: StyleLayer;
-    };
-    _serializedLayers: {
-        [_: string]: any;
     };
     _order: Array<string>;
     _drapedFirstOrder: Array<string>;
@@ -331,6 +337,7 @@ class Style extends Evented<MapEvents> {
         this._mergedOtherSourceCaches = {};
         this._mergedSymbolSourceCaches = {};
         this._clipLayerPresent = false;
+        this._featuresets = new Map();
 
         this._has3DLayers = false;
         this._hasCircleLayers = false;
@@ -370,7 +377,6 @@ class Style extends Evented<MapEvents> {
         }
 
         this._layers = {};
-        this._serializedLayers = {};
         this._sourceCaches = {};
         this._otherSourceCaches = {};
         this._symbolSourceCaches = {};
@@ -740,13 +746,11 @@ class Style extends Evented<MapEvents> {
             }
 
             this._layers = {};
-            this._serializedLayers = {};
             for (const layer of layers) {
                 const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
                 if (styleLayer.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
                 styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
                 this._layers[styleLayer.id] = styleLayer;
-                this._serializedLayers[styleLayer.id] = styleLayer.serialize();
 
                 const sourceCache = this.getOwnLayerSourceCache(styleLayer);
                 const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
@@ -1001,6 +1005,7 @@ class Style extends Evented<MapEvents> {
         this._has3DLayers = false;
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
+        this._featuresets.clear();
 
         this.forEachFragmentStyle((style: Style) => {
             for (const layerId of style._order) {
@@ -1017,6 +1022,32 @@ class Style extends Evented<MapEvents> {
                 }
 
                 mergedOrder.push(layer);
+            }
+
+            const {featuresets} = style.stylesheet || {};
+            if (featuresets) {
+                for (const featuresetId of Object.keys(featuresets)) {
+                    const {selectors} = featuresets[featuresetId];
+                    for (const selector of selectors) {
+                        const layer = style._layers[selector.layer];
+                        const layers = this._featuresets.get(layer.fqid) || [];
+                        let properties;
+                        if (selector.properties) {
+                            for (const name of Object.keys(selector.properties)) {
+                                const expression = createExpression(selector.properties[name]);
+                                if (expression.result === 'success') {
+                                    properties = properties || {};
+                                    properties[name] = expression.value;
+                                }
+                            }
+                        }
+                        layers.push({
+                            id: featuresetId,
+                            properties
+                        });
+                        this._featuresets.set(layer.fqid, layers);
+                    }
+                }
             }
         });
 
@@ -1960,6 +1991,19 @@ class Style extends Evented<MapEvents> {
         }
     }
 
+    getOwnFeaturesetLayers(id: string): Array<StyleLayer> {
+        const layers = [];
+        const featuresets = this.stylesheet.featuresets;
+        if (!featuresets || !featuresets[id]) {
+            this.fire(new ErrorEvent(new Error(`The featureset '${id}' does not exist in the map's style and cannot be queried.`)));
+            return [];
+        }
+        for (const selector of featuresets[id].selectors) {
+            layers.push(this._layers[selector.layer]);
+        }
+        return layers;
+    }
+
     getConfigProperty(fragmentId: string, key: string): SerializedExpression | null {
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return null;
@@ -2170,7 +2214,6 @@ class Style extends Evented<MapEvents> {
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});
-            this._serializedLayers[layer.id] = layer.serialize();
         }
 
         if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
@@ -2296,7 +2339,6 @@ class Style extends Evented<MapEvents> {
         this._order.splice(index, 1);
 
         delete this._layers[id];
-        delete this._serializedLayers[id];
 
         this._changes.setDirty();
         this._layerOrderChanged = true;
@@ -2512,6 +2554,18 @@ class Style extends Evented<MapEvents> {
 
     setFeatureState(target: FeatureSelector | GeoJSONFeature, state: FeatureState) {
         this._checkLoaded();
+
+        const layer = (target as GeoJSONFeature).layer;
+
+        if (layer && isFQID(layer.id)) {
+            const fragment = this.getFragmentStyle(getScopeFromFQID(layer.id));
+            const layers = fragment.getOwnFeaturesetLayers(getNameFromFQID(layer.id));
+            for (const {source, sourceLayer} of layers) {
+                fragment.setFeatureState({id: target.id, source, sourceLayer}, state);
+            }
+            return;
+        }
+
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
 
@@ -2539,6 +2593,18 @@ class Style extends Evented<MapEvents> {
 
     removeFeatureState(target: Omit<FeatureSelector, 'id'> & {id?: FeatureSelector['id']} | GeoJSONFeature, key?: string) {
         this._checkLoaded();
+
+        const layer = (target as GeoJSONFeature).layer;
+
+        if (layer && isFQID(layer.id)) {
+            const fragment = this.getFragmentStyle(getScopeFromFQID(layer.id));
+            const layers = fragment.getOwnFeaturesetLayers(getNameFromFQID(layer.id));
+            for (const {source, sourceLayer} of layers) {
+                fragment.removeFeatureState({id: target.id, source, sourceLayer}, key);
+            }
+            return;
+        }
+
         const sourceId = target.source;
 
         const source = this._checkSource(sourceId);
@@ -2642,6 +2708,32 @@ class Style extends Evented<MapEvents> {
         layer.invalidateCompiledFilter();
     }
 
+    _appendFeaturesetFeatures(features: Array<GeoJSONFeature>, feature: Feature, layerId: string) {
+        const featuresets = this._featuresets.get(layerId);
+        for (const featureset of (featuresets || [])) {
+            const {id, properties} = featureset;
+            const importId = getScopeFromFQID(layerId);
+
+            const derivedFeature = feature.clone();
+
+            if (feature.layer) {
+                const {type, layout, paint} = feature.layer;
+                derivedFeature.layer = ({id: makeFQID(id, importId), type, layout, paint} as LayerSpecification);
+            }
+
+            if (properties) {
+                const transformedProperties = {};
+                const zoom = this.map.transform.zoom;
+                for (const name of Object.keys(properties)) {
+                    const value = properties[name].evaluate({zoom}, feature._vectorTileFeature, feature.state, feature.tile, this._availableImages);
+                    if (value != null) transformedProperties[name] = value;
+                }
+                derivedFeature.properties = transformedProperties;
+            }
+            features.push(derivedFeature);
+        }
+    }
+
     _flattenAndSortRenderedFeatures(sourceResults: Array<QueryResult>): Array<GeoJSONFeature> {
         // Feature order is complicated.
         // The order between features in two 2D layers is determined by layer order (subject to draped rendering modification).
@@ -2688,6 +2780,15 @@ class Style extends Evented<MapEvents> {
         });
 
         const features = [];
+
+        const addFeature = (feature: Feature) => {
+            if (feature.layer && isFQID(feature.layer.id)) {
+                this._appendFeaturesetFeatures(features, feature, feature.layer.id);
+            } else {
+                features.push(feature);
+            }
+        };
+
         for (let l = order.length - 1; l >= 0; l--) {
             const layerId = order[l];
 
@@ -2696,7 +2797,7 @@ class Style extends Evented<MapEvents> {
                 for (let i = features3D.length - 1; i >= 0; i--) {
                     const topmost3D = features3D[i].feature;
                     if (topmost3D.layer && layerIndex[topmost3D.layer.id] < l) break;
-                    features.push(topmost3D);
+                    addFeature(topmost3D);
                     features3D.pop();
                 }
             } else {
@@ -2704,7 +2805,7 @@ class Style extends Evented<MapEvents> {
                     const layerFeatures = sourceResult[layerId];
                     if (layerFeatures) {
                         for (const featureWrapper of layerFeatures) {
-                            features.push(featureWrapper.feature);
+                            addFeature(featureWrapper.feature);
                         }
                     }
                 }
@@ -2723,52 +2824,64 @@ class Style extends Evented<MapEvents> {
             this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
 
-        params.scope = this.scope;
-        params.availableImages = this._availableImages;
-        params.serializedLayers = this._serializedLayers;
-
         const includedSources: Record<string, any> = {};
+        let has3DLayer = false;
+        const layers = [];
+
         if (params && params.layers) {
             if (!Array.isArray(params.layers)) {
                 this.fire(new ErrorEvent(new Error('parameters.layers must be an Array.')));
                 return [];
             }
-            for (const layerId of params.layers) {
-                const layer = this._mergedLayers[layerId];
-                if (!layer) {
-                    // this layer is not in the style.layers array
-                    this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be queried for features.`)));
-                    return [];
+            for (const featuresetId of params.layers) {
+                if (typeof featuresetId === 'string') {
+                    const layer = this._mergedLayers[featuresetId];
+                    if (!layer) {
+                        // this layer is not in the style.layers array
+                        this.fire(new ErrorEvent(new Error(`The layer '${featuresetId}' does not exist in the map's style and cannot be queried for features.`)));
+                        return [];
+                    }
+                    if (layer.is3D()) has3DLayer = true;
+                    includedSources[layer.source] = true;
+                    layers.push(featuresetId);
+
+                } else {
+                    const {id, importId} = featuresetId;
+                    const fragment = this.getFragmentStyle(importId);
+                    const featuresetLayers = fragment.getOwnFeaturesetLayers(id);
+                    if (featuresetLayers.length === 0) return;
+
+                    for (const layer of featuresetLayers) {
+                        if (layer.is3D()) has3DLayer = true;
+                        includedSources[layer.source] = true;
+                        layers.push(makeFQID(layer.id, importId));
+                    }
                 }
-                includedSources[layer.source] = true;
             }
+        } else {
+            has3DLayer = this.has3DLayers();
         }
 
         const sourceResults: Array<QueryResult> = [];
-        const serializedLayers = params.serializedLayers || {};
-
-        const has3DLayer = (params && params.layers) ?
-            params.layers.some((layerId) => {
-                const layer = this.getLayer(layerId);
-                return layer && layer.is3D();
-            }) : this.has3DLayers();
 
         const queryGeometryStruct = QueryGeometry.createFromScreenPoints(queryGeometry, transform);
 
         for (const id in this._mergedSourceCaches) {
             const source = this._mergedSourceCaches[id].getSource();
-            if (!source || source.scope !== params.scope) continue;
+            if (!source) continue;
 
             const sourceId = this._mergedSourceCaches[id].getSource().id;
             if (params.layers && !includedSources[sourceId]) continue;
+
             const showQueryGeometry = !!this.map._showQueryGeometry;
             sourceResults.push(
                 queryRenderedFeatures(
                     this._mergedSourceCaches[id],
                     this._mergedLayers,
-                    serializedLayers,
                     queryGeometryStruct,
-                    (params as any),
+                    params.filter,
+                    layers,
+                    this._availableImages,
                     transform,
                     has3DLayer,
                     showQueryGeometry)
@@ -2781,10 +2894,11 @@ class Style extends Evented<MapEvents> {
             sourceResults.push(
                 queryRenderedSymbols(
                     this._mergedLayers,
-                    serializedLayers,
                     this.getLayerSourceCache.bind(this),
                     queryGeometryStruct.screenGeometry,
-                    (params as any),
+                    params.filter,
+                    layers,
+                    this._availableImages,
                     this.placement.collisionIndex,
                     this.placement.retainedQueryData)
             );
@@ -2794,20 +2908,33 @@ class Style extends Evented<MapEvents> {
     }
 
     querySourceFeatures(
-        sourceID: string,
+        sourceID: string | FeaturesetDescriptor,
         params?: {
             sourceLayer?: string;
             filter?: FilterSpecification;
             validate?: boolean;
         },
-    ): Array<GeoJSONFeature> {
-        if (params && params.filter) {
-            this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);
+    ): Array<Feature> {
+        const filter = params && params.filter;
+        if (filter) {
+            this._validate(validateFilter, 'querySourceFeatures.filter', filter, null, params);
         }
-        const sourceCaches = this.getOwnSourceCaches(sourceID);
         let results = [];
-        for (const sourceCache of sourceCaches) {
-            results = results.concat(querySourceFeatures(sourceCache, params));
+        if (typeof sourceID !== 'string') {
+            const fragment = this.getFragmentStyle(sourceID.importId);
+            const layers = fragment.getOwnFeaturesetLayers(sourceID.id);
+            for (const {id, source, sourceLayer} of layers) {
+                const features = fragment.querySourceFeatures(source, {sourceLayer, filter});
+                const layerId = makeFQID(id, sourceID.importId);
+                for (const feature of features) {
+                    this._appendFeaturesetFeatures(results, feature, layerId);
+                }
+            }
+        } else {
+            const sourceCaches = this.getOwnSourceCaches(sourceID);
+            for (const sourceCache of sourceCaches) {
+                results = results.concat(querySourceFeatures(sourceCache, params));
+            }
         }
         return results;
     }

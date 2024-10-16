@@ -39,14 +39,18 @@ class Feature implements GeoJSONFeature {
         this.id = id;
     }
 
-    get geometry(): GeoJSON.Geometry | null | undefined {
+    clone(): Feature {
+        return new Feature(this._vectorTileFeature, this._z, this._x, this._y, this.id);
+    }
+
+    get geometry(): GeoJSON.Geometry {
         if (this._geometry === undefined) {
             this._geometry = this._vectorTileFeature.toGeoJSON(this._x, this._y, this._z).geometry;
         }
         return this._geometry;
     }
 
-    set geometry(g: GeoJSON.Geometry | null | undefined) {
+    set geometry(g: GeoJSON.Geometry) {
         this._geometry = g;
     }
 

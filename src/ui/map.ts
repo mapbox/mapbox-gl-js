@@ -56,7 +56,7 @@ import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
-import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector} from '../style/style';
+import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector, QueryRenderedFeaturesParams, FeaturesetDescriptor} from '../style/style';
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type {ScrollZoomHandlerOptions} from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -92,7 +92,6 @@ import type {
 import type {Source, SourceClass} from '../source/source';
 import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
-import type {QueryRenderedFeaturesParams} from '../source/query_features';
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 import type {Callback} from '../types/callback';
@@ -118,8 +117,6 @@ export type SetStyleOptions = {
     localFontFamily: StyleOptions['localFontFamily'];
     localIdeographFontFamily: StyleOptions['localIdeographFontFamily'];
 };
-
-export type QueryRenderedFeaturesOptions = Pick<QueryRenderedFeaturesParams, 'layers' | 'filter' | 'validate'>;
 
 type Listener<T extends MapEventType> = (event: MapEventOf<T>) => void;
 
@@ -1938,9 +1935,9 @@ export class Map extends Camera {
      * @see [Example: Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Example: Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
-    queryRenderedFeatures(geometry: PointLike | [PointLike, PointLike], options?: QueryRenderedFeaturesOptions): Array<GeoJSONFeature>;
-    queryRenderedFeatures(options?: QueryRenderedFeaturesOptions): Array<GeoJSONFeature>;
-    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike] | QueryRenderedFeaturesOptions, options?: QueryRenderedFeaturesOptions): Array<GeoJSONFeature> {
+    queryRenderedFeatures(geometry: PointLike | [PointLike, PointLike], options?: QueryRenderedFeaturesParams): Array<GeoJSONFeature>;
+    queryRenderedFeatures(options?: QueryRenderedFeaturesParams): Array<GeoJSONFeature>;
+    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike] | QueryRenderedFeaturesParams, options?: QueryRenderedFeaturesParams): Array<GeoJSONFeature> {
         // The first parameter can be omitted entirely, making this effectively an overloaded method
         // with two signatures:
         //
@@ -1962,8 +1959,8 @@ export class Map extends Camera {
         geometry = (geometry || [[0, 0], [this.transform.width, this.transform.height]]) as PointLike;
 
         if (options.layers && Array.isArray(options.layers)) {
-            for (const layerId of options.layers) {
-                if (!this._isValidId(layerId)) {
+            for (const featuresetId of options.layers) {
+                if (!this._isValidId(typeof featuresetId === 'string' ? featuresetId : featuresetId.id)) {
                     return [];
                 }
             }
@@ -2010,14 +2007,14 @@ export class Map extends Camera {
      * @see [Example: Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
     querySourceFeatures(
-        sourceId: string,
+        sourceId: FeaturesetDescriptor,
         parameters?: {
             sourceLayer?: string;
             filter?: FilterSpecification;
             validate?: boolean;
         },
     ): Array<GeoJSONFeature> {
-        if (!this._isValidId(sourceId)) {
+        if (!sourceId || (typeof sourceId === 'string' && !this._isValidId(sourceId))) {
             return [];
         }
 
@@ -2231,7 +2228,7 @@ export class Map extends Camera {
         return this.style.loaded();
     }
 
-    _isValidId(id?: string | null): boolean {
+    _isValidId(id?: string): boolean {
         if (id == null) {
             this.fire(new ErrorEvent(new Error(`IDs can't be empty.`)));
             return false;
@@ -3648,7 +3645,7 @@ export class Map extends Camera {
      * @see [Tutorial: Create interactive hover effects with Mapbox GL JS](https://docs.mapbox.com/help/tutorials/create-interactive-hover-effects-with-mapbox-gl-js/)
      */
     setFeatureState(feature: FeatureSelector | GeoJSONFeature, state: FeatureState): this {
-        if (!this._isValidId(feature.source)) {
+        if (feature.source && !this._isValidId(feature.source)) {
             return this;
         }
 
