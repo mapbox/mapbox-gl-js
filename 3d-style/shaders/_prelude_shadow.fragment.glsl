@@ -46,7 +46,7 @@ float shadow_occlusion_0(highp vec4 pos, highp float bias) {
 
     // Perform percentage-closer filtering with a 2x2 sample grid.
     // Edge tap smoothing is used to weight each sample based on their contribution in the overall PCF kernel
-#ifdef NATIVE
+#ifdef TEXTURE_GATHER
     highp vec2 uv = pos.xy;
     highp vec4 samples = textureGather(u_shadowmap_0, uv, 0);
     lowp vec4 stepSamples = step(samples, vec4(compare0));
