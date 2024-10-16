@@ -33,6 +33,7 @@ export default defineConfig({
             enabled: true,
             headless: true,
             fileParallelism: false,
+            screenshotFailures: false,
         },
         restoreMocks: true,
         unstubGlobals: true,

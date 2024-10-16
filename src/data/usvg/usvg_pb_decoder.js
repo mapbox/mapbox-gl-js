@@ -59,6 +59,13 @@ export const SpreadMethod = {
 };
 
 /** @enum {number} */
+export const ClipRule = {
+    "CLIP_RULE_UNSPECIFIED": 0,
+    "CLIP_RULE_NON_ZERO": 1,
+    "CLIP_RULE_EVEN_ODD": 2
+};
+
+/** @enum {number} */
 export const MaskType = {
     "MASK_TYPE_UNSPECIFIED": 0,
     "MASK_TYPE_LUMINANCE": 1,
@@ -67,7 +74,7 @@ export const MaskType = {
 
 /**
  * @typedef {object} IconSet
- * @property {Array<Icon>} icons
+ * @property {Icon[]} icons
  */
 
 /**
@@ -118,10 +125,10 @@ function readIconField(tag, obj, pbf) {
 
 /**
  * @typedef {object} IconMetadata
- * @property {Array<number>} stretch_x
- * @property {Array<number>} stretch_y
+ * @property {number[]} stretch_x
+ * @property {number[]} stretch_y
  * @property {ContentArea} [content_area]
- * @property {Array<Variable>} variables
+ * @property {Variable[]} variables
  */
 
 /**
@@ -204,11 +211,11 @@ function readVariableField(tag, obj, pbf) {
  * @typedef {object} UsvgTree
  * @property {number} [width]
  * @property {number} [height]
- * @property {Array<Node>} children
- * @property {Array<LinearGradient>} linear_gradients
- * @property {Array<RadialGradient>} radial_gradients
- * @property {Array<ClipPath>} clip_paths
- * @property {Array<Mask>} masks
+ * @property {Node[]} children
+ * @property {LinearGradient[]} linear_gradients
+ * @property {RadialGradient[]} radial_gradients
+ * @property {ClipPath[]} clip_paths
+ * @property {Mask[]} masks
  */
 
 /**
@@ -267,7 +274,7 @@ function readNodeField(tag, obj, pbf) {
  * @property {number} [opacity]
  * @property {number} [clip_path_idx]
  * @property {number} [mask_idx]
- * @property {Array<Node>} children
+ * @property {Node[]} children
  */
 
 /**
@@ -330,9 +337,10 @@ function readTransformField(tag, obj, pbf) {
  * @property {Fill} [fill]
  * @property {Stroke} [stroke]
  * @property {PaintOrder} [paint_order]
- * @property {Array<PathCommand>} commands
+ * @property {PathCommand[]} commands
  * @property {number} [step]
- * @property {Array<number>} diffs
+ * @property {number[]} diffs
+ * @property {ClipRule} [clip_rule]
  */
 
 /**
@@ -341,7 +349,7 @@ function readTransformField(tag, obj, pbf) {
  * @returns {Path}
  */
 export function readPath(pbf, end) {
-    return pbf.readFields(readPathField, {paint_order: 1, commands: [], step: 1, diffs: []}, end);
+    return pbf.readFields(readPathField, {paint_order: 1, commands: [], step: 1, diffs: [], clip_rule: 1}, end);
 }
 
 /**
@@ -356,6 +364,7 @@ function readPathField(tag, obj, pbf) {
     else if (tag === 5) pbf.readPackedVarint(obj.commands);
     else if (tag === 6) obj.step = pbf.readFloat();
     else if (tag === 7) pbf.readPackedSVarint(obj.diffs);
+    else if (tag === 8) obj.clip_rule = pbf.readVarint();
 }
 
 /**
@@ -395,7 +404,7 @@ function readFillField(tag, obj, pbf) {
  * @property {number} [rgb_color]
  * @property {number} [linear_gradient_idx]
  * @property {number} [radial_gradient_idx]
- * @property {Array<number>} dasharray
+ * @property {number[]} dasharray
  * @property {number} [dashoffset]
  * @property {number} [miterlimit]
  * @property {number} [opacity]
@@ -436,7 +445,7 @@ function readStrokeField(tag, obj, pbf) {
  * @typedef {object} LinearGradient
  * @property {Transform} [transform]
  * @property {SpreadMethod} [spread_method]
- * @property {Array<Stop>} stops
+ * @property {Stop[]} stops
  * @property {number} [x1]
  * @property {number} [y1]
  * @property {number} [x2]
@@ -498,12 +507,13 @@ function readStopField(tag, obj, pbf) {
  * @typedef {object} RadialGradient
  * @property {Transform} [transform]
  * @property {SpreadMethod} [spread_method]
- * @property {Array<Stop>} stops
+ * @property {Stop[]} stops
  * @property {number} [cx]
  * @property {number} [cy]
  * @property {number} [r]
  * @property {number} [fx]
  * @property {number} [fy]
+ * @property {number} [fr]
  */
 
 /**
@@ -512,7 +522,7 @@ function readStopField(tag, obj, pbf) {
  * @returns {RadialGradient}
  */
 export function readRadialGradient(pbf, end) {
-    return pbf.readFields(readRadialGradientField, {spread_method: 1, stops: [], cx: 0.5, cy: 0.5, r: 0.5, fx: 0.5, fy: 0.5}, end);
+    return pbf.readFields(readRadialGradientField, {spread_method: 1, stops: [], cx: 0.5, cy: 0.5, r: 0.5, fx: 0.5, fy: 0.5, fr: 0}, end);
 }
 
 /**
@@ -529,13 +539,14 @@ function readRadialGradientField(tag, obj, pbf) {
     else if (tag === 6) obj.r = pbf.readFloat();
     else if (tag === 7) obj.fx = pbf.readFloat();
     else if (tag === 8) obj.fy = pbf.readFloat();
+    else if (tag === 9) obj.fr = pbf.readFloat();
 }
 
 /**
  * @typedef {object} ClipPath
  * @property {Transform} [transform]
  * @property {number} [clip_path_idx]
- * @property {Array<Path>} paths
+ * @property {Path[]} paths
  */
 
 /**
@@ -567,7 +578,7 @@ function readClipPathField(tag, obj, pbf) {
  * @property {MaskType} [mask_type]
  * @property {number} [mask_idx]
  * @property {Transform} [transform]
- * @property {Array<Node>} children
+ * @property {Node[]} children
  */
 
 /**

@@ -33,6 +33,7 @@
   "include": [
     "./src/**/*",
     "./test/unit/**/*",
+    "./test/usvg/**/*",
     "./test/util/**/*",
     "./vitest.config.*",
     "./rollup.config.*",

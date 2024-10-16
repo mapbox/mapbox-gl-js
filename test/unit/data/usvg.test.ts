@@ -1,7 +1,8 @@
 import Pbf from 'pbf';
+// eslint-disable-next-line import/extensions
 import {server} from '@vitest/browser/context';
-import {describe, test, expect, vi} from '../../util/vitest';
-import {readIconSet} from '../../../src/data/usvg/usvg_pb_decoder';
+import {describe, test, expect} from 'vitest';
+import {readIconSet} from '../../../src/data/usvg/usvg_pb_decoder.js';
 
 async function readJson(path: string) {
     const data = await server.commands.readFile(path);
