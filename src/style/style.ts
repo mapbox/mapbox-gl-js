@@ -2730,6 +2730,11 @@ class Style extends Evented<MapEvents> {
                 }
                 derivedFeature.properties = transformedProperties;
             }
+
+            if (feature.state) {
+                derivedFeature.state = {...feature.state};
+            }
+
             features.push(derivedFeature);
         }
     }
