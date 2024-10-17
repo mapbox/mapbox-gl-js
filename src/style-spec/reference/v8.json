@@ -4952,6 +4952,360 @@
       }
     }
   },
+  "snow": {
+    "density": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow particles density.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "intensity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow particles movement factor.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow particles color.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "opacity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow particles opacity.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "vignette": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow vignette screen-space effect.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "centerThinning": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Thinning factor of snow particles from center. 0 - no thinning. 1 - maximal central area thinning.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "direction": {
+      "type": "array",
+      "default": [
+        0.0,
+        90.0
+      ],
+      "minimum": 0,
+      "maximum": 360,
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "doc": "Main snow particles direction. Heading & pitch",
+      "example": [
+        0,
+        45
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    }
+  },
+  "rain": {
+    "density": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain particles density.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "intensity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain particles movement factor.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "opacity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain particles opacity.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "vignette": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain vignette screen-space effect.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "centerThinning": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Thinning factor of rain particles from center. 0 - no thinning. 1 - maximal central area thinning.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "direction": {
+      "type": "array",
+      "default": [
+        0.0,
+        80.0
+      ],
+      "minimum": 0,
+      "maximum": 360,
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "doc": "Main rain particles direction. Heading & pitch",
+      "example": [
+        0,
+        45
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    }
+  },
   "camera": {
     "camera-projection" : {
       "doc": "Camera projection describes how 3D world geometry get projected into 2D screen",

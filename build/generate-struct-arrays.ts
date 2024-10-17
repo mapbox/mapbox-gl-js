@@ -209,6 +209,12 @@ createStructArrayType('atmosphere_vertex', atmosphereLayout);
 import {starsLayout} from '../src/render/stars_attributes';
 createStructArrayType('stars_vertex', starsLayout);
 
+import {snowLayout} from '../src/precipitation/snow_attributes.js';
+createStructArrayType('snow_vertex', snowLayout);
+
+import {rainLayout} from '../src/precipitation/rain_attributes.js';
+createStructArrayType('rain_vertex', rainLayout);
+
 // feature index array
 createStructArrayType('feature_index', createLayout([
     // the index of the feature in the original vectortile

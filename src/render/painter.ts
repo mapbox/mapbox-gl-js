@@ -49,6 +49,8 @@ import {WireframeDebugCache} from './wireframe_cache';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
 import Framebuffer from '../gl/framebuffer';
 import {OcclusionParams} from './occlusion_params';
+import {Rain} from '../precipitation/draw_rain';
+import {Snow} from '../precipitation/draw_snow';
 
 // 3D-style related
 import type {Source} from '../source/source';
@@ -208,6 +210,8 @@ class Painter {
         [key: number]: Tile;
     };
     _atmosphere: Atmosphere | null | undefined;
+    _rain: any;
+    _snow: any;
     replacementSource: ReplacementSource;
     conflationActive: boolean;
     firstLightBeamLayer: number;
@@ -230,6 +234,7 @@ class Painter {
     tp: ITrackedParameters;
 
     _debugParams: {
+        forceEnablePrecipitation: boolean;
         showTerrainProxyTiles: boolean;
         fpsWindow: number;
         continousRedraw: boolean;
@@ -268,6 +273,7 @@ class Painter {
         this._dt = 0;
 
         this._debugParams = {
+            forceEnablePrecipitation: false,
             showTerrainProxyTiles: false,
             fpsWindow: 30,
             continousRedraw:false,
@@ -284,6 +290,8 @@ class Painter {
         tp.registerParameter(this._debugParams, ["Terrain"], "showTerrainProxyTiles", {}, () => {
             this.style.map.triggerRepaint();
         });
+
+        tp.registerParameter(this._debugParams, ["Precipitation"], "forceEnablePrecipitation");
 
         tp.registerParameter(this._debugParams, ["FPS"], "fpsWindow", {min: 1, max: 100, step: 1});
         tp.registerBinding(this._debugParams, ["FPS"], 'continousRedraw', {
@@ -1003,6 +1011,25 @@ class Painter {
             }
         }
 
+        Debug.run(() => {
+            if (this._debugParams.forceEnablePrecipitation) {
+                if (!this._snow) {
+                    this._snow = new Snow(this);
+                }
+
+                if (!this._rain) {
+                    this._rain = new Rain(this);
+                }
+            }
+
+            if (this._debugParams.forceEnablePrecipitation && this._snow) {
+                this._snow.update(this);
+            }
+            if (this._debugParams.forceEnablePrecipitation && this._rain) {
+                this._rain.update(this);
+            }
+        });
+
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
 
@@ -1262,6 +1289,15 @@ class Painter {
             this.terrain.postRender();
         }
 
+        Debug.run(() => {
+            if (this._debugParams.forceEnablePrecipitation && this._snow) {
+                this._snow.draw(this);
+            }
+
+            if (this._debugParams.forceEnablePrecipitation && this._rain) {
+                this._rain.draw(this);
+            }
+        });
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             // Use source with highest maxzoom
             let selectedSource = null;
@@ -1415,13 +1451,12 @@ class Painter {
 
     queryGpuTimeDeferredRender(gpuQueries: Array<any>): number {
         if (!this.options.gpuTimingDeferredRender) return 0;
-        const ext = this.context.extTimerQuery;
         const gl = this.context.gl;
 
         let gpuTime = 0;
         for (const query of gpuQueries) {
-            gpuTime += ext.getQueryParameter(query, gl.QUERY_RESULT) / (1000 * 1000);
-            ext.deleteQueryEXT(query);
+            gpuTime += gl.getQueryParameter(query, gl.QUERY_RESULT) / (1000 * 1000);
+            gl.deleteQuery(query);
         }
 
         return gpuTime;

@@ -19,6 +19,8 @@ import {modelUniforms, modelDepthUniforms} from '../../../3d-style/render/progra
 import {groundShadowUniforms} from '../../../3d-style/render/program/ground_shadow_program';
 import {starsUniforms} from '../../terrain/stars_program';
 import {occlusionUniforms} from './occlusion_program';
+import {snowUniforms} from '../../precipitation/snow_program';
+import {rainUniforms} from "../../precipitation/rain_program";
 
 import type {GlobeDefinesType} from '../../terrain/globe_raster_program';
 import type {HeatmapDefinesType} from './heatmap_program';
@@ -101,5 +103,7 @@ export const programUniforms = {
     modelDepth: modelDepthUniforms,
     groundShadow: groundShadowUniforms,
     stars: starsUniforms,
+    snowParticle: snowUniforms,
+    rainParticle: rainUniforms,
     occlusion: occlusionUniforms
 } as const;
