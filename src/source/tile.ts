@@ -43,7 +43,7 @@ import type Context from '../gl/context';
 import type {CanonicalTileID, OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
 import type Transform from '../geo/transform';
-import type {LayerFeatureStates} from './source_state';
+import type {FeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
 import type {FilterSpecification} from '../style-spec/types';
 import type {TilespaceQueryGeometry} from '../style/query_geometry';
@@ -583,11 +583,8 @@ class Tile {
         }
     }
 
-    setFeatureState(states: LayerFeatureStates, painter?: Painter | null) {
-        if (!this.latestFeatureIndex ||
-            !this.latestFeatureIndex.rawTileData ||
-            Object.keys(states).length === 0 ||
-            !painter) {
+    refreshFeatureState(painter?: Painter) {
+        if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData || !painter) {
             return;
         }
 
@@ -604,13 +601,15 @@ class Tile {
             if (!painter.style.hasLayer(id)) continue;
 
             const bucket = this.buckets[id];
+            const bucketLayer = bucket.layers[0] as StyleLayer;
             // Buckets are grouped by common source-layer
-            const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
+            const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
             const sourceLayer = vtLayers[sourceLayerId];
-            const sourceCache = painter.style.getOwnSourceCache(bucket.layers[0].source);
-            let sourceLayerStates: Record<string, any> = {};
+            const sourceCache = painter.style.getSourceCache(bucketLayer.source, bucketLayer.scope);
+
+            let sourceLayerStates: FeatureStates = {};
             if (sourceCache) {
-                sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined);
+                sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
             }
 
             const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
