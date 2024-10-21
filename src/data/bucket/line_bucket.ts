@@ -566,6 +566,9 @@ class LineBucket implements Bucket {
 
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
             const lineTurnsLeft = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0;
+            // Fixed offset from the corners to straighted up edges (require for pattern, gradient and trim-offset)
+            const SHARP_CORNER_OFFSET = 15;
+            const sharpCornerOffset = this.overscaling <= 16 ? SHARP_CORNER_OFFSET * EXTENT / (512 * this.overscaling) : 0;
 
             if (middleVertex && currentJoin === 'round') {
                 if (miterLength < roundLimit) {
@@ -596,9 +599,6 @@ class LineBucket implements Bucket {
 
             if (currentJoin === 'miter') {
                 if (isSharpCorner) {
-                    // Fixed offset from the corners to straighted up edges (require for pattern, gradient and trim-offset)
-                    const SHARP_CORNER_OFFSET = 15;
-                    const sharpCornerOffset = this.overscaling <= 16 ? SHARP_CORNER_OFFSET * EXTENT / (512 * this.overscaling) : 0;
                     const prevSegmentLength = currentVertex.dist(prevVertex);
                     if (prevSegmentLength > 2 * sharpCornerOffset) {
                         const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
@@ -640,6 +640,8 @@ class LineBucket implements Bucket {
                     this.addCurrentVertex(currentVertex, prevNormal, 0, 0, segment, fixedElevation);
                 }
 
+                const dist = currentVertex.dist(prevVertex);
+                const skipStraightEdges = dist <= 2 * sharpCornerOffset && currentJoin !== 'bevel';
                 const join = joinNormal.mult(lineTurnsLeft ? 1.0 : -1.0);
                 join._mult(miterLength);
                 const next = nextNormal.mult(lineTurnsLeft ? -1.0 : 1.0);
@@ -647,8 +649,10 @@ class LineBucket implements Bucket {
 
                 // This vertex is placed at the inner side of the corner
                 this.addHalfVertex(currentVertex, join.x, join.y, false, !lineTurnsLeft, 0, segment, fixedElevation);
-                // This vertex is responsible to straighten up the line before the corner
-                this.addHalfVertex(currentVertex, join.x + prev.x * 2.0, join.y + prev.y * 2.0, false, lineTurnsLeft, 0, segment, fixedElevation);
+                if (!skipStraightEdges) {
+                    // This vertex is responsible to straighten up the line before the corner
+                    this.addHalfVertex(currentVertex, join.x + prev.x * 2.0, join.y + prev.y * 2.0, false, lineTurnsLeft, 0, segment, fixedElevation);
+                }
 
                 if (currentJoin === 'fakeround') {
                     // The join angle is sharp enough that a round join would be visible.
@@ -660,7 +664,7 @@ class LineBucket implements Bucket {
                     const n = Math.round((approxAngle * 180 / Math.PI) / DEG_PER_TRIANGLE);
 
                     this.addHalfVertex(currentVertex, prev.x, prev.y, false, lineTurnsLeft, 0, segment, fixedElevation);
-                    for (let m = 0; m < n + 1; m++) {
+                    for (let m = 0; m < n; m++) {
                         let t = m / n;
                         if (t !== 0.5) {
                             // approximate spherical interpolation https://observablehq.com/@mourner/approximating-geometric-slerp
@@ -675,8 +679,11 @@ class LineBucket implements Bucket {
                     // These vertices are placed on the outer side of the line
                     this.addHalfVertex(currentVertex, next.x, next.y, false, lineTurnsLeft, 0, segment, fixedElevation);
                 }
-                // This vertex is responsible to straighten up the line after the corner
-                this.addHalfVertex(currentVertex, join.x + next.x * 2.0, join.y + next.y * 2.0, false, lineTurnsLeft, 0, segment, fixedElevation);
+
+                if (!skipStraightEdges) {
+                    // This vertex is responsible to straighten up the line after the corner
+                    this.addHalfVertex(currentVertex, join.x + next.x * 2.0, join.y + next.y * 2.0, false, lineTurnsLeft, 0, segment, fixedElevation);
+                }
 
                 if (fixedElevation != null && nextVertex) {
                     // Start next segment with a butt
