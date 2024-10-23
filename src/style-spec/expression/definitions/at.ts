@@ -40,15 +40,28 @@ class At implements Expression {
             throw new RuntimeError(`Array index out of bounds: ${index} < 0.`);
         }
 
-        if (index >= array.length) {
+        if (index > array.length - 1) {
             throw new RuntimeError(`Array index out of bounds: ${index} > ${array.length - 1}.`);
         }
 
-        if (index !== Math.floor(index)) {
-            throw new RuntimeError(`Array index must be an integer, but found ${index} instead.`);
+        if (index === Math.floor(index)) {
+            return array[index];
         }
 
-        return array[index];
+        // Interpolation logic for non-integer indices
+        const lowerIndex = Math.floor(index);
+        const upperIndex = Math.ceil(index);
+
+        const lowerValue = array[lowerIndex];
+        const upperValue = array[upperIndex];
+
+        if (typeof lowerValue !== 'number' || typeof upperValue !== 'number') {
+            throw new RuntimeError(`Cannot interpolate between non-number values at index ${index}.`);
+        }
+
+        // Linear interpolation
+        const fraction = index - lowerIndex;
+        return lowerValue * (1 - fraction) + upperValue * fraction;
     }
 
     eachChild(fn: (_: Expression) => void) {

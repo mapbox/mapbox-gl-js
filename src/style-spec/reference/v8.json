@@ -1915,7 +1915,11 @@
     "line-z-offset": {
       "type": "number",
       "experimental": true,
-      "doc": "Vertical offset from ground, in meters. Defaults to 0. Not supported for globe projection at the moment.",
+      "doc": "Vertical offset from ground, in meters. Defaults to 0. This is an experimental property with some known issues:\n * Not supported for globe projection at the moment \n * Elevated line discontinuity is possible on tile borders with terrain enabled \n * Rendering artifacts can happen near line joins and line caps depending on the line styling \n * Rendering artifacts relating to `line-opacity` and `line-blur` \n * Elevated line visibility is determined by layer order \n * Z-fighting issues can happen with intersecting elevated lines \n * Elevated lines don't cast shadows",
+      "default": 0,
+      "requires": [
+        "line-elevation-reference"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.5.0",
@@ -1937,6 +1941,57 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "line-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of line-elevation. Some modes might require precomputed elevation data in the tileset.",
+      "values": {
+        "none": {
+          "doc": "Elevated rendering is disabled."
+        },
+        "sea": {
+          "doc": "Elevated rendering is enabled. Use this mode to elevate lines relative to the sea level."
+        },
+        "ground": {
+          "doc": "Elevated rendering is enabled. Use this mode to elevate lines relative to the ground's height below them."
+        },
+        "hd-road-markup": {
+          "doc": "Elevated rendering is enabled. Use this mode to describe additive and stackable features that should exist only on top of road polygons."
+      }
+      },
+      "default": "none",
+      "experimental": true,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant"
+    },
+    "line-cross-slope": {
+      "type": "number",
+      "experimental": true,
+      "doc": "Defines the slope of an elevated line. A value of 0 creates a horizontal line. A value of 1 creates a vertical line. Other values are currently not supported. If undefined, the line follows the terrain slope. This is an experimental property with some known issues:\n * Vertical lines don't support line caps \n * `line-join: round` is not supported with this property",
+      "requires": [
+        "line-z-offset"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "constant"
     },
     "visibility": {
       "type": "enum",

@@ -1,0 +1,214 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 300,
+      "width": 512,
+      "allowed": 0.0021
+    }
+  },
+  "center": [-113.29125158622139, 35.97236542785612],
+  "zoom": 13.021885513531622,
+  "pitch": 0,
+  "bearing": -4.399999999999864,
+  "sprite": "local://sprites/emerald",
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "cast-shadows" : true,
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 1.0
+      }
+    }
+  ],
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 256
+    },
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "geojson1": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -113.3022988725203,
+              35.976255609860246
+            ],
+            [
+              -113.2915246502235,
+              35.97221647630822
+            ],
+            [
+              -113.30227507671059,
+              35.96737017034512
+            ]
+          ]
+        }
+      }
+    },
+    "geojson2": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -113.3023832053058,
+              35.97551954359808
+            ],
+            [
+              -113.29328420773386,
+              35.97220973508958
+            ],
+            [
+              -113.30241490913015,
+              35.96807869412561
+            ]
+          ]
+        }
+      }
+    },
+    "geojson3": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -113.30228809383273,
+              35.977700349324095
+            ],
+            [
+              -113.2902406406013,
+              35.97228670895639
+            ],
+            [
+              -113.3023832053058,
+              35.9656923421565
+            ]
+          ]
+        }
+      }
+    },
+    "geojson4": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -113.29266049714492,
+              35.978966123681275
+            ],
+            [
+              -113.28895114970237,
+              35.97224402516754
+            ],
+            [
+              -113.30137904882557,
+              35.96454626278218
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "layout": {},
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line1",
+      "type": "line",
+      "source": "geojson1",
+      "layout": {
+        "line-join": "round",
+        "line-z-offset": 3000,
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 3,
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "line2",
+      "type": "line",
+      "source": "geojson2",
+      "layout": {
+        "line-join": "none",
+        "line-z-offset": 3000,
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 3,
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "line3",
+      "type": "line",
+      "source": "geojson3",
+      "layout": {
+        "line-join": "bevel",
+        "line-z-offset": 3000,
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 3,
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "line4",
+      "type": "line",
+      "source": "geojson4",
+      "layout": {
+        "line-join": "miter",
+        "line-z-offset": 3000,
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 3,
+        "line-color": "red"
+      }
+    }
+  ]
+}

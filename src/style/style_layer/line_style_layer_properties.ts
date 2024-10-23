@@ -23,6 +23,8 @@ export type LayoutProps = {
     "line-round-limit": DataConstantProperty<number>;
     "line-sort-key": DataDrivenProperty<number>;
     "line-z-offset": DataDrivenProperty<number>;
+    "line-elevation-reference": DataConstantProperty<"none" | "sea" | "ground" | "hd-road-markup">;
+    "line-cross-slope": DataConstantProperty<number>;
     "visibility": DataConstantProperty<"visible" | "none">;
 };
 let layout: Properties<LayoutProps>;
@@ -33,6 +35,8 @@ export const getLayoutProperties = (): Properties<LayoutProps> => layout || (lay
     "line-round-limit": new DataConstantProperty(styleSpec["layout_line"]["line-round-limit"]),
     "line-sort-key": new DataDrivenProperty(styleSpec["layout_line"]["line-sort-key"]),
     "line-z-offset": new DataDrivenProperty(styleSpec["layout_line"]["line-z-offset"]),
+    "line-elevation-reference": new DataConstantProperty(styleSpec["layout_line"]["line-elevation-reference"]),
+    "line-cross-slope": new DataConstantProperty(styleSpec["layout_line"]["line-cross-slope"]),
     "visibility": new DataConstantProperty(styleSpec["layout_line"]["visibility"]),
 }));
 

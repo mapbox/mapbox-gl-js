@@ -1,0 +1,115 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 200,
+      "height": 200,
+      "allowed": 0.003
+    }
+  },
+  "zoom": 3,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -1,
+              8
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              1,
+              -8
+            ],
+            [
+              -8,
+              -1
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              4,
+              -1
+            ],
+            [
+              -1,
+              -4
+            ],
+            [
+              -2,
+              0
+            ]
+          ]
+        }
+      },
+      "lineMetrics": true
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "line0",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-z-offset": 0.01
+      },
+      "paint": {
+        "line-width": 18,
+        "line-color": "royalblue"
+      }
+    },
+    {
+      "id": "line1",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-z-offset": 0.01
+      },
+      "paint": {
+        "line-width": 14,
+        "line-color": "yellow"
+      }
+    },
+    {
+      "id": "line2",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-z-offset": 0.01
+      },
+      "paint": {
+        "line-width": 13,
+        "line-pattern": "generic_metro",
+        "line-trim-offset": [0.0, 0.4]
+      }
+    },
+    {
+      "id": "line3",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-z-offset": 0.01
+      },
+      "paint": {
+        "line-width": 13,
+        "line-pattern": "generic_icon",
+        "line-trim-offset": [0.4, 1.0]
+      }
+    }
+  ]
+}

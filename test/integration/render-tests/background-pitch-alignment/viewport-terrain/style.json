@@ -170,9 +170,10 @@
         "line-join": "round",
         "line-z-offset": [
           "at",
-          ["floor", ["*", [ "line-progress" ], 2.9]],
+          ["*", [ "line-progress" ], 2],
           ["get", "elevation"]
-        ]
+        ],
+        "line-cross-slope": 0
       },
       "paint": {
         "line-width": 12,
@@ -187,9 +188,10 @@
         "line-join": "none",
         "line-z-offset": [
           "at",
-          ["floor", ["*", [ "line-progress" ], 6.9]],
+          ["*", [ "line-progress" ], 6],
           ["get", "elevation"]
-        ]
+        ],
+        "line-cross-slope": 0
       },
       "paint": {
         "line-width": 14,

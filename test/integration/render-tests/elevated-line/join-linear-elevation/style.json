@@ -1,0 +1,170 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 300,
+      "width": 512,
+      "allowed": 0.0021
+    }
+  },
+  "center": [-113.21321082448964, 36.04692734782307],
+  "zoom": 10.986549674156256,
+  "pitch": 64.9999999999999,
+  "bearing": 41.19999999999618,
+  "sprite": "local://sprites/emerald",
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "cast-shadows" : true,
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 1.0
+      }
+    }
+  ],
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 256
+    },
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "elevation": [5000.0, 1500.0]
+
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -113.30644631862066,
+              35.97008174332019
+            ],
+            [
+              -113.28690927723653,
+              35.98343257640977
+            ],
+            [
+              -113.25311040297527,
+              35.95219086719196
+            ],
+            [
+              -113.27542291315574,
+              35.936889653404776
+            ],
+            [
+              -113.30644631862066,
+              35.97008174332019
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "layout": {},
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line1",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "bevel",
+        "line-z-offset": [
+          "-",
+          ["at", ["*", [ "line-progress" ], 1], ["get", "elevation"]], 
+          300
+        ],
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 8,
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "line2",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "miter",
+        "line-z-offset": [
+          "+",
+          ["at", ["*", [ "line-progress" ], 1], ["get", "elevation"]], 
+          100
+        ],
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 8,
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "line3",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "round",
+        "line-z-offset": [
+          "+",
+          ["at", ["*", [ "line-progress" ], 1], ["get", "elevation"]], 
+          500
+        ],
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 8,
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "line4",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "none",
+        "line-z-offset": [
+          "+",
+          ["at", ["*", [ "line-progress" ], 1], ["get", "elevation"]], 
+          900
+        ],
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 8,
+        "line-color": "red"
+      }
+    }
+  ]
+}

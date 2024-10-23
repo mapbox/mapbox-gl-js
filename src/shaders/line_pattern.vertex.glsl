@@ -33,6 +33,19 @@ uniform vec2 u_units_to_pixels;
 uniform mat2 u_pixels_to_tile_units;
 uniform float u_device_pixel_ratio;
 
+#ifdef ELEVATED
+uniform lowp float u_zbias_factor;
+uniform lowp float u_tile_to_meter;
+
+float sample_elevation(vec2 apos) {
+#ifdef ELEVATION_REFERENCE_SEA
+    return 0.0;
+#else
+    return elevation(apos);
+#endif
+}
+#endif
+
 out vec2 v_normal;
 out vec2 v_width2;
 out highp float v_linesofar;
@@ -99,31 +112,51 @@ void main() {
     vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
 
     float hidden = float(opacity == 0.0);
-    vec4 projected_extrude = u_matrix * vec4(dist * u_pixels_to_tile_units, 0.0, 0.0);
+    vec2 extrude = dist * u_pixels_to_tile_units;
+    vec4 projected_extrude = u_matrix * vec4(extrude, 0.0, 0.0);
 #ifdef ELEVATED_ROADS
     // Apply slight vertical offset (1cm) for elevated vertices above the ground plane
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset + 0.01 * step(0.01, a_z_offset), 1.0) + projected_extrude;
-#else // ELEVATED_ROADS
+#else
 #ifdef ELEVATED
     vec2 offsetTile = offset2 * u_pixels_to_tile_units;
-    // forward or backward along the line, perpendicular to offset
-    vec2 halfCellProgress = normal.yx * 32.0;
-    float ele0 = elevation(pos);
-    float ele_line = max(ele0, max(elevation(pos + halfCellProgress), elevation(pos - halfCellProgress)));
-    float ele1 = elevation(pos + offsetTile);
-    float ele2 = elevation(pos - offsetTile);
-    float ele_max = max(ele_line, 0.5 * (ele1 + ele2));
-    // keep cross slope by default
-    float ele = ele_max - ele0 + ele1 + a_z_offset ;
-    gl_Position = u_matrix * vec4(pos + offsetTile, ele, 1.0) + projected_extrude;
+    vec2 offset_pos = pos + offsetTile;
+    float ele = 0.0;
+#ifdef CROSS_SLOPE_VERTICAL
+    // Vertical line
+    // The least significant bit of a_pos_normal.y hold 1 if it's on top, 0 for bottom
+    float top = a_pos_normal.y - 2.0 * floor(a_pos_normal.y * 0.5);
+    float line_height = 2.0 * u_tile_to_meter * outset * top * u_pixels_to_tile_units[1][1] + a_z_offset;
+    ele = sample_elevation(offset_pos) + line_height;
+    // Ignore projected extrude for vertical lines
+    projected_extrude = vec4(0);
+#else // CROSS_SLOPE_VERTICAL
+#ifdef CROSS_SLOPE_HORIZONTAL
+    // Horizontal line
+    float ele0 = sample_elevation(offset_pos);
+    float ele1 = max(sample_elevation(offset_pos + extrude), sample_elevation(offset_pos + extrude / 2.0));
+    float ele2 = max(sample_elevation(offset_pos - extrude), sample_elevation(offset_pos - extrude / 2.0));
+    float ele_max = max(ele0, max(ele1, ele2));
+    ele = ele_max + a_z_offset;
+#else // CROSS_SLOPE_HORIZONTAL
+    // Line follows terrain slope
+    float ele0 = sample_elevation(offset_pos);
+    float ele1 = max(sample_elevation(offset_pos + extrude), sample_elevation(offset_pos + extrude / 2.0));
+    float ele2 = max(sample_elevation(offset_pos - extrude), sample_elevation(offset_pos - extrude / 2.0));
+    float ele_max = max(ele0, 0.5 * (ele1 + ele2));
+    ele = ele_max - ele0 + ele1 + a_z_offset;
+#endif // CROSS_SLOPE_HORIZONTAL
+#endif // CROSS_SLOPE_VERTICAL
+    gl_Position = u_matrix * vec4(offset_pos, ele, 1.0) + projected_extrude;
     float z = clamp(gl_Position.z / gl_Position.w, 0.5, 1.0);
-    float zbias = max(0.00005, (pow(z, 0.8) - z) * 0.1 * u_exaggeration);
+    float zbias = max(0.00005, (pow(z, 0.8) - z) * u_zbias_factor * u_exaggeration);
     gl_Position.z -= (gl_Position.w * zbias);
     gl_Position = mix(gl_Position, AWAY, hidden);
 #else // ELEVATED
     gl_Position = mix(u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, 0.0, 1.0) + projected_extrude, AWAY, hidden);
 #endif // ELEVATED
 #endif // ELEVATED_ROADS
+
 
 #ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude

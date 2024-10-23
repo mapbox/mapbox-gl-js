@@ -30,13 +30,19 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     const emissiveStrength = layer.paint.get('line-emissive-strength');
     const occlusionOpacity = layer.paint.get('line-occlusion-opacity');
+    const elevationReference = layer.layout.get('line-elevation-reference');
+    const elevationFromSea = elevationReference === 'sea';
 
     const context = painter.context;
     const gl = context.gl;
 
-    const zOffset = layer.layout.get('line-z-offset');
+    const hasZOffset = !layer.isDraped();
+    // line-z-offset is not supported for globe projection
+    if (hasZOffset && painter.transform.projection.name === 'globe') return;
 
-    const hasZOffset = !zOffset.isConstant() || !!zOffset.constantOr(0);
+    const crossSlope = layer.layout.get('line-cross-slope');
+    const hasCrossSlope = crossSlope !== undefined;
+    const crossSlopeHorizontal = crossSlope < 1.0;
 
     const depthMode = hasZOffset ?
         (new DepthMode(painter.depthOcclusion ? gl.GREATER : gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D)) :
@@ -89,11 +95,21 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     }
     if (hasZOffset) painter.forceTerrainMode = true;
     if (!hasZOffset && occlusionOpacity !== 0 && painter.terrain && !isDraping) {
-        warnOnce(`Occlusion opacity for layer ${layer.id} is supported on terrain only if the layer has non-zero line-z-offset.`);
+        warnOnce(`Occlusion opacity for layer ${layer.id} is supported on terrain only if the layer has line-z-offset enabled.`);
         return;
     }
     // No need for tile clipping, a single pass only even for transparent lines.
     const stencilMode3D = (useStencilMaskRenderPass && hasZOffset) ? painter.stencilModeFor3D() : StencilMode.disabled;
+
+    if (hasZOffset) {
+        definesValues.push("ELEVATED");
+        if (hasCrossSlope) {
+            definesValues.push(crossSlopeHorizontal ? "CROSS_SLOPE_HORIZONTAL" : "CROSS_SLOPE_VERTICAL");
+        }
+        if (elevationFromSea) {
+            definesValues.push('ELEVATION_REFERENCE_SEA');
+        }
+    }
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -105,7 +121,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: hasZOffset ? [...definesValues, "ELEVATED"] : definesValues, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog, overrideRtt: hasZOffset ? true : undefined});
 
         if (constantPattern && tile.imageAtlas) {
             const posTo = tile.imageAtlas.patternPositions[constantPattern.toString()];
@@ -190,7 +206,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             programConfiguration.updatePaintBuffers();
         }
 
-        if (hasZOffset) {
+        if (hasZOffset && !elevationFromSea) {
             assert(painter.terrain);
             painter.terrain.setupElevationDraw(tile, program);
         }

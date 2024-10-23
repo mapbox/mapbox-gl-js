@@ -186,8 +186,11 @@ class LineStyleLayer extends StyleLayer {
 
     override isDraped(_?: SourceCache | null): boolean {
         const zOffset = this.layout.get('line-z-offset');
+        const zOffsetZero = zOffset.isConstant() && !zOffset.constantOr(0);
+        const elevationReference = this.layout.get('line-elevation-reference');
+        const seaOrGroundReference = elevationReference === 'sea' || elevationReference === 'ground';
 
-        return zOffset.isConstant() && !zOffset.constantOr(0);
+        return !seaOrGroundReference && (zOffsetZero || elevationReference !== 'none');
     }
 }
 
