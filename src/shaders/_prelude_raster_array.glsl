@@ -1,5 +1,5 @@
 #ifdef RASTER_ARRAY
-uniform sampler2D u_image0;
+uniform highp sampler2D u_image0;
 uniform sampler2D u_image1;
 
 const vec4 NODATA = vec4(1);
