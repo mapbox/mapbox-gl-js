@@ -41,6 +41,7 @@ export type WorkerTileParameters = RequestedTileParameters & {
     collectResourceTiming?: boolean;
     projection: Projection;
     brightness: number;
+    scaleFactor: number;
     extraShadowCaster?: boolean;
     tessellationStep?: number // test purpose only;
     partial?: boolean;

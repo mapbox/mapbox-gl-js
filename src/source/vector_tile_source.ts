@@ -246,7 +246,8 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
             isSymbolTile: tile.isSymbolTile,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
             extraShadowCaster: tile.isExtraShadowCaster,
-            tessellationStep: this.map._tessellationStep
+            tessellationStep: this.map._tessellationStep,
+            scaleFactor: this.map.getScaleFactor(),
         };
         params.request.collectResourceTiming = this._collectResourceTiming;
 

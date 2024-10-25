@@ -9,7 +9,7 @@ import {mat4} from 'gl-matrix';
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
 import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util';
-import {warnOnce} from '../util/util';
+import {clamp, warnOnce} from '../util/util';
 import {transformPointToTile, pointInFootprint, skipClipping} from '../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
 
@@ -261,7 +261,7 @@ export class Placement {
         this.placedOrientations = {};
     }
 
-    getBucketParts(results: Array<BucketPart>, styleLayer: StyleLayer, tile: Tile, sortAcrossTiles: boolean) {
+    getBucketParts(results: Array<BucketPart>, styleLayer: StyleLayer, tile: Tile, sortAcrossTiles: boolean, scaleFactor: number = 1) {
         const symbolBucket = (tile.getBucket(styleLayer) as SymbolBucket);
         const bucketFeatureIndex = tile.latestFeatureIndex;
 
@@ -333,6 +333,11 @@ export class Placement {
             tile.tileID
         );
 
+        const textSizeScaleRange = symbolBucket.layers[0].layout.get('text-size-scale-range');
+        const textScaleFactor = clamp(scaleFactor, textSizeScaleRange[0], textSizeScaleRange[1]);
+        const iconSizeScaleRange = symbolBucket.layers[0].layout.get('icon-size-scale-range');
+        const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRange[0], iconSizeScaleRange[1]);
+
         const parameters = {
             bucket: symbolBucket,
             layout,
@@ -345,8 +350,8 @@ export class Placement {
             textPixelRatio,
             holdingForFade: tile.holdingForFade(),
             collisionBoxArray,
-            partiallyEvaluatedTextSize: symbolSize.evaluateSizeForZoom(symbolBucket.textSizeData, this.transform.zoom),
-            partiallyEvaluatedIconSize: symbolSize.evaluateSizeForZoom(symbolBucket.iconSizeData, this.transform.zoom),
+            partiallyEvaluatedTextSize: symbolSize.evaluateSizeForZoom(symbolBucket.textSizeData, this.transform.zoom, textScaleFactor),
+            partiallyEvaluatedIconSize: symbolSize.evaluateSizeForZoom(symbolBucket.iconSizeData, this.transform.zoom, iconScaleFactor),
             collisionGroup: this.collisionGroups.get(symbolBucket.sourceID),
             latestFeatureIndex: tile.latestFeatureIndex
         };
@@ -437,7 +442,7 @@ export class Placement {
         }
     }
 
-    placeLayerBucketPart(bucketPart: any, seenCrossTileIDs: Set<number>, showCollisionBoxes: boolean, updateCollisionBoxIfNecessary: boolean) {
+    placeLayerBucketPart(bucketPart: any, seenCrossTileIDs: Set<number>, showCollisionBoxes: boolean, updateCollisionBoxIfNecessary: boolean, scaleFactor: number = 1) {
 
         const {
             bucket,
@@ -465,6 +470,10 @@ export class Placement {
         const zOffset = layout.get('symbol-z-elevate');
         const symbolZOffset = paint.get('symbol-z-offset');
         const elevationFromSea = paint.get('symbol-elevation-reference') === 'sea';
+        const textSizeScaleRange = layout.get('text-size-scale-range');
+        const iconSizeScaleRange = layout.get('icon-size-scale-range');
+        const textScaleFactor = clamp(scaleFactor, textSizeScaleRange[0], textSizeScaleRange[1]);
+        const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRange[0], iconSizeScaleRange[1]);
 
         this.transform.setProjection(bucket.projection);
 
@@ -492,7 +501,7 @@ export class Placement {
         }
 
         if (showCollisionBoxes && updateCollisionBoxIfNecessary) {
-            bucket.updateCollisionDebugBuffers(this.transform.zoom, collisionBoxArray);
+            bucket.updateCollisionDebugBuffers(this.transform.zoom, collisionBoxArray, textScaleFactor, iconScaleFactor);
         }
 
         const placeSymbol = (symbolInstance: SymbolInstance, boxIndex: number, collisionArrays: CollisionArrays) => {
@@ -604,7 +613,7 @@ export class Placement {
 
                 if (!layout.get('text-variable-anchor')) {
                     const placeBox = (collisionTextBox: SingleCollisionBox, orientation: number) => {
-                        const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, boxIndex);
+                        const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, boxIndex, scaleFactor);
                         const placedFeature = this.collisionIndex.placeCollisionBox(bucket, textScale, collisionTextBox,
                             new Point(0, 0), textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                         if (placedFeature && placedFeature.box && placedFeature.box.length) {

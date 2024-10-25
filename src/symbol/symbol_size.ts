@@ -101,12 +101,12 @@ function evaluateSizeForFeature(
     return uSize;
 }
 
-function evaluateSizeForZoom(sizeData: SizeData, zoom: number): InterpolatedSize {
+function evaluateSizeForZoom(sizeData: SizeData, zoom: number, scaleFactor: number = 1): InterpolatedSize {
     let uSizeT = 0;
     let uSize = 0;
 
     if (sizeData.kind === 'constant') {
-        uSize = sizeData.layoutSize;
+        uSize = sizeData.layoutSize * scaleFactor;
 
     } else if (sizeData.kind !== 'source') {
         const {interpolationType, minZoom, maxZoom} = sizeData;
@@ -120,9 +120,9 @@ function evaluateSizeForZoom(sizeData: SizeData, zoom: number): InterpolatedSize
             Interpolate.interpolationFactor(interpolationType, zoom, minZoom, maxZoom), 0, 1);
 
         if (sizeData.kind === 'camera') {
-            uSize = interpolate(sizeData.minSize, sizeData.maxSize, t);
+            uSize = interpolate(sizeData.minSize, sizeData.maxSize, t) * scaleFactor;
         } else {
-            uSizeT = t;
+            uSizeT = t * scaleFactor;
         }
     }
 

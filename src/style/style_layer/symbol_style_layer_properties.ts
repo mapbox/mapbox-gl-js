@@ -31,6 +31,7 @@ export type LayoutProps = {
     "icon-optional": DataConstantProperty<boolean>;
     "icon-rotation-alignment": DataConstantProperty<"map" | "viewport" | "auto">;
     "icon-size": DataDrivenProperty<number>;
+    "icon-size-scale-range": DataConstantProperty<[number, number]>;
     "icon-text-fit": DataDrivenProperty<"none" | "width" | "height" | "both">;
     "icon-text-fit-padding": DataDrivenProperty<[number, number, number, number]>;
     "icon-image": DataDrivenProperty<ResolvedImage>;
@@ -45,6 +46,7 @@ export type LayoutProps = {
     "text-field": DataDrivenProperty<Formatted>;
     "text-font": DataDrivenProperty<Array<string>>;
     "text-size": DataDrivenProperty<number>;
+    "text-size-scale-range": DataConstantProperty<[number, number]>;
     "text-max-width": DataDrivenProperty<number>;
     "text-line-height": DataDrivenProperty<number>;
     "text-letter-spacing": DataDrivenProperty<number>;
@@ -77,6 +79,7 @@ export const getLayoutProperties = (): Properties<LayoutProps> => layout || (lay
     "icon-optional": new DataConstantProperty(styleSpec["layout_symbol"]["icon-optional"]),
     "icon-rotation-alignment": new DataConstantProperty(styleSpec["layout_symbol"]["icon-rotation-alignment"]),
     "icon-size": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-size"]),
+    "icon-size-scale-range": new DataConstantProperty(styleSpec["layout_symbol"]["icon-size-scale-range"]),
     "icon-text-fit": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-text-fit"]),
     "icon-text-fit-padding": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-text-fit-padding"]),
     "icon-image": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-image"]),
@@ -91,6 +94,7 @@ export const getLayoutProperties = (): Properties<LayoutProps> => layout || (lay
     "text-field": new DataDrivenProperty(styleSpec["layout_symbol"]["text-field"]),
     "text-font": new DataDrivenProperty(styleSpec["layout_symbol"]["text-font"]),
     "text-size": new DataDrivenProperty(styleSpec["layout_symbol"]["text-size"]),
+    "text-size-scale-range": new DataConstantProperty(styleSpec["layout_symbol"]["text-size-scale-range"]),
     "text-max-width": new DataDrivenProperty(styleSpec["layout_symbol"]["text-max-width"]),
     "text-line-height": new DataDrivenProperty(styleSpec["layout_symbol"]["text-line-height"]),
     "text-letter-spacing": new DataDrivenProperty(styleSpec["layout_symbol"]["text-letter-spacing"]),

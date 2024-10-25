@@ -4,6 +4,7 @@ import SegmentVector from '../data/segment';
 import * as symbolProjection from '../symbol/projection';
 import * as symbolSize from '../symbol/symbol_size';
 import {mat4, vec3, vec4} from 'gl-matrix';
+import {clamp} from '../util/util';
 const identityMat4 = mat4.create();
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
@@ -66,6 +67,8 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
     const variablePlacement = layer.layout.get('text-variable-anchor');
+    const textSizeScaleRange = layer.layout.get('text-size-scale-range');
+    const textScaleFactor = clamp(painter.scaleFactor, textSizeScaleRange[0], textSizeScaleRange[1]);
 
     //Compute variable-offsets before painting since icons and text data positioning
     //depend on each other in this case.
@@ -74,7 +77,8 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
 
             layer.layout.get('text-rotation-alignment'),
             layer.layout.get('text-pitch-alignment'),
-            variableOffsets
+            variableOffsets,
+            textScaleFactor
         );
     }
 
@@ -143,7 +147,7 @@ function calculateVariableRenderShift(
     );
 }
 
-function updateVariableAnchors(coords: Array<OverscaledTileID>, painter: Painter, layer: SymbolStyleLayer, sourceCache: SourceCache, rotationAlignment: Alignment, pitchAlignment: Alignment, variableOffsets: Partial<Record<CrossTileID, VariableOffset>>) {
+function updateVariableAnchors(coords: Array<OverscaledTileID>, painter: Painter, layer: SymbolStyleLayer, sourceCache: SourceCache, rotationAlignment: Alignment, pitchAlignment: Alignment, variableOffsets: Partial<Record<CrossTileID, VariableOffset>>, textScaleFactor: number) {
     const tr = painter.transform;
     const rotateWithMap = rotationAlignment === 'map';
     const pitchWithMap = pitchAlignment === 'map';
@@ -156,7 +160,7 @@ function updateVariableAnchors(coords: Array<OverscaledTileID>, painter: Painter
         }
 
         const sizeData = bucket.textSizeData;
-        const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
+        const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom, textScaleFactor);
         const tileMatrix = getSymbolTileProjectionMatrix(coord, bucket.getProjection(), tr);
 
         const pixelsToTileUnits = tr.calculatePixelsToTileUnitsMatrix(tile);
@@ -510,7 +514,9 @@ function drawLayerSymbols(
             }
 
             const texSize: [number, number] = tile.glyphAtlasTexture ? tile.glyphAtlasTexture.size : [0, 0];
-            const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
+            const textSizeScaleRange = layer.layout.get('text-size-scale-range');
+            const textScaleFactor = clamp(painter.scaleFactor, textSizeScaleRange[0], textSizeScaleRange[1]);
+            const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom, textScaleFactor);
             const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
             // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
             const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
@@ -537,7 +543,7 @@ function drawLayerSymbols(
             const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
 
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
-                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection());
+                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), null, null, textScaleFactor);
 
             const atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
             const atlasInterpolation = gl.LINEAR;

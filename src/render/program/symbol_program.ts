@@ -42,6 +42,7 @@ export type SymbolUniformsType = {
     ['u_is_halo']: Uniform1i;
     ['u_icon_transition']: Uniform1f;
     ['u_color_adj_mat']: UniformMatrix4f;
+    ['u_scale_factor']: Uniform1f;
 };
 
 export type SymbolDefinesType = 'PITCH_WITH_MAP_TERRAIN';
@@ -78,6 +79,7 @@ const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_is_halo': new Uniform1i(context),
     'u_icon_transition': new Uniform1f(context),
     'u_color_adj_mat': new UniformMatrix4f(context),
+    'u_scale_factor': new Uniform1f(context)
 });
 
 const identityMatrix = mat4.create();
@@ -104,6 +106,7 @@ const symbolUniformValues = (
     projection: Projection,
     colorAdjustmentMatrix?: mat4 | null,
     transition?: number | null,
+    scaleFactor?: number | null
 ): UniformValues<SymbolUniformsType> => {
     const transform = painter.transform;
 
@@ -138,7 +141,8 @@ const symbolUniformValues = (
         'u_icon_transition': transition ? transition : 0.0,
         'u_gamma_scale': pitchWithMap ? painter.transform.getCameraToCenterDistance(projection) * Math.cos(painter.terrain ? 0 : painter.transform._pitch) : 1,
         'u_device_pixel_ratio': browser.devicePixelRatio,
-        'u_is_halo': +isHalo
+        'u_is_halo': +isHalo,
+        'u_scale_factor': scaleFactor ? scaleFactor : 1.0
     };
 
     if (projection.name === 'globe') {

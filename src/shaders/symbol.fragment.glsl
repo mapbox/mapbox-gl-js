@@ -10,6 +10,7 @@ uniform highp float u_gamma_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_text;
 uniform bool u_is_halo;
+uniform lowp float u_scale_factor;
 #ifdef ICON_TRANSITION
 uniform float u_icon_transition;
 #endif
@@ -76,8 +77,8 @@ void main() {
     bool draw_halo = v_draw_halo > 0.0;
     if (draw_halo) {
         out_color = halo_color;
-        gamma = (halo_blur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
-        buff = (6.0 - halo_width / fontScale) / SDF_PX;
+        gamma = (halo_blur * u_scale_factor * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
+        buff = (6.0 - halo_width * u_scale_factor / fontScale) / SDF_PX;
     }
 
     lowp float dist = texture(u_texture, v_tex_a).r;

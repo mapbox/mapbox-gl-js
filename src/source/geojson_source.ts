@@ -446,6 +446,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             showCollisionBoxes: this.map.showCollisionBoxes,
             promoteId: this.promoteId,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
+            scaleFactor: this.map.getScaleFactor(),
             partial
         };
 

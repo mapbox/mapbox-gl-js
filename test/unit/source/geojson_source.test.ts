@@ -273,7 +273,10 @@ describe('GeoJSONSource#update', () => {
 
             const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
             source.map = {
-                transform: {}
+                transform: {},
+                painter: {
+                    scaleFactor: 1
+                }
             };
 
             source.on('data', (e) => {

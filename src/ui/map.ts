@@ -192,6 +192,7 @@ export type MapOptions = {
     localIdeographFontFamily?: string;
     performanceMetricsCollection?: boolean;
     tessellationStep?: number;
+    scaleFactor?: number;
 };
 
 const defaultMinZoom = -2;
@@ -249,7 +250,8 @@ const defaultOptions: Omit<MapOptions, 'container'> = {
     crossSourceCollisions: true,
     collectResourceTiming: false,
     testMode: false,
-    precompilePrograms: true
+    precompilePrograms: true,
+    scaleFactor: 1.0
 };
 
 /**
@@ -442,6 +444,7 @@ export class Map extends Camera {
     _styleDirty?: boolean;
     _sourcesDirty?: boolean;
     _placementDirty?: boolean;
+    _scaleFactorChanged?: boolean;
     _loaded: boolean;
     _fullyLoaded: boolean; // accounts for placement finishing as well
     _trackResize: boolean;
@@ -486,6 +489,7 @@ export class Map extends Camera {
     _tessellationStep?: number;
     _precompilePrograms: boolean;
     _interactions: InteractionSet;
+    _scaleFactor: number;
 
     // `_useExplicitProjection` indicates that a projection is set by a call to map.setProjection()
     _useExplicitProjection: boolean;
@@ -611,6 +615,7 @@ export class Map extends Camera {
         this._containerHeight = 0;
         this._showParseStatus = true;
         this._precompilePrograms = options.precompilePrograms;
+        this._scaleFactorChanged = false;
 
         this._averageElevationLastSampledAt = -Infinity;
         this._averageElevationExaggeration = 0;
@@ -622,6 +627,8 @@ export class Map extends Camera {
         this._useExplicitProjection = false; // Fallback to stylesheet by default
 
         this._frameId = 0;
+
+        this._scaleFactor = options.scaleFactor;
 
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
@@ -686,6 +693,9 @@ export class Map extends Camera {
         this._tp.registerParameter(this, ["Debug", "Wireframe"], "showTerrainWireframe");
         this._tp.registerParameter(this, ["Debug", "Wireframe"], "showLayers2DWireframe");
         this._tp.registerParameter(this, ["Debug", "Wireframe"], "showLayers3DWireframe");
+        this._tp.registerParameter(this, ["Scaling"], "_scaleFactor", {min: 0.1, max: 10.0, step: 0.1}, () => {
+            this.setScaleFactor(this._scaleFactor);
+        });
 
         this._setupPainter();
         if (this.painter === undefined) {
@@ -1185,6 +1195,42 @@ export class Map extends Camera {
      * const maxPitch = map.getMaxPitch();
      */
     getMaxPitch(): number { return this.transform.maxPitch; }
+
+    /**
+     * Returns the map's current scale factor.
+     *
+     * @returns {number} Returns the map's scale factor.
+     * @private
+     *
+     * @example
+     * const scaleFactor = map.getScaleFactor();
+     */
+    getScaleFactor(): number {
+        return this._scaleFactor;
+    }
+
+    /**
+     * Sets the map's scale factor.
+     *
+     * @param {number} scaleFactor The scale factor to set.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @private
+     *
+     * @example
+     *
+     * map.setScaleFactor(2);
+     */
+    setScaleFactor(scaleFactor: number): this {
+        this._scaleFactor = scaleFactor;
+        this.painter.scaleFactor = scaleFactor;
+        this._tp.refreshUI();
+
+        this._scaleFactorChanged = true;
+
+        this.style._updateFilteredLayers((layer) => layer.type === 'symbol');
+        this._update(true);
+        return this;
+    }
 
     /**
      * Returns the state of `renderWorldCopies`. If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
@@ -3890,7 +3936,7 @@ export class Map extends Camera {
 
         storeAuthState(gl, true);
 
-        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._tp);
+        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._scaleFactor, this._tp);
         this.on('data', (event) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);
@@ -4106,7 +4152,10 @@ export class Map extends Camera {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
 
-        const updatePlacementResult = this.style && this.style._updatePlacement(this.painter, this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource);
+        const updatePlacementResult = this.style && this.style._updatePlacement(this.painter, this.painter.transform, this.showCollisionBoxes, fadeDuration, this._crossSourceCollisions, this.painter.replacementSource, this._scaleFactorChanged);
+        if (this._scaleFactorChanged) {
+            this._scaleFactorChanged = false;
+        }
         if (updatePlacementResult) {
             this._placementDirty = updatePlacementResult.needsRerender;
         }

@@ -2323,6 +2323,31 @@
       },
       "property-type": "data-driven"
     },
+    "icon-size-scale-range": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0.8,
+        2
+      ],
+      "doc": "Defines the minimum and maximum scaling factors for icon related properties like `icon-size`, `icon-halo-width`, `icon-halo-blur`",
+      "minimum": 0.1,
+      "maximum": 10,
+      "experimental": true,
+      "private": true,
+      "expression": {
+        "interpolated": false
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
     "icon-text-fit": {
       "type": "enum",
       "values": {
@@ -2811,6 +2836,31 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "text-size-scale-range": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0.8,
+        2
+      ],
+      "doc": "Defines the minimum and maximum scaling factors for text related properties like `text-size`, `text-max-width`, `text-halo-width`, `font-size`",
+      "minimum": 0.1,
+      "maximum": 10,
+      "experimental": true,
+      "private": true,
+      "expression": {
+        "interpolated": false
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
+      "property-type": "data-constant"
     },
     "text-max-width": {
       "type": "number",

@@ -258,7 +258,9 @@ class Painter {
 
     _clippingActiveLastFrame: boolean;
 
-    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, tp: ITrackedParameters) {
+    scaleFactor: number;
+
+    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, tp: ITrackedParameters) {
         this.context = new Context(gl, contextCreateOptions);
 
         this.transform = transform;
@@ -345,6 +347,8 @@ class Painter {
         this.emptyDepthTexture = new Texture(this.context, emptyDepth, gl.RGBA8);
 
         this._clippingActiveLastFrame = false;
+
+        this.scaleFactor = scaleFactor;
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {

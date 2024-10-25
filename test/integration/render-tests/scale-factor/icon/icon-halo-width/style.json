@@ -1,0 +1,79 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "scaleFactor": 2,
+      "collisionDebug": true
+    }
+  },
+  "sources": {
+    "geojson-x2": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                -10
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                25
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol-x2",
+      "type": "symbol",
+      "source": "geojson-x2",
+      "layout": {
+        "icon-image": "dot.sdf"
+      },
+      "paint": {
+        "icon-halo-width": 2,
+        "icon-halo-color": "blue"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-size-scale-range": [1, 1],
+        "icon-image": "dot.sdf"
+      },
+      "paint": {
+        "icon-halo-width": 2,
+        "icon-halo-color": "blue"
+      }
+    }
+  ]
+}

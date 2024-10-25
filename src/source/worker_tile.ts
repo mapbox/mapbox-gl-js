@@ -56,6 +56,7 @@ class WorkerTile {
     projection: Projection;
     tileTransform: TileTransform;
     brightness: number;
+    scaleFactor: number;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -86,6 +87,7 @@ class WorkerTile {
         this.brightness = params.brightness;
         this.extraShadowCaster = !!params.extraShadowCaster;
         this.tessellationStep = params.tessellationStep;
+        this.scaleFactor = params.scaleFactor;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
@@ -258,6 +260,7 @@ class WorkerTile {
                                 this.tileID.canonical,
                                 this.tileZoom,
                                 this.projection,
+                                this.scaleFactor,
                                 this.brightness);
                     } else if (bucket.hasPattern &&
                             (bucket instanceof LineBucket ||

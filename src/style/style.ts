@@ -2743,6 +2743,14 @@ class Style extends Evented<MapEvents> {
         }, (value) => { return value !== undefined; });
     }
 
+    _updateFilteredLayers(filter: (layer: StyleLayer) => boolean) {
+        for (const layer of Object.values(this._mergedLayers)) {
+            if (filter(layer)) {
+                this._updateLayer(layer);
+            }
+        }
+    }
+
     _updateLayer(layer: StyleLayer) {
         this._changes.updateLayer(layer);
         const sourceCache = this.getLayerSourceCache(layer);
@@ -3473,7 +3481,7 @@ class Style extends Evented<MapEvents> {
             // render frame
             this.placement.setStale();
         } else {
-            this.pauseablePlacement.continuePlacement(this._mergedOrder, this._mergedLayers, layerTiles, layerTilesInYOrder);
+            this.pauseablePlacement.continuePlacement(this._mergedOrder, this._mergedLayers, layerTiles, layerTilesInYOrder, this.map.painter.scaleFactor);
 
             if (this.pauseablePlacement.isDone()) {
                 this.placement = this.pauseablePlacement.commit(browser.now());
