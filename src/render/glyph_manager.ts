@@ -2,7 +2,7 @@ import loadGlyphRange from '../style/load_glyph_range';
 import TinySDF from '@mapbox/tiny-sdf';
 import isChar from '../util/is_char_in_unicode_block';
 import config from '../util/config';
-import {asyncAll} from '../util/util';
+import {asyncAll, warnOnce} from '../util/util';
 import {AlphaImage} from '../util/image';
 
 import type {Class} from '../types/class';
@@ -163,7 +163,8 @@ class GlyphManager {
 
             const range = Math.floor(id / 256);
             if (range * 256 > 65535) {
-                fnCallback(new Error('glyphs > 65535 not supported'));
+                warnOnce('glyphs > 65535 not supported');
+                fnCallback(null, {stack, id, glyph});
                 return;
             }
 
@@ -255,7 +256,8 @@ class GlyphManager {
                 isChar['Katakana'](id) ||
                 // gl-native parity: Extend Ideographs rasterization range to include CJK symbols and punctuations
                 isChar['CJK Symbols and Punctuation'](id) ||
-                isChar['CJK Unified Ideographs Extension A'](id) || isChar['CJK Unified Ideographs Extension B'](id)) // very rare surrogate characters
+                isChar['CJK Unified Ideographs Extension A'](id) || isChar['CJK Unified Ideographs Extension B'](id)) || // very rare surrogate characters
+                isChar['Osage'](id)
             );
             /* eslint-enable new-cap */
         }
