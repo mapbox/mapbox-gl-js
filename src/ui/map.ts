@@ -56,7 +56,7 @@ import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
-import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector, QueryRenderedFeaturesParams, FeaturesetDescriptor} from '../style/style';
+import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector, QueryRenderedFeaturesParams, FeaturesetQueryTarget} from '../style/style';
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type {ScrollZoomHandlerOptions} from './handler/scroll_zoom';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -92,7 +92,7 @@ import type {
 import type {Source, SourceClass} from '../source/source';
 import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
+import type {GeoJSONFeature, FeaturesetDescriptor} from '../util/vectortile_to_geojson';
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 import type {Callback} from '../types/callback';
 import type {Interaction} from './interactions';
@@ -1936,8 +1936,13 @@ export class Map extends Camera {
      * @see [Example: Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      */
     queryRenderedFeatures(geometry: PointLike | [PointLike, PointLike], options?: QueryRenderedFeaturesParams): Array<GeoJSONFeature>;
+    queryRenderedFeatures(geometry: PointLike | [PointLike, PointLike], targets?: Array<FeaturesetQueryTarget>): Array<GeoJSONFeature>;
     queryRenderedFeatures(options?: QueryRenderedFeaturesParams): Array<GeoJSONFeature>;
-    queryRenderedFeatures(geometry?: PointLike | [PointLike, PointLike] | QueryRenderedFeaturesParams, options?: QueryRenderedFeaturesParams): Array<GeoJSONFeature> {
+    queryRenderedFeatures(targets?: Array<FeaturesetQueryTarget>): Array<GeoJSONFeature>;
+    queryRenderedFeatures(
+        geometry?: PointLike | [PointLike, PointLike] | QueryRenderedFeaturesParams | Array<FeaturesetQueryTarget>,
+        options?: QueryRenderedFeaturesParams | Array<FeaturesetQueryTarget>
+    ): Array<GeoJSONFeature> {
         // The first parameter can be omitted entirely, making this effectively an overloaded method
         // with two signatures:
         //
@@ -1958,11 +1963,21 @@ export class Map extends Camera {
         options = options || {};
         geometry = (geometry || [[0, 0], [this.transform.width, this.transform.height]]) as PointLike;
 
+        // options is an array of featureset query targets
+        if (Array.isArray(options)) {
+            for (const {featureset} of options) {
+                const isValid = 'featuresetId' in featureset ?
+                    this._isValidId(featureset.featuresetId) :
+                    this._isValidId(featureset.layerId);
+                if (!isValid) return [];
+            }
+
+            return this.style.queryRenderedFeaturesets(geometry, options, this.transform);
+        }
+
         if (options.layers && Array.isArray(options.layers)) {
-            for (const featuresetId of options.layers) {
-                if (!this._isValidId(typeof featuresetId === 'string' ? featuresetId : featuresetId.id)) {
-                    return [];
-                }
+            for (const layerId of options.layers) {
+                if (!this._isValidId(layerId)) return [];
             }
         }
 
@@ -2007,12 +2022,12 @@ export class Map extends Camera {
      * @see [Example: Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
     querySourceFeatures(
-        sourceId: FeaturesetDescriptor,
+        sourceId: string,
         parameters?: {
             sourceLayer?: string;
             filter?: FilterSpecification;
             validate?: boolean;
-        },
+        }
     ): Array<GeoJSONFeature> {
         if (!sourceId || (typeof sourceId === 'string' && !this._isValidId(sourceId))) {
             return [];
@@ -2045,7 +2060,8 @@ export class Map extends Camera {
      * @param {Object} interaction The interaction object with the following properties.
      * @param {string} interaction.type The type of gesture to handle (e.g. 'click').
      * @param {Object} [interaction.filter] Filter expression to narrow down the interaction to a subset of features under the pointer.
-     * @param {string[]} [interaction.layers] A list of layer IDs to narrow down features to.
+     * @param {FeaturesetDescriptor} [interaction.featureset] The featureset descriptor to narrow down features to.
+     * Either `{layerId: string}` to reference features in the root style layer, or `{featuresetId: string, importId?: string}` to reference features in an imported style.
      * @param {Function} interaction.handler A handler function that will be invoked on the gesture and receive a `{feature, interaction}` object as a parameter.
      * @returns {Map} Returns itself to allow for method chaining.
      *
@@ -3367,6 +3383,18 @@ export class Map extends Camera {
     }
 
     /**
+     * Returns the list of featuresets that could be used
+     *
+     * @private
+     * @returns {FeaturesetDescriptor[]} The list of featuresets.
+     * @example
+     * const featuresets = map.getFeaturesets('basemap');
+     */
+    getFeaturesets(importId?: string): Array<FeaturesetDescriptor> {
+        return this.style.getFeaturesets(importId);
+    }
+
+    /**
      * Adds a set of Mapbox style light to the map's style.
      *
      * _Note: This light is not to confuse with our legacy light API used through {@link Map#setLight} and {@link Map#getLight}_.
@@ -3737,7 +3765,7 @@ export class Map extends Camera {
      * });
      */
     getFeatureState(feature: FeatureSelector | GeoJSONFeature): FeatureState | null | undefined {
-        if (!this._isValidId(feature.source)) {
+        if (feature.source && !this._isValidId(feature.source)) {
             return null;
         }
 

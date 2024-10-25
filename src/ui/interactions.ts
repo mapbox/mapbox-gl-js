@@ -5,8 +5,7 @@ import {Event} from '../util/evented';
 
 import type {MapEvents, MapMouseEventType, MapMouseEvent} from './events';
 import type {Map as MapboxMap} from './map';
-import type {FeaturesetDescriptor} from '../style/style';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
+import type {GeoJSONFeature, FeaturesetDescriptor} from '../util/vectortile_to_geojson';
 import type {ExpressionSpecification} from '../style-spec/types';
 import type {StyleExpression, Feature} from '../style-spec/expression/index';
 import type LngLat from '../geo/lng_lat';
@@ -15,7 +14,8 @@ import type Point from '@mapbox/point-geometry';
 export type Interaction = {
     type: MapMouseEventType;
     filter?: ExpressionSpecification;
-    featuresetId?: FeaturesetDescriptor;
+    namespace?: string;
+    featureset?: FeaturesetDescriptor;
     handler: (event: InteractionEvent) => boolean;
 };
 
@@ -107,34 +107,75 @@ export class InteractionSet {
         if (!features) return;
 
         const interactions = this.interactionsByType.get(event.type);
+        // The interactions are handled in reverse order of addition,
+        // so that the last added interaction to the same target handles it first.
+        const reversedInteractions = Array.from(interactions).reverse();
         const ctx = {zoom: 0};
 
-        for (const [id, interaction] of interactions) {
-            const filter = this.filters.get(id);
-            const {handler, featuresetId} = interaction;
-            let handled = false;
+        let handled = false;
 
-            for (const feature of features) {
-                // narrow down features through filter and layers
-                if (featuresetId) {
-                    const targetLayerId = feature.layer.id;
-                    const targetLayerName = getNameFromFQID(targetLayerId);
-                    const targetLayerScope = getScopeFromFQID(targetLayerId);
-                    if (!(typeof featuresetId === 'string' ? featuresetId === targetLayerId :
-                        featuresetId.id === targetLayerName && featuresetId.importId === targetLayerScope)) continue;
+        for (const feature of features) {
+            for (const [id, interaction] of reversedInteractions) {
+                const {handler, featureset} = interaction;
+                if (!featureset) {
+                    continue;
                 }
+                const filter = this.filters.get(id);
+
+                // narrow down features through filter and layers
+                const targetLayerId = feature.layer.id;
+                const targetLayerName = getNameFromFQID(targetLayerId);
+                const targetLayerScope = getScopeFromFQID(targetLayerId);
+
+                if ('layerId' in featureset && featureset.layerId !== targetLayerId) {
+                    continue;
+                }
+
+                if ('featuresetId' in featureset) {
+                    if (featureset.importId !== targetLayerScope) continue;
+
+                    const featuresetSpec = this.map.style.getFeatureset(featureset.featuresetId, featureset.importId);
+                    if (!featuresetSpec || !featuresetSpec.selectors) continue;
+
+                    const selectorLayers = featuresetSpec.selectors.map(selector => selector.layer);
+                    if (!selectorLayers.includes(targetLayerName)) continue;
+                }
+
                 if (filter && !filter.evaluate(ctx, feature as unknown as Feature)) continue;
 
+                // make a derived feature by cloning original feature
+                // and replacing the layer property with the featureset
+                const derivedFeature = feature.clone();
+                delete derivedFeature.layer;
+                derivedFeature.namespace = feature.namespace;
+                derivedFeature.featureset = featureset;
+                derivedFeature.properties = feature.properties;
+
                 // if we explicitly returned false in a feature handler, pass through to the feature below it
-                const stop = handler(new InteractionEvent(event, id, interaction, feature));
+                const stop = handler(new InteractionEvent(event, id, interaction, derivedFeature));
                 if (stop !== false) {
                     handled = true;
                     break;
                 }
             }
-            if (!handled) {
-                // if no features handled the interactions, propagate to map
-                handler(new InteractionEvent(event, id, interaction, null));
+            if (handled) {
+                break;
+            }
+        }
+
+        if (handled) {
+            return;
+        }
+
+        // If no interactions targeted to a featureset handled it, the targetless intaractions have chance to handle.
+        for (const [id, interaction] of reversedInteractions) {
+            const {handler, featureset} = interaction;
+            if (featureset) {
+                continue;
+            }
+            const stop = handler(new InteractionEvent(event, id, interaction, null));
+            if (stop !== false) {
+                break;
             }
         }
     }

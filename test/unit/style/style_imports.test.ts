@@ -3019,3 +3019,25 @@ test('Style#areTilesLoaded', async () => {
         style.loadJSON(initialStyle);
     });
 });
+
+test('Style#getFeaturesets', async () => {
+    const style = new Style(new StubMap());
+    const initialStyle = createStyleJSON({
+        imports: [{
+            id: 'basemap',
+            url: '',
+            data: createStyleJSON({
+                featuresets: {
+                    poi: {selectors: []},
+                    buildings: {selectors: []}
+                }
+            })
+        }]
+    });
+
+    style.loadJSON(initialStyle);
+    await waitFor(style, 'style.load');
+
+    expect(style.getFeaturesets()).toEqual([]);
+    expect(style.getFeaturesets('basemap')).toEqual([{featuresetId: 'poi', importId: 'basemap'}, {featuresetId: 'buildings', importId: 'basemap'}]);
+});

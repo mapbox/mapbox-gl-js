@@ -98,7 +98,7 @@ var map = window.map = new mapboxgl.Map({
 
 map.addInteraction('poiclick', {
     type: 'click',
-    featuresetId: {id: 'poi', importId: 'basemap'},
+    featureset: {featuresetId: 'poi', importId: 'basemap'},
     handler: (e) => console.log(e)
 });
 

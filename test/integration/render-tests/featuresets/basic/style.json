@@ -6,7 +6,7 @@
       "operations": [
         [
           "setFeatureState",
-          {"id": "1000059876748", "layer": {"id": "poi\u001fbasemap"}},
+          {"id": "1000059876748", "namespace": "poi", "featureset": {"featuresetId": "poi", "importId": "basemap"}},
           {"color": "red"}
         ],
         ["wait"]
@@ -24,7 +24,7 @@
       "data": {
         "version": 8,
         "featuresets": {
-          "poi": {"selectors": [{"layer": "poi_label"}]}
+          "poi": {"selectors": [{"layer": "poi_label", "namespace": "poi"}]}
         },
         "sources": {
           "mapbox": {

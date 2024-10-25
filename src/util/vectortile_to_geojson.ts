@@ -4,11 +4,17 @@ import type {LayerSpecification} from '../style-spec/types';
 
 const customProps = ['id', 'tile', 'layer', 'source', 'sourceLayer', 'state'] as const;
 
+export type FeaturesetDescriptor = {layerId: string} | {featuresetId: string, importId?: string};
+
 export interface GeoJSONFeature extends GeoJSON.Feature {
     layer?: LayerSpecification;
     source: string;
     sourceLayer?: string;
+    namespace?: string;
+    featureset?: FeaturesetDescriptor;
     state?: FeatureState;
+    clone: () => GeoJSONFeature;
+    toJSON: () => GeoJSON.Feature;
 }
 
 class Feature implements GeoJSONFeature {
@@ -16,6 +22,7 @@ class Feature implements GeoJSONFeature {
     _geometry?: GeoJSON.Geometry;
     properties: Record<any, any>;
     id?: number | string;
+    namespace?: string;
     _vectorTileFeature: VectorTileFeature;
     _x: number;
     _y: number;
@@ -40,7 +47,11 @@ class Feature implements GeoJSONFeature {
     }
 
     clone(): Feature {
-        return new Feature(this._vectorTileFeature, this._z, this._x, this._y, this.id);
+        const feature = new Feature(this._vectorTileFeature, this._z, this._x, this._y, this.id);
+        if (this.state) feature.state = {...this.state};
+        if (this.layer) feature.layer = {...this.layer};
+        if (this.namespace) feature.namespace = this.namespace;
+        return feature;
     }
 
     get geometry(): GeoJSON.Geometry {
@@ -54,7 +65,7 @@ class Feature implements GeoJSONFeature {
         this._geometry = g;
     }
 
-    toJSON(): GeoJSONFeature {
+    toJSON(): GeoJSON.Feature {
         const json = {
             type: 'Feature',
             state: undefined,
@@ -66,7 +77,7 @@ class Feature implements GeoJSONFeature {
             if (this[key] !== undefined) json[key] = this[key];
         }
 
-        return json as GeoJSONFeature;
+        return json as GeoJSON.Feature;
     }
 }
 

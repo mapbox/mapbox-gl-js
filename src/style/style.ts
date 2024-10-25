@@ -83,7 +83,8 @@ import type {ColorThemeSpecification,
     TransitionSpecification,
     ConfigSpecification,
     SchemaSpecification,
-    CameraSpecification
+    CameraSpecification,
+    FeaturesetSpecification
 } from '../style-spec/types';
 import type {Callback} from '../types/callback';
 import type {StyleGlyph} from './style_glyph';
@@ -105,16 +106,19 @@ import type {PointLike} from '../types/point-like';
 import type {ISource, Source, SourceClass} from '../source/source';
 import type {TransitionParameters, ConfigOptions} from './properties';
 import type {QueryResult} from '../source/query_features';
-import type {GeoJSONFeature, default as Feature} from '../util/vectortile_to_geojson';
+import type {GeoJSONFeature, FeaturesetDescriptor, default as Feature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
 
-export type FeaturesetDescriptor = string | {id: string, importId?: string};
-
 export type QueryRenderedFeaturesParams = {
-    layers?: FeaturesetDescriptor[];
+    layers?: string[];
     filter?: FilterSpecification;
     validate?: boolean;
+};
+
+export type FeaturesetQueryTarget = {
+    featureset: FeaturesetDescriptor;
+    filter?: FilterSpecification;
 };
 
 // We're skipping validation errors with the `source.canvas` identifier in order
@@ -212,6 +216,12 @@ type StyleColorTheme = {
     colorTheme: ColorThemeSpecification | null;
 };
 
+type FeaturesetSelector = {
+    id: string;
+    featureNamespace?: string;
+    properties?: Record<string, StyleExpression>;
+};
+
 const MAX_IMPORT_DEPTH = 5;
 const defaultTransition = {duration: 300, delay: 0};
 
@@ -259,7 +269,7 @@ class Style extends Evented<MapEvents> {
     _mergedSourceCaches: Record<string, SourceCache>;
     _mergedOtherSourceCaches: Record<string, SourceCache>;
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
-    _featuresets: Map<string, Array<{id: string, properties?: Record<string, StyleExpression>}>>;
+    _featuresets: Map<string, Array<FeaturesetSelector>>;
     _clipLayerPresent: boolean;
 
     _request: Cancelable | null | undefined;
@@ -1026,8 +1036,8 @@ class Style extends Evented<MapEvents> {
 
             const {featuresets} = style.stylesheet || {};
             if (featuresets) {
-                for (const featuresetId of Object.keys(featuresets)) {
-                    const {selectors} = featuresets[featuresetId];
+                for (const featureset of Object.keys(featuresets)) {
+                    const {selectors} = featuresets[featureset];
                     for (const selector of selectors) {
                         const layer = style._layers[selector.layer];
                         const layers = this._featuresets.get(layer.fqid) || [];
@@ -1042,7 +1052,8 @@ class Style extends Evented<MapEvents> {
                             }
                         }
                         layers.push({
-                            id: featuresetId,
+                            id: featureset,
+                            featureNamespace: selector.featureNamespace,
                             properties
                         });
                         this._featuresets.set(layer.fqid, layers);
@@ -1991,6 +2002,24 @@ class Style extends Evented<MapEvents> {
         }
     }
 
+    getFeatureset(featuresetId: string, fragmentId?: string): FeaturesetSpecification | null | undefined {
+        const style = fragmentId ? this.getFragmentStyle(fragmentId) : this;
+        if (!style || !style.stylesheet.featuresets) return;
+        return style.stylesheet.featuresets[featuresetId];
+    }
+
+    getFeaturesets(fragmentId?: string): Array<FeaturesetDescriptor> {
+        const style = fragmentId ? this.getFragmentStyle(fragmentId) : this;
+        if (!style || !style.stylesheet.featuresets) return [];
+
+        const featuresets: FeaturesetDescriptor[] = [];
+        for (const id in style.stylesheet.featuresets) {
+            featuresets.push({featuresetId: id, importId: style.scope ? style.scope : undefined});
+        }
+
+        return featuresets;
+    }
+
     getOwnFeaturesetLayers(id: string): Array<StyleLayer> {
         const layers = [];
         const featuresets = this.stylesheet.featuresets;
@@ -2555,11 +2584,10 @@ class Style extends Evented<MapEvents> {
     setFeatureState(target: FeatureSelector | GeoJSONFeature, state: FeatureState) {
         this._checkLoaded();
 
-        const layer = (target as GeoJSONFeature).layer;
-
-        if (layer && isFQID(layer.id)) {
-            const fragment = this.getFragmentStyle(getScopeFromFQID(layer.id));
-            const layers = fragment.getOwnFeaturesetLayers(getNameFromFQID(layer.id));
+        const featureset = (target as GeoJSONFeature).featureset;
+        if (featureset && 'featuresetId' in featureset) {
+            const fragment = this.getFragmentStyle(featureset.importId);
+            const layers = fragment.getOwnFeaturesetLayers(featureset.featuresetId);
             for (const {source, sourceLayer} of layers) {
                 fragment.setFeatureState({id: target.id, source, sourceLayer}, state);
             }
@@ -2631,6 +2659,27 @@ class Style extends Evented<MapEvents> {
 
     getFeatureState(target: FeatureSelector | GeoJSONFeature): FeatureState | null | undefined {
         this._checkLoaded();
+
+        const featureset = (target as GeoJSONFeature).featureset;
+        if (featureset && 'featuresetId' in featureset) {
+            const fragment = this.getFragmentStyle(featureset.importId);
+            const layers = fragment.getOwnFeaturesetLayers(featureset.featuresetId);
+
+            let finalState: FeatureState;
+            for (const {source, sourceLayer} of layers) {
+                const state = fragment.getFeatureState({id: target.id, source, sourceLayer});
+                // There is possibility that the same feature id exists in multiple sources, and the states of the
+                // features must be consistent through all the sources
+                if (state && !finalState) {
+                    finalState = state;
+                } else if (!deepEqual(finalState, state)) {
+                    this.fire(new ErrorEvent(new Error(`The same feature id exists in multiple sources in the featureset, but their feature states are not consistent through the sources.`)));
+                    return;
+                }
+            }
+            return finalState;
+        }
+
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
 
@@ -2709,17 +2758,9 @@ class Style extends Evented<MapEvents> {
     }
 
     _appendFeaturesetFeatures(features: Array<GeoJSONFeature>, feature: Feature, layerId: string) {
-        const featuresets = this._featuresets.get(layerId);
-        for (const featureset of (featuresets || [])) {
-            const {id, properties} = featureset;
-            const importId = getScopeFromFQID(layerId);
-
+        const selectors = this._featuresets.get(layerId) || [];
+        for (const {properties, featureNamespace} of selectors) {
             const derivedFeature = feature.clone();
-
-            if (feature.layer) {
-                const {type, layout, paint} = feature.layer;
-                derivedFeature.layer = ({id: makeFQID(id, importId), type, layout, paint} as LayerSpecification);
-            }
 
             if (properties) {
                 const transformedProperties = {};
@@ -2731,8 +2772,8 @@ class Style extends Evented<MapEvents> {
                 derivedFeature.properties = transformedProperties;
             }
 
-            if (feature.state) {
-                derivedFeature.state = {...feature.state};
+            if (featureNamespace) {
+                derivedFeature.namespace = featureNamespace;
             }
 
             features.push(derivedFeature);
@@ -2820,55 +2861,88 @@ class Style extends Evented<MapEvents> {
         return features;
     }
 
-    queryRenderedFeatures(
-        queryGeometry: PointLike | [PointLike, PointLike],
-        params: QueryRenderedFeaturesParams,
-        transform: Transform,
-    ): Array<GeoJSONFeature> {
-        if (params && params.filter) {
+    queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: QueryRenderedFeaturesParams, transform: Transform): Array<GeoJSONFeature> {
+        if (params && !Array.isArray(params) && params.filter) {
             this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
 
-        const includedSources: Record<string, any> = {};
-        let has3DLayer = false;
-        const layers = [];
+        let has3DLayers = false;
+        let layerIds;
+        const includedSources = new Set<string>();
 
         if (params && params.layers) {
             if (!Array.isArray(params.layers)) {
                 this.fire(new ErrorEvent(new Error('parameters.layers must be an Array.')));
                 return [];
             }
-            for (const featuresetId of params.layers) {
-                if (typeof featuresetId === 'string') {
-                    const layer = this._mergedLayers[featuresetId];
-                    if (!layer) {
-                        // this layer is not in the style.layers array
-                        this.fire(new ErrorEvent(new Error(`The layer '${featuresetId}' does not exist in the map's style and cannot be queried for features.`)));
-                        return [];
-                    }
-                    if (layer.is3D()) has3DLayer = true;
-                    includedSources[layer.source] = true;
-                    layers.push(featuresetId);
 
-                } else {
-                    const {id, importId} = featuresetId;
-                    const fragment = this.getFragmentStyle(importId);
-                    const featuresetLayers = fragment.getOwnFeaturesetLayers(id);
-                    if (featuresetLayers.length === 0) return;
-
-                    for (const layer of featuresetLayers) {
-                        if (layer.is3D()) has3DLayer = true;
-                        includedSources[layer.source] = true;
-                        layers.push(makeFQID(layer.id, importId));
-                    }
+            layerIds = [];
+            for (const layerId of params.layers) {
+                const layer = this._mergedLayers[layerId];
+                if (!layer) {
+                    // this layer is not in the style.layers array
+                    this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be queried for features.`)));
+                    return [];
                 }
+                if (layer.is3D()) has3DLayers = true;
+                includedSources.add(layer.source);
+                layerIds.push(layerId);
             }
         } else {
-            has3DLayer = this.has3DLayers();
+            has3DLayers = this.has3DLayers();
         }
 
-        const sourceResults: Array<QueryResult> = [];
+        const renderedFeatures = this._queryRenderedFeatures(queryGeometry, transform, {layerIds, filter: params.filter, has3DLayers, includedSources});
+        return this._flattenAndSortRenderedFeatures(renderedFeatures);
+    }
 
+    queryRenderedFeaturesets(queryGeometry: PointLike | [PointLike, PointLike], targets: Array<FeaturesetQueryTarget>, transform: Transform): Array<GeoJSONFeature> {
+        let renderedFeatures = [];
+        for (const {featureset, filter} of targets) {
+            let has3DLayers = false;
+            const layerIds: string[] = [];
+            const includedSources = new Set<string>();
+
+            if ('featuresetId' in featureset) {
+                const fragment = this.getFragmentStyle(featureset.importId);
+                const featuresetLayers = fragment.getOwnFeaturesetLayers(featureset.featuresetId);
+                if (featuresetLayers.length === 0) continue;
+                for (const layer of featuresetLayers) {
+                    if (layer.is3D()) has3DLayers = true;
+                    includedSources.add(layer.source);
+                    layerIds.push(layer.fqid);
+                }
+            } else if ('layerId' in featureset) {
+                const layer = this._mergedLayers[featureset.layerId];
+                if (!layer) {
+                    // this layer is not in the style.layers array
+                    this.fire(new ErrorEvent(new Error(`The layer '${featureset.layerId}' does not exist in the map's style and cannot be queried for features.`)));
+                    return [];
+                }
+                if (layer.is3D()) has3DLayers = true;
+                includedSources.add(layer.source);
+                layerIds.push(featureset.layerId);
+            }
+
+            renderedFeatures = renderedFeatures.concat(this._queryRenderedFeatures(queryGeometry, transform, {layerIds, filter, has3DLayers, includedSources}));
+        }
+
+        return this._flattenAndSortRenderedFeatures(renderedFeatures);
+    }
+
+    _queryRenderedFeatures(
+        queryGeometry: PointLike | [PointLike, PointLike],
+        transform: Transform,
+        options: {
+            layerIds?: string[],
+            filter?: FilterSpecification,
+            has3DLayers: boolean,
+            includedSources: Set<string>
+        }
+    ): Array<QueryResult> {
+        const {layerIds, filter, has3DLayers, includedSources} = options;
+
+        const queryResults: Array<QueryResult> = [];
         const queryGeometryStruct = QueryGeometry.createFromScreenPoints(queryGeometry, transform);
 
         for (const id in this._mergedSourceCaches) {
@@ -2876,19 +2950,19 @@ class Style extends Evented<MapEvents> {
             if (!source) continue;
 
             const sourceId = this._mergedSourceCaches[id].getSource().id;
-            if (params.layers && !includedSources[sourceId]) continue;
+            if (layerIds && !includedSources.has(sourceId)) continue;
 
             const showQueryGeometry = !!this.map._showQueryGeometry;
-            sourceResults.push(
+            queryResults.push(
                 queryRenderedFeatures(
                     this._mergedSourceCaches[id],
                     this._mergedLayers,
                     queryGeometryStruct,
-                    params.filter,
-                    layers,
+                    filter,
+                    layerIds || [],
                     this._availableImages,
                     transform,
-                    has3DLayer,
+                    has3DLayers,
                     showQueryGeometry)
             );
         }
@@ -2896,51 +2970,41 @@ class Style extends Evented<MapEvents> {
         if (this.placement) {
             // If a placement has run, query against its CollisionIndex
             // for symbol results, and treat it as an extra source to merge
-            sourceResults.push(
+            queryResults.push(
                 queryRenderedSymbols(
                     this._mergedLayers,
                     this.getLayerSourceCache.bind(this),
                     queryGeometryStruct.screenGeometry,
-                    params.filter,
-                    layers,
+                    filter,
+                    layerIds || [],
                     this._availableImages,
                     this.placement.collisionIndex,
                     this.placement.retainedQueryData)
             );
         }
 
-        return this._flattenAndSortRenderedFeatures(sourceResults);
+        return queryResults;
     }
 
     querySourceFeatures(
-        sourceID: string | FeaturesetDescriptor,
+        sourceId: string,
         params?: {
             sourceLayer?: string;
             filter?: FilterSpecification;
             validate?: boolean;
-        },
+        }
     ): Array<Feature> {
         const filter = params && params.filter;
         if (filter) {
             this._validate(validateFilter, 'querySourceFeatures.filter', filter, null, params);
         }
+
         let results = [];
-        if (typeof sourceID !== 'string') {
-            const fragment = this.getFragmentStyle(sourceID.importId);
-            const layers = fragment.getOwnFeaturesetLayers(sourceID.id);
-            for (const {id, source, sourceLayer} of layers) {
-                const features = fragment.querySourceFeatures(source, {sourceLayer, filter});
-                const layerId = makeFQID(id, sourceID.importId);
-                for (const feature of features) {
-                    this._appendFeaturesetFeatures(results, feature, layerId);
-                }
-            }
-        } else {
-            const sourceCaches = this.getOwnSourceCaches(sourceID);
-            for (const sourceCache of sourceCaches) {
-                results = results.concat(querySourceFeatures(sourceCache, params));
-            }
+        const sourceCaches = this.getOwnSourceCaches(sourceId);
+        for (const sourceCache of sourceCaches) {
+            results = results.concat(querySourceFeatures(sourceCache, params));
         }
+
         return results;
     }
 
