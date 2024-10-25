@@ -1,3 +1,19 @@
+## 3.8.0-beta.1
+
+### Features and improvements ✨
+
+- Minor optimizations to reduce load time.
+
+### Bug fixes 🐞
+- Fix raster array rendering on some Android devices.
+- Fix an issue where fill-extrusion buildings would disappear when zooming out.
+- Fix line joins for thick semi-transparent or blurred lines.
+- Improve appearance of line corners with densely placed vertices.
+- Fix anti-alising aftifacts on blurred lines.
+- Fix call stack overflow caused by repeated `addImport` calls.
+- Fix failures when handling non-renderable characters.
+- Fix the Osage script rendering.
+
 ## v3.7.0
 
 ### Features and improvements ✨
