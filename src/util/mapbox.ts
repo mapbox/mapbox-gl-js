@@ -26,6 +26,7 @@ import type {RequestParameters, ResourceType as ResourceTypeEnum} from './ajax';
 import type {Cancelable} from '../types/cancelable';
 import type {TileJSON} from '../types/tilejson';
 import type {Map as MapboxMap} from "../ui/map";
+import '../types/import-meta.d';
 
 export type ResourceType = keyof typeof ResourceTypeEnum;
 export type RequestTransformFunction = (url: string, resourceTypeEnum?: ResourceType) => RequestParameters;
@@ -76,7 +77,9 @@ export class RequestManager {
     normalizeStyleURL(url: string, accessToken?: string): string {
         if (!isMapboxURL(url)) return url;
         const urlObject = parseUrl(url);
-        urlObject.params.push(`sdk=js-${sdkVersion}`);
+        if (import.meta.env.mode !== 'dev') {
+            urlObject.params.push(`sdk=js-${sdkVersion}`);
+        }
         urlObject.path = `/styles/v1${urlObject.path}`;
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
