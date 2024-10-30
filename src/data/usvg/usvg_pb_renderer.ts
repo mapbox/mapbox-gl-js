@@ -1,4 +1,4 @@
-import {PaintOrder, PathCommand, LineCap, LineJoin, FillRule, ClipRule, MaskType} from './usvg_pb_decoder.js';
+import {PaintOrder, PathCommand, LineCap, LineJoin, PathRule, MaskType} from './usvg_pb_decoder.js';
 
 import type {UsvgTree, Icon, Group, Node, Path, Transform, ClipPath, Mask, LinearGradient, RadialGradient} from './usvg_pb_decoder';
 
@@ -113,11 +113,11 @@ function fillPath(context: OffscreenCanvasRenderingContext2D, tree: UsvgTree, pa
     }
 
     let fillRule: CanvasFillRule;
-    switch (fill.rule) {
-    case FillRule.FILL_RULE_NON_ZERO:
+    switch (path.rule) {
+    case PathRule.PATH_RULE_NON_ZERO:
         fillRule = 'nonzero';
         break;
-    case FillRule.FILL_RULE_EVEN_ODD:
+    case PathRule.PATH_RULE_EVEN_ODD:
         fillRule = 'evenodd';
     }
 
@@ -219,20 +219,22 @@ function applyClipPath(context: OffscreenCanvasRenderingContext2D, transform: DO
         applyClipPath(context, tr, tree, selfClipPath);
     }
 
-    for (const path of clipPath.paths) {
+    for (const node of clipPath.children) {
+        const path = node.path;
+        if (!path) continue;
         const path2d = new Path2D();
         path2d.addPath(makePath2d(path), tr);
 
-        let clipRule;
-        switch (path.clip_rule) {
-        case ClipRule.CLIP_RULE_NON_ZERO:
-            clipRule = 'nonzero';
+        let fillRule;
+        switch (path.rule) {
+        case PathRule.PATH_RULE_NON_ZERO:
+            fillRule = 'nonzero';
             break;
-        case ClipRule.CLIP_RULE_EVEN_ODD:
-            clipRule = 'evenodd';
+        case PathRule.PATH_RULE_EVEN_ODD:
+            fillRule = 'evenodd';
         }
 
-        context.clip(path2d, clipRule);
+        context.clip(path2d, fillRule);
     }
 }
 

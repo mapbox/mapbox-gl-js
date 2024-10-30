@@ -10,10 +10,10 @@
  */
 
 /** @enum {number} */
-export const FillRule = {
-    "FILL_RULE_UNSPECIFIED": 0,
-    "FILL_RULE_NON_ZERO": 1,
-    "FILL_RULE_EVEN_ODD": 2
+export const PathRule = {
+    "PATH_RULE_UNSPECIFIED": 0,
+    "PATH_RULE_NON_ZERO": 1,
+    "PATH_RULE_EVEN_ODD": 2
 };
 
 /** @enum {number} */
@@ -56,13 +56,6 @@ export const SpreadMethod = {
     "SPREAD_METHOD_PAD": 1,
     "SPREAD_METHOD_REFLECT": 2,
     "SPREAD_METHOD_REPEAT": 3
-};
-
-/** @enum {number} */
-export const ClipRule = {
-    "CLIP_RULE_UNSPECIFIED": 0,
-    "CLIP_RULE_NON_ZERO": 1,
-    "CLIP_RULE_EVEN_ODD": 2
 };
 
 /** @enum {number} */
@@ -340,7 +333,7 @@ function readTransformField(tag, obj, pbf) {
  * @property {PathCommand[]} commands
  * @property {number} [step]
  * @property {number[]} diffs
- * @property {ClipRule} [clip_rule]
+ * @property {PathRule} [rule]
  */
 
 /**
@@ -349,7 +342,7 @@ function readTransformField(tag, obj, pbf) {
  * @returns {Path}
  */
 export function readPath(pbf, end) {
-    return pbf.readFields(readPathField, {paint_order: 1, commands: [], step: 1, diffs: [], clip_rule: 1}, end);
+    return pbf.readFields(readPathField, {paint_order: 1, commands: [], step: 1, diffs: [], rule: PathRule.PATH_RULE_NON_ZERO}, end);
 }
 
 /**
@@ -364,7 +357,7 @@ function readPathField(tag, obj, pbf) {
     else if (tag === 5) pbf.readPackedVarint(obj.commands);
     else if (tag === 6) obj.step = pbf.readFloat();
     else if (tag === 7) pbf.readPackedSVarint(obj.diffs);
-    else if (tag === 8) obj.clip_rule = pbf.readVarint();
+    else if (tag === 8) obj.rule = pbf.readVarint();
 }
 
 /**
@@ -373,7 +366,6 @@ function readPathField(tag, obj, pbf) {
  * @property {number} [linear_gradient_idx]
  * @property {number} [radial_gradient_idx]
  * @property {number} [opacity]
- * @property {FillRule} [rule]
  * @property {"rgb_color" | "linear_gradient_idx" | "radial_gradient_idx"} [paint]
  */
 
@@ -383,7 +375,7 @@ function readPathField(tag, obj, pbf) {
  * @returns {Fill}
  */
 export function readFill(pbf, end) {
-    return pbf.readFields(readFillField, {rgb_color: 0, paint: "rgb_color", opacity: 255, rule: 1}, end);
+    return pbf.readFields(readFillField, {rgb_color: 0, paint: "rgb_color", opacity: 255}, end);
 }
 
 /**
@@ -396,7 +388,6 @@ function readFillField(tag, obj, pbf) {
     else if (tag === 2) { obj.linear_gradient_idx = pbf.readVarint(); obj.paint = "linear_gradient_idx"; }
     else if (tag === 3) { obj.radial_gradient_idx = pbf.readVarint(); obj.paint = "radial_gradient_idx"; }
     else if (tag === 5) obj.opacity = pbf.readVarint();
-    else if (tag === 6) obj.rule = pbf.readVarint();
 }
 
 /**
@@ -546,7 +537,7 @@ function readRadialGradientField(tag, obj, pbf) {
  * @typedef {object} ClipPath
  * @property {Transform} [transform]
  * @property {number} [clip_path_idx]
- * @property {Path[]} paths
+ * @property {Node[]} children
  */
 
 /**
@@ -555,7 +546,7 @@ function readRadialGradientField(tag, obj, pbf) {
  * @returns {ClipPath}
  */
 export function readClipPath(pbf, end) {
-    return pbf.readFields(readClipPathField, {paths: []}, end);
+    return pbf.readFields(readClipPathField, {children: []}, end);
 }
 
 /**
@@ -566,7 +557,7 @@ export function readClipPath(pbf, end) {
 function readClipPathField(tag, obj, pbf) {
     if (tag === 1) obj.transform = readTransform(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 2) obj.clip_path_idx = pbf.readVarint();
-    else if (tag === 3) obj.paths.push(readPath(pbf, pbf.readVarint() + pbf.pos));
+    else if (tag === 3) obj.children.push(readNode(pbf, pbf.readVarint() + pbf.pos));
 }
 
 /**
@@ -577,7 +568,6 @@ function readClipPathField(tag, obj, pbf) {
  * @property {number} [height]
  * @property {MaskType} [mask_type]
  * @property {number} [mask_idx]
- * @property {Transform} [transform]
  * @property {Node[]} children
  */
 
@@ -602,6 +592,5 @@ function readMaskField(tag, obj, pbf) {
     else if (tag === 4) obj.height = pbf.readFloat();
     else if (tag === 5) obj.mask_type = pbf.readVarint();
     else if (tag === 6) obj.mask_idx = pbf.readVarint();
-    else if (tag === 7) obj.transform = readTransform(pbf, pbf.readVarint() + pbf.pos);
-    else if (tag === 8) obj.children.push(readNode(pbf, pbf.readVarint() + pbf.pos));
+    else if (tag === 7) obj.children.push(readNode(pbf, pbf.readVarint() + pbf.pos));
 }
