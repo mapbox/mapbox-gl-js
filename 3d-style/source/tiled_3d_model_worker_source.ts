@@ -98,11 +98,10 @@ class Tiled3dWorkerTile {
     }
 }
 
-// @ts-expect-error - TS2420 - Class 'Tiled3dModelWorkerSource' incorrectly implements interface 'WorkerSource'.
 class Tiled3dModelWorkerSource implements WorkerSource {
     actor: Actor;
     layerIndex: StyleLayerIndex;
-
+    availableImages: Array<string>;
     loading: {
         [_: number]: Tiled3dWorkerTile;
     };
@@ -113,6 +112,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
     constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadVectorData?: LoadVectorData, brightness?: number) {
         this.actor = actor;
         this.layerIndex = layerIndex;
+        this.availableImages = availableImages;
         this.brightness = brightness;
         this.loading = {};
         this.loaded = {};

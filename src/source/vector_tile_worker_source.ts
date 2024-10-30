@@ -33,16 +33,12 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     layerIndex: StyleLayerIndex;
     availableImages: Array<string>;
     loadVectorData: LoadVectorData;
-    loading: {
-        [_: number]: WorkerTile;
-    };
-    loaded: {
-        [_: number]: WorkerTile;
-    };
+    loading: Record<number, WorkerTile>;
+    loaded: Record<number, WorkerTile>;
     deduped: DedupedRequest;
     isSpriteLoaded: boolean;
-    scheduler: Scheduler | null | undefined;
-    brightness: number | null | undefined;
+    scheduler?: Scheduler | null;
+    brightness?: number | null;
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile

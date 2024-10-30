@@ -1,3 +1,5 @@
+import type Actor from '../util/actor';
+import type StyleLayerIndex from '../style/style_layer_index';
 import type {RequestParameters} from '../util/ajax';
 import type {AlphaImage} from '../util/image';
 import type {GlyphPositions} from '../render/glyph_atlas';
@@ -12,7 +14,8 @@ import type {StyleGlyph} from '../style/style_glyph';
 import type {StyleImage} from '../style/style_image';
 import type {PromoteIdSpecification} from '../style-spec/types';
 import type Projection from '../geo/projection/projection';
-import type {LUT} from "../util/lut";
+import type {LUT} from '../util/lut';
+import type {Callback} from '../types/callback';
 
 type TDecodingResult = any;
 
@@ -81,16 +84,16 @@ export type WorkerTileResult = {
     glyphMap?: {
         [_: string]: {
             glyphs: {
-                [_: number]: StyleGlyph | null | undefined;
+                [_: number]: StyleGlyph | undefined;
             };
             ascender?: number;
             descender?: number;
         };
-    } | null;
+    };
     iconMap?: {
         [_: string]: StyleImage;
-    } | null;
-    glyphPositions?: GlyphPositions | null;
+    };
+    glyphPositions?: GlyphPositions;
 };
 
 export type WorkerTileCallback = (error?: Error, result?: WorkerTileResult) => void;
@@ -113,17 +116,15 @@ export type WorkerRasterArrayTileCallback = (err?: Error, result?: TDecodingResu
  */
 export interface WorkerSource {
     availableImages: Array<string>;
-    // Disabled due to https://github.com/facebook/flow/issues/5208
-    // constructor(actor: Actor, layerIndex: StyleLayerIndex): WorkerSource;
 
     /**
      * Loads a tile from the given params and parse it into buckets ready to send
-     * back to the main thread for rendering.  Should call the callback with:
+     * back to the main thread for rendering. Should call the callback with:
      * `{ buckets, featureIndex, collisionIndex, rawTileData}`.
      */
     loadTile: (params: WorkerTileParameters, callback: WorkerTileCallback) => void;
     /**
-     * Re-parses a tile that has already been loaded.  Yields the same data as
+     * Re-parses a tile that has already been loaded. Yields the same data as
      * {@link WorkerSource#loadTile}.
      */
     reloadTile: (params: WorkerTileParameters, callback: WorkerTileCallback) => void;
@@ -140,10 +141,16 @@ export interface WorkerSource {
      * The foreground Source is responsible for ensuring that 'removeSource' is
      * the last message sent to the WorkerSource.
      */
-    removeSource?: (
-        params: {
-            source: string;
-        },
-        callback: WorkerTileCallback,
-    ) => void;
+    removeSource?: (params: {source: string}, callback: WorkerTileCallback) => void;
+}
+
+export interface WorkerSourceConstructor {
+    new(
+        actor: Actor,
+        layerIndex: StyleLayerIndex,
+        availableImages: Array<string>,
+        isSpriteLoaded: boolean,
+        loadData?: (params: {source: string; scope: string}, callback: Callback<unknown>) => () => void | undefined,
+        brightness?: number
+    ): WorkerSource;
 }

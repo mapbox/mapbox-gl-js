@@ -23,6 +23,7 @@ import type {Callback} from '../types/callback';
 
 export type GeoJSONWorkerOptions = {
     source: string;
+    scope: string;
     cluster: boolean;
     superclusterOptions?: any;
     geojsonVtOptions?: any;
