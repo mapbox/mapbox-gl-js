@@ -19,11 +19,13 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 export type LayoutProps = {
     "fill-sort-key": DataDrivenProperty<number>;
     "visibility": DataConstantProperty<"visible" | "none">;
+    "fill-elevation-reference": DataConstantProperty<"none" | "hd-road-base" | "hd-road-markup">;
 };
 let layout: Properties<LayoutProps>;
 export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "fill-sort-key": new DataDrivenProperty(styleSpec["layout_fill"]["fill-sort-key"]),
     "visibility": new DataConstantProperty(styleSpec["layout_fill"]["visibility"]),
+    "fill-elevation-reference": new DataConstantProperty(styleSpec["layout_fill"]["fill-elevation-reference"]),
 }));
 
 export type PaintProps = {

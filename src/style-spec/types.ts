@@ -386,7 +386,11 @@ export type FillLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "fill-sort-key"?: DataDrivenPropertyValueSpecification<number>,
-        "visibility"?: "visible" | "none" | ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "fill-elevation-reference"?: "none" | "hd-road-base" | "hd-road-markup" | ExpressionSpecification
     },
     "paint"?: {
         "fill-antialias"?: PropertyValueSpecification<boolean>,
