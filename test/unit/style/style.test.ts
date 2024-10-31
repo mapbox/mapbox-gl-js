@@ -204,9 +204,14 @@ describe('Style#loadURL', () => {
     });
 
     test('cancels pending requests if removed', () => {
+        networkWorker.use(
+            http.get('/style.json', () => {
+                return HttpResponse.json(createStyleJSON());
+            })
+        );
         const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
         const style = new Style(new StubMap());
-        style.loadURL('style.json');
+        style.loadURL('/style.json');
         style._remove();
         expect(abortSpy).toHaveBeenCalledTimes(1);
     });

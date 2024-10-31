@@ -69,7 +69,7 @@ export function getIconQuads(
     iconRotate: number,
     isSDFIcon: boolean,
     hasIconTextFit: boolean,
-    iconScale: number,
+    iconScale: number = 1,
 ): Array<SymbolQuad> {
     const quads = [];
 
