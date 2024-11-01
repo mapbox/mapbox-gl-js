@@ -1400,6 +1400,10 @@ class Style extends Evented<MapEvents> {
         return this._mergedOrder;
     }
 
+    getOrder(isEnabled: boolean): Array<string> {
+        return isEnabled ? this.order : this._mergedOrder;
+    }
+
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;
         return layer.isDraped(this.getLayerSourceCache(layer));

@@ -277,7 +277,7 @@
         "line-join": "round",
         "line-z-offset": [
           "at",
-          ["floor", ["*", [ "line-progress" ], 2.9]],
+          ["*", [ "line-progress" ], 2],
           ["get", "elevation"]
         ]
       },
@@ -294,7 +294,7 @@
         "line-join": "none",
         "line-z-offset": [
           "at",
-          ["floor", ["*", [ "line-progress" ], 6.9]],
+          ["*", [ "line-progress" ], 6],
           ["get", "elevation"]
         ]
       },
