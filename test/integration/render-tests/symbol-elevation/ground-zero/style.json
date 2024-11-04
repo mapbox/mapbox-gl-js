@@ -104,11 +104,11 @@
       "filter": ["<=", ["distance-from-center"], 0.0001],
       "layout": {
         "symbol-placement": "point",
-        "icon-image": "music-12"
+        "icon-image": "music-12",
+        "symbol-elevation-reference": "ground"
       },
       "paint": {
-        "symbol-z-offset": 0.0,
-        "symbol-elevation-reference": "ground"
+        "symbol-z-offset": 0.0
       }
     }
   ]

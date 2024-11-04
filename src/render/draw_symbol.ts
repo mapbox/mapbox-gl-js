@@ -297,7 +297,7 @@ function drawLayerSymbols(
     const iconContrast = layer.paint.get('icon-color-contrast');
     const iconBrightnessMin = layer.paint.get('icon-color-brightness-min');
     const iconBrightnessMax = layer.paint.get('icon-color-brightness-max');
-    const elevationFromSea = layer.paint.get('symbol-elevation-reference') === 'sea';
+    const elevationFromSea = layer.layout.get('symbol-elevation-reference') === 'sea';
 
     const context = painter.context;
     const gl = context.gl;

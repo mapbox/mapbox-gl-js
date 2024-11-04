@@ -469,7 +469,7 @@ export class Placement {
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const zOffset = layout.get('symbol-z-elevate');
         const symbolZOffset = paint.get('symbol-z-offset');
-        const elevationFromSea = paint.get('symbol-elevation-reference') === 'sea';
+        const elevationFromSea = layout.get('symbol-elevation-reference') === 'sea';
         const textSizeScaleRange = layout.get('text-size-scale-range');
         const iconSizeScaleRange = layout.get('icon-size-scale-range');
         const textScaleFactor = clamp(scaleFactor, textSizeScaleRange[0], textSizeScaleRange[1]);
@@ -1028,7 +1028,7 @@ export class Placement {
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const symbolZOffset = paint.get('symbol-z-offset');
-        const elevationFromSea = paint.get('symbol-elevation-reference') === 'sea';
+        const elevationFromSea = layout.get('symbol-elevation-reference') === 'sea';
         const needsFeatureForElevation = !symbolZOffset.isConstant();
 
         // If allow-overlap is true, we can show symbols before placement runs on them
