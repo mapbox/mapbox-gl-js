@@ -757,8 +757,7 @@ class Painter {
 
         const layers = this.style._mergedLayers;
 
-        const terrainEnabled = this.terrain && this.terrain.enabled && this.terrain.sourceCache.usedForTerrain;
-        const layerIds = this.style.getOrder(terrainEnabled).filter((id) => {
+        const layerIds = this.style.order.filter((id) => {
             const layer = layers[id];
 
             if (layer.type in this._debugParams.enabledLayers) {

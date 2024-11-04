@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "description": "Circle and symbol layer are not reordered as their minzoom is in terrain disabled zoom range",
       "height": 256,
       "width": 256,
       "operations": [
@@ -165,6 +166,8 @@
   "center": [-113.2935, 35.9529],
   "zoom": 13.5,
   "pitch": 30,
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "terrain": {
     "source": "terrain",
     "exaggeration": [
@@ -185,9 +188,38 @@
   },
   "layers": [
     {
+      "id": "line",
+      "type": "line",
+      "source": "line",
+      "paint": {
+        "line-color": "rgba(0,128,255,1)",
+        "line-width": 30.0,
+        "line-occlusion-opacity": 0.5,
+        "line-offset": 10
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "line-ends",
+      "minzoom": 14,
+      "layout": {
+          "symbol-placement": "point",
+          "icon-rotation-alignment": "map",
+          "icon-image": "building-12",
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+          "icon-size": 4
+      },
+      "paint": {
+        "icon-translate": [20, 20]
+      }
+    },
+    {
       "id": "circle",
       "type": "circle",
       "source": "line-ends",
+      "minzoom": 14,
       "paint": {
         "circle-color": "orange",
         "circle-radius": 40.0,
@@ -196,24 +228,9 @@
       }
     },
     {
-      "id": "line",
-      "type": "line",
-      "source": "line",
-      "layout": {
-        "line-z-offset": 5
-      },
-      "paint": {
-        "line-color": "rgba(0,128,255,1)",
-        "line-width": 22.0,
-        "line-occlusion-opacity": 0.5,
-        "line-offset": 10
-      }
-    },
-    {
       "id": "line1",
       "type": "line",
       "source": "line",
-      "minzoom": 14,
       "paint": {
         "line-color": "rgba(0,255,0,1)",
         "line-width": 15.0,
