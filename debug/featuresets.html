@@ -16,76 +16,7 @@
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
-<script src='/debug/dynamic.js'></script>
 <script>
-
-dynamic.featuresets = {
-    "poi": {
-        "selectors": [
-            {
-                "layer": "poi-label",
-                "properties": {
-                    "id": ["get", "id"],
-                    "type": ["get", "type"],
-                    "name": ["get", "name"],
-                    "brand": ["get", "brand"]
-                }
-            }
-        ]
-    },
-    "buildings": {
-        "selectors": [
-            {
-                "layer": "3d-building",
-                "properties": {
-                    "id": ["get", "id"],
-                    "type": ["get", "type"],
-                    "height": ["get", "height"]
-                }
-            },
-            {
-                "layer": "building-models"
-            }
-        ]
-    },
-    "transit": {
-        "selectors": [
-            {
-                "layer": "transit-label",
-                "properties": {
-                    "id": ["get", "id"],
-                    "category": ["get", "class"]
-                }
-            },
-            {
-                "layer": "airport-label"
-            }
-        ]
-    },
-    "places": {
-        "selectors": [
-            {
-                "layer": "country-label",
-                "properties": {
-                    "id": ["get", "id"],
-                    "category": ["get", "class"]
-                }
-            },
-            {
-                "layer": "state-label"
-            },
-            {
-                "layer": "settlement-major-label"
-            },
-            {
-                "layer": "settlement-minor-label"
-            },
-            {
-                "layer": "settlement-subdivision-label"
-            }
-        ]
-    }
-};
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
@@ -93,24 +24,194 @@ var map = window.map = new mapboxgl.Map({
     zoom: 12.5,
     center: [-122.4194, 37.7749],
     hash: true,
-    style: window.dynamic
+    style: 'mapbox://styles/mapbox-map-design/standard-experimental-ime',
 });
 
-map.addInteraction('poiclick', {
+
+// Selecting buildings
+var selectedBuildings = [];
+map.addInteraction('building-click', {
     type: 'click',
-    featureset: {featuresetId: 'poi', importId: 'basemap'},
-    handler: (e) => console.log(e)
+    featureset: {featuresetId: "buildings", importId: "basemap"},
+    handler: (e) => {
+        // Clear selected building
+        selectedBuildings.forEach(f => map.setFeatureState(f, {select: false}));
+
+        map.setFeatureState(e.feature, {select: true});
+        selectedBuildings = [e.feature];
+    }
 });
 
-// map.on('click', (e) => {
-//     const features = map.queryRenderedFeatures(e.point);//, {layers: [{id: 'poi', importId: 'basemap'}]});
+// Selecting POIs
+var selectedPoi = null;
+const selectedPoiMarker = new mapboxgl.Marker();
+selectedPoiMarker.getElement().style.cursor = 'pointer';
+map.addInteraction('poi-click', {
+    type: 'click',
+    featureset: {featuresetId: "poi", importId: "basemap"},
+    handler: (e) => {
+        console.log("poi click", e.feature);
+        if(selectedPoi) {
+            map.setFeatureState(selectedPoi, {hide: false});
+            selectedPoiMarker.remove();
+        }
 
-//     if (features.length) {
-//         map.setFeatureState(features[0], {hover: true});
-//     }
+        selectedPoi = e.feature;
+        selectedPoiMarker
+            .setLngLat(e.feature.geometry.coordinates)
+            .addTo(map);
 
-//     console.log(features);
-// });
+        let html = '';
+        for (const key in e.feature.properties) {
+            html += `<div><b>${key}</b>: ${e.feature.properties[key]}</div>`;
+        }
+        selectedPoiMarker.setPopup(new mapboxgl.Popup().setHTML(html));
+
+        map.setFeatureState(e.feature, {hide: true});
+
+        /// Optional: Highlight buildins underneath the selected pin.
+        // TODO: Uncomment after GLJS-1062
+        // let buildings = map.queryRenderedFeatures({
+        //     featureset: {featuresetId: "buildings", importId: "basemap"},
+        //     filter: ["<=", ["distance", e.feature.geometry], 0]
+        // })
+        // buildings.forEach(f => map.setFeatureState(f, {select: true}));
+        // selectedBuildings = buildings;
+    }
+});
+
+// Selecting places
+var selectedPlace = null;
+var placePopup = new mapboxgl.Popup();
+map.addInteraction('place-click', {
+    type: 'click',
+    featureset: {featuresetId: "place-labels", importId: "basemap"},
+    handler: (e) => {
+        console.log("place click", e.feature);
+        if(selectedPlace) {
+            map.setFeatureState(selectedPlace, {select: false});
+        }
+
+        selectedPlace = e.feature;
+        map.setFeatureState(e.feature, {select: true});
+
+        let html = '';
+        for (const key in e.feature.properties) {
+            html += `<div><b>${key}</b>: ${e.feature.properties[key]}</div>`;
+        }
+        placePopup
+            .setLngLat(e.feature.geometry.coordinates)
+            .setHTML(html)
+            .addTo(map);
+    }
+});
+
+// Cleaning selected features
+map.addInteraction('map-click', {
+    type: 'click',
+    handler: (e) => {
+        // Clear selected POI
+        if(selectedPoi) {
+            map.setFeatureState(selectedPoi, {hide: false});
+            selectedPoiMarker.remove();
+            selectedPoi = null;
+        }
+
+        // Clear selected building
+        selectedBuildings.forEach(f => map.setFeatureState(f, {select: false}));
+
+        // Clear selected place
+        if(selectedPlace) {
+            map.setFeatureState(selectedPlace, {select: false});
+            selectedPlace = null;
+        }
+        placePopup.remove();
+        return false;
+    }
+});
+
+// Hover effects
+
+var hoveredBuilding = null;
+var hoveredPlace = null;
+
+function highlight(feature, hovered) {
+    if (hovered) {
+        map.setFeatureState(feature, {highlight: true});
+    } else {
+        map.setFeatureState(feature, {highlight: false});
+    }
+}
+
+map.addInteraction('building-hover', {
+    type: 'mousemove',
+    featureset: {featuresetId: "buildings", importId: "basemap"},
+    handler: (e) => {
+        if (hoveredBuilding) {
+            if(hoveredBuilding.id === e.feature.id && hoveredBuilding.namespace === e.feature.namespace) {
+                // Hovering the same building
+                return;
+            }
+            // Clear the old building highlight
+            highlight(hoveredBuilding, false);
+        }
+
+        if (hoveredPlace) {
+            // Clear the place highlight
+            highlight(hoveredPlace, false);
+            hoveredBuilding = null;
+        }
+
+        hoveredBuilding = e.feature;
+        highlight(hoveredBuilding, true);
+        map.getCanvas().style.cursor = 'pointer';
+    }
+});
+
+map.addInteraction('place-hover', {
+    type: 'mousemove',
+    featureset: {featuresetId: "place-labels", importId: "basemap"},
+    handler: (e) => {
+        if (hoveredPlace) {
+            if(hoveredPlace.id === e.feature.id && hoveredPlace.namespace === e.feature.namespace) {
+                // Hovering the same place
+                return;
+            }
+            // Clear the old place highlight
+            highlight(hoveredPlace, false);
+        }
+
+        if (hoveredBuilding) {
+            // Clear the building highlight
+            highlight(hoveredBuilding, false);
+            hoveredBuilding = null;
+        }
+
+        hoveredPlace = e.feature;
+        highlight(hoveredPlace, true);
+        map.getCanvas().style.cursor = 'pointer';
+    }
+});
+
+// Mousemove on map that wasn't handled any featureset-specific interaction
+// means the mouse is moved outside of hovered features.
+// Thid is a safe place to clear the hover effect.
+map.addInteraction(`map-mousemove`, {
+    type: 'mousemove',
+    handler: (e) => {
+        if (hoveredBuilding) {
+            highlight(hoveredBuilding, false);
+            hoveredBuilding = null;
+        }
+
+        if (hoveredPlace) {
+            highlight(hoveredPlace, false);
+            hoveredPlace = null;
+        }
+        map.getCanvas().style.cursor = '';
+        return false; // Don't stop the event propagation.
+    }
+});
 
 </script>
 </body>
