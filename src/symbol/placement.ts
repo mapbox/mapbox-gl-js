@@ -1069,9 +1069,9 @@ export class Placement {
             } = symbolInstance;
 
             let feature = null;
-            if (symbolInstance && needsFeatureForElevation) {
+            const retainedQueryData = this.retainedQueryData[bucket.bucketInstanceId];
+            if (needsFeatureForElevation && symbolInstance && retainedQueryData) {
                 const featureIndex = tile.latestFeatureIndex;
-                const retainedQueryData = this.retainedQueryData[bucket.bucketInstanceId];
                 feature = featureIndex.loadFeature({
                     featureIndex: symbolInstance.featureIndex,
                     bucketIndex: retainedQueryData.bucketIndex,
