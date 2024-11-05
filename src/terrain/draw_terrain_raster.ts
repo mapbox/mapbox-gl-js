@@ -300,6 +300,12 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             if (cutoffParams.shouldRenderCutoff) {
                 modes.push('RENDER_CUTOFF');
             }
+            if (shadowRenderer) {
+                modes.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+                if (shadowRenderer.useNormalOffset) {
+                    modes.push('NORMAL_OFFSET');
+                }
+            }
             program = painter.getOrCreateProgram('terrainRaster', {defines: modes});
             programMode = mode;
         };

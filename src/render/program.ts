@@ -384,6 +384,16 @@ class Program<Us extends UniformBindings> {
         context.setColorMode(colorMode);
     }
 
+    checkUniforms(name: string, define: DynamicDefinesType, uniforms: any) {
+        if (this.fixedDefines.includes(define)) {
+            for (const key of Object.keys(uniforms)) {
+                if (!uniforms[key].initialized) {
+                    throw new Error(`Program '${this.name}', from draw '${name}': uniform ${key} not set but required by ${define} being defined`);
+                }
+            }
+        }
+    }
+
     draw(
          painter: Painter,
          drawMode: DrawMode,
@@ -427,6 +437,8 @@ class Program<Us extends UniformBindings> {
             [gl.TRIANGLES]: 3,
             [gl.LINE_STRIP]: 1
         }[drawMode];
+
+        this.checkUniforms(layerID, 'RENDER_SHADOWS', this.shadowUniforms);
 
         const vertexAttribDivisorValue = instanceCount && instanceCount > 0 ? 1 : undefined;
         for (const segment of segments.get()) {

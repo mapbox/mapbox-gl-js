@@ -382,6 +382,10 @@ export class ShadowRenderer {
         if (cutoffParams.shouldRenderCutoff) {
             baseDefines.push('RENDER_CUTOFF');
         }
+        baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+        if (this.useNormalOffset) {
+            baseDefines.push('NORMAL_OFFSET');
+        }
 
         const shadowColor = calculateGroundShadowFactor(style, directionalLight, ambientLight);
 

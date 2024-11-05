@@ -1,5 +1,6 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
+#include "_prelude_shadow.fragment.glsl"
 
 uniform highp float u_device_pixel_ratio;
 uniform highp float u_alpha_discard_threshold;
@@ -20,6 +21,14 @@ in highp vec4 v_uv;
 
 #ifdef LINE_JOIN_NONE
 in vec2 v_pattern_data; // [pos_in_segment, segment_length];
+#endif
+
+#ifdef RENDER_SHADOWS
+uniform vec3 u_ground_shadow_factor;
+
+in highp vec4 v_pos_light_view_0;
+in highp vec4 v_pos_light_view_1;
+in highp float v_depth;
 #endif
 
 #pragma mapbox: define mediump vec4 pattern
@@ -104,6 +113,10 @@ void main() {
 
 #ifdef LIGHTING_3D_MODE
     color = apply_lighting_ground(color);
+#ifdef RENDER_SHADOWS
+    float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    color.rgb *= mix(u_ground_shadow_factor, vec3(1.0), light);
+#endif // RENDER_SHADOWS
 #endif
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));

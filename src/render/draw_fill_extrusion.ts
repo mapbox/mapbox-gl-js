@@ -328,6 +328,12 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
         }
 
+        if (!isShadowPass) {
+            baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+            if (shadowRenderer.useNormalOffset) {
+                baseDefines.push('NORMAL_OFFSET');
+            }
+        }
         singleCascadeDefines = baseDefines.concat(['SHADOWS_SINGLE_CASCADE']);
     }
 
