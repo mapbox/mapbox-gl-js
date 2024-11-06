@@ -55,7 +55,7 @@
     "@rollup/plugin-strip": "^3.0.4",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-virtual": "^3.0.2",
-    "@tweakpane/core": "^2.0.4",
+    "@tweakpane/core": "^2.0.5",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.8.2",
     "@types/offscreencanvas": "^2019.7.3",
