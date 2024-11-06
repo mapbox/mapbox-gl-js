@@ -53,6 +53,7 @@ out vec3 v_normal;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
+#pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump vec4 pattern
 #pragma mapbox: define highp float pixel_ratio
 #pragma mapbox: define highp float line_width
@@ -60,6 +61,7 @@ out vec3 v_normal;
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
+    #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize mediump vec4 pattern
     #pragma mapbox: initialize highp float pixel_ratio
     #pragma mapbox: initialize highp float line_width
@@ -125,7 +127,7 @@ void main() {
     p.xy += (1.0 - a_join_normal_inside.z) * wall_offset * 0.5;
     p.xy -= a_join_normal_inside.z * wall_offset * 0.5;
 #endif
-    float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
+    float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (color.a == 0.0));
     gl_Position = mix(u_matrix * vec4(p, 1), AWAY, hidden);
 
     vec2 pos = normal.z == 1.0
