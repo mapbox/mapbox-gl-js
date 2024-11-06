@@ -131,6 +131,7 @@ void main() {
     float hidden = float(opacity == 0.0);
     vec2 extrude = dist * u_pixels_to_tile_units;
     vec4 projected_extrude = u_matrix * vec4(extrude, 0.0, 0.0);
+    vec2 projected_extrude_xy = projected_extrude.xy;
 #ifdef ELEVATED_ROADS
     // Apply slight vertical offset (1cm) for elevated vertices above the ground plane
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset + 0.01 * step(0.01, a_z_offset), 1.0) + projected_extrude;
@@ -193,7 +194,7 @@ void main() {
 #ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude
     float extrude_length_without_perspective = length(dist);
-    float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_units_to_pixels);
+    float extrude_length_with_perspective = length(projected_extrude_xy / gl_Position.w * u_units_to_pixels);
     v_gamma_scale = mix(extrude_length_without_perspective / extrude_length_with_perspective, 1.0, step(0.01, blur));
 #else
     v_gamma_scale = 1.0;

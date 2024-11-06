@@ -808,7 +808,6 @@ class LineBucket implements Bucket {
             const outside = pointOutsideBounds(p, boundsMin, boundsMax);
             const lineSoFar = this.lineSoFar;
             const distance = this.distance;
-            const scaledDist = this.scaledDistance;
 
             if (!this.currentVertex) {
                 if (!outside) { // add the first point
@@ -826,19 +825,18 @@ class LineBucket implements Bucket {
                         // add half vertex to start the segment
                         this.e1 = this.e2 = -1;
                         // Previously calculated distance is not correct after clipLine()
-                        const updatedDist = this.prevDistance + prev.dist(vertex);
-                        this.prevDistance -= updatedDist - this.distance;
-                        this.distance = updatedDist;
+                        this.distance -= prev.dist(vertex);
                         this.lineSoFar = prev.w;
                         const z = this.evaluateElevationValue(prev.w - this.totalFeatureLength * (this.lineClips ? this.lineClips.start : 0));
                         this.addHalfVertex(prev, leftX, leftY, round, false, endLeft, segment, z);
                         this.addHalfVertex(prev, rightX, rightY, round, true, -endRight, segment, z);
+                        this.prevDistance = this.distance;
                     }
                     this.distance = this.prevDistance + prev.dist(next);
                     this.scaledDistance = this.distance / this.totalDistance;
                     this.addVerticesTo(prev, next, leftX, leftY, rightX, rightY, endLeft, endRight, segment, round);
                     this.distance = distance;
-                    this.scaledDistance = scaledDist;
+                    this.scaledDistance = this.distance / this.totalDistance;
                 }
             } else {
                 // inside
@@ -850,16 +848,15 @@ class LineBucket implements Bucket {
                     // add half vertex to start the segment
                     this.e1 = this.e2 = -1;
                     // Previously calculated distance is not correct after clipLine()
-                    const updatedDist = this.prevDistance + prev.dist(vertex);
-                    this.prevDistance -= updatedDist - this.distance;
-                    this.distance = updatedDist;
-                    this.scaledDistance = this.prevDistance / this.totalDistance;
+                    this.distance -= prev.dist(vertex);
+                    this.scaledDistance = this.distance / this.totalDistance;
                     this.lineSoFar = prev.w;
                     const z = this.evaluateElevationValue(prev.w - this.totalFeatureLength * (this.lineClips ? this.lineClips.start : 0));
                     this.addHalfVertex(prev, leftX, leftY, round, false, endLeft, segment, z);
                     this.addHalfVertex(prev, rightX, rightY, round, true, -endRight, segment, z);
+                    this.prevDistance = this.distance;
                     this.distance = distance;
-                    this.scaledDistance = scaledDist;
+                    this.scaledDistance = this.distance / this.totalDistance;
                 }
                 this.addVerticesTo(prev, vertex, leftX, leftY, rightX, rightY, endLeft, endRight, segment, round);
             }
