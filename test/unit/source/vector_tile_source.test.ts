@@ -24,6 +24,7 @@ function createSource(options, {transformCallback, customAccessToken} = {}) {
     const source = new VectorTileSource('id', options, mockDispatcher, options.eventedParent);
 
     source.onAdd({
+        getWorldview() { },
         getScaleFactor() { return 1; },
         transform: {showCollisionBoxes: false},
         _getMapId: () => 1,

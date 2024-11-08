@@ -9,7 +9,7 @@ import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 import {makeFQID} from '../util/fqid';
 import Texture from '../render/texture';
 
-import type {ISource, SourceEvents} from './source';
+import type {ISource, SourceEvents, SourceRasterLayer} from './source';
 import type {OverscaledTileID} from './tile_id';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -57,6 +57,10 @@ class RasterTileSource<T extends 'raster' | 'raster-dem' | 'raster-array' = 'ras
     tileSize: number;
     minTileCacheSize: number | null | undefined;
     maxTileCacheSize: number | null | undefined;
+    vectorLayers?: never;
+    vectorLayerIds?: never;
+    rasterLayers?: Array<SourceRasterLayer>;
+    rasterLayerIds?: Array<string>;
 
     bounds: [number, number, number, number] | null | undefined;
     tileBounds: TileBounds;
@@ -102,6 +106,12 @@ class RasterTileSource<T extends 'raster' | 'raster-dem' | 'raster-array' = 'ras
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
                 extend(this, tileJSON);
+
+                if (tileJSON.raster_layers) {
+                    this.rasterLayers = tileJSON.raster_layers;
+                    this.rasterLayerIds = this.rasterLayers.map(layer => layer.id);
+                }
+
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
 
                 postTurnstileEvent(tileJSON.tiles);

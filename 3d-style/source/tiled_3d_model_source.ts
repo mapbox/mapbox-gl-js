@@ -35,6 +35,10 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
+    vectorLayers?: never;
+    vectorLayerIds?: never;
+    rasterLayers?: never;
+    rasterLayerIds?: never;
     tiles: Array<string>;
     dispatcher: Dispatcher;
     scheme: string;
@@ -81,7 +85,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
         const language = Array.isArray(this.map._language) ? this.map._language.join() : this.map._language;
-        const worldview = this.map._worldview;
+        const worldview = this.map.getWorldview();
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, language, worldview, (err, tileJSON) => {
             this._tileJSONRequest = null;
             this._loaded = true;

@@ -69,6 +69,8 @@ class StubMap extends Evented {
     _getMapId() {
         return 1;
     }
+
+    getWorldview() {}
 }
 
 let networkWorker: any;

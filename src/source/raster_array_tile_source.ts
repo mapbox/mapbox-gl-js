@@ -16,7 +16,7 @@ import type Dispatcher from '../util/dispatcher';
 import type RasterArrayTile from './raster_array_tile';
 import type {Callback} from '../types/callback';
 import type {TextureDescriptor} from './raster_array_tile';
-import type {ISource, SourceRasterLayer} from './source';
+import type {ISource} from './source';
 import type {RasterArraySourceSpecification} from '../style-spec/types';
 
 /**
@@ -36,8 +36,6 @@ import type {RasterArraySourceSpecification} from '../style-spec/types';
 class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource {
     override type: 'raster-array';
     override map: Map;
-    rasterLayers: Array<SourceRasterLayer> | undefined;
-    rasterLayerIds: Array<string> | undefined;
 
     constructor(id: string, options: RasterArraySourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);

@@ -440,7 +440,6 @@ class Style extends Evented<MapEvents> {
             }
 
             const source = this.getOwnSource(event.sourceId);
-            // @ts-expect-error - TS2339 - Property 'vectorLayerIds' does not exist on type 'Source'.
             if (!source || !source.vectorLayerIds) {
                 return;
             }
@@ -1271,7 +1270,6 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        // @ts-expect-error - TS2339 - Property 'vectorLayerIds' does not exist on type 'Source'. | TS2339 - Property 'vectorLayerIds' does not exist on type 'Source'.
         if (source.type === 'geojson' || (source.vectorLayerIds && source.vectorLayerIds.indexOf(sourceLayer) === -1)) {
             this.fire(new ErrorEvent(new Error(
                 `Source layer "${sourceLayer}" ` +
@@ -1739,7 +1737,7 @@ class Style extends Evented<MapEvents> {
         return this.modelManager.listModels(this.scope);
     }
 
-    addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}): void {
+    addSource(id: string, source: SourceSpecification & {collectResourceTiming?: boolean}, options: StyleSetterOptions = {}): void {
         this._checkLoaded();
 
         if (this.getOwnSource(id) !== undefined) {
@@ -1754,7 +1752,7 @@ class Style extends Evented<MapEvents> {
         const shouldValidate = builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._validate(validateSource, `sources.${id}`, source, null, options)) return;
 
-        if (this.map && this.map._collectResourceTiming) (source as any).collectResourceTiming = true;
+        if (this.map && this.map._collectResourceTiming) source.collectResourceTiming = true;
         const sourceInstance = createSource(id, source, this.dispatcher, this);
         sourceInstance.scope = this.scope;
 

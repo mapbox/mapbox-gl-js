@@ -10,7 +10,6 @@ import GlyphManager from '../../../src/render/glyph_manager';
 import {Event, Evented} from '../../../src/util/evented';
 import {RequestManager} from '../../../src/util/mapbox';
 import {OverscaledTileID} from '../../../src/source/tile_id';
-
 import {extend} from '../../../src/util/util';
 import {makeFQID} from '../../../src/util/fqid';
 
@@ -37,6 +36,8 @@ class StubMap extends Evented {
     _getMapId() {
         return 1;
     }
+
+    getWorldview() {}
 }
 
 let networkWorker: any;

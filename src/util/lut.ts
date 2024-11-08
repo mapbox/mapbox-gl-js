@@ -10,7 +10,7 @@ import type {ColorThemeSpecification} from "../style-spec/types";
 
 export type LUT = {
     image: RGBAImage;
-    data: string;
+    data?: string;
     texture?: Texture3D;
 };
 

@@ -13,6 +13,7 @@ import type {Callback} from '../types/callback';
 import type {GeoJSONWorkerOptions} from './geojson_worker_source';
 import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 import type {Cancelable} from '../types/cancelable';
+import type {RequestedTileParameters} from './worker_source';
 
 /**
  * A source containing GeoJSON.
@@ -73,6 +74,10 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     promoteId: PromoteIdSpecification | null | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
+    vectorLayers?: never;
+    vectorLayerIds?: never;
+    rasterLayers?: never;
+    rasterLayerIds?: never;
 
     roundZoom: boolean | undefined;
     isTileClipped: boolean | undefined;
@@ -428,8 +433,10 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         const message = !tile.actor ? 'loadTile' : 'reloadTile';
         tile.actor = this.actor;
         const lutForScope = this.map.style ? this.map.style.getLut(this.scope) : null;
+        const lut = lutForScope ? {image: lutForScope.image.clone()} : null;
         const partial = this._partialReload;
-        const params = {
+
+        const params: RequestedTileParameters = {
             type: this.type,
             uid: tile.uid,
             tileID: tile.tileID,
@@ -438,9 +445,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             maxZoom: this.maxzoom,
             tileSize: this.tileSize,
             source: this.id,
-            lut: lutForScope ? {
-                image: lutForScope.image.clone()
-            } : null,
+            lut,
             scope: this.scope,
             pixelRatio: browser.devicePixelRatio,
             showCollisionBoxes: this.map.showCollisionBoxes,

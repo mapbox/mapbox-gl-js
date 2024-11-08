@@ -16,6 +16,7 @@ import type {PromoteIdSpecification} from '../style-spec/types';
 import type Projection from '../geo/projection/projection';
 import type {LUT} from '../util/lut';
 import type {Callback} from '../types/callback';
+import type {SourceType} from './source';
 
 type TDecodingResult = any;
 
@@ -26,28 +27,30 @@ export type TileParameters = {
 };
 
 export type RequestedTileParameters = TileParameters & {
+    brightness: number;
+    lut: LUT | null;
+    maxZoom: number;
+    pixelRatio: number;
+    promoteId: PromoteIdSpecification | null | undefined;
+    scaleFactor: number;
+    showCollisionBoxes: boolean;
     tileID: OverscaledTileID;
+    tileSize: number;
     tileZoom: number;
-    request: RequestParameters;
+    type: SourceType;
+    zoom: number;
     data?: unknown;
-    isSymbolTile: boolean | null | undefined;
+    extraShadowCaster?: boolean;
+    isSymbolTile?: boolean | null;
+    partial?: boolean;
+    request?: RequestParameters;
+    tessellationStep?: number // test purpose only;
+    worldview?: string | null;
+    localizableLayerIds?: Set<string>;
 };
 
 export type WorkerTileParameters = RequestedTileParameters & {
-    zoom: number;
-    lut: LUT | null;
-    maxZoom: number;
-    tileSize: number;
-    promoteId: PromoteIdSpecification | null | undefined;
-    pixelRatio: number;
-    showCollisionBoxes: boolean;
-    collectResourceTiming?: boolean;
     projection: Projection;
-    brightness: number;
-    scaleFactor: number;
-    extraShadowCaster?: boolean;
-    tessellationStep?: number // test purpose only;
-    partial?: boolean;
 };
 
 export type DEMSourceEncoding = 'mapbox' | 'terrarium';
