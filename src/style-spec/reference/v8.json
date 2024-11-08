@@ -3643,6 +3643,61 @@
       "parameters": ["zoom", "feature"]
     }
   },
+  "filter_hillshade": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the hillshade layer. Hillshade layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_raster": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the raster layer. Raster layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_raster-particle": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the raster particle layer. Raster particle layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_clip": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the clip layer. Clip layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_model": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to display a model. Model layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
   "filter_line": {
     "type": "boolean",
     "doc": "Expression which determines whether or not to display a Polygon or LineString. Line layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",

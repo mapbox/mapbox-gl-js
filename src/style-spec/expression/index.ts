@@ -71,6 +71,7 @@ export class StyleExpression {
     _defaultValue: Value;
     _warningHistory: {[key: string]: boolean};
     _enumValues?: {[_: string]: unknown};
+    configDependencies: Set<string>;
 
     constructor(expression: Expression, propertySpec?: StylePropertySpecification, scope?: string, options?: ConfigOptions) {
         this.expression = expression;
@@ -78,6 +79,7 @@ export class StyleExpression {
         this._evaluator = new EvaluationContext(scope, options);
         this._defaultValue = propertySpec ? getDefaultValue(propertySpec) : null;
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
+        this.configDependencies = isConstant.getConfigDependencies(expression);
     }
 
     evaluateWithoutErrorHandling(

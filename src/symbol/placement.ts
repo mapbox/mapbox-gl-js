@@ -283,7 +283,7 @@ export class Placement {
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
 
-        styleLayer.compileFilter();
+        styleLayer.compileFilter(styleLayer.options);
 
         const dynamicFilter = styleLayer.dynamicFilter();
         const dynamicFilterNeedsFeature = styleLayer.dynamicFilterNeedsFeature();
