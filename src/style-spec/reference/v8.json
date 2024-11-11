@@ -4441,7 +4441,7 @@
         }
       },
       "line-progress": {
-        "doc": "Returns the progress along a gradient line. Can only be used in the `line-gradient` property.",
+        "doc": "Returns the progress along a gradient line. Can only be used in the `line-gradient` and `line-z-offset` properties.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
