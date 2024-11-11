@@ -757,7 +757,8 @@ class Painter {
 
         const layers = this.style._mergedLayers;
 
-        const layerIds = this.style.order.filter((id) => {
+        const drapingEnabled = !!(this.terrain && this.terrain.enabled);
+        const layerIds = this.style._getOrder(drapingEnabled).filter((id) => {
             const layer = layers[id];
 
             if (layer.type in this._debugParams.enabledLayers) {

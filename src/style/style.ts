@@ -1398,6 +1398,15 @@ class Style extends Evented<MapEvents> {
         return this._mergedOrder;
     }
 
+    /**
+     * Returns active order for when terrain or globe are enabled (when draping is enabled).
+     * @param drapingEnabled {boolean} speficy if order is requested for draping enabled.
+     * @private
+     */
+    _getOrder(drapingEnabled: boolean): Array<string> {
+        return drapingEnabled ? this.order : this._mergedOrder;
+    }
+
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;
         return layer.isDraped(this.getLayerSourceCache(layer));
@@ -3262,28 +3271,15 @@ class Style extends Evented<MapEvents> {
         if (!this.terrain) {
             return;
         }
-        const attenuationRange = this.terrain.getAttenuationRange();
-        const maxTerrainZoom = attenuationRange ? Math.ceil(attenuationRange[1]) : Number.MAX_SAFE_INTEGER;
 
         const draped = [];
         const nonDraped = [];
-        let lastDraped = true;
         for (const layerId of this._mergedOrder) {
             const layer = this._mergedLayers[layerId];
-            // if layer minzoom is in area where terrain is disabled, don't reorder.
-            if ((layer.minzoom || DEFAULT_MIN_ZOOM) >= maxTerrainZoom) {
-                // follow the order here, add the layer to wherever the last layer was added.
-                if (lastDraped) {
-                    draped.push(layerId);
-                } else {
-                    nonDraped.push(layerId);
-                }
-            } else if (this.isLayerDraped(layer)) {
+            if (this.isLayerDraped(layer)) {
                 draped.push(layerId);
-                lastDraped = true;
             } else {
                 nonDraped.push(layerId);
-                lastDraped = false;
             }
         }
 
