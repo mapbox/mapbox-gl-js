@@ -384,6 +384,20 @@ class Tile {
         this.state = 'unloaded';
     }
 
+    loadModelData(data: WorkerTileResult | null | undefined, painter: Painter, justReloaded?: boolean | null) {
+        if (!data) {
+            return;
+        }
+
+        if (data.resourceTiming) this.resourceTiming = data.resourceTiming;
+
+        this.buckets = {...this.buckets, ...deserializeBucket(data.buckets, painter.style)};
+
+        if (data.featureIndex) {
+            this.latestFeatureIndex = data.featureIndex;
+        }
+    }
+
     getBucket(layer: StyleLayer): Bucket {
         return this.buckets[layer.fqid];
     }
@@ -584,7 +598,7 @@ class Tile {
     }
 
     refreshFeatureState(painter?: Painter) {
-        if (!this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData || !painter) {
+        if (!this.latestFeatureIndex || !(this.latestFeatureIndex.rawTileData || this.latestFeatureIndex.is3DTile) || !painter) {
             return;
         }
 
@@ -593,6 +607,7 @@ class Tile {
 
     updateBuckets(painter: Painter) {
         if (!this.latestFeatureIndex) return;
+
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
         const availableImages = painter.style.listImages();
         const brightness = painter.style.getBrightness();

@@ -18,9 +18,9 @@ import type {
     TileParameters,
     WorkerTileResult
 } from '../../src/source/worker_source';
-import type {Bucket} from '../../src/data/bucket';
 import type {LoadVectorData} from '../../src/source/load_vector_tile';
 import type Projection from '../../src/geo/projection/projection';
+import type ModelStyleLayer from '../style/style_layer/model_style_layer';
 
 class Tiled3dWorkerTile {
     tileID: OverscaledTileID;
@@ -59,9 +59,7 @@ class Tiled3dWorkerTile {
     ): Promise<void> {
         this.status = 'parsing';
         const tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
-        const buckets: {
-            [_: string]: Bucket;
-        } = {};
+        const buckets: Tiled3dModelBucket[] = [];
         const layerFamilies = layerIndex.familiesBySource[params.source];
         const featureIndex = new FeatureIndex(tileID, params.promoteId);
         featureIndex.bucketLayerIDs = [];
@@ -78,21 +76,29 @@ class Tiled3dWorkerTile {
                 const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness});
                 for (const sourceLayerId in layerFamilies) {
                     for (const family of layerFamilies[sourceLayerId]) {
-                        const layer = family[0];
+                        const layer = family[0] as ModelStyleLayer;
                         featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
                         layer.recalculate(parameters, []);
-                        const bucket = new Tiled3dModelBucket(nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex);
+                        const bucket = new Tiled3dModelBucket(family as Array<ModelStyleLayer>, nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex);
                         // Upload to GPU without waiting for evaluation if we are in diffuse path
                         if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
-                        buckets[layer.fqid] = bucket;
+                        buckets.push(bucket);
                         // do the first evaluation in the worker to avoid stuttering
-                        // @ts-expect-error - TS2345 - Argument of type 'TypedStyleLayer' is not assignable to parameter of type 'ModelStyleLayer'.
                         bucket.evaluate(layer);
                     }
                 }
+
                 this.status = 'done';
-                // @ts-expect-error - TS2740 - Type '{ [_: string]: Bucket; }' is missing the following properties from type 'Bucket[]': length, pop, push, concat, and 35 more.
-                callback(null, {buckets, featureIndex});
+
+                callback(null, {
+                    buckets,
+                    featureIndex,
+                    collisionBoxArray: null,
+                    glyphAtlasImage: null,
+                    lineAtlas: null,
+                    imageAtlas: null,
+                    brightness: null,
+                });
             })
             .catch((err) => callback(new Error(err.message)));
     }
