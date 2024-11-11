@@ -48,7 +48,8 @@ function addAABBsToGridIndex(node: Node, key: number, grid: GridIndex) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (mesh.aabb.min[0] === Infinity) continue;
-            grid.insert(key, mesh.aabb.min[0], mesh.aabb.min[1], mesh.aabb.max[0], mesh.aabb.max[1]);
+            const meshAabb = Aabb.applyTransform(mesh.aabb, node.matrix);
+            grid.insert(key, meshAabb.min[0], meshAabb.min[1], meshAabb.max[0], meshAabb.max[1]);
         }
     }
     if (node.children) {

@@ -208,22 +208,19 @@ class ModelStyleLayer extends StyleLayer {
             anchorY * (scale[1] - 1),
             elevation]);
         mat4.scale(modelMatrix, modelMatrix, scale);
-
-        mat4.multiply(modelMatrix, modelMatrix, node.matrix);
-
         // Collision checks are performed in screen space. Corners are in ndc space.
         const screenQuery = queryGeometry.queryGeometry;
         const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
 
         const checkNode = function(n: Node) {
-            const nodeModelMatrix = mat4.multiply([] as any, modelMatrix, n.matrix);
-            const worldViewProjection = mat4.multiply(nodeModelMatrix, transform.expandedFarZProjMatrix, nodeModelMatrix);
+            const worldViewProjectionForNode = mat4.multiply([] as any, modelMatrix, n.matrix);
+            mat4.multiply(worldViewProjectionForNode, transform.expandedFarZProjMatrix, worldViewProjectionForNode);
             for (let i = 0; i < n.meshes.length; ++i) {
                 const mesh = n.meshes[i];
                 if (i === n.lightMeshIndex) {
                     continue;
                 }
-                const depth = queryGeometryIntersectsProjectedAabb(projectedQueryGeometry, transform, worldViewProjection, mesh.aabb);
+                const depth = queryGeometryIntersectsProjectedAabb(projectedQueryGeometry, transform, worldViewProjectionForNode, mesh.aabb);
                 if (depth != null) {
                     intersectionZ = Math.min(depth, intersectionZ);
                 }
