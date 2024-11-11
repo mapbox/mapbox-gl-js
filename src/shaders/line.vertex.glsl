@@ -181,9 +181,9 @@ void main() {
     vec3 shd_pos0 = shd_pos;
     vec3 shd_pos1 = shd_pos;
 #ifdef NORMAL_OFFSET
-    vec3 offset = shadow_normal_offset(vec3(0.0, 0.0, 1.0));
-    shd_pos0 += offset * shadow_normal_offset_multiplier0();
-    shd_pos1 += offset * shadow_normal_offset_multiplier1();
+    vec3 shd_pos_offset = shadow_normal_offset(vec3(0.0, 0.0, 1.0));
+    shd_pos0 += shd_pos_offset * shadow_normal_offset_multiplier0();
+    shd_pos1 += shd_pos_offset * shadow_normal_offset_multiplier1();
 #endif
     v_pos_light_view_0 = u_light_matrix_0 * vec4(shd_pos0, 1);
     v_pos_light_view_1 = u_light_matrix_1 * vec4(shd_pos1, 1);
