@@ -69,15 +69,13 @@ export class QueryGeometry {
         let aboveHorizon;
 
         if (geometry instanceof Point || typeof geometry[0] === 'number') {
-            const pt = Point.convert(geometry);
+            const pt = Point.convert(geometry) as Point;
             screenGeometry = [pt];
-            // @ts-expect-error - TS2345 - Argument of type 'Point | [PointLike, PointLike]' is not assignable to parameter of type 'Point'.
             aboveHorizon = transform.isPointAboveHorizon(pt);
         } else {
             const tl = Point.convert(geometry[0]);
-            const br = Point.convert(geometry[1]);
+            const br = Point.convert(geometry[1]) as Point;
             screenGeometry = [tl, br];
-            // @ts-expect-error - TS2345 - Argument of type 'number | Point' is not assignable to parameter of type 'Point'.
             aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p));
         }
 

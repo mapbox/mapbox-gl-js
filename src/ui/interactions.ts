@@ -1,26 +1,58 @@
-
 import {createExpression} from '../style-spec/expression/index';
-import {getNameFromFQID, getScopeFromFQID} from '../util/fqid';
+import {deepEqual} from '../util/util';
 import {Event} from '../util/evented';
 
-import type {MapEvents, MapMouseEventType, MapMouseEvent} from './events';
+import type {MapEvents, MapInteractionEventType, MapMouseEvent} from './events';
 import type {Map as MapboxMap} from './map';
 import type {GeoJSONFeature, FeaturesetDescriptor} from '../util/vectortile_to_geojson';
-import type {ExpressionSpecification} from '../style-spec/types';
-import type {StyleExpression, Feature} from '../style-spec/expression/index';
+import type {FilterSpecification} from '../style-spec/types';
+import type {StyleExpression} from '../style-spec/expression/index';
 import type LngLat from '../geo/lng_lat';
 import type Point from '@mapbox/point-geometry';
 
+/**
+ * Configuration object for adding an interaction to a map in `Map#addInteraction()`.
+ * Interactions allow you to handle user events like clicks and hovers, either globally
+ * or for specific featuresets.
+ */
 export type Interaction = {
-    type: MapMouseEventType;
-    filter?: ExpressionSpecification;
-    namespace?: string;
+    /**
+     * A type of interaction.
+     */
+    type: MapInteractionEventType;
+    /**
+     * A featureset to add interaction to.
+     */
     featureset?: FeaturesetDescriptor;
-    handler: (event: InteractionEvent) => boolean;
+    /**
+     * A feature namespace to distinguish between features in the same sources but different featuresets.
+     */
+    namespace?: string;
+    /**
+     * A filter allows to specify which features from the featureset should handle the interaction.
+     * This parameter only applies when the featureset is specified.
+     */
+    filter?: FilterSpecification;
+    /**
+     * Radius of an extra area around click or touch. Default value: 0.
+     * This parameter only applies when the featureset is specified.
+     */
+    radius?: number;
+    /**
+     * A function that will be called when the interaction is triggered.
+     * @param event - The event object.
+     * @returns
+     */
+    handler: (event: InteractionEvent) => boolean | void;
 };
 
-export class InteractionEvent extends Event<MapEvents, MapMouseEventType> {
-    override type: MapMouseEventType;
+/**
+ * Event types that require a featureset to be specified.
+ */
+const delegatedEventTypes = ['mouseenter', 'mouseover', 'mouseleave', 'mouseout'];
+
+export class InteractionEvent extends Event<MapEvents, MapInteractionEventType> {
+    override type: MapInteractionEventType;
     override target: MapboxMap;
     originalEvent: MouseEvent;
     point: Point;
@@ -33,7 +65,7 @@ export class InteractionEvent extends Event<MapEvents, MapMouseEventType> {
 
     constructor(e: MapMouseEvent, id: string, interaction: Interaction, feature?: GeoJSONFeature) {
         const {point, lngLat, originalEvent, target} = e;
-        super(e.type, {point, lngLat, originalEvent, target} as MapEvents[MapMouseEventType]);
+        super(e.type, {point, lngLat, originalEvent, target} as MapEvents[MapInteractionEventType]);
         this.preventDefault = () => { e.preventDefault(); };
 
         this.id = id;
@@ -44,8 +76,8 @@ export class InteractionEvent extends Event<MapEvents, MapMouseEventType> {
 
 export class InteractionSet {
     map: MapboxMap;
-    interactionsByType: Map<MapMouseEventType, Map<string, Interaction>>;
-    typeById: Map<string, MapMouseEventType>;
+    interactionsByType: Map<MapInteractionEventType, Map<string, Interaction>>;
+    typeById: Map<string, MapInteractionEventType>;
     filters: Map<string, StyleExpression>;
 
     constructor(map) {
@@ -75,7 +107,12 @@ export class InteractionSet {
 
         // if we didn't have an interaction of this type before, add a map listener for it
         if (interactions.size === 0) {
-            this.map.on(type, this.handleType);
+            if (delegatedEventTypes.includes(type)) {
+                this.map.on(type, interaction.featureset, this.handleType);
+            } else {
+                this.map.on(type, this.handleType);
+            }
+
             this.interactionsByType.set(type, interactions);
         }
 
@@ -102,70 +139,48 @@ export class InteractionSet {
     }
 
     handleType(event: MapMouseEvent) {
-        // only query features once for every interaction type
-        const features = event.features || this.map.queryRenderedFeatures(event.point);
-        if (!features) return;
-
         const interactions = this.interactionsByType.get(event.type);
         // The interactions are handled in reverse order of addition,
         // so that the last added interaction to the same target handles it first.
         const reversedInteractions = Array.from(interactions).reverse();
-        const ctx = {zoom: 0};
+
+        const targets = [];
+        for (const [, interaction] of reversedInteractions) {
+            if (interaction.featureset) {
+                targets.push({featureset: interaction.featureset, filter: interaction.filter, radius: interaction.radius});
+            }
+        }
+
+        let features = this.map.style.queryRenderedFeaturesForInteractions(event.point, targets, this.map.transform);
+
+        // To handle event types that require a featureset to be specified
+        // but no features are returned, we create an empty feature
+        // to trigger the interactions processing loop.
+        if (!features.length && delegatedEventTypes.includes(event.type)) {
+            features = [null];
+        }
 
         let handled = false;
-
         for (const feature of features) {
             for (const [id, interaction] of reversedInteractions) {
                 const {handler, featureset} = interaction;
-                if (!featureset) {
-                    continue;
-                }
-                const filter = this.filters.get(id);
+                if (!featureset) continue;
 
-                // narrow down features through filter and layers
-                const targetLayerId = feature.layer.id;
-                const targetLayerName = getNameFromFQID(targetLayerId);
-                const targetLayerScope = getScopeFromFQID(targetLayerId);
-
-                if ('layerId' in featureset && featureset.layerId !== targetLayerId) {
-                    continue;
-                }
-
-                if ('featuresetId' in featureset) {
-                    if (featureset.importId !== targetLayerScope) continue;
-
-                    const featuresetSpec = this.map.style.getFeatureset(featureset.featuresetId, featureset.importId);
-                    if (!featuresetSpec || !featuresetSpec.selectors) continue;
-
-                    const selectorLayers = featuresetSpec.selectors.map(selector => selector.layer);
-                    if (!selectorLayers.includes(targetLayerName)) continue;
-                }
-
-                if (filter && !filter.evaluate(ctx, feature as unknown as Feature)) continue;
-
-                // make a derived feature by cloning original feature
-                // and replacing the layer property with the featureset
-                const derivedFeature = feature.clone();
-                delete derivedFeature.layer;
-                derivedFeature.namespace = feature.namespace;
-                derivedFeature.featureset = featureset;
-                derivedFeature.properties = feature.properties;
+                // check if the feature belongs to the interaction
+                if (feature != null && !deepEqual(feature.featureset, featureset)) continue;
 
                 // if we explicitly returned false in a feature handler, pass through to the feature below it
-                const stop = handler(new InteractionEvent(event, id, interaction, derivedFeature));
+                const stop = handler(new InteractionEvent(event, id, interaction, feature));
                 if (stop !== false) {
                     handled = true;
                     break;
                 }
             }
-            if (handled) {
-                break;
-            }
+
+            if (handled) break;
         }
 
-        if (handled) {
-            return;
-        }
+        if (handled) return;
 
         // If no interactions targeted to a featureset handled it, the targetless intaractions have chance to handle.
         for (const [id, interaction] of reversedInteractions) {
@@ -173,6 +188,7 @@ export class InteractionSet {
             if (featureset) {
                 continue;
             }
+
             const stop = handler(new InteractionEvent(event, id, interaction, null));
             if (stop !== false) {
                 break;

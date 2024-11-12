@@ -10,6 +10,7 @@ import EXTENT from '../../../src/style-spec/data/extent';
 import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '../../util/model_util';
 import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
+import Feature from '../../../src/util/vectortile_to_geojson';
 
 import type {vec3} from 'gl-matrix';
 import type {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue, ConfigOptions} from '../../../src/style/properties';
@@ -24,7 +25,6 @@ import type ModelManager from '../../render/model_manager';
 import type {Node} from '../../data/model';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {FeatureFilter} from '../../../src/style-spec/feature_filter/index';
-import type Feature from '../../../src/util/vectortile_to_geojson';
 import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type {LUT} from "../../../src/util/lut";
 
@@ -239,14 +239,15 @@ class ModelStyleLayer extends StyleLayer {
 
         const position = new LngLat(0, 0);
         tileToLngLat(tile.tileID.canonical, position, nodeInfo.node.anchor[0], nodeInfo.node.anchor[1]);
-        queryFeature = {
-            type: 'Feature',
-            geometry: {type: "Point", coordinates: [position.lng, position.lat]},
-            properties: nodeInfo.feature.properties,
-            id: nodeInfo.feature.id,
-            state: {}, // append later
-            layer: this.serialize()
-        };
+
+        const {z, x, y} = tile.tileID.canonical;
+        queryFeature = new Feature({} as unknown as VectorTileFeature, z, x, y, nodeInfo.feature.id);
+        queryFeature.properties = nodeInfo.feature.properties;
+        queryFeature.geometry = {type: 'Point', coordinates: [position.lng, position.lat]};
+        queryFeature.layer = {...this.serialize(), id: this.fqid};
+        queryFeature.state = {};
+        queryFeature.tile = tile.tileID.canonical;
+
         return {queryFeature, intersectionZ};
     }
 }

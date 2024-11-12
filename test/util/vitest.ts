@@ -46,7 +46,7 @@ export function doneAsync() {
     };
 }
 
-export function createMap(options, callback) {
+export function createMap(options, callback?: (err: any, map: Map) => void) {
     const container = window.document.createElement('div');
     const defaultOptions = {
         container,

@@ -3021,7 +3021,7 @@ test('Style#areTilesLoaded', async () => {
     });
 });
 
-test('Style#getFeaturesets', async () => {
+test('Style#getFeaturesetDescriptors', async () => {
     const style = new Style(new StubMap());
     const initialStyle = createStyleJSON({
         imports: [{
@@ -3039,6 +3039,6 @@ test('Style#getFeaturesets', async () => {
     style.loadJSON(initialStyle);
     await waitFor(style, 'style.load');
 
-    expect(style.getFeaturesets()).toEqual([]);
-    expect(style.getFeaturesets('basemap')).toEqual([{featuresetId: 'poi', importId: 'basemap'}, {featuresetId: 'buildings', importId: 'basemap'}]);
+    expect(style.getFeaturesetDescriptors()).toEqual([]);
+    expect(style.getFeaturesetDescriptors('basemap')).toEqual([{featuresetId: 'poi', importId: 'basemap'}, {featuresetId: 'buildings', importId: 'basemap'}]);
 });

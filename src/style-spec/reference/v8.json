@@ -204,7 +204,7 @@
    "featuresets": {
       "experimental": true,
       "type": "featuresets",
-      "doc": "Defines sets of features for querying, interaction, and feature state manipulation.",
+      "doc": "Defines sets of features for querying, interaction, and state management on the map, referencing individual layers or subsets of layers within the map's style.",
       "example": {
         "poi": {
           "selectors": [

@@ -451,9 +451,7 @@ class Tile {
     // Queries non-symbol features rendered for this tile.
     // Symbol features are queried globally
     queryRenderedFeatures(
-        layers: {
-            [_: string]: StyleLayer;
-        },
+        layers: Record<string, StyleLayer>,
         sourceFeatureState: SourceFeatureState,
         tileResult: TilespaceQueryGeometry,
         filter: FilterSpecification,

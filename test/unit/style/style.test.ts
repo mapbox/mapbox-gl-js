@@ -1798,12 +1798,18 @@ describe('Style#queryRenderedFeatures', () => {
                     layer: style._layers.land.serialize(),
                     geometry: {
                         type: 'Polygon'
+                    },
+                    clone() {
+                        return this;
                     }
                 }, {
                     type: 'Feature',
                     layer: style._layers.land.serialize(),
                     geometry: {
                         type: 'Point'
+                    },
+                    clone() {
+                        return this;
                     }
                 }],
                 'landref': [{
@@ -1811,6 +1817,9 @@ describe('Style#queryRenderedFeatures', () => {
                     layer: style._layers.landref.serialize(),
                     geometry: {
                         type: 'Line'
+                    },
+                    clone() {
+                        return this;
                     }
                 }]
             };
@@ -1963,24 +1972,19 @@ describe('Style#queryRenderedFeatures', () => {
         expect(results.length).toEqual(0);
     });
 
-    describe('Style#queryRenderedFeaturesets', () => {
+    describe('Style#queryRenderedFeaturesForInteractions', () => {
         test('query referencing featuresetId', () => {
-            const results = style.queryRenderedFeaturesets([0, 0], [{featureset: {featuresetId: 'land'}}], transform);
+            const results = style.queryRenderedFeaturesForInteractions([0, 0], [{featureset: {featuresetId: 'land', importId: ''}}], transform);
             expect(results.length).toEqual(2);
         });
 
         test('query referencing layerId', () => {
-            const results = style.queryRenderedFeaturesets([0, 0], [{featureset: {layerId: 'landref'}}], transform);
+            const results = style.queryRenderedFeaturesForInteractions([0, 0], [{featureset: {layerId: 'landref'}}], transform);
             expect(results.length).toEqual(1);
         });
 
-        test('query referencing featuresetId', () => {
-            const results = style.queryRenderedFeaturesets([0, 0], [{featureset: {featuresetId: 'land'}}], transform);
-            expect(results.length).toEqual(2);
-        });
-
         test('query mix of featureset descriptors', () => {
-            const results = style.queryRenderedFeaturesets([0, 0], [{featureset: {featuresetId: 'land'}}, {featureset: {layerId: 'landref'}}], transform);
+            const results = style.queryRenderedFeaturesForInteractions([0, 0], [{featureset: {featuresetId: 'land', importId: ''}}, {featureset: {layerId: 'landref'}}], transform);
             expect(results.length).toEqual(3);
         });
     });
