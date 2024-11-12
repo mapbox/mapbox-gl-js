@@ -228,7 +228,7 @@ const exported = {
      * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
      * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
      *
-     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/guides/browsers/#csp-directives) for more details.
      *
      * @var {string} workerUrl
      * @returns {string} A URL hosting a JavaScript bundle for mapbox-gl's WebWorker.
@@ -283,7 +283,7 @@ const exported = {
      * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
      * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
      *
-     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/guides/browsers/#csp-directives) for more details.
      *
      * @var {string} dracoUrl
      * @returns {string} A URL hosting Google Draco decoding library (`draco_wasm_wrapper_gltf.js` and `draco_decoder_gltf.wasm`).
