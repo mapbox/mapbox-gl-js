@@ -9491,20 +9491,25 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity of the model layer.",
+      "doc": "The opacity of the model layer. Except for zoom, expressions that are data-driven are not supported if using GeoJSON or vector tile as the model layer source.",
       "transition": true,
       "expression": {
         "interpolated": true,
-        "parameters": ["zoom"]
+        "parameters": ["feature", "feature-state", "zoom"]
       },
       "sdk-support": {
-          "basic functionality": {
+        "basic functionality": {
           "js": "3.0.0",
           "android": "11.0.0",
           "ios": "11.0.0"
+        },
+        "data-driven styling": {
+          "js": "3.9.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "model-rotation": {
       "type": "array",

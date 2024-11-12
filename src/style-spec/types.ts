@@ -935,7 +935,7 @@ export type ModelLayerSpecification = {
         "model-id"?: DataDrivenPropertyValueSpecification<string>
     },
     "paint"?: {
-        "model-opacity"?: PropertyValueSpecification<number>,
+        "model-opacity"?: DataDrivenPropertyValueSpecification<number>,
         "model-opacity-transition"?: TransitionSpecification,
         "model-rotation"?: DataDrivenPropertyValueSpecification<[number, number, number]>,
         "model-rotation-transition"?: TransitionSpecification,

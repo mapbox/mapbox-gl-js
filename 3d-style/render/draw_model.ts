@@ -157,7 +157,7 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
 }
 
 function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer, modelParameters: ModelParameters, stencilMode: StencilMode, colorMode: ColorMode) {
-    const opacity = layer.paint.get('model-opacity');
+    const opacity = layer.paint.get('model-opacity').constantOr(1.0);
 
     assert(opacity > 0);
     const context = painter.context;
@@ -324,7 +324,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         return;
     }
     // early return if totally transparent
-    const opacity = layer.paint.get('model-opacity');
+    const opacity = layer.paint.get('model-opacity').constantOr(1.0);
     if (opacity === 0) {
         return;
     }
@@ -676,7 +676,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 program = painter.getOrCreateProgram('model', {defines: (definesValues as DynamicDefinesType[]), overrideFog: affectedByFog});
                 const material = mesh.material;
                 const pbr = material.pbrMetallicRoughness;
-                const layerOpacity = layer.paint.get('model-opacity');
+                const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
 
                 const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
                 uniformValues = modelUniformValues(
@@ -779,7 +779,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     const pixelsPerMeter = 1.0 / metersPerPixel;
     const zScaleMatrix = mat4.fromScaling([] as any, [1.0, 1.0, pixelsPerMeter]);
     mat4.translate(negCameraPosMatrix, negCameraPosMatrix, negCameraPos);
-    const layerOpacity = layer.paint.get('model-opacity');
+    const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
 
     const depthModeRW = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     const depthModeRO = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
