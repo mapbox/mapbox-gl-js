@@ -33,6 +33,7 @@ uniform float u_tile_units_to_pixels;
 uniform vec2 u_units_to_pixels;
 uniform mat2 u_pixels_to_tile_units;
 uniform float u_device_pixel_ratio;
+uniform float u_width_scale;
 
 #ifdef ELEVATED
 uniform lowp float u_zbias_factor;
@@ -103,8 +104,8 @@ void main() {
     // these transformations used to be applied in the JS and native code bases.
     // moved them into the shader for clarity and simplicity.
     gapwidth = gapwidth / 2.0;
-    float halfwidth = width / 2.0;
-    offset = -1.0 * offset;
+    float halfwidth = (u_width_scale * width) / 2.0;
+    offset = -1.0 * offset * u_width_scale;
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
     float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : ANTIALIASING);

@@ -26,6 +26,7 @@ export type LayoutProps = {
     "line-elevation-reference": DataConstantProperty<"none" | "sea" | "ground" | "hd-road-markup">;
     "line-cross-slope": DataConstantProperty<number>;
     "visibility": DataConstantProperty<"visible" | "none">;
+    "line-width-unit": DataConstantProperty<"pixels" | "meters">;
 };
 let layout: Properties<LayoutProps>;
 export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
@@ -38,6 +39,7 @@ export const getLayoutProperties = (): Properties<LayoutProps> => layout || (lay
     "line-elevation-reference": new DataConstantProperty(styleSpec["layout_line"]["line-elevation-reference"]),
     "line-cross-slope": new DataConstantProperty(styleSpec["layout_line"]["line-cross-slope"]),
     "visibility": new DataConstantProperty(styleSpec["layout_line"]["visibility"]),
+    "line-width-unit": new DataConstantProperty(styleSpec["layout_line"]["line-width-unit"]),
 }));
 
 export type PaintProps = {

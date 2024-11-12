@@ -3,6 +3,7 @@
 #include "_prelude_shadow.fragment.glsl"
 
 uniform lowp float u_device_pixel_ratio;
+uniform highp float u_width_scale;
 uniform float u_alpha_discard_threshold;
 uniform highp vec2 u_trim_offset;
 uniform highp vec2 u_trim_fade_range;
@@ -64,7 +65,7 @@ void main() {
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_width2.t) or when fading out
     // (v_width2.s)
-    float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
+    float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture(u_dash_image, v_tex).r;

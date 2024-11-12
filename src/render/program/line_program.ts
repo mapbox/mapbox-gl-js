@@ -15,6 +15,7 @@ export type LineUniformsType = {
     ['u_matrix']: UniformMatrix4f;
     ['u_pixels_to_tile_units']: UniformMatrix2f;
     ['u_device_pixel_ratio']: Uniform1f;
+    ['u_width_scale']: Uniform1f;
     ['u_units_to_pixels']: Uniform2f;
     ['u_dash_image']: Uniform1i;
     ['u_gradient_image']: Uniform1i;
@@ -35,6 +36,7 @@ export type LinePatternUniformsType = {
     ['u_texsize']: Uniform2f;
     ['u_pixels_to_tile_units']: UniformMatrix2f;
     ['u_device_pixel_ratio']: Uniform1f;
+    ['u_width_scale']: Uniform1f;
     ['u_units_to_pixels']: Uniform2f;
     ['u_image']: Uniform1i;
     ['u_tile_units_to_pixels']: Uniform1f;
@@ -51,6 +53,7 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_pixels_to_tile_units': new UniformMatrix2f(context),
     'u_device_pixel_ratio': new Uniform1f(context),
+    'u_width_scale': new Uniform1f(context),
     'u_units_to_pixels': new Uniform2f(context),
     'u_dash_image': new Uniform1i(context),
     'u_gradient_image': new Uniform1i(context),
@@ -71,6 +74,7 @@ const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
     'u_texsize': new Uniform2f(context),
     'u_pixels_to_tile_units': new UniformMatrix2f(context),
     'u_device_pixel_ratio': new Uniform1f(context),
+    'u_width_scale': new Uniform1f(context),
     'u_image': new Uniform1i(context),
     'u_units_to_pixels': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context),
@@ -90,6 +94,7 @@ const lineUniformValues = (
     matrix: mat4 | null | undefined,
     imageHeight: number,
     pixelRatio: number,
+    widthScale: number,
     trimOffset: [number, number],
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
@@ -101,6 +106,7 @@ const lineUniformValues = (
         'u_matrix': calculateMatrix(painter, tile, layer, matrix) as Float32Array,
         'u_pixels_to_tile_units': pixelsToTileUnits as Float32Array,
         'u_device_pixel_ratio': pixelRatio,
+        'u_width_scale': widthScale,
         'u_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
@@ -126,6 +132,7 @@ const linePatternUniformValues = (
     layer: LineStyleLayer,
     matrix: mat4 | null | undefined,
     pixelRatio: number,
+    widthScale: number,
     trimOffset: [number, number],
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
@@ -138,6 +145,7 @@ const linePatternUniformValues = (
         // camera zoom ratio
         'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile) as Float32Array,
         'u_device_pixel_ratio': pixelRatio,
+        'u_width_scale': widthScale,
         'u_image': 0,
         'u_tile_units_to_pixels': calculateTileRatio(tile, transform),
         'u_units_to_pixels': [

@@ -449,7 +449,11 @@ export type LineLayerSpecification = {
          * @experimental This property is experimental and subject to change in future versions.
          */
         "line-cross-slope"?: ExpressionSpecification,
-        "visibility"?: "visible" | "none" | ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "line-width-unit"?: PropertyValueSpecification<"pixels" | "meters">
     },
     "paint"?: {
         "line-opacity"?: DataDrivenPropertyValueSpecification<number>,

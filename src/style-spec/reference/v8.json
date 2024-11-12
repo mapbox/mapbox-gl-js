@@ -2049,6 +2049,36 @@
         "interpolated": false
       },
       "property-type": "constant"
+    },
+    "line-width-unit": {
+      "type": "enum",
+      "doc": "Selects the unit of line-width. The same unit is automatically used for line-blur and line-offset. Note: This is an experimental property and might be removed in a future release.",
+      "values": {
+        "pixels": {
+          "doc": "Width is rendered in pixels."
+        },
+        "meters": {
+          "doc": "Width is rendered in meters."
+        }
+      },
+      "default": "pixels",
+      "experimental": true,
+      "private": true,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.9.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "layout_symbol": {

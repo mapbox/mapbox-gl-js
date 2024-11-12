@@ -21,6 +21,7 @@ import EvaluationParameters from '../../style/evaluation_parameters';
 import assert from 'assert';
 import {Point4D, clipLine} from '../../util/polygon_clipping';
 import {warnOnce} from '../../util/util';
+import {tileToMeter} from '../../geo/mercator_coordinate';
 // Import LineAtlas as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../../render/line_atlas';
@@ -140,6 +141,7 @@ class LineBucket implements Bucket {
 
     hasPattern: boolean;
     hasZOffset: boolean;
+    tileToMeter: number;
     hasCrossSlope: boolean;
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
@@ -192,6 +194,7 @@ class LineBucket implements Bucket {
         this.hasPattern = hasPattern('line', this.layers, options);
         const lineSortKey = this.layers[0].layout.get('line-sort-key');
 
+        this.tileToMeter = tileToMeter(canonical);
         this.hasZOffset = !this.layers[0].isDraped();
         const elevationReference = this.layers[0].layout.get('line-elevation-reference');
         if (this.hasZOffset && elevationReference === 'none') {
