@@ -51,7 +51,7 @@ export default function validateTerrain(options: ValidationOptions): Array<Valid
         errors.push(new ValidationError(key, terrain, `terrain is missing required property "source"`));
     } else {
         const source = style.sources && style.sources[terrain.source];
-        const sourceType = source && unbundle(source.type);
+        const sourceType = source && unbundle(source.type) as string;
         if (!source) {
             errors.push(new ValidationError(key, terrain.source, `source "${terrain.source}" not found`));
         } else if (sourceType !== 'raster-dem') {

@@ -136,7 +136,7 @@ export function toString(value: Value): string {
     if (value === null) {
         return '';
     } else if (type === 'string' || type === 'number' || type === 'boolean') {
-        return String(value);
+        return String(value as string | number | boolean);
     } else if (value instanceof Color || value instanceof Formatted || value instanceof ResolvedImage) {
         return value.toString();
     } else {
