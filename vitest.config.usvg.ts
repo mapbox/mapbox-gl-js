@@ -20,7 +20,7 @@ export default mergeConfig(baseConfig, defineConfig({
         include: ['./test/usvg/*.test.ts'],
         setupFiles: ['./test/usvg/setup.ts'],
         reporters: process.env.CI ?
-            [['junit', {outputFile: './test/usvg/test-results.xml'}]] :
+            [['junit', {outputFile: './test/usvg/test-results.xml'}], ['basic']] :
             ['basic'],
     },
     plugins: [

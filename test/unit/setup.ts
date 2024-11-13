@@ -4,6 +4,8 @@
 import {toHaveBeenCalledBefore, toHaveBeenCalledAfter} from 'jest-extended';
 import {expect} from '../util/vitest';
 
+window.devicePixelRatio = 1;
+
 // Load Error Handling
 // https://vitejs.dev/guide/build#load-error-handling
 window.addEventListener('vite:preloadError', (event) => {

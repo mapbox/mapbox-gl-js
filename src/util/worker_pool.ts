@@ -1,7 +1,5 @@
 import {createWorker} from './web_worker';
 
-import type {WorkerInterface} from './web_worker';
-
 export const PRELOAD_POOL_ID = 'mapboxgl_preloaded_worker_pool';
 
 /**
@@ -12,13 +10,13 @@ export default class WorkerPool {
     static workerCount: number;
 
     active: Partial<Record<number | string, boolean>>;
-    workers: Array<WorkerInterface>;
+    workers: Array<Worker>;
 
     constructor() {
         this.active = {};
     }
 
-    acquire(mapId: number | string): Array<WorkerInterface> {
+    acquire(mapId: number | string): Array<Worker> {
         if (!this.workers) {
             // Lazily look up the value of mapboxgl.workerCount so that
             // client code has had a chance to set it.

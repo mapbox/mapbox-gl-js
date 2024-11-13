@@ -119,10 +119,8 @@ export interface Bucket {
     updateFootprints: (id: UnwrappedTileID, footprints: Array<TileFootprint>) => void;
 }
 
-export function deserialize(input: Array<Bucket>, style: Style): {
-    [_: string]: Bucket;
-} {
-    const output: Record<string, any> = {};
+export function deserialize(input: Array<Bucket>, style: Style): Record<string, Bucket> {
+    const output: Record<string, Bucket> = {};
 
     // Guard against the case where the map's style has been set to null while
     // this bucket has been parsing.
@@ -139,7 +137,8 @@ export function deserialize(input: Array<Bucket>, style: Style): {
 
         // look up StyleLayer objects from layer ids (since we don't
         // want to waste time serializing/copying them from the worker)
-        (bucket as any).layers = layers;
+        // @ts-expect-error - layers is a readonly property
+        bucket.layers = layers;
         if (bucket.stateDependentLayerIds) {
             (bucket as any).stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
         }

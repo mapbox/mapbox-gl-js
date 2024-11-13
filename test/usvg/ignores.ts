@@ -44,35 +44,72 @@ export const ignores = [
     "painting_visibility_collapse-on-tspan",
     "painting_visibility_hidden-on-tspan",
     "painting-stroke-linejoin-miter-clip",
+    "paint-servers_pattern_attributes-via-xlink-href",
+    "paint-servers_pattern_children-via-xlink-href",
+    "paint-servers_pattern_display=none-on-child",
+    "paint-servers_pattern_everything-via-xlink-href",
+    "paint-servers_pattern_invalid-patternUnits-and-patternContentUnits",
+    "paint-servers_pattern_nested-objectBoundingBox",
+    "paint-servers_pattern_out-of-order-referencing",
+    "paint-servers_pattern_pattern-on-child",
+    "paint-servers_pattern_patternContentUnits-with-viewBox",
+    "paint-servers_pattern_patternContentUnits=objectBoundingBox",
+    "paint-servers_pattern_patternUnits=objectBoundingBox",
+    "paint-servers_pattern_patternUnits=objectBoundingBox-with-percent",
+    "paint-servers_pattern_patternUnits=userSpaceOnUse-with-percent",
+    "paint-servers_pattern_preserveAspectRatio",
+    "paint-servers_pattern_recursive-on-child",
+    "paint-servers_pattern_self-recursive",
+    "paint-servers_pattern_self-recursive-on-child",
+    "paint-servers_pattern_simple-case",
+    "paint-servers_pattern_text-child",
+    "paint-servers_pattern_tiny-pattern-upscaled",
+    "paint-servers_pattern_transform-and-patternTransform",
+    "paint-servers_pattern_viewBox-via-xlink-href",
+    "paint-servers_pattern_with-patternTransform",
+    "paint-servers_pattern_with-viewBox",
+    "paint-servers_pattern_with-x-and-y",
+    "painting_context_with-pattern-and-transform-in-use",
+    "painting_context_with-pattern-in-use",
+    "painting_context_with-pattern-objectBoundingBox-in-use",
+    "painting_context_with-pattern-on-marker",
+    "painting_fill_pattern-on-shape",
+    "painting_fill-opacity_with-pattern",
+    "painting_stroke_pattern",
+    "painting_stroke-opacity_with-pattern",
+    "masking_mask_with-grayscale-image", // embedded images
+    "masking_mask_with-image",
+    "painting_image-rendering_optimizeSpeed",
+    "painting_image-rendering_optimizeSpeed-on-SVG",
 
-    // not yet implemented in src/data/usvg/usvg_pb_renderer.ts
-    "masking_clipPath_invisible-child-1",
-    "masking_clipPath_mixed-clip-rule",
-    "masking_clipPath_multiple-children",
-    "masking_clipPath_overlapped-shapes-with-evenodd",
-    "masking_clipPath_recursive-on-self",
-    "masking_clipPath_with-invalid-child-via-use",
-    "masking_mask_half-width-region-with-rotation",
-    "masking_mask_invisible-child-2",
-    "masking_mask_mask-on-self",
-    "masking_mask_maskContentUnits=objectBoundingBox",
-    "masking_mask_on-a-horizontal-line",
-    "masking_mask_on-a-small-object",
-    "masking_mask_on-group-with-transform",
-    "masking_mask_with-clip-path",
+    // spreadMethod not yet implemented
     "paint-servers_linearGradient_attributes-via-xlink-href-complex-order",
     "paint-servers_linearGradient_attributes-via-xlink-href-from-radialGradient",
     "paint-servers_linearGradient_spreadMethod=reflect",
     "paint-servers_linearGradient_spreadMethod=repeat",
     "paint-servers_radialGradient_attributes-via-xlink-href-complex-order",
     "paint-servers_radialGradient_attributes-via-xlink-href-from-linearGradient",
-    "paint-servers_radialGradient_gradientUnits=objectBoundingBox-with-percent",
     "paint-servers_radialGradient_spreadMethod=reflect",
     "paint-servers_radialGradient_spreadMethod=repeat",
-    "painting_fill-opacity_with-linearGradient",
+
+    // complex clip hierarchies and mixed clip rules not yet implemented
+    "masking_clipPath_mixed-clip-rule",
+    "masking_clipPath_overlapped-shapes-with-evenodd",
+    "masking_clipPath_clip-path-on-child",
+    "masking_clipPath_clip-path-on-child-with-transform",
+    "masking_clipPath_clip-path-on-children",
+    "masking_clipPath_recursive-on-child",
+
+    // Can't pass gradient transform to Canvas https://github.com/mapbox/mapbox-gl-js-internal/pull/1960#discussion_r1824278822
+    "paint-servers_radialGradient_gradientUnits=objectBoundingBox-with-percent",
+
+    // orientation on the marker here is different from expected image but still correct
+    // https://github.com/linebender/resvg-test-suite/issues/46#issuecomment-1741979205
     "painting_marker_orient=auto-on-M-C-C-4",
+
+    // difference in SVG and Canvas bezier renderers https://jsfiddle.net/Mourner/ub8twnhd/9/
+    "painting_stroke_line-as-curve-2",
+
+    // needs investigation
     "painting_marker_recursive-5",
-    "painting_stroke-linecap_open-path-with-butt",
-    "painting_stroke-linecap_open-path-with-round",
-    "painting_stroke-opacity_with-linearGradient"
 ];

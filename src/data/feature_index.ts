@@ -253,7 +253,7 @@ class FeatureIndex {
                 featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', id);
             }
 
-            const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, featureState, layoutVertexArrayOffset);
+            const intersectionZ = (!intersectionTest || intersectionTest(feature, styleLayer, featureState, layoutVertexArrayOffset)) as number;
             if (!intersectionZ) {
                 // Only applied for non-symbol features
                 continue;
@@ -275,7 +275,7 @@ class FeatureIndex {
         }
     }
 
-    appendToResult(result: QueryResult, layerID: string, featureIndex: number, geojsonFeature: Feature, intersectionZ: boolean | number) {
+    appendToResult(result: QueryResult, layerID: string, featureIndex: number, geojsonFeature: Feature, intersectionZ?: number) {
         let layerResult = result[layerID];
         if (layerResult === undefined) {
             layerResult = result[layerID] = [];

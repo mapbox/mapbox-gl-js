@@ -1,4 +1,5 @@
 #include "_prelude_fog.vertex.glsl"
+#include "_prelude_shadow.vertex.glsl"
 #include "_prelude_terrain.vertex.glsl"
 
 // floor(127 / 2) == 63.0
@@ -57,6 +58,15 @@ out vec2 v_tex;
 
 #ifdef RENDER_LINE_GRADIENT
 uniform float u_image_height;
+#endif
+
+#ifdef RENDER_SHADOWS
+uniform mat4 u_light_matrix_0;
+uniform mat4 u_light_matrix_1;
+
+out highp vec4 v_pos_light_view_0;
+out highp vec4 v_pos_light_view_1;
+out highp float v_depth;
 #endif
 
 #pragma mapbox: define highp vec4 color
@@ -121,6 +131,7 @@ void main() {
     float hidden = float(opacity == 0.0);
     vec2 extrude = dist * u_pixels_to_tile_units;
     vec4 projected_extrude = u_matrix * vec4(extrude, 0.0, 0.0);
+    vec2 projected_extrude_xy = projected_extrude.xy;
 #ifdef ELEVATED_ROADS
     // Apply slight vertical offset (1cm) for elevated vertices above the ground plane
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset + 0.01 * step(0.01, a_z_offset), 1.0) + projected_extrude;
@@ -164,10 +175,26 @@ void main() {
 #endif // ELEVATED
 #endif // ELEVATED_ROADS
 
+#ifdef ELEVATED_ROADS
+#ifdef RENDER_SHADOWS
+    vec3 shd_pos = vec3(pos + (offset2 + dist) * u_pixels_to_tile_units, a_z_offset);
+    vec3 shd_pos0 = shd_pos;
+    vec3 shd_pos1 = shd_pos;
+#ifdef NORMAL_OFFSET
+    vec3 shd_pos_offset = shadow_normal_offset(vec3(0.0, 0.0, 1.0));
+    shd_pos0 += shd_pos_offset * shadow_normal_offset_multiplier0();
+    shd_pos1 += shd_pos_offset * shadow_normal_offset_multiplier1();
+#endif
+    v_pos_light_view_0 = u_light_matrix_0 * vec4(shd_pos0, 1);
+    v_pos_light_view_1 = u_light_matrix_1 * vec4(shd_pos1, 1);
+    v_depth = gl_Position.w;
+#endif
+#endif
+
 #ifndef RENDER_TO_TEXTURE
     // calculate how much the perspective view squishes or stretches the extrude
     float extrude_length_without_perspective = length(dist);
-    float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_units_to_pixels);
+    float extrude_length_with_perspective = length(projected_extrude_xy / gl_Position.w * u_units_to_pixels);
     v_gamma_scale = mix(extrude_length_without_perspective / extrude_length_with_perspective, 1.0, step(0.01, blur));
 #else
     v_gamma_scale = 1.0;

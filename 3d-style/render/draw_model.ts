@@ -146,6 +146,14 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
     }
 
     definesValues.push('USE_STANDARD_DERIVATIVES');
+
+    const shadowRenderer = painter.shadowRenderer;
+    if (shadowRenderer) {
+        definesValues.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+        if (shadowRenderer.useNormalOffset) {
+            definesValues.push('NORMAL_OFFSET');
+        }
+    }
 }
 
 function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer, modelParameters: ModelParameters, stencilMode: StencilMode, colorMode: ColorMode) {
@@ -195,9 +203,10 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     // Extra buffers (colors, normals, texCoords)
     const dynamicBuffers = [];
 
-    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
+
+    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
 
     let fogMatrixArray = null;
     if (fog) {
@@ -970,6 +979,11 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         defines: []
                     };
                     const dynamicBuffers = [];
+
+                    if (!isShadowPass && shadowRenderer) {
+                        shadowRenderer.useNormalOffset = !!mesh.normalBuffer;
+                    }
+
                     setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
                     if (!hasMapboxFeatures) {
                         programOptions.defines.push('DIFFUSE_SHADED');
@@ -1011,11 +1025,6 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     if (material.occlusionTexture && material.occlusionTexture.offsetScale) {
                         occlusionTextureTransform = material.occlusionTexture.offsetScale;
                         programOptions.defines.push('OCCLUSION_TEXTURE_TRANSFORM');
-                    }
-
-                    if (!isShadowPass && shadowRenderer) {
-                        // Set normal offset before program creation, as it adds/remove necessary defines under the hood
-                        shadowRenderer.useNormalOffset = !!mesh.normalBuffer;
                     }
 
                     const program = painter.getOrCreateProgram('model', programOptions);

@@ -70,7 +70,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const hasOpacity = lineOpacity !== 1.0;
     let useStencilMaskRenderPass = (!image && hasOpacity) ||
     // Only semi-transparent lines need stencil masking
-
         (painter.depthOcclusion && occlusionOpacity > 0 && occlusionOpacity < 1);
 
     const gradient = layer.paint.get('line-gradient');
@@ -121,7 +120,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog, overrideRtt: hasZOffset ? true : undefined});
+        const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog, overrideRtt: hasZOffset ? false : undefined});
 
         if (constantPattern && tile.imageAtlas) {
             const posTo = tile.imageAtlas.patternPositions[constantPattern.toString()];
@@ -231,7 +230,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             // When terrain is on, ensure that the stencil buffer has 0 values.
             // As stencil may be disabled when it is not in overlapping stencil
             // mode. Refer to stencilModeForRTTOverlap logic.
-            if (stencilId === 0 && isDraping) {
+            const needsClearing = stencilId === 0 && isDraping;
+            if (needsClearing) {
                 context.clear({stencil: 0});
             }
             const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
@@ -255,6 +255,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
     }
 
+    // It is important that this precedes resetStencilClippingMasks as in gl-js we don't clear stencil for terrain.
+    if (hasZOffset) painter.forceTerrainMode = false;
+
     // When rendering to stencil, reset the mask to make sure that the tile
     // clipping reverts the stencil mask we may have drawn in the buffer.
     // The stamp could be reverted by an extra draw call of line geometry,
@@ -267,5 +270,4 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     if (occlusionOpacity !== 0 && !painter.depthOcclusion && !isDraping) {
         painter.layersWithOcclusionOpacity.push(painter.currentLayer);
     }
-    if (hasZOffset) painter.forceTerrainMode = false;
 }

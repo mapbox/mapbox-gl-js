@@ -34,7 +34,8 @@ function createSource(options, logoRequired) {
             canonicalizeTileset: tileJSON => tileJSON.tiles
         },
         transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
-        _getMapId: () => 1
+        _getMapId: () => 1,
+        getWorldview: () => {}
     });
     source.on('error', (e) => {
         throw e.error;

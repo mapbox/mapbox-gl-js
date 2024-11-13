@@ -6,7 +6,12 @@ import {createPropertyExpression} from '../../../src/style-spec/expression/index
 const spec = {
     'function': true,
     'property-function': true,
-    'type': 'color'
+    'type': 'color',
+    "expression": {
+        "parameters": [
+            "line-progress"
+        ]
+    }
 };
 
 function pixelAt(image, i) {

@@ -1,0 +1,54 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        -122.40966796875,
+        37.80544606854738
+      ],
+      "type": "Point"
+    },
+    "id": "6062613",
+    "properties": {
+      "height": 80.5507812
+    },
+    "source": "file-system-tiles",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+          -122.39465564489365,
+        37.79525622982453
+      ],
+      "type": "Point"
+    },
+    "id": 3733942554523437,
+    "properties": {
+      "tree_type": "palm"
+    },
+    "source": "trees",
+    "sourceLayer": "trees",
+    "state": {
+      "hover": true
+    },
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -122.39468783140182,
+        37.79514813539846
+      ],
+      "type": "Point"
+    },
+    "id": 334703598267437,
+    "properties": {
+      "tree_type": "palm"
+    },
+    "source": "trees",
+    "sourceLayer": "trees",
+    "state": {},
+    "type": "Feature"
+  }
+]

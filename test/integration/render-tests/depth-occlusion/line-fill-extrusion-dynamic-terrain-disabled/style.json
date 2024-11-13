@@ -213,6 +213,7 @@
       "id": "line1",
       "type": "line",
       "source": "line",
+      "minzoom": 14,
       "paint": {
         "line-color": "rgba(0,255,0,1)",
         "line-width": 15.0,

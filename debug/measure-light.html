@@ -39,7 +39,7 @@ var Demo3D = function() {
     this.directionalLightAltitude = 2;
 
     this.symbolZOffset = 100.0;
-    this.symbolElevationReference = 'terrain';
+    this.symbolElevationReference = 'ground';
 };
 
 var demo3d = new Demo3D();
@@ -143,9 +143,9 @@ window.onload = function() {
         map.setPaintProperty('icon-variant-label-demo', 'symbol-z-offset', demo3d.symbolZOffset);
     });
 
-    var symbolElevationReference = symbolElevationGroup.add(demo3d, 'symbolElevationReference', ['sea', 'terrain']);
+    var symbolElevationReference = symbolElevationGroup.add(demo3d, 'symbolElevationReference', ['sea', 'ground']);
     symbolElevationReference.onChange((value) => {
-        map.setPaintProperty('icon-variant-label-demo', 'symbol-elevation-reference', demo3d.symbolElevationReference);
+        map.setLayoutProperty('icon-variant-label-demo', 'symbol-elevation-reference', demo3d.symbolElevationReference);
     });
 
 };

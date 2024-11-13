@@ -21,6 +21,10 @@ export function supportsZoomExpression(spec: StylePropertySpecification): boolea
     return expressionHasParameter(spec.expression, 'zoom');
 }
 
+export function supportsLineProgressExpression(spec: StylePropertySpecification): boolean {
+    return expressionHasParameter(spec.expression, 'line-progress');
+}
+
 export function supportsInterpolation(spec: StylePropertySpecification): boolean {
     return !!spec.expression && spec.expression.interpolated;
 }

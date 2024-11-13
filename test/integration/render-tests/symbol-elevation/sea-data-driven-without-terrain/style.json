@@ -106,11 +106,11 @@
       "source": "geojson",
       "layout": {
         "symbol-placement": "point",
-        "icon-image": "music-12"
+        "icon-image": "music-12",
+        "symbol-elevation-reference": "sea"
       },
       "paint": {
-        "symbol-z-offset": ["get", "elevation"],
-        "symbol-elevation-reference": "sea"
+        "symbol-z-offset": ["get", "elevation"]
       }
     }
   ]

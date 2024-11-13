@@ -204,7 +204,7 @@
    "featuresets": {
       "experimental": true,
       "type": "featuresets",
-      "doc": "Defines sets of features for querying, interaction, and feature state manipulation.",
+      "doc": "Defines sets of features for querying, interaction, and state management on the map, referencing individual layers or subsets of layers within the map's style.",
       "example": {
         "poi": {
           "selectors": [
@@ -1617,6 +1617,35 @@
         "interpolated": false
       },
       "property-type": "constant"
+    },
+    "fill-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of fill-elevation. Some modes might require precomputed elevation data in the tileset.",
+      "values": {
+        "none": {
+          "doc": "Elevated rendering is disabled."
+        },
+        "hd-road-base": {
+          "doc": "Elevate geometry relative to HD roads. Use this mode to describe base polygons of the road networks."
+        },
+        "hd-road-markup": {
+          "doc": "Elevated rendering is enabled. Use this mode to describe additive and stackable features such as 'hatched areas' that should exist only on top of road polygons."
+      }
+      },
+      "default": "none",
+      "experimental": true,
+      "private": true,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant"
     }
   },
   "layout_circle": {
@@ -1956,7 +1985,7 @@
         },
         "hd-road-markup": {
           "doc": "Elevated rendering is enabled. Use this mode to describe additive and stackable features that should exist only on top of road polygons."
-      }
+        }
       },
       "default": "none",
       "experimental": true,
@@ -2180,6 +2209,36 @@
           ]
         }
       ],
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "symbol-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of symbol-elevation.",
+      "values": {
+        "sea": {
+          "doc": "Elevate symbols relative to the sea level."
+        },
+        "ground": {
+          "doc": "Elevate symbols relative to the ground's height below them."
+        },
+        "hd-road-markup": {
+          "doc": "Use this mode to enable elevated behavior for features that are rendered on top of 3D road polygons. The feature is currently being developed."
+        }
+      },
+      "default": "ground",
+      "experimental": true,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
       "expression": {
         "interpolated": false,
         "parameters": [
@@ -3584,6 +3643,61 @@
       "parameters": ["zoom", "feature"]
     }
   },
+  "filter_hillshade": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the hillshade layer. Hillshade layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_raster": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the raster layer. Raster layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_raster-particle": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the raster particle layer. Raster particle layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_clip": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the clip layer. Clip layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_model": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to display a model. Model layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
   "filter_line": {
     "type": "boolean",
     "doc": "Expression which determines whether or not to display a Polygon or LineString. Line layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
@@ -4327,7 +4441,7 @@
         }
       },
       "line-progress": {
-        "doc": "Returns the progress along a gradient line. Can only be used in the `line-gradient` property.",
+        "doc": "Returns the progress along a gradient line. Can only be used in the `line-gradient` and `line-z-offset` properties.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -8367,34 +8481,6 @@
         ]
       },
       "property-type": "data-driven"
-    },
-    "symbol-elevation-reference": {
-      "type": "enum",
-      "doc": "Selects the base of symbol-elevation.",
-      "values": {
-        "sea": {
-          "doc": "Elevate symbols relative to the sea level."
-        },
-        "ground": {
-          "doc": "Elevate symbols relative to the ground's height below them."
-        }
-      },
-      "default": "ground",
-      "experimental": true,
-      "sdk-support": {
-        "basic functionality": {
-          "js": "3.7.0",
-          "android": "11.7.0",
-          "ios": "11.7.0"
-        }
-      },
-      "expression": {
-        "interpolated": false,
-        "parameters": [
-          "zoom"
-        ]
-      },
-      "property-type": "data-constant"
     }
   },
   "paint_raster": {

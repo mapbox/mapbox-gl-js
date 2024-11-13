@@ -3,7 +3,7 @@
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
@@ -16,101 +16,152 @@
 
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
-<script src='/debug/dynamic.js'></script>
 <script>
-
-dynamic.featuresets = {
-    "poi": {
-        "selectors": [
-            {
-                "layer": "poi-label",
-                "properties": {
-                    "id": ["get", "id"],
-                    "type": ["get", "type"],
-                    "name": ["get", "name"],
-                    "brand": ["get", "brand"]
-                }
-            }
-        ]
-    },
-    "buildings": {
-        "selectors": [
-            {
-                "layer": "3d-building",
-                "properties": {
-                    "id": ["get", "id"],
-                    "type": ["get", "type"],
-                    "height": ["get", "height"]
-                }
-            },
-            {
-                "layer": "building-models"
-            }
-        ]
-    },
-    "transit": {
-        "selectors": [
-            {
-                "layer": "transit-label",
-                "properties": {
-                    "id": ["get", "id"],
-                    "category": ["get", "class"]
-                }
-            },
-            {
-                "layer": "airport-label"
-            }
-        ]
-    },
-    "places": {
-        "selectors": [
-            {
-                "layer": "country-label",
-                "properties": {
-                    "id": ["get", "id"],
-                    "category": ["get", "class"]
-                }
-            },
-            {
-                "layer": "state-label"
-            },
-            {
-                "layer": "settlement-major-label"
-            },
-            {
-                "layer": "settlement-minor-label"
-            },
-            {
-                "layer": "settlement-subdivision-label"
-            }
-        ]
-    }
-};
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    devtools: true,
-    zoom: 12.5,
-    center: [-122.4194, 37.7749],
+    zoom: 16.7,
+    center: [24.9425, 60.1715],
+    pitch: 67,
+    bearing: -34,
     hash: true,
-    style: window.dynamic
+    style: 'mapbox://styles/mapbox-map-design/standard-experimental-ime',
 });
 
-map.addInteraction('poiclick', {
+// Selecting Buildings
+let selectedBuildings = [];
+map.addInteraction('building-click', {
+    type: 'click',
+    featureset: {featuresetId: 'buildings', importId: 'basemap'},
+    handler: (e) => {
+        map.setFeatureState(e.feature, {select: !e.feature.state.select});
+        selectedBuildings.push(e.feature);
+    }
+});
+
+// Selecting POIs
+let selectedPoi = null;
+const poiMarker = new mapboxgl.Marker({color: 'red'});
+poiMarker.getElement().style.cursor = 'pointer';
+
+map.addInteraction('poi-click', {
     type: 'click',
     featureset: {featuresetId: 'poi', importId: 'basemap'},
-    handler: (e) => console.log(e)
+    handler: (e) => {
+        if (selectedPoi) {
+            map.setFeatureState(selectedPoi, {hide: false});
+            poiMarker.remove();
+        }
+
+        selectedPoi = e.feature;
+        poiMarker
+            .setLngLat(selectedPoi.geometry.coordinates)
+            .addTo(map);
+
+        let html = '';
+        for (const key in e.feature.properties) {
+            html += `<div><b>${key}</b>: ${e.feature.properties[key]}</div>`;
+        }
+
+        const popup = new mapboxgl.Popup().setHTML(html);
+        poiMarker.setPopup(popup);
+
+        map.setFeatureState(e.feature, {hide: true});
+
+        // Highlight buildins underneath the selected pin.
+        const buildings = map.queryRenderedFeatures({
+            featureset: {featuresetId: 'buildings', importId: 'basemap'},
+            filter: ['<=', ['distance', e.feature.geometry], 0]
+        });
+
+        if (buildings.length > 0) {
+            selectedBuildings.forEach(f => map.setFeatureState(f, {select: false}));
+            buildings.forEach(f => map.setFeatureState(f, {select: true}));
+            selectedBuildings = buildings;
+        }
+    }
 });
 
-// map.on('click', (e) => {
-//     const features = map.queryRenderedFeatures(e.point);//, {layers: [{id: 'poi', importId: 'basemap'}]});
+// Selecting Places
+let selectedPlace = null;
+let placePopup = new mapboxgl.Popup();
+map.addInteraction('place-click', {
+    type: 'click',
+    featureset: {featuresetId: 'place-labels', importId: 'basemap'},
+    handler: (e) => {
+        if (selectedPlace) {
+            map.setFeatureState(selectedPlace, {select: false});
+        }
 
-//     if (features.length) {
-//         map.setFeatureState(features[0], {hover: true});
-//     }
+        selectedPlace = e.feature;
+        map.setFeatureState(e.feature, {select: true});
 
-//     console.log(features);
-// });
+        let html = '';
+        for (const key in e.feature.properties) {
+            html += `<div><b>${key}</b>: ${e.feature.properties[key]}</div>`;
+        }
+
+        placePopup
+            .setLngLat(e.feature.geometry.coordinates)
+            .setHTML(html)
+            .addTo(map);
+    }
+});
+
+// Clearing features selection
+map.addInteraction('map-click', {
+    type: 'click',
+    handler: (e) => {
+        // Clear selected POI
+        if (selectedPoi) {
+            map.setFeatureState(selectedPoi, {hide: false});
+            poiMarker.remove();
+            selectedPoi = null;
+        }
+
+        // Clear selected building
+        selectedBuildings.forEach(f => map.setFeatureState(f, {select: false}));
+
+        // Clear selected place
+        if (selectedPlace) {
+            map.setFeatureState(selectedPlace, {select: false});
+            selectedPlace = null;
+        }
+
+        placePopup.remove();
+        return false;
+    }
+});
+
+// Hover effects
+
+let hoveredBuilding;
+map.addInteraction('building-mousemove', {
+    type: 'mousemove',
+    featureset: {featuresetId: 'buildings', importId: 'basemap'},
+    handler: (e) => {
+        if (hoveredBuilding) {
+            // Hovering the same building
+            if(hoveredBuilding.id === e.feature.id && hoveredBuilding.namespace === e.feature.namespace) return;
+            // Clear the old building highlight
+            map.setFeatureState(hoveredBuilding, {highlight: false});
+        }
+
+        hoveredBuilding = e.feature;
+        map.setFeatureState(e.feature, {highlight: true});
+    }
+});
+
+map.addInteraction('building-mouseleave', {
+    type: 'mouseleave',
+    featureset: {featuresetId: 'buildings', importId: 'basemap'},
+    handler: (e) => {
+        if (hoveredBuilding) {
+            map.setFeatureState(hoveredBuilding, {highlight: false});
+            hoveredBuilding = null;
+        }
+    }
+});
 
 </script>
 </body>

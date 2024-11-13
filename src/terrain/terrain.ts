@@ -229,6 +229,7 @@ export class Terrain extends Elevation {
 
     _exaggeration: number;
     _evaluationZoom: number | null | undefined;
+    _attenuationRange: [number, number] | null;
     _previousCameraAltitude: number | null | undefined;
     _previousUpdateTimestamp: number | null | undefined;
     _previousZoom: number;
@@ -357,6 +358,7 @@ export class Terrain extends Elevation {
 
             this.sourceCache = sourceCache;
 
+            this._attenuationRange = style.terrain.getAttenuationRange();
             this._exaggeration = zoomDependentExaggeration ? this.calculateExaggeration(transform) : terrainProps.get('exaggeration');
             if (!transform.projection.requiresDraping && zoomDependentExaggeration && this._exaggeration === 0) {
                 this._disable();
@@ -406,6 +408,10 @@ export class Terrain extends Elevation {
     }
 
     calculateExaggeration(transform: Transform): number {
+        if (this._attenuationRange && transform.zoom >= Math.ceil(this._attenuationRange[1])) {
+            const terrainStyle = this._style.terrain;
+            return terrainStyle.getExaggeration(transform.zoom);
+        }
         const previousAltitude = this._previousCameraAltitude;
         const altitude = (transform.getFreeCameraOptions().position as any).z / transform.pixelsPerMeter * transform.worldSize;
         this._previousCameraAltitude = altitude;
@@ -469,6 +475,15 @@ export class Terrain extends Elevation {
 
     resetTileLookupCache(sourceCacheID: string) {
         this._findCoveringTileCache[sourceCacheID] = {};
+    }
+
+    attenuationRange(): [number, number] | null {
+        return this._attenuationRange;
+    }
+
+    getDemUpscale(): number {
+        const proxyTileSize = this.proxySourceCache.getSource().tileSize;
+        return proxyTileSize / GRID_DIM;
     }
 
     getScaledDemTileSize(): number {

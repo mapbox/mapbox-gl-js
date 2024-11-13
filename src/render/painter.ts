@@ -757,7 +757,8 @@ class Painter {
 
         const layers = this.style._mergedLayers;
 
-        const layerIds = this.style.order.filter((id) => {
+        const drapingEnabled = !!(this.terrain && this.terrain.enabled);
+        const layerIds = this.style._getOrder(drapingEnabled).filter((id) => {
             const layer = layers[id];
 
             if (layer.type in this._debugParams.enabledLayers) {
@@ -1561,12 +1562,6 @@ class Painter {
         }
         if (this.renderPass === 'shadow') {
             if (!this._shadowMapDebug) defines.push('DEPTH_TEXTURE');
-        } else if (this.shadowRenderer) {
-            if (this.shadowRenderer.useNormalOffset) {
-                defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
-            } else {
-                defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
-            }
         }
         if (this.terrainRenderModeElevated()) {
             defines.push('TERRAIN');

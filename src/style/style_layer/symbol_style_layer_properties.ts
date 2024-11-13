@@ -26,6 +26,7 @@ export type LayoutProps = {
     "symbol-sort-key": DataDrivenProperty<number>;
     "symbol-z-order": DataConstantProperty<"auto" | "viewport-y" | "source">;
     "symbol-z-elevate": DataConstantProperty<boolean>;
+    "symbol-elevation-reference": DataConstantProperty<"sea" | "ground" | "hd-road-markup">;
     "icon-allow-overlap": DataConstantProperty<boolean>;
     "icon-ignore-placement": DataConstantProperty<boolean>;
     "icon-optional": DataConstantProperty<boolean>;
@@ -74,6 +75,7 @@ export const getLayoutProperties = (): Properties<LayoutProps> => layout || (lay
     "symbol-sort-key": new DataDrivenProperty(styleSpec["layout_symbol"]["symbol-sort-key"]),
     "symbol-z-order": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-z-order"]),
     "symbol-z-elevate": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-z-elevate"]),
+    "symbol-elevation-reference": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-elevation-reference"]),
     "icon-allow-overlap": new DataConstantProperty(styleSpec["layout_symbol"]["icon-allow-overlap"]),
     "icon-ignore-placement": new DataConstantProperty(styleSpec["layout_symbol"]["icon-ignore-placement"]),
     "icon-optional": new DataConstantProperty(styleSpec["layout_symbol"]["icon-optional"]),
@@ -140,7 +142,6 @@ export type PaintProps = {
     "icon-color-brightness-min": DataConstantProperty<number>;
     "icon-color-brightness-max": DataConstantProperty<number>;
     "symbol-z-offset": DataDrivenProperty<number>;
-    "symbol-elevation-reference": DataConstantProperty<"sea" | "ground">;
 };
 
 let paint: Properties<PaintProps>;
@@ -169,5 +170,4 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "icon-color-brightness-min": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-min"]),
     "icon-color-brightness-max": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-max"]),
     "symbol-z-offset": new DataDrivenProperty(styleSpec["paint_symbol"]["symbol-z-offset"]),
-    "symbol-elevation-reference": new DataConstantProperty(styleSpec["paint_symbol"]["symbol-elevation-reference"]),
 }));

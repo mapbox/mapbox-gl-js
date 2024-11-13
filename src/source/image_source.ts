@@ -232,6 +232,10 @@ class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Event
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
+    vectorLayers?: never;
+    vectorLayerIds?: never;
+    rasterLayers?: never;
+    rasterLayerIds?: never;
 
     coordinates: Coordinates;
     tiles: {

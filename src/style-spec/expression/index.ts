@@ -16,7 +16,8 @@ import {
     supportsPropertyExpression,
     supportsZoomExpression,
     supportsLightExpression,
-    supportsInterpolation
+    supportsInterpolation,
+    supportsLineProgressExpression
 } from '../util/properties';
 import {isFunction, createFunction} from '../function/index';
 import {Color} from './values';
@@ -71,6 +72,7 @@ export class StyleExpression {
     _defaultValue: Value;
     _warningHistory: {[key: string]: boolean};
     _enumValues?: {[_: string]: unknown};
+    configDependencies: Set<string>;
 
     constructor(expression: Expression, propertySpec?: StylePropertySpecification, scope?: string, options?: ConfigOptions) {
         this.expression = expression;
@@ -78,6 +80,7 @@ export class StyleExpression {
         this._evaluator = new EvaluationContext(scope, options);
         this._defaultValue = propertySpec ? getDefaultValue(propertySpec) : null;
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
+        this.configDependencies = isConstant.getConfigDependencies(expression);
     }
 
     evaluateWithoutErrorHandling(
@@ -360,6 +363,11 @@ export function createPropertyExpression(
         return error([new ParsingError('', 'measure-light expression not supported')]);
     }
 
+    const isLineProgressConstant = isConstant.isGlobalPropertyConstant(parsed, ['line-progress']);
+    if (!isLineProgressConstant && !supportsLineProgressExpression(propertySpec)) {
+        return error([new ParsingError('', 'line-progress expression not supported')]);
+    }
+
     const canRelaxZoomRestriction = propertySpec.expression && propertySpec.expression.relaxZoomRestriction;
     const zoomCurve = findZoomCurve(parsed);
     if (!zoomCurve && !isZoomConstant && !canRelaxZoomRestriction) {
@@ -371,7 +379,7 @@ export function createPropertyExpression(
     }
 
     if (!zoomCurve) {
-        return success(isFeatureConstant ?
+        return success((isFeatureConstant && isLineProgressConstant) ?
         // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
             (new ZoomConstantExpression('constant', expression.value, isLightConstant) as ConstantExpression) :
         // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
@@ -380,7 +388,7 @@ export function createPropertyExpression(
 
     const interpolationType = zoomCurve instanceof Interpolate ? zoomCurve.interpolation : undefined;
 
-    return success(isFeatureConstant ?
+    return success((isFeatureConstant && isLineProgressConstant) ?
     // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
         (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType, isLightConstant) as CameraExpression) :
     // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.

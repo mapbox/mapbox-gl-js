@@ -1,10 +1,18 @@
-## 3.8.0-beta.1
+## 3.8.0
 
 ### Features and improvements ✨
 
+- Add _experimental_ support for style-defined `featuresets`, an upcoming way to query features in Mapbox Standard and other fragment-based styles.
+- Add _experimental_ `Map` `addInteraction`/`removeInteraction` methods that make it easier to manage map interactions like clicking and hovering over features.
+- Add _experimental_ support for elevated lines with `line-cross-slope` and `line-elevation-reference` properties.
+- Add _experimental_ `scaleFactor` map option and `setScaleFactor` method to increase map label size (useful for improving accessibility or adjusting text size for different devices).
+- Add support for using `line-progress` expression in non-data-driven line properties.
+- Improve performance of dynamic brightness changes.
 - Minor optimizations to reduce load time.
 
 ### Bug fixes 🐞
+
+- Fix localization when setting a worldview on the Mapbox Standard style.
 - Fix raster array rendering on some Android devices.
 - Fix an issue where fill-extrusion buildings would disappear when zooming out.
 - Fix line joins for thick semi-transparent or blurred lines.
@@ -12,7 +20,12 @@
 - Fix anti-alising aftifacts on blurred lines.
 - Fix call stack overflow caused by repeated `addImport` calls.
 - Fix failures when handling non-renderable characters.
-- Fix the Osage script rendering.
+- Fix rendering of Osage script.
+- Fix certain edge cases when using config expression in filter properties.
+- Fix patterned fill extrusions being visible with zero opacity alpha.
+- Fix data-driven `symbol-z-offset` not working properly.
+- Fix fill extrusions on terrain producing WebGL warnings in some cases.
+- Fix `line-emissive-strength` not being applied to patterned lines.
 
 ## v3.7.0
 

@@ -17,7 +17,7 @@ export type QueryResult = {
     [_: string]: Array<{
         featureIndex: number;
         feature: Feature;
-        intersectionZ: boolean | number;
+        intersectionZ: number;
     }>;
 };
 
@@ -39,9 +39,7 @@ function getPixelPosMatrix(transform: Transform, tileID: OverscaledTileID) {
 
 export function queryRenderedFeatures(
     sourceCache: SourceCache,
-    styleLayers: {
-        [_: string]: StyleLayer;
-    },
+    styleLayers: Record<string, StyleLayer>,
     queryGeometry: QueryGeometry,
     filter: FilterSpecification,
     layers: string[],

@@ -4,11 +4,15 @@ import type {LayerSpecification} from '../style-spec/types';
 
 const customProps = ['id', 'tile', 'layer', 'source', 'sourceLayer', 'state'] as const;
 
+/**
+ * A descriptor for a featureset, which can be either a reference to a layer
+ * or a reference to a featureset in a style fragment.
+ */
 export type FeaturesetDescriptor = {layerId: string} | {featuresetId: string, importId?: string};
 
 export interface GeoJSONFeature extends GeoJSON.Feature {
     layer?: LayerSpecification;
-    source: string;
+    source?: string;
     sourceLayer?: string;
     namespace?: string;
     featureset?: FeaturesetDescriptor;

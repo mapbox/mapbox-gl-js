@@ -531,6 +531,17 @@ class SourceCache extends Evented {
         const isBatchedModelType = this._source.type === 'batched-model';
         let idealTileIDs: OverscaledTileID[];
 
+        let maxZoom = this._source.maxzoom;
+        const terrain = this.map && this.map.painter ? this.map.painter._terrain : null;
+        const sourceUsedForTerrain = terrain && terrain.sourceCache === this;
+        if (sourceUsedForTerrain && terrain.attenuationRange()) {
+            const minAttenuationZoom = terrain.attenuationRange()[0];
+            const demMaxZoom = Math.floor(minAttenuationZoom) - Math.log2(terrain.getDemUpscale());
+            if (maxZoom > demMaxZoom) {
+                maxZoom = demMaxZoom;
+            }
+        }
+
         if (!this.used && !this.usedForTerrain) {
             idealTileIDs = [];
         } else if (this._source.tileID) {
@@ -543,7 +554,7 @@ class SourceCache extends Evented {
             idealTileIDs = modifiedTransform.coveringTiles({
                 tileSize: tileSize || this._source.tileSize,
                 minzoom: this._source.minzoom,
-                maxzoom: this._source.maxzoom,
+                maxzoom: maxZoom,
                 roundZoom: this._source.roundZoom && !updateForTerrain,
                 reparseOverscaled: this._source.reparseOverscaled,
                 isTerrainDEM: this.usedForTerrain,
@@ -561,7 +572,7 @@ class SourceCache extends Evented {
             idealTileIDs = transform.coveringTiles({
                 tileSize: tileSize || this._source.tileSize,
                 minzoom: this._source.minzoom,
-                maxzoom: this._source.maxzoom,
+                maxzoom: maxZoom,
                 roundZoom: this._source.roundZoom && !updateForTerrain,
                 reparseOverscaled: this._source.reparseOverscaled,
                 isTerrainDEM: this.usedForTerrain,

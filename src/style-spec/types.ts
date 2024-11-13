@@ -386,7 +386,11 @@ export type FillLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "fill-sort-key"?: DataDrivenPropertyValueSpecification<number>,
-        "visibility"?: "visible" | "none" | ExpressionSpecification
+        "visibility"?: "visible" | "none" | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "fill-elevation-reference"?: "none" | "hd-road-base" | "hd-road-markup" | ExpressionSpecification
     },
     "paint"?: {
         "fill-antialias"?: PropertyValueSpecification<boolean>,
@@ -511,6 +515,10 @@ export type SymbolLayerSpecification = {
         "symbol-sort-key"?: DataDrivenPropertyValueSpecification<number>,
         "symbol-z-order"?: PropertyValueSpecification<"auto" | "viewport-y" | "source">,
         "symbol-z-elevate"?: PropertyValueSpecification<boolean>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "symbol-elevation-reference"?: PropertyValueSpecification<"sea" | "ground" | "hd-road-markup">,
         "icon-allow-overlap"?: PropertyValueSpecification<boolean>,
         "icon-ignore-placement"?: PropertyValueSpecification<boolean>,
         "icon-optional"?: PropertyValueSpecification<boolean>,
@@ -599,11 +607,7 @@ export type SymbolLayerSpecification = {
         "icon-color-brightness-min"?: ExpressionSpecification,
         "icon-color-brightness-max"?: ExpressionSpecification,
         "symbol-z-offset"?: DataDrivenPropertyValueSpecification<number>,
-        "symbol-z-offset-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
-        "symbol-elevation-reference"?: PropertyValueSpecification<"sea" | "ground">
+        "symbol-z-offset-transition"?: TransitionSpecification
     }
 }
 

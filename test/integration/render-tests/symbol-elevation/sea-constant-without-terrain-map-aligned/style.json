@@ -101,11 +101,11 @@
       "layout": {
         "icon-pitch-alignment": "map",
         "symbol-placement": "point",
-        "icon-image": "music-12"
+        "icon-image": "music-12",
+        "symbol-elevation-reference": "sea"
       },
       "paint": {
-        "symbol-z-offset": 500.0,
-        "symbol-elevation-reference": "sea"
+        "symbol-z-offset": 500.0
       }
     }
   ]

@@ -63,6 +63,45 @@ class Terrain extends Evented {
         return this._transitioning.possiblyEvaluate(new EvaluationParameters(atZoom)).get('exaggeration');
     }
 
+    // For dynamic terrain, this is the zoom range when the terrain flattening (disabling) starts
+    // and ends. At zoom above attenuationRange->max, terrain exaggeration is evaluated to 0.
+    // The exaggeration used in terrain is smoothened from this value, and as terrain gets disabled
+    // using smoothened curve, it effectivelly gets disabled at some value above attenuationRange->max
+    // but that value is capped at ceil(attenuationRange->max).
+    getAttenuationRange(): [number, number] | null {
+        if (!this.isZoomDependent()) {
+            return null;
+        }
+
+        const exaggeration = this._transitionable._values['exaggeration'];
+        if (!exaggeration) {
+            return null;
+        }
+
+        const expression = exaggeration.value.expression as ZoomDependentExpression<'camera'>;
+        if (!expression) {
+            return null;
+        }
+
+        let zoomBeforeDrop = -1.0; // at this zoom, if above zero, terrain flattening starts.
+        let fullyDisabledZoom = -1.0; // at this zoom, at the end of the zoom curve, terrain exaggeration expression disables the zoom.
+        let theLastExaggeration = 1.0;
+        const zeroExaggerationCutoff = 0.01; // ~0 exaggeration
+        for (const zoom of expression.zoomStops) {
+            theLastExaggeration = expression.evaluate(new EvaluationParameters(zoom));
+            if (theLastExaggeration > zeroExaggerationCutoff) {
+                zoomBeforeDrop = zoom;
+                fullyDisabledZoom = -1;
+            } else {
+                fullyDisabledZoom = zoom;
+            }
+        }
+        if (theLastExaggeration < zeroExaggerationCutoff && zoomBeforeDrop > 0.0 && fullyDisabledZoom > zoomBeforeDrop) {
+            return [zoomBeforeDrop, fullyDisabledZoom];
+        }
+        return null;
+    }
+
     isZoomDependent(): boolean {
         const exaggeration = this._transitionable._values['exaggeration'];
         return exaggeration != null && exaggeration.value != null &&

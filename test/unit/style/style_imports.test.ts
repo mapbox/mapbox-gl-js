@@ -10,7 +10,6 @@ import GlyphManager from '../../../src/render/glyph_manager';
 import {Event, Evented} from '../../../src/util/evented';
 import {RequestManager} from '../../../src/util/mapbox';
 import {OverscaledTileID} from '../../../src/source/tile_id';
-
 import {extend} from '../../../src/util/util';
 import {makeFQID} from '../../../src/util/fqid';
 
@@ -37,6 +36,8 @@ class StubMap extends Evented {
     _getMapId() {
         return 1;
     }
+
+    getWorldview() {}
 }
 
 let networkWorker: any;
@@ -3020,7 +3021,7 @@ test('Style#areTilesLoaded', async () => {
     });
 });
 
-test('Style#getFeaturesets', async () => {
+test('Style#getFeaturesetDescriptors', async () => {
     const style = new Style(new StubMap());
     const initialStyle = createStyleJSON({
         imports: [{
@@ -3038,6 +3039,6 @@ test('Style#getFeaturesets', async () => {
     style.loadJSON(initialStyle);
     await waitFor(style, 'style.load');
 
-    expect(style.getFeaturesets()).toEqual([]);
-    expect(style.getFeaturesets('basemap')).toEqual([{featuresetId: 'poi', importId: 'basemap'}, {featuresetId: 'buildings', importId: 'basemap'}]);
+    expect(style.getFeaturesetDescriptors()).toEqual([]);
+    expect(style.getFeaturesetDescriptors('basemap')).toEqual([{featuresetId: 'poi', importId: 'basemap'}, {featuresetId: 'buildings', importId: 'basemap'}]);
 });
