@@ -48,10 +48,15 @@ const spinningMarkers = [];
 ['auto', 'map', 'viewport', 'horizon'].forEach((rotationAlignment, i) => {
     ['auto', 'map', 'viewport'].forEach((pitchAlignment, j) => {
         var bounds = map.getBounds();
+        console.log(5111,bounds)
         var s = bounds.getSouth();
         var n = bounds.getNorth();
         var w = bounds.getWest();
         var e = bounds.getEast();
+
+        var height = i * 2000 + j*2000;
+
+        console.log(5999,height);
 
         var lng = w + (e - w) * ((i + .5) / 4);
         var lat = s + (n - s) * ((j + .5) / 3);
@@ -69,7 +74,9 @@ const spinningMarkers = [];
             scale: sc,
             draggable: true,
             rotationAlignment,
-            pitchAlignment
+            pitchAlignment,
+            altitube:height,
+            // altitube:0.0,
         })
             .setLngLat([lng, lat])
             .setPopup(popup)

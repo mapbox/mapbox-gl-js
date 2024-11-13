@@ -33,6 +33,7 @@ export type PopupOptions = {
     offset?: Offset;
     className?: string;
     maxWidth?: string;
+    altitube?: number;
 };
 
 type PopupEvents = {
@@ -117,10 +118,12 @@ export default class Popup extends Evented<PopupEvents> {
     _anchor: Anchor;
     _classList: Set<string>;
     _marker: Marker | null | undefined;
+    _altitube: number;
 
     constructor(options?: PopupOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
+        this._altitube = (options && options.altitube) || 0;
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
@@ -623,7 +626,8 @@ export default class Popup extends Evented<PopupEvents> {
         }
 
         if (!this._trackPointer || cursor) {
-            const pos = this._pos = this._trackPointer && cursor instanceof Point ? cursor : map.project(this._lngLat);
+            // const pos = this._pos = this._trackPointer && cursor instanceof Point ? cursor : map.project(this._lngLat);
+            const pos = this._pos = this._trackPointer && cursor instanceof Point ? cursor : map.project(this._lngLat,(this._altitube ?? 0));
 
             const offsetBottom = normalizeOffset(this.options.offset);
             const anchor = this._anchor = this._getAnchor(offsetBottom.y);

@@ -1529,7 +1529,8 @@ class Transform {
      * @returns {Point} screen point
      * @private
      */
-    locationPoint3D(lnglat: LngLat): Point {
+    locationPoint3D(lnglat: LngLat,altitude?: number): Point {
+    // locationPoint3D(lnglat: LngLat): Point {
         return this.projection.locationPoint(this, lnglat, true);
     }
 
@@ -1551,7 +1552,8 @@ class Transform {
      * @returns {LngLat} lnglat location
      * @private
      */
-    pointLocation3D(p: Point): LngLat {
+    pointLocation3D(p: Point, altitude?: number): LngLat {
+    // pointLocation3D(p: Point): LngLat {
         return this.coordinateLocation(this.pointCoordinate3D(p));
     }
 
@@ -1674,7 +1676,8 @@ class Transform {
      * @param {Point} p top left origin screen point, in pixels.
      * @private
      */
-    pointCoordinate3D(p: Point): MercatorCoordinate {
+    pointCoordinate3D(p: Point, altitude?: number): MercatorCoordinate {
+    // pointCoordinate3D(p: Point): MercatorCoordinate {
         if (!this.elevation) return this.pointCoordinate(p);
         let raycast: vec3 | null | undefined = this.projection.pointCoordinate3D(this, p.x, p.y);
         if (raycast) return new MercatorCoordinate(raycast[0], raycast[1], raycast[2]);

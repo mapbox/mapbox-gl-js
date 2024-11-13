@@ -1496,7 +1496,8 @@ export class Map extends Camera {
      * const coordinate = [-122.420679, 37.772537];
      * const point = map.project(coordinate);
      */
-    project(lnglat: LngLatLike): Point {
+    project(lnglat: LngLatLike,altitude?: number): Point {
+    // project(lnglat: LngLatLike): Point {
         return this.transform.locationPoint3D(LngLat.convert(lnglat));
     }
 

@@ -29,6 +29,7 @@ export type MarkerOptions = {
     pitchAlignment?: string;
     occludedOpacity?: number;
     className?: string;
+    altitube?: number;
 };
 
 type MarkerEvents = {
@@ -54,6 +55,7 @@ type MarkerEvents = {
  * @param {string} [options.rotationAlignment='auto'] The alignment of the marker's rotation.`'map'` is aligned with the map plane, consistent with the cardinal directions as the map rotates. `'viewport'` is screenspace-aligned. `'horizon'` is aligned according to the nearest horizon, on non-globe projections it is equivalent to `'viewport'`. `'auto'` is equivalent to `'viewport'`.
  * @param {number} [options.occludedOpacity=0.2] The opacity of a marker that's occluded by 3D terrain.
  * @param {string} [options.className] Space-separated CSS class names to add to marker element.
+ * @param {number} [options.altitube=0] marker 离开地面的高度.
  * @example
  * // Create a new marker.
  * const marker = new mapboxgl.Marker()
@@ -94,6 +96,7 @@ export default class Marker extends Evented<MarkerEvents> {
     _updateFrameId: number;
     _updateMoving: () => void;
     _occludedOpacity: number;
+    _altitube: number;
 
     constructor(options?: MarkerOptions, legacyOptions?: MarkerOptions) {
         super();
@@ -125,6 +128,7 @@ export default class Marker extends Evented<MarkerEvents> {
         this._pitchAlignment = (options && options.pitchAlignment && options.pitchAlignment) || 'auto';
         this._updateMoving = () => this._update(true);
         this._occludedOpacity = (options && options.occludedOpacity) || 0.2;
+        this._altitube = (options && options.altitube) || 0;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -355,6 +359,7 @@ export default class Marker extends Evented<MarkerEvents> {
             }
             this._popup = popup;
             popup._marker = this;
+            popup._altitube = this._altitube;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
             this._element.setAttribute('role', 'button');
@@ -571,7 +576,8 @@ export default class Marker extends Evented<MarkerEvents> {
             this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
         }
 
-        this._pos = map.project(this._lngLat);
+        // this._pos = map.project(this._lngLat);
+        this._pos = map.project(this._lngLat,(this._altitube ?? 0));
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
