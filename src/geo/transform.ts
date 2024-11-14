@@ -1530,8 +1530,7 @@ class Transform {
      * @private
      */
     locationPoint3D(lnglat: LngLat,altitude?: number): Point {
-    // locationPoint3D(lnglat: LngLat): Point {
-        return this.projection.locationPoint(this, lnglat, true);
+        return this.projection.locationPoint(this, lnglat, true,altitude);
     }
 
     /**
@@ -1553,7 +1552,6 @@ class Transform {
      * @private
      */
     pointLocation3D(p: Point, altitude?: number): LngLat {
-    // pointLocation3D(p: Point): LngLat {
         return this.coordinateLocation(this.pointCoordinate3D(p));
     }
 
@@ -1677,8 +1675,7 @@ class Transform {
      * @private
      */
     pointCoordinate3D(p: Point, altitude?: number): MercatorCoordinate {
-    // pointCoordinate3D(p: Point): MercatorCoordinate {
-        if (!this.elevation) return this.pointCoordinate(p);
+        if (!this.elevation) return this.pointCoordinate(p,altitude);
         let raycast: vec3 | null | undefined = this.projection.pointCoordinate3D(this, p.x, p.y);
         if (raycast) return new MercatorCoordinate(raycast[0], raycast[1], raycast[2]);
         let start = 0, end = this.horizonLineFromTop();
