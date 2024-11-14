@@ -208,6 +208,8 @@ async function renderMap(style, options) {
             extStandardDerivativesForceOff: !options.standardDerivatives,
             // OES_texture_float_linear is enabled by default
             extTextureFloatLinearForceOff: options.textureFloatLinear === undefined ? false : !options.textureFloatLinear,
+            // ordinary instancing is enabled by default, manual is disabled
+            forceManualRenderingForInstanceIDShaders: options.forceManualRenderingForInstanceIDShaders,
         }
     });
 
