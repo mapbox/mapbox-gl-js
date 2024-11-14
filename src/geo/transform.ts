@@ -1530,7 +1530,7 @@ class Transform {
      * @private
      */
     locationPoint3D(lnglat: LngLat,altitude?: number): Point {
-        return this.projection.locationPoint(this, lnglat, true,altitude);
+        return this.projection.locationPoint(this, lnglat, true, altitude);
     }
 
     /**
@@ -1552,7 +1552,7 @@ class Transform {
      * @private
      */
     pointLocation3D(p: Point, altitude?: number): LngLat {
-        return this.coordinateLocation(this.pointCoordinate3D(p));
+        return this.coordinateLocation(this.pointCoordinate3D(p, altitude));
     }
 
     /**

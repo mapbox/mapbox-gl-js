@@ -55,7 +55,7 @@ type MarkerEvents = {
  * @param {string} [options.rotationAlignment='auto'] The alignment of the marker's rotation.`'map'` is aligned with the map plane, consistent with the cardinal directions as the map rotates. `'viewport'` is screenspace-aligned. `'horizon'` is aligned according to the nearest horizon, on non-globe projections it is equivalent to `'viewport'`. `'auto'` is equivalent to `'viewport'`.
  * @param {number} [options.occludedOpacity=0.2] The opacity of a marker that's occluded by 3D terrain.
  * @param {string} [options.className] Space-separated CSS class names to add to marker element.
- * @param {number} [options.altitube=0] marker 离开地面的高度.
+ * @param {number} [options.altitube=0] The altitude above ground level.
  * @example
  * // Create a new marker.
  * const marker = new mapboxgl.Marker()
