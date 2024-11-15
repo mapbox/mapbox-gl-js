@@ -44,6 +44,7 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
+let lngLatArr = [];
 const spinningMarkers = [];
 ['auto', 'map', 'viewport', 'horizon'].forEach((rotationAlignment, i) => {
     ['auto', 'map', 'viewport'].forEach((pitchAlignment, j) => {
@@ -54,14 +55,20 @@ const spinningMarkers = [];
         var w = bounds.getWest();
         var e = bounds.getEast();
 
-        var height = i * 2000 + j*2000;
-
-        console.log(5999,height);
-
         var lng = w + (e - w) * ((i + .5) / 4);
         var lat = s + (n - s) * ((j + .5) / 3);
 
-        var popup = new mapboxgl.Popup().setHTML(`Pitch Alignment: ${pitchAlignment}<br>Rotation Alignment: ${rotationAlignment}`);
+        var height = (i * 2000 + j*2000) * (e - w);
+
+
+
+        const popupHtml = `<div>
+                Pitch Alignment: ${pitchAlignment}<br>
+                Rotation Alignment: ${rotationAlignment}<br>
+                height:${height}
+              </div>`
+
+        var popup = new mapboxgl.Popup().setHTML(popupHtml);
 
         var r = Math.round(Math.random() * 255);
         var g = Math.round(Math.random() * 255);
@@ -84,9 +91,87 @@ const spinningMarkers = [];
 
         marker.togglePopup();
 
+        lngLatArr.push({
+            lngLat:[lng, lat],
+            lngOffset:(e - w),
+            latOffset:(n - s),
+            height
+        })
+
         spinningMarkers.push(marker);
     });
 });
+
+
+map.on('style.load',()=>{
+    addFillExtrusionLayer(lngLatArr)
+})
+
+
+
+function addFillExtrusionLayer(data=[]){
+
+    console.log(1077,data);
+
+    const dataArr = data.map(a=>{
+
+        let {lngOffset,latOffset} = a;
+        lngOffset = lngOffset/100;
+        latOffset = latOffset/100;
+        const [lng, lat] = a.lngLat;
+
+        const aObj = {
+            ...a,
+            "type": "Feature",
+            "properties": {
+                "height": a.height,
+                "color": `rgba(${a.height%255},${a.height%150},${255 - a.height%255},1)`,
+            },
+            lngLatArr:[
+                [lng-lngOffset,lat+latOffset],
+                [lng+lngOffset,lat+latOffset],
+                [lng+lngOffset,lat-latOffset],
+                [lng-lngOffset,lat-latOffset],
+            ]
+        }
+
+        aObj.geometry = {
+            "type": "Polygon",
+            "coordinates": [aObj.lngLatArr]
+        }
+
+        return aObj
+    });
+
+    console.log(1111,dataArr,data);
+
+    let layer = {
+        id:'FillExtrusionLayerId',
+        'type': 'fill-extrusion',
+        'source': {
+            type: 'geojson',
+            data: {
+                "type": "FeatureCollection",
+                "features":dataArr,
+            }
+        },
+
+        'paint': {
+            'fill-extrusion-opacity':0.6,
+            // 'fill-extrusion-color': 'rgba(255,10,10,0.8)',
+            'fill-extrusion-color': ["get", "color"],
+            'fill-extrusion-height': ["get", "height"],
+            'fill-extrusion-base': 0,
+        }
+
+
+
+
+    }
+
+    map.addLayer(layer);
+
+}
 
 let animate = false;
 document.getElementById('animate').addEventListener('click', () => {
