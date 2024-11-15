@@ -144,9 +144,6 @@ const skip = [
     // Current behavior is arbitrary
     "render-tests/geojson/inline-linestring-fill",
 
-    // Render SDF icon and normal icon in one layer
-    "render-tests/icon-image/icon-sdf-non-sdf-one-layer",
-
     // Mapbox-gl-js does not support tile-mode
     "render-tests/icon-text-fit/text-variable-anchor-tile-map-mode",
     "render-tests/map-mode/tile",
