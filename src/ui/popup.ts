@@ -653,9 +653,11 @@ export default class Popup extends Evented<PopupEvents> {
         if (!this.options.focusAfterOpen || !this._container) return;
 
         const firstFocusable = this._container.querySelector(focusQuerySelector);
-
-        // @ts-expect-error - TS2339 - Property 'focus' does not exist on type 'Element'.
-        if (firstFocusable) firstFocusable.focus();
+        if (firstFocusable) {
+            const  isAriaHidden = (firstFocusable?.getAttribute('aria-hidden') === 'true');
+            // @ts-expect-error - TS2339 - Property 'focus' does not exist on type 'Element'.
+            if (!isAriaHidden) firstFocusable.focus();
+        }
     }
 
     _onClose() {
