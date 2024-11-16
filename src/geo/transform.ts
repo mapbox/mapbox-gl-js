@@ -1530,7 +1530,7 @@ class Transform {
      * @private
      */
     locationPoint3D(lnglat: LngLat,altitude?: number): Point {
-        return this.projection.locationPoint(this, lnglat, true, altitude);
+        return this.projection.locationPoint(this, lnglat, true, (altitude ?? 0));
     }
 
     /**
@@ -1552,7 +1552,7 @@ class Transform {
      * @private
      */
     pointLocation3D(p: Point, altitude?: number): LngLat {
-        return this.coordinateLocation(this.pointCoordinate3D(p, altitude));
+        return this.coordinateLocation(this.pointCoordinate3D(p, (altitude ?? 0)));
     }
 
     /**
@@ -1675,11 +1675,11 @@ class Transform {
      * @private
      */
     pointCoordinate3D(p: Point, altitude?: number): MercatorCoordinate {
-        if (!this.elevation) return this.pointCoordinate(p,altitude);
+        if (!this.elevation) return this.pointCoordinate(p,(altitude ?? 0));
         let raycast: vec3 | null | undefined = this.projection.pointCoordinate3D(this, p.x, p.y);
         if (raycast) return new MercatorCoordinate(raycast[0], raycast[1], raycast[2]);
         let start = 0, end = this.horizonLineFromTop();
-        if (p.y > end) return this.pointCoordinate(p); // holes between tiles below horizon line or below bottom.
+        if (p.y > end) return this.pointCoordinate(p, (altitude ?? 0)); // holes between tiles below horizon line or below bottom.
         const samples = 10;
         const threshold = 0.02 * end;
         const r = p.clone();

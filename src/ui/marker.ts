@@ -441,7 +441,7 @@ export default class Marker extends Evented<MarkerEvents> {
         const map = this._map;
         const pos = this._pos;
         if (!map || !pos) return false;
-        const unprojected = map.unproject(pos);
+        const unprojected = map.unproject(pos,(this._altitube ?? 0));
         const camera = map.getFreeCameraOptions();
         if (!camera.position) return false;
         const cameraLngLat = camera.position.toLngLat();
@@ -461,7 +461,7 @@ export default class Marker extends Evented<MarkerEvents> {
             this._clearFadeTimer();
             return;
         }
-        const mapLocation = map.unproject(pos);
+        const mapLocation = map.unproject(pos,(this._altitube ?? 0));
         let opacity;
         if (map._showingGlobe() && isLngLatBehindGlobe(map.transform, this._lngLat)) {
             opacity = 0;
@@ -540,8 +540,8 @@ export default class Marker extends Evented<MarkerEvents> {
         const alignment = this.getRotationAlignment();
         if (alignment === 'map') {
             if (map._showingGlobe()) {
-                const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001));
-                const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001));
+                const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001),(this._altitube ?? 0));
+                const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001),(this._altitube ?? 0));
                 const diff = south.sub(north);
                 rotation = radToDeg(Math.atan2(diff.y, diff.x)) - 90;
             } else {
@@ -692,7 +692,8 @@ export default class Marker extends Evented<MarkerEvents> {
         }
 
         this._pos = e.point.sub(posDelta);
-        this._lngLat = map.unproject(this._pos);
+        // this._lngLat = map.unproject(this._pos);
+        this._lngLat = map.unproject(this._pos,(this._altitube ?? 0));
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
         this._element.style.pointerEvents = 'none';
