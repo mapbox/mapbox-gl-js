@@ -573,7 +573,8 @@ export default class Marker extends Evented<MarkerEvents> {
         if (!map) return;
 
         if (map.transform.renderWorldCopies) {
-            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
+            // this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
+            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitube ?? 0));
         }
 
         // this._pos = map.project(this._lngLat);

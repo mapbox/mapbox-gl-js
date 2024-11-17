@@ -622,7 +622,8 @@ export default class Popup extends Evented<PopupEvents> {
         }
 
         if (map.transform.renderWorldCopies && !this._trackPointer) {
-            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
+            // this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
+            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitube ?? 0));
         }
 
         if (!this._trackPointer || cursor) {
