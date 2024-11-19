@@ -1006,6 +1006,9 @@ export type BackgroundLayerSpecification = {
         "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
         "background-pitch-alignment"?: "map" | "viewport" | ExpressionSpecification,
         "background-color"?: PropertyValueSpecification<ColorSpecification>,
         "background-color-transition"?: TransitionSpecification,

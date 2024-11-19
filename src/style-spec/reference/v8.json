@@ -9194,7 +9194,7 @@
           "doc": "The background is aligned to the plane of the map."
         },
         "viewport": {
-          "doc": "The background is aligned to the plane of the viewport, covering the whole screen."
+          "doc": "The background is aligned to the plane of the viewport, covering the whole screen. Note: This mode disables the automatic reordering of the layer when terrain or globe projection is used."
         }
       },
       "default": "map",
@@ -9210,6 +9210,7 @@
         "interpolated": false,
         "parameters": []
       },
+      "experimental": true,
       "property-type": "data-constant"
     },
     "background-color": {
