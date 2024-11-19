@@ -16,6 +16,7 @@ import {
     removeAuthState
 } from '../util/mapbox';
 import Style from '../style/style';
+import IndoorManager from '../style/indoor_manager';
 import EvaluationParameters from '../style/evaluation_parameters';
 import Painter from '../render/painter';
 import Transform from '../geo/transform';
@@ -422,6 +423,7 @@ const defaultOptions: Omit<MapOptions, 'container'> = {
  */
 export class Map extends Camera {
     style: Style;
+    indoor: IndoorManager;
     painter: Painter;
     handlers?: HandlerManager;
 
@@ -745,6 +747,8 @@ export class Map extends Camera {
         if (options.projection) {
             this.setProjection(options.projection);
         }
+
+        this.indoor = new IndoorManager(this);
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         if (options.hash) this._hash = (new Hash(hashName)).addTo(this);
@@ -4537,6 +4541,7 @@ export class Map extends Camera {
         if (this.style) {
             this.style.destroy();
         }
+        this.indoor.destroy();
         this.painter.destroy();
         if (this.handlers) this.handlers.destroy();
         this.handlers = undefined;

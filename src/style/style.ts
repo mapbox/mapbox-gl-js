@@ -61,6 +61,7 @@ import {RGBAImage} from '../util/image';
 import {evaluateColorThemeProperties} from '../util/lut';
 import EvaluationParameters from './evaluation_parameters';
 import Point from '@mapbox/point-geometry';
+import {expandSchemaWithIndoor} from './indoor_manager';
 
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
@@ -702,7 +703,7 @@ class Style extends Evented<MapEvents> {
     }
 
     _load(json: StyleSpecification, validate: boolean) {
-        const schema = json.schema;
+        const schema = json.indoor ? expandSchemaWithIndoor(json.schema) : json.schema;
 
         // This style was loaded as a root style, but it is marked as a fragment and/or has a schema. We instead load
         // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
@@ -2065,7 +2066,7 @@ class Style extends Evented<MapEvents> {
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return;
 
-        const schema = fragmentStyle.stylesheet.schema;
+        const schema = fragmentStyle.stylesheet.indoor ? expandSchemaWithIndoor(fragmentStyle.stylesheet.schema) : fragmentStyle.stylesheet.schema;
         if (!schema || !schema[key]) return;
 
         const expressionParsed = createExpression(value);

@@ -90,6 +90,10 @@ export type StyleSpecification = {
     "fog"?: FogSpecification,
     "camera"?: CameraSpecification,
     "color-theme"?: ColorThemeSpecification,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
+    "indoor"?: IndoorSpecification,
     "imports"?: Array<ImportSpecification>,
     "schema"?: SchemaSpecification,
     "sources": SourcesSpecification,
@@ -166,6 +170,17 @@ export type ImportSpecification = {
     "url": string,
     "config"?: ConfigSpecification,
     "data"?: StyleSpecification
+}
+
+export type IndoorSpecification = {
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
+    "floorplanFeaturesetId"?: ExpressionSpecification,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
+    "buildingFeaturesetId"?: ExpressionSpecification
 }
 
 export type ConfigSpecification = {

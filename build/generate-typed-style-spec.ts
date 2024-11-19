@@ -321,6 +321,8 @@ ${tsObjectDeclaration('ProjectionSpecification', spec.projection)}
 
 ${tsObjectDeclaration('ImportSpecification', spec.import)}
 
+${tsObjectDeclaration('IndoorSpecification', spec.indoor)}
+
 ${tsObjectDeclaration('ConfigSpecification', spec.config)}
 
 ${tsObjectDeclaration('SchemaSpecification', spec.schema)}

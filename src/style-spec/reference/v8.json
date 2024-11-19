@@ -113,6 +113,11 @@
       "type": "colorTheme",
       "doc": "A global modifier for the colors of the style."
     },
+    "indoor": {
+      "type": "indoor",
+      "experimental": true,
+      "doc": "Controls the behaviour of indoor features."
+    },
     "imports": {
       "type": "array",
       "value": "import",
@@ -5588,6 +5593,28 @@
     "data": {
       "type": "string",
       "doc": "Expects a base64 encoded PNG image which represents a cube strip LUT. The height of the image cannot exceed 32 pixels and the width must be equal to the height squared.",
+      "transition": false,
+      "property-type": "data-constant",
+      "expression": {
+        "interpolated": false
+      }
+    }
+  },
+  "indoor": {
+    "floorplanFeaturesetId": {
+      "type": "string",
+      "doc": "An ID of a featureset to be used to query indoor floorplans.",
+      "experimental": true,
+      "transition": false,
+      "property-type": "data-constant",
+      "expression": {
+        "interpolated": false
+      }
+    },
+    "buildingFeaturesetId": {
+      "type": "string",
+      "doc": "An ID of a featureset to be used to add interactivity for building selection.",
+      "experimental": true,
       "transition": false,
       "property-type": "data-constant",
       "expression": {
