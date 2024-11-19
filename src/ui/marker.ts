@@ -55,7 +55,7 @@ type MarkerEvents = {
  * @param {string} [options.rotationAlignment='auto'] The alignment of the marker's rotation.`'map'` is aligned with the map plane, consistent with the cardinal directions as the map rotates. `'viewport'` is screenspace-aligned. `'horizon'` is aligned according to the nearest horizon, on non-globe projections it is equivalent to `'viewport'`. `'auto'` is equivalent to `'viewport'`.
  * @param {number} [options.occludedOpacity=0.2] The opacity of a marker that's occluded by 3D terrain.
  * @param {string} [options.className] Space-separated CSS class names to add to marker element.
- * @param {number} [options.altitube=0] The altitude above ground level.
+ * @param {number} [options.altitube=0] The altitude above ground level,how many meters.
  * @example
  * // Create a new marker.
  * const marker = new mapboxgl.Marker()
@@ -573,11 +573,9 @@ export default class Marker extends Evented<MarkerEvents> {
         if (!map) return;
 
         if (map.transform.renderWorldCopies) {
-            // this._lngLat = smartWrap(this._lngLat, this._pos, map.transform);
             this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitube ?? 0));
         }
 
-        // this._pos = map.project(this._lngLat);
         this._pos = map.project(this._lngLat,(this._altitube ?? 0));
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
@@ -693,7 +691,6 @@ export default class Marker extends Evented<MarkerEvents> {
         }
 
         this._pos = e.point.sub(posDelta);
-        // this._lngLat = map.unproject(this._pos);
         this._lngLat = map.unproject(this._pos,(this._altitube ?? 0));
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
