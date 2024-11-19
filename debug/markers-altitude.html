@@ -49,7 +49,6 @@ const spinningMarkers = [];
 ['auto', 'map', 'viewport', 'horizon'].forEach((rotationAlignment, i) => {
     ['auto', 'map', 'viewport'].forEach((pitchAlignment, j) => {
         var bounds = map.getBounds();
-        console.log(5111,bounds)
         var s = bounds.getSouth();
         var n = bounds.getNorth();
         var w = bounds.getWest();
@@ -114,15 +113,11 @@ map.on('style.load',()=>{
 
 function addFillExtrusionLayer(data=[]){
 
-    console.log(1077,data);
-
     const dataArr = data.map(a=>{
-
         let {lngOffset,latOffset} = a;
         lngOffset = lngOffset/100;
         latOffset = latOffset/100;
         const [lng, lat] = a.lngLat;
-
         const aObj = {
             ...a,
             "type": "Feature",
@@ -145,8 +140,6 @@ function addFillExtrusionLayer(data=[]){
 
         return aObj
     });
-
-    console.log(1111,dataArr,data);
 
     let layer = {
         id:'FillExtrusionLayerId',
