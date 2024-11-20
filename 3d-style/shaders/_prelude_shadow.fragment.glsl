@@ -134,6 +134,27 @@ float shadowed_light_factor_normal_unbiased(vec3 N, highp vec4 light_view_pos0, 
     return mix(0.0, (1.0 - (u_shadow_intensity * occlusion)) * NDotL, step(0.0, NDotL));
 }
 
+// from https://archive.org/download/GDC2006Isidoro: Receiver Plane Depth Bias (slides 37 - 41)
+highp vec2 compute_receiver_plane_depth_bias(highp vec3 pos_dx, highp vec3 pos_dy)
+{
+    highp vec2 biasUV = vec2(
+        pos_dy.y * pos_dx.z - pos_dx.y * pos_dy.z,
+        pos_dx.x * pos_dy.z - pos_dy.x * pos_dx.z);
+    biasUV *= 1.0 / ((pos_dx.x * pos_dy.y) - (pos_dx.y * pos_dy.x));
+    return biasUV;
+}
+float shadowed_light_factor_plane_bias(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
+    highp vec3 light_view_pos0_xyz = light_view_pos0.xyz / light_view_pos0.w * 0.5 + 0.5;
+    highp vec3 light_view_pos0_ddx = dFdx(light_view_pos0_xyz);
+    highp vec3 light_view_pos0_ddy = dFdy(light_view_pos0_xyz);
+    highp vec2 plane_depth_bias = compute_receiver_plane_depth_bias(light_view_pos0_ddx, light_view_pos0_ddy);
+    highp float bias = dot(vec2(u_shadow_texel_size, u_shadow_texel_size), plane_depth_bias) + 0.0001;
+
+    float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);
+
+    return 1.0 - (u_shadow_intensity * occlusion);
+}
+
 float shadowed_light_factor(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth) {
     float bias = 0.0;
     float occlusion = shadow_occlusion(light_view_pos0, light_view_pos1, view_depth, bias);

@@ -50,6 +50,9 @@ out vec2 v_normal;
 out vec2 v_width2;
 out float v_gamma_scale;
 out highp vec4 v_uv;
+#ifdef ELEVATED_ROADS
+out highp float v_road_z_offset;
+#endif
 
 #ifdef RENDER_LINE_DASH
 uniform vec2 u_texsize;
@@ -144,6 +147,7 @@ void main() {
     vec4 projected_extrude = u_matrix * vec4(extrude, 0.0, 0.0);
     vec2 projected_extrude_xy = projected_extrude.xy;
 #ifdef ELEVATED_ROADS
+    v_road_z_offset = a_z_offset;
     // Apply slight vertical offset (1cm) for elevated vertices above the ground plane
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset + 0.01 * step(0.01, a_z_offset), 1.0) + projected_extrude;
 #else

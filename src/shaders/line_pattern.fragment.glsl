@@ -19,6 +19,9 @@ in float v_width;
 #ifdef RENDER_LINE_TRIM_OFFSET
 in highp vec4 v_uv;
 #endif
+#ifdef ELEVATED_ROADS
+in highp float v_road_z_offset;
+#endif
 
 #ifdef LINE_JOIN_NONE
 in vec2 v_pattern_data; // [pos_in_segment, segment_length];
@@ -118,7 +121,11 @@ void main() {
     color = apply_lighting_with_emission_ground(color, u_emissive_strength);
 #ifdef RENDER_SHADOWS
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+#ifdef ELEVATED_ROADS
+    color.rgb *= mix(v_road_z_offset > 0.0 ? u_ground_shadow_factor : vec3(1.0), vec3(1.0), light);
+#else
     color.rgb *= mix(u_ground_shadow_factor, vec3(1.0), light);
+#endif // ELEVATED_ROADS
 #endif // RENDER_SHADOWS
 #endif
 #ifdef FOG
