@@ -53,8 +53,11 @@
             id: 'line',
             paint: {
                 'line-color': 'red',
-                'line-width': 100,
-                'line-blur': 20.0,
+                'line-width': [
+                    "-",
+                    100.0,
+                    ["*", 100.0, ["line-progress"]]
+                ],
                 'line-gradient': [
                     'interpolate',
                     ['linear'],

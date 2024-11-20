@@ -112,6 +112,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
     }
 
+    if (width.value.kind !== 'constant' && width.value.isLineProgressConstant === false) {
+        definesValues.push("VARIABLE_LINE_WIDTH");
+    }
+
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         if (image && !tile.patternsLoaded()) continue;

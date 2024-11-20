@@ -6945,7 +6945,8 @@
           "zoom",
           "feature",
           "feature-state",
-          "measure-light"
+          "measure-light",
+          "line-progress"
         ]
       },
       "property-type": "data-driven"

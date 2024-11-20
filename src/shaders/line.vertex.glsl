@@ -12,8 +12,8 @@
 
 in vec2 a_pos_normal;
 in vec4 a_data;
-#if defined(ELEVATED) || defined(ELEVATED_ROADS)
-in float a_z_offset;
+#if defined(ELEVATED) || defined(ELEVATED_ROADS) || defined(VARIABLE_LINE_WIDTH)
+in vec2 a_z_offset_width;
 #endif
 
 // Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
@@ -93,6 +93,11 @@ void main() {
     #pragma mapbox: initialize lowp float border_width
     #pragma mapbox: initialize lowp vec4 border_color
 
+    float a_z_offset;
+#if defined(ELEVATED) || defined(ELEVATED_ROADS)
+    a_z_offset = a_z_offset_width.x;
+#endif
+
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
@@ -111,7 +116,12 @@ void main() {
     // these transformations used to be applied in the JS and native code bases.
     // moved them into the shader for clarity and simplicity.
     gapwidth = gapwidth / 2.0;
-    float halfwidth = (u_width_scale * width) / 2.0;
+    float halfwidth;
+#ifdef VARIABLE_LINE_WIDTH
+    halfwidth = (u_width_scale * a_z_offset_width.y) / 2.0;
+#else
+    halfwidth = (u_width_scale * width) / 2.0;
+#endif
     offset = -1.0 * offset * u_width_scale;
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);

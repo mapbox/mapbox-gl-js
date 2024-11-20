@@ -135,7 +135,7 @@ createStructArrayType('raster_bounds', boundsAttributes);
 
 import {circleAttributes, circleGlobeAttributesExt} from '../src/data/bucket/circle_attributes';
 import fillAttributes from '../src/data/bucket/fill_attributes';
-import lineAttributes from '../src/data/bucket/line_attributes';
+import {lineLayoutAttributes, lineZOffsetAttributes} from '../src/data/bucket/line_attributes';
 import lineAttributesExt from '../src/data/bucket/line_attributes_ext';
 import lineAttributesPattern from '../src/data/bucket/line_attributes_pattern';
 import patternAttributes from '../src/data/bucket/pattern_attributes';
@@ -151,7 +151,7 @@ const layoutAttributes = {
     'fill-extrusion': fillExtrusionAttributes,
     'fill-extrusion-ground': fillExtrusionGroundAttributes,
     heatmap: circleAttributes,
-    line: lineAttributes,
+    line: lineLayoutAttributes,
     lineExt: lineAttributesExt,
     linePattern: lineAttributesPattern,
     pattern: patternAttributes,
@@ -241,6 +241,9 @@ createStructArrayType('line_index', createLayout([
 createStructArrayType('line_strip_index', createLayout([
     {type: 'Uint16', name: 'vertices', components: 1}
 ]));
+
+// line z offset extension
+createStructArrayType('line_z_offset_ext', lineZOffsetAttributes);
 
 // skybox vertex array
 createStructArrayType(`skybox_vertex`, skyboxAttributes);

@@ -13,7 +13,7 @@
 in vec2 a_pos_normal;
 in vec4 a_data;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)
-in float a_z_offset;
+in vec2 a_z_offset_width;
 #endif
 // Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
 // to reduce attribute count on older devices.
@@ -84,6 +84,11 @@ void main() {
     #pragma mapbox: initialize mediump float floorwidth
     #pragma mapbox: initialize mediump vec4 pattern
     #pragma mapbox: initialize mediump float pixel_ratio
+
+    float a_z_offset;
+#if defined(ELEVATED) || defined(ELEVATED_ROADS)
+    a_z_offset = a_z_offset_width.x;
+#endif
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.

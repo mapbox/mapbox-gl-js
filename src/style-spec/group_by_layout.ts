@@ -29,6 +29,25 @@ function getKey(layer: LayerSpecification) {
     return key;
 }
 
+function containsKey(obj: any, key: string) {
+    function recursiveSearch(item) {
+        if (typeof item === 'string' && item === key) {
+            return true;
+        }
+
+        if (Array.isArray(item)) {
+            return item.some(recursiveSearch);
+        }
+
+        if (item && typeof item === 'object') {
+            return Object.values(item).some(recursiveSearch);
+        }
+
+        return false;
+    }
+    return recursiveSearch(obj);
+}
+
 /**
  * Given an array of layers, return an array of arrays of layers where all
  * layers in each group have identical layout-affecting properties. These
@@ -53,17 +72,30 @@ export default function groupByLayout(
     const groups: Record<string, any> = {};
 
     for (let i = 0; i < layers.length; i++) {
+        const layer = layers[i];
+        let k = cachedKeys && cachedKeys[layer.id];
 
-        const k = (cachedKeys && cachedKeys[layers[i].id]) || getKey(layers[i]);
+        if (!k) {
+            k =  getKey(layer);
+            // The usage of "line-progress" inside "line-width" makes the property act like a layout property.
+            // We need to split it from the group to avoid conflicts in the bucket creation.
+            if (layer.type === 'line' && layer["paint"]) {
+                const lineWidth = layer["paint"]['line-width'];
+                if (containsKey(lineWidth, 'line-progress')) {
+                    k += `/${stringify(layer["paint"]['line-width'])}`;
+                }
+            }
+        }
+
         // update the cache if there is one
         if (cachedKeys)
-            cachedKeys[layers[i].id] = k;
+            cachedKeys[layer.id] = k;
 
         let group = groups[k];
         if (!group) {
             group = groups[k] = [];
         }
-        group.push(layers[i]);
+        group.push(layer);
     }
 
     const result = [];
