@@ -19,9 +19,8 @@
       "type": "geojson",
       "lineMetrics": true,
       "data": {
-        "type": "MultiLineString",
+        "type": "LineString",
         "coordinates": [
-          [
             [
               0,
               20
@@ -42,7 +41,6 @@
               0,
               20
             ]
-          ]
         ]
       }
     }
