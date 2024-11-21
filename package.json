@@ -1,5 +1,5 @@
 {
-  "name": "@vicmartini/mapbox-gl",
+  "name": "@splightplatform/mapbox-gl",
   "description": "A WebGL interactive maps library",
   "version": "3.7.0",
   "main": "dist/mapbox-gl.js",
