@@ -262,10 +262,10 @@ function drawRaster(
         texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
       }
 
-      // Enable trilinear filtering on tiles only beyond 20 degrees pitch,
-      // to prevent it from compromising image crispness on flat or low tilted maps.
-      // @ts-expect-error - TS2339 - Property 'useMipmap' does not exist on type 'Texture | UserManagedTexture'.
       if (
+        // Enable trilinear filtering on tiles only beyond 20 degrees pitch,
+        // to prevent it from compromising image crispness on flat or low tilted maps.
+        // @ts-expect-error - TS2339 - Property 'useMipmap' does not exist on type 'Texture | UserManagedTexture'.
         texture.useMipmap &&
         context.extTextureFilterAnisotropic &&
         painter.transform.pitch > 20
@@ -378,8 +378,8 @@ function drawRaster(
         const elevatedGlobeVertexBuffer = source.elevatedGlobeVertexBuffer;
         const elevatedGlobeIndexBuffer = source.elevatedGlobeIndexBuffer;
         if (renderingToTexture || !isGlobeProjection) {
-          // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
           if (source.boundsBuffer && source.boundsSegments)
+            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(
               painter,
               gl.TRIANGLES,
