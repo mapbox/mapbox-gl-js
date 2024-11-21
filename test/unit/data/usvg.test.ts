@@ -19,6 +19,6 @@ describe('IconSet', () => {
         const data = await readArrayBuffer('../../fixtures/iconset.pb');
 
         const iconSet = readIconSet(new Pbf(data));
-        expect(JSON.stringify(iconSet)).toMatchFileSnapshot('__snapshots__/iconset.json');
+        await expect(JSON.stringify(iconSet)).toMatchFileSnapshot('__snapshots__/iconset.json');
     });
 });
