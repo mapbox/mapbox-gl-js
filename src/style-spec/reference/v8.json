@@ -2435,9 +2435,7 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "3.8.0",
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "js": "3.8.0"
         }
       },
       "property-type": "data-constant"
@@ -2949,9 +2947,7 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "3.8.0",
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "js": "3.8.0"
         }
       },
       "property-type": "data-constant"
