@@ -4289,6 +4289,17 @@
           }
         }
       },
+      "to-hsla": {
+        "doc": "Returns a four-element array containing the input color's Hue, Saturation, Luminance and alpha components, in that order.",
+        "group": "Color",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.10.0",
+            "android": "11.10.0",
+            "ios": "11.10.0"
+          }
+        }
+      },
       "to-color": {
         "doc": "Converts the input value to a color. If multiple values are provided, each one is evaluated in order until the first successful conversion is obtained. If none of the inputs can be converted, the expression is an error.",
         "group": "Types",

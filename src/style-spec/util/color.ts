@@ -180,6 +180,53 @@ export class RenderColor {
     }
 
     /**
+     * Returns an HSLA array of values representing the color, unpremultiplied by A.
+     *
+     * @returns An array of HSLA color values.
+     */
+    toHslaArray(): [number, number, number, number] {
+        if (this.a === 0) {
+            return [0, 0, 0, 0];
+        }
+        const {r, g, b, a} = this;
+
+        const red = Math.min(Math.max(r / a, 0.0), 1.0);
+        const green = Math.min(Math.max(g / a, 0.0), 1.0);
+        const blue = Math.min(Math.max(b / a, 0.0), 1.0);
+
+        const min = Math.min(red, green, blue);
+        const max = Math.max(red, green, blue);
+
+        const l = (min + max) / 2;
+
+        if (min === max) {
+            return [0, 0, l * 100, a];
+        }
+
+        const delta = max - min;
+
+        const s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+
+        let h = 0;
+        if (max === red) {
+            h = (green - blue) / delta + (green < blue ? 6 : 0);
+        } else if (max === green) {
+            h = (blue - red) / delta + 2;
+        } else if (max === blue) {
+            h = (red - green) / delta + 4;
+        }
+
+        h *= 60;
+
+        return [
+            Math.min(Math.max(h, 0), 360),
+            Math.min(Math.max(s * 100, 0), 100),
+            Math.min(Math.max(l * 100, 0), 100),
+            a
+        ];
+    }
+
+    /**
      * Returns a RGBA array of float values representing the color, unpremultiplied by A.
      *
      * @returns An array of RGBA color values in the range [0, 1].
