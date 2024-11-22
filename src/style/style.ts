@@ -189,6 +189,7 @@ export type StyleOptions = {
     modelManager?: ModelManager;
     styleChanges?: StyleChanges;
     configOptions?: ConfigOptions;
+    colorThemeOverride?: ColorThemeSpecification;
     scope?: string;
     importDepth?: number;
     importsCache?: Map<string, StyleSpecification>;
@@ -216,6 +217,7 @@ type StyleColorTheme = {
     lutLoading: boolean;
     lutLoadingCorrelationID: number;
     colorTheme: ColorThemeSpecification | null;
+    colorThemeOverride: ColorThemeSpecification | null;
 };
 
 type FeaturesetSelector = {
@@ -399,17 +401,18 @@ class Style extends Evented<MapEvents> {
         this._availableImages = [];
         this._order = [];
         this._markersNeedUpdate = false;
-        this._styleColorTheme = {
-            lut: null,
-            lutLoading: false,
-            lutLoadingCorrelationID: 0,
-            colorTheme: null
-        };
-        this._styleColorThemeForScope = {};
 
         this.options = options.configOptions ? options.configOptions : new Map();
         this._configDependentLayers = options.configDependentLayers ? options.configDependentLayers : new Set();
         this._config = options.config;
+        this._styleColorTheme = {
+            lut: null,
+            lutLoading: false,
+            lutLoadingCorrelationID: 0,
+            colorTheme: null,
+            colorThemeOverride: options.colorThemeOverride
+        };
+        this._styleColorThemeForScope = {};
         this._initialConfig = options.initialConfig;
 
         this.dispatcher.broadcast('setReferrer', getReferrer());
@@ -674,6 +677,7 @@ class Style extends Evented<MapEvents> {
             modelManager: this.modelManager,
             config,
             configOptions: this.options,
+            colorThemeOverride: importSpec["color-theme"],
             configDependentLayers: this._configDependentLayers
         });
 
@@ -807,8 +811,8 @@ class Style extends Evented<MapEvents> {
             }
         };
 
-        const colorTheme = this.stylesheet['color-theme'];
-        this._styleColorTheme.colorTheme = colorTheme;
+        this._styleColorTheme.colorTheme = this.stylesheet['color-theme'];
+        const colorTheme = this._styleColorTheme.colorThemeOverride ? this._styleColorTheme.colorThemeOverride : this._styleColorTheme.colorTheme;
         if (colorTheme) {
             const data = this._evaluateColorThemeData(colorTheme);
             this._loadColorTheme(data).then(() => {
@@ -2215,10 +2219,11 @@ class Style extends Evented<MapEvents> {
         }
 
         this.forEachFragmentStyle((style: Style) => {
-            if (style._styleColorTheme.colorTheme) {
-                const data = style._evaluateColorThemeData(style._styleColorTheme.colorTheme);
+            const colorTheme = style._styleColorTheme.colorThemeOverride ? style._styleColorTheme.colorThemeOverride : style._styleColorTheme.colorTheme;
+            if (colorTheme) {
+                const data = style._evaluateColorThemeData(colorTheme);
                 if ((!style._styleColorTheme.lut && data !== '') || (style._styleColorTheme.lut && data !== style._styleColorTheme.lut.data)) {
-                    style.setColorTheme(style._styleColorTheme.colorTheme);
+                    style.setColorTheme(colorTheme);
                 }
             }
         });
@@ -3301,9 +3306,7 @@ class Style extends Evented<MapEvents> {
         this._markersNeedUpdate = true;
     }
 
-    setColorTheme(colorTheme?: ColorThemeSpecification) {
-        this._checkLoaded();
-
+    _reloadColorTheme() {
         const updateStyle = () => {
             for (const layerId in this._layers) {
                 const layer = this._layers[layerId];
@@ -3314,7 +3317,7 @@ class Style extends Evented<MapEvents> {
             }
         };
 
-        this._styleColorTheme.colorTheme = colorTheme;
+        const colorTheme = this._styleColorTheme.colorThemeOverride ? this._styleColorTheme.colorThemeOverride : this._styleColorTheme.colorTheme;
         if (!colorTheme) {
             this._styleColorTheme.lut = null;
             updateStyle();
@@ -3328,6 +3331,26 @@ class Style extends Evented<MapEvents> {
         }).catch((e) => {
             warnOnce(`Couldn\'t set color theme: ${e}`);
         });
+    }
+
+    setColorTheme(colorTheme?: ColorThemeSpecification) {
+        this._checkLoaded();
+
+        if (this._styleColorTheme.colorThemeOverride) {
+            // This is just for hardening and in practice shouldn't happen.
+            // In theory colorThemeOverride can have values only for imports, and it's not possible to call setColorTheme directly on an imported style.
+            warnOnce(`Note: setColorTheme is called on a style with a color-theme override, the passed color-theme won't be visible.`);
+        }
+
+        this._styleColorTheme.colorTheme = colorTheme;
+        this._reloadColorTheme();
+    }
+
+    setImportColorTheme(importId: string, colorTheme?: ColorThemeSpecification) {
+        const fragmentStyle = this.getFragmentStyle(importId);
+        if (!fragmentStyle) return;
+        fragmentStyle._styleColorTheme.colorThemeOverride = colorTheme;
+        fragmentStyle._reloadColorTheme();
     }
 
     _getTransitionParameters(transition?: TransitionSpecification | null): TransitionParameters {

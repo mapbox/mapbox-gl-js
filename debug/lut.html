@@ -56,7 +56,41 @@
         pitch: 50.0,
         bearing: 50.0,
         hash: true,
-        style: PARAMS.styleURL
+        style: {
+            version: 8,
+            imports: [
+                {
+                    id: 'standard',
+                    url: 'mapbox://styles/mapbox/standard'
+                }
+            ],
+            "lights": [
+                {
+                    "id": "ambient",
+                    "type": "ambient",
+                    "properties": {
+                        "color":  "hsl(0, 0%, 100%)",
+                        "intensity": 0.8
+                    }
+                },
+                {
+                    "id": "directional",
+                    "type": "directional",
+                    "properties": {
+                        "direction": [
+                            180,
+                            20
+                        ],
+                        "color": "hsl(0, 0%, 100%)",
+                        "intensity": 0.2,
+                        "cast-shadows": true,
+                        "shadow-intensity": 1
+                    }
+                }
+            ],
+            sources: {},
+            layers: []
+        }
     });
 
     async function fetchJSON(url) {
@@ -189,6 +223,9 @@
             map.setColorTheme({
                 "data": lutData
             });
+            map.setImportColorTheme("standard", {
+                "data": lutData
+            });
         } else {
             // Load from preset
             const img = document.getElementById('canvasImageHolder');
@@ -198,6 +235,9 @@
                 ctx.drawImage(img, 0, 0);
                 lutData = canvas.toDataURL();
                 map.setColorTheme({
+                    "data": lutData
+                });
+                map.setImportColorTheme("standard", {
                     "data": lutData
                 });
             };

@@ -3666,6 +3666,25 @@ export class Map extends Camera {
     }
 
     /**
+     * Sets the color-theme property of an import, which overrides the color-theme property of the imported style data.
+     *
+     * @param {string} importId Identifier of import to update.
+     * @param {ColorThemeSpecification} colorTheme The color-theme properties to set.
+     * If `null` or `undefined` is provided, this function call removes the color-theme override.
+     * Note: Calling this function triggers a full reload of tiles.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setImportColorTheme("someImportId", {
+     *     "data": "iVBORw0KGgoAA..."
+     * });
+     */
+    setImportColorTheme(importId: string, colorTheme?: ColorThemeSpecification): this {
+        this._lazyInitEmptyStyle();
+        this.style.setImportColorTheme(importId, colorTheme);
+        return this._update(true);
+    }
+
+    /**
      * Sets the camera property of the style.
      *
      * @param {CameraSpecification} camera The camera properties to set. Must conform to the Camera Style Specification.

@@ -293,6 +293,11 @@
     "data": {
       "type": "$root",
       "doc": "The inlined style that must correspond to the contents of the specified URL."
+    },
+    "color-theme": {
+      "type": "colorTheme",
+      "optional": true,
+      "doc": "If specified, it overrides the color-theme of the imported style."
     }
   },
   "config": {

@@ -169,7 +169,8 @@ export type ImportSpecification = {
     "id": string,
     "url": string,
     "config"?: ConfigSpecification,
-    "data"?: StyleSpecification
+    "data"?: StyleSpecification,
+    "color-theme"?: ColorThemeSpecification | null | undefined
 }
 
 export type IndoorSpecification = {
