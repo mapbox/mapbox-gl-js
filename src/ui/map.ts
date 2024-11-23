@@ -1502,13 +1502,14 @@ export class Map extends Camera {
      * the `x` and `y` components of the returned {@link Point} are set to Number.MAX_VALUE.
      *
      * @param {LngLatLike} lnglat The geographical location to project.
+     * @param {number} altitude The height above sea level.
      * @returns {Point} The {@link Point} corresponding to `lnglat`, relative to the map's `container`.
      * @example
      * const coordinate = [-122.420679, 37.772537];
      * const point = map.project(coordinate);
      */
-    project(lnglat: LngLatLike,altitude?: number): Point {
-        return this.transform.locationPoint3D(LngLat.convert(lnglat), (altitude ?? 0));
+    project(lnglat: LngLatLike, altitude?: number): Point {
+        return this.transform.locationPoint3D(LngLat.convert(lnglat), (altitude || 0));
     }
 
     /**
@@ -1518,6 +1519,7 @@ export class Map extends Camera {
      * to the point.
      *
      * @param {PointLike} point The pixel coordinates to unproject.
+     *@param {number} altitude The height above sea level.
      * @returns {LngLat} The {@link LngLat} corresponding to `point`.
      * @example
      * map.on('click', (e) => {
@@ -1525,8 +1527,8 @@ export class Map extends Camera {
      *     const coordinate = map.unproject(e.point);
      * });
      */
-    unproject(point: PointLike,altitude?: number): LngLat {
-        return this.transform.pointLocation3D(Point.convert(point), (altitude ?? 0));
+    unproject(point: PointLike, altitude?: number): LngLat {
+        return this.transform.pointLocation3D(Point.convert(point), (altitude || 0));
     }
 
     /** @section {Movement state} */

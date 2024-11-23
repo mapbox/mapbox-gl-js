@@ -441,7 +441,7 @@ export default class Marker extends Evented<MarkerEvents> {
         const map = this._map;
         const pos = this._pos;
         if (!map || !pos) return false;
-        const unprojected = map.unproject(pos,(this._altitube ?? 0));
+        const unprojected = map.unproject(pos, (this._altitube || 0));
         const camera = map.getFreeCameraOptions();
         if (!camera.position) return false;
         const cameraLngLat = camera.position.toLngLat();
@@ -461,7 +461,7 @@ export default class Marker extends Evented<MarkerEvents> {
             this._clearFadeTimer();
             return;
         }
-        const mapLocation = map.unproject(pos,(this._altitube ?? 0));
+        const mapLocation = map.unproject(pos, (this._altitube || 0));
         let opacity;
         if (map._showingGlobe() && isLngLatBehindGlobe(map.transform, this._lngLat)) {
             opacity = 0;
@@ -540,8 +540,8 @@ export default class Marker extends Evented<MarkerEvents> {
         const alignment = this.getRotationAlignment();
         if (alignment === 'map') {
             if (map._showingGlobe()) {
-                const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001),(this._altitube ?? 0));
-                const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001),(this._altitube ?? 0));
+                const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001), (this._altitube || 0));
+                const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001), (this._altitube || 0));
                 const diff = south.sub(north);
                 rotation = radToDeg(Math.atan2(diff.y, diff.x)) - 90;
             } else {
@@ -573,10 +573,10 @@ export default class Marker extends Evented<MarkerEvents> {
         if (!map) return;
 
         if (map.transform.renderWorldCopies) {
-            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitube ?? 0));
+            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitube || 0));
         }
 
-        this._pos = map.project(this._lngLat,(this._altitube ?? 0));
+        this._pos = map.project(this._lngLat, (this._altitube || 0));
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
@@ -691,7 +691,7 @@ export default class Marker extends Evented<MarkerEvents> {
         }
 
         this._pos = e.point.sub(posDelta);
-        this._lngLat = map.unproject(this._pos,(this._altitube ?? 0));
+        this._lngLat = map.unproject(this._pos, (this._altitube || 0));
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
         this._element.style.pointerEvents = 'none';

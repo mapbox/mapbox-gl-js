@@ -52,14 +52,14 @@ export default class Globe extends Mercator {
         return {x: pos[0], y: pos[1], z: pos[2]};
     }
 
-    override locationPoint(tr: Transform, lngLat: LngLat, terrain: boolean = true,altitude?: number): Point {
+    override locationPoint(tr: Transform, lngLat: LngLat, terrain: boolean = true, altitude?: number): Point {
         const pos = latLngToECEF(lngLat.lat, lngLat.lng);
         const up = vec3.normalize([] as any, pos);
 
         let elevation = 0;
-        if(altitude){
+        if (altitude) {
             elevation = tr._centerAltitude + altitude;
-        }else {
+        } else {
             elevation = tr.elevation ?
                 tr.elevation.getAtPointOrZero(tr.locationCoordinate(lngLat), tr._centerAltitude) :
                 tr._centerAltitude;

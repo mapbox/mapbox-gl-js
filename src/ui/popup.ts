@@ -622,11 +622,11 @@ export default class Popup extends Evented<PopupEvents> {
         }
 
         if (map.transform.renderWorldCopies && !this._trackPointer) {
-            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitube ?? 0));
+            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitube || 0));
         }
 
         if (!this._trackPointer || cursor) {
-            const pos = this._pos = this._trackPointer && cursor instanceof Point ? cursor : map.project(this._lngLat,(this._altitube ?? 0));
+            const pos = this._pos = this._trackPointer && cursor instanceof Point ? cursor : map.project(this._lngLat, (this._altitube || 0));
 
             const offsetBottom = normalizeOffset(this.options.offset);
             const anchor = this._anchor = this._getAnchor(offsetBottom.y);
@@ -653,7 +653,7 @@ export default class Popup extends Evented<PopupEvents> {
 
         const firstFocusable = this._container.querySelector(focusQuerySelector);
         if (firstFocusable) {
-            const  isAriaHidden = (firstFocusable?.getAttribute('aria-hidden') === 'true');
+            const  isAriaHidden = firstFocusable.getAttribute('aria-hidden') === 'true';
             // @ts-expect-error - TS2339 - Property 'focus' does not exist on type 'Element'.
             if (!isAriaHidden) firstFocusable.focus();
         }
