@@ -77,6 +77,7 @@ const focusQuerySelector = [
  *
  * Negative offsets indicate left and up.
  * @param {string} [options.className] Space-separated CSS class names to add to popup container.
+ * @param {number} [options.altitube=0] The altitude above ground level,how many meters.
  * @param {string} [options.maxWidth='240px'] -
  * A string that sets the CSS property of the popup's maximum width (for example, `'300px'`).
  * To ensure the popup resizes to fit its content, set this property to `'none'`.
