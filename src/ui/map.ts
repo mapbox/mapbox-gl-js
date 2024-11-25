@@ -3914,7 +3914,6 @@ export class Map extends Camera {
         this._detectMissingCSS();
 
         const canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
-        // @ts-expect-error - TS2740 - Type 'HTMLElement' is missing the following properties from type 'HTMLCanvasElement': height, width, captureStream, getContext, and 3 more.
         this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
 
         if (this._interactive) {
