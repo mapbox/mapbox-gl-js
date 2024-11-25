@@ -1,6 +1,6 @@
 // @ts-nocheck
-import {describe, test, beforeAll, afterEach, afterAll, expect, waitFor, vi} from '../../util/vitest';
-import {getNetworkWorker, http, HttpResponse} from '../../util/network';
+import {describe, test, expect, waitFor, vi, doneAsync} from '../../util/vitest';
+import {mockFetch} from '../../util/network';
 import VectorTileSource from '../../../src/source/vector_tile_source';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import {Evented} from '../../../src/util/evented';
@@ -43,20 +43,6 @@ function createSource(options, {transformCallback, customAccessToken} = {}) {
     return source;
 }
 
-let networkWorker: any;
-
-beforeAll(async () => {
-    networkWorker = await getNetworkWorker(window);
-});
-
-afterEach(() => {
-    networkWorker.resetHandlers();
-});
-
-afterAll(() => {
-    networkWorker.stop();
-});
-
 describe('VectorTileSource', () => {
     test('can be constructed from TileJSON', async () => {
         const source = createSource({
@@ -76,11 +62,9 @@ describe('VectorTileSource', () => {
     });
 
     test('can be constructed from a TileJSON URL', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            }),
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture))
+        });
 
         const source = createSource({url: "/source.json"});
 
@@ -94,11 +78,9 @@ describe('VectorTileSource', () => {
     });
 
     test('transforms the request for TileJSON URL', () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            }),
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture))
+        });
         const transformSpy = vi.fn((url) => {
             return {url};
         });
@@ -109,11 +91,9 @@ describe('VectorTileSource', () => {
     });
 
     test('fires event with metadata property', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            }),
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture))
+        });
         const source = createSource({url: "/source.json"});
         await new Promise(resolve => {
             source.on('data', (e) => {
@@ -125,34 +105,30 @@ describe('VectorTileSource', () => {
     });
 
     test('fires "dataloading" event', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            }),
-        );
-        await new Promise(resolve => {
-            const evented = new Evented();
-            let dataloadingFired = false;
-            evented.on('dataloading', () => {
-                dataloadingFired = true;
-            });
-            const source = createSource({url: "/source.json", eventedParent: evented});
-            source.on('data', (e) => {
-                if (e.sourceDataType === 'metadata') {
-                    if (!dataloadingFired) expect.unreachable();
-                    resolve();
-                }
-            });
+        const {wait, withAsync} = doneAsync();
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture))
         });
+        const evented = new Evented();
+        let dataloadingFired = false;
+        evented.on('dataloading', () => {
+            dataloadingFired = true;
+        });
+        const source = createSource({url: "/source.json", eventedParent: evented});
+        source.on('data', withAsync((e, doneRef) => {
+            if (e.sourceDataType === 'metadata') {
+                if (!dataloadingFired) expect.unreachable();
+                doneRef.resolve();
+            }
+        }));
+
+        await wait;
     });
 
     test('serialize URL', async () => {
-        networkWorker.use(
-            http.get('http://localhost:2900/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            }),
-        );
-
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture))
+        });
         const source = createSource({
             url: "http://localhost:2900/source.json"
         });
@@ -183,6 +159,7 @@ describe('VectorTileSource', () => {
 
     function testScheme(scheme, expectedURL) {
         test(`scheme "${scheme}"`, async () => {
+            const {wait, withAsync} = doneAsync();
             const source = createSource({
                 minzoom: 1,
                 maxzoom: 10,
@@ -191,22 +168,21 @@ describe('VectorTileSource', () => {
                 scheme
             });
 
-            await new Promise(resolve => {
-                source.dispatcher = wrapDispatcher({
-                    send(type, params) {
-                        expect(type).toEqual('loadTile');
-                        expect(expectedURL).toEqual(params.request.url);
-                        resolve();
-                    }
-                });
-
-                source.on('data', (e) => {
-                    if (e.sourceDataType === 'metadata') source.loadTile({
-                        tileID: new OverscaledTileID(10, 0, 10, 5, 5)
-                    }, () => {});
-                });
+            source.dispatcher = wrapDispatcher({
+                send: withAsync((type, params, _, __, ___, doneRef) => {
+                    expect(type).toEqual('loadTile');
+                    expect(expectedURL).toEqual(params.request.url);
+                    doneRef.resolve();
+                })
             });
 
+            source.on('data', (e) => {
+                if (e.sourceDataType === 'metadata') source.loadTile({
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5)
+                }, () => {});
+            });
+
+            await wait;
         });
     }
 
@@ -215,32 +191,30 @@ describe('VectorTileSource', () => {
 
     function testRemoteScheme(scheme, expectedURL) {
         test(`remote scheme "${scheme}"`, async () => {
-            networkWorker.use(
-                http.get('/source.json', async () => {
-                    return HttpResponse.json({...sourceFixture, scheme});
-                }),
-            );
+            const {wait, withAsync} = doneAsync();
+            mockFetch({
+                '/source.json': () => new Response(JSON.stringify({...sourceFixture, scheme}))
+            });
 
             const source = createSource({url: "/source.json"});
 
-            await new Promise(resolve => {
-                source.dispatcher = wrapDispatcher({
-                    send(type, params) {
-                        expect(type).toEqual('loadTile');
-                        expect(expectedURL).toEqual(params.request.url);
-                    }
-                });
-
-                source.on('data', (e) => {
-                    if (e.sourceDataType === 'metadata') {
-                        expect(source.scheme).toEqual(scheme);
-                        source.loadTile({
-                            tileID: new OverscaledTileID(10, 0, 10, 5, 5)
-                        }, () => {});
-                        resolve();
-                    }
-                });
+            source.dispatcher = wrapDispatcher({
+                send(type, params) {
+                    expect(type).toEqual('loadTile');
+                    expect(expectedURL).toEqual(params.request.url);
+                }
             });
+
+            source.on('data', withAsync((e, doneRef) => {
+                if (e.sourceDataType === 'metadata') {
+                    expect(source.scheme).toEqual(scheme);
+                    source.loadTile({
+                        tileID: new OverscaledTileID(10, 0, 10, 5, 5)
+                    }, () => {});
+                    doneRef.resolve();
+                }
+            }));
+            await wait;
         });
     }
 
@@ -248,11 +222,9 @@ describe('VectorTileSource', () => {
     testRemoteScheme('tms', 'http://example.com/10/5/1018.png');
 
     test('transforms tile urls before requesting', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            }),
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture))
+        });
 
         const source = createSource({url: "/source.json"});
         const transformSpy = vi.spyOn(source.map._requestManager, 'transformRequest');
@@ -298,6 +270,7 @@ describe('VectorTileSource', () => {
     });
 
     test('reloads a loading tile properly', async () => {
+        const {wait, withAsync} = doneAsync();
         const source = createSource({
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
@@ -305,32 +278,32 @@ describe('VectorTileSource', () => {
         source.dispatcher = wrapDispatcher({
             send(type, params, cb) {
                 events.push(type);
-                if (cb) setTimeout(cb, 0);
+                if (cb) setTimeout(() => cb(), 0);
                 return 1;
             }
         });
 
-        await new Promise(resolve => {
-            source.once('data', (e) => {
-                if (e.sourceDataType === 'metadata') {
-                    const tile = {
-                        tileID: new OverscaledTileID(10, 0, 10, 5, 5),
-                        state: 'loading',
-                        loadVectorData () {
-                            this.state = 'loaded';
-                            events.push('tileLoaded');
-                        },
-                        setExpiryData() {}
-                    };
-                    source.loadTile(tile, () => {});
-                    expect(tile.state).toEqual('loading');
-                    source.loadTile(tile, () => {
-                        expect(events).toStrictEqual(['loadTile', 'tileLoaded', 'enforceCacheSizeLimit', 'reloadTile', 'tileLoaded']);
-                        resolve();
-                    });
-                }
-            });
+        source.once('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                const tile = {
+                    tileID: new OverscaledTileID(10, 0, 10, 5, 5),
+                    state: 'loading',
+                    loadVectorData () {
+                        this.state = 'loaded';
+                        events.push('tileLoaded');
+                    },
+                    setExpiryData() {}
+                };
+                source.loadTile(tile, () => {});
+                expect(tile.state).toEqual('loading');
+                source.loadTile(tile, withAsync((_, doneRef) => {
+                    expect(events).toStrictEqual(['loadTile', 'tileLoaded', 'enforceCacheSizeLimit', 'reloadTile', 'tileLoaded']);
+                    doneRef.resolve();
+                }));
+            }
         });
+
+        await wait;
     });
 
     test('respects TileJSON.bounds', async () => {
@@ -364,17 +337,15 @@ describe('VectorTileSource', () => {
     });
 
     test('respects TileJSON.bounds when loaded from TileJSON', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json({
-                    minzoom: 0,
-                    maxzoom: 22,
-                    attribution: "Mapbox",
-                    tiles: ["http://example.com/{z}/{x}/{y}.png"],
-                    bounds: [-47, -7, -45, -5]
-                });
-            }),
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify({
+                minzoom: 0,
+                maxzoom: 22,
+                attribution: "Mapbox",
+                tiles: ["http://example.com/{z}/{x}/{y}.png"],
+                bounds: [-47, -7, -45, -5]
+            }))
+        });
         const source = createSource({url: "/source.json"});
 
         const e = await waitFor(source, "data");
@@ -392,7 +363,7 @@ describe('VectorTileSource', () => {
         source.dispatcher = wrapDispatcher({
             send(type, params, cb) {
                 expect(params.request.collectResourceTiming).toBeTruthy();
-                setTimeout(cb, 0);
+                setTimeout(() => cb(), 0);
 
                 // do nothing for cache size check dispatch
                 source.dispatcher = mockDispatcher;
@@ -421,11 +392,9 @@ describe('VectorTileSource', () => {
     });
 
     test('supports property updates', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            }),
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture))
+        });
         const source = createSource({url: '/source.json'});
 
         const loadSpy = vi.spyOn(source, 'load');
@@ -433,14 +402,13 @@ describe('VectorTileSource', () => {
         const responseSpy = vi.fn();
 
         await waitFor(source, 'data');
-        networkWorker.resetHandlers();
 
-        networkWorker.use(
-            http.get('/source.json', async ({request}) => {
+        mockFetch({
+            '/source.json': (request) => {
                 responseSpy(request);
-                return HttpResponse.json({...sourceFixture, maxzoom: 22});
-            }),
-        );
+                return new Response(JSON.stringify({...sourceFixture, maxzoom: 22}));
+            }
+        });
 
         source.attribution = 'OpenStreetMap';
         source.reload();
@@ -454,14 +422,10 @@ describe('VectorTileSource', () => {
     });
 
     test('supports url property updates', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            }),
-            http.get('/new-source.json', async () => {
-                return HttpResponse.json({...sourceFixture, minzoom: 0, maxzoom: 22});
-            })
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture)),
+            '/new-source.json': () => new Response(JSON.stringify({...sourceFixture, minzoom: 0, maxzoom: 22}))
+        });
 
         const source = createSource({url: '/source.json'});
         source.setUrl('/new-source.json');
@@ -498,11 +462,9 @@ describe('VectorTileSource', () => {
     });
 
     test('prefers TileJSON tiles, if both URL and tiles options are set', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            })
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture))
+        });
 
         const source = createSource({
             minzoom: 1,

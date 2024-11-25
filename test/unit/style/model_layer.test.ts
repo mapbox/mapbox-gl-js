@@ -1,6 +1,6 @@
 // @ts-nocheck
-import {describe, test, beforeAll, afterEach, afterAll, expect} from '../../util/vitest';
-import {getNetworkWorker, http, HttpResponse} from '../../util/network';
+import {describe, test, expect} from '../../util/vitest';
+import {mockFetch} from '../../util/network';
 import Style from '../../../src/style/style';
 import Transform from '../../../src/geo/transform';
 import {RequestManager} from '../../../src/util/mapbox';
@@ -22,25 +22,11 @@ class StubMap extends Evented {
     }
 }
 
-let networkWorker: any;
-
-beforeAll(async () => {
-    networkWorker = await getNetworkWorker(window);
-});
-
-afterEach(() => {
-    networkWorker.resetHandlers();
-});
-
-afterAll(() => {
-    networkWorker.stop();
-});
-
 describe('ModelLayer#loadStyleExpressionConstraint', () => {
     test('validates the style', async () => {
-        networkWorker.use(
-            http.get('/style.json', async () => {
-                return HttpResponse.json({
+        mockFetch({
+            '/style.json': () => {
+                return new Response(JSON.stringify({
                     "version": 8,
                     "sources": {
                         "trees": {
@@ -121,10 +107,9 @@ describe('ModelLayer#loadStyleExpressionConstraint', () => {
                             }
                         }
                     ]
-
-                });
-            }),
-        );
+                }));
+            }
+        });
 
         const style = new Style(new StubMap());
         let errorCount = 0;

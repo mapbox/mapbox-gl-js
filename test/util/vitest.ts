@@ -29,7 +29,7 @@ export function doneAsync() {
         doneRef.reject = reject;
     });
 
-    const withAsync = (fn) => {
+    const withAsync = (fn): void => {
         return async (...args) => {
             try {
                 await fn(...args, doneRef);

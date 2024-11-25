@@ -147,19 +147,16 @@ test('AttributionControl has the correct edit map link', async () => {
 
     await waitFor(map, 'load');
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    map.on('data', withAsync((e, doneRef) => {
-        if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-            expect(attribution._editLink.rel).toEqual('noopener nofollow');
-            expect(attribution._editLink.href).toEqual(
-                'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0'
-            );
-            map.setZoom(2);
-            expect(attribution._editLink.href).toEqual(
-                'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2'
-            );
-            doneRef.resolve();
-        }
+    map.on('idle', withAsync((e, doneRef) => {
+        expect(attribution._editLink.rel).toEqual('noopener nofollow');
+        expect(attribution._editLink.href).toEqual(
+            'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0'
+        );
+        map.setZoom(2);
+        expect(attribution._editLink.href).toEqual(
+            'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2'
+        );
+        doneRef.resolve();
     }));
     map.addSource('1', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: '<a class="mapbox-improve-map" href="https://feedback.com" target="_blank">Improve this map</a>'});
     map.addLayer({id: '1', type: 'fill', source: '1'});
