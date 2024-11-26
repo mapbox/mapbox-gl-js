@@ -1,6 +1,6 @@
 import {test, expect, vi, beforeEach} from '../../util/vitest';
 import {loadVectorTile, DedupedRequest, resetRequestQueue} from '../../../src/source/load_vector_tile';
-import type {RequestedTileParameters} from 'src/source/worker_source';
+import type {RequestedTileParameters} from '../../../src/source/worker_source';
 
 const createScheduler = () => ({add: () => {}} as any);
 const ARRAY_BUF_DELAY = 1500;

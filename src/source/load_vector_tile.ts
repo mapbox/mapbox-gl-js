@@ -6,7 +6,7 @@ import assert from "assert";
 import type {Callback} from '../types/callback';
 import type {RequestedTileParameters} from './worker_source';
 import type Scheduler from '../util/scheduler';
-import type {Cancelable} from 'src/types/cancelable';
+import type {Cancelable} from '../types/cancelable';
 
 export type LoadVectorTileResult = {
     rawData: ArrayBuffer;
