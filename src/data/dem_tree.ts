@@ -199,9 +199,8 @@ export default class DemMinMaxQuadTree {
         d: vec3,
         exaggeration: number = 1,
     ): number | null | undefined {
-        const min = [minx, miny, -aabbSkirtPadding];
-        const max = [maxx, maxy, this.maximums[0] * exaggeration];
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
+        const min: vec3 = [minx, miny, -aabbSkirtPadding];
+        const max: vec3 = [maxx, maxy, this.maximums[0] * exaggeration];
         return aabbRayIntersect(min, max, p, d);
     }
 
@@ -223,8 +222,8 @@ export default class DemMinMaxQuadTree {
 
         const tHits = [];
         const sortedHits = [];
-        const boundsMin = [];
-        const boundsMax = [];
+        const boundsMin = [] as unknown as vec3;
+        const boundsMax = [] as unknown as vec3;
 
         const stack = [{
             idx: 0,
@@ -240,7 +239,7 @@ export default class DemMinMaxQuadTree {
 
             if (this.leaves[idx]) {
                 // Create 2 triangles to approximate the surface plane for more precise tests
-                decodeBounds(nodex, nodey, depth, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin, boundsMax);
+                decodeBounds(nodex, nodey, depth, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin as number[], boundsMax as number[]);
 
                 const scale = 1 << depth;
                 const minxUv = (nodex + 0) / scale;
@@ -295,12 +294,11 @@ export default class DemMinMaxQuadTree {
                 const childNodeY = (nodey << 1) + this._siblingOffset[i][1];
 
                 // Decode node aabb from the morton code
-                decodeBounds(childNodeX, childNodeY, depth + 1, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin, boundsMax);
+                decodeBounds(childNodeX, childNodeY, depth + 1, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin as number[], boundsMax as number[]);
 
                 boundsMin[2] = -aabbSkirtPadding;
                 boundsMax[2] = this.maximums[this.childOffsets[idx] + i] * exaggeration;
 
-                // @ts-expect-error - TS2345 - Argument of type 'any[]' is not assignable to parameter of type 'vec3'.
                 const result = aabbRayIntersect(boundsMin, boundsMax, p, d);
                 if (result != null) {
                     // Build the result list from furthest to closest hit.

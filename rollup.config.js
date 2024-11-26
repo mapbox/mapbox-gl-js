@@ -48,11 +48,11 @@ export default ({watch}) => {
         onwarn: production ? onwarn : false,
         treeshake: production ? {
             moduleSideEffects: (id, external) => {
-                return !id.endsWith("tracked_parameters.ts");
+                return !id.endsWith("tracked_parameters.ts") && !id.endsWith("draw_snow.ts") && !id.endsWith("draw_rain.ts");
             },
             preset: "recommended"
         } : false,
-        plugins: plugins({minified, production, bench, test: false, keepClassNames: false})
+        plugins: plugins({minified, production, bench, test: false, keepClassNames: false, mode: BUILD})
     }, {
         // Next, bundle together the three "chunks" produced in the previous pass
         // into a single, final bundle. See rollup/bundle_prelude.js and

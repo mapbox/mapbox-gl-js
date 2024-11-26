@@ -1,9 +1,9 @@
-import Context from '../gl/context';
-import type {UniformValues} from './uniform_binding';
 import {Uniform4f} from './uniform_binding';
 import {smoothstep, warnOnce} from '../util/util';
 import {MIN_LOD_PITCH} from '../geo/transform';
 
+import type {UniformValues} from './uniform_binding';
+import type Context from '../gl/context';
 import type Painter from './painter';
 
 export type CutoffUniformsType = {

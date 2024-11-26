@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import Color from '../util/color';
 import Collator from './types/collator';
 import Formatted from './types/formatted';
@@ -111,7 +110,7 @@ export function typeOf(value: Value): Type {
         return ResolvedImageType;
     } else if (Array.isArray(value)) {
         const length = value.length;
-        let itemType: Type | typeof undefined;
+        let itemType: Type;
 
         for (const item of value) {
             const t = typeOf(item);

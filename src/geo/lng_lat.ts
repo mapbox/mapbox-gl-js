@@ -13,7 +13,7 @@ export function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radi
     return [sx, sy, sz];
 }
 
-export function ecefToLatLng([x, y, z]: [any, any, any]): LngLat {
+export function ecefToLatLng([x, y, z]: [number, number, number]): LngLat {
     const radius = Math.hypot(x, y, z);
     const lng = Math.atan2(x, z);
     const lat = Math.PI * 0.5 - Math.acos(-y / radius);
@@ -503,8 +503,8 @@ export class LngLatBounds {
      * console.log(llb);   // = LngLatBounds {_sw: LngLat {lng: -73.9876, lat: 40.7661}, _ne: LngLat {lng: -73.9397, lat: 40.8002}}
      */
     static convert(input: LngLatBoundsLike): LngLatBounds {
-        // @ts-expect-error - TS2322 - Type 'LngLatBoundsLike' is not assignable to type 'LngLatBounds'.
-        if (!input || input instanceof LngLatBounds) return input;
+        if (!input) return;
+        if (input instanceof LngLatBounds) return input;
         return new LngLatBounds(input);
     }
 }

@@ -1,0 +1,333 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0006,
+      "operations": [
+        [
+        "wait"
+        ],
+        [
+          "setConfigProperty",
+          "basemap",
+          "lightPreset",
+          "night"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": [],
+  "transition": {
+    "duration": 0
+  },
+  "pitch": 55,
+  "zoom": 16.95,
+  "bearing": 115,
+  "center": [
+    -74.0092,
+    40.7160
+  ],
+  "imports": [
+    {
+        "id": "basemap",
+        "url": "",
+        "data": {
+          "version": 8,
+          "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+          "schema": {
+            "lightPreset": {
+                "default": "day",
+                "type": "string",
+                "values": [
+                    "dawn",
+                    "day",
+                    "dusk",
+                    "night"
+                ]
+            }
+          },
+          "lights": [
+              {
+                  "id": "ambient",
+                  "type": "ambient",
+                  "properties": {
+                      "color": [
+                          "match",
+                          [
+                              "config",
+                              "lightPreset"
+                          ],
+                          "dawn",
+                          "hsl(28, 98%, 93%)",
+                          "day",
+                          "hsl(0, 0%, 100%)",
+                          "dusk",
+                          "hsl(228, 27%, 29%)",
+                          "night",
+                          "hsl(217, 100%, 11%)",
+                          "hsl(0, 0%, 100%)"
+                      ],
+                      "intensity": [
+                          "match",
+                          [
+                              "config",
+                              "lightPreset"
+                          ],
+                          "dawn",
+                          0.75,
+                          "day",
+                          0.8,
+                          "dusk",
+                          0.8,
+                          "night",
+                          0.5,
+                          0.8
+                      ]
+                  }
+              },
+              {
+                  "id": "directional",
+                  "type": "directional",
+                  "properties": {
+                      "direction": [
+                          "match",
+                          [
+                              "config",
+                              "lightPreset"
+                          ],
+                          "dawn",
+                          [
+                              "literal",
+                              [
+                                  120,
+                                  50
+                              ]
+                          ],
+                          "day",
+                          [
+                              "literal",
+                              [
+                                  180,
+                                  20
+                              ]
+                          ],
+                          "dusk",
+                          [
+                              "literal",
+                              [
+                                  240,
+                                  80
+                              ]
+                          ],
+                          "night",
+                          [
+                              "literal",
+                              [
+                                  270,
+                                  20
+                              ]
+                          ],
+                          [
+                              "literal",
+                              [
+                                  180,
+                                  20
+                              ]
+                          ]
+                      ],
+                      "color": [
+                          "match",
+                          [
+                              "config",
+                              "lightPreset"
+                          ],
+                          "dawn",
+                          "hsl(33, 98%, 77%)",
+                          "day",
+                          "hsl(0, 0%, 100%)",
+                          "dusk",
+                          "hsl(30, 98%, 76%)",
+                          "night",
+                          "hsl(0, 0%, 29%)",
+                          "hsl(0, 0%, 100%)"
+                      ],
+                      "intensity": [
+                          "interpolate",
+                          [
+                              "linear"
+                          ],
+                          [
+                              "zoom"
+                          ],
+                          12,
+                          [
+                              "match",
+                              [
+                                  "config",
+                                  "lightPreset"
+                              ],
+                              "dawn",
+                              0.5,
+                              "day",
+                              0.2,
+                              "dusk",
+                              0,
+                              "night",
+                              0,
+                              0.2
+                          ],
+                          14,
+                          [
+                              "match",
+                              [
+                                  "config",
+                                  "lightPreset"
+                              ],
+                              "dawn",
+                              0.5,
+                              "day",
+                              0.2,
+                              "dusk",
+                              0.2,
+                              "night",
+                              0.5,
+                              0.2
+                          ]
+                      ],
+                      "cast-shadows": true,
+                      "shadow-intensity": [
+                          "match",
+                          [
+                              "config",
+                              "lightPreset"
+                          ],
+                          "night",
+                          0.5,
+                          1
+                      ]
+                  }
+              }
+          ],
+          "sources": {
+            "mapbox": {
+              "type": "vector",
+              "maxzoom": 16,
+              "tiles": [
+                "local://tiles/{z}-{x}-{y}.mvt"
+              ]
+            }
+          },
+          "layers": [
+            {
+              "id": "background",
+              "type": "background",
+              "paint": {
+                "background-color": "lightgray"
+              }
+            },
+            {
+              "id": "extrusion",
+              "type": "fill-extrusion",
+              "source": "mapbox",
+              "source-layer": "building",
+              "paint": {
+                "fill-extrusion-color": "white",
+                "fill-extrusion-height": [
+                  "get",
+                  "height"
+                ],
+                "fill-extrusion-opacity": 1.0,
+                "fill-extrusion-ambient-occlusion-ground-radius": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    0,
+                    17,
+                    5
+                ],
+                "fill-extrusion-flood-light-wall-radius": [
+                  "case",
+                  [
+                      ">",
+                      [
+                          "number",
+                          [
+                              "get",
+                              "height"
+                          ]
+                      ],
+                      32
+                  ],
+                  [
+                      "/",
+                      [
+                          "number",
+                          [
+                              "get",
+                              "height"
+                          ]
+                      ],
+                      3
+                  ],
+                  0
+                ],
+                "fill-extrusion-flood-light-ground-radius": [
+                  "step",
+                  [
+                      "number",
+                      [
+                          "get",
+                          "height"
+                      ]
+                  ],
+                  0,
+                  30,
+                  [
+                      "random",
+                      40,
+                      80,
+                      [
+                          "id"
+                      ]
+                  ]
+                ],
+                "fill-extrusion-flood-light-color": [
+                  "rgb",
+                  255,
+                  255,
+                  127
+                ],
+                "fill-extrusion-flood-light-intensity": [
+                  "interpolate",
+                  [
+                      "linear"
+                  ],
+                  [
+                      "measure-light",
+                      "brightness"
+                  ],
+                  0.015,
+                  0.3,
+                  0.026,
+                  0
+                ]
+              },
+              "layout": {
+                "fill-extrusion-edge-radius": 0.99
+              }
+            }
+          ]
+        }
+      }
+  ]
+}

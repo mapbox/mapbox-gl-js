@@ -7,7 +7,10 @@
         "plugin:@typescript-eslint/recommended-type-checked"
     ],
     "parserOptions": {
-        "EXPERIMENTAL_useProjectService": true
+        "projectService": {
+            "defaultProject": "./tsconfig.json",
+            "allowDefaultProject": ["*.js", "debug/*", "build/*"]
+        }
     },
     "plugins": [
         "jsdoc",
@@ -33,6 +36,7 @@
     },
     "rules": {
         // temporarily disabled for easier migration to TypeScript
+        "no-loss-of-precision": "off",
         "@typescript-eslint/no-this-alias": "off",
         "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/unbound-method": "off",
@@ -40,19 +44,24 @@
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-unsafe-return": "off",
         "@typescript-eslint/no-unsafe-argument": "off",
-        "@typescript-eslint/no-misused-promises": "off",
         "@typescript-eslint/no-unsafe-assignment": "off",
         "@typescript-eslint/no-loss-of-precision": "off",
         "@typescript-eslint/no-unsafe-member-access": "off",
-        "@typescript-eslint/no-redundant-type-constituents": "off",
+        "@typescript-eslint/only-throw-error": "off",
 
         // TypeScript specific rules
+        "@typescript-eslint/method-signature-style": "error",
         "@typescript-eslint/no-floating-promises": "off",
-        "@typescript-eslint/consistent-type-exports": "off",
-        "@typescript-eslint/consistent-type-imports": "off",
+        "@typescript-eslint/consistent-type-exports": "error",
+        "@typescript-eslint/consistent-type-imports": "error",
         "@typescript-eslint/restrict-template-expressions": ["off", { "allowNever": true }],
         "@typescript-eslint/no-unnecessary-type-constraint": "off",
-        "@typescript-eslint/no-unused-vars": ["off", { "argsIgnorePattern": "^_" }],
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": ["error", {
+            "args": "none",
+            "caughtErrors": "none",
+            "ignoreRestSiblings": true
+        }],
 
         // Disable those rules since TypeScript provides the same checks as part of standard type checking
         // See https://typescript-eslint.io/troubleshooting/performance-troubleshooting/#eslint-plugin-import
@@ -61,10 +70,16 @@
         "import/default": "off",
         "import/no-named-as-default-member": "off",
         "import/no-unresolved": "off",
+        "import/no-named-as-default": "off",
 
         // Import plugin rules
         "no-duplicate-imports": "off",
         "import/no-duplicates": "error",
+
+        "import/order": ["error", {
+            "groups": [["builtin", "external", "internal", "unknown", "parent", "sibling", "index", "object"], "type"],
+            "newlines-between": "always"
+        }],
 
         // Restrict imports outside of the style-spec
         "import/no-restricted-paths": ["error", {
@@ -124,7 +139,7 @@
         }],
         "no-multiple-empty-lines": ["error", {
             "max": 1
-        }],
+        }]
     },
     "overrides": [
         {
@@ -256,6 +271,7 @@
         "es6": true
     },
     "ignorePatterns": [
-        "dist/**/*"
+        "dist/**/*",
+        "src/style-spec/bin/*"
     ]
 }

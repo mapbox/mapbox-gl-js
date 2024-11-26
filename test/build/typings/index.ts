@@ -2,7 +2,7 @@
 
 import mapboxgl from 'mapbox-gl';
 
-mapboxgl.accessToken = localStorage.getItem('accessToken') || window.prompt('Enter access token');
+mapboxgl.accessToken = 'accessToken';
 localStorage.setItem('accessToken', mapboxgl.accessToken);
 
 //
@@ -16,6 +16,8 @@ const map = new mapboxgl.Map({
     hash: true,
     attributionControl: false,
 });
+
+const transformRequest: mapboxgl.RequestTransformFunction = (url: string, resourceTypeEnum: mapboxgl.ResourceType): mapboxgl.RequestParameters => {return {url}};
 
 //
 // Events
@@ -37,7 +39,7 @@ map.on('click', (event) => {
 
     event.point satisfies mapboxgl.Point;
     event.lngLat satisfies mapboxgl.LngLat;
-    event.features satisfies mapboxgl.GeoJSONFeature[];
+    event.features satisfies mapboxgl.GeoJSONFeature[] | undefined;
     event.originalEvent satisfies MouseEvent;
 
     event.preventDefault();
@@ -49,15 +51,17 @@ map.on('touchstart', 'layerId', (event) => {
 
     event.point satisfies mapboxgl.Point;
     event.lngLat satisfies mapboxgl.LngLat;
-    event.features satisfies mapboxgl.GeoJSONFeature[];
+    event.features satisfies mapboxgl.GeoJSONFeature[] | undefined;
     event.originalEvent satisfies TouchEvent;
 
     event.preventDefault();
 });
 
 // Custom events
-map.fire('flystart' as mapboxgl.MapEventType, {});
-map.on('flystart' as mapboxgl.MapEventType, () => {})
+map.fire('flystart', {});
+map.once('flystart', () => {});
+map.on('flystart', () => {});
+map.off('flystart', () => {});
 
 await new Promise((resolve) => map.on('style.load', resolve));
 
@@ -175,39 +179,41 @@ map.addSource('points', {
 //
 
 const source = map.getSource('id');
-const geojsonSource: mapboxgl.GeoJSONSource = map.getSource('id');
+const geojsonSource: mapboxgl.GeoJSONSource | undefined = map.getSource('id');
 
-switch (source.type) {
-    case 'geojson':
-        source satisfies mapboxgl.GeoJSONSource;
-        break;
-    case 'raster-array':
-        source satisfies mapboxgl.RasterArrayTileSource;
-        break;
-    case 'raster-dem':
-        source satisfies mapboxgl.RasterDemTileSource;
-        break;
-    case 'raster':
-        source satisfies mapboxgl.RasterTileSource;
-        break;
-    case 'vector':
-        source satisfies mapboxgl.VectorTileSource;
-        break;
-    case 'image':
-        source satisfies mapboxgl.ImageSource;
-        break;
-    case 'video':
-        source satisfies mapboxgl.VideoSource;
-        break;
-    case 'canvas':
-        source satisfies mapboxgl.CanvasSource;
-        break;
-    case 'custom':
-        source satisfies mapboxgl.CustomSource<ImageData | ImageBitmap | HTMLCanvasElement | HTMLImageElement>;
-        break;
-    case 'model':
-        source satisfies mapboxgl.ModelSource;
-        break;
+if (source) {
+    switch (source.type) {
+        case 'geojson':
+            source satisfies mapboxgl.GeoJSONSource;
+            break;
+        case 'raster-array':
+            source satisfies mapboxgl.RasterArrayTileSource;
+            break;
+        case 'raster-dem':
+            source satisfies mapboxgl.RasterDemTileSource;
+            break;
+        case 'raster':
+            source satisfies mapboxgl.RasterTileSource;
+            break;
+        case 'vector':
+            source satisfies mapboxgl.VectorTileSource;
+            break;
+        case 'image':
+            source satisfies mapboxgl.ImageSource;
+            break;
+        case 'video':
+            source satisfies mapboxgl.VideoSource;
+            break;
+        case 'canvas':
+            source satisfies mapboxgl.CanvasSource;
+            break;
+        case 'custom':
+            source satisfies mapboxgl.CustomSource<ImageData | ImageBitmap | HTMLCanvasElement | HTMLImageElement>;
+            break;
+        case 'model':
+            source satisfies mapboxgl.ModelSource;
+            break;
+    }
 }
 
 //
@@ -271,37 +277,80 @@ map.addLayer({
 
 
 const layer = map.getLayer('id');
-const backgroundLayer: mapboxgl.BackgroundLayerSpecification = map.getLayer('background');
+if (layer) {
+    layer.id satisfies string;
+    layer.slot satisfies string | undefined;
+    layer.paint satisfies mapboxgl.LayerSpecification['paint'];
+    layer.layout satisfies mapboxgl.LayerSpecification['layout'];
 
-switch (layer.type) {
-    case 'background':
-        layer satisfies mapboxgl.BackgroundLayerSpecification;
-        break;
-    case 'circle':
-        layer satisfies mapboxgl.CircleLayerSpecification;
-        break;
-    case 'fill':
-        layer satisfies mapboxgl.FillLayerSpecification;
-        break;
-    case 'fill-extrusion':
-        layer satisfies mapboxgl.FillExtrusionLayerSpecification;
-        break;
-    case 'heatmap':
-        layer satisfies mapboxgl.HeatmapLayerSpecification;
-        break;
-    case 'hillshade':
-        layer satisfies mapboxgl.HillshadeLayerSpecification;
-        break;
-    case 'line':
-        layer satisfies mapboxgl.LineLayerSpecification;
-        break;
-    case 'raster':
-        layer satisfies mapboxgl.RasterLayerSpecification;
-        break;
-    case 'symbol':
-        layer satisfies mapboxgl.SymbolLayerSpecification;
-        break;
+    switch (layer.type) {
+        case 'background':
+            layer satisfies mapboxgl.BackgroundLayerSpecification;
+            break;
+        case 'circle':
+            layer satisfies mapboxgl.CircleLayerSpecification;
+            break;
+        case 'fill':
+            layer satisfies mapboxgl.FillLayerSpecification;
+            break;
+        case 'fill-extrusion':
+            layer satisfies mapboxgl.FillExtrusionLayerSpecification;
+            break;
+        case 'heatmap':
+            layer satisfies mapboxgl.HeatmapLayerSpecification;
+            break;
+        case 'hillshade':
+            layer satisfies mapboxgl.HillshadeLayerSpecification;
+            break;
+        case 'line':
+            layer satisfies mapboxgl.LineLayerSpecification;
+            break;
+        case 'raster':
+            layer satisfies mapboxgl.RasterLayerSpecification;
+            break;
+        case 'symbol':
+            layer satisfies mapboxgl.SymbolLayerSpecification;
+            break;
+        case 'custom':
+            layer satisfies mapboxgl.CustomLayerInterface;
+            break;
+    }
 }
+
+const backgroundLayer: mapboxgl.BackgroundLayerSpecification | undefined = map.getLayer('background');
+
+const customLayer: mapboxgl.CustomLayerInterface | undefined = map.getLayer<mapboxgl.CustomLayerInterface>('custom');
+if (customLayer) {
+    customLayer.render satisfies mapboxgl.CustomLayerInterface['render'];
+}
+
+//
+// Layout Properties
+//
+
+map.setLayoutProperty('id', 'text-offset', [0, 0]);
+map.setLayoutProperty('id', 'visibility', 'visible');
+// @ts-expect-error
+map.setLayoutProperty('id', 'visebility', 'visible');
+// @ts-expect-error
+map.setLayoutProperty('id', 'visibility', 'viseble');
+
+map.getLayoutProperty('id', 'text-offset') satisfies NonNullable<mapboxgl.SymbolLayerSpecification['layout']>['text-offset'] | undefined;
+map.getLayoutProperty('id', 'visibility') satisfies NonNullable<mapboxgl.SymbolLayerSpecification['layout']>['visibility'] | undefined;
+
+//
+// Paint Properties
+//
+
+map.setPaintProperty('id', 'background-color', '#f08');
+// @ts-expect-error
+map.setPaintProperty('id', 'background-kolor', '#f08');
+map.setPaintProperty('id', 'background-opacity', 0.4);
+map.setPaintProperty('id', 'background-color-transition', {duration: 300, delay: 0});
+
+map.getPaintProperty('id', 'background-color') satisfies NonNullable<mapboxgl.BackgroundLayerSpecification['paint']>['background-color'] | undefined;
+map.getPaintProperty('id', 'background-opacity') satisfies NonNullable<mapboxgl.BackgroundLayerSpecification['paint']>['background-opacity'] | undefined;
+map.getPaintProperty('id', 'background-color-transition') satisfies mapboxgl.TransitionSpecification | undefined;
 
 //
 // Add Custom Layer
@@ -316,6 +365,23 @@ const highlightLayer: mapboxgl.CustomLayerInterface = {
 map.addLayer(highlightLayer);
 
 //
+// Add model layer
+//
+
+map.addLayer({
+    'id': 'model',
+    'type': 'model',
+    'source': 'model',
+    'layout': {
+        'model-id': ['get', 'model-uri']
+    },
+    'paint': {
+        'model-cast-shadows': false,
+        'model-receive-shadows': false
+    }
+});
+
+//
 // Add 3D terrain
 //
 
@@ -327,6 +393,22 @@ map.addSource('mapbox-dem', {
 });
 
 map.setTerrain({'source': 'mapbox-dem', 'exaggeration': 1.5});
+map.setTerrain(undefined);
+map.setTerrain(null);
+
+//
+// 3D Lights
+//
+
+map.setLights([
+    {
+        "id": "directional",
+        "type": "directional",
+        "properties": {
+            "cast-shadows": true,
+        }
+    }
+]);
 
 //
 // Query features
@@ -394,3 +476,18 @@ map.fitBounds([[-73.9876, 40.7661], [-73.9397, 40.8002]], {
     padding: 20,
     maxZoom: 12,
 });
+
+//
+// Set Language
+//
+
+map.setLanguage('auto');
+map.setLanguage('es');
+map.setLanguage(['en-GB', 'en-US']);
+
+//
+// Set Worldview
+//
+
+map.setWorldview();
+map.setWorldview('JP');

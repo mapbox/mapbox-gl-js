@@ -23,21 +23,10 @@ type Config = {
     TILES3D_URL_PREFIX: string;
 };
 
-let mapboxHTTPURLRegex;
-
 const config: Config = {
     API_URL: 'https://api.mapbox.com',
     get API_URL_REGEX () {
-        if (mapboxHTTPURLRegex == null) {
-            const prodMapboxHTTPURLRegex = /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/|\?|$)/i;
-            try {
-                mapboxHTTPURLRegex = (process.env.API_URL_REGEX != null) ? new RegExp(process.env.API_URL_REGEX) : prodMapboxHTTPURLRegex;
-            } catch (e: any) {
-                mapboxHTTPURLRegex = prodMapboxHTTPURLRegex;
-            }
-        }
-
-        return mapboxHTTPURLRegex;
+        return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/|\?|$)/i;
     },
     get API_TILEJSON_REGEX() {
         // https://docs.mapbox.com/api/maps/mapbox-tiling-service/#retrieve-tilejson-metadata

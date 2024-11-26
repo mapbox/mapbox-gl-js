@@ -6,15 +6,12 @@ import {
     collisionBoxLayout,
     dynamicLayoutAttributes,
     iconTransitioningAttributes,
-    zOffsetAttributes,
-    occlusionQueryOpacityAttributes,
+    zOffsetAttributes
 } from './symbol_attributes';
-
 import {SymbolLayoutArray,
     SymbolGlobeExtArray,
     SymbolDynamicLayoutArray,
     SymbolOpacityArray,
-    SymbolOcclusionQueryOpacityArray,
     CollisionBoxLayoutArray,
     CollisionVertexExtArray,
     CollisionVertexArray,
@@ -25,7 +22,6 @@ import {SymbolLayoutArray,
     SymbolIconTransitioningArray,
     ZOffsetVertexArray
 } from '../array_types';
-
 import ONE_EM from '../../symbol/one_em';
 import * as symbolSize from '../../symbol/symbol_size';
 import Point from '@mapbox/point-geometry';
@@ -41,7 +37,6 @@ import toEvaluationFeature from '../evaluation_feature';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
-import Anchor from '../../symbol/anchor';
 import {getSizeData} from '../../symbol/symbol_size';
 import {MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
 import {register} from '../../util/web_worker_transfer';
@@ -54,10 +49,11 @@ import {tileCoordToECEF} from '../../geo/projection/globe_util';
 import {getProjection} from '../../geo/projection/index';
 import {mat4, vec3} from 'gl-matrix';
 import assert from 'assert';
-import {ReplacementSource, regionsEquals} from '../../../3d-style/source/replacement_source';
+import {regionsEquals} from '../../../3d-style/source/replacement_source';
 
+import type Anchor from '../../symbol/anchor';
+import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
-
 import type {Class} from '../../types/class';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type Projection from '../../geo/projection/projection';
@@ -73,14 +69,14 @@ import type {StructArray, StructArrayMember} from '../../util/struct_array';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
-import {OcclusionQuery} from '../../gl/query';
 import type {SymbolQuad} from '../../symbol/quads';
 import type {SizeData} from '../../symbol/symbol_size';
 import type {FeatureStates} from '../../source/source_state';
 import type {TileTransform} from '../../geo/projection/tile_transform';
-import {SymbolParams} from '../../render/symbol_parameters';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {LUT} from '../../util/lut';
+import type {SpritePositions} from '../../util/image';
+import type {VectorTileLayer} from '@mapbox/vector-tile';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -96,11 +92,6 @@ export type SingleCollisionBox = {
     elevation?: number;
     tileID?: OverscaledTileID;
 };
-
-import type {SpritePositions} from '../../util/image';
-import type {VectorTileLayer} from '@mapbox/vector-tile';
-
-import {clamp} from '../../util/util';
 
 export type CollisionArrays = {
     textBox?: SingleCollisionBox;
@@ -121,7 +112,7 @@ export type SymbolFeature = {
     sourceLayerIndex: number;
     geometry: Array<Array<Point>>;
     properties: any;
-    type: 'Point' | 'LineString' | 'Polygon';
+    type: 'Unknown' | 'Point' | 'LineString' | 'Polygon';
     id?: any;
 };
 
@@ -229,9 +220,6 @@ export class SymbolBuffers {
     opacityVertexArray: SymbolOpacityArray;
     opacityVertexBuffer: VertexBuffer;
 
-    occlusionQueryOpacityVertexArray: SymbolOcclusionQueryOpacityArray;
-    occlusionQueryOpacityVertexBuffer: VertexBuffer;
-
     zOffsetVertexArray: ZOffsetVertexArray;
     zOffsetVertexBuffer: VertexBuffer;
 
@@ -250,7 +238,6 @@ export class SymbolBuffers {
         this.segments = new SegmentVector();
         this.dynamicLayoutVertexArray = new SymbolDynamicLayoutArray();
         this.opacityVertexArray = new SymbolOpacityArray();
-        this.occlusionQueryOpacityVertexArray = new SymbolOcclusionQueryOpacityArray();
         this.placedSymbolArray = new PlacedSymbolArray();
         this.iconTransitioningVertexArray = new SymbolIconTransitioningArray();
         this.globeExtVertexArray = new SymbolGlobeExtArray();
@@ -276,7 +263,6 @@ export class SymbolBuffers {
             this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
             // @ts-expect-error - TS2345 - Argument of type '{ name: string; components: number; type: string; offset: number; }[]' is not assignable to parameter of type 'readonly StructArrayMember[]'.
             this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
-            this.occlusionQueryOpacityVertexBuffer = context.createVertexBuffer(this.occlusionQueryOpacityVertexArray, occlusionQueryOpacityAttributes.members, true);
             if (this.iconTransitioningVertexArray.length > 0) {
                 this.iconTransitioningVertexBuffer = context.createVertexBuffer(this.iconTransitioningVertexArray, iconTransitioningAttributes.members, true);
             }
@@ -303,7 +289,6 @@ export class SymbolBuffers {
         this.segments.destroy();
         this.dynamicLayoutVertexBuffer.destroy();
         this.opacityVertexBuffer.destroy();
-        this.occlusionQueryOpacityVertexBuffer.destroy();
         if (this.iconTransitioningVertexBuffer) {
             this.iconTransitioningVertexBuffer.destroy();
         }
@@ -461,14 +446,10 @@ class SymbolBucket implements Bucket {
     zOffsetSortDirty: boolean;
     zOffsetBuffersNeedUpload: boolean;
 
-    // Occlusion queries pool
-    queries: Map<number, OcclusionQuery>;
     activeReplacements: Array<any>;
     replacementUpdateTime: number;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
-        this.queries = new Map<number, OcclusionQuery>();
-
         this.collisionBoxArray = options.collisionBoxArray;
         this.zoom = options.zoom;
         this.lut = options.lut;
@@ -525,8 +506,12 @@ class SymbolBucket implements Bucket {
     }
 
     createArrays() {
-        this.text = new SymbolBuffers(new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => /^text/.test(property)));
-        this.icon = new SymbolBuffers(new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => /^icon/.test(property)));
+        this.text = new SymbolBuffers(new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => {
+            return property.startsWith('text') || property.startsWith('symbol');
+        }));
+        this.icon = new SymbolBuffers(new ProgramConfigurationSet(this.layers, {zoom: this.zoom, lut: this.lut}, (property) => {
+            return property.startsWith('icon') || property.startsWith('symbol');
+        }));
 
         this.glyphOffsetArray = new GlyphOffsetArray();
         this.lineVertexArray = new SymbolLineVertexArray();
@@ -536,12 +521,12 @@ class SymbolBucket implements Bucket {
     calculateGlyphDependencies(text: string, stack: {
         [_: number]: boolean;
     }, textAlongLine: boolean, allowVerticalPlacement: boolean, doesAllowVerticalWritingMode: boolean) {
-        for (let i = 0; i < text.length; i++) {
-            const codePoint = text.codePointAt(i);
+        for (const char of text) {
+            const codePoint = char.codePointAt(0);
             if (codePoint === undefined) break;
             stack[codePoint] = true;
             if (allowVerticalPlacement && doesAllowVerticalWritingMode && codePoint <= 65535) {
-                const verticalChar = verticalizedCharacterMap[text.charAt(i)];
+                const verticalChar = verticalizedCharacterMap[char];
                 if (verticalChar) {
                     stack[verticalChar.charCodeAt(0)] = true;
                 }
@@ -612,7 +597,6 @@ class SymbolBucket implements Bucket {
                 continue;
             }
 
-            // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
             if (!needGeometry) evaluationFeature.geometry = loadGeometry(feature, canonical, tileTransform);
 
             if (isGlobe && feature.type !== 1 && canonical.z <= 5) {
@@ -683,7 +667,6 @@ class SymbolBucket implements Bucket {
                 sourceLayerIndex,
                 geometry: evaluationFeature.geometry,
                 properties: feature.properties,
-                // @ts-expect-error - TS2322 - Type '"Polygon" | "Point" | "LineString" | "Unknown"' is not assignable to type '"Polygon" | "Point" | "LineString"'.
                 type: vectorTileFeatureTypes[feature.type],
                 sortKey
             };
@@ -735,135 +718,6 @@ class SymbolBucket implements Bucket {
         const layers = withStateUpdates ? this.stateDependentLayers : this.layers;
         this.text.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
         this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
-    }
-
-    updateOcclusionOpacities(context: Context, symbolParams: SymbolParams, dt: number): boolean {
-        if (!symbolParams.useOcclusionQueries) {
-            return false;
-        }
-
-        const bucket = this;
-
-        // Occlusions not supported for globe
-        if (bucket.projection.name === 'globe') {
-            return false;
-        }
-
-        let hasFilledData = false;
-
-        if (bucket.hasTextData()) hasFilledData = hasFilledData || (bucket.text.occlusionQueryOpacityVertexArray.length !== 0);
-        if (bucket.hasIconData()) hasFilledData = hasFilledData || (bucket.icon.occlusionQueryOpacityVertexArray.length !== 0);
-
-        const paint =  bucket.layers[0].paint;
-
-        const iconOccludedOpacityMultiplier = paint.get('icon-occlusion-opacity').constantOr(0);
-        const textOccludedOpacityMultiplier = paint.get('text-occlusion-opacity').constantOr(0);
-
-        const iconHasOcclusionOpacity = iconOccludedOpacityMultiplier !== 1;
-        const textHasOcclusionOpacity = textOccludedOpacityMultiplier !== 1;
-        const subjectForOcclusion = bucket.layers[0].hasInitialOcclusionOpacityProperties && (iconHasOcclusionOpacity || textHasOcclusionOpacity);
-
-        // Fill buffer only once for pitched data
-        if (!subjectForOcclusion) {
-            return false;
-        }
-
-        //
-        // Iterate opacities
-        //
-
-        let opacityChanged = !hasFilledData;
-        for (let symbolInstanceId = 0; symbolInstanceId < bucket.symbolInstances.length; symbolInstanceId++) {
-            const symbolInstance = bucket.symbolInstances.get(symbolInstanceId);
-
-            const occlusionState = symbolInstance.occlusionState;
-            const sign = occlusionState > 0.5 ? 1 : -1;
-            const fadeSpeed = symbolParams.fadeSpeed;
-            const fV = sign * fadeSpeed;
-            const prevValue = symbolInstance.occlusionOpacity;
-            symbolInstance.occlusionOpacity += fV * dt * 0.001;
-
-            symbolInstance.occlusionOpacity = clamp(symbolInstance.occlusionOpacity, 0.0, 1.0);
-            opacityChanged = opacityChanged || (symbolInstance.occlusionOpacity !== prevValue);
-        }
-
-        if (!opacityChanged) {
-            return false;
-        }
-
-        let currentTextOffsetVertex = 0;
-        let currentIconOffsetVertex = 0;
-
-        const addOcclusionOpacity = (symbolInstance: SymbolInstance, iconOrText: SymbolBuffers, isIcon: boolean, numVertices: number) => {
-            let offsetV = 0;
-            let totalV = 0;
-            if (isIcon) {
-                offsetV = currentIconOffsetVertex;
-                currentIconOffsetVertex += numVertices;
-                totalV = currentIconOffsetVertex;
-            } else {
-                offsetV = currentTextOffsetVertex;
-                currentTextOffsetVertex += numVertices;
-                totalV = currentTextOffsetVertex;
-            }
-
-            if (totalV > iconOrText.occlusionQueryOpacityVertexArray.length) {
-                iconOrText.occlusionQueryOpacityVertexArray.resize(totalV);
-            }
-
-            const occlusionState = symbolInstance.occlusionOpacity;
-            for (let i = 0; i < numVertices; i++) {
-                iconOrText.occlusionQueryOpacityVertexArray.emplace(i + offsetV, occlusionState);
-            }
-        };
-
-        for (let s = 0; s < bucket.symbolInstances.length; s++) {
-            const symbolInstance = bucket.symbolInstances.get(s);
-            const {
-                numHorizontalGlyphVertices,
-                numVerticalGlyphVertices,
-                numIconVertices
-            } = symbolInstance;
-
-            const hasText = numHorizontalGlyphVertices > 0 || numVerticalGlyphVertices > 0;
-            const hasIcon = numIconVertices > 0;
-
-            if (hasText) {
-                addOcclusionOpacity(symbolInstance, bucket.text, false, numHorizontalGlyphVertices);
-                addOcclusionOpacity(symbolInstance, bucket.text, false, numVerticalGlyphVertices);
-            }
-
-            if (hasIcon) {
-                const {placedIconSymbolIndex, verticalPlacedIconSymbolIndex} = symbolInstance;
-
-                if (placedIconSymbolIndex >= 0) {
-                    addOcclusionOpacity(symbolInstance, bucket.icon, true, numIconVertices);
-                }
-
-                if (verticalPlacedIconSymbolIndex >= 0) {
-                    addOcclusionOpacity(symbolInstance, bucket.icon, true, symbolInstance.numVerticalIconVertices);
-                }
-            }
-
-        }
-
-        if (bucket.hasTextData() && bucket.text.occlusionQueryOpacityVertexBuffer) {
-            if (bucket.text.occlusionQueryOpacityVertexBuffer.length < bucket.text.occlusionQueryOpacityVertexArray.length) {
-                bucket.text.occlusionQueryOpacityVertexBuffer = context.createVertexBuffer(bucket.text.occlusionQueryOpacityVertexArray, occlusionQueryOpacityAttributes.members, true);
-            } else {
-                bucket.text.occlusionQueryOpacityVertexBuffer.updateData(bucket.text.occlusionQueryOpacityVertexArray);
-
-            }
-        }
-        if (bucket.hasIconData() && bucket.icon.occlusionQueryOpacityVertexBuffer) {
-            if (bucket.icon.occlusionQueryOpacityVertexBuffer.length < bucket.icon.occlusionQueryOpacityVertexArray.length) {
-                bucket.icon.occlusionQueryOpacityVertexBuffer = context.createVertexBuffer(bucket.icon.occlusionQueryOpacityVertexArray, occlusionQueryOpacityAttributes.members, true);
-            } else {
-                bucket.icon.occlusionQueryOpacityVertexBuffer.updateData(bucket.icon.occlusionQueryOpacityVertexArray);
-            }
-        }
-
-        return true;
     }
 
     updateZOffset() {
@@ -968,10 +822,6 @@ class SymbolBucket implements Bucket {
 
         if (this.hasDebugData()) {
             this.destroyDebugData();
-        }
-
-        for (const query of this.queries.values()) {
-            query.destroy();
         }
     }
 
@@ -1105,7 +955,7 @@ class SymbolBucket implements Bucket {
         const symbolTileAnchorY = symbolInstance.tileAnchorY;
 
         for (let i = 0; i < 4; i++) {
-            arrays.collisionVertexArray.emplaceBack(0, 0, 0, 0);
+            arrays.collisionVertexArray.emplaceBack(0, 0, 0, 0, 0, 0);
         }
 
         this._commitDebugCollisionVertexUpdate(arrays.collisionVertexArrayExt, scale, box.padding, symbolInstance.zOffset);
@@ -1144,7 +994,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    generateCollisionDebugBuffers(zoom: number, collisionBoxArray: CollisionBoxArray) {
+    generateCollisionDebugBuffers(zoom: number, collisionBoxArray: CollisionBoxArray, textScaleFactor: number) {
         if (this.hasDebugData()) {
             this.destroyDebugData();
         }
@@ -1153,7 +1003,7 @@ class SymbolBucket implements Bucket {
         this.iconCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
 
         const iconSize = symbolSize.evaluateSizeForZoom(this.iconSizeData, zoom);
-        const textSize = symbolSize.evaluateSizeForZoom(this.textSizeData, zoom);
+        const textSize = symbolSize.evaluateSizeForZoom(this.textSizeData, zoom, textScaleFactor);
 
         for (let i = 0; i < this.symbolInstances.length; i++) {
             const symbolInstance = this.symbolInstances.get(i);
@@ -1191,7 +1041,7 @@ class SymbolBucket implements Bucket {
         array.emplaceBack(scale, -padding,  padding, zOffset);
     }
 
-    _updateTextDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
+    _updateTextDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance, scaleFactor: number) {
         for (let b = startIndex; b < endIndex; b++) {
             const box: CollisionBox = (collisionBoxArray.get(b) as any);
             const scale = this.getSymbolInstanceTextSize(size, instance, zoom, b);
@@ -1200,7 +1050,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    _updateIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
+    _updateIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance, iconScaleFactor: number) {
         for (let b = startIndex; b < endIndex; b++) {
             const box = (collisionBoxArray.get(b));
             const scale = this.getSymbolInstanceIconSize(size, zoom, instance.placedIconSymbolIndex);
@@ -1209,7 +1059,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    updateCollisionDebugBuffers(zoom: number, collisionBoxArray: CollisionBoxArray) {
+    updateCollisionDebugBuffers(zoom: number, collisionBoxArray: CollisionBoxArray, textScaleFactor: number, iconScaleFactor: number) {
         if (!this.hasDebugData()) {
             return;
         }
@@ -1217,15 +1067,15 @@ class SymbolBucket implements Bucket {
         if (this.hasTextCollisionBoxData()) this.textCollisionBox.collisionVertexArrayExt.clear();
         if (this.hasIconCollisionBoxData()) this.iconCollisionBox.collisionVertexArrayExt.clear();
 
-        const iconSize = symbolSize.evaluateSizeForZoom(this.iconSizeData, zoom);
-        const textSize = symbolSize.evaluateSizeForZoom(this.textSizeData, zoom);
+        const iconSize = symbolSize.evaluateSizeForZoom(this.iconSizeData, zoom, iconScaleFactor);
+        const textSize = symbolSize.evaluateSizeForZoom(this.textSizeData, zoom, textScaleFactor);
 
         for (let i = 0; i < this.symbolInstances.length; i++) {
             const symbolInstance = this.symbolInstances.get(i);
-            this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance);
-            this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance);
-            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance);
-            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex, symbolInstance);
+            this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.textBoxStartIndex, symbolInstance.textBoxEndIndex, symbolInstance, textScaleFactor);
+            this._updateTextDebugCollisionBoxes(textSize, zoom, collisionBoxArray, symbolInstance.verticalTextBoxStartIndex, symbolInstance.verticalTextBoxEndIndex, symbolInstance, textScaleFactor);
+            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.iconBoxStartIndex, symbolInstance.iconBoxEndIndex, symbolInstance, iconScaleFactor);
+            this._updateIconDebugCollisionBoxes(iconSize, zoom, collisionBoxArray, symbolInstance.verticalIconBoxStartIndex, symbolInstance.verticalIconBoxEndIndex, symbolInstance, iconScaleFactor);
         }
 
         if (this.hasTextCollisionBoxData() && this.textCollisionBox.collisionVertexBufferExt) {

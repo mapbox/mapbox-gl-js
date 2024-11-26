@@ -417,6 +417,18 @@ describe('camera', () => {
             });
         });
 
+        test('retain or not padding based on provided padding option', () => {
+            const camera = createCamera();
+            camera.easeTo({center: [100, 0], duration: 0, padding: {top: 100}});
+            expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+
+            camera.easeTo({center: [120, 0], duration: 0, padding: {top: 200}, retainPadding: false});
+            expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+
+            camera.easeTo({center: [80, 0], duration: 0, padding: {top: 300}, retainPadding: true});
+            expect(camera.getPadding()).toEqual({top:300, bottom:0, left:0, right:0});
+        });
+
         describe('Globe', () => {
             test('pans to specified location', () => {
                 const camera = createCamera();

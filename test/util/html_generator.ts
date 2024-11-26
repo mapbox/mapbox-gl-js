@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* eslint-env browser */
-import template from 'lodash.template';
+import template from 'lodash/template.js';
 
 const CI = process.env.CI;
 

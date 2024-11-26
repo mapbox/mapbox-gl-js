@@ -43,7 +43,7 @@ export function setDracoUrl(url: string) {
 
 function waitForDraco() {
     if (draco) return;
-    if (dracoLoading) return dracoLoading;
+    if (dracoLoading != null) return dracoLoading;
 
     dracoLoading = DracoDecoderModule(fetch(getDracoUrl()));
 

@@ -1,5 +1,4 @@
 import {NumberType} from '../types';
-
 import {findStopLessThanOrEqualTo} from '../stops';
 
 import type {Stops} from '../stops';

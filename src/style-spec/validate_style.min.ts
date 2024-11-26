@@ -1,5 +1,4 @@
 import latestStyleSpec from './reference/latest';
-
 import _validateStyle from './validate/validate_style';
 import _validateSource from './validate/validate_source';
 import _validateLight from './validate/validate_light';

@@ -69,15 +69,13 @@ export class QueryGeometry {
         let aboveHorizon;
 
         if (geometry instanceof Point || typeof geometry[0] === 'number') {
-            const pt = Point.convert(geometry);
+            const pt = Point.convert(geometry) as Point;
             screenGeometry = [pt];
-            // @ts-expect-error - TS2345 - Argument of type 'Point | [PointLike, PointLike]' is not assignable to parameter of type 'Point'.
             aboveHorizon = transform.isPointAboveHorizon(pt);
         } else {
             const tl = Point.convert(geometry[0]);
-            const br = Point.convert(geometry[1]);
+            const br = Point.convert(geometry[1]) as Point;
             screenGeometry = [tl, br];
-            // @ts-expect-error - TS2345 - Argument of type 'number | Point' is not assignable to parameter of type 'Point'.
             aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p));
         }
 
@@ -410,7 +408,6 @@ export function unwrapQueryPolygon(polygon: Point[], tr: Transform): {
 // Finding projection of these kind of polygons is more involving as projecting just the corners will
 // produce a degenerate (self-intersecting, non-continuous, etc.) polygon in mercator coordinates
 export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): CachedPolygon | null | undefined {
-// @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
     const matrix = mat4.multiply([] as any, tr.pixelMatrix, tr.globeMatrix);
 
     // Transform north and south pole coordinates to the screen to see if they're

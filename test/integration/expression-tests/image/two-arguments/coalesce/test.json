@@ -1,0 +1,37 @@
+{
+  "expression": ["coalesce", ["image", "first", "second"], ["image", "third", "fourth"]],
+  "propertySpec": {"type": "resolvedImage"},
+  "inputs": [
+    [{}, {}],
+    [{"availableImages": ["first"]}, {}],
+    [{"availableImages": ["second"]}, {}],
+    [{"availableImages": ["third"]}, {}],
+    [{"availableImages": ["fourth"]}, {}],
+    [{"availableImages": ["third", "fourth"]}, {}],
+    [{"availableImages": ["first", "third", "fourth"]}, {}],
+    [{"availableImages": ["second", "third", "fourth"]}, {}],
+    [{"availableImages": ["first", "second"]}, {}],
+    [{"availableImages": ["first", "second", "third", "fourth"]}, {}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "resolvedImage"
+    },
+    "outputs": [
+      {"namePrimary": "first", "nameSecondary": "second", "available": false},
+      {"namePrimary": "first", "nameSecondary": "second", "available": false},
+      {"namePrimary": "first", "nameSecondary": "second", "available": false},
+      {"namePrimary": "first", "nameSecondary": "second", "available": false},
+      {"namePrimary": "first", "nameSecondary": "second", "available": false},
+      {"namePrimary": "third", "nameSecondary": "fourth", "available": true},
+      {"namePrimary": "third", "nameSecondary": "fourth", "available": true},
+      {"namePrimary": "third", "nameSecondary": "fourth", "available": true},
+      {"namePrimary": "first", "nameSecondary": "second", "available": true},
+      {"namePrimary": "first", "nameSecondary": "second", "available": true}
+    ],
+    "serialized": ["coalesce", ["image", "first", "second"], ["image", "third", "fourth"]]
+  }
+}

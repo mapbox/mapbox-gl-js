@@ -1,17 +1,16 @@
 import Point from '@mapbox/point-geometry';
-
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
-
-import type Anchor from './anchor';
-import type {PositionedIcon, Shaping} from './shaping';
-import {IMAGE_PADDING} from '../render/image_atlas';
+import {ICON_PADDING} from '../render/image_atlas';
 import {SDF_SCALE} from '../render/glyph_manager';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-import type {Feature} from '../style-spec/expression/index';
-import type {StyleImage} from '../style/style_image';
 import {isVerticalClosePunctuation, isVerticalOpenPunctuation} from '../util/verticalize_punctuation';
 import ONE_EM from './one_em';
 import {warnOnce} from '../util/util';
+
+import type Anchor from './anchor';
+import type {PositionedIcon, Shaping} from './shaping';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
+import type {Feature} from '../style-spec/expression/index';
+import type {StyleImage} from '../style/style_image';
 
 export type TextureCoordinate = {
     x: number;
@@ -48,7 +47,7 @@ export type SymbolQuad = {
     texSecondary: TextureCoordinate | null | undefined;
     pixelOffsetTL: Point;
     pixelOffsetBR: Point;
-    writingMode: any | undefined;
+    writingMode: Shaping['writingMode'];
     glyphOffset: [number, number];
     sectionIndex: number;
     isSDF: boolean;
@@ -59,7 +58,7 @@ export type SymbolQuad = {
 // If you have a 10px icon that isn't perfectly aligned to the pixel grid it will cover 11 actual
 // pixels. The quad needs to be padded to account for this, otherwise they'll look slightly clipped
 // on one edge in some cases.
-const border = IMAGE_PADDING;
+const border = ICON_PADDING;
 
 /**
  * Create the quads used for rendering an icon.
@@ -70,6 +69,7 @@ export function getIconQuads(
     iconRotate: number,
     isSDFIcon: boolean,
     hasIconTextFit: boolean,
+    iconScale: number = 1,
 ): Array<SymbolQuad> {
     const quads = [];
 
@@ -78,8 +78,8 @@ export function getIconQuads(
     const imageWidth = image.paddedRect.w - 2 * border;
     const imageHeight = image.paddedRect.h - 2 * border;
 
-    const iconWidth = shapedIcon.right - shapedIcon.left;
-    const iconHeight = shapedIcon.bottom - shapedIcon.top;
+    const iconWidth = (shapedIcon.right - shapedIcon.left) * iconScale;
+    const iconHeight = (shapedIcon.bottom - shapedIcon.top) * iconScale;
 
     const stretchX = image.stretchX || [[0, imageWidth]];
     const stretchY = image.stretchY || [[0, imageHeight]];
@@ -113,16 +113,16 @@ export function getIconQuads(
 
     const makeBox = (left: Size, top: Size, right: Size, bottom: Size) => {
 
-        const leftEm = getEmOffset(left.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left);
+        const leftEm = getEmOffset(left.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left * iconScale);
         const leftPx = getPxOffset(left.fixed - fixedOffsetX, fixedContentWidth, left.stretch, stretchWidth);
 
-        const topEm = getEmOffset(top.stretch - stretchOffsetY, stretchContentHeight, iconHeight, shapedIcon.top);
+        const topEm = getEmOffset(top.stretch - stretchOffsetY, stretchContentHeight, iconHeight, shapedIcon.top * iconScale);
         const topPx = getPxOffset(top.fixed - fixedOffsetY, fixedContentHeight, top.stretch, stretchHeight);
 
-        const rightEm = getEmOffset(right.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left);
+        const rightEm = getEmOffset(right.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left * iconScale);
         const rightPx = getPxOffset(right.fixed - fixedOffsetX, fixedContentWidth, right.stretch, stretchWidth);
 
-        const bottomEm = getEmOffset(bottom.stretch - stretchOffsetY, stretchContentHeight, iconHeight, shapedIcon.top);
+        const bottomEm = getEmOffset(bottom.stretch - stretchOffsetY, stretchContentHeight, iconHeight, shapedIcon.top * iconScale);
         const bottomPx = getPxOffset(bottom.fixed - fixedOffsetY, fixedContentHeight, bottom.stretch, stretchHeight);
 
         const tl = new Point(leftEm, topEm);
@@ -307,7 +307,7 @@ export function getGlyphQuads(
                 }
                 isSDF = false;
                 pixelRatio = image.pixelRatio;
-                rectBuffer = IMAGE_PADDING / pixelRatio;
+                rectBuffer = ICON_PADDING / pixelRatio;
             }
 
             const rotateVerticalGlyph = (alongLine || allowVerticalPlacement) && positionedGlyph.vertical;

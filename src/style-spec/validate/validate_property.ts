@@ -5,9 +5,9 @@ import {isFunction} from '../function/index';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import {supportsLightExpression, supportsPropertyExpression, supportsZoomExpression} from '../util/properties';
 import {isGlobalPropertyConstant, isFeatureConstant, isStateConstant} from '../expression/is_constant';
+import {createPropertyExpression} from '../expression/index';
 
 import type {ValidationOptions} from './validate';
-import {createPropertyExpression} from '../expression/index';
 
 export type PropertyValidationOptions = ValidationOptions & {
     objectKey: string;
@@ -42,8 +42,7 @@ export default function validateProperty(options: PropertyValidationOptions, pro
         return [new ValidationWarning(key, value, `unknown property "${propertyKey}"`)];
     }
 
-    // @ts-expect-error - TS2702 - 'RegExp' only refers to a type, but is being used as a namespace here.
-    let tokenMatch: RegExp.matchResult | null | undefined;
+    let tokenMatch: RegExpExecArray | undefined;
     if (getType(value) === 'string' && supportsPropertyExpression(valueSpec) && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
         const example = `\`{ "type": "identity", "property": ${tokenMatch ? JSON.stringify(tokenMatch[1]) : '"_"'} }\``;
         return [new ValidationError(

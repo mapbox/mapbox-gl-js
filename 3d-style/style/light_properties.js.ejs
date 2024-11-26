@@ -23,11 +23,10 @@ export type LightProps = {
 <% } -%>
 };
 
-const properties: Properties<LightProps> = new Properties({
+let properties: Properties<LightProps>;
+export const getProperties = (): Properties<LightProps> => properties || (properties = new Properties({
 <% for (const property of properties) { -%>
     "<%= property.name %>": <%- propertyValue(type, property, 'properties') %>,
 <% } -%>
-});
+}));
 <% } -%>
-
-export {properties}

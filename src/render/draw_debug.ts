@@ -11,6 +11,7 @@ import {mat4} from 'gl-matrix';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type {OverscaledTileID} from '../source/tile_id';
+import type {DynamicDefinesType} from './program/program_uniforms';
 
 const topColor = new Color(1, 0, 0, 1);
 const btmColor = new Color(0, 1, 0, 1);
@@ -63,7 +64,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const gl = context.gl;
 
     const isGlobeProjection = tr.projection.name === 'globe';
-    const definesValues = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : [];
+    const definesValues: DynamicDefinesType[] = isGlobeProjection ? ['PROJECTION_GLOBE_VIEW'] : [];
 
     let posMatrix = mat4.clone(coord.projMatrix);
 
@@ -73,10 +74,8 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
         // except we use transitionTileAABBinECEF instead of globeTileBounds to account for the transition.
         const bounds = transitionTileAABBinECEF(coord.canonical, tr);
         const decode = globeDenormalizeECEF(bounds);
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
         posMatrix = mat4.multiply(new Float32Array(16), tr.globeMatrix, decode);
 
-        // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
         mat4.multiply(posMatrix, tr.projMatrix, posMatrix);
     }
 
@@ -86,7 +85,6 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
 
     mat4.multiply(posMatrix, jitterMatrix, posMatrix);
 
-    // @ts-expect-error - TS2322 - Type 'string[]' is not assignable to type 'DynamicDefinesType[]'.
     const program = painter.getOrCreateProgram('debug', {defines: definesValues});
     const tile = sourceCache.getTileByID(coord.key);
     if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
@@ -111,7 +109,6 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const debugSegments = tile._tileDebugSegments || painter.debugSegments;
 
     program.draw(painter, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
         debugUniformValues(posMatrix, color), id,
         debugBuffer, debugIndexBuffer, debugSegments,
         null, null, null, [tile._globeTileDebugBorderBuffer]);
@@ -136,7 +133,6 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const debugTextSegments = tile._tileDebugTextSegments || painter.debugSegments;
 
     program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
-        // @ts-expect-error - TS2345 - Argument of type 'mat4' is not assignable to parameter of type 'Float32Array'.
         debugUniformValues(posMatrix, Color.transparent, scaleRatio), id,
         debugTextBuffer, debugTextIndexBuffer, debugTextSegments,
         null, null, null, [tile._globeTileDebugTextBuffer]);

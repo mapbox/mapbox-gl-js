@@ -1,5 +1,4 @@
 import {extend, pick} from '../util/util';
-
 import {getImage, ResourceType} from '../util/ajax';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import loadTileJSON from './load_tilejson';
@@ -8,8 +7,9 @@ import TileBounds from './tile_bounds';
 import browser from '../util/browser';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 import {makeFQID} from '../util/fqid';
+import Texture from '../render/texture';
 
-import type {ISource, SourceEvents} from './source';
+import type {ISource, SourceEvents, SourceRasterLayer} from './source';
 import type {OverscaledTileID} from './tile_id';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -21,7 +21,6 @@ import type {
     RasterDEMSourceSpecification,
     RasterArraySourceSpecification
 } from '../style-spec/types';
-import Texture from '../render/texture';
 
 /**
  * A source containing raster tiles.
@@ -58,6 +57,10 @@ class RasterTileSource<T extends 'raster' | 'raster-dem' | 'raster-array' = 'ras
     tileSize: number;
     minTileCacheSize: number | null | undefined;
     maxTileCacheSize: number | null | undefined;
+    vectorLayers?: never;
+    vectorLayerIds?: never;
+    rasterLayers?: Array<SourceRasterLayer>;
+    rasterLayerIds?: Array<string>;
 
     bounds: [number, number, number, number] | null | undefined;
     tileBounds: TileBounds;
@@ -103,6 +106,12 @@ class RasterTileSource<T extends 'raster' | 'raster-dem' | 'raster-array' = 'ras
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
                 extend(this, tileJSON);
+
+                if (tileJSON.raster_layers) {
+                    this.rasterLayers = tileJSON.raster_layers;
+                    this.rasterLayerIds = this.rasterLayers.map(layer => layer.id);
+                }
+
                 if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
 
                 postTurnstileEvent(tileJSON.tiles);
@@ -198,7 +207,6 @@ class RasterTileSource<T extends 'raster' | 'raster-dem' | 'raster-array' = 'ras
     loadTile(tile: Tile, callback: Callback<undefined>) {
         const use2x = browser.devicePixelRatio >= 2;
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), use2x, this.tileSize);
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (error, data, cacheControl, expires) => {
             delete tile.request;
 

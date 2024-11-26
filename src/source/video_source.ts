@@ -1,5 +1,4 @@
 import {getVideo, ResourceType} from '../util/ajax';
-
 import ImageSource from './image_source';
 import Texture from '../render/texture';
 import {ErrorEvent} from '../util/evented';
@@ -43,8 +42,8 @@ import type {VideoSourceSpecification} from '../style-spec/types';
  * @see [Example: Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
 class VideoSource extends ImageSource<'video'> {
-    type: 'video';
-    options: VideoSourceSpecification;
+    override type: 'video';
+    override options: VideoSourceSpecification;
     urls: Array<string>;
     video: HTMLVideoElement;
 
@@ -58,13 +57,12 @@ class VideoSource extends ImageSource<'video'> {
         this.options = options;
     }
 
-    load() {
+    override load() {
         this._loaded = false;
         const options = this.options;
 
         this.urls = [];
         for (const url of options.urls) {
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
             this.urls.push(this.map._requestManager.transformRequest(url, ResourceType.Source).url);
         }
 
@@ -153,7 +151,7 @@ class VideoSource extends ImageSource<'video'> {
         return this.video;
     }
 
-    onAdd(map: Map) {
+    override onAdd(map: Map) {
         if (this.map) return;
         this.map = map;
         this.load();
@@ -197,7 +195,7 @@ class VideoSource extends ImageSource<'video'> {
      */
     // setCoordinates inherited from ImageSource
 
-    prepare() {
+    override prepare() {
         if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) {
             return; // not enough data for current position
         }
@@ -206,11 +204,10 @@ class VideoSource extends ImageSource<'video'> {
         const gl = context.gl;
 
         if (!this.texture) {
-            this.texture = new Texture(context, this.video, gl.RGBA);
+            this.texture = new Texture(context, this.video, gl.RGBA8);
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             this.width = this.video.videoWidth;
             this.height = this.video.videoHeight;
-
         } else if (!this.video.paused) {
             this.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
@@ -219,7 +216,7 @@ class VideoSource extends ImageSource<'video'> {
         this._prepareData(context);
     }
 
-    serialize(): VideoSourceSpecification {
+    override serialize(): VideoSourceSpecification {
         return {
             type: 'video',
             urls: this.urls,
@@ -227,7 +224,7 @@ class VideoSource extends ImageSource<'video'> {
         };
     }
 
-    hasTransition(): boolean {
+    override hasTransition(): boolean {
         return this.video && !this.video.paused;
     }
 }

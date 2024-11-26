@@ -1,8 +1,6 @@
 import assert from 'assert';
 import murmur3 from 'murmurhash-js';
-
 import {Event, ErrorEvent, Evented} from '../util/evented';
-import StyleLayer from './style_layer';
 import StyleChanges from './style_changes';
 import createStyleLayer from './create_style_layer';
 import loadSprite from './load_sprite';
@@ -18,14 +16,9 @@ import {stripQueryParameters} from '../util/url';
 import browser from '../util/browser';
 import Dispatcher from '../util/dispatcher';
 import Lights from '../../3d-style/style/lights';
-import {properties as ambientProps} from '../../3d-style/style/ambient_light_properties';
-import {properties as directionalProps} from '../../3d-style/style/directional_light_properties';
+import {getProperties as getAmbientProps} from '../../3d-style/style/ambient_light_properties';
+import {getProperties as getDirectionalProps} from '../../3d-style/style/directional_light_properties';
 import {createExpression} from '../style-spec/expression/index';
-import Painter from '../render/painter';
-import ClipStyleLayer from './style_layer/clip_style_layer';
-import type SymbolBucket from '../data/bucket/symbol_bucket';
-import {LayerTypeMask} from '../../3d-style/util/conflation';
-
 import {
     validateStyle,
     validateLayoutProperty,
@@ -47,7 +40,6 @@ import {
 import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '../source/query_features';
 import SourceCache from '../source/source_cache';
 import BuildingIndex from '../source/building_index';
-import GeoJSONSource from '../source/geojson_source';
 import styleSpec from '../style-spec/reference/latest';
 import getWorkerPool from '../util/global_worker_pool';
 import deref from '../style-spec/deref';
@@ -65,12 +57,21 @@ import {isFQID, makeFQID, getNameFromFQID, getScopeFromFQID} from '../util/fqid'
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_renderer';
 import ModelManager from '../../3d-style/render/model_manager';
 import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform';
-import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import {RGBAImage} from '../util/image';
+import {evaluateColorThemeProperties} from '../util/lut';
+import EvaluationParameters from './evaluation_parameters';
+import Point from '@mapbox/point-geometry';
+
+import type GeoJSONSource from '../source/geojson_source';
+import type {ReplacementSource} from "../../3d-style/source/replacement_source";
+import type Painter from '../render/painter';
+import type StyleLayer from './style_layer';
+import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {ColorThemeSpecification,
     LayerSpecification,
+    LayoutSpecification,
+    PaintSpecification,
     FilterSpecification,
-    ExpressionSpecification,
     StyleSpecification,
     ImportSpecification,
     LightSpecification,
@@ -81,42 +82,51 @@ import type {ColorThemeSpecification,
     FogSpecification,
     ProjectionSpecification,
     TransitionSpecification,
-    PropertyValueSpecification,
     ConfigSpecification,
     SchemaSpecification,
-    CameraSpecification
+    CameraSpecification,
 } from '../style-spec/types';
-import {evaluateColorThemeProperties} from '../util/lut';
-
-// We're skipping validation errors with the `source.canvas` identifier in order
-// to continue to allow canvas sources to be added at runtime/updated in
-// smart setStyle (see https://github.com/mapbox/mapbox-gl-js/pull/6424):
-const emitValidationErrors = (evented: Evented, errors?: ValidationErrors | null) =>
-    _emitValidationErrors(evented, errors && errors.filter(error => error.identifier !== 'source.canvas'));
-
-import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties';
-import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties';
-import type {vec3} from 'gl-matrix';
-import type {MapEvents} from '../ui/events';
-import type {Map as MapboxMap} from '../ui/map';
-import type Transform from '../geo/transform';
-import type {StyleImage} from './style_image';
-import type {StyleGlyph} from './style_glyph';
 import type {Callback} from '../types/callback';
-import EvaluationParameters from './evaluation_parameters';
+import type {StyleGlyph} from './style_glyph';
+import type {StyleImage} from './style_image';
+import type Transform from '../geo/transform';
+import type {Map as MapboxMap} from '../ui/map';
+import type {MapEvents} from '../ui/events';
+import type {vec3} from 'gl-matrix';
+import type {LightProps as Directional} from '../../3d-style/style/directional_light_properties';
+import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties';
 import type {Placement} from '../symbol/placement';
 import type {Cancelable} from '../types/cancelable';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator, ValidationErrors} from './validate_style';
 import type {OverscaledTileID} from '../source/tile_id';
-import type {FeatureState} from '../style-spec/expression/index';
+import type {FeatureState, StyleExpression} from '../style-spec/expression/index';
 import type {PointLike} from '../types/point-like';
 import type {ISource, Source, SourceClass} from '../source/source';
 import type {TransitionParameters, ConfigOptions} from './properties';
-import type {QueryResult, QueryRenderedFeaturesParams} from '../source/query_features';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
+import type {QueryResult} from '../source/query_features';
+import type {GeoJSONFeature, FeaturesetDescriptor, default as Feature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
+import type {SerializedExpression} from '../style-spec/expression/expression';
+
+export type QueryRenderedFeaturesParams = {
+    layers?: string[];
+    filter?: FilterSpecification;
+    validate?: boolean;
+};
+
+export type QueryRenderedFeaturesetParams = {
+    featureset: FeaturesetDescriptor;
+    filter?: FilterSpecification;
+    radius?: number;
+};
+
+// We're skipping validation errors with the `source.canvas` identifier in order
+// to continue to allow canvas sources to be added at runtime/updated in
+// smart setStyle (see https://github.com/mapbox/mapbox-gl-js/pull/6424):
+const emitValidationErrors = (evented: Evented, errors?: ValidationErrors | null) =>
+    _emitValidationErrors(evented, errors && errors.filter(error => error.identifier !== 'source.canvas'));
 
 const supportedDiffOperations = pick(diffOperations, [
     'addLayer',
@@ -207,6 +217,12 @@ type StyleColorTheme = {
     colorTheme: ColorThemeSpecification | null;
 };
 
+type FeaturesetSelector = {
+    featuresetId: string;
+    featureNamespace?: string;
+    properties?: Record<string, StyleExpression>;
+};
+
 const MAX_IMPORT_DEPTH = 5;
 const defaultTransition = {duration: 300, delay: 0};
 
@@ -254,15 +270,14 @@ class Style extends Evented<MapEvents> {
     _mergedSourceCaches: Record<string, SourceCache>;
     _mergedOtherSourceCaches: Record<string, SourceCache>;
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
-    _clipLayerIndices: Array<number>;
+    // Maps layer FQIDs to their corresponding featureset selectors
+    _mergedLayerSelectors: Map<string, Array<FeaturesetSelector>>;
+    _clipLayerPresent: boolean;
 
     _request: Cancelable | null | undefined;
     _spriteRequest: Cancelable | null | undefined;
     _layers: {
         [_: string]: StyleLayer;
-    };
-    _serializedLayers: {
-        [_: string]: any;
     };
     _order: Array<string>;
     _drapedFirstOrder: Array<string>;
@@ -333,7 +348,8 @@ class Style extends Evented<MapEvents> {
         this._mergedSourceCaches = {};
         this._mergedOtherSourceCaches = {};
         this._mergedSymbolSourceCaches = {};
-        this._clipLayerIndices = [];
+        this._mergedLayerSelectors = new Map();
+        this._clipLayerPresent = false;
 
         this._has3DLayers = false;
         this._hasCircleLayers = false;
@@ -373,7 +389,6 @@ class Style extends Evented<MapEvents> {
         }
 
         this._layers = {};
-        this._serializedLayers = {};
         this._sourceCaches = {};
         this._otherSourceCaches = {};
         this._symbolSourceCaches = {};
@@ -404,7 +419,7 @@ class Style extends Evented<MapEvents> {
                 pluginStatus: event.pluginStatus,
                 pluginURL: event.pluginURL
             };
-            self.dispatcher.broadcast('syncRTLPluginState', state, (err, results) => {
+            self.dispatcher.broadcast('syncRTLPluginState', state, (err, results: boolean[]) => {
                 triggerPluginCompletionEvent(err);
                 if (results) {
                     const allComplete = results.every((elem) => elem);
@@ -427,7 +442,6 @@ class Style extends Evented<MapEvents> {
             }
 
             const source = this.getOwnSource(event.sourceId);
-            // @ts-expect-error - TS2339 - Property 'vectorLayerIds' does not exist on type 'Source'.
             if (!source || !source.vectorLayerIds) {
                 return;
             }
@@ -494,9 +508,8 @@ class Style extends Evented<MapEvents> {
 
         if (typeof style === 'string') {
             const url = this.map._requestManager.normalizeStyleURL(style);
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
             const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
-            getJSON(request, (error?: Error | null, json?: any | null) => {
+            getJSON(request, (error?: Error | null, json?: StyleSpecification) => {
                 if (error) {
                     this.fire(new ErrorEvent(error));
                 } else if (json) {
@@ -527,9 +540,8 @@ class Style extends Evented<MapEvents> {
         const cachedImport = this.importsCache.get(url);
         if (cachedImport) return this._load(cachedImport, validate);
 
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         const request = this.map._requestManager.transformRequest(url, ResourceType.Style);
-        this._request = getJSON(request, (error?: Error | null, json?: any | null) => {
+        this._request = getJSON(request, (error?: Error, json?: StyleSpecification) => {
             this._request = null;
             if (error) {
                 this.fire(new ErrorEvent(error));
@@ -745,13 +757,11 @@ class Style extends Evented<MapEvents> {
             }
 
             this._layers = {};
-            this._serializedLayers = {};
             for (const layer of layers) {
                 const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
                 if (styleLayer.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
                 styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
                 this._layers[styleLayer.id] = styleLayer;
-                this._serializedLayers[styleLayer.id] = styleLayer.serialize();
 
                 const sourceCache = this.getOwnLayerSourceCache(styleLayer);
                 const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
@@ -1006,6 +1016,7 @@ class Style extends Evented<MapEvents> {
         this._has3DLayers = false;
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
+        this._mergedLayerSelectors.clear();
 
         this.forEachFragmentStyle((style: Style) => {
             for (const layerId of style._order) {
@@ -1023,12 +1034,37 @@ class Style extends Evented<MapEvents> {
 
                 mergedOrder.push(layer);
             }
+
+            const {featuresets} = style.stylesheet || {};
+            if (featuresets) {
+                for (const featuresetId in featuresets) {
+                    const {selectors} = featuresets[featuresetId];
+                    for (const selector of selectors) {
+                        const layer = style._layers[selector.layer];
+                        const layerSelectors = this._mergedLayerSelectors.get(layer.fqid) || [];
+                        let properties;
+                        if (selector.properties) {
+                            for (const name in selector.properties) {
+                                const expression = createExpression(selector.properties[name]);
+                                if (expression.result === 'success') {
+                                    properties = properties || {};
+                                    properties[name] = expression.value;
+                                }
+                            }
+                        }
+                        layerSelectors.push({
+                            featuresetId,
+                            featureNamespace: selector.featureNamespace,
+                            properties
+                        });
+                        this._mergedLayerSelectors.set(layer.fqid, layerSelectors);
+                    }
+                }
+            }
         });
 
         this._mergedOrder = [];
-        this._clipLayerIndices = [];
 
-        let i = 0;
         const sort = (layers: StyleLayer[] = []) => {
             for (const layer of layers) {
                 if (layer.type === 'slot') {
@@ -1044,13 +1080,35 @@ class Style extends Evented<MapEvents> {
                     if (layer.is3D()) this._has3DLayers = true;
                     if (layer.type === 'circle') this._hasCircleLayers = true;
                     if (layer.type === 'symbol') this._hasSymbolLayers = true;
-                    if (layer.type === 'clip') this._clipLayerIndices.push(i);
-                    i++;
+                    if (layer.type === 'clip') this._clipLayerPresent = true;
                 }
             }
         };
 
         sort(mergedOrder);
+
+        // Sort symbols with occlusion opacity to be rendered after all 3D layers
+        this._mergedOrder.sort((layerName1: string, layerName2: string) => {
+            const l1 = mergedLayers[layerName1];
+            const l2 = mergedLayers[layerName2];
+
+            if ((l1 as SymbolStyleLayer).hasInitialOcclusionOpacityProperties) {
+                if (l2.is3D()) {
+                    return 1;
+                }
+                return 0;
+            }
+
+            if (l1.is3D()) {
+                if ((l2 as SymbolStyleLayer).hasInitialOcclusionOpacityProperties) {
+                    return -1;
+                }
+                return 0;
+            }
+
+            return 0;
+        });
+
         this._mergedLayers = mergedLayers;
         this.updateDrapeFirstLayers();
         this._buildingIndex.processLayersChanged();
@@ -1214,7 +1272,6 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        // @ts-expect-error - TS2339 - Property 'vectorLayerIds' does not exist on type 'Source'. | TS2339 - Property 'vectorLayerIds' does not exist on type 'Source'.
         if (source.type === 'geojson' || (source.vectorLayerIds && source.vectorLayerIds.indexOf(sourceLayer) === -1)) {
             this.fire(new ErrorEvent(new Error(
                 `Source layer "${sourceLayer}" ` +
@@ -1343,9 +1400,17 @@ class Style extends Evented<MapEvents> {
         return this._mergedOrder;
     }
 
+    /**
+     * Returns active order for when terrain or globe are enabled (when draping is enabled).
+     * @param drapingEnabled {boolean} speficy if order is requested for draping enabled.
+     * @private
+     */
+    _getOrder(drapingEnabled: boolean): Array<string> {
+        return drapingEnabled ? this.order : this._mergedOrder;
+    }
+
     isLayerDraped(layer: StyleLayer): boolean {
         if (!this.terrain) return false;
-        // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
         return layer.isDraped(this.getLayerSourceCache(layer));
     }
 
@@ -1683,7 +1748,7 @@ class Style extends Evented<MapEvents> {
         return this.modelManager.listModels(this.scope);
     }
 
-    addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}): void {
+    addSource(id: string, source: SourceSpecification & {collectResourceTiming?: boolean}, options: StyleSetterOptions = {}): void {
         this._checkLoaded();
 
         if (this.getOwnSource(id) !== undefined) {
@@ -1698,7 +1763,7 @@ class Style extends Evented<MapEvents> {
         const shouldValidate = builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._validate(validateSource, `sources.${id}`, source, null, options)) return;
 
-        if (this.map && this.map._collectResourceTiming) (source as any).collectResourceTiming = true;
+        if (this.map && this.map._collectResourceTiming) source.collectResourceTiming = true;
         const sourceInstance = createSource(id, source, this.dispatcher, this);
         sourceInstance.scope = this.scope;
 
@@ -1846,7 +1911,7 @@ class Style extends Evented<MapEvents> {
                     ambientLight.set(light);
                     ambientLight.updateTransitions(transitionParameters);
                 } else {
-                    this.ambientLight = new Lights<Ambient>(light, ambientProps, this.scope, this.options);
+                    this.ambientLight = new Lights<Ambient>(light, getAmbientProps(), this.scope, this.options);
                 }
                 break;
             case 'directional':
@@ -1855,7 +1920,7 @@ class Style extends Evented<MapEvents> {
                     directionalLight.set(light);
                     directionalLight.updateTransitions(transitionParameters);
                 } else {
-                    this.directionalLight = new Lights<Directional>(light, directionalProps, this.scope, this.options);
+                    this.directionalLight = new Lights<Directional>(light, getDirectionalProps(), this.scope, this.options);
                 }
                 break;
             default:
@@ -1907,7 +1972,11 @@ class Style extends Evented<MapEvents> {
 
         const ambientBrightness = relativeLuminance(ambientColor) * ambientIntensity;
 
-        return (directionalBrightness + ambientBrightness) / 2.0;
+        const brightness = (directionalBrightness + ambientBrightness) / 2.0;
+
+        // Reduces decimal places to prevent bucket re-evaluation which was caused by small precision differences
+        // Since in most places we directly compare the previously evaluated brightness values
+        return Number(brightness.toFixed(6));
     }
 
     getBrightness(): number | null | undefined {
@@ -1930,23 +1999,60 @@ class Style extends Evented<MapEvents> {
         return !!this.ambientLight && !!this.directionalLight;
     }
 
-    getFragmentStyle(fragmentId?: string): Style | null | undefined {
+    /**
+     * Returns the fragment style associated with the provided fragmentId.
+     * If no fragmentId is provided, returns itself.
+     */
+    getFragmentStyle(fragmentId?: string): Style | undefined {
         if (!fragmentId) return this;
 
         if (isFQID(fragmentId)) {
             const scope = getScopeFromFQID(fragmentId);
             const fragment = this.fragments.find(({id}) => id === scope);
-            if (!fragment) throw new Error(`Style import not found: ${fragmentId}`);
+            if (!fragment) throw new Error(`Style import '${fragmentId}' not found`);
             const name = getNameFromFQID(fragmentId);
             return fragment.style.getFragmentStyle(name);
         } else {
             const fragment = this.fragments.find(({id}) => id === fragmentId);
-            if (!fragment) throw new Error(`Style import not found: ${fragmentId}`);
+            if (!fragment) throw new Error(`Style import '${fragmentId}' not found`);
             return fragment.style;
         }
     }
 
-    getConfigProperty(fragmentId: string, key: string): unknown {
+    getFeaturesetDescriptors(fragmentId?: string): Array<FeaturesetDescriptor> {
+        const style = this.getFragmentStyle(fragmentId);
+        if (!style || !style.stylesheet.featuresets) return [];
+
+        const featuresetDescriptors: FeaturesetDescriptor[] = [];
+        for (const id in style.stylesheet.featuresets) {
+            featuresetDescriptors.push({featuresetId: id, importId: style.scope ? style.scope : undefined});
+        }
+
+        return featuresetDescriptors;
+    }
+
+    /**
+     * Returns the layers associated with a featureset in the style fragment.
+     * If no fragmentId is provided, returns the layers associated with own featuresets.
+     */
+    getFeaturesetLayers(featuresetId: string, fragmentId?: string): Array<StyleLayer> {
+        const style = this.getFragmentStyle(fragmentId);
+        const featuresets = style.stylesheet.featuresets;
+        if (!featuresets || !featuresets[featuresetId]) {
+            this.fire(new ErrorEvent(new Error(`The featureset '${featuresetId}' does not exist in the map's style and cannot be queried.`)));
+            return [];
+        }
+
+        const layers = [];
+        for (const selector of featuresets[featuresetId].selectors) {
+            const layer = style.getOwnLayer(selector.layer);
+            if (layer) layers.push(layer);
+        }
+
+        return layers;
+    }
+
+    getConfigProperty(fragmentId: string, key: string): SerializedExpression | null {
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return null;
         const fqid = makeFQID(key, fragmentStyle.scope);
@@ -2156,7 +2262,6 @@ class Style extends Evented<MapEvents> {
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});
-            this._serializedLayers[layer.id] = layer.serialize();
         }
 
         if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
@@ -2282,7 +2387,6 @@ class Style extends Evented<MapEvents> {
         this._order.splice(index, 1);
 
         delete this._layers[id];
-        delete this._serializedLayers[id];
 
         this._changes.setDirty();
         this._layerOrderChanged = true;
@@ -2418,7 +2522,7 @@ class Style extends Evented<MapEvents> {
         return clone(layer.filter);
     }
 
-    setLayoutProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
+    setLayoutProperty<T extends keyof LayoutSpecification>(layerId: string, name: T, value: LayoutSpecification[T], options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this._checkLayer(layerId);
@@ -2453,13 +2557,13 @@ class Style extends Evented<MapEvents> {
      * @param {string} name The name of the layout property.
      * @returns {*} The property value.
      */
-    getLayoutProperty(layerId: string, name: string): PropertyValueSpecification<unknown> | null | undefined {
+    getLayoutProperty<T extends keyof LayoutSpecification>(layerId: string, name: T): LayoutSpecification[T] | undefined {
         const layer = this._checkLayer(layerId);
         if (!layer) return;
         return layer.getLayoutProperty(name);
     }
 
-    setPaintProperty(layerId: string, name: string, value: any, options: StyleSetterOptions = {}) {
+    setPaintProperty<T extends keyof PaintSpecification>(layerId: string, name: T, value: PaintSpecification[T], options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this._checkLayer(layerId);
@@ -2490,7 +2594,7 @@ class Style extends Evented<MapEvents> {
         this._changes.updatePaintProperties(layer);
     }
 
-    getPaintProperty(layerId: string, name: string): void | TransitionSpecification | PropertyValueSpecification<unknown> {
+    getPaintProperty<T extends keyof PaintSpecification>(layerId: string, name: T): PaintSpecification[T] | undefined {
         const layer = this._checkLayer(layerId);
         if (!layer) return;
         return layer.getPaintProperty(name);
@@ -2498,6 +2602,23 @@ class Style extends Evented<MapEvents> {
 
     setFeatureState(target: FeatureSelector | GeoJSONFeature, state: FeatureState) {
         this._checkLoaded();
+
+        const featureset = (target as GeoJSONFeature).featureset;
+        if (featureset) {
+            if ('featuresetId' in featureset) {
+                const fragment = this.getFragmentStyle(featureset.importId);
+                const layers = fragment.getFeaturesetLayers(featureset.featuresetId);
+                for (const {source, sourceLayer} of layers) {
+                    fragment.setFeatureState({id: target.id, source, sourceLayer}, state);
+                }
+            } else if ('layerId' in featureset) {
+                const layer = this.getLayer(featureset.layerId);
+                this.setFeatureState({id: target.id, source: layer.source, sourceLayer: layer.sourceLayer}, state);
+            }
+
+            return;
+        }
+
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
 
@@ -2525,6 +2646,23 @@ class Style extends Evented<MapEvents> {
 
     removeFeatureState(target: Omit<FeatureSelector, 'id'> & {id?: FeatureSelector['id']} | GeoJSONFeature, key?: string) {
         this._checkLoaded();
+
+        const featureset = (target as GeoJSONFeature).featureset;
+        if (featureset) {
+            if ('featuresetId' in featureset) {
+                const fragment = this.getFragmentStyle(featureset.importId);
+                const layers = fragment.getFeaturesetLayers(featureset.featuresetId);
+                for (const {source, sourceLayer} of layers) {
+                    fragment.removeFeatureState({id: target.id, source, sourceLayer}, key);
+                }
+            } else if ('layerId' in featureset) {
+                const layer = this.getLayer(featureset.layerId);
+                this.removeFeatureState({id: target.id, source: layer.source, sourceLayer: layer.sourceLayer}, key);
+            }
+
+            return;
+        }
+
         const sourceId = target.source;
 
         const source = this._checkSource(sourceId);
@@ -2551,6 +2689,32 @@ class Style extends Evented<MapEvents> {
 
     getFeatureState(target: FeatureSelector | GeoJSONFeature): FeatureState | null | undefined {
         this._checkLoaded();
+
+        const featureset = (target as GeoJSONFeature).featureset;
+        if (featureset) {
+            let finalState: FeatureState;
+            if ('featuresetId' in featureset) {
+                const fragment = this.getFragmentStyle(featureset.importId);
+                const layers = fragment.getFeaturesetLayers(featureset.featuresetId);
+                for (const {source, sourceLayer} of layers) {
+                    const state = fragment.getFeatureState({id: target.id, source, sourceLayer});
+                    // There is possibility that the same feature id exists in multiple sources, and the states of the
+                    // features must be consistent through all the sources
+                    if (state && !finalState) {
+                        finalState = state;
+                    } else if (!deepEqual(finalState, state)) {
+                        this.fire(new ErrorEvent(new Error(`The same feature id exists in multiple sources in the featureset, but their feature states are not consistent through the sources.`)));
+                        return;
+                    }
+                }
+            } else if ('layerId' in target) {
+                const layer = this.getLayer(featureset.layerId);
+                finalState = this.getFeatureState({id: target.id, source: layer.source, sourceLayer: layer.sourceLayer});
+            }
+
+            return finalState;
+        }
+
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
 
@@ -2614,6 +2778,14 @@ class Style extends Evented<MapEvents> {
         }, (value) => { return value !== undefined; });
     }
 
+    _updateFilteredLayers(filter: (layer: StyleLayer) => boolean) {
+        for (const layer of Object.values(this._mergedLayers)) {
+            if (filter(layer)) {
+                this._updateLayer(layer);
+            }
+        }
+    }
+
     _updateLayer(layer: StyleLayer) {
         this._changes.updateLayer(layer);
         const sourceCache = this.getLayerSourceCache(layer);
@@ -2628,7 +2800,7 @@ class Style extends Evented<MapEvents> {
         layer.invalidateCompiledFilter();
     }
 
-    _flattenAndSortRenderedFeatures(sourceResults: Array<QueryResult>): Array<GeoJSONFeature> {
+    _flattenAndSortRenderedFeatures(sourceResults: Array<QueryResult>): Array<Feature> {
         // Feature order is complicated.
         // The order between features in two 2D layers is determined by layer order (subject to draped rendering modification).
         //  - if terrain/globe enabled layers are reordered in a drape-first, immediate-second manner
@@ -2648,12 +2820,12 @@ class Style extends Evented<MapEvents> {
         //      This means that that the line_layer feature is above the extrusion_layer_b feature despite
         //      it being in an earlier layer.
 
-        const isLayer3D = (layerId: string) => this._mergedLayers[layerId].type === 'fill-extrusion' ||  this._mergedLayers[layerId].type === 'model';
+        const isLayer3D = (layerId: string) => this._mergedLayers[layerId].is3D();
 
         const order = this.order;
 
         const layerIndex: Record<string, any> = {};
-        const features3D = [];
+        const features3D: Array<{feature: Feature; featureIndex: number; intersectionZ: number}> = [];
         for (let l = order.length - 1; l >= 0; l--) {
             const layerId = order[l];
             if (isLayer3D(layerId)) {
@@ -2673,7 +2845,8 @@ class Style extends Evented<MapEvents> {
             return b.intersectionZ - a.intersectionZ;
         });
 
-        const features = [];
+        const features: Feature[] = [];
+
         for (let l = order.length - 1; l >= 0; l--) {
             const layerId = order[l];
 
@@ -2700,25 +2873,22 @@ class Style extends Evented<MapEvents> {
         return features;
     }
 
-    queryRenderedFeatures(
-        queryGeometry: PointLike | [PointLike, PointLike],
-        params: QueryRenderedFeaturesParams,
-        transform: Transform,
-    ): Array<GeoJSONFeature> {
-        if (params && params.filter) {
+    queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: QueryRenderedFeaturesParams, transform: Transform): Array<GeoJSONFeature> {
+        if (params && !Array.isArray(params) && params.filter) {
             this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
         }
 
-        params.scope = this.scope;
-        params.availableImages = this._availableImages;
-        params.serializedLayers = this._serializedLayers;
+        let has3DLayers = false;
+        let layerIds;
+        const includedSources = new Set<string>();
 
-        const includedSources: Record<string, any> = {};
         if (params && params.layers) {
             if (!Array.isArray(params.layers)) {
                 this.fire(new ErrorEvent(new Error('parameters.layers must be an Array.')));
                 return [];
             }
+
+            layerIds = [];
             for (const layerId of params.layers) {
                 const layer = this._mergedLayers[layerId];
                 if (!layer) {
@@ -2726,37 +2896,161 @@ class Style extends Evented<MapEvents> {
                     this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be queried for features.`)));
                     return [];
                 }
-                includedSources[layer.source] = true;
+                if (layer.is3D()) has3DLayers = true;
+                includedSources.add(layer.source);
+                layerIds.push(layerId);
+            }
+        } else {
+            has3DLayers = this.has3DLayers();
+        }
+
+        const renderedFeatures = this._queryRenderedFeatures(queryGeometry, transform, {layerIds, filter: params.filter, has3DLayers, includedSources});
+        const sortedFeatures = this._flattenAndSortRenderedFeatures(renderedFeatures);
+
+        const features = [];
+        for (const feature of sortedFeatures) {
+            const scope = getScopeFromFQID(feature.layer.id);
+            if (scope === this.scope) features.push(feature);
+        }
+
+        return features;
+    }
+
+    queryRenderedFeaturesForInteractions(queryGeometry: PointLike | [PointLike, PointLike], targets: QueryRenderedFeaturesetParams[], transform: Transform): Array<GeoJSONFeature> {
+        let renderedFeatures = [];
+        for (const {featureset, filter, radius} of targets) {
+            let has3DLayers = false;
+            const layerIds: string[] = [];
+            const includedSources = new Set<string>();
+
+            if ('featuresetId' in featureset) {
+                const featuresetLayers = this.getFeaturesetLayers(featureset.featuresetId, featureset.importId);
+                if (featuresetLayers.length === 0) continue;
+                for (const layer of featuresetLayers) {
+                    if (layer.is3D()) has3DLayers = true;
+                    includedSources.add(layer.source);
+                    layerIds.push(layer.fqid);
+                }
+            } else if ('layerId' in featureset) {
+                const layer = this._mergedLayers[featureset.layerId];
+                if (!layer) {
+                    // this layer is not in the style.layers array
+                    this.fire(new ErrorEvent(new Error(`The layer '${featureset.layerId}' does not exist in the map's style and cannot be queried for features.`)));
+                    return [];
+                }
+                if (layer.is3D()) has3DLayers = true;
+                includedSources.add(layer.source);
+                layerIds.push(featureset.layerId);
+            }
+
+            // apply radius to the query geometry
+            let bbox = queryGeometry;
+            if (radius) {
+                if (queryGeometry instanceof Point || typeof queryGeometry[0] === 'number') {
+                    const p = Point.convert(queryGeometry) as Point;
+                    bbox = [[p.x - radius, p.y - radius], [p.x + radius, p.y + radius]];
+                } else {
+                    const tl = Point.convert(queryGeometry[0]);
+                    const br = Point.convert(queryGeometry[1]) as Point;
+                    bbox = [[tl.x - radius, tl.y - radius], [br.x + radius, br.y + radius]];
+                }
+            }
+
+            renderedFeatures = renderedFeatures.concat(this._queryRenderedFeatures(bbox, transform, {layerIds, filter, has3DLayers, includedSources}));
+        }
+
+        const sortedFeatures = this._flattenAndSortRenderedFeatures(renderedFeatures);
+
+        const makeFeaturesetFeature = (feature: Feature, featureset: FeaturesetDescriptor, selector?: FeaturesetSelector): GeoJSONFeature => {
+            const derivedFeature: GeoJSONFeature = feature.clone();
+            delete derivedFeature.layer;
+            derivedFeature.featureset = featureset;
+
+            if (selector && selector.featureNamespace) {
+                derivedFeature.namespace = selector.featureNamespace;
+            }
+
+            if (selector && selector.properties) {
+                const transformedProperties = {};
+                const zoom = this.map.transform.zoom;
+                for (const name of Object.keys(selector.properties)) {
+                    const value = selector.properties[name].evaluate({zoom}, feature._vectorTileFeature, feature.state, feature.tile, this._availableImages);
+                    if (value != null) transformedProperties[name] = value;
+                }
+                derivedFeature.properties = transformedProperties;
+            }
+
+            return derivedFeature;
+        };
+
+        // Derive a featureset feature for each selector and append it to the featuresetFeatures
+        const featuresetFeatures = [];
+        for (const feature of sortedFeatures) {
+            const targetLayerId = feature.layer.id;
+            const targetLayerName = getNameFromFQID(targetLayerId);
+            const targetLayerScope = getScopeFromFQID(targetLayerId);
+
+            for (const {featureset} of targets) {
+                if ('layerId' in featureset && featureset.layerId !== targetLayerId) {
+                    continue;
+                } else if ('layerId' in featureset && featureset.layerId === targetLayerId) {
+                    const featuresetFeature = makeFeaturesetFeature(feature, featureset);
+                    featuresetFeatures.push(featuresetFeature);
+                    continue;
+                }
+
+                if ('featuresetId' in featureset) {
+                    if (featureset.importId !== targetLayerScope) continue;
+
+                    const layers = this.getFeaturesetLayers(featureset.featuresetId, featureset.importId);
+                    const layerIds = layers.map(layer => layer.id);
+                    if (!layerIds.includes(targetLayerName)) continue;
+                }
+
+                const layerSelectors = this._mergedLayerSelectors.get(targetLayerId) || [];
+                for (const selector of layerSelectors) {
+                    const featuresetFeature = makeFeaturesetFeature(feature, featureset, selector);
+                    featuresetFeatures.push(featuresetFeature);
+                }
             }
         }
 
-        const sourceResults: Array<QueryResult> = [];
-        const serializedLayers = params.serializedLayers || {};
+        return featuresetFeatures;
+    }
 
-        const has3DLayer = (params && params.layers) ?
-            params.layers.some((layerId) => {
-                const layer = this.getLayer(layerId);
-                return layer && layer.is3D();
-            }) : this.has3DLayers();
+    _queryRenderedFeatures(
+        queryGeometry: PointLike | [PointLike, PointLike],
+        transform: Transform,
+        options: {
+            layerIds?: string[],
+            filter?: FilterSpecification,
+            has3DLayers: boolean,
+            includedSources: Set<string>
+        }
+    ): Array<QueryResult> {
+        const {layerIds, filter, has3DLayers, includedSources} = options;
 
+        const queryResults: Array<QueryResult> = [];
         const queryGeometryStruct = QueryGeometry.createFromScreenPoints(queryGeometry, transform);
 
         for (const id in this._mergedSourceCaches) {
             const source = this._mergedSourceCaches[id].getSource();
-            if (!source || source.scope !== params.scope) continue;
+            if (!source) continue;
 
             const sourceId = this._mergedSourceCaches[id].getSource().id;
-            if (params.layers && !includedSources[sourceId]) continue;
+            if (layerIds && !includedSources.has(sourceId)) continue;
+
             const showQueryGeometry = !!this.map._showQueryGeometry;
-            sourceResults.push(
+            queryResults.push(
                 queryRenderedFeatures(
                     this._mergedSourceCaches[id],
                     this._mergedLayers,
-                    serializedLayers,
                     queryGeometryStruct,
-                    (params as any),
+                    filter,
+                    layerIds || [],
+                    this._availableImages,
                     transform,
-                    has3DLayer,
+                    has3DLayers,
                     showQueryGeometry)
             );
         }
@@ -2764,37 +3058,41 @@ class Style extends Evented<MapEvents> {
         if (this.placement) {
             // If a placement has run, query against its CollisionIndex
             // for symbol results, and treat it as an extra source to merge
-            sourceResults.push(
+            queryResults.push(
                 queryRenderedSymbols(
                     this._mergedLayers,
-                    serializedLayers,
                     this.getLayerSourceCache.bind(this),
                     queryGeometryStruct.screenGeometry,
-                    (params as any),
+                    filter,
+                    layerIds || [],
+                    this._availableImages,
                     this.placement.collisionIndex,
                     this.placement.retainedQueryData)
             );
         }
 
-        return this._flattenAndSortRenderedFeatures(sourceResults);
+        return queryResults;
     }
 
     querySourceFeatures(
-        sourceID: string,
+        sourceId: string,
         params?: {
             sourceLayer?: string;
             filter?: FilterSpecification;
             validate?: boolean;
-        },
-    ): Array<GeoJSONFeature> {
-        if (params && params.filter) {
-            this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);
         }
-        const sourceCaches = this.getOwnSourceCaches(sourceID);
+    ): Array<Feature> {
+        const filter = params && params.filter;
+        if (filter) {
+            this._validate(validateFilter, 'querySourceFeatures.filter', filter, null, params);
+        }
+
         let results = [];
+        const sourceCaches = this.getOwnSourceCaches(sourceId);
         for (const sourceCache of sourceCaches) {
             results = results.concat(querySourceFeatures(sourceCache, params));
         }
+
         return results;
     }
 
@@ -2865,7 +3163,15 @@ class Style extends Evented<MapEvents> {
         // Disabling
         if (!terrainOptions) {
             // This check prevents removing draping terrain not from #applyProjectionUpdate
-            if (!this.terrainSetForDrapingOnly() || drapeRenderMode === DrapeRenderMode.deferred) {
+            if (!this.terrainSetForDrapingOnly()) {
+                delete this.terrain;
+
+                if (this.map.transform.projection.requiresDraping) {
+                    this.setTerrainForDraping();
+                }
+            }
+
+            if (drapeRenderMode === DrapeRenderMode.deferred) {
                 delete this.terrain;
             }
 
@@ -3037,7 +3343,7 @@ class Style extends Evented<MapEvents> {
 
         const draped = [];
         const nonDraped = [];
-        for (const layerId in this._mergedLayers) {
+        for (const layerId of this._mergedOrder) {
             const layer = this._mergedLayers[layerId];
             if (this.isLayerDraped(layer)) {
                 draped.push(layerId);
@@ -3201,7 +3507,6 @@ class Style extends Evented<MapEvents> {
         forceFullPlacement: boolean = false,
     ): {
         needsRerender: boolean;
-        occlusionQueryBasedOpacityChanged: boolean;
     } {
         let symbolBucketsChanged = false;
         let placementCommitted = false;
@@ -3256,7 +3561,7 @@ class Style extends Evented<MapEvents> {
             // render frame
             this.placement.setStale();
         } else {
-            this.pauseablePlacement.continuePlacement(this._mergedOrder, this._mergedLayers, layerTiles, layerTilesInYOrder);
+            this.pauseablePlacement.continuePlacement(this._mergedOrder, this._mergedLayers, layerTiles, layerTilesInYOrder, this.map.painter.scaleFactor);
 
             if (this.pauseablePlacement.isDone()) {
                 this.placement = this.pauseablePlacement.commit(browser.now());
@@ -3277,28 +3582,14 @@ class Style extends Evented<MapEvents> {
                 const layerId = this._mergedOrder[i];
                 const styleLayer = this._mergedLayers[layerId];
                 if (styleLayer.type !== 'symbol') continue;
-                const checkAgainstClipLayer = this.isLayerClipped(styleLayer) && this._clipLayerIndices.some(c => i < c);
+                const checkAgainstClipLayer = this.isLayerClipped(styleLayer);
                 this.placement.updateLayerOpacities(styleLayer, layerTiles[makeFQID(styleLayer.source, styleLayer.scope)], i, checkAgainstClipLayer ? replacementSource : null);
             }
         }
 
-        // Update symbol bucket opacities due to occlusion queries
-        let opacityChanged = false;
-        for (const layerId of this._mergedOrder) {
-            const styleLayer = this._mergedLayers[layerId];
-            if (styleLayer.type !== 'symbol') continue;
-            const tiles = layerTiles[makeFQID(styleLayer.source, styleLayer.scope)];
-            for (const tile of tiles) {
-                const symbolBucket = (tile.getBucket(styleLayer) as SymbolBucket);
-                if (symbolBucket && tile.latestFeatureIndex && styleLayer.fqid === symbolBucket.layerIds[0]) {
-                    opacityChanged = symbolBucket.updateOcclusionOpacities(painter.context, painter.symbolParams, painter._dt) || opacityChanged;
-                }
-            }
-        }
-
         // needsRender is false when we have just finished a placement that didn't change the visibility of any symbols
-        const needsRerender = !this.pauseablePlacement.isDone() || this.placement.hasTransitions(browser.now()) || opacityChanged;
-        return {needsRerender, occlusionQueryBasedOpacityChanged: opacityChanged};
+        const needsRerender = !this.pauseablePlacement.isDone() || this.placement.hasTransitions(browser.now());
+        return {needsRerender};
     }
 
     _releaseSymbolFadeTiles() {
@@ -3529,7 +3820,7 @@ class Style extends Evented<MapEvents> {
         return this._mergedOtherSourceCaches[fqid];
     }
 
-    getLayerSourceCache(layer: StyleLayer): SourceCache | void {
+    getLayerSourceCache(layer: StyleLayer): SourceCache | undefined {
         const fqid = makeFQID(layer.source, layer.scope);
         return layer.type === 'symbol' ?
             this._mergedSymbolSourceCaches[fqid] :
@@ -3675,34 +3966,16 @@ class Style extends Evented<MapEvents> {
 
     isLayerClipped(layer: StyleLayer, source?: Source | null): boolean {
         // fill-extrusions can be conflated by landmarks.
-        if (this._clipLayerIndices.length === 0 && layer.type !== 'fill-extrusion') return false;
+        if (!this._clipLayerPresent && layer.type !== 'fill-extrusion') return false;
         const isFillExtrusion = layer.type === 'fill-extrusion' && layer.sourceLayer === 'building';
 
-        let layerMask = 0;
         if (layer.is3D()) {
             if (isFillExtrusion || (!!source && source.type === 'batched-model')) return true;
             if (layer.type === 'model') {
-                layerMask = LayerTypeMask.Model;
+                return true;
             }
-        } else {
-            if (layer.type === 'symbol') {
-                layerMask = LayerTypeMask.Symbol;
-            }
-        }
-
-        for (const i of this._clipLayerIndices) {
-            assert(i < this._mergedOrder.length);
-            const clipLayer: ClipStyleLayer = (this._mergedLayers[this._mergedOrder[i]] as any);
-            if (!clipLayer) continue;
-
-            const extraLayersToBeClipped = [];
-
-            for (const extra of clipLayer.layout.get('clip-layer-types'))
-                extraLayersToBeClipped.push(extra === 'model' ? LayerTypeMask.Model : (extra === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
-
-            for (const mask of extraLayersToBeClipped)
-                if (layerMask & mask)
-                    return true;
+        } else if (layer.type === 'symbol') {
+            return true;
         }
 
         return false;

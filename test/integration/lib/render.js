@@ -193,6 +193,7 @@ async function renderMap(style, options) {
         preserveDrawingBuffer: true,
         axonometric: options.axonometric || false,
         skew: options.skew || [0, 0],
+        scaleFactor: options.scaleFactor || 1,
         fadeDuration: options.fadeDuration || 0,
         localIdeographFontFamily: options.localIdeographFontFamily || false,
         projection: options.projection,

@@ -157,10 +157,10 @@
 
         const map = window.map = new mapboxgl.Map({
             container: 'map',
-            center: [-74.012499, 40.705441],
-            zoom: 15.27,
-            pitch: 60,
-            bearing: -7,
+            center: [-0.12501974, 51.5332374],
+            zoom: 16,
+            pitch: 50,
+            bearing: -30,
             style: defaultStyle,
             devtools: true,
             hash: true
@@ -201,7 +201,82 @@
             }
 
             if (standard) {
-                map.addImport(imported);
+              map.addSource('eraser', {
+                  'type': 'geojson',
+                  'data': {
+                      'type': 'FeatureCollection',
+                      'features': [
+                          {
+                              'type': 'Feature',
+                              'properties': {},
+                              'geometry': {
+                                  'coordinates': [
+                                      [
+                                          [-0.12573446384880071, 51.53222253720682],
+                                          [-0.12458889852425159, 51.53219470021111],
+                                          [-0.12358091771250201, 51.53492205161518],
+                                          [-0.12701761368793996, 51.53391996847543],
+                                          [-0.12573446384880071, 51.53222253720682]
+                                      ]
+                                  ],
+                                  'type': 'Polygon'
+                              }
+                          }
+                      ]
+                  }
+              });
+
+              map.addSource('model', {
+                  'type': 'geojson',
+                  'data': {
+                      'type': 'Feature',
+                      'properties': {
+                          'model-uri':
+                              'http://localhost:9966/debug/models/tower.glb'
+                      },
+                      'geometry': {
+                          'coordinates': [-0.12501974, 51.5332374],
+                          'type': 'Point'
+                      }
+                  }
+              });
+
+              map.addLayer({
+                  'id': 'tower',
+                  'type': 'model',
+                  'source': 'model',
+                  'minzoom': 14,
+                  'slot': 'middle',
+                  'layout': {
+                      'model-id': ['get', 'model-uri']
+                  },
+                  'paint': {
+                    "model-opacity": [
+                        "interpolate",
+                        ["exponential", 1.8],
+                        ["zoom"],
+                        14,
+                        0,
+                        15,
+                        1
+                      ],
+                      'model-rotation': [0.0, 0.0, 35.0],
+                      'model-scale': [0.8, 0.8, 1.2],
+                      'model-color-mix-intensity': 0,
+                      'model-cast-shadows': true,
+                      'model-emissive-strength': 0.8
+                  }
+              });
+
+              map.addLayer({
+                  'id': 'eraser',
+                  'type': 'clip',
+                  'source': 'eraser',
+                  'layout': {
+                      'clip-layer-types': ['symbol', 'model'],
+                      'clip-layer-scope': ['basemap']
+                  }
+              });
             }
         });
     </script>

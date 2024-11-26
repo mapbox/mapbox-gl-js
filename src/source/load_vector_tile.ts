@@ -25,7 +25,7 @@ export type LoadVectorTileResult = {
 export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | undefined>;
 
 export type AbortVectorData = () => void;
-export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback, deduped: DedupedRequest) => AbortVectorData | null | undefined;
+export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback, deduped: DedupedRequest) => AbortVectorData | undefined;
 export type DedupedRequestInput = {key : string,
     metadata: any,
     requestFunc: any,

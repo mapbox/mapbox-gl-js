@@ -160,7 +160,7 @@ Larger alloweds are acceptable for testing debug features that will not be direc
 
 If a test fails on a run with too large a difference to adjust the "allowed," it can be added to the corresponding [ignore file](../ignore) for the browser or operating system.
 
-Ignores include tests under `"todo"` and `"skip"`. `"todo"` tests show up in test results but do not trigger a failing run. Most tests failing on one pltaform should be marked as "ignore." This allows us to notice if the tests start passing.
+Ignores include tests under `"todo"` and `"skip"`. `"todo"` tests show up in test results but do not trigger a failing run. Most tests failing on one platform should be marked as "ignore." This allows us to notice if the tests start passing.
 
 Tests under `"skip"` will not run at all. Tests should be skipped if they trigger crashes or if they are flaky (to prevent falsely concluding that the test is a non-issue).
 

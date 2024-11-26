@@ -21,6 +21,8 @@ uniform highp float u_ao_pass;
 uniform highp float u_meter_to_tile;
 uniform highp float u_edge_radius; // in tile coords
 
+uniform highp float u_dynamic_offset;
+
 uniform highp vec2 u_ao;
 
 #pragma mapbox: define highp float flood_light_ground_radius
@@ -49,7 +51,8 @@ void main() {
     float top = 1.0 - start_bottom.y;
 
     float side = (0.5 - start_bottom.x) * 2.0;
-    vec2 extrusion_parallel = v * side * mix(1.0, angular_offset, top);
+
+    vec2 extrusion_parallel = v * side * mix(u_dynamic_offset, angular_offset, top);
 
     vec2 perp = vec2(v.y, -v.x);
     vec2 extrusion_perp = direction * perp * effect_radius * top;

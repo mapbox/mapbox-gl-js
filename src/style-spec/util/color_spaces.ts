@@ -1,5 +1,4 @@
 import Color from './color';
-
 import {number as interpolateNumber} from './interpolate';
 
 type LABColor = {

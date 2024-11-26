@@ -6,7 +6,7 @@ import {globSync} from 'glob';
 import shuffleSeed from 'shuffle-seed';
 import {queue} from 'd3-queue';
 import chalk from 'chalk';
-import template from 'lodash.template';
+import template from 'lodash/template.js';
 import createServer from './server.js';
 
 import {fileURLToPath} from 'url';
@@ -20,7 +20,7 @@ export default function (directory, implementation, options, run) {
     const server = createServer();
 
     const tests = options.tests || [];
-    const ignores = options.ignores || {};
+    const ignores = options.ignores || {'todo': [], 'skip': []};
 
     let sequence = globSync(`**/${options.fixtureFilename || 'style.json'}`, {cwd: directory})
         .sort((a, b) => a.localeCompare(b, 'en'))
@@ -31,9 +31,10 @@ export default function (directory, implementation, options, run) {
             server.localizeURLs(style);
 
             style.metadata = style.metadata || {};
+            let testName = `${path.basename(directory)}/${id}`;
             style.metadata.test = Object.assign({
                 id,
-                ignored: ignores[`${path.basename(directory)}/${id}`],
+                skip: ignores.skip.includes(testName) || ignores.todo.includes(testName),
                 width: 512,
                 height: 512,
                 pixelRatio: 1,
@@ -54,8 +55,8 @@ export default function (directory, implementation, options, run) {
                 return false;
             }
 
-            if (/^skip/.test(test.ignored)) {
-                console.log(chalk.gray(`* skipped ${test.id} (${test.ignored})`));
+            if (test.skip) {
+                console.log(chalk.gray(`* skipped ${test.id}`));
                 return false;
             }
 

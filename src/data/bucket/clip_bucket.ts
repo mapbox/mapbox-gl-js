@@ -6,6 +6,7 @@ import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import TriangleGridIndex from '../../util/triangle_grid_index';
+import Point from "@mapbox/point-geometry";
 
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
 import type {
@@ -22,8 +23,6 @@ import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {Footprint, TileFootprint} from '../../../3d-style/util/conflation';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {SpritePositions} from '../../util/image';
-
-import Point from "@mapbox/point-geometry";
 
 class ClipBucket implements Bucket {
     index: number;
@@ -69,11 +68,9 @@ class ClipBucket implements Bucket {
             const bucketFeature: BucketFeature = {
                 id,
                 properties: feature.properties,
-                // @ts-expect-error - TS2322 - Type '0 | 2 | 1 | 3' is not assignable to type '2 | 1 | 3'.
                 type: feature.type,
                 sourceLayerIndex,
                 index,
-                // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
                 geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
                 patterns: {}
             };

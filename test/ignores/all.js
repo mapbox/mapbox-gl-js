@@ -34,6 +34,87 @@ const todo = [
 
     // https://mapbox.atlassian.net/browse/MAPS3D-987
     "render-tests/model-layer/landmark-shadows-terrain",
+
+    // https://mapbox.atlassian.net/browse/GLJS-1005
+    "expression-tests/image/two-arguments/available",
+    "render-tests/image-fallback-nested/add-image-after",
+
+    // https://mapbox.atlassian.net/browse/GLJS-873
+    "expression-tests/image/options/one-image",
+    "expression-tests/image/options/options-for-both-images",
+    "expression-tests/image/options/options-for-first-image-only",
+    "expression-tests/image/options/options-for-second-image-only",
+    "expression-tests/image/options/options-with-invalid-params/array",
+    "expression-tests/image/options/options-with-invalid-params/empty-parameter-name",
+    "expression-tests/image/options/options-with-invalid-params/integer-parameter-value",
+    "expression-tests/image/options/options-with-invalid-params/parameter-value-with-unknown-color",
+    "expression-tests/image/options/options-with-invalid-params/string",
+    "expression-tests/image/options/options-without-params",
+
+    // Known issues with the elevated lines implementation
+    // https://github.com/mapbox/mapbox-gl-js-internal/pull/1909
+    "render-tests/elevated-line/join-none",
+    "render-tests/elevated-line/join-linear-elevation",
+    // z-fighting issues
+    "render-tests/elevated-line-sort-key/literal",
+    "render-tests/elevated-line-color/property-function",
+    // Rendering issue at tile border
+    "render-tests/elevated-line-translate/function",
+    "render-tests/elevated-line-translate-anchor/map",
+    "render-tests/elevated-line-translate-anchor/viewport-terrain",
+    "render-tests/elevated-line-translate-anchor/viewport",
+    // Globe projection not supported yet
+    "render-tests/elevated-line-pattern-trim-offset/globe-end-offset",
+    "render-tests/elevated-line-pattern-trim-offset/globe-mid-offset",
+    "render-tests/elevated-line-pattern-trim-offset/globe-start-offset",
+    // blur issues
+    "render-tests/elevated-line-blur/high-pitch",
+    "render-tests/elevated-line-blur/property-function",
+    // border issues
+    "render-tests/elevated-line-border/color",
+    "render-tests/elevated-line-border/default",
+    "render-tests/elevated-line-border/gradient",
+    "render-tests/elevated-line-border/trim-offset",
+    "render-tests/elevated-line-border/width",
+    // opacity issues
+    "render-tests/elevated-line-join/bevel-transparent",
+    "render-tests/elevated-line-opacity/data-driven",
+    "render-tests/elevated-line-opacity/multiple-layers",
+    "render-tests/elevated-line-opacity/property-function",
+    // possibly related to incorrect line progress values near line-joins and line-caps
+    "render-tests/elevated-line-join/property-function-dasharray",
+    "render-tests/elevated-line-pattern-trim-offset/end-offset",
+    "render-tests/elevated-line-pattern-trim-offset/line-join-none-start-offset",
+    "render-tests/elevated-line-pattern-trim-offset/mid-offset",
+    "render-tests/elevated-line-pattern-trim-offset/shared-source",
+    "render-tests/elevated-line-pattern-trim-offset/start-offset",
+    "render-tests/elevated-line-pattern/line-join-none-fract-zoom",
+    "render-tests/elevated-line-trim-offset/gradient-end-offset",
+    "render-tests/elevated-line-trim-offset/gradient-mid-offset",
+    "render-tests/elevated-line-trim-offset/gradient-round-cap",
+    "render-tests/elevated-line-trim-offset/gradient-shared-source",
+    "render-tests/elevated-line-trim-offset/gradient-start-offset",
+    "render-tests/elevated-line-trim-offset/gradient-step",
+    "render-tests/elevated-line-trim-offset/gradient-with-dash",
+    "render-tests/elevated-line-trim-offset/pure-color-end-offset",
+    "render-tests/elevated-line-trim-offset/pure-color-mid-offset",
+    "render-tests/elevated-line-trim-offset/pure-color-round-cap",
+    "render-tests/elevated-line-trim-offset/pure-color-shared-source",
+    "render-tests/elevated-line-trim-offset/pure-color-start-offset",
+    "render-tests/elevated-line-trim-offset/pure-color-with-dash",
+    "render-tests/elevated-line-trim-offset/trim-color-fade",
+    "render-tests/elevated-line-gradient/gradient-shared-source",
+    "render-tests/elevated-line-gradient/gradient-step",
+    "render-tests/elevated-line-gradient/gradient-with-dash",
+    "render-tests/elevated-line-gradient/gradient",
+    "render-tests/elevated-line-gradient/translucent",
+    // pattern issues
+    "render-tests/elevated-line-pattern/line-join-none-runtime-pattern",
+    "render-tests/elevated-line-pattern/line-join-none-with-offset",
+    "render-tests/elevated-line-pattern/line-join-none",
+    "render-tests/elevated-line-pattern/overscaled",
+    // line-width projected
+    "render-tests/elevated-line-width/projected"
 ];
 
 const skip = [
@@ -198,7 +279,12 @@ const skip = [
     "render-tests/raster-color/categorical",
 
     // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
-    "render-tests/clip-layer/clip-layer-keep-fill-extrusions"
+    "render-tests/clip-layer/clip-layer-keep-fill-extrusions",
+
+    // Not working correctly
+    // https://github.com/mapbox/mapbox-gl-js-internal/pull/1909
+    "render-tests/lines-elevated-line-join-none",
+    "render-tests/lines-elevated-line-joins-linear-elevation"
 ];
 
 export default {todo, skip};

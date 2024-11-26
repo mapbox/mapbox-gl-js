@@ -1,4 +1,5 @@
 import {extend} from '../util/util';
+
 import type Tile from './tile';
 import type Painter from '../render/painter';
 import type {FeatureState} from '../style-spec/expression/index';
@@ -85,25 +86,36 @@ class SourceFeatureState {
         }
     }
 
-    getState(sourceLayer: string, featureId: number | string): FeatureState {
-        const feature = String(featureId);
+    getState(sourceLayer: string, featureId?: number | string): FeatureState | FeatureStates {
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};
+        const deletedStates = this.deletedStates[sourceLayer];
+        // return empty object if the whole source layer is awaiting deletion
+        if (deletedStates === null) return {};
 
-        const reconciledState = extend({}, base[feature], changes[feature]);
+        if (featureId !== undefined) {
+            const feature = String(featureId);
+            const reconciledState = extend({}, base[feature], changes[feature]);
 
-        //return empty object if the whole source layer is awaiting deletion
-        if (this.deletedStates[sourceLayer] === null) return {};
-        else if (this.deletedStates[sourceLayer]) {
-            const featureDeletions = this.deletedStates[sourceLayer][featureId];
-            if (featureDeletions === null) return {};
-            for (const prop in featureDeletions) delete reconciledState[prop];
+            if (deletedStates) {
+                const featureDeletions = deletedStates[featureId];
+                if (featureDeletions === null) return {};
+                for (const prop in featureDeletions) delete reconciledState[prop];
+            }
+
+            return reconciledState;
         }
+
+        const reconciledState = extend({}, base, changes);
+        if (deletedStates) {
+            for (const feature in deletedStates) delete reconciledState[feature];
+        }
+
         return reconciledState;
     }
 
     initializeTileState(tile: Tile, painter?: Painter | null) {
-        tile.setFeatureState(this.state, painter);
+        tile.refreshFeatureState(painter);
     }
 
     coalesceChanges(tiles: Record<string | number, Tile>, painter: Painter) {
@@ -154,7 +166,7 @@ class SourceFeatureState {
 
         for (const id in tiles) {
             const tile = tiles[id];
-            tile.setFeatureState(featuresChanged, painter);
+            tile.refreshFeatureState(painter);
         }
     }
 }

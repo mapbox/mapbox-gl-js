@@ -10,7 +10,7 @@
     "noImplicitAny": false,
     "noImplicitThis": true,
     "strictFunctionTypes": false,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "target": "es2021",
     "types": [],
   },

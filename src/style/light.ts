@@ -1,5 +1,4 @@
 import styleSpec from '../style-spec/reference/latest';
-
 import {extend} from '../util/util';
 import {Evented} from '../util/evented';
 import {
@@ -7,20 +6,19 @@ import {
     validateLight,
     emitValidationErrors
 } from './validate_style';
-import Color from '../style-spec/util/color';
 import {
     Properties,
     Transitionable,
-    Transitioning,
-    PossiblyEvaluated,
     DataConstantProperty,
     PositionProperty
 } from './properties';
 
+import type Color from '../style-spec/util/color';
 import type EvaluationParameters from './evaluation_parameters';
 import type {StyleSetterOptions} from '../style/style';
-import type {TransitionParameters} from './properties';
-
+import type {TransitionParameters,
+    Transitioning,
+    PossiblyEvaluated} from './properties';
 import type {LightSpecification} from '../style-spec/types';
 
 type Props = {
@@ -30,12 +28,13 @@ type Props = {
     ["intensity"]: DataConstantProperty<number>;
 };
 
-const properties: Properties<Props> = new Properties({
+let properties: Properties<Props>;
+const getProperties = (): Properties<Props> => properties || (properties = new Properties({
     "anchor": new DataConstantProperty(styleSpec.light.anchor),
     "position": new PositionProperty(styleSpec.light.position),
     "color": new DataConstantProperty(styleSpec.light.color),
     "intensity": new DataConstantProperty(styleSpec.light.intensity),
-});
+}));
 
 /*
  * Represents the light used to light extruded features.
@@ -49,7 +48,7 @@ class Light extends Evented {
 
     constructor(lightOptions?: LightSpecification, id: string = "flat") {
         super();
-        this._transitionable = new Transitionable(properties);
+        this._transitionable = new Transitionable(getProperties());
         this.setLight(lightOptions, id);
         this._transitioning = this._transitionable.untransitioned();
     }

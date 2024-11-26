@@ -1,4 +1,7 @@
+import {isWorker} from '../util/util';
 import {LivePerformanceMarkers} from '../util/live_performance';
+
+import type {RequestParameters} from '../util/ajax';
 
 export const PerformanceMarkers = {
     libraryEvaluate: 'library-evaluate',
@@ -6,8 +9,9 @@ export const PerformanceMarkers = {
     frame: 'frame'
 } as const;
 
-import {isWorker} from '../util/util';
-import type {RequestParameters} from '../util/ajax';
+export type PerformanceMarker =
+    typeof PerformanceMarkers[keyof typeof PerformanceMarkers] |
+    typeof LivePerformanceMarkers[keyof typeof LivePerformanceMarkers];
 
 export type PerformanceMetrics = {
     loadTime: number;
@@ -25,13 +29,26 @@ export type PerformanceMetrics = {
     timelines: Array<any>;
 };
 
+export type WorkerPerformanceMetrics = {
+    timeOrigin: number;
+    entries: Array<PerformanceEntry & PerformanceMarkOptions>;
+    scope: string;
+};
+
 export type PerformanceMark = {
     mark: string;
     name: string;
 };
 
+export type PerformanceMarkDetail = {
+    gpuTime?: number;
+    cpuTime?: number;
+    timestamp?: number
+    isRenderFrame?: boolean;
+};
+
 type PerformanceMarkOptions = {
-    detail?: unknown;
+    detail?: PerformanceMarkDetail;
     startTime?: number;
 };
 
@@ -39,10 +56,9 @@ let fullLoadFinished = false;
 let placementTime = 0;
 
 export const PerformanceUtils = {
-    mark(marker: typeof PerformanceMarkers[keyof typeof PerformanceMarkers], markOptions?: PerformanceMarkOptions) {
+    mark(marker: PerformanceMarker, markOptions?: PerformanceMarkOptions) {
         performance.mark(marker, markOptions);
 
-        // @ts-expect-error - TS2367 - This comparison appears to be unintentional because the types '"frame" | "library-evaluate" | "frame-gpu"' and '"fullLoad"' have no overlap.
         if (marker === LivePerformanceMarkers.fullLoad) {
             fullLoadFinished = true;
         }
@@ -90,7 +106,7 @@ export const PerformanceUtils = {
     },
 
     getPerformanceMetrics(): PerformanceMetrics {
-        const metrics: Record<string, any> = {};
+        const metrics: Partial<PerformanceMetrics> = {};
 
         performance.measure('loadTime', LivePerformanceMarkers.create, LivePerformanceMarkers.load);
         performance.measure('fullLoadTime', LivePerformanceMarkers.create, LivePerformanceMarkers.fullLoad);
@@ -102,29 +118,18 @@ export const PerformanceUtils = {
 
         metrics.placementTime = placementTime;
 
-        // @ts-expect-error - TS2740 - Type 'Record<string, any>' is missing the following properties from type 'PerformanceMetrics': loadTime, fullLoadTime, percentDroppedFrames, parseTile, and 9 more.
-        return metrics;
+        return metrics as PerformanceMetrics;
     },
 
-    getWorkerPerformanceMetrics(): {
-        timeOrigin: string;
-        entries: Array<any>;
-        scope: string;
-        } {
-        const entries = performance.getEntries().map(entry => {
+    getWorkerPerformanceMetrics(): WorkerPerformanceMetrics {
+        const entries = performance.getEntries().map((entry: PerformanceEntry & PerformanceMarkOptions) => {
             const result = entry.toJSON();
-            // @ts-expect-error - TS2339 - Property 'detail' does not exist on type 'PerformanceEntry'.
-            if (entry.detail) {
-                Object.assign(result, {
-                    // @ts-expect-error - TS2339 - Property 'detail' does not exist on type 'PerformanceEntry'.
-                    detail: entry.detail
-                });
-            }
+            if (entry.detail) Object.assign(result, {detail: entry.detail});
             return result;
         });
+
         return {
             scope: isWorker() ? 'Worker' : 'Window',
-            // @ts-expect-error - TS2322 - Type 'number' is not assignable to type 'string'.
             timeOrigin: performance.timeOrigin,
             entries
         };

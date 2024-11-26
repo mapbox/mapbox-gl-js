@@ -1,5 +1,4 @@
 import {Event} from '../util/evented';
-
 import * as DOM from '../util/dom';
 import Point from '@mapbox/point-geometry';
 import {extend} from '../util/util';
@@ -11,7 +10,7 @@ import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {EventData, EventOf} from '../util/evented';
 import type {SourceSpecification} from '../style-spec/types';
 
-type MapMouseEventType =
+export type MapMouseEventType =
     | 'mousedown'
     | 'mouseup'
     | 'preclick'
@@ -24,7 +23,7 @@ type MapMouseEventType =
     | 'mouseout'
     | 'contextmenu';
 
-type MapTouchEventType =
+export type MapTouchEventType =
     | 'touchstart'
     | 'touchend'
     | 'touchcancel';
@@ -61,12 +60,12 @@ export class MapMouseEvent extends Event<MapEvents, MapMouseEventType> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    type: MapMouseEventType;
+    override type: MapMouseEventType;
 
     /**
      * The `Map` object that fired the event.
      */
-    target: Map;
+    override target: Map;
 
     /**
      * The DOM event which caused the map event.
@@ -203,12 +202,12 @@ export class MapTouchEvent extends Event<MapEvents, MapTouchEventType> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    type: MapTouchEventType;
+    override type: MapTouchEventType;
 
     /**
      * The `Map` object that fired the event.
      */
-    target: Map;
+    override target: Map;
 
     /**
      * The DOM event which caused the map event.
@@ -305,6 +304,8 @@ export class MapTouchEvent extends Event<MapEvents, MapTouchEventType> {
     }
 }
 
+export type MapWheelEventType = 'wheel';
+
 /**
  * `MapWheelEvent` is a class used by other classes to generate
  * mouse events of specific types such as 'wheel'.
@@ -326,16 +327,16 @@ export class MapTouchEvent extends Event<MapEvents, MapTouchEventType> {
  * // }
  * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  */
-export class MapWheelEvent extends Event<MapEvents, 'wheel'> {
+export class MapWheelEvent extends Event<MapEvents, MapWheelEventType> {
     /**
      * The type of originating event. For a full list of available events, see [`Map` events](/mapbox-gl-js/api/map/#map-events).
      */
-    type: 'wheel';
+    override type: MapWheelEventType;
 
     /**
      * The `Map` object that fired the event.
      */
-    target: Map;
+    override target: Map;
 
     /**
      * The DOM event which caused the map event.
@@ -370,10 +371,12 @@ export class MapWheelEvent extends Event<MapEvents, 'wheel'> {
      * @private
      */
     constructor(map: Map, originalEvent: WheelEvent) {
-        super('wheel', {originalEvent} as MapEvents['wheel']);
+        super('wheel', {originalEvent} as MapEvents[MapWheelEventType]);
         this._defaultPrevented = false;
     }
 }
+
+export type MapInteractionEventType = MapMouseEventType | MapTouchEventType | MapWheelEventType;
 
 /**
  * `MapBoxZoomEvent` is a class used to generate
@@ -1618,6 +1621,7 @@ export type MapEvents = {
 /**
  * Utility type that represents all possible Map event types.
  */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export type MapEventType = keyof MapEvents & string;
 
 /**

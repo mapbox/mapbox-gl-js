@@ -69,6 +69,7 @@ const PARAMS = {
     resetRateFactor: 0.4,
     particleCount: 2048,
     bandIndex: 0,
+    elevation: 0,
 };
 
 const RASTERARRAY_LAYER = '10winds';
@@ -146,6 +147,11 @@ window.onload = function() {
         bandSlider.on('change', ({value}) => {
             map.setPaintProperty('wind-layer', 'raster-particle-array-band', bandList[value]);
         });
+    });
+
+    const elevationSlider = gui.addInput(PARAMS, 'elevation', {min: 0, max: 1000000});
+    elevationSlider.on('change', (ev) => {
+        map.setPaintProperty('wind-layer', 'raster-particle-elevation', ev.value);
     });
 };
 

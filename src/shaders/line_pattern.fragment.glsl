@@ -1,5 +1,6 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
+#include "_prelude_shadow.fragment.glsl"
 
 uniform highp float u_device_pixel_ratio;
 uniform highp float u_alpha_discard_threshold;
@@ -21,6 +22,16 @@ in highp vec4 v_uv;
 #ifdef LINE_JOIN_NONE
 in vec2 v_pattern_data; // [pos_in_segment, segment_length];
 #endif
+
+#ifdef RENDER_SHADOWS
+uniform vec3 u_ground_shadow_factor;
+
+in highp vec4 v_pos_light_view_0;
+in highp vec4 v_pos_light_view_1;
+in highp float v_depth;
+#endif
+
+uniform float u_emissive_strength;
 
 #pragma mapbox: define mediump vec4 pattern
 #pragma mapbox: define mediump float pixel_ratio
@@ -52,14 +63,14 @@ void main() {
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 
     highp float pattern_x = v_linesofar / pattern_size * aspect;
-    float x = mod(pattern_x, 1.0);
+    highp float x = mod(pattern_x, 1.0);
 
-    float y = 0.5 * v_normal.y + 0.5;
+    highp float y = 0.5 * v_normal.y + 0.5;
 
     vec2 texel_size = 1.0 / u_texsize;
 
-    vec2 pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(x, y));
-    vec2 lod_pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(pattern_x, y));
+    highp vec2 pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(x, y));
+    highp vec2 lod_pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(pattern_x, y));
     vec4 color = textureLodCustom(u_image, pos, lod_pos);
 
 #ifdef RENDER_LINE_TRIM_OFFSET
@@ -103,7 +114,11 @@ void main() {
 #endif
 
 #ifdef LIGHTING_3D_MODE
-    color = apply_lighting_ground(color);
+    color = apply_lighting_with_emission_ground(color, u_emissive_strength);
+#ifdef RENDER_SHADOWS
+    float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+    color.rgb *= mix(u_ground_shadow_factor, vec3(1.0), light);
+#endif // RENDER_SHADOWS
 #endif
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));

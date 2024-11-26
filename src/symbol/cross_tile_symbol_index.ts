@@ -1,8 +1,7 @@
 import EXTENT from '../style-spec/data/extent';
-
-import {SymbolInstanceArray} from '../data/array_types';
 import KDBush from 'kdbush';
 
+import type {SymbolInstanceArray} from '../data/array_types';
 import type Projection from '../geo/projection/projection';
 import type {OverscaledTileID} from '../source/tile_id';
 import type SymbolBucket from '../data/bucket/symbol_bucket';

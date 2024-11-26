@@ -1,9 +1,7 @@
 import extend from '../util/extend';
-import ValidationError from '../error/validation_error';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import {isExpression} from '../expression/index';
 import {isFunction} from '../function/index';
-
 import validateImport from './validate_import';
 import validateFunction from './validate_function';
 import validateExpression from './validate_expression';
@@ -25,10 +23,11 @@ import validateString from './validate_string';
 import validateFormatted from './validate_formatted';
 import validateImage from './validate_image';
 import validateProjection from './validate_projection';
+import getType from '../util/get_type';
 
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
-import getType from '../util/get_type';
+import type ValidationError from '../error/validation_error';
 
 const VALIDATORS = {
     '*'() {

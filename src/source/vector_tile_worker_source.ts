@@ -14,7 +14,6 @@ import type {
     WorkerTileCallback,
     TileParameters
 } from './worker_source';
-
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type Scheduler from '../util/scheduler';
@@ -34,16 +33,12 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     layerIndex: StyleLayerIndex;
     availableImages: Array<string>;
     loadVectorData: LoadVectorData;
-    loading: {
-        [_: number]: WorkerTile;
-    };
-    loaded: {
-        [_: number]: WorkerTile;
-    };
+    loading: Record<number, WorkerTile>;
+    loaded: Record<number, WorkerTile>;
     deduped: DedupedRequest;
     isSpriteLoaded: boolean;
-    scheduler: Scheduler | null | undefined;
-    brightness: number | null | undefined;
+    scheduler?: Scheduler | null;
+    brightness?: number | null;
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile
@@ -79,7 +74,6 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
         const workerTile = this.loading[uid] = new WorkerTile(params);
         workerTile.abort = this.loadVectorData(params, (err, response) => {
-
             const aborted = !this.loading[uid];
             delete this.loading[uid];
 
@@ -149,6 +143,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
+            workerTile.scaleFactor = params.scaleFactor;
             workerTile.showCollisionBoxes = params.showCollisionBoxes;
             workerTile.projection = params.projection;
             workerTile.brightness = params.brightness;

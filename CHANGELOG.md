@@ -1,6 +1,68 @@
-## 3.6.0-beta.1
+## 3.8.0
 
 ### Features and improvements ✨
+
+- Add _experimental_ support for style-defined `featuresets`, an upcoming way to query features in Mapbox Standard and other fragment-based styles.
+- Add _experimental_ `Map` `addInteraction`/`removeInteraction` methods that make it easier to manage map interactions like clicking and hovering over features.
+- Add _experimental_ support for elevated lines with `line-cross-slope` and `line-elevation-reference` properties.
+- Add _experimental_ `scaleFactor` map option and `setScaleFactor` method to increase map label size (useful for improving accessibility or adjusting text size for different devices).
+- Add support for using `line-progress` expression in non-data-driven line properties.
+- Improve performance of dynamic brightness changes.
+- Minor optimizations to reduce load time.
+
+### Bug fixes 🐞
+
+- Fix localization when setting a worldview on the Mapbox Standard style.
+- Fix raster array rendering on some Android devices.
+- Fix an issue where fill-extrusion buildings would disappear when zooming out.
+- Fix line joins for thick semi-transparent or blurred lines.
+- Improve appearance of line corners with densely placed vertices.
+- Fix anti-alising aftifacts on blurred lines.
+- Fix call stack overflow caused by repeated `addImport` calls.
+- Fix failures when handling non-renderable characters.
+- Fix rendering of Osage script.
+- Fix certain edge cases when using config expression in filter properties.
+- Fix patterned fill extrusions being visible with zero opacity alpha.
+- Fix data-driven `symbol-z-offset` not working properly.
+- Fix fill extrusions on terrain producing WebGL warnings in some cases.
+- Fix `line-emissive-strength` not being applied to patterned lines.
+
+## v3.7.0
+
+### Features and improvements ✨
+
+- Add `background-pitch-alignment` property of the `background` layer, which is set to `map` by default but can now be set to `viewport`. Useful for highlighting individual features by dimming the rest of the map with a semitransparent background.
+- Add new control positions (`top`, `right`, `bottom`, and `left`) (h/t [@Ethan-Guttman](https://github.com/Ethan-Guttman)).
+- Add `retainPadding` option for camera movement methods, which can be set to `false` for pre-v3.4 padding behavior.
+- Add `config` expression support in layer filter.
+- Add symbol elevation properties: `symbol-z-offset` and `symbol-elevation-reference`.
+- Add the `fill-z-offset` property for fill layers.
+- Improve `Map#fitBounds` for the alternative projections.
+- Improve terrain hillshade lighting anchored to viewport.
+- Improve shadow casting from 3D models.
+- Improve error messages for invalid expressions.
+- Skip landmarks rendering when the camera is inside them.
+- Improve type checking for the `Map#setPaintProperty` and `Map#setLayoutProperty` methods.
+- Allow the `string` event type in Map event handlers.
+- Expose `RequestTransformFunction`, `ResourceType`, and `RequestParameters` types.
+- Improve texture memory footprint on some platforms.
+
+### Bug fixes 🐞
+- Fix feature filtering when using 3D lights.
+- Fix pattern rendering issues on some devices at high zoom levels.
+- Fix `fill-extrusion-line-width` rendering for large polygons
+- Fix symbol placement ordering when `symbol-z-order` is set to `auto`.
+- Fix the issue where `minzoom` and `maxzoom` properties were ignored by `clip` layers.
+- Fix handling previously hidden models in `clip` layers.
+- Fix directional light `cast-shadows` property type.
+- Fix an edge case that could produce `setStencilMode`-related error in the console with the dev build.
+- Fix an issue where some fill extrusions could temporarily disappear when zooming quickly in certain areas.
+- Fix an edge case that could cause flickering on a far plane on high zooms.
+
+## 3.6.0
+
+### Features and improvements ✨
+- Add wall rendering mode to the `fill-exturion` layer by introducing `fill-extrusion-line-width` and `fill-extrusion-line-alignment` properties. Set `fill-extrusion-line-width` to a non-zero value to render walls instead of a solid extrusion.
 - Improve initial load performance.
 - Add inner glow effect for negative `circle-blur` values.
 - Add support for inlining TileJSON in style source definitions using `data` field.
@@ -8,13 +70,23 @@
 - Improve performance of updating config values of a style.
 - Add more descriptive expression evaluation error messages.
 - Improve TypeScript typings.
+- Improve performance of symbol occlusion (visibility checks against terrain and 3D objects).
+- Add `clip-layer-scope` property to limit `clip` layer to a specific style fragment.
+- Add `Map` `idle` method to check whether a map is idle.
 
 ### Bug fixes 🐞
 - Fix `isSourceLoaded` flag on `sourcedata` event for already loaded sources.
 - Fix firing `load` event when all tiles fail to load.
 - Fix performance issues when GeoJSON in `dynamic` mode is updated too frequently.
+- Fix GeoJSON line rendering in `dynamic` mode.
 - Fix rasterarray layer flickering from stale tiles cache.
 - Fix spikes when viewing terrain-enabled maps in certain environments.
+- Fix `Map` `getLayer` not working properly with custom layers.
+- Fix custom layer rendering issues on globe with high pitch.
+- Fix an issue with `line-trim-offset` on very long lines.
+- Fix rendering issues when ground effects overlap with line layers.
+- Fix landmark visibility issues near tile borders.
+- Fix accessibility issues with compact attribution button and logo.
 
 ## 3.5.2
 

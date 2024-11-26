@@ -1,5 +1,4 @@
 import {warnOnce} from '../util/util';
-
 import {register} from '../util/web_worker_transfer';
 
 import type VertexArrayObject from '../render/vertex_array_object';

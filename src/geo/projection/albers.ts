@@ -24,7 +24,7 @@ export default class Albers extends Projection {
         this.r0 = Math.sqrt(this.c) / this.n;
     }
 
-    project(lng: number, lat: number): ProjectedPoint {
+    override project(lng: number, lat: number): ProjectedPoint {
         const {n, c, r0} = this;
         const lambda = degToRad(lng - this.center[0]);
         const phi = degToRad(lat);
@@ -35,7 +35,7 @@ export default class Albers extends Projection {
         return {x, y, z: 0};
     }
 
-    unproject(x: number, y: number): LngLat {
+    override unproject(x: number, y: number): LngLat {
         const {n, c, r0} = this;
         const r0y = r0 + y;
         let l = Math.atan2(x, Math.abs(r0y)) * Math.sign(r0y);

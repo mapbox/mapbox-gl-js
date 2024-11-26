@@ -1,4 +1,5 @@
 import {Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from '../uniform_binding';
+
 import type {mat4} from 'gl-matrix';
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';

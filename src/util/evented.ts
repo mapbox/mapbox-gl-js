@@ -86,7 +86,7 @@ export class Evented<R extends EventRegistry = EventRegistry> {
      *   extended with `target` and `type` properties.
      * @returns {Object} Returns itself to allow for method chaining.
      */
-    on<T extends keyof R & string>(type: T, listener: Listener<R, T, this>): this {
+    on<T extends keyof R | (string & {})>(type: T, listener: Listener<R, T, this>): this {
         this._listeners = this._listeners || {};
         _addEventListener(type, listener, this._listeners);
 
@@ -100,7 +100,7 @@ export class Evented<R extends EventRegistry = EventRegistry> {
      * @param {Function} listener The listener function to remove.
      * @returns {Object} Returns itself to allow for method chaining.
      */
-    off<T extends keyof R & string>(type: T, listener: Listener<R, T, this>): this {
+    off<T extends keyof R | (string & {})>(type: T, listener: Listener<R, T, this>): this {
         _removeEventListener(type, listener, this._listeners);
         _removeEventListener(type, listener, this._oneTimeListeners);
 
@@ -117,9 +117,9 @@ export class Evented<R extends EventRegistry = EventRegistry> {
      *   If not provided, returns a Promise that will be resolved when the event is fired once.
      * @returns {Object} Returns `this` | Promise.
      */
-    once<T extends keyof R & string>(type: T): Promise<EventOf<R, T, this>>;
-    once<T extends keyof R & string>(type: T, listener: Listener<R, T, this>): this;
-    once<T extends keyof R & string>(type: T, listener?: Listener<R, T, this>): this | Promise<EventOf<R, T, this>> {
+    once<T extends keyof R | (string & {})>(type: T): Promise<EventOf<R, T, this>>;
+    once<T extends keyof R | (string & {})>(type: T, listener: Listener<R, T, this>): this;
+    once<T extends keyof R | (string & {})>(type: T, listener?: Listener<R, T, this>): this | Promise<EventOf<R, T, this>> {
         if (!listener) {
             return new Promise((resolve) => this.once(type, resolve as Listener<R, T, this>));
         }
@@ -130,14 +130,14 @@ export class Evented<R extends EventRegistry = EventRegistry> {
         return this;
     }
 
-    fire<T extends keyof R & string, E>(event: Event<R, T>): this;
-    fire<T extends keyof R & string>(event: ErrorEvent): this;
-    fire<T extends keyof R & string>(type: T, eventData?: R[T]): this;
-    fire<T extends keyof R & string>(e: Event<R, T> | T, eventData?: R[T]): this {
+    fire<T extends keyof R | (string & {})>(event: Event<R, T>): this;
+    fire<T extends keyof R | (string & {})>(type: T, eventData?: R[T]): this;
+    fire(event: ErrorEvent): this;
+    fire<T extends keyof R | (string & {})>(e: Event<R, T> | T, eventData?: R[T]): this {
         // Compatibility with (type: string, properties: Object) signature from previous versions.
         // See https://github.com/mapbox/mapbox-gl-js/issues/6522,
         //     https://github.com/mapbox/mapbox-gl-draw/issues/766
-        const event = typeof e === 'string' ? new Event(e, eventData as R[T] extends void ? [] : [R[T]]) : e;
+        const event = typeof e === 'string' ? new Event(e, eventData as R[T] extends void ? [] : [R[T]]) : (e as Event<R, T>);
         const type = event.type;
 
         if (this.listens(type)) {
@@ -182,11 +182,11 @@ export class Evented<R extends EventRegistry = EventRegistry> {
      * @returns {boolean} Returns `true` if there is at least one registered listener for specified event type, `false` otherwise.
      * @private
      */
-    listens<T extends keyof R & string>(type: T): boolean {
+    listens<T extends keyof R | (string & {})>(type: T): boolean {
         return !!(
             (this._listeners && this._listeners[type] && this._listeners[type].length > 0) ||
             (this._oneTimeListeners && this._oneTimeListeners[type] && this._oneTimeListeners[type].length > 0) ||
-            (this._eventedParent && this._eventedParent.listens(type))
+            (this._eventedParent && this._eventedParent.listens(type as string))
         );
     }
 

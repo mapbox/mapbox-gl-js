@@ -27,9 +27,14 @@ describe('FarZ', () => {
         pixelsPerMeter = mercator.pixelsPerMeter(tr.center.lat, tr.worldSize);
         expect(farthestPixelDistanceOnPlane(tr, pixelsPerMeter).toFixed(3)).toBe("151.500");
 
-        tr.zoom = 22.0;
+        tr.zoom = 17.0;
         pixelsPerMeter = mercator.pixelsPerMeter(tr.center.lat, tr.worldSize);
         expect(farthestPixelDistanceOnPlane(tr, pixelsPerMeter).toFixed(3)).toBe("151.500");
+
+        // Expanded furthest distance to prevent flicker on far plane
+        tr.zoom = 22.0;
+        pixelsPerMeter = mercator.pixelsPerMeter(tr.center.lat, tr.worldSize);
+        expect(farthestPixelDistanceOnPlane(tr, pixelsPerMeter).toFixed(3)).toBe("909.000");
     });
 
     test('farthestPixelDistanceOnSphere', () => {

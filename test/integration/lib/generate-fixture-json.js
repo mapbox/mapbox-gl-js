@@ -4,6 +4,11 @@ import fs from 'fs';
 import {globSync} from 'glob';
 import localizeURLs from './localize-urls.js';
 
+const ignoreStylePaths = [
+    '**/actual.json',
+    '**/expected*.json',
+];
+
 /**
  * Analyzes the contents of the specified `path.join(rootDirectory, suiteDirectory)`, and inlines
  * the contents into a single json file which can then be imported and built into a bundle
@@ -16,7 +21,7 @@ import localizeURLs from './localize-urls.js';
 export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 'test/integration/dist', includeImages = false, stylePaths = []) {
     if (!stylePaths.length) {
         const pathGlob = getAllFixtureGlobs(rootDirectory, suiteDirectory)[0];
-        stylePaths = globSync(pathGlob).sort((a, b) => a.localeCompare(b, 'en'));
+        stylePaths = globSync(pathGlob, {ignore: ignoreStylePaths}).sort((a, b) => a.localeCompare(b, 'en'));
         if (!stylePaths.length) {
             console.error(`Found no tests matching the pattern ${pathGlob}`);
         }
@@ -38,6 +43,10 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
 
             const filenames = fs.readdirSync(dirName);
             for (const file of filenames) {
+                // We don't use it and it is not a JSON
+                if (file === 'actual.json') {
+                    continue;
+                }
                 const [name, extension] = file.split(".");
                 if (extension === 'json') {
                     const json = parseJsonFromFile(path.join(dirName, file));
@@ -56,7 +65,6 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
                 }
             }
             testCases[testName] = testObject;
-
         } catch (e) {
             console.log(`Error reading directory: ${dirName}`);
             console.log(e.message);

@@ -1,6 +1,7 @@
 import {clamp} from '../util/util';
-import Point from '@mapbox/point-geometry';
 import assert from 'assert';
+
+import type Point from '@mapbox/point-geometry';
 
 class PathInterpolator {
     points: Array<Point>;

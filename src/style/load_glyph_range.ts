@@ -1,5 +1,4 @@
 import {getArrayBuffer, ResourceType} from '../util/ajax';
-
 import parseGlyphPBF from './parse_glyph_pbf';
 
 import type {StyleGlyph} from './style_glyph';
@@ -24,7 +23,6 @@ export default function (fontstack: string,
         requestManager.normalizeGlyphsURL(urlTemplate)
             .replace('{fontstack}', fontstack)
             .replace('{range}', `${begin}-${end}`),
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         ResourceType.Glyphs);
 
     getArrayBuffer(request, (err?: Error | null, data?: ArrayBuffer | null) => {

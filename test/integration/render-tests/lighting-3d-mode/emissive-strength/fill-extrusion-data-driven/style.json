@@ -1,0 +1,120 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "allowed": 0.002
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 1.0
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 0.5
+      }
+    }
+  ],
+  "pitch": 45.0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 1,
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    8,
+                    8
+                  ],
+                  [
+                    8,
+                    20
+                  ],
+                  [
+                    20,
+                    20
+                  ],
+                  [
+                    20,
+                    8
+                  ],
+                  [
+                    8,
+                    8
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 2,
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -15,
+                    -15
+                  ],
+                  [
+                    -15,
+                    8
+                  ],
+                  [
+                    8,
+                    8
+                  ],
+                  [
+                    8,
+                    -15
+                  ],
+                  [
+                    -15,
+                    -15
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "fill-extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-color": [
+          "case",
+          ["==", ["id"], 2],
+          "purple",
+          "yellow"
+        ],
+        "fill-extrusion-emissive-strength": 1,
+        "fill-extrusion-height": 1000000.0
+      }
+    }
+  ]
+}

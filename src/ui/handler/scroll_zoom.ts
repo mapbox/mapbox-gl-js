@@ -1,15 +1,14 @@
 import assert from 'assert';
 import * as DOM from '../../util/dom';
-
 import {ease as _ease, bindAll, bezier, isFullscreen} from '../../util/util';
 import browser from '../../util/browser';
 import {number as interpolate} from '../../style-spec/util/interpolate';
-import Point from '@mapbox/point-geometry';
 
+import type Point from '@mapbox/point-geometry';
 import type {Map} from '../map';
 import type HandlerManager from '../handler_manager';
 import type {Handler, HandlerResult} from '../handler';
-import MercatorCoordinate from '../../geo/mercator_coordinate';
+import type MercatorCoordinate from '../../geo/mercator_coordinate';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;

@@ -5,8 +5,7 @@ import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import Texture from './texture';
 import {rasterPoleUniformValues, rasterUniformValues} from './program/raster_program';
-
-import {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
+import {CanonicalTileID} from '../source/tile_id';
 import rasterFade from './raster_fade';
 import {
     calculateGlobeMercatorMatrix,
@@ -21,11 +20,12 @@ import {
 import {GLOBE_ZOOM_THRESHOLD_MIN} from '../geo/projection/globe_constants';
 import {mat4} from "gl-matrix";
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
-import Transform from '../geo/transform';
 import {COLOR_MIX_FACTOR} from '../style/style_layer/raster_style_layer';
 import RasterArrayTile from '../source/raster_array_tile';
 import RasterArrayTileSource from '../source/raster_array_tile_source';
 
+import type Transform from '../geo/transform';
+import type {OverscaledTileID} from '../source/tile_id';
 import type Tile from '../source/tile';
 import type Context from '../gl/context';
 import type Painter from './painter';
@@ -184,7 +184,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
             const tr = painter.transform;
             let perspectiveTransform: [number, number];
-            const cutoffParams = renderingWithElevation ? cutoffParamsForElevation(tr) : [0, 0, 0, 0];
+            const cutoffParams: [number, number, number, number] = renderingWithElevation ? cutoffParamsForElevation(tr) : [0, 0, 0, 0];
 
             let normalizeMatrix: Float32Array;
             let globeMatrix: Float32Array;
@@ -227,7 +227,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 parentTL || [0, 0],
                 globeToMercatorTransition(painter.transform.zoom),
                 mercatorCenter,
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number, number, number]'.
                 cutoffParams,
                 parentScaleBy || 1,
                 fade,
@@ -473,7 +472,7 @@ function configureRaster(
     let range = layer.paint.get('raster-color-range');
 
     // Unpack the offset for use in a separate uniform
-    const mix = [inputMix[0], inputMix[1], inputMix[2], 0];
+    const mix: [number, number, number, number] = [inputMix[0], inputMix[1], inputMix[2], 0];
     const offset = inputMix[3];
 
     let resampling = inputResampling === 'nearest' ? gl.NEAREST : gl.LINEAR;
@@ -514,14 +513,12 @@ function configureRaster(
         layer.updateColorRamp(range);
 
         let tex = layer.colorRampTexture;
-        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA8);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 
     return {
-        // @ts-expect-error - TS2322 - Type 'any[]' is not assignable to type '[number, number, number, number]'.
         mix,
-
         range,
         offset,
         defines,

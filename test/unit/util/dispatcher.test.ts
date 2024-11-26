@@ -1,12 +1,12 @@
 // @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
 import Dispatcher from '../../../src/util/dispatcher';
-import WebWorker from '../../../src/util/web_worker';
+import {createWorker} from '../../../src/util/web_worker';
 import WorkerPool from '../../../src/util/worker_pool';
 
 describe('Dispatcher', () => {
     test('requests and releases workers from pool', () => {
-        const workers = [new WebWorker(), new WebWorker()];
+        const workers = [createWorker(), createWorker()];
 
         const releaseCalled: Array<any> = [];
         const workerPool = {

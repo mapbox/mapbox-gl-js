@@ -24,12 +24,12 @@ class <%=StructArrayLayoutClass%> extends StructArray implements IStructArrayLay
 <%
 for (const type of usedTypes) {
 -%>
-    <%=type.toLowerCase()%>: <%=type%>Array;
+    override <%=type.toLowerCase()%>: <%=type%>Array;
 <%
 }
 -%>
 
-    _refreshViews() {
+    override _refreshViews() {
 <%
 for (const type of usedTypes) {
 -%>
@@ -59,13 +59,13 @@ for (const member of members) {
     }
 }
 -%>
-    emplaceBack(<%=argNamesTyped.join(', ')%>): number {
+    override emplaceBack(<%=argNamesTyped.join(', ')%>): number {
         const i = this.length;
         this.resize(i + 1);
         return this.emplace(i, <%=argNames.join(', ')%>);
     }
 
-    emplace(i: number, <%=argNamesTyped.join(', ')%>): number {
+    override emplace(i: number, <%=argNamesTyped.join(', ')%>): number {
 <%
 {
 for (const size of usedTypeSizes) {

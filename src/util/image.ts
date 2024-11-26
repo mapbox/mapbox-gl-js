@@ -1,7 +1,7 @@
 import assert from 'assert';
-
 import {register} from './web_worker_transfer';
 import Color from '../style-spec/util/color';
+
 import type {LUT} from "./lut";
 
 export type Size = {
@@ -9,11 +9,12 @@ export type Size = {
     height: number;
 };
 
-export interface SpritePosition {
-    readonly tl: [number, number];
-    readonly br: [number, number];
-    readonly pixelRatio?: number;
-}
+export type SpritePosition = Readonly<{
+    tl: [number, number];
+    br: [number, number];
+    pixelRatio?: number;
+}>;
+
 export type SpritePositions = {
     [_: string]: SpritePosition;
 };

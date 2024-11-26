@@ -55,7 +55,7 @@ export type BucketFeature = {
     sourceLayerIndex: number;
     geometry: Array<Array<Point>>;
     properties: any;
-    type: 1 | 2 | 3;
+    type: 0 | 1 | 2 | 3;
     id?: any;
     readonly patterns: {
         [_: string]: string;
@@ -92,22 +92,22 @@ export interface Bucket {
     readonly layers: Array<any>;
     readonly stateDependentLayers: Array<any>;
     readonly stateDependentLayerIds: Array<string>;
-    populate(
+    populate: (
         features: Array<IndexedFeature>,
         options: PopulateParameters,
         canonical: CanonicalTileID,
         tileTransform: TileTransform,
-    ): void;
-    update(
+    ) => void;
+    update: (
         states: FeatureStates,
         vtLayer: VectorTileLayer,
         availableImages: Array<string>,
         imagePositions: SpritePositions,
-        brightness?: number | null | undefined,
-    ): void;
-    isEmpty(): boolean;
-    upload(context: Context): void;
-    uploadPending(): boolean;
+        brightness?: number | null,
+    ) => void;
+    isEmpty: () => boolean;
+    upload: (context: Context) => void;
+    uploadPending: () => boolean;
     /**
      * Release the WebGL resources associated with the buffers. Note that because
      * buckets are shared between layers having the same layout properties, they
@@ -115,14 +115,12 @@ export interface Bucket {
      *
      * @private
      */
-    destroy(): void;
-    updateFootprints(id: UnwrappedTileID, footprints: Array<TileFootprint>): void;
+    destroy: () => void;
+    updateFootprints: (id: UnwrappedTileID, footprints: Array<TileFootprint>) => void;
 }
 
-export function deserialize(input: Array<Bucket>, style: Style): {
-    [_: string]: Bucket;
-} {
-    const output: Record<string, any> = {};
+export function deserialize(input: Array<Bucket>, style: Style): Record<string, Bucket> {
+    const output: Record<string, Bucket> = {};
 
     // Guard against the case where the map's style has been set to null while
     // this bucket has been parsing.
@@ -139,7 +137,8 @@ export function deserialize(input: Array<Bucket>, style: Style): {
 
         // look up StyleLayer objects from layer ids (since we don't
         // want to waste time serializing/copying them from the worker)
-        (bucket as any).layers = layers;
+        // @ts-expect-error - layers is a readonly property
+        bucket.layers = layers;
         if (bucket.stateDependentLayerIds) {
             (bucket as any).stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
         }

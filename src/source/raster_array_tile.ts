@@ -1,7 +1,8 @@
 import Tile from './tile';
 import Texture from '../render/texture';
 import {getArrayBuffer} from '../util/ajax';
-import {MapboxRasterTile} from '../data/mrt/mrt';
+import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
+import Pbf from 'pbf';
 
 import type Painter from '../render/painter';
 import type Framebuffer from '../gl/framebuffer';
@@ -10,6 +11,8 @@ import type {Cancelable} from '../types/cancelable';
 import type {TextureImage} from '../render/texture';
 import type {OverscaledTileID} from './tile_id';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
+
+MapboxRasterTile.setPbf(Pbf);
 
 export type TextureDescriptor = {
     img: TextureImage;
@@ -56,7 +59,7 @@ export type MRTDataRange = {
 export type MRTDecodingBatch = {
     tasks: Array<MRTDecodingTask>;
     cancel: () => void;
-    complete: (arg1?: Error | null | undefined, arg2?: ArrayBuffer | null | undefined) => void;
+    complete: (arg1?: Error | null, arg2?: ArrayBuffer | null) => void;
 };
 
 export type MRTDecodingTask = {
@@ -79,17 +82,17 @@ export type MRT = {
     layers: {
         [_: string]: MRTLayer;
     };
-    getLayer(arg1: string): MRTLayer | null | undefined;
-    parseHeader(arg1: ArrayBuffer): MRT;
-    getHeaderLength(arg1: ArrayBuffer): number;
-    createDecodingTask(arg1: MRTDataRange): MRTDecodingBatch;
+    getLayer: (arg1: string) => MRTLayer | null | undefined;
+    parseHeader: (arg1: ArrayBuffer) => MRT;
+    getHeaderLength: (arg1: ArrayBuffer) => number;
+    createDecodingTask: (arg1: MRTDataRange) => MRTDecodingBatch;
 };
 
 const FIRST_TRY_HEADER_LENGTH = 16384;
 const MRT_DECODED_BAND_CACHE_SIZE = 30;
 
 class RasterArrayTile extends Tile {
-    texture: Texture | null | undefined;
+    override texture: Texture | null | undefined;
     entireBuffer: ArrayBuffer | null | undefined;
     requestParams: RequestParameters | null | undefined;
 
@@ -110,15 +113,15 @@ class RasterArrayTile extends Tile {
         this._isHeaderLoaded = false;
     }
 
-    setTexture(img: TextureImage, painter: Painter) {
+    override setTexture(img: TextureImage, painter: Painter) {
         const context = painter.context;
         const gl = context.gl;
         this.texture = this.texture || painter.getTileTexture(img.width);
 
         if (this.texture && this.texture instanceof Texture) {
-            this.texture.update(img, {useMipmap: false, premultiply: false});
+            this.texture.update(img, {premultiply: false});
         } else {
-            this.texture = new Texture(context, img, gl.RGBA, {useMipmap: false, premultiply: false});
+            this.texture = new Texture(context, img, gl.RGBA8, {premultiply: false});
         }
     }
 
@@ -168,9 +171,7 @@ class RasterArrayTile extends Tile {
                 // If the received data covers all possible byte ranges (i.e. if the range request was
                 // ignored by the server), then cache the buffer and neglect range requests.
                 let lastByte = 0;
-                // @ts-expect-error - TS2339 - Property 'layers' does not exist on type 'MapboxRasterTile'.
                 for (const layer of Object.values(mrt.layers)) {
-                    // @ts-expect-error - TS2339 - Property 'dataIndex' does not exist on type 'unknown'. | TS2339 - Property 'dataIndex' does not exist on type 'unknown'.
                     lastByte = Math.max(lastByte, layer.dataIndex[layer.dataIndex.length - 1].last_byte);
                 }
 
@@ -288,7 +289,7 @@ class RasterArrayTile extends Tile {
 
         const texture = this.texture;
         if (texture && texture instanceof Texture) {
-            texture.update(img, {useMipmap: false, premultiply: false});
+            texture.update(img, {premultiply: false});
         }
 
         this.textureDescriptor = {

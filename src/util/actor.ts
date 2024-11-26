@@ -4,6 +4,10 @@ import Scheduler from './scheduler';
 
 import type {Transferable} from '../types/transferable';
 import type {Cancelable} from '../types/cancelable';
+import type {Callback} from '../types/callback';
+import '../types/worker';
+
+type ActorCallback = Callback<any> & {metadata?: any};
 
 /**
  * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)
@@ -17,25 +21,19 @@ import type {Cancelable} from '../types/cancelable';
  * @private
  */
 class Actor {
-    target: any;
-    parent: any;
-    mapId: number | null | undefined;
-    callbacks: {
-        number: any;
-    };
-    name: string;
-    cancelCallbacks: {
-        number: Cancelable;
-    };
+    target: Worker;
+    parent: Worker;
+    name?: string;
+    mapId?: string | number;
+    callbacks: Record<number, ActorCallback>;
+    cancelCallbacks: Record<number, Cancelable>;
     scheduler: Scheduler;
 
-    constructor(target: any, parent: any, mapId?: number | null) {
+    constructor(target: Worker, parent: Worker, mapId?: string | number) {
         this.target = target;
         this.parent = parent;
         this.mapId = mapId;
-        // @ts-expect-error - TS2741 - Property 'number' is missing in type '{}' but required in type '{ number: any; }'.
         this.callbacks = {};
-        // @ts-expect-error - TS2741 - Property 'number' is missing in type '{}' but required in type '{ number: Cancelable; }'.
         this.cancelCallbacks = {};
         bindAll(['receive'], this);
         this.target.addEventListener('message', this.receive, false);
@@ -53,11 +51,11 @@ class Actor {
     send(
         type: string,
         data: unknown,
-        callback?: any | null,
+        callback?: ActorCallback,
         targetMapId?: string | null,
         mustQueue: boolean = false,
-        callbackMetadata?: any,
-    ): Cancelable | null | undefined {
+        callbackMetadata?: ActorCallback['metadata'],
+    ): Cancelable | undefined {
         // We're using a string ID instead of numbers because they are being used as object keys
         // anyway, and thus stringified implicitly. We use random IDs because an actor may receive
         // message from multiple other actors which could run in different execution context. A
@@ -76,7 +74,7 @@ class Actor {
             mustQueue,
             sourceMapId: this.mapId,
             data: serialize(data, buffers)
-        }, buffers);
+        }, buffers as unknown as Transferable[]);
         return {
             cancel: () => {
                 if (callback) {
@@ -144,6 +142,7 @@ class Actor {
             if (callback) {
                 // If we get a response, but don't have a callback, the request was canceled.
                 if (task.error) {
+                    // @ts-ignore
                     callback(deserialize(task.error));
                 } else {
                     callback(null, deserialize(task.data));
@@ -158,18 +157,17 @@ class Actor {
                     sourceMapId: this.mapId,
                     error: err ? serialize(err) : null,
                     data: serialize(data, buffers)
-                }, buffers);
-            } : (_) => {
-            };
+                }, buffers as unknown as Transferable[]);
+            } : () => {};
 
-            const params = (deserialize(task.data) as any);
+            const params = deserialize(task.data) as any;
             if (this.parent[task.type]) {
                 // task.type == 'loadTile', 'removeTile', etc.
                 this.parent[task.type](task.sourceMapId, params, done);
             } else if (this.parent.getWorkerSource) {
                 // task.type == sourcetype.method
                 const keys = task.type.split('.');
-                const scope = (this.parent).getWorkerSource(task.sourceMapId, keys[0], params.source, params.scope);
+                const scope = this.parent.getWorkerSource(task.sourceMapId, keys[0], params.source, params.scope);
                 scope[keys[1]](params, done);
             } else {
                 // No function was found.

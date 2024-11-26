@@ -29,17 +29,19 @@ export default class CollatorExpression implements Expression {
         // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`Collator options argument must be an object.`);
 
-        const caseSensitive = context.parse(
-            options['case-sensitive'] === undefined ? false : options['case-sensitive'], 1, BooleanType);
+        const caseSensitive = options['case-sensitive'] === undefined ?
+            context.parse(false, 1, BooleanType) :
+            context.parseObjectValue(options['case-sensitive'], 1, 'case-sensitive', BooleanType);
         if (!caseSensitive) return null;
 
-        const diacriticSensitive = context.parse(
-            options['diacritic-sensitive'] === undefined ? false : options['diacritic-sensitive'], 1, BooleanType);
+        const diacriticSensitive = options['diacritic-sensitive'] === undefined ?
+            context.parse(false, 1, BooleanType) :
+            context.parseObjectValue(options['diacritic-sensitive'], 1, 'diacritic-sensitive', BooleanType);
         if (!diacriticSensitive) return null;
 
         let locale = null;
         if (options['locale']) {
-            locale = context.parse(options['locale'], 1, StringType);
+            locale = context.parseObjectValue(options['locale'], 1, 'locale', StringType);
             if (!locale) return null;
         }
 

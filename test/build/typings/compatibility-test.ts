@@ -355,7 +355,7 @@ const features = map.queryRenderedFeatures([0, 0], {layers: ["custom"], validate
 const features2 = map.querySourceFeatures("some_source", {
     sourceLayer: "source_layer",
     filter: ["all"],
-    validate: null,
+    validate: false,
 }) satisfies mapboxgl.GeoJSONFeature[];
 
 /**
@@ -380,8 +380,8 @@ var geoJSONSource: mapboxgl.GeoJSONSourceSpecification = {
 map.addSource("some id", geoJSONSource); // add
 map.removeSource("some id"); // remove
 
-var geoJSONSourceObj: mapboxgl.GeoJSONSource = map.getSource("some id"); // get
-geoJSONSourceObj.setData(geoJSONSource["data"]);
+var geoJSONSourceObj: mapboxgl.GeoJSONSource | undefined = map.getSource("some id"); // get
+if (geoJSONSourceObj) geoJSONSourceObj.setData(geoJSONSource["data"] || 'url');
 
 /**
  * ImageSource
@@ -399,24 +399,26 @@ var imageSource: mapboxgl.ImageSourceSpecification = {
 
 map.addSource("some id", imageSource); // add
 map.removeSource("some id"); // remove
-var imageSourceObj: mapboxgl.ImageSource = map.getSource("some id"); // get
+var imageSourceObj: mapboxgl.ImageSource | undefined = map.getSource("some id"); // get
 
-imageSourceObj.updateImage({
-    url: "/foo.png",
-    coordinates: [
+if (imageSourceObj) {
+    imageSourceObj.updateImage({
+        url: "/foo.png",
+        coordinates: [
+            [-76.54335737228394, 39.18579907229748],
+            [-76.52803659439087, 39.1838364847587],
+            [-76.5295386314392, 39.17683392507606],
+            [-76.54520273208618, 39.17876344106642],
+        ],
+    });
+
+    imageSourceObj.setCoordinates([
         [-76.54335737228394, 39.18579907229748],
         [-76.52803659439087, 39.1838364847587],
         [-76.5295386314392, 39.17683392507606],
         [-76.54520273208618, 39.17876344106642],
-    ],
-});
-
-imageSourceObj.setCoordinates([
-    [-76.54335737228394, 39.18579907229748],
-    [-76.52803659439087, 39.1838364847587],
-    [-76.5295386314392, 39.17683392507606],
-    [-76.54520273208618, 39.17876344106642],
-]);
+    ]);
+}
 
 /**
  * Video Source
@@ -435,25 +437,31 @@ var videoSource: mapboxgl.VideoSourceSpecification = {
 map.addSource("some id", videoSource); // add
 map.removeSource("some id"); // remove
 
-var videoSourceObj: mapboxgl.VideoSource = map.getSource("some id"); // get
-videoSourceObj.pause();
-videoSourceObj.play();
+var videoSourceObj: mapboxgl.VideoSource | undefined = map.getSource("some id"); // get
+if (videoSourceObj) {
+    videoSourceObj.pause();
+    videoSourceObj.play();
+}
 
 /**
  * Raster Source
  */
-const rasterSource: mapboxgl.RasterTileSource = map.getSource("tile-source");
-rasterSource.reload() satisfies void;
-rasterSource.setTiles(["a", "b"]) satisfies mapboxgl.RasterTileSource;
-rasterSource.setUrl("https://github.com") satisfies mapboxgl.RasterTileSource;
+const rasterSource: mapboxgl.RasterTileSource | undefined = map.getSource("tile-source");
+if (rasterSource) {
+    rasterSource.reload() satisfies void;
+    rasterSource.setTiles(["a", "b"]) satisfies mapboxgl.RasterTileSource;
+    rasterSource.setUrl("https://github.com") satisfies mapboxgl.RasterTileSource;
+}
 
 /**
  * Vector Source
  */
-const vectorSource: mapboxgl.VectorTileSource = map.getSource("tile-source");
-vectorSource.reload() satisfies void;
-vectorSource.setTiles(["a", "b"]) satisfies mapboxgl.VectorTileSource;
-vectorSource.setUrl("https://github.com") satisfies mapboxgl.VectorTileSource;
+const vectorSource: mapboxgl.VectorTileSource | undefined = map.getSource("tile-source");
+if (vectorSource) {
+    vectorSource.reload() satisfies void;
+    vectorSource.setTiles(["a", "b"]) satisfies mapboxgl.VectorTileSource;
+    vectorSource.setUrl("https://github.com") satisfies mapboxgl.VectorTileSource;
+}
 
 /**
  * Add Raster Source /// made URL optional to allow only tiles.
@@ -511,7 +519,7 @@ const popup = new mapboxgl.Popup(popupOptions)
     .setMaxWidth("none")
     .addTo(map);
 popup.getMaxWidth();
-popup.getElement() satisfies HTMLElement;
+popup.getElement() satisfies HTMLElement | undefined;
 popup.addClassName("class1");
 popup.removeClassName("class2");
 popup.toggleClassName("class3");
@@ -940,7 +948,6 @@ mercatorcoordinate.meterInMercatorCoordinateUnits() satisfies number;
  */
 
 expectType<mapboxgl.TransformRequestFunction>((url: string) => ({url}));
-// @ts-expect-error - incompatible
 expectType<mapboxgl.TransformRequestFunction>((url: string, resourceType: mapboxgl.ResourceType) => ({
     url,
     credentials: "same-origin",
@@ -991,17 +998,17 @@ map.getPadding() satisfies mapboxgl.PaddingOptions;
 
 map.setPadding({top: 10, bottom: 20, left: 30, right: 40}, {myData: "MY DATA"}) satisfies mapboxgl.Map;
 
-map.setPaintProperty("layerId", "layerName", null, {validate: true});
-map.setPaintProperty("layerId", "layerName", null, {validate: false});
-map.setPaintProperty("layerId", "layerName", null, {});
+map.setPaintProperty("layerId", "background-color", 'red', {validate: true});
+map.setPaintProperty("layerId", "background-color", 'red', {validate: false});
+map.setPaintProperty("layerId", "background-color", 'red', {});
 // @ts-expect-error
-map.setPaintProperty("layerId", "layerName", null, {some_option: "some_string"});
+map.setPaintProperty("layerId", "background-color", null, {some_option: "some_string"});
 
-map.setLayoutProperty("layerId", "layerName", null, {validate: true});
-map.setLayoutProperty("layerId", "layerName", null, {validate: false});
-map.setLayoutProperty("layerId", "layerName", null, {});
+map.setLayoutProperty("layerId", "visibility", 'visible', {validate: true});
+map.setLayoutProperty("layerId", "visibility", 'visible', {validate: false});
+map.setLayoutProperty("layerId", "visibility", 'none', {});
 // @ts-expect-error
-map.setLayoutProperty("layerId", "layerName", null, {some_option: "some_string"});
+map.setLayoutProperty("layerId", "visibility", null, {some_option: "some_string"});
 
 map.setLight({anchor: "viewport", color: "blue", intensity: 0.5}, {validate: true});
 map.setLight({anchor: "viewport", color: "blue", intensity: 0.5}, {validate: false});
@@ -1057,7 +1064,7 @@ map.setFog({
 map.setFog(null) satisfies mapboxgl.Map;
 map.setFog(undefined) satisfies mapboxgl.Map;
 
-map.getFog() satisfies mapboxgl.FogSpecification | null;
+map.getFog() satisfies mapboxgl.FogSpecification | null | undefined;
 
 /*
  * Map Events
@@ -1282,14 +1289,14 @@ expectType<mapboxgl.Map>(
     map.on("webglcontextlost", ev => {
         expectType<mapboxgl.MapContextEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
-        expectType<WebGLContextEvent>(ev.originalEvent);
+        expectType<WebGLContextEvent | undefined>(ev.originalEvent);
     }),
 );
 expectType<mapboxgl.Map>(
     map.on("webglcontextrestored", ev => {
         expectType<mapboxgl.MapContextEvent>(ev);
         expectType<mapboxgl.Map>(ev.target);
-        expectType<WebGLContextEvent>(ev.originalEvent);
+        expectType<WebGLContextEvent | undefined>(ev.originalEvent);
     }),
 );
 
@@ -1311,10 +1318,9 @@ expectType<mapboxgl.Map>(
     }),
 );
 expectType<mapboxgl.Map>(
-    // @ts-expect-error - incompatible
     map.on("tiledataloading", ev => {
-        // @ts-expect-error - incompatible
         expectType<mapboxgl.MapDataEvent>(ev);
+        // @ts-expect-error - incompatible
         expectType<mapboxgl.Map>(ev.target);
 
         // @ts-expect-error - incompatible
@@ -1636,7 +1642,7 @@ const backgroundLayout: mapboxgl.BackgroundLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const backgroundPaint: mapboxgl.BackgroundPaint = {
+const backgroundPaint: NonNullable<mapboxgl.BackgroundPaint> = {
     "background-color": eitherType("#000", expression),
     "background-color-transition": transition,
     "background-pattern": "pattern",
@@ -1650,7 +1656,7 @@ const fillLayout: mapboxgl.FillLayout = {
     "fill-sort-key": eitherType(0, expression),
 };
 
-const fillPaint: mapboxgl.FillPaint = {
+const fillPaint: NonNullable<mapboxgl.FillPaint> = {
     "fill-antialias": eitherType(false, expression),
     "fill-opacity": eitherType(0, styleFunction, expression),
     "fill-opacity-transition": transition,
@@ -1670,7 +1676,7 @@ const fillExtrusionLayout: mapboxgl.FillExtrusionLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const fillExtrusionPaint: mapboxgl.FillExtrusionPaint = {
+const fillExtrusionPaint: NonNullable<mapboxgl.FillExtrusionPaint> = {
     "fill-extrusion-opacity": eitherType(0, expression),
     "fill-extrusion-opacity-transition": transition,
     "fill-extrusion-color": eitherType("#000", styleFunction, expression),
@@ -1696,7 +1702,7 @@ const lineLayout: mapboxgl.LineLayout = {
     "line-sort-key": eitherType(0, expression),
 };
 
-const linePaint: mapboxgl.LinePaint = {
+const linePaint: NonNullable<mapboxgl.LinePaint> = {
     "line-opacity": eitherType(0, styleFunction, expression),
     "line-opacity-transition": transition,
     "line-color": eitherType("#000", styleFunction, expression),
@@ -1731,7 +1737,6 @@ const symbolLayout: mapboxgl.SymbolLayout = {
     "icon-rotation-alignment": eitherType("map", "viewport", "auto"),
     "icon-size": eitherType(0, styleFunction, expression),
     "icon-text-fit": eitherType("none", "both", "width", "height"),
-    // @ts-expect-error - incompatible
     "icon-text-fit-padding": eitherType([0], expression),
     "icon-image": eitherType("#000", styleFunction, expression),
     "icon-rotate": eitherType(0, styleFunction, expression),
@@ -1755,7 +1760,6 @@ const symbolLayout: mapboxgl.SymbolLayout = {
     "text-padding": eitherType(0, expression),
     "text-keep-upright": false,
     "text-transform": eitherType("none", "uppercase", "lowercase", styleFunction, expression),
-    // @ts-expect-error - incompatible
     "text-offset": eitherType([0], expression),
     "text-allow-overlap": false,
     "text-ignore-placement": false,
@@ -1770,7 +1774,7 @@ const symbolLayout: mapboxgl.SymbolLayout = {
     "symbol-sort-key": eitherType(0, expression),
 };
 
-const symbolPaint: mapboxgl.SymbolPaint = {
+const symbolPaint: NonNullable<mapboxgl.SymbolPaint> = {
     "icon-opacity": eitherType(0, styleFunction, expression),
     "icon-opacity-transition": transition,
     "icon-color": eitherType("#000", styleFunction, expression),
@@ -1805,7 +1809,7 @@ const rasterLayout: mapboxgl.RasterLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const rasterPaint: mapboxgl.RasterPaint = {
+const rasterPaint: NonNullable<mapboxgl.RasterPaint> = {
     "raster-opacity": eitherType(0, expression),
     "raster-opacity-transition": transition,
     "raster-hue-rotate": eitherType(0, expression),
@@ -1827,7 +1831,7 @@ const circleLayout: mapboxgl.CircleLayout = {
     "circle-sort-key": eitherType(0, expression),
 };
 
-const circlePaint: mapboxgl.CirclePaint = {
+const circlePaint: NonNullable<mapboxgl.CirclePaint> = {
     "circle-radius": eitherType(0, styleFunction, expression),
     "circle-radius-transition": transition,
     "circle-color": eitherType("#000", styleFunction, expression),
@@ -1854,7 +1858,7 @@ const heatmapLayout: mapboxgl.HeatmapLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const heatmapPaint: mapboxgl.HeatmapPaint = {
+const heatmapPaint: NonNullable<mapboxgl.HeatmapPaint> = {
     "heatmap-radius": eitherType(0, styleFunction, expression),
     "heatmap-radius-transition": transition,
     "heatmap-weight": eitherType(0, styleFunction, expression),
@@ -1869,7 +1873,7 @@ const hillshadeLayout: mapboxgl.HillshadeLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const hillshadePaint: mapboxgl.HillshadePaint = {
+const hillshadePaint: NonNullable<mapboxgl.HillshadePaint> = {
     "hillshade-illumination-direction": eitherType(0, expression),
     "hillshade-illumination-anchor": eitherType("map", "viewport"),
     "hillshade-exaggeration": eitherType(0, expression),
@@ -1886,7 +1890,7 @@ const skyLayout: mapboxgl.SkyLayout = {
     visibility: eitherType("visible", "none"),
 };
 
-const skyPaint: mapboxgl.SkyPaint = {
+const skyPaint: NonNullable<mapboxgl.SkyPaint> = {
     // @ts-expect-error - incompatible
     "sky-atmosphere-color": eitherType("white", expression),
     // @ts-expect-error - incompatible

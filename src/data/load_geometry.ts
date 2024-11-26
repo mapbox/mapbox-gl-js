@@ -1,10 +1,9 @@
 import {warnOnce, clamp} from '../util/util';
-
 import EXTENT from '../style-spec/data/extent';
 import {lngFromMercatorX, latFromMercatorY} from '../geo/mercator_coordinate';
 import resample from '../geo/projection/resample';
-import Point from '@mapbox/point-geometry';
 
+import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../source/tile_id';
 import type {TileTransform} from '../geo/projection/tile_transform';
 
@@ -32,8 +31,8 @@ function preparePoint(point: Point, scale: number) {
 // a subset of VectorTileGeometry
 interface FeatureWithGeometry {
     extent: number;
-    type: 1 | 2 | 3;
-    loadGeometry(): Array<Array<Point>>;
+    type: 0 | 1 | 2 | 3;
+    loadGeometry: () => Array<Array<Point>>;
 }
 
 /**

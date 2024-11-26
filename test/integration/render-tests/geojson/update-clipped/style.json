@@ -1,0 +1,34 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "center": [-77.03452668893777, 38.856821713744495],
+  "zoom": 18,
+  "sources": {
+    "line": {
+      "type": "geojson",
+      "dynamic": true,
+      "data": {
+        "id": 1,
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "coordinates": [[-77.04, 38.853], [-77.03, 38.86]],
+          "type": "LineString"
+        }
+      }
+    }
+  },
+  "layers": [{
+    "type": "line",
+    "source": "line",
+    "id": "line",
+    "paint": {
+      "line-width": 5
+    }
+  }]
+}

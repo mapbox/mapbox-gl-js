@@ -1,6 +1,7 @@
 import {members as skyboxAttributes} from './skybox_attributes';
 import {SkyboxVertexArray, TriangleIndexArray} from '../data/array_types';
 import SegmentVector from '../data/segment';
+
 import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type Context from '../gl/context';

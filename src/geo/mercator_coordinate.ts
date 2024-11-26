@@ -1,8 +1,9 @@
 import LngLat, {earthCircumference} from '../geo/lng_lat';
-import type {LngLatLike} from '../geo/lng_lat';
 import {clamp, degToRad} from '../util/util';
-import {CanonicalTileID} from '../source/tile_id';
 import EXTENT from '../style-spec/data/extent';
+
+import type {LngLatLike} from '../geo/lng_lat';
+import type {CanonicalTileID} from '../source/tile_id';
 
 const DEFAULT_MIN_ZOOM = 0;
 const DEFAULT_MAX_ZOOM = 25.5;

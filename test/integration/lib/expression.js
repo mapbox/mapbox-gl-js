@@ -84,7 +84,7 @@ function deepEqual(a, b) {
  * deal with implementation-specific test exclusions and fudge-factors.
  * @param {Object} options
  * @param {Array<string>} [options.tests] - Array of test names to run; tests not in the array will be skipped.
- * @param {Array<string>} [options.ignores] - Array of test names to ignore.
+ * @param {Array<string>} [options.ignores] - Object with todo and skip arrays containing test names to ignore.
  * @param {} runExpressionTest - A function that runs a single expression test fixture.
  * @returns {undefined} Terminates the process when testing is complete.
  */

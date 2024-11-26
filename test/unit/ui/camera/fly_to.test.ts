@@ -745,5 +745,17 @@ describe('camera', () => {
                 camera.flyTo({center: [100, 0], bearing: 90, animate: true});
             });
         });
+
+        test('retain or not padding based on provided padding option', () => {
+            const camera = createCamera();
+            camera.flyTo({center: [100, 0], duration: 0, padding: {top: 100}});
+            expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+
+            camera.flyTo({center: [120, 0], duration: 0, padding: {top: 200}, retainPadding: false});
+            expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+
+            camera.flyTo({center: [80, 0], duration: 0, padding: {top: 300}, retainPadding: true});
+            expect(camera.getPadding()).toEqual({top:300, bottom:0, left:0, right:0});
+        });
     });
 });

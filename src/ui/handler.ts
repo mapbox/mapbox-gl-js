@@ -9,12 +9,12 @@ import type MercatorCoordinate from '../geo/mercator_coordinate';
 // For example, if there is a mousedown and mousemove, the mousePan handler
 // would return a `panDelta` on the mousemove.
 export interface Handler {
-    enable(): void;
-    disable(): void;
-    isEnabled(): boolean;
-    isActive(): boolean;
+    enable: () => void;
+    disable: () => void;
+    isEnabled: () => boolean;
+    isActive: () => boolean;
     // `reset` can be called by the manager at any time and must reset everything to it's original state
-    reset(): void;
+    reset: () => void;
     // Handlers can optionally implement these methods.
     // They are called with dom events whenever those dom evens are received.
     readonly touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | null | undefined | void;

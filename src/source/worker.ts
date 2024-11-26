@@ -1,5 +1,4 @@
 import Actor from '../util/actor';
-
 import StyleLayerIndex from '../style/style_layer_index';
 import VectorTileWorkerSource from './vector_tile_worker_source';
 import RasterDEMTileWorkerSource from './raster_dem_tile_worker_source';
@@ -13,8 +12,6 @@ import {PerformanceUtils} from '../util/performance';
 import {Event} from '../util/evented';
 import {getProjection} from '../geo/projection/index';
 
-import type {Class} from '../types/class';
-
 import type {
     WorkerSource,
     WorkerTileParameters,
@@ -23,21 +20,20 @@ import type {
     WorkerDEMTileCallback,
     TileParameters,
     WorkerRasterArrayTileParameters,
-    WorkerRasterArrayTileCallback
-} from '../source/worker_source';
-
-import type {WorkerGlobalScopeInterface} from '../util/web_worker';
+    WorkerRasterArrayTileCallback,
+    WorkerSourceConstructor
+} from './worker_source';
 import type {Callback} from '../types/callback';
 import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types';
 import type {ConfigOptions} from '../style/properties';
-import type {PluginState} from './rtl_text_plugin';
+import type {RtlTextPlugin, PluginState} from './rtl_text_plugin';
 import type Projection from '../geo/projection/projection';
 
 /**
  * @private
  */
-export default class Worker {
-    self: WorkerGlobalScopeInterface;
+export default class MapWorker {
+    self: Worker;
     actor: Actor;
     layerIndexes: {
         [mapId: string]: {
@@ -50,7 +46,7 @@ export default class Worker {
         };
     };
     workerSourceTypes: {
-        [_: string]: Class<WorkerSource>;
+        [_: string]: WorkerSourceConstructor;
     };
     workerSources: {
         [mapId: string]: {
@@ -82,10 +78,10 @@ export default class Worker {
     dracoUrl: string | null | undefined;
     brightness: number | null | undefined;
 
-    constructor(self: WorkerGlobalScopeInterface) {
+    constructor(self: Worker) {
         PerformanceUtils.measure('workerEvaluateScript');
         this.self = self;
-        this.actor = new Actor(self, this);
+        this.actor = new Actor(self, this as unknown as Worker);
 
         this.layerIndexes = {};
         this.availableImages = {};
@@ -97,7 +93,6 @@ export default class Worker {
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
             geojson: GeoJSONWorkerSource,
-            // @ts-expect-error - TS2419 - Types of construct signatures are incompatible.
             'batched-model': Tiled3dModelWorkerSource
         };
 
@@ -105,7 +100,7 @@ export default class Worker {
         this.workerSources = {};
         this.demWorkerSources = {};
 
-        this.self.registerWorkerSource = (name: string, WorkerSource: Class<WorkerSource>) => {
+        this.self.registerWorkerSource = (name: string, WorkerSource: WorkerSourceConstructor) => {
             if (this.workerSourceTypes[name]) {
                 throw new Error(`Worker source with name "${name}" already registered.`);
             }
@@ -113,11 +108,7 @@ export default class Worker {
         };
 
         // This is invoked by the RTL text plugin when the download via the `importScripts` call has finished, and the code has been parsed.
-        this.self.registerRTLTextPlugin = (rtlTextPlugin: {
-            applyArabicShaping: any;
-            processBidirectionalText: any;
-            processStyledBidirectionalText?: any;
-        }) => {
+        this.self.registerRTLTextPlugin = (rtlTextPlugin: RtlTextPlugin) => {
             if (globalRTLTextPlugin.isParsed()) {
                 throw new Error('RTL text plugin already registered.');
             }
@@ -299,13 +290,11 @@ export default class Worker {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    loadWorkerSource(map: string, params: {
-        url: string;
-    }, callback: Callback<undefined>) {
+    loadWorkerSource(map: string, params: {url: string}, callback: Callback<undefined>) {
         try {
             this.self.importScripts(params.url);
             callback();
-        } catch (e: any) {
+        } catch (e) {
             callback(e.toString());
         }
     }
@@ -380,14 +369,16 @@ export default class Worker {
                     this.actor.send(type, data, callback, mapId, mustQueue, metadata);
                 },
                 scheduler: this.actor.scheduler
-            };
-            this.workerSources[mapId][scope][type][source] = new (this.workerSourceTypes[type] as any)(
-                (actor as any),
+            } as Actor;
+
+            this.workerSources[mapId][scope][type][source] = new this.workerSourceTypes[type](
+                actor,
                 this.getLayerIndex(mapId, scope),
                 this.getAvailableImages(mapId, scope),
                 this.isSpriteLoaded[mapId][scope],
                 undefined,
-                this.brightness);
+                this.brightness
+            );
         }
 
         return this.workerSources[mapId][scope][type][source];
@@ -419,7 +410,7 @@ export default class Worker {
         enforceCacheSizeLimit(limit);
     }
 
-    getWorkerPerformanceMetrics(mapId: string, params: any, callback: (error?: Error | null | undefined, result?: any | null | undefined) => void) {
+    getWorkerPerformanceMetrics(mapId: string, params: any, callback: (error?: Error, result?: any) => void) {
         callback(undefined, PerformanceUtils.getWorkerPerformanceMetrics());
     }
 }
@@ -429,6 +420,6 @@ if (typeof WorkerGlobalScope !== 'undefined' &&
     typeof self !== 'undefined' &&
     // @ts-expect-error - TS2304
     self instanceof WorkerGlobalScope) {
-// @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2345 - Argument of type 'Window & typeof globalThis' is not assignable to parameter of type 'WorkerGlobalScopeInterface'.
-    self.worker = new Worker(self);
+    // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2345 - Argument of type 'Window & typeof globalThis' is not assignable to parameter of type 'WorkerGlobalScopeInterface'.
+    self.worker = new MapWorker(self);
 }

@@ -1,8 +1,8 @@
-import Context from '../gl/context';
-import Fog from '../style/fog';
 import {Uniform1f, Uniform1i, Uniform2f, Uniform3f, Uniform4f, UniformMatrix4f} from './uniform_binding';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 
+import type Context from '../gl/context';
+import type Fog from '../style/fog';
 import type {UniformValues} from './uniform_binding';
 import type {UnwrappedTileID} from '../source/tile_id';
 import type Painter from './painter';
@@ -65,7 +65,7 @@ export const fogUniformValues = (
 
     const [verticalRangeMin, verticalRangeMax] = fog.properties.get('vertical-range');
     return {
-        'u_fog_matrix': tileID ? tr.calculateFogTileMatrix(tileID) : fogMatrix ? fogMatrix : painter.identityMat,
+        'u_fog_matrix': (tileID ? tr.calculateFogTileMatrix(tileID) : fogMatrix ? fogMatrix : painter.identityMat) as Float32Array,
         'u_fog_range': fog.getFovAdjustedRange(tr._fov),
         'u_fog_color': fogColor,
         'u_fog_horizon_blend': fog.properties.get('horizon-blend'),

@@ -7,6 +7,7 @@ import {
     backgroundPatternUniformValues
 } from './program/background_program';
 import {OverscaledTileID} from '../source/tile_id';
+import {mat4} from 'gl-matrix';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -19,6 +20,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const color = layer.paint.get('background-color');
     const opacity = layer.paint.get('background-opacity');
     const emissiveStrength = layer.paint.get('background-emissive-strength');
+    const isViewportPitch = layer.paint.get('background-pitch-alignment') === 'viewport';
 
     if (opacity === 0) return;
 
@@ -60,6 +62,23 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         painter.imageManager.bind(painter.context, layer.scope);
     }
 
+    if (isViewportPitch) {
+        // Set overrideRtt to ignore 3D lights
+        const program = painter.getOrCreateProgram(programName, {overrideFog: false, overrideRtt: true});
+        const matrix = new Float32Array(mat4.identity([] as any));
+        const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+
+        const uniformValues = image ?
+            backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
+            backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(layer.lut));
+
+        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
+        program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+            uniformValues, layer.id, painter.viewportBuffer,
+            painter.quadTriangleIndexBuffer, painter.viewportSegments);
+        return;
+    }
+
     for (const tileID of tileIDs) {
         const affectedByFog = painter.isTileAffectedByFog(tileID);
         const program = painter.getOrCreateProgram(programName, {overrideFog: affectedByFog});
@@ -71,9 +90,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundTiles ? backgroundTiles[tileID.key] : new Tile(tileID, tileSize, transform.zoom, painter);
 
         const uniformValues = image ?
-
-            backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, {tileID, tileSize}) :
-
+            backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
             backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(layer.lut));
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);

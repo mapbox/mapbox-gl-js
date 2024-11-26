@@ -6,32 +6,33 @@ import {
     includeMap,
 } from '../shaders/shaders';
 import assert from 'assert';
-import ProgramConfiguration from '../data/program_configuration';
 import VertexArrayObject from './vertex_array_object';
-import Context from '../gl/context';
 import {terrainUniforms, globeUniforms} from '../terrain/terrain';
-import type {TerrainUniformsType, GlobeUniformsType} from '../terrain/terrain';
 import {fogUniforms} from './fog';
-import type {FogUniformsType} from './fog';
 import {cutoffUniforms} from './cutoff';
-import type {CutoffUniformsType} from './cutoff';
 import {lightsUniforms} from '../../3d-style/render/lights';
-import type {LightsUniformsType} from '../../3d-style/render/lights';
 import {shadowUniforms} from '../../3d-style/render/shadow_uniforms';
-import type {ShadowUniformsType} from '../../3d-style/render/shadow_uniforms';
-
-import type SegmentVector from '../data/segment';
-import type VertexBuffer from '../gl/vertex_buffer';
-import IndexBuffer from '../gl/index_buffer';
 import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
+import Color from '../style-spec/util/color';
+
+import type ProgramConfiguration from '../data/program_configuration';
+import type Context from '../gl/context';
+import type {TerrainUniformsType, GlobeUniformsType} from '../terrain/terrain';
+import type {FogUniformsType} from './fog';
+import type {CutoffUniformsType} from './cutoff';
+import type {LightsUniformsType} from '../../3d-style/render/lights';
+import type {ShadowUniformsType} from '../../3d-style/render/shadow_uniforms';
+import type SegmentVector from '../data/segment';
+import type VertexBuffer from '../gl/vertex_buffer';
+import type IndexBuffer from '../gl/index_buffer';
 import type CullFaceMode from '../gl/cull_face_mode';
 import type {UniformBindings, UniformValues} from './uniform_binding';
 import type {BinderUniform} from '../data/program_configuration';
 import type Painter from './painter';
 import type {Segment} from "../data/segment";
-import Color from '../style-spec/util/color';
+import type {DynamicDefinesType} from '../render/program/program_uniforms';
 
 export type DrawMode = WebGL2RenderingContext['POINTS'] | WebGL2RenderingContext['LINES'] | WebGL2RenderingContext['TRIANGLES'] | WebGL2RenderingContext['LINE_STRIP'];
 
@@ -39,7 +40,7 @@ type ShaderSource = {
     fragmentSource: string;
     vertexSource: string;
     staticAttributes: Array<string>;
-    usedDefines: Array<string>;
+    usedDefines: Array<DynamicDefinesType>;
     vertexIncludes: Array<string>;
     fragmentIncludes: Array<string>;
 };
@@ -53,9 +54,11 @@ const debugWireframe2DLayerProgramNames = [
 
 const debugWireframe3DLayerProgramNames = [
     "stars",
+    "rain_particle",
+    "snow_particle",
     "fillExtrusion",  "fillExtrusionGroundEffect",
     "model",
-    "symbolSDF", "symbolIcon", "symbolTextAndIcon"];
+    "symbol"];
 
 class Program<Us extends UniformBindings> {
     program: WebGLProgram;
@@ -75,12 +78,12 @@ class Program<Us extends UniformBindings> {
 
     name: string;
     configuration: ProgramConfiguration | null | undefined;
-    fixedDefines: string[];
+    fixedDefines: DynamicDefinesType[];
 
-    static cacheKey<Us extends UniformBindings>(
+    static cacheKey(
         source: ShaderSource,
         name: string,
-        defines: string[],
+        defines: DynamicDefinesType[],
         programConfiguration?: ProgramConfiguration | null,
     ): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
@@ -97,7 +100,7 @@ class Program<Us extends UniformBindings> {
                 source: ShaderSource,
                 configuration: ProgramConfiguration | null | undefined,
                 fixedUniforms: (arg1: Context) => Us,
-                fixedDefines: string[]) {
+                fixedDefines: DynamicDefinesType[]) {
         const gl = context.gl;
         this.program = (gl.createProgram());
 
@@ -171,7 +174,10 @@ class Program<Us extends UniformBindings> {
 
         this.fixedUniforms = fixedUniforms(context);
         this.binderUniforms = configuration ? configuration.getUniforms(context) : [];
-        if (fixedDefines.includes('TERRAIN')) {
+
+        // Symbol and circle layer are depth (terrain + 3d layers) occluded
+        // For the sake of native compatibility depth occlusion goes via terrain uniforms block
+        if (fixedDefines.includes('TERRAIN') || name.indexOf("symbol") !== -1 || name.indexOf("circle") !== -1) {
             this.terrainUniforms = terrainUniforms(context);
         }
         if (fixedDefines.includes('GLOBE')) {
@@ -316,9 +322,8 @@ class Program<Us extends UniformBindings> {
             return;
         }
 
-        const debugDefines = [...this.fixedDefines];
-        debugDefines.push("DEBUG_WIREFRAME");
-        // @ts-expect-error - TS2322 - Type 'string[]' is not assignable to type 'DynamicDefinesType[]'.
+        const debugDefines = [...this.fixedDefines] as DynamicDefinesType[];
+        debugDefines.push('DEBUG_WIREFRAME');
         const debugProgram = painter.getOrCreateProgram(this.name, {config: this.configuration, defines: debugDefines});
 
         context.program.set(debugProgram.program);
@@ -379,6 +384,16 @@ class Program<Us extends UniformBindings> {
         context.setColorMode(colorMode);
     }
 
+    checkUniforms(name: string, define: DynamicDefinesType, uniforms: any) {
+        if (this.fixedDefines.includes(define)) {
+            for (const key of Object.keys(uniforms)) {
+                if (!uniforms[key].initialized) {
+                    throw new Error(`Program '${this.name}', from draw '${name}': uniform ${key} not set but required by ${define} being defined`);
+                }
+            }
+        }
+    }
+
     draw(
          painter: Painter,
          drawMode: DrawMode,
@@ -422,6 +437,8 @@ class Program<Us extends UniformBindings> {
             [gl.TRIANGLES]: 3,
             [gl.LINE_STRIP]: 1
         }[drawMode];
+
+        this.checkUniforms(layerID, 'RENDER_SHADOWS', this.shadowUniforms);
 
         const vertexAttribDivisorValue = instanceCount && instanceCount > 0 ? 1 : undefined;
         for (const segment of segments.get()) {

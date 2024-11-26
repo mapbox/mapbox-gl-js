@@ -19,10 +19,10 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 export type LayoutProps = {
     "visibility": DataConstantProperty<"visible" | "none">;
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "visibility": new DataConstantProperty(styleSpec["layout_raster-particle"]["visibility"]),
-});
+}));
 
 export type PaintProps = {
     "raster-particle-array-band": DataConstantProperty<string>;
@@ -32,9 +32,11 @@ export type PaintProps = {
     "raster-particle-speed-factor": DataConstantProperty<number>;
     "raster-particle-fade-opacity-factor": DataConstantProperty<number>;
     "raster-particle-reset-rate-factor": DataConstantProperty<number>;
+    "raster-particle-elevation": DataConstantProperty<number>;
 };
 
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "raster-particle-array-band": new DataConstantProperty(styleSpec["paint_raster-particle"]["raster-particle-array-band"]),
     "raster-particle-count": new DataConstantProperty(styleSpec["paint_raster-particle"]["raster-particle-count"]),
     "raster-particle-color": new ColorRampProperty(styleSpec["paint_raster-particle"]["raster-particle-color"]),
@@ -42,6 +44,5 @@ const paint: Properties<PaintProps> = new Properties({
     "raster-particle-speed-factor": new DataConstantProperty(styleSpec["paint_raster-particle"]["raster-particle-speed-factor"]),
     "raster-particle-fade-opacity-factor": new DataConstantProperty(styleSpec["paint_raster-particle"]["raster-particle-fade-opacity-factor"]),
     "raster-particle-reset-rate-factor": new DataConstantProperty(styleSpec["paint_raster-particle"]["raster-particle-reset-rate-factor"]),
-});
-
-export default { paint, layout };
+    "raster-particle-elevation": new DataConstantProperty(styleSpec["paint_raster-particle"]["raster-particle-elevation"]),
+}));

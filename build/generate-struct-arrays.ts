@@ -141,7 +141,7 @@ import lineAttributesPattern from '../src/data/bucket/line_attributes_pattern';
 import patternAttributes from '../src/data/bucket/pattern_attributes';
 import dashAttributes from '../src/data/bucket/dash_attributes';
 import skyboxAttributes from '../src/render/skybox_attributes';
-import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes} from '../src/data/bucket/fill_extrusion_attributes';
+import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes, wallAttributes} from '../src/data/bucket/fill_extrusion_attributes';
 import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, instanceAttributes, featureAttributes} from '../3d-style/data/model_attributes';
 
 // layout vertex arrays
@@ -170,7 +170,6 @@ import {
     symbolGlobeExtAttributes,
     dynamicLayoutAttributes,
     placementOpacityAttributes,
-    occlusionQueryOpacityAttributes,
     iconTransitioningAttributes,
     collisionBox,
     collisionBoxLayout,
@@ -189,7 +188,6 @@ createStructArrayType(`symbol_layout`, symbolLayoutAttributes);
 createStructArrayType(`symbol_globe_ext`, symbolGlobeExtAttributes);
 createStructArrayType(`symbol_dynamic_layout`, dynamicLayoutAttributes);
 createStructArrayType(`symbol_opacity`, placementOpacityAttributes);
-createStructArrayType(`symbol_occlusion_query_opacity`, occlusionQueryOpacityAttributes);
 createStructArrayType(`symbol_icon_transitioning`, iconTransitioningAttributes);
 createStructArrayType('collision_box', collisionBox, true);
 createStructArrayType(`collision_box_layout`, collisionBoxLayout);
@@ -211,8 +209,11 @@ createStructArrayType('atmosphere_vertex', atmosphereLayout);
 import {starsLayout} from '../src/render/stars_attributes';
 createStructArrayType('stars_vertex', starsLayout);
 
-import {occlusionLayout} from '../src/render/occlusion_attributes.js';
-createStructArrayType('occlusion_vertex', occlusionLayout);
+import {snowLayout} from '../src/precipitation/snow_attributes.js';
+createStructArrayType('snow_vertex', snowLayout);
+
+import {rainLayout} from '../src/precipitation/rain_attributes.js';
+createStructArrayType('rain_vertex', rainLayout);
 
 // feature index array
 createStructArrayType('feature_index', createLayout([
@@ -285,6 +286,7 @@ createStructArrayLayoutType(createLayout([{
 
 // Fill extrusion specific array
 createStructArrayType(`fill_extrusion_centroid`, centroidAttributes, true);
+createStructArrayType(`fill_extrusion_wall`, wallAttributes, true);
 
 // Fill extrusion ground effect specific array
 createStructArrayType('fill_extrusion_hidden_by_landmark', hiddenByLandmarkAttributes);
@@ -301,6 +303,7 @@ fs.writeFileSync('src/data/array_types.ts',
 import assert from 'assert';
 import {Struct, StructArray} from '../util/struct_array';
 import {register} from '../util/web_worker_transfer';
+
 import type {IStructArrayLayout} from '../util/struct_array';
 
 ${layouts.map(structArrayLayoutJs).join('\n')}

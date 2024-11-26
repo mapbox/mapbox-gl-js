@@ -71,6 +71,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test-usvg:
+          requires:
+            - setup-playwright
+          filters:
+            tags:
+              only: /.*/
       - test-csp:
           requires:
             - setup-playwright
@@ -364,6 +370,22 @@ jobs:
           path: test/unit/vitest
       - store_test_results:
           path: test/unit/test-results.xml
+
+  test-usvg:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Run usvg tests
+          command: |
+            tar xvzf test/usvg/test-suite.tar.gz -C test/usvg/
+            npm run test-usvg
+          no_output_timeout: 5m
+      - store_artifacts:
+          path: test/usvg/vitest
+      - store_test_results:
+          path: test/usvg/test-results.xml
 
   test-query:
     <<: *linux-defaults

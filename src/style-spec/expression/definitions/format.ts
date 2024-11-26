@@ -55,19 +55,19 @@ export default class FormatExpression implements Expression {
 
                 let scale = null;
                 if (arg['font-scale']) {
-                    scale = context.parse(arg['font-scale'], 1, NumberType);
+                    scale = context.parseObjectValue(arg['font-scale'], i, 'font-scale', NumberType);
                     if (!scale) return null;
                 }
 
                 let font = null;
                 if (arg['text-font']) {
-                    font = context.parse(arg['text-font'], 1, array(StringType));
+                    font = context.parseObjectValue(arg['text-font'], i, 'text-font', array(StringType));
                     if (!font) return null;
                 }
 
                 let textColor = null;
                 if (arg['text-color']) {
-                    textColor = context.parse(arg['text-color'], 1, ColorType);
+                    textColor = context.parseObjectValue(arg['text-color'], i, 'text-color', ColorType);
                     if (!textColor) return null;
                 }
 
@@ -76,7 +76,7 @@ export default class FormatExpression implements Expression {
                 lastExpression.font = font;
                 lastExpression.textColor = textColor;
             } else {
-                const content = context.parse(args[i], 1, ValueType);
+                const content = context.parse(args[i], i, ValueType);
                 if (!content) return null;
 
                 const kind = content.type.kind;

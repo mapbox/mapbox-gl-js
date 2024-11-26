@@ -18,6 +18,7 @@ import type {Cancelable} from '../../src/types/cancelable';
 import type {OverscaledTileID} from '../../src/source/tile_id';
 import type {ISource, SourceEvents} from '../../src/source/source';
 import type {ModelSourceSpecification} from '../../src/style-spec/types';
+import type {RequestedTileParameters, WorkerTileResult} from '../../src/source/worker_source';
 
 class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     type: 'batched-model';
@@ -35,6 +36,10 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
+    vectorLayers?: never;
+    vectorLayerIds?: never;
+    rasterLayers?: never;
+    rasterLayerIds?: never;
     tiles: Array<string>;
     dispatcher: Dispatcher;
     scheme: string;
@@ -81,7 +86,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
         const language = Array.isArray(this.map._language) ? this.map._language.join() : this.map._language;
-        const worldview = this.map._worldview;
+        const worldview = this.map.getWorldview();
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, language, worldview, (err, tileJSON) => {
             this._tileJSONRequest = null;
             this._loaded = true;
@@ -120,9 +125,8 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
 
     loadTile(tile: Tile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url((this.tiles as any), this.scheme));
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
-        const params = {
+        const params: RequestedTileParameters = {
             request,
             data: undefined,
             uid: tile.uid,
@@ -135,8 +139,15 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             scope: this.scope,
             showCollisionBoxes: this.map.showCollisionBoxes,
             isSymbolTile: tile.isSymbolTile,
-            brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0
+            brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
+            // Not supported in 3D models
+            lut: null,
+            maxZoom: null,
+            promoteId: null,
+            pixelRatio: null,
+            scaleFactor: null,
         };
+
         if (!tile.actor || tile.state === 'expired') {
             tile.actor = this.dispatcher.getActor();
             tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
@@ -156,7 +167,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
-        function done(err: Error | null | undefined, data: any) {
+        function done(err?: Error | null, data?: WorkerTileResult | null) {
             if (tile.aborted) return callback(null);
 
             // @ts-expect-error - TS2339 - Property 'status' does not exist on type 'Error'.
@@ -164,14 +175,8 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
                 return callback(err);
             }
 
-            if (data) {
-                if (data.resourceTiming) tile.resourceTiming = data.resourceTiming;
-                if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
-                tile.buckets = {...tile.buckets, ...data.buckets};
-                if (data.featureIndex) {
-                    tile.latestFeatureIndex = data.featureIndex;
-                }
-            }
+            if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
+            tile.loadModelData(data, this.map.painter);
 
             tile.state = 'loaded';
             callback(null);

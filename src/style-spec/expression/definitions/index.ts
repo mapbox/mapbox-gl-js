@@ -10,7 +10,6 @@ import {
     array,
     toString as typeToString,
 } from '../types';
-
 import {typeOf, Color, validateRGBA, validateHSLA, toString as valueToString} from '../values';
 import CompoundExpression from '../compound_expression';
 import RuntimeError from '../runtime_error';

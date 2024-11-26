@@ -1,15 +1,14 @@
 import IndexBuffer from './index_buffer';
-
 import VertexBuffer from './vertex_buffer';
 import Framebuffer from './framebuffer';
-import DepthMode from './depth_mode';
-import StencilMode from './stencil_mode';
 import ColorMode from './color_mode';
-import CullFaceMode from './cull_face_mode';
 import {deepEqual} from '../util/util';
 import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, BlendEquation, CullFace, CullFaceSide, FrontFace, Program, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY} from './value';
-import type {DepthBufferType, ColorMaskType} from './types';
 
+import type DepthMode from './depth_mode';
+import type StencilMode from './stencil_mode';
+import type CullFaceMode from './cull_face_mode';
+import type {DepthBufferType, ColorMaskType} from './types';
 import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type';
 import type {
     StructArray,

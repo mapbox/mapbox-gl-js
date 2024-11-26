@@ -16,7 +16,7 @@ import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 // Common set of plugins/transformations shared across different rollup
 // builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
 
-export const plugins = ({minified, production, test, bench, keepClassNames}) => [
+export const plugins = ({mode, minified, production, test, bench, keepClassNames}) => [
     minifyStyleSpec(),
     esbuild({
         // We target `esnext` and disable minification so esbuild
@@ -24,6 +24,9 @@ export const plugins = ({minified, production, test, bench, keepClassNames}) => 
         target: 'esnext',
         minify: false,
         sourceMap: true,
+        define: {
+            'import.meta.env': JSON.stringify({mode}),
+        },
     }),
     json({
         exclude: 'src/style-spec/reference/v8.json'

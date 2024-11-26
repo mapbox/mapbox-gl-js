@@ -207,10 +207,8 @@ class LineAtlas {
         const pos = {
             tl: [y, n],
             br: [length, 0]
-        };
-        // @ts-expect-error - TS2322 - Type '{ tl: number[]; br: number[]; }' is not assignable to type 'SpritePosition'.
+        } as SpritePosition;
         this.positions[key] = pos;
-        // @ts-expect-error - TS2322 - Type '{ tl: number[]; br: number[]; }' is not assignable to type 'SpritePosition'.
         return pos;
     }
 }

@@ -1,6 +1,5 @@
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
-
 import * as DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';
 import smartWrap from '../util/smart_wrap';

@@ -200,6 +200,69 @@
         "spruce1-lod1": "asset://spruce1-lod1.glb",
         "spruce1-lod2": "asset://spruce1-lod2.glb"
       }
+    },
+   "featuresets": {
+      "experimental": true,
+      "type": "featuresets",
+      "doc": "Defines sets of features for querying, interaction, and state management on the map, referencing individual layers or subsets of layers within the map's style.",
+      "example": {
+        "poi": {
+          "selectors": [
+            {
+              "layer": "poi",
+              "properties": {
+                "type": ["get", "type"],
+                "name": ["get", "name"],
+                "brand": "ABC"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "featuresets": {
+    "experimental": true,
+    "*": {
+      "type": "featureset",
+      "doc": "Defines a combined set of features from one or more underlying layers within the current style. Features in a style featureset can be queried, interacted with, and their states can be queried and updated."
+    }
+  },
+  "featureset": {
+    "experimental": true,
+    "metadata": {
+      "type": "*",
+      "doc": "Arbitrary properties useful to track with the stylesheet, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
+    },
+    "selectors": {
+      "type": "array",
+      "value": "selector",
+      "doc": "A collection of categorized selectors."
+    }
+  },
+  "selector": {
+    "experimental": true,
+    "layer": {
+      "type": "string",
+      "doc": "The ID of a layer that exists in the current style.",
+      "required": true
+    },
+    "properties": {
+      "type": "selectorProperty",
+      "required": false,
+      "doc": "Properties accessible to the end user through queried feautures. If properties are empty, no feature properties are exposed. If undefined, all original feature properties will be accessible."
+    },
+    "featureNamespace": {
+      "type": "string",
+      "required": false,
+      "doc": "An optional field that represents the feature namespace defined by the selector within a featureset to which this feature belongs. If the underlying source is the same for multiple selectors within a featureset, the same featureNamespace should be used across those selectors."
+    }
+  },
+  "selectorProperty": {
+    "experimental": true,
+    "*": {
+      "type": "*",
+      "doc": "The value of the property. It can be an expression that generates the returned value from the feature, or a constant value specifying the returned value."
     }
   },
   "model": {
@@ -424,9 +487,6 @@
       "default": false,
       "doc": "Enable/Disable shadow casting for this light",
       "transition": false,
-      "expression": {
-        "interpolated": false
-      },
       "property-type": "data-constant",
       "sdk-support": {
         "basic functionality": {
@@ -512,7 +572,7 @@
           "doc": "The position of the light source is aligned to the rotation of the map."
         },
         "viewport": {
-          "doc": "The position of the light source is aligned to the rotation of the viewport."
+          "doc": "The position of the light source is aligned to the rotation of the viewport. If terrain is enabled, performance regressions may occur in certain scenarios, particularly on lower-end hardware. Ensure that you test your target scenarios on the appropriate hardware to verify performance."
         }
       },
       "property-type": "data-constant",
@@ -1262,7 +1322,6 @@
         },
         "clip": {
           "doc": "Layer that removes 3D content from map.",
-          "experimental": true,
           "sdk-support": {
             "basic functionality": {
               "js": "3.5.0",
@@ -1485,6 +1544,24 @@
       },
       "property-type": "data-constant",
       "experimental": true
+    },
+    "clip-layer-scope": {
+      "type": "array",
+      "value": "string",
+      "default": [],
+      "doc": "Removes content from layers with the specified scope. By default all layers are affected. For example specifying `basemap` will only remove content from the Mapbox Standard style layers which have the same scope",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.6.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant",
+      "experimental": true
     }
   },
   "layout_fill": {
@@ -1540,6 +1617,35 @@
         "interpolated": false
       },
       "property-type": "constant"
+    },
+    "fill-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of fill-elevation. Some modes might require precomputed elevation data in the tileset.",
+      "values": {
+        "none": {
+          "doc": "Elevated rendering is disabled."
+        },
+        "hd-road-base": {
+          "doc": "Elevate geometry relative to HD roads. Use this mode to describe base polygons of the road networks."
+        },
+        "hd-road-markup": {
+          "doc": "Elevated rendering is enabled. Use this mode to describe additive and stackable features such as 'hatched areas' that should exist only on top of road polygons."
+      }
+      },
+      "default": "none",
+      "experimental": true,
+      "private": true,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant"
     }
   },
   "layout_circle": {
@@ -1661,7 +1767,6 @@
     "fill-extrusion-edge-radius": {
       "type": "number",
       "experimental": true,
-      "private": true,
       "default": 0,
       "minimum": 0,
       "maximum": 1,
@@ -1838,7 +1943,11 @@
     "line-z-offset": {
       "type": "number",
       "experimental": true,
-      "doc": "Vertical offset from ground, in meters. Defaults to 0. Not supported for globe projection at the moment.",
+      "doc": "Vertical offset from ground, in meters. Defaults to 0. This is an experimental property with some known issues:\n * Not supported for globe projection at the moment \n * Elevated line discontinuity is possible on tile borders with terrain enabled \n * Rendering artifacts can happen near line joins and line caps depending on the line styling \n * Rendering artifacts relating to `line-opacity` and `line-blur` \n * Elevated line visibility is determined by layer order \n * Z-fighting issues can happen with intersecting elevated lines \n * Elevated lines don't cast shadows",
+      "default": 0,
+      "requires": [
+        "line-elevation-reference"
+      ],
       "sdk-support": {
         "basic functionality": {
           "js": "3.5.0",
@@ -1860,6 +1969,57 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "line-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of line-elevation. Some modes might require precomputed elevation data in the tileset.",
+      "values": {
+        "none": {
+          "doc": "Elevated rendering is disabled."
+        },
+        "sea": {
+          "doc": "Elevated rendering is enabled. Use this mode to elevate lines relative to the sea level."
+        },
+        "ground": {
+          "doc": "Elevated rendering is enabled. Use this mode to elevate lines relative to the ground's height below them."
+        },
+        "hd-road-markup": {
+          "doc": "Elevated rendering is enabled. Use this mode to describe additive and stackable features that should exist only on top of road polygons."
+        }
+      },
+      "default": "none",
+      "experimental": true,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant"
+    },
+    "line-cross-slope": {
+      "type": "number",
+      "experimental": true,
+      "doc": "Defines the slope of an elevated line. A value of 0 creates a horizontal line. A value of 1 creates a vertical line. Other values are currently not supported. If undefined, the line follows the terrain slope. This is an experimental property with some known issues:\n * Vertical lines don't support line caps \n * `line-join: round` is not supported with this property",
+      "requires": [
+        "line-z-offset"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "constant"
     },
     "visibility": {
       "type": "enum",
@@ -2057,6 +2217,36 @@
       },
       "property-type": "data-constant"
     },
+    "symbol-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of symbol-elevation.",
+      "values": {
+        "sea": {
+          "doc": "Elevate symbols relative to the sea level."
+        },
+        "ground": {
+          "doc": "Elevate symbols relative to the ground's height below them."
+        },
+        "hd-road-markup": {
+          "doc": "Use this mode to enable elevated behavior for features that are rendered on top of 3D road polygons. The feature is currently being developed."
+        }
+      },
+      "default": "ground",
+      "experimental": true,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
     "icon-allow-overlap": {
       "type": "boolean",
       "default": false,
@@ -2191,6 +2381,31 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "icon-size-scale-range": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0.8,
+        2
+      ],
+      "doc": "Defines the minimum and maximum scaling factors for icon related properties like `icon-size`, `icon-halo-width`, `icon-halo-blur`",
+      "minimum": 0.1,
+      "maximum": 10,
+      "experimental": true,
+      "private": true,
+      "expression": {
+        "interpolated": false
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
+      "property-type": "data-constant"
     },
     "icon-text-fit": {
       "type": "enum",
@@ -2680,6 +2895,31 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "text-size-scale-range": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0.8,
+        2
+      ],
+      "doc": "Defines the minimum and maximum scaling factors for text related properties like `text-size`, `text-max-width`, `text-halo-width`, `font-size`",
+      "minimum": 0.1,
+      "maximum": 10,
+      "experimental": true,
+      "private": true,
+      "expression": {
+        "interpolated": false
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
+      "property-type": "data-constant"
     },
     "text-max-width": {
       "type": "number",
@@ -3395,6 +3635,61 @@
   "filter_fill": {
     "type": "boolean",
     "doc": "Expression which determines whether or not to display a polygon. Fill layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_hillshade": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the hillshade layer. Hillshade layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_raster": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the raster layer. Raster layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_raster-particle": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the raster particle layer. Raster particle layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_clip": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to enable the clip layer. Clip layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
+  "filter_model": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to display a model. Model layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
     "default": false,
     "transition": false,
     "property-type": "data-driven",
@@ -4146,7 +4441,7 @@
         }
       },
       "line-progress": {
-        "doc": "Returns the progress along a gradient line. Can only be used in the `line-gradient` property.",
+        "doc": "Returns the progress along a gradient line. Can only be used in the `line-gradient` and `line-z-offset` properties.",
         "group": "Feature data",
         "sdk-support": {
           "basic functionality": {
@@ -4875,6 +5170,360 @@
       }
     }
   },
+  "snow": {
+    "density": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow particles density.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "intensity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow particles movement factor.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow particles color.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "opacity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow particles opacity.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "vignette": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow vignette screen-space effect.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "centerThinning": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Thinning factor of snow particles from center. 0 - no thinning. 1 - maximal central area thinning.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "direction": {
+      "type": "array",
+      "default": [
+        0.0,
+        90.0
+      ],
+      "minimum": 0,
+      "maximum": 360,
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "doc": "Main snow particles direction. Heading & pitch",
+      "example": [
+        0,
+        45
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    }
+  },
+  "rain": {
+    "density": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain particles density.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "intensity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain particles movement factor.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "opacity": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain particles opacity.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "vignette": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain vignette screen-space effect.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "centerThinning": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Thinning factor of rain particles from center. 0 - no thinning. 1 - maximal central area thinning.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    },
+    "direction": {
+      "type": "array",
+      "default": [
+        0.0,
+        80.0
+      ],
+      "minimum": 0,
+      "maximum": 360,
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "doc": "Main rain particles direction. Heading & pitch",
+      "example": [
+        0,
+        45
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      }
+    }
+  },
   "camera": {
     "camera-projection" : {
       "doc": "Camera projection describes how 3D world geometry get projected into 2D screen",
@@ -5392,6 +6041,30 @@
         ]
       },
       "property-type": "data-constant"
+    },
+    "fill-z-offset": {
+      "type": "number",
+      "doc": "Specifies an uniform elevation in meters. Note: If the value is zero, the layer will be rendered on the ground. Non-zero values will elevate the layer from the sea level, which can cause it to be rendered below the terrain.",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "experimental": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.7.0"
+        },
+        "data-driven styling": {
+          "js": "3.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
     }
   },
   "paint_fill-extrusion": {
@@ -5592,6 +6265,56 @@
       },
       "property-type": "data-driven"
     },
+    "fill-extrusion-height-alignment": {
+      "type": "enum",
+      "experimental": true,
+      "values": {
+        "terrain": {
+          "doc": "The fill extrusion height follows terrain slope."
+        },
+        "flat": {
+          "doc": "The fill extrusion height is flat over terrain."
+        }
+      },
+      "doc": "Controls the behavior of fill extrusion height over terrain",
+      "default": "flat",
+      "requires": [
+        "fill-extrusion-height"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "fill-extrusion-base-alignment": {
+      "type": "enum",
+      "experimental": true,
+      "values": {
+        "terrain": {
+          "doc": "The fill extrusion base follows terrain slope."
+        },
+        "flat": {
+          "doc": "The fill extrusion base is flat over terrain."
+        }
+      },
+      "doc": "Controls the behavior of fill extrusion base over terrain",
+      "default": "terrain",
+      "requires": [
+        "fill-extrusion-base"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
+      "property-type": "data-constant"
+    },
     "fill-extrusion-vertical-gradient": {
       "type": "boolean",
       "default": true,
@@ -5615,7 +6338,6 @@
     "fill-extrusion-ambient-occlusion-intensity": {
       "property-type": "data-constant",
       "type": "number",
-      "private": true,
       "default": 0.0,
       "minimum": 0,
       "maximum": 1,
@@ -5638,7 +6360,6 @@
     "fill-extrusion-ambient-occlusion-radius": {
       "property-type": "data-constant",
       "type": "number",
-      "private": true,
       "default": 3.0,
       "minimum": 0,
       "expression": {
@@ -5827,7 +6548,7 @@
       "experimental": true,
       "units": "meters",
       "default": 0,
-      "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters.",
+      "doc": "The extent of the flood light effect on the ground beneath the extruded buildings in meters. Note: this experimental property is evaluated once per tile, during tile initialization. Changing the property value could trigger tile reload. The `feature-state` styling is deprecated and will get removed soon.",
       "requires": [
         "lights"
       ],
@@ -5958,17 +6679,69 @@
           "js": "3.0.0",
           "android": "11.0.0",
           "ios": "11.0.0"
+        },
+        "data-driven styling": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
         }
       },
       "expression": {
         "interpolated": true,
         "parameters": [
           "zoom",
+          "measure-light",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "fill-extrusion-line-width": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "experimental": true,
+      "units": "meters",
+      "doc": "If a non-zero value is provided, it sets the fill-extrusion layer into wall rendering mode. The value is used to render the feature with the given width over the outlines of the geometry. Note: This property is experimental and some other fill-extrusion properties might not be supported with non-zero line width.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
+
+        },
+        "data-driven styling": {
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state",
           "measure-light"
         ]
       },
+      "property-type": "data-driven"
+    },
+    "fill-extrusion-cast-shadows": {
+      "type": "boolean",
+      "default": true,
+      "doc": "Enable/Disable shadow casting for this layer",
+      "transition": false,
+      "sdk-support": {
+          "basic functionality": {
+          "js": "3.7.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
       "property-type": "data-constant"
-   }
+    }
   },
   "paint_line": {
     "line-opacity": {
@@ -6493,7 +7266,6 @@
       "default": 0,
       "minimum": 0,
       "maximum": 1,
-      "experimental": true,
       "doc": "Opacity multiplier (multiplies line-opacity value) of the line part that is occluded by 3D objects. Value 0 hides occluded part, value 1 means the same opacity as non-occluded part. The property is not supported when `line-opacity` has data-driven styling.",
       "sdk-support": {
         "basic functionality": {
@@ -7034,11 +7806,11 @@
       "property-type": "data-driven"
     },
     "icon-occlusion-opacity": {
-      "doc": "The opacity at which the icon will be drawn in case of being depth occluded. Not supported on globe zoom levels. Absent value means behavior prior to this property introduction.",
+      "doc": "The opacity at which the icon will be drawn in case of being depth occluded. Absent value means full occlusion against terrain only.",
       "type": "number",
       "minimum": 0,
       "maximum": 1,
-      "default": 1,
+      "default": 0,
       "transition": true,
       "requires": [
         "icon-image"
@@ -7092,7 +7864,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "measure-light"
+          "measure-light",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -7123,7 +7896,8 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "measure-light"
+          "measure-light",
+          "feature-state"
         ]
       },
       "property-type": "data-driven"
@@ -7384,10 +8158,10 @@
     },
     "text-occlusion-opacity": {
       "type": "number",
-      "doc": "The opacity at which the text will be drawn in case of being depth occluded. Not supported on globe zoom levels. Absent value means behavior prior to this property introduction.",
+      "doc": "The opacity at which the text will be drawn in case of being depth occluded. Absent value means full occlusion against terrain only.",
       "minimum": 0,
       "maximum": 1,
-      "default": 1,
+      "default": 0,
       "transition": true,
       "requires": [
         "text-field"
@@ -7679,6 +8453,34 @@
         "interpolated": false
       },
       "property-type": "data-constant"
+    },
+    "symbol-z-offset": {
+      "type": "number",
+      "doc": "Specifies an uniform elevation from the ground, in meters.",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "experimental": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
+        },
+        "data-driven styling": {
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
     }
   },
   "paint_raster": {
@@ -8142,6 +8944,27 @@
         }
       },
       "property-type": "data-constant"
+    },
+    "raster-particle-elevation": {
+      "type": "number",
+      "doc": "Specifies an uniform elevation from the ground, in meters.",
+      "default": 0,
+      "minimum": 0,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.7.0",
+          "android": "11.7.0",
+          "ios": "11.7.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "paint_hillshade": {
@@ -8307,6 +9130,31 @@
     }
   },
   "paint_background": {
+    "background-pitch-alignment": {
+      "type": "enum",
+      "values": {
+        "map": {
+          "doc": "The background is aligned to the plane of the map."
+        },
+        "viewport": {
+          "doc": "The background is aligned to the plane of the viewport, covering the whole screen."
+        }
+      },
+      "default": "map",
+      "doc": "Orientation of background layer.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0",
+          "android": "11.8.0",
+          "ios": "11.8.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": []
+      },
+      "property-type": "data-constant"
+    },
     "background-color": {
       "type": "color",
       "default": "#000000",
@@ -8809,9 +9657,6 @@
       "default": true,
       "doc": "Enable/Disable shadow casting for this layer",
       "transition": false,
-      "expression": {
-        "interpolated": false
-      },
       "sdk-support": {
           "basic functionality": {
           "js": "3.0.0",
@@ -8826,9 +9671,6 @@
       "default": true,
       "doc": "Enable/Disable shadow receiving for this layer",
       "transition": false,
-      "expression": {
-        "interpolated": false
-      },
       "sdk-support": {
           "basic functionality": {
           "js": "3.0.0",
@@ -8976,9 +9818,7 @@
       "doc": "An array for configuring the fade-out effect for the front cutoff of content on pitched map views. It contains three values: start, range and final opacity. The start parameter defines the point at which the fade-out effect begins, with smaller values causing the effect to start earlier. The range parameter specifies how long the fade-out effect will last. A value of 0.0 for range makes content disappear immediately without a fade-out effect. The final opacity determines content opacity at the end of the fade-out effect. A value of 1.0 for final opacity means that the cutoff is completely disabled.",
       "sdk-support": {
         "basic functionality": {
-          "js": "3.5.0",
-          "android": "11.5.0",
-          "ios": "11.5.0"
+          "js": "3.5.0"
         }
       }
     }

@@ -118,6 +118,7 @@ async function runTest(t) {
         const actual = results.map((feature) => {
             const featureJson = typeof feature.toJSON === 'function' ? JSON.parse(JSON.stringify(feature.toJSON())) : feature;
             if (!skipLayerDelete) delete featureJson.layer;
+            delete featureJson.tile;
             return featureJson;
         });
 

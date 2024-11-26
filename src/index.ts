@@ -1,8 +1,6 @@
 import {PerformanceUtils} from './util/performance';
-
 import assert from 'assert';
 import {supported} from '@mapbox/mapbox-gl-supported';
-
 import {version} from '../package.json';
 import {Map} from './ui/map';
 import NavigationControl from './ui/control/navigation_control';
@@ -30,6 +28,8 @@ import {FreeCameraOptions} from './ui/free_camera';
 import {getDracoUrl, setDracoUrl, setMeshoptUrl, getMeshoptUrl} from '../3d-style/util/loaders';
 import browser from './util/browser';
 
+import type {Class} from './types/class';
+
 // Explicit type re-exports
 export type * from './ui/events';
 export type * from './style-spec/types';
@@ -42,6 +42,8 @@ export type {PluginStatus} from './source/rtl_text_plugin';
 export type {Event, ErrorEvent} from './util/evented';
 export type {GeoJSONFeature} from './util/vectortile_to_geojson';
 export type {PaddingOptions} from './geo/edge_insets';
+export type {RequestParameters} from './util/ajax';
+export type {RequestTransformFunction, ResourceType} from './util/mapbox';
 export type {LngLatLike, LngLatBoundsLike} from './geo/lng_lat';
 
 export type {FeatureSelector} from './style/style';
@@ -121,7 +123,7 @@ const exported = {
      */
     prewarm,
     /**
-     * Clears up resources that have previously been created by [`mapboxgl.prewarm()](https://docs.mapbox.com/mapbox-gl-js/api/properties/#prewarm)`.
+     * Clears up resources that have previously been created by [`mapboxgl.prewarm()`](https://docs.mapbox.com/mapbox-gl-js/api/properties/#prewarm).
      * Note that this is typically not necessary. You should only call this function
      * if you expect the user of your app to not return to a Map view at any point
      * in your application.
@@ -217,7 +219,7 @@ const exported = {
      * @example
      * mapboxgl.clearStorage();
      */
-    clearStorage(callback?: (err?: Error | null | undefined) => void) {
+    clearStorage(callback?: (err?: Error | null) => void) {
         clearTileCache(callback);
     },
     /**
@@ -226,7 +228,7 @@ const exported = {
      * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
      * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
      *
-     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/guides/browsers/#csp-directives) for more details.
      *
      * @var {string} workerUrl
      * @returns {string} A URL hosting a JavaScript bundle for mapbox-gl's WebWorker.
@@ -259,19 +261,19 @@ const exported = {
      *
      * mapboxgl.workerClass = MapboxGLWorker;
      */
-    get workerClass(): any {
+    get workerClass(): Class<Worker> {
         return WorkerClass.workerClass;
     },
 
-    set workerClass(klass: any) {
+    set workerClass(klass: Class<Worker>) {
         WorkerClass.workerClass = klass;
     },
 
-    get workerParams(): any {
+    get workerParams(): WorkerOptions {
         return WorkerClass.workerParams;
     },
 
-    set workerParams(params: any) {
+    set workerParams(params: WorkerOptions) {
         WorkerClass.workerParams = params;
     },
 
@@ -281,7 +283,7 @@ const exported = {
      * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
      * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
      *
-     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/guides/browsers/#csp-directives) for more details.
      *
      * @var {string} dracoUrl
      * @returns {string} A URL hosting Google Draco decoding library (`draco_wasm_wrapper_gltf.js` and `draco_decoder_gltf.wasm`).

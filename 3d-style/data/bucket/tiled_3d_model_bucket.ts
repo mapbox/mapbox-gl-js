@@ -3,7 +3,6 @@ import Point from '@mapbox/point-geometry';
 import browser from '../../../src/util/browser';
 import {register} from '../../../src/util/web_worker_transfer';
 import {uploadNode, destroyNodeArrays, destroyBuffers, ModelTraits, HEIGHTMAP_DIM} from '../model';
-import {OverscaledTileID} from '../../../src/source/tile_id';
 import {FeatureVertexArray} from '../../../src/data/array_types';
 import {number as interpolate} from '../../../src/style-spec/util/interpolate';
 import {clamp} from '../../../src/util/util';
@@ -12,20 +11,21 @@ import {ZoomConstantExpression} from '../../../src/style-spec/expression/index';
 import {Aabb} from '../../../src/util/primitives';
 import {vec3, mat4} from 'gl-matrix';
 
+import type {OverscaledTileID, CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {ReplacementSource} from '../../source/replacement_source';
 import type {Bucket} from '../../../src/data/bucket';
 import type {Node} from '../model';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
-import type {CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import type Context from '../../../src/gl/context';
 import type {ProjectionSpecification} from '../../../src/style-spec/types';
 import type Painter from '../../../src/render/painter';
 import type {vec4} from 'gl-matrix';
 import type {Terrain} from '../../../src/terrain/terrain';
-import FeatureIndex from '../../../src/data/feature_index';
+import type FeatureIndex from '../../../src/data/feature_index';
 import type {GridIndex} from '../../../src/types/grid-index';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
+import type {FeatureStates} from '../../../src/source/source_state';
 
 const lookup = new Float32Array(512 * 512);
 const passLookup = new Uint8Array(512 * 512);
@@ -49,7 +49,8 @@ function addAABBsToGridIndex(node: Node, key: number, grid: GridIndex) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (mesh.aabb.min[0] === Infinity) continue;
-            grid.insert(key, mesh.aabb.min[0], mesh.aabb.min[1], mesh.aabb.max[0], mesh.aabb.max[1]);
+            const meshAabb = Aabb.applyTransform(mesh.aabb, node.matrix);
+            grid.insert(key, meshAabb.min[0], meshAabb.min[1], meshAabb.max[0], meshAabb.max[1]);
         }
     }
     if (node.children) {
@@ -80,6 +81,7 @@ export class Tiled3dModelFeature {
     node: Node;
     aabb: Aabb;
     emissionHeightBasedParams: Array<[number, number, number, number, number]>;
+    cameraCollisionOpacity: number;
     constructor(node: Node) {
         this.node = node;
         this.evaluatedRMEA = [[1, 0, 0, 1],
@@ -93,6 +95,7 @@ export class Tiled3dModelFeature {
         this.evaluatedScale = [1, 1, 1];
         this.evaluatedColor = [];
         this.emissionHeightBasedParams = [];
+        this.cameraCollisionOpacity = 1;
         // Needs to calculate geometry
         this.feature = {type: 'Point', id: node.id, geometry: [], properties: {'height' : getNodeHeight(node)}};
         this.aabb = this._getLocalBounds();
@@ -137,6 +140,7 @@ class Tiled3dModelBucket implements Bucket {
     brightness: number | null | undefined;
     needsUpload: boolean;
     constructor(
+        layers: Array<ModelStyleLayer>,
         nodes: Array<Node>,
         id: OverscaledTileID,
         hasMbxMeshFeatures: boolean,
@@ -145,6 +149,9 @@ class Tiled3dModelBucket implements Bucket {
         featureIndex: FeatureIndex,
     ) {
         this.id = id;
+        this.layers = layers;
+        this.layerIds = this.layers.map(layer => layer.fqid);
+        this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.modelTraits |= ModelTraits.CoordinateSpaceTile;
         this.uploaded = false;
         this.hasPattern = false;
@@ -184,12 +191,20 @@ class Tiled3dModelBucket implements Bucket {
         }
     }
 
-    update() {
-        console.log("Update 3D model bucket");
+    update(states: FeatureStates) {
+        const withStateUpdates = Object.keys(states).length !== 0;
+        if (withStateUpdates && !this.stateDependentLayers.length) return;
+        const layers = withStateUpdates ? this.stateDependentLayers : this.layers;
+
+        for (const layer of layers) {
+            this.evaluate(layer, states);
+        }
     }
+
     populate() {
         console.log("populate 3D model bucket");
     }
+
     uploadPending(): boolean {
         return !this.uploaded || this.needsUpload;
     }
@@ -259,11 +274,12 @@ class Tiled3dModelBucket implements Bucket {
         }
     }
 
-    evaluate(layer: ModelStyleLayer) {
+    evaluate(layer: ModelStyleLayer, states?: FeatureStates) {
         const nodesInfo = this.getNodesInfo();
         for (const nodeInfo of nodesInfo) {
             if (!nodeInfo.node.meshes) continue;
             const evaluationFeature = nodeInfo.feature;
+            const state = states && states[evaluationFeature.id];
             const hasFeatures = nodeInfo.node.meshes && nodeInfo.node.meshes[0].featureData;
             const previousDoorColor = nodeInfo.evaluatedColor[PartIndices.door];
             const previousDoorRMEA = nodeInfo.evaluatedRMEA[PartIndices.door];
@@ -277,18 +293,18 @@ class Tiled3dModelBucket implements Bucket {
                         evaluationFeature.properties['part'] = part;
                     }
 
-                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, {}, canonical).toRenderColor(null);
+                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, state, canonical).toRenderColor(null);
 
-                    const colorMixIntensity = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, {}, canonical);
+                    const colorMixIntensity = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, state, canonical);
                     nodeInfo.evaluatedColor[i] = [color.r, color.g, color.b, colorMixIntensity];
 
-                    nodeInfo.evaluatedRMEA[i][0] = layer.paint.get('model-roughness').evaluate(evaluationFeature, {}, canonical);
+                    nodeInfo.evaluatedRMEA[i][0] = layer.paint.get('model-roughness').evaluate(evaluationFeature, state, canonical);
                     // For the first version metallic is not styled
 
-                    nodeInfo.evaluatedRMEA[i][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, {}, canonical);
+                    nodeInfo.evaluatedRMEA[i][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical);
                     nodeInfo.evaluatedRMEA[i][3] = color.a;
 
-                    nodeInfo.emissionHeightBasedParams[i] = layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, {}, canonical);
+                    nodeInfo.emissionHeightBasedParams[i] = layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, state, canonical);
 
                     if (!nodeInfo.hasTranslucentParts && color.a < 1.0) {
                         nodeInfo.hasTranslucentParts = true;
@@ -300,10 +316,10 @@ class Tiled3dModelBucket implements Bucket {
                 updateNodeFeatureVertices(nodeInfo, doorLightChanged, this.modelTraits);
             } else {
 
-                nodeInfo.evaluatedRMEA[0][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, {}, canonical);
+                nodeInfo.evaluatedRMEA[0][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical);
             }
 
-            nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical);
+            nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, state, canonical);
             if (!this.updatePbrBuffer(nodeInfo.node)) {
                 this.needsUpload = true;
             }
@@ -555,7 +571,7 @@ class Tiled3dModelBucket implements Bucket {
             const mesh = nodeInfo.node.meshes[0];
             const meshAabb = mesh.transformedAabb;
             if (x < meshAabb.min[0] || y < meshAabb.min[1] || x > meshAabb.max[0] || y > meshAabb.max[1]) continue;
-            if (nodeInfo.node.hidden === true) return {height: 0.0, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
+            if (nodeInfo.node.hidden === true) return {height: Infinity, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
 
             assert(mesh.heightmap);
 

@@ -51,7 +51,7 @@ export type StencilTest = {
     mask: number;
 } | {
     func: WebGL2RenderingContext['ALWAYS'];
-    mask: 0;
+    mask: 0 | 0xFF;
 };
 
 export type CullFaceModeType = WebGL2RenderingContext['FRONT'] | WebGL2RenderingContext['BACK'] | WebGL2RenderingContext['FRONT_AND_BACK'];

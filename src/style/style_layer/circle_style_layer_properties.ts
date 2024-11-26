@@ -20,11 +20,11 @@ export type LayoutProps = {
     "circle-sort-key": DataDrivenProperty<number>;
     "visibility": DataConstantProperty<"visible" | "none">;
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "circle-sort-key": new DataDrivenProperty(styleSpec["layout_circle"]["circle-sort-key"]),
     "visibility": new DataConstantProperty(styleSpec["layout_circle"]["visibility"]),
-});
+}));
 
 export type PaintProps = {
     "circle-radius": DataDrivenProperty<number>;
@@ -41,7 +41,8 @@ export type PaintProps = {
     "circle-emissive-strength": DataConstantProperty<number>;
 };
 
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "circle-radius": new DataDrivenProperty(styleSpec["paint_circle"]["circle-radius"]),
     "circle-color": new DataDrivenProperty(styleSpec["paint_circle"]["circle-color"]),
     "circle-blur": new DataDrivenProperty(styleSpec["paint_circle"]["circle-blur"]),
@@ -54,6 +55,4 @@ const paint: Properties<PaintProps> = new Properties({
     "circle-stroke-color": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-color"]),
     "circle-stroke-opacity": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-opacity"]),
     "circle-emissive-strength": new DataConstantProperty(styleSpec["paint_circle"]["circle-emissive-strength"]),
-});
-
-export default { paint, layout };
+}));

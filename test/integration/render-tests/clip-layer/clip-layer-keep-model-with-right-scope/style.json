@@ -1,0 +1,381 @@
+{
+  "version": 8,
+  "sprite": "local://sprites/sprite",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "metadata": {
+    "test": {
+      "standardDerivatives": true,
+      "height": 512,
+      "width": 512,
+      "allowed": 0.00094
+    }
+  },
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "mapbox://styles/mapbox/basemap",
+      "data": {
+        "sprite": "local://sprites/sprite",
+        "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+        "version": 8,
+        "models": {
+          "maple1": "local://models/maple1-lod2.glb",
+          "maple2": "local://models/maple2-lod2.glb",
+          "oak1": "local://models/oak1-lod2.glb",
+          "oak2": "local://models/oak2-lod2.glb"
+        },
+        "sources": {
+          "mapbox": {
+            "type": "vector",
+            "maxzoom": 15,
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.vector.pbf"
+            ]
+          },
+          "trees": {
+            "type": "vector",
+            "maxzoom": 15,
+            "tiles": [
+              "local://tiles/trees/{z}-{x}-{y}.pbf"
+            ]
+          },
+          "symbols0": {
+            "type": "geojson",
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "coordinates": [
+                      -122.40258704262851,
+                      37.785333172276225
+                    ],
+                    "type": "Point"
+                  }
+                },
+                {
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "coordinates": [
+                      -122.40215546084919,
+                      37.78485812560673
+                    ],
+                    "type": "Point"
+                  }
+                },
+                {
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "coordinates": [
+                      -122.4022134557859,
+                      37.784353395723954
+                    ],
+                    "type": "Point"
+                  }
+                },
+                {
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "coordinates": [
+                      -122.40288715249795,
+                      37.78461056689346
+                    ],
+                    "type": "Point"
+                  }
+                },
+                {
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "coordinates": [
+                      -122.40317078586372,
+                      37.784861683364056
+                    ],
+                    "type": "Point"
+                  }
+                },
+                {
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "coordinates": [
+                      -122.40186348642963,
+                      37.78470109216411
+                    ],
+                    "type": "Point"
+                  }
+                },
+                {
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "coordinates": [
+                      -122.40260163997047,
+                      37.78471119279847
+                    ],
+                    "type": "Point"
+                  }
+                },
+                {
+                  "type": "Feature",
+                  "properties": {},
+                  "geometry": {
+                    "coordinates": [
+                      -122.40273075923267,
+                      37.78500261129909
+                    ],
+                    "type": "Point"
+                  }
+                }
+              ]
+            }
+          },
+          "eraser": {
+            "type": "geojson",
+            "data": {
+                "type": "Polygon",
+                "coordinates": [
+                  [
+                    [
+                      -122.40279441055449,
+                      37.783338265050006
+                    ],
+                    [
+                      -122.40050073154293,
+                      37.78501205720265
+                    ],
+                    [
+                      -122.40198186662008,
+                      37.78621844743742
+                    ],
+                    [
+                      -122.40419414067134,
+                      37.7845074951814
+                    ],
+                    [
+                      -122.40279441055449,
+                      37.783338265050006
+                    ]
+                  ]
+                ]
+            }
+          }
+        },
+        "zoom": 16.5,
+        "bearing": 264,
+        "center": [
+          -122.4027,
+          37.7845
+        ],
+        "layers": [
+          {
+            "id": "background",
+            "type": "background",
+            "paint": {
+              "background-color": "lightgray"
+            }
+          },
+          {
+            "id": "land",
+            "type": "fill",
+            "source": "mapbox",
+            "source-layer": "water",
+            "paint": {
+              "fill-color": "lightblue"
+            }
+          },
+          {
+            "id": "road",
+            "type": "line",
+            "source": "mapbox",
+            "source-layer": "road",
+            "paint": {
+                "line-color": "lightyellow",
+                "line-width": 10,
+                "line-emissive-strength": 1
+            }
+          },
+          {
+            "id": "tree-layer",
+            "type": "model",
+            "source": "trees",
+            "source-layer": "trees",
+            "layout" : {
+              "model-id": 
+                ["match", ["%", ["id"], 4],
+                  0, "maple1",
+                  1, "maple2",
+                  3, "oak1",
+                  "oak2"]
+            },
+            "paint": {
+              "model-rotation": ["match", ["%", ["id"], 4],
+                0, ["literal", [0.0, 0.0, 0.0]],
+                1, ["literal", [0.0, 0.0, 50.0]],
+                2, ["literal", [10.0, 0.0, 120.0]],
+                ["literal", [0.0, -3.0, -60]]],
+              "model-scale": ["match", ["%", ["id"], 3],
+                0, ["literal", [3.0, 3.25, 3.0]],
+                1, ["literal", [1.8, 1.9, 1.8]],
+                ["literal", [5.2, 5.1, 5.1]]],
+              "model-color": [
+                "case",
+                ["boolean", ["feature-state", "hover"], false],
+                "blue",
+                ["match", ["%", ["id"], 6],
+                  0, "orange",
+                  1, "gray",
+                  2, "white",
+                  3, "pink",
+                  4, "yellow",
+                  "green"]
+              ],
+              "model-color-mix-intensity": 0.2,
+              "model-cutoff-fade-range": 0.2
+            }
+          },
+          {
+            "id": "extrusion",
+            "type": "fill-extrusion",
+            "source": "mapbox",
+            "source-layer": "building",
+            "minzoom": 15,
+            "paint": {
+              "fill-extrusion-color": "lightblue",
+              "fill-extrusion-height": ["get", "height"],
+              "fill-extrusion-vertical-scale": 0.6,
+              "fill-extrusion-opacity": 0.4,
+              "fill-extrusion-cutoff-fade-range": 0.2
+            }
+          },
+          {
+            "id": "symbols0",
+            "type": "symbol",
+            "source": "symbols0",
+            "layout": {
+                "icon-image": "rocket-12",
+                "text-field": "Mapbox",
+                "text-font": [
+                  "Open Sans Semibold",
+                  "Arial Unicode MS Bold"
+                ],
+                "text-allow-overlap": true,
+                "text-ignore-placement": true,
+                "text-offset": [0, 1]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "symbols1": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                -122.4017522725137,
+                37.785411225920924
+              ],
+              "type": "Point"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                -122.40323185079319,
+                37.78433377061576
+              ],
+              "type": "Point"
+            }
+          }
+        ]
+      }
+    },
+    "model-tree": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+            "coordinates": [-122.40245598623389, 37.784952191974824],
+            "type": "Point"
+        }
+      }
+    },
+    "eraser": {
+      "type": "geojson",
+      "data": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -122.40279441055449,
+                37.783338265050006
+              ],
+              [
+                -122.40050073154293,
+                37.78501205720265
+              ],
+              [
+                -122.40198186662008,
+                37.78621844743742
+              ],
+              [
+                -122.40419414067134,
+                37.7845074951814
+              ],
+              [
+                -122.40279441055449,
+                37.783338265050006
+              ]
+            ]
+          ]
+      }
+    }
+  },
+  "zoom": 16.5,
+  "bearing": 264,
+  "center": [
+    -122.4027,
+    37.7845
+  ],
+  "layers": [
+    {
+      "id": "symbols1",
+      "type": "symbol",
+      "source": "symbols1",
+      "layout": {
+          "icon-image": "restaurant-12",
+          "text-field": "Restaurant",
+          "text-font": [
+            "Open Sans Semibold",
+            "Arial Unicode MS Bold"
+          ],
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+          "text-offset": [0, 1]
+      }
+    },
+    {
+      "id": "eraser",
+      "type": "clip",
+      "source": "eraser",
+      "layout": {
+        "clip-layer-types": ["model", "symbol"],
+        "clip-layer-scope": ["basemap"]
+      }
+    }
+  ]
+}

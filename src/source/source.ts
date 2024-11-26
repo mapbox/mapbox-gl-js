@@ -1,6 +1,4 @@
 import {bindAll} from '../util/util';
-import {CanonicalTileID} from './tile_id';
-
 import vector from '../source/vector_tile_source';
 import raster from '../source/raster_tile_source';
 import rasterDem from '../source/raster_dem_tile_source';
@@ -13,6 +11,7 @@ import custom from '../source/custom_source';
 import model from '../../3d-style/source/model_source';
 import tiled3DModel from '../../3d-style/source/tiled_3d_model_source';
 
+import type {CanonicalTileID, OverscaledTileID} from './tile_id';
 import type Tile from './tile';
 import type Dispatcher from '../util/dispatcher';
 import type {Map} from '../ui/map';
@@ -21,7 +20,6 @@ import type {Source} from './source_types';
 import type {Evented} from '../util/evented';
 import type {Callback} from '../types/callback';
 import type {MapEvents} from '../ui/events';
-import type {OverscaledTileID} from './tile_id';
 import type {SourceSpecification} from '../style-spec/types';
 
 export type {Source};
@@ -40,6 +38,7 @@ export type SourceRasterLayer = {
 
 export type SourceVectorLayer = {
     id: string;
+    source?: string;
     maxzoom?: number;
     minzoom?: number;
 };
@@ -91,17 +90,17 @@ export interface ISource extends Evented<SourceEvents> {
     vectorLayerIds?: Array<string>;
     rasterLayers?: Array<SourceRasterLayer>;
     rasterLayerIds?: Array<string>;
-    hasTransition(): boolean;
-    loaded(): boolean;
+    hasTransition: () => boolean;
+    loaded: () => boolean;
     readonly onAdd?: (map: Map) => void;
     readonly onRemove?: (map: Map) => void;
-    loadTile(
+    loadTile: (
         tile: Tile,
         callback: Callback<undefined>,
         tileWorkers?: {
             [key: string]: Actor;
         },
-    ): void;
+    ) => void;
     readonly hasTile?: (tileID: OverscaledTileID) => boolean;
     readonly abortTile?: (tile: Tile, callback?: Callback<undefined>) => void;
     readonly unloadTile?: (tile: Tile, callback?: Callback<undefined>) => void;
@@ -112,7 +111,7 @@ export interface ISource extends Evented<SourceEvents> {
      * equivalent to this one.
      * @private
      */
-    serialize(): SourceSpecification | {type: 'custom', [key: string]: unknown};
+    serialize: () => SourceSpecification | {type: 'custom', [key: string]: unknown};
     readonly prepare?: () => void;
     readonly afterUpdate?: () => void;
     readonly _clear?: () => void;
@@ -141,6 +140,8 @@ const sourceTypes: Record<Source['type'], Class<ISource>> = {
     canvas,
     custom
 };
+
+export type SourceType = keyof typeof sourceTypes;
 
 /*
  * Creates a tiled data source instance given an options object.
@@ -177,5 +178,5 @@ export const setType = function (name: string, type: Class<ISource>) {
 };
 
 export interface Actor {
-    send(type: string, data: unknown, callback: Callback<unknown>): void;
+    send: (type: string, data: unknown, callback: Callback<unknown>) => void;
 }

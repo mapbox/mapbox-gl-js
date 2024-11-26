@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import {checkSubtype, ValueType} from '../types';
 import ResolvedImage from '../types/resolved_image';
 
@@ -50,7 +49,7 @@ class Coalesce implements Expression {
             new Coalesce((outputType as any), parsedArgs);
     }
 
-    evaluate(ctx: EvaluationContext): any | null {
+    evaluate(ctx: EvaluationContext): any {
         let result = null;
         let argCount = 0;
         let firstImage;

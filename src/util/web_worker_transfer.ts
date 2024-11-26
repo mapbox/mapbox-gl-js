@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import Grid from 'grid-index';
 import Color from '../style-spec/util/color';
 import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomConstantExpression} from '../style-spec/expression/index';
@@ -7,11 +6,11 @@ import CompoundExpression from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions/index';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import {AJAXError} from './ajax';
+import Formatted, {FormattedSection} from '../style-spec/expression/types/formatted';
 
 import type {Class} from '../types/class';
 import type {GridIndex} from '../types/grid-index';
 import type {Transferable} from '../types/transferable';
-import Formatted, {FormattedSection} from '../style-spec/expression/types/formatted';
 
 type SerializedObject = {
     [_: string]: Serialized;
@@ -78,7 +77,7 @@ Grid.deserialize = function deserialize(serialized: SerializedGrid): GridIndex {
 
 Object.defineProperty(Grid, 'name', {value: 'Grid'});
 
-register(Grid, 'Grid');
+register(Grid as Class<Grid>, 'Grid');
 
 register(Color, 'Color');
 register(Error, 'Error');
@@ -130,8 +129,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         input instanceof String ||
         input instanceof Date ||
         input instanceof RegExp) {
-        // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type 'Serialized'.
-        return input;
+        return input as Serialized;
     }
 
     if (isArrayBuffer(input) || isImageBitmap(input)) {

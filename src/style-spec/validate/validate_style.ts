@@ -2,8 +2,7 @@ import validate from './validate';
 import latestStyleSpec from '../reference/latest';
 import validateGlyphsURL from './validate_glyphs_url';
 
-import ValidationError from '../error/validation_error';
-
+import type ValidationError from '../error/validation_error';
 import type {ValidationOptions} from './validate';
 import type {StyleSpecification} from '../types';
 

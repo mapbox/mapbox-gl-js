@@ -1,0 +1,75 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "allowed": 0.0003
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [[11.520050168037415,48.12305714430885],
+                    [11.520978212356567,48.12447159057148],
+                    [11.521986722946167,48.124546787889976],
+                    [11.521723866462708,48.12366231722393],
+                    [11.518800258636475,48.12389507413895],
+                    [11.51975780725479,48.12425495006228],
+                    [11.519132852554321,48.12331317987383],
+                    [11.519358158111572,48.12304282060319]],
+                    "type": "LineString"
+                }
+            }]
+        }
+    }
+  },
+  "center": [ 11.520078212356567, 48.12347159057148 ],
+  "zoom": 14.0,
+  "pitch" : 0,
+  "bearing" : 0,
+
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightseagreen"
+      }
+    },
+    {
+        "type": "line",
+        "source": "geojson",
+        "id": "line",
+        "paint": {
+            "line-color": "red",
+            "line-width": 14,
+            "line-border-width": 1.5,
+            "line-gradient": [
+                "interpolate",
+                ["linear"],
+                ["line-progress"],
+                0, "rgba(0, 0, 255, 0)",
+                0.1, "royalblue",
+                0.3, "cyan",
+                0.5, "lime",
+                0.7, "yellow",
+                1, "red"
+            ]
+        },
+        "layout": {
+            "line-cap": "round",
+            "line-join": "round",
+            "line-z-offset": 0.01
+        }
+     }
+  ]
+}

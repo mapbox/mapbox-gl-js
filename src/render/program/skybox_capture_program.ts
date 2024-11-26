@@ -1,11 +1,11 @@
-import type Color from '../../style-spec/util/color';
-
 import {
     UniformMatrix3f,
     Uniform1f,
     Uniform3f,
     Uniform4f,
 } from '../uniform_binding';
+
+import type Color from '../../style-spec/util/color';
 import type {UniformValues} from '../uniform_binding';
 import type Context from '../../gl/context';
 

@@ -1,5 +1,4 @@
-import {RGBAImage} from '../util/image';
-
+import type {RGBAImage} from '../util/image';
 import type {Map} from '../ui/map';
 
 export type StyleImageData = {

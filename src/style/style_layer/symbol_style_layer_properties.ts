@@ -26,11 +26,13 @@ export type LayoutProps = {
     "symbol-sort-key": DataDrivenProperty<number>;
     "symbol-z-order": DataConstantProperty<"auto" | "viewport-y" | "source">;
     "symbol-z-elevate": DataConstantProperty<boolean>;
+    "symbol-elevation-reference": DataConstantProperty<"sea" | "ground" | "hd-road-markup">;
     "icon-allow-overlap": DataConstantProperty<boolean>;
     "icon-ignore-placement": DataConstantProperty<boolean>;
     "icon-optional": DataConstantProperty<boolean>;
     "icon-rotation-alignment": DataConstantProperty<"map" | "viewport" | "auto">;
     "icon-size": DataDrivenProperty<number>;
+    "icon-size-scale-range": DataConstantProperty<[number, number]>;
     "icon-text-fit": DataDrivenProperty<"none" | "width" | "height" | "both">;
     "icon-text-fit-padding": DataDrivenProperty<[number, number, number, number]>;
     "icon-image": DataDrivenProperty<ResolvedImage>;
@@ -45,6 +47,7 @@ export type LayoutProps = {
     "text-field": DataDrivenProperty<Formatted>;
     "text-font": DataDrivenProperty<Array<string>>;
     "text-size": DataDrivenProperty<number>;
+    "text-size-scale-range": DataConstantProperty<[number, number]>;
     "text-max-width": DataDrivenProperty<number>;
     "text-line-height": DataDrivenProperty<number>;
     "text-letter-spacing": DataDrivenProperty<number>;
@@ -64,19 +67,21 @@ export type LayoutProps = {
     "text-optional": DataConstantProperty<boolean>;
     "visibility": DataConstantProperty<"visible" | "none">;
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "symbol-placement": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-placement"]),
     "symbol-spacing": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-spacing"]),
     "symbol-avoid-edges": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-avoid-edges"]),
     "symbol-sort-key": new DataDrivenProperty(styleSpec["layout_symbol"]["symbol-sort-key"]),
     "symbol-z-order": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-z-order"]),
     "symbol-z-elevate": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-z-elevate"]),
+    "symbol-elevation-reference": new DataConstantProperty(styleSpec["layout_symbol"]["symbol-elevation-reference"]),
     "icon-allow-overlap": new DataConstantProperty(styleSpec["layout_symbol"]["icon-allow-overlap"]),
     "icon-ignore-placement": new DataConstantProperty(styleSpec["layout_symbol"]["icon-ignore-placement"]),
     "icon-optional": new DataConstantProperty(styleSpec["layout_symbol"]["icon-optional"]),
     "icon-rotation-alignment": new DataConstantProperty(styleSpec["layout_symbol"]["icon-rotation-alignment"]),
     "icon-size": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-size"]),
+    "icon-size-scale-range": new DataConstantProperty(styleSpec["layout_symbol"]["icon-size-scale-range"]),
     "icon-text-fit": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-text-fit"]),
     "icon-text-fit-padding": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-text-fit-padding"]),
     "icon-image": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-image"]),
@@ -91,6 +96,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "text-field": new DataDrivenProperty(styleSpec["layout_symbol"]["text-field"]),
     "text-font": new DataDrivenProperty(styleSpec["layout_symbol"]["text-font"]),
     "text-size": new DataDrivenProperty(styleSpec["layout_symbol"]["text-size"]),
+    "text-size-scale-range": new DataConstantProperty(styleSpec["layout_symbol"]["text-size-scale-range"]),
     "text-max-width": new DataDrivenProperty(styleSpec["layout_symbol"]["text-max-width"]),
     "text-line-height": new DataDrivenProperty(styleSpec["layout_symbol"]["text-line-height"]),
     "text-letter-spacing": new DataDrivenProperty(styleSpec["layout_symbol"]["text-letter-spacing"]),
@@ -109,7 +115,7 @@ const layout: Properties<LayoutProps> = new Properties({
     "text-ignore-placement": new DataConstantProperty(styleSpec["layout_symbol"]["text-ignore-placement"]),
     "text-optional": new DataConstantProperty(styleSpec["layout_symbol"]["text-optional"]),
     "visibility": new DataConstantProperty(styleSpec["layout_symbol"]["visibility"]),
-});
+}));
 
 export type PaintProps = {
     "icon-opacity": DataDrivenProperty<number>;
@@ -135,9 +141,11 @@ export type PaintProps = {
     "icon-color-contrast": DataConstantProperty<number>;
     "icon-color-brightness-min": DataConstantProperty<number>;
     "icon-color-brightness-max": DataConstantProperty<number>;
+    "symbol-z-offset": DataDrivenProperty<number>;
 };
 
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "icon-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-opacity"]),
     "icon-occlusion-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-occlusion-opacity"]),
     "icon-emissive-strength": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-emissive-strength"]),
@@ -161,6 +169,5 @@ const paint: Properties<PaintProps> = new Properties({
     "icon-color-contrast": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-contrast"]),
     "icon-color-brightness-min": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-min"]),
     "icon-color-brightness-max": new DataConstantProperty(styleSpec["paint_symbol"]["icon-color-brightness-max"]),
-});
-
-export default { paint, layout };
+    "symbol-z-offset": new DataDrivenProperty(styleSpec["paint_symbol"]["symbol-z-offset"]),
+}));

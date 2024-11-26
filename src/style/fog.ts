@@ -2,18 +2,18 @@ import styleSpec from '../style-spec/reference/latest';
 import {extend, smoothstep} from '../util/util';
 import {Evented} from '../util/evented';
 import {validateStyle, validateFog, emitValidationErrors} from './validate_style';
-import {Properties, Transitionable, Transitioning, PossiblyEvaluated, DataConstantProperty} from './properties';
-import Color from '../style-spec/util/color';
+import {Properties, Transitionable, PossiblyEvaluated, DataConstantProperty} from './properties';
 import {FOG_PITCH_START, FOG_PITCH_END, FOG_OPACITY_THRESHOLD, getFogOpacityAtLngLat, getFogOpacityAtMercCoord, getFovAdjustedFogRange, getFogOpacityForBounds} from './fog_helpers';
 import {number as interpolate, array as vecInterpolate} from '../style-spec/util/interpolate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
-import {Frustum} from '../util/primitives';
-import {OverscaledTileID} from '../source/tile_id';
 import EXTENT from '../style-spec/data/extent';
 
+import type {Frustum} from '../util/primitives';
+import type {OverscaledTileID} from '../source/tile_id';
+import type Color from '../style-spec/util/color';
 import type {FogSpecification} from '../style-spec/types';
 import type EvaluationParameters from './evaluation_parameters';
-import type {TransitionParameters, ConfigOptions} from './properties';
+import type {TransitionParameters, ConfigOptions, Transitioning} from './properties';
 import type LngLat from '../geo/lng_lat';
 import type Transform from '../geo/transform';
 import type {StyleSetterOptions} from '../style/style';
@@ -30,16 +30,6 @@ type Props = {
     ["vertical-range"]: DataConstantProperty<[number, number]>;
 };
 
-const fogProperties: Properties<Props> = new Properties({
-    "range": new DataConstantProperty(styleSpec.fog.range),
-    "color": new DataConstantProperty(styleSpec.fog.color),
-    "high-color": new DataConstantProperty(styleSpec.fog["high-color"]),
-    "space-color": new DataConstantProperty(styleSpec.fog["space-color"]),
-    "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
-    "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
-    "vertical-range": new DataConstantProperty(styleSpec.fog["vertical-range"]),
-});
-
 class Fog extends Evented {
     _transitionable: Transitionable<Props>;
     _transitioning: Transitioning<Props>;
@@ -53,6 +43,17 @@ class Fog extends Evented {
 
     constructor(fogOptions: FogSpecification | null | undefined, transform: Transform, scope: string, configOptions?: ConfigOptions | null) {
         super();
+
+        const fogProperties: Properties<Props> = new Properties({
+            "range": new DataConstantProperty(styleSpec.fog.range),
+            "color": new DataConstantProperty(styleSpec.fog.color),
+            "high-color": new DataConstantProperty(styleSpec.fog["high-color"]),
+            "space-color": new DataConstantProperty(styleSpec.fog["space-color"]),
+            "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
+            "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
+            "vertical-range": new DataConstantProperty(styleSpec.fog["vertical-range"]),
+        });
+
         this._transitionable = new Transitionable(fogProperties, scope, new Map(configOptions));
         this.set(fogOptions, configOptions);
         this._transitioning = this._transitionable.untransitioned();

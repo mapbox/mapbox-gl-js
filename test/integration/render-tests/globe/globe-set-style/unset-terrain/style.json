@@ -1,0 +1,60 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 256,
+      "allowed": 0.0008,
+      "operations": [
+        ["wait"],
+        ["setStyle", {
+          "version": 8,
+          "zoom": 0,
+          "center": [-180, 0],
+          "projection": {
+            "name": "globe"
+          },
+          "sources": {},
+          "layers": [
+            {
+              "id": "land",
+              "type": "background",
+              "paint": {
+                "background-color": "#000"
+              }
+            }
+          ]
+        }],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 0,
+  "center": [-180, 0],
+  "projection": {
+    "name": "globe"
+  },
+  "terrain": {
+    "source": "mapbox-dem",
+    "exaggeration": 1
+  },
+  "sources": {
+    "mapbox-dem": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/dem/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 13,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "land",
+      "type": "background",
+      "paint": {
+        "background-color": "#000"
+      }
+    }
+  ]
+}

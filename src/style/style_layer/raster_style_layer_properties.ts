@@ -19,10 +19,10 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 export type LayoutProps = {
     "visibility": DataConstantProperty<"visible" | "none">;
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "visibility": new DataConstantProperty(styleSpec["layout_raster"]["visibility"]),
-});
+}));
 
 export type PaintProps = {
     "raster-opacity": DataConstantProperty<number>;
@@ -41,7 +41,8 @@ export type PaintProps = {
     "raster-elevation": DataConstantProperty<number>;
 };
 
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "raster-opacity": new DataConstantProperty(styleSpec["paint_raster"]["raster-opacity"]),
     "raster-color": new ColorRampProperty(styleSpec["paint_raster"]["raster-color"]),
     "raster-color-mix": new DataConstantProperty(styleSpec["paint_raster"]["raster-color-mix"]),
@@ -56,6 +57,4 @@ const paint: Properties<PaintProps> = new Properties({
     "raster-emissive-strength": new DataConstantProperty(styleSpec["paint_raster"]["raster-emissive-strength"]),
     "raster-array-band": new DataConstantProperty(styleSpec["paint_raster"]["raster-array-band"]),
     "raster-elevation": new DataConstantProperty(styleSpec["paint_raster"]["raster-elevation"]),
-});
-
-export default { paint, layout };
+}));

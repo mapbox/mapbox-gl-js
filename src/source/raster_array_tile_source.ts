@@ -2,21 +2,21 @@ import Texture from '../render/texture';
 import RasterTileSource from './raster_tile_source';
 import {extend} from '../util/util';
 import {ResourceType} from '../util/ajax';
-import {Evented, ErrorEvent} from '../util/evented';
+import {ErrorEvent} from '../util/evented';
 import RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
-
 // Import MRTData as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../data/mrt_data';
 
+import type {Evented} from '../util/evented';
 import type Tile from './tile';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type RasterArrayTile from './raster_array_tile';
 import type {Callback} from '../types/callback';
 import type {TextureDescriptor} from './raster_array_tile';
-import type {ISource, SourceRasterLayer} from './source';
+import type {ISource} from './source';
 import type {RasterArraySourceSpecification} from '../style-spec/types';
 
 /**
@@ -34,10 +34,8 @@ import type {RasterArraySourceSpecification} from '../style-spec/types';
  * @see [Example: Create a wind particle animation](https://docs.mapbox.com/mapbox-gl-js/example/raster-particle-layer/)
  */
 class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource {
-    type: 'raster-array';
-    map: Map;
-    rasterLayers: Array<SourceRasterLayer> | undefined;
-    rasterLayerIds: Array<string> | undefined;
+    override type: 'raster-array';
+    override map: Map;
 
     constructor(id: string, options: RasterArraySourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
@@ -58,11 +56,10 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         this.map.triggerRepaint();
     }
 
-    loadTile(tile: Tile, callback: Callback<undefined>) {
+    override loadTile(tile: Tile, callback: Callback<undefined>) {
         tile = (tile as RasterArrayTile);
 
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         const requestParams = this.map._requestManager.transformRequest(url, ResourceType.Tile);
 
         // @ts-expect-error - TS2339 - Property 'requestParams' does not exist on type 'Tile'.
@@ -94,7 +91,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         });
     }
 
-    unloadTile(tile: Tile, _?: Callback<undefined> | null) {
+    override unloadTile(tile: Tile, _?: Callback<undefined> | null) {
         tile = (tile as RasterArrayTile);
 
         const texture = tile.texture;

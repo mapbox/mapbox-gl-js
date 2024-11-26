@@ -1,8 +1,9 @@
 import Point from '@mapbox/point-geometry';
-import type {Map} from '../map';
 import {indexTouches} from './handler_util';
 import {bindAll, isFullscreen} from '../../util/util';
 import * as DOM from '../../util/dom';
+
+import type {Map} from '../map';
 import type {Handler, HandlerResult} from '../handler';
 
 export default class TouchPanHandler implements Handler {

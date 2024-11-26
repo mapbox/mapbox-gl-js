@@ -1,6 +1,7 @@
 import IndexBuffer from '../gl/index_buffer';
-import Context from '../gl/context';
 import {LineIndexArray} from '../data/index_array_type';
+
+import type Context from '../gl/context';
 
 class CacheEntry {
     buf: IndexBuffer;

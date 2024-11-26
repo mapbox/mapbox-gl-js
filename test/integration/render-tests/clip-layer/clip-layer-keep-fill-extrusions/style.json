@@ -21,16 +21,6 @@
     }
   },
   "sources": {
-    "model-car": {
-      "type": "model",
-      "models": {
-          "model-1" : {
-              "uri": "local://models/low-poly-car.gltf",
-              "position": [-122.39929753985325, 37.792820716290734],
-              "orientation": [0, 0, 45]
-          }
-      }
-    },
     "mapbox": {
       "type": "vector",
       "maxzoom": 16,

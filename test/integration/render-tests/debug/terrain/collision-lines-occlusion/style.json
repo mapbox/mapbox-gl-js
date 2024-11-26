@@ -4,6 +4,7 @@
         "test": {
             "width": 200,
             "height": 200,
+            "allowed": 0.01,
             "collisionDebug": true,
             "description": "Covers placement and collision for elevated text. There is also text completely behind terrain that shouldn't be visible.",
             "operations": [

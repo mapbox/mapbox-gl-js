@@ -19,10 +19,10 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 export type LayoutProps = {
     "visibility": DataConstantProperty<"visible" | "none">;
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "visibility": new DataConstantProperty(styleSpec["layout_sky"]["visibility"]),
-});
+}));
 
 export type PaintProps = {
     "sky-type": DataConstantProperty<"gradient" | "atmosphere">;
@@ -36,7 +36,8 @@ export type PaintProps = {
     "sky-opacity": DataConstantProperty<number>;
 };
 
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "sky-type": new DataConstantProperty(styleSpec["paint_sky"]["sky-type"]),
     "sky-atmosphere-sun": new DataConstantProperty(styleSpec["paint_sky"]["sky-atmosphere-sun"]),
     "sky-atmosphere-sun-intensity": new DataConstantProperty(styleSpec["paint_sky"]["sky-atmosphere-sun-intensity"]),
@@ -46,6 +47,4 @@ const paint: Properties<PaintProps> = new Properties({
     "sky-atmosphere-halo-color": new DataConstantProperty(styleSpec["paint_sky"]["sky-atmosphere-halo-color"]),
     "sky-atmosphere-color": new DataConstantProperty(styleSpec["paint_sky"]["sky-atmosphere-color"]),
     "sky-opacity": new DataConstantProperty(styleSpec["paint_sky"]["sky-opacity"]),
-});
-
-export default { paint, layout };
+}));

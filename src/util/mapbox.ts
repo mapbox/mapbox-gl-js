@@ -18,17 +18,18 @@ import {isMapboxHTTPURL, isMapboxURL} from './mapbox_url';
 import {createSkuToken, SKU_ID} from './sku_token';
 import {version as sdkVersion} from '../../package.json';
 import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util';
-import {postData, ResourceType, getData} from './ajax';
+import {postData, getData} from './ajax';
 import {getLivePerformanceMetrics} from '../util/live_performance';
 
 import type {LivePerformanceData} from '../util/live_performance';
-import type {RequestParameters} from './ajax';
+import type {RequestParameters, ResourceType as ResourceTypeEnum} from './ajax';
 import type {Cancelable} from '../types/cancelable';
 import type {TileJSON} from '../types/tilejson';
 import type {Map as MapboxMap} from "../ui/map";
+import '../types/import-meta.d';
 
-type ResourceTypeEnum = keyof typeof ResourceType;
-export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
+export type ResourceType = keyof typeof ResourceTypeEnum;
+export type RequestTransformFunction = (url: string, resourceTypeEnum?: ResourceType) => RequestParameters;
 
 type UrlObject = {
     protocol: string;
@@ -37,7 +38,7 @@ type UrlObject = {
     params: Array<string>;
 };
 
-type EventCallback = (err?: Error | null | undefined) => void;
+type EventCallback = (err?: Error | null) => void;
 
 export const AUTH_ERR_MSG: string = 'NO_ACCESS_TOKEN';
 
@@ -65,7 +66,7 @@ export class RequestManager {
         return Date.now() > this._skuTokenExpiresAt;
     }
 
-    transformRequest(url: string, type: ResourceTypeEnum): RequestParameters {
+    transformRequest(url: string, type: ResourceType): RequestParameters {
         if (this._transformRequestFn) {
             return this._transformRequestFn(url, type) || {url};
         }
@@ -76,7 +77,9 @@ export class RequestManager {
     normalizeStyleURL(url: string, accessToken?: string): string {
         if (!isMapboxURL(url)) return url;
         const urlObject = parseUrl(url);
-        urlObject.params.push(`sdk=js-${sdkVersion}`);
+        if (import.meta.env.mode !== 'dev') {
+            urlObject.params.push(`sdk=js-${sdkVersion}`);
+        }
         urlObject.path = `/styles/v1${urlObject.path}`;
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
@@ -418,7 +421,7 @@ export class PerformanceEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
@@ -468,7 +471,7 @@ export class MapLoadEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) return;
         const {id, timestamp} = this.queue.shift();
 
@@ -574,7 +577,7 @@ export class StyleLoadEvent extends TelemetryEvent {
         }, customAccessToken);
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
@@ -632,7 +635,7 @@ export class MapSessionAPI extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) return;
         const {id, timestamp} = this.queue.shift();
 
@@ -670,7 +673,7 @@ export class TurnstileEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
@@ -724,7 +727,7 @@ export class TurnstileEvent extends TelemetryEvent {
 }
 
 const turnstileEvent_ = new TurnstileEvent();
-export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: string | null | undefined) => void = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
+export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: string | null) => void = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
 
 export const mapLoadEvent: MapLoadEvent = new MapLoadEvent();
 export const postMapLoadEvent: (

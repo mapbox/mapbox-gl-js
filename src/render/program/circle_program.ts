@@ -1,15 +1,16 @@
 import {Uniform1f, Uniform2f, Uniform3f, UniformMatrix2f, UniformMatrix4f} from '../uniform_binding';
-
-import type Context from '../../gl/context';
-import type {UniformValues} from '../uniform_binding';
-import {CanonicalTileID, OverscaledTileID} from '../../source/tile_id';
-import type Tile from '../../source/tile';
-import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
-import type Painter from '../painter';
+import {CanonicalTileID} from '../../source/tile_id';
 import browser from '../../util/browser';
 import {mat4} from 'gl-matrix';
 import {globeToMercatorTransition, globePixelsToTileUnits} from '../../geo/projection/globe_util';
 import EXTENT from '../../style-spec/data/extent';
+
+import type Context from '../../gl/context';
+import type {UniformValues} from '../uniform_binding';
+import type {OverscaledTileID} from '../../source/tile_id';
+import type Tile from '../../source/tile';
+import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
+import type Painter from '../painter';
 
 export type CircleUniformsType = {
     ['u_camera_to_center_distance']: Uniform1f;
@@ -39,13 +40,13 @@ const circleUniforms = (context: Context): CircleUniformsType => ({
     'u_emissive_strength': new Uniform1f(context),
 });
 
-const identityMatrix = mat4.create() as Float32Array;
+const identityMatrix = mat4.create();
 
 const circleUniformValues = (
     painter: Painter,
     coord: OverscaledTileID,
     tile: Tile,
-    invMatrix: Float32Array,
+    invMatrix: mat4,
     mercatorCenter: [number, number],
     layer: CircleStyleLayer,
 ): UniformValues<CircleUniformsType> => {
@@ -74,10 +75,10 @@ const circleUniformValues = (
             coord.projMatrix,
             tile,
             layer.paint.get('circle-translate'),
-            layer.paint.get('circle-translate-anchor')),
+            layer.paint.get('circle-translate-anchor')) as Float32Array,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_extrude_scale': extrudeScale,
-        'u_inv_rot_matrix': identityMatrix,
+        'u_inv_rot_matrix': identityMatrix as Float32Array,
         'u_merc_center': [0, 0] as [number, number],
         'u_tile_id': [0, 0, 0] as [number, number, number],
         'u_zoom_transition': 0,
@@ -86,7 +87,7 @@ const circleUniformValues = (
     };
 
     if (isGlobe) {
-        values['u_inv_rot_matrix'] = invMatrix;
+        values['u_inv_rot_matrix'] = invMatrix as Float32Array;
         values['u_merc_center'] = mercatorCenter;
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = globeToMercatorTransition(transform.zoom);

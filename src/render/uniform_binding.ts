@@ -1,4 +1,5 @@
 import Color from '../style-spec/util/color';
+
 import type Context from '../gl/context';
 import type {RenderColor} from "../style-spec/util/color";
 
@@ -11,8 +12,8 @@ export interface IUniform<T> {
     location: WebGLUniformLocation | null | undefined;
     current: T;
     initialized: boolean;
-    fetchUniformLocation(program: WebGLProgram, name: string): boolean;
-    set(program: WebGLProgram, name: string, v: T): void;
+    fetchUniformLocation: (program: WebGLProgram, name: string) => boolean;
+    set: (program: WebGLProgram, name: string, v: T) => void;
 }
 
 class Uniform<T> implements IUniform<T> {
@@ -45,7 +46,7 @@ class Uniform1i extends Uniform<number> implements IUniform<number> {
         this.current = 0;
     }
 
-    set(program: WebGLProgram, name: string, v: number): void {
+    override set(program: WebGLProgram, name: string, v: number): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (this.current !== v) {
             this.current = v;
@@ -60,7 +61,7 @@ class Uniform1f extends Uniform<number> implements IUniform<number> {
         this.current = 0;
     }
 
-    set(program: WebGLProgram, name: string, v: number): void {
+    override set(program: WebGLProgram, name: string, v: number): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (this.current !== v) {
             this.current = v;
@@ -75,7 +76,7 @@ class Uniform2f extends Uniform<[number, number]> implements IUniform<[number, n
         this.current = [0, 0];
     }
 
-    set(program: WebGLProgram, name: string, v: [number, number]): void {
+    override set(program: WebGLProgram, name: string, v: [number, number]): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v[0] !== this.current[0] || v[1] !== this.current[1]) {
             this.current = v;
@@ -90,7 +91,7 @@ class Uniform3f extends Uniform<[number, number, number]> implements IUniform<[n
         this.current = [0, 0, 0];
     }
 
-    set(program: WebGLProgram, name: string, v: [number, number, number]): void {
+    override set(program: WebGLProgram, name: string, v: [number, number, number]): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v[0] !== this.current[0] || v[1] !== this.current[1] || v[2] !== this.current[2]) {
             this.current = v;
@@ -105,7 +106,7 @@ class Uniform4f extends Uniform<[number, number, number, number]> implements IUn
         this.current = [0, 0, 0, 0];
     }
 
-    set(program: WebGLProgram, name: string, v: [number, number, number, number]): void {
+    override set(program: WebGLProgram, name: string, v: [number, number, number, number]): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v[0] !== this.current[0] || v[1] !== this.current[1] ||
             v[2] !== this.current[2] || v[3] !== this.current[3]) {
@@ -121,7 +122,7 @@ class UniformColor extends Uniform<RenderColor> implements IUniform<RenderColor>
         this.current = Color.transparent.toRenderColor(null);
     }
 
-    set(program: WebGLProgram, name: string, v: RenderColor): void {
+    override set(program: WebGLProgram, name: string, v: RenderColor): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v.r !== this.current.r || v.g !== this.current.g ||
             v.b !== this.current.b || v.a !== this.current.a) {
@@ -138,7 +139,7 @@ class UniformMatrix4f extends Uniform<Float32Array> implements IUniform<Float32A
         this.current = emptyMat4;
     }
 
-    set(program: WebGLProgram, name: string, v: Float32Array): void {
+    override set(program: WebGLProgram, name: string, v: Float32Array): void {
         if (!this.fetchUniformLocation(program, name)) return;
         // The vast majority of matrix comparisons that will trip this set
         // happen at i=12 or i=0, so we check those first to avoid lots of
@@ -165,7 +166,7 @@ class UniformMatrix3f extends Uniform<Float32Array> implements IUniform<Float32A
         this.current = emptyMat3;
     }
 
-    set(program: WebGLProgram, name: string, v: Float32Array): void {
+    override set(program: WebGLProgram, name: string, v: Float32Array): void {
         if (!this.fetchUniformLocation(program, name)) return;
         for (let i = 0; i < 9; i++) {
             if (v[i] !== this.current[i]) {
@@ -184,7 +185,7 @@ class UniformMatrix2f extends Uniform<Float32Array> implements IUniform<Float32A
         this.current = emptyMat2;
     }
 
-    set(program: WebGLProgram, name: string, v: Float32Array): void {
+    override set(program: WebGLProgram, name: string, v: Float32Array): void {
         if (!this.fetchUniformLocation(program, name)) return;
         for (let i = 0; i < 4; i++) {
             if (v[i] !== this.current[i]) {

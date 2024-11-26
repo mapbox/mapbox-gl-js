@@ -1,17 +1,17 @@
 import assert from 'assert';
 import Point from '@mapbox/point-geometry';
-
 import Tile from './tile';
 import RasterArrayTile from './raster_array_tile';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import TileCache from './tile_cache';
 import {asyncAll, keysDifference, values, clamp} from '../util/util';
-import Context from '../gl/context';
 import browser from '../util/browser';
-import {OverscaledTileID, CanonicalTileID} from './tile_id';
+import {OverscaledTileID} from './tile_id';
 import SourceFeatureState from './source_state';
 import {mercatorXfromLng} from '../geo/mercator_coordinate';
 
+import type {CanonicalTileID} from './tile_id';
+import type Context from '../gl/context';
 import type {vec3} from 'gl-matrix';
 import type {AJAXError} from '../util/ajax';
 import type {ISource, Source} from './source';
@@ -528,7 +528,19 @@ class SourceCache extends Evented {
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
 
-        let idealTileIDs;
+        const isBatchedModelType = this._source.type === 'batched-model';
+        let idealTileIDs: OverscaledTileID[];
+
+        let maxZoom = this._source.maxzoom;
+        const terrain = this.map && this.map.painter ? this.map.painter._terrain : null;
+        const sourceUsedForTerrain = terrain && terrain.sourceCache === this;
+        if (sourceUsedForTerrain && terrain.attenuationRange()) {
+            const minAttenuationZoom = terrain.attenuationRange()[0];
+            const demMaxZoom = Math.floor(minAttenuationZoom) - Math.log2(terrain.getDemUpscale());
+            if (maxZoom > demMaxZoom) {
+                maxZoom = demMaxZoom;
+            }
+        }
 
         if (!this.used && !this.usedForTerrain) {
             idealTileIDs = [];
@@ -542,10 +554,11 @@ class SourceCache extends Evented {
             idealTileIDs = modifiedTransform.coveringTiles({
                 tileSize: tileSize || this._source.tileSize,
                 minzoom: this._source.minzoom,
-                maxzoom: this._source.maxzoom,
+                maxzoom: maxZoom,
                 roundZoom: this._source.roundZoom && !updateForTerrain,
                 reparseOverscaled: this._source.reparseOverscaled,
-                isTerrainDEM: this.usedForTerrain
+                isTerrainDEM: this.usedForTerrain,
+                calculateQuadrantVisibility: isBatchedModelType
             });
 
             // Add zoom level 1 tiles to cover area behind globe
@@ -559,10 +572,11 @@ class SourceCache extends Evented {
             idealTileIDs = transform.coveringTiles({
                 tileSize: tileSize || this._source.tileSize,
                 minzoom: this._source.minzoom,
-                maxzoom: this._source.maxzoom,
+                maxzoom: maxZoom,
                 roundZoom: this._source.roundZoom && !updateForTerrain,
                 reparseOverscaled: this._source.reparseOverscaled,
-                isTerrainDEM: this.usedForTerrain
+                isTerrainDEM: this.usedForTerrain,
+                calculateQuadrantVisibility: isBatchedModelType
             });
 
             if (this._source.hasTile) {
@@ -581,11 +595,18 @@ class SourceCache extends Evented {
             });
             const idealZoom = Math.min(coveringZoom, this._source.maxzoom);
 
-            // find shadowCasterTiles
-            const shadowCasterTileIDs = transform.extendTileCoverForShadows(idealTileIDs, directionalLight, idealZoom);
-            for (const id of shadowCasterTileIDs) {
-                this._shadowCasterTiles[id.key] = true;
-                idealTileIDs.push(id);
+            if (isBatchedModelType) {
+                const batchedModelTileIDs = transform.extendTileCover(idealTileIDs, idealZoom);
+                for (const id of batchedModelTileIDs) {
+                    idealTileIDs.push(id);
+                }
+            } else {
+                // find shadowCasterTiles
+                const shadowCasterTileIDs = transform.extendTileCover(idealTileIDs, idealZoom, directionalLight);
+                for (const id of shadowCasterTileIDs) {
+                    this._shadowCasterTiles[id.key] = true;
+                    idealTileIDs.push(id);
+                }
             }
         }
 

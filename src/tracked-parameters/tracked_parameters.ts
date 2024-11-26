@@ -2,8 +2,9 @@ import {Pane} from 'tweakpane';
 import serialize from 'serialize-to-js';
 import assert from 'assert';
 import {isWorker} from '../util/util';
-import type {Map as MapboxMap} from '../ui/map';
 import {setGlobal} from './tracked_parameters_base';
+
+import type {Map as MapboxMap} from '../ui/map';
 import type {ITrackedParameters, Description} from './tracked_parameters_base';
 
 if (!isWorker()) {
@@ -473,7 +474,7 @@ export class TrackedParameters implements ITrackedParameters {
         return {currentScope, fullScopeName};
     }
 
-    registerParameter(containerObject: any, scope: Array<string>, name: string, description?: Description | null, changeValueCallback?: any | null) {
+    registerParameter(containerObject: any, scope: Array<string>, name: string, description?: Description, changeValueCallback?: any) {
         const {currentScope, fullScopeName} = this.createFoldersChainAndSelectScope(scope);
 
         const folderStateObj: FolderState = (this._paneState.folders.get(fullScopeName) as any);
@@ -524,7 +525,7 @@ export class TrackedParameters implements ITrackedParameters {
         });
     }
 
-    registerBinding(containerObject: any, scope: Array<string>, name: string, description?: any | null) {
+    registerBinding(containerObject: any, scope: Array<string>, name: string, description?: Description) {
         const {currentScope} = this.createFoldersChainAndSelectScope(scope);
 
         const modifiedLabel = `  ${(() => {

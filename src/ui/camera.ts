@@ -25,10 +25,9 @@ import MercatorCoordinate, {
     mercatorZfromAltitude,
     mercatorXfromLng,
     mercatorYfromLat,
-    latFromMercatorY,
-    lngFromMercatorX
 } from '../geo/mercator_coordinate';
 import {Aabb} from '../util/primitives';
+import {getZoomAdjustment} from '../geo/projection/adjustments';
 
 import type Transform from '../geo/transform';
 import type {TaskID} from '../util/task_queue';
@@ -61,7 +60,8 @@ import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
  * `center` is ignored if `around` is included.
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
  * Note that when `padding` is used with `jumpTo`, `easeTo`, and `flyTo`, it also sets the global map padding as a side effect,
- * affecting all subsequent camera movements until the padding is reset.
+ * affecting all subsequent camera movements until the padding is reset. To avoid this, add the `retainPadding: false` option.
+ * @property {boolean} retainPadding If `false`, the value provided with the `padding` option will not be retained as the global map padding. This is `true` by default.
  * @example
  * // set the map's initial perspective with CameraOptions
  * const map = new mapboxgl.Map({
@@ -84,14 +84,16 @@ export type CameraOptions = {
     pitch?: number;
     around?: LngLatLike;
     padding?: number | PaddingOptions;
+    minZoom?: number;
     maxZoom?: number;
+    retainPadding?: boolean;
 };
 
-export type FullCameraOptions = {
+export type FullCameraOptions = CameraOptions & {
     maxZoom: number;
     offset: PointLike;
     padding: Required<PaddingOptions>;
-} & CameraOptions;
+};
 
 /**
  * Options common to map movement methods that involve animation, such as {@link Map#panBy} and
@@ -192,10 +194,7 @@ class Camera extends Evented<MapEvents> {
 
     _bearingSnap: number;
     _easeStart: number;
-    _easeOptions: {
-        duration: number;
-        easing: (_: number) => number;
-    };
+    _easeOptions: EasingOptions;
     _easeId: string | undefined;
     _respectPrefersReducedMotion: boolean;
 
@@ -637,8 +636,7 @@ class Camera extends Evented<MapEvents> {
 
         options.padding = this._extendPadding(options.padding);
 
-        // @ts-expect-error - TS2322 - Type 'CameraOptions' is not assignable to type 'FullCameraOptions'.
-        return options;
+        return options as FullCameraOptions;
     }
 
     _minimumAABBFrustumDistance(tr: Transform, aabb: Aabb): number {
@@ -680,7 +678,7 @@ class Camera extends Evented<MapEvents> {
         const xAxis = vec3.normalize([] as any, vec3.cross([] as any, zAxis, [0, 1, 0]));
         const yAxis = vec3.cross([] as any, xAxis, zAxis);
 
-        const aabbOrientation = [
+        const aabbOrientation: mat4 = [
             xAxis[0], xAxis[1], xAxis[2], 0,
             yAxis[0], yAxis[1], yAxis[2], 0,
             zAxis[0], zAxis[1], zAxis[2], 0,
@@ -703,7 +701,7 @@ class Camera extends Evented<MapEvents> {
 
         let aabb = Aabb.fromPoints(ecefCoords.map(p => [vec3.dot(xAxis, p), vec3.dot(yAxis, p), vec3.dot(zAxis, p)]));
 
-        const center = vec3.transformMat4([] as any, aabb.center, aabbOrientation as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]);
+        const center = vec3.transformMat4([] as unknown as vec3, aabb.center, aabbOrientation) as [number, number, number];
 
         if (vec3.squaredLength(center) === 0) {
             vec3.set(center, 0, 0, 1);
@@ -711,14 +709,12 @@ class Camera extends Evented<MapEvents> {
 
         vec3.normalize(center, center);
         vec3.scale(center, center, GLOBE_RADIUS);
-        // @ts-expect-error - TS2345 - Argument of type 'vec3' is not assignable to parameter of type '[any, any, any]'.
         tr.center = ecefToLatLng(center);
 
         const worldToCamera = tr.getWorldToCameraMatrix();
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-        const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
+        const cameraToWorld = mat4.invert(new Float64Array(16) as unknown as mat4, worldToCamera);
 
-        aabb = Aabb.applyTransform(aabb, mat4.multiply([] as any, worldToCamera, aabbOrientation as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]));
+        aabb = Aabb.applyTransform(aabb, mat4.multiply([] as any, worldToCamera, aabbOrientation));
         const extendedAabb = this._extendAABB(aabb, tr, eOptions, bearing);
         if (!extendedAabb) {
             warnOnce('Map cannot fit within canvas with the given bounds, padding, and/or offset.');
@@ -788,8 +784,7 @@ class Camera extends Evented<MapEvents> {
         const width = tr.width - (left + right);
         const height = tr.height - (top + bottom);
 
-        // @ts-expect-error - TS2322 - Type 'vec3' is not assignable to type '[number, number, number]'.
-        const aabbSize: [number, number, number] = vec3.sub(([] as any), aabb.max, aabb.min);
+        const aabbSize = vec3.sub([] as unknown as vec3, aabb.max, aabb.min) as [number, number, number];
 
         const scaleX = width / aabbSize[0];
         const scaleY = height / aabbSize[1];
@@ -808,10 +803,8 @@ class Camera extends Evented<MapEvents> {
             [aabb.max[0] + right * scaleRatio, aabb.max[1] + top * scaleRatio, aabb.max[2]]
         );
 
-        // @ts-expect-error - TS2339 - Property 'x' does not exist on type 'PointLike'. | TS2339 - Property 'y' does not exist on type 'PointLike'.
-        const centerOffset = (typeof options.offset.x === 'number' && typeof options.offset.y === 'number') ?
-        // @ts-expect-error - TS2339 - Property 'x' does not exist on type 'PointLike'. | TS2339 - Property 'y' does not exist on type 'PointLike'.
-            new Point(options.offset.x, options.offset.y) :
+        const centerOffset = (typeof (options.offset as Point).x === 'number' && typeof (options.offset as Point).y === 'number') ?
+            new Point((options.offset as Point).x, (options.offset as Point).y) :
             Point.convert(options.offset);
 
         const rotatedOffset = centerOffset.rotate(-degToRad(bearing));
@@ -906,17 +899,15 @@ class Camera extends Evented<MapEvents> {
         const z2 = this.queryTerrainElevation(coord2);
         const z3 = this.queryTerrainElevation(coord3);
 
-        const worldCoords = [
+        const worldCoords: vec3[] = [
             [p0world.x, p0world.y, Math.min(z0 || 0, z1 || 0, z2 || 0, z3 || 0)],
             [p1world.x, p1world.y, Math.max(z0 || 0, z1 || 0, z2 || 0, z3 || 0)]
         ];
 
-        // @ts-expect-error - TS2345 - Argument of type 'number[][]' is not assignable to parameter of type 'vec3[]'.
         let aabb = Aabb.fromPoints(worldCoords);
 
         const worldToCamera = tr.getWorldToCameraMatrix();
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-        const cameraToWorld = mat4.invert(new Float64Array(16), worldToCamera);
+        const cameraToWorld = mat4.invert(new Float64Array(16) as unknown as mat4, worldToCamera);
 
         aabb = Aabb.applyTransform(aabb, worldToCamera);
         const extendedAabb = this._extendAABB(aabb, tr, eOptions, bearing);
@@ -930,26 +921,23 @@ class Camera extends Evented<MapEvents> {
         const aabbHalfExtentZ = size[2] * 0.5;
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);
 
-        const normalZ = [0, 0, 1, 0];
+        const normalZ: vec4 = [0, 0, 1, 0];
 
-        vec4.transformMat4(normalZ as [number, number, number, number], normalZ as [number, number, number, number], worldToCamera);
-        vec4.normalize(normalZ as [number, number, number, number], normalZ as [number, number, number, number]);
+        vec4.transformMat4(normalZ, normalZ, worldToCamera);
+        vec4.normalize(normalZ, normalZ);
 
-        // @ts-expect-error - TS2345 - Argument of type '[number, number, number, number]' is not assignable to parameter of type 'ReadonlyVec3'.
-        const offset = vec3.scale([] as any, normalZ as [number, number, number, number], frustumDistance + aabbHalfExtentZ);
-        const cameraPosition = vec3.add([] as any, aabb.center, offset);
+        const offset = vec3.scale([] as unknown as vec3, normalZ as unknown as vec3, frustumDistance + aabbHalfExtentZ);
+        const cameraPosition = vec3.add([] as unknown as vec3, aabb.center, offset);
 
         vec3.transformMat4(aabb.center, aabb.center, cameraToWorld);
         vec3.transformMat4(cameraPosition, cameraPosition, cameraToWorld);
 
-        const mercator = [aabb.center[0], aabb.center[1], cameraPosition[2] * tr.pixelsPerMeter];
-        vec3.scale(mercator as [number, number, number], mercator as [number, number, number], 1.0 / tr.worldSize);
+        const center = tr.unproject(new Point(aabb.center[0], aabb.center[1]));
 
-        const lng = lngFromMercatorX(mercator[0]);
-        const lat = latFromMercatorY(mercator[1]);
-
-        const zoom = Math.min(tr._zoomFromMercatorZ(mercator[2]), eOptions.maxZoom);
-        const center = new LngLat(lng, lat);
+        const zoomAdjustment = getZoomAdjustment(tr.projection, center);
+        const scaleAdjustment = Math.pow(2, zoomAdjustment);
+        const mercatorZ = (cameraPosition[2] * tr.pixelsPerMeter * scaleAdjustment) / tr.worldSize;
+        const zoom = Math.min(tr._zoomFromMercatorZ(mercatorZ), eOptions.maxZoom);
 
         const halfZoomTransition = (GLOBE_ZOOM_THRESHOLD_MIN + GLOBE_ZOOM_THRESHOLD_MAX) * 0.5;
 
@@ -1048,18 +1036,17 @@ class Camera extends Evented<MapEvents> {
         const lnglat2 = this.transform.pointLocation3D(new Point(min.x, max.y));
         const lnglat3 = this.transform.pointLocation3D(new Point(max.x, min.y));
 
-        const p0coord = [
+        const p0coord: LngLatLike = [
             Math.min(lnglat0.lng, lnglat1.lng, lnglat2.lng, lnglat3.lng),
             Math.min(lnglat0.lat, lnglat1.lat, lnglat2.lat, lnglat3.lat),
         ];
-        const p1coord =  [
+        const p1coord: LngLatLike = [
             Math.max(lnglat0.lng, lnglat1.lng, lnglat2.lng, lnglat3.lng),
             Math.max(lnglat0.lat, lnglat1.lat, lnglat2.lat, lnglat3.lat),
         ];
 
         const pitch = options && options.pitch ? options.pitch : this.getPitch();
 
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'LngLatLike'.
         const cameraPlacement = this._cameraForBounds(this.transform, p0coord, p1coord, bearing, pitch, options);
         return this._fitInternal(cameraPlacement, options, eventData);
     }
@@ -1138,12 +1125,18 @@ class Camera extends Evented<MapEvents> {
             tr.pitch = +options.pitch;
         }
 
-        if (options.padding != null) {
-            const padding = typeof options.padding === 'number' ?
-                this._extendPadding(options.padding) :
-                options.padding;
+        const padding = typeof options.padding === 'number' ?
+            this._extendPadding(options.padding) :
+            options.padding;
 
-            if (!tr.isPaddingEqual(padding)) tr.padding = padding;
+        if (options.padding != null && !tr.isPaddingEqual(padding)) {
+            if (options.retainPadding === false) {
+                const transformForPadding = tr.clone();
+                transformForPadding.padding = padding;
+                tr.setLocationAtPoint(tr.center, transformForPadding.centerPoint);
+            } else {
+                tr.padding = padding;
+            }
         }
 
         if (options.preloadOnly) {
@@ -1324,6 +1317,7 @@ class Camera extends Evented<MapEvents> {
     easeTo(
         options: EasingOptions & {
             easeId?: string;
+            noMoveStart?: boolean;
         },
         eventData?: EventData,
     ): this {
@@ -1392,6 +1386,8 @@ class Camera extends Evented<MapEvents> {
         const pitchChanged = this._pitching || (pitch !== startPitch);
         const paddingChanged = !tr.isPaddingEqual(padding);
 
+        const transformForPadding = options.retainPadding === false ? tr.clone() : tr;
+
         const frame = (tr: Transform) => (k: number) => {
             if (zoomChanged) {
                 tr.zoom = interpolate(startZoom, zoom, k);
@@ -1403,10 +1399,10 @@ class Camera extends Evented<MapEvents> {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
             if (paddingChanged) {
-                tr.interpolatePadding(startPadding, padding, k);
+                transformForPadding.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every fra,e
-                pointAtOffset = tr.centerPoint.add(offsetAsPoint);
+                pointAtOffset = transformForPadding.centerPoint.add(offsetAsPoint);
             }
 
             if (around) {
@@ -1447,13 +1443,11 @@ class Camera extends Evented<MapEvents> {
         this._padding = paddingChanged;
 
         this._easeId = options.easeId;
-        // @ts-expect-error - TS2339 - Property 'noMoveStart' does not exist on type 'CameraOptions & AnimationOptions & { easeId?: string; }'.
         this._prepareEase(eventData, options.noMoveStart, currently);
 
         this._ease(frame(tr), (interruptingEaseId?: string) => {
             if (tr.cameraElevationReference === "sea") tr.recenterOnTerrain();
             this._afterEase(eventData, interruptingEaseId);
-            // @ts-expect-error - TS2345 - Argument of type 'CameraOptions & AnimationOptions & { easeId?: string; }' is not assignable to parameter of type '{ animate: boolean; duration: number; easing: (_: number) => number; }'.
         }, options);
 
         return this;
@@ -1587,7 +1581,7 @@ class Camera extends Evented<MapEvents> {
     flyTo(options: EasingOptions, eventData?: EventData): this {
         // Fall through to jumpTo if user has set prefers-reduced-motion
         if (this._prefersReducedMotion(options)) {
-            const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around', 'padding']);
+            const coercedOptions = pick(options, ['center', 'zoom', 'bearing', 'pitch', 'around', 'padding', 'retainPadding']);
             return this.jumpTo(coercedOptions, eventData);
         }
 
@@ -1640,7 +1634,6 @@ class Camera extends Evented<MapEvents> {
             u1 = delta.mag();
 
         if ('minZoom' in options) {
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'number'.
             const minZoom = clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
             // w<sub>m</sub>: Maximum visible span, measured in pixels with respect to the initial
             // scale.
@@ -1712,6 +1705,8 @@ class Camera extends Evented<MapEvents> {
         const pitchChanged = (pitch !== startPitch);
         const paddingChanged = !tr.isPaddingEqual(padding);
 
+        const transformForPadding = options.retainPadding === false ? tr.clone() : tr;
+
         const frame = (tr: Transform) => (k: number) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             const s = k * S;
@@ -1725,10 +1720,10 @@ class Camera extends Evented<MapEvents> {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
             if (paddingChanged) {
-                tr.interpolatePadding(startPadding, padding, k);
+                transformForPadding.interpolatePadding(startPadding, padding, k);
                 // When padding is being applied, Transform#centerPoint is changing continuously,
                 // thus we need to recalculate offsetPoint every frame
-                pointAtOffset = tr.centerPoint.add(offsetAsPoint);
+                pointAtOffset = transformForPadding.centerPoint.add(offsetAsPoint);
             }
 
             const newCenter = k === 1 ? center : tr.unproject(from.add(delta.mult(u(s))).mult(scale));
@@ -1754,7 +1749,6 @@ class Camera extends Evented<MapEvents> {
         this._padding = paddingChanged;
 
         this._prepareEase(eventData, false);
-        // @ts-expect-error - TS2345 - Argument of type 'EasingOptions' is not assignable to parameter of type '{ animate: boolean; duration: number; easing: (_: number) => number; }'.
         this._ease(frame(tr), () => this._afterEase(eventData), options);
 
         return this;
@@ -1776,7 +1770,7 @@ class Camera extends Evented<MapEvents> {
         return this._stop();
     }
 
-    // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
+    // @ts-expect-error - No-op in the Camera class, implemented by the Map class
     _requestRenderFrame(_callback: () => void): TaskID {}
 
     // No-op in the Camera class, implemented by the Map class
@@ -1804,13 +1798,11 @@ class Camera extends Evented<MapEvents> {
         return this;
     }
 
-    _ease(frame: (_: number) => Transform | void,
-          finish: () => void,
-          options: {
-              animate: boolean;
-              duration: number;
-              easing: (_: number) => number;
-          }) {
+    _ease(
+        frame: (_: number) => Transform | void,
+        finish: () => void,
+        options: EasingOptions
+    ) {
         if (options.animate === false || options.duration === 0) {
             frame(1);
             finish();

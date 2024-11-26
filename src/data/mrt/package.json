@@ -1,0 +1,10 @@
+{
+  "name": "mrt",
+  "version": "1.0.0",
+  "main": "mrt.esm.js",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

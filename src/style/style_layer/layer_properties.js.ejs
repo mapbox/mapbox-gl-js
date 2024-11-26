@@ -37,12 +37,12 @@ export type LayoutProps = {
     "<%= property.name %>": <%- propertyType(type, property) %>;
 <% } -%>
 };
-
-const layout: Properties<LayoutProps> = new Properties({
+let layout: Properties<LayoutProps>;
+export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
 <% for (const property of layoutProperties) { -%>
     "<%= property.name %>": <%- propertyValue(type, property, 'layout') %>,
 <% } -%>
-});
+}));
 <% } -%>
 <% if(paintProperties.length){ %>
 export type PaintProps = {
@@ -53,10 +53,9 @@ export type PaintProps = {
 <% } else{ %>
 export type PaintProps = {};
 <% } %>
-const paint: Properties<PaintProps> = new Properties({
+let paint: Properties<PaintProps>;
+export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
 <% for (const property of paintProperties) { -%>
     "<%= property.name %>": <%- propertyValue(type, property, 'paint') %>,
 <% } -%>
-});
-
-export default { paint<% if (layoutProperties.length) { %>, layout<% } %> };
+}));

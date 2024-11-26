@@ -1,0 +1,100 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0003
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "type": "bigwall"
+            },
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    24.94229998527527,
+                    60.17073288640324
+                  ],
+                  [
+                    24.93339848287482,
+                    60.17193747550019
+                  ],
+                  [
+                    24.92901318389906,
+                    60.16844296011962
+                  ],
+                  [
+                    24.930932113031048,
+                    60.16309244980681
+                  ],
+                  [
+                    24.937280978712664,
+                    60.16357006091562
+                  ],
+                  [
+                    24.934139271984094,
+                    60.16647899686055
+                  ],
+                  [
+                    24.941906269176712,
+                    60.1677597153645
+                  ],
+                  [
+                    24.9367791783325,
+                    60.169843489627056
+                  ],
+                  [
+                    24.94229998527527,
+                    60.17073288640324
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 50.0,
+  "bearing": 20.0,
+  "zoom": 14.5,
+  "center": [24.93548, 60.16557],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "beige"
+      }      
+    },
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+        "fill-color": "rgba(0,255,255,1)"
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-color": "green",
+        "fill-extrusion-height": 10,
+        "fill-extrusion-line-width": 20
+      }
+    }
+  ]
+}

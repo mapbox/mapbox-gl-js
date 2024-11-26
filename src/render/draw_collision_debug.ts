@@ -7,9 +7,9 @@ import {collisionCircleLayout} from '../data/bucket/symbol_attributes';
 import SegmentVector from '../data/segment';
 import {mat4} from 'gl-matrix';
 import {getCollisionDebugTileProjectionMatrix} from '../geo/projection/projection_util';
-import VertexBuffer from '../gl/vertex_buffer';
-import IndexBuffer from '../gl/index_buffer';
 
+import type VertexBuffer from '../gl/vertex_buffer';
+import type IndexBuffer from '../gl/index_buffer';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type StyleLayer from '../style/style_layer';
@@ -22,8 +22,8 @@ export default drawCollisionDebug;
 type TileBatch = {
     circleArray: Array<number>;
     circleOffset: number;
-    transform: Float32Array;
-    invTransform: Float32Array;
+    transform: mat4;
+    invTransform: mat4;
     projection: Projection;
 };
 
@@ -67,8 +67,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
                 circleArray,
                 circleOffset,
                 transform,
-                // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
-                invTransform,
+                invTransform: invTransform as Float32Array,
                 projection: bucket.getProjection()
             });
 

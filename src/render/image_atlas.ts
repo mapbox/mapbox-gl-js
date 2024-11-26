@@ -1,3 +1,4 @@
+import assert from 'assert';
 import {RGBAImage} from '../util/image';
 import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
@@ -8,8 +9,9 @@ import type Texture from './texture';
 import type {SpritePosition} from '../util/image';
 import type {LUT} from "../util/lut";
 
-const IMAGE_PADDING: number = 1;
-export {IMAGE_PADDING};
+const ICON_PADDING: number = 1;
+const PATTERN_PADDING: number = 2;
+export {ICON_PADDING, PATTERN_PADDING};
 
 type Rect = {
     x: number;
@@ -25,6 +27,7 @@ export class ImagePosition implements SpritePosition {
     stretchY: Array<[number, number]> | null | undefined;
     stretchX: Array<[number, number]> | null | undefined;
     content: [number, number, number, number] | null | undefined;
+    padding: number;
 
     constructor(paddedRect: Rect, {
         pixelRatio,
@@ -32,33 +35,34 @@ export class ImagePosition implements SpritePosition {
         stretchX,
         stretchY,
         content,
-    }: StyleImage) {
+    }: StyleImage, padding: number) {
         this.paddedRect = paddedRect;
         this.pixelRatio = pixelRatio;
         this.stretchX = stretchX;
         this.stretchY = stretchY;
         this.content = content;
         this.version = version;
+        this.padding = padding;
     }
 
     get tl(): [number, number] {
         return [
-            this.paddedRect.x + IMAGE_PADDING,
-            this.paddedRect.y + IMAGE_PADDING
+            this.paddedRect.x + this.padding,
+            this.paddedRect.y + this.padding
         ];
     }
 
     get br(): [number, number] {
         return [
-            this.paddedRect.x + this.paddedRect.w - IMAGE_PADDING,
-            this.paddedRect.y + this.paddedRect.h - IMAGE_PADDING
+            this.paddedRect.x + this.paddedRect.w - this.padding,
+            this.paddedRect.y + this.paddedRect.h - this.padding
         ];
     }
 
     get displaySize(): [number, number] {
         return [
-            (this.paddedRect.w - IMAGE_PADDING * 2) / this.pixelRatio,
-            (this.paddedRect.h - IMAGE_PADDING * 2) / this.pixelRatio
+            (this.paddedRect.w - this.padding * 2) / this.pixelRatio,
+            (this.paddedRect.h - this.padding * 2) / this.pixelRatio
         ];
     }
 }
@@ -84,8 +88,8 @@ export default class ImageAtlas {
 
         const bins = [];
 
-        this.addImages(icons, iconPositions, bins);
-        this.addImages(patterns, patternPositions, bins);
+        this.addImages(icons, iconPositions, ICON_PADDING, bins);
+        this.addImages(patterns, patternPositions, PATTERN_PADDING, bins);
 
         const {w, h} = potpack(bins);
         const image = new RGBAImage({width: w || 1, height: h || 1});
@@ -96,23 +100,33 @@ export default class ImageAtlas {
             // For SDF icons, we override the RGB channels with white.
             // This is because we read the red channel in the shader and RGB channels will get alpha-premultiplied on upload.
             const overrideRGB = src.sdf;
-            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + IMAGE_PADDING, y: bin.y + IMAGE_PADDING}, src.data, lut, overrideRGB);
+            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + ICON_PADDING, y: bin.y + ICON_PADDING}, src.data, lut, overrideRGB);
         }
 
         for (const id in patterns) {
             const src = patterns[id];
             const bin = patternPositions[id].paddedRect;
-            const x = bin.x + IMAGE_PADDING,
-                y = bin.y + IMAGE_PADDING,
+            let padding = patternPositions[id].padding;
+            const x = bin.x + padding,
+                y = bin.y + padding,
                 w = src.data.width,
                 h = src.data.height;
 
+            assert(padding > 1);
+            padding = padding > 1 ? padding - 1 : padding;
+
             RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x, y}, src.data, lut);
-            // Add 1 pixel wrapped padding on each side of the image.
-            RGBAImage.copy(src.data, image, {x: 0, y: h - 1}, {x, y: y - 1}, {width: w, height: 1}, lut); // T
-            RGBAImage.copy(src.data, image, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: 1}, lut); // B
-            RGBAImage.copy(src.data, image, {x: w - 1, y: 0}, {x: x - 1, y}, {width: 1, height: h}, lut); // L
-            RGBAImage.copy(src.data, image, {x: 0,     y: 0}, {x: x + w, y}, {width: 1, height: h}, lut); // R
+            // Add wrapped padding on each side of the image.
+            // Leave one pixel transparent to avoid bleeding to neighbouring images
+            RGBAImage.copy(src.data, image, {x: 0, y: h - padding}, {x, y: y - padding}, {width: w, height: padding}, lut); // T
+            RGBAImage.copy(src.data, image, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: padding}, lut); // B
+            RGBAImage.copy(src.data, image, {x: w - padding, y: 0}, {x: x - padding, y}, {width: padding, height: h}, lut); // L
+            RGBAImage.copy(src.data, image, {x: 0,     y: 0}, {x: x + w, y}, {width: padding, height: h}, lut); // R
+            // Fill corners
+            RGBAImage.copy(src.data, image, {x: w - padding, y: h - padding}, {x: x - padding, y: y - padding}, {width: padding, height: padding}, lut); // TL
+            RGBAImage.copy(src.data, image, {x: 0, y: h - padding}, {x: x + w, y: y - padding}, {width: padding, height: padding}, lut); // TR
+            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: x + w, y: y + h}, {width: padding, height: padding}, lut); // BL
+            RGBAImage.copy(src.data, image, {x: w - padding, y: 0}, {x: x - padding, y: y + h}, {width: padding, height: padding}, lut); // BR
         }
 
         this.image = image;
@@ -124,17 +138,18 @@ export default class ImageAtlas {
         [_: string]: StyleImage;
     }, positions: {
         [_: string]: ImagePosition;
-    }, bins: Array<Rect>) {
+    }, padding: number,
+    bins: Array<Rect>) {
         for (const id in images) {
             const src = images[id];
             const bin = {
                 x: 0,
                 y: 0,
-                w: src.data.width + 2 * IMAGE_PADDING,
-                h: src.data.height + 2 * IMAGE_PADDING,
+                w: src.data.width + 2 * padding,
+                h: src.data.height + 2 * padding,
             };
             bins.push(bin);
-            positions[id] = new ImagePosition(bin, src);
+            positions[id] = new ImagePosition(bin, src, padding);
 
             if (src.hasRenderCallback) {
                 this.haveRenderCallbacks.push(id);
@@ -158,8 +173,7 @@ export default class ImageAtlas {
 
         position.version = image.version;
         const [x, y] = position.tl;
-        const hasPattern = !!Object.keys(this.patternPositions).length;
-        texture.update(image.data, {useMipmap: hasPattern}, {x, y});
+        texture.update(image.data, {position: {x, y}});
     }
 
 }

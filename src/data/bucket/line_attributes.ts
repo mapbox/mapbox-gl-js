@@ -8,5 +8,9 @@ const lineLayoutAttributes: StructArrayLayout = createLayout([
     {name: 'a_linesofar', components: 1, type: 'Float32'}
 ], 4);
 
+export const zOffsetAttributes: StructArrayLayout = createLayout([
+    {name: 'a_z_offset', components: 1, type: 'Float32'}
+], 4);
+
 export default lineLayoutAttributes;
 export const {members, size, alignment} = lineLayoutAttributes;

@@ -6,11 +6,10 @@ import {
     Uniform4f,
     UniformMatrix4f
 } from '../../../src/render/uniform_binding';
-
 import Color from '../../../src/style-spec/util/color';
-import ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import TextureSlots from '../texture_slots';
 
+import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {UniformValues} from '../../../src/render/uniform_binding';
 import type Context from '../../../src/gl/context';
 import type Painter from '../../../src/render/painter';
@@ -46,6 +45,8 @@ export type ModelUniformsType = {
     ['u_occlusionTextureTransform']: Uniform4f;
 };
 
+export type ModelDefinesType = 'DIFFUSE_SHADED' | 'SHADOWS_SINGLE_CASCADE' | 'OCCLUSION_TEXTURE_TRANSFORM';
+
 const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_lighting_matrix': new UniformMatrix4f(context),
@@ -76,13 +77,13 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
 
 });
 
-const emptyMat4 = new Float32Array(mat4.identity([] as any));
+const emptyMat4 = new Float32Array(mat4.identity([] as unknown as mat4));
 
 const modelUniformValues = (
-    matrix: Float32Array,
-    lightingMatrix: Float32Array,
-    normalMatrix: Float32Array,
-    nodeMatrix: Float32Array,
+    matrix: mat4,
+    lightingMatrix: mat4,
+    normalMatrix: mat4,
+    nodeMatrix: mat4,
     painter: Painter,
     opacity: number,
     baseColorFactor: RenderColor,
@@ -117,10 +118,10 @@ const modelUniformValues = (
     const colorMixIntensity = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
 
     const uniformValues = {
-        'u_matrix': matrix,
-        'u_lighting_matrix': lightingMatrix,
-        'u_normal_matrix': normalMatrix,
-        'u_node_matrix': nodeMatrix ? nodeMatrix : emptyMat4,
+        'u_matrix': matrix as Float32Array,
+        'u_lighting_matrix': lightingMatrix as Float32Array,
+        'u_normal_matrix': normalMatrix as Float32Array,
+        'u_node_matrix': (nodeMatrix ? nodeMatrix : emptyMat4) as Float32Array,
         'u_lightpos': lightPos,
         'u_lightintensity': light.properties.get('intensity'),
         'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b] as [number, number, number],
@@ -161,14 +162,14 @@ const modelDepthUniforms = (context: Context): ModelDepthUniformsType => ({
 });
 
 const modelDepthUniformValues = (
-    matrix: Float32Array,
-    instance: Float32Array = emptyMat4,
-    nodeMatrix: Float32Array = emptyMat4,
+    matrix: mat4,
+    instance: mat4 = emptyMat4,
+    nodeMatrix: mat4 = emptyMat4,
 ): UniformValues<ModelDepthUniformsType> => {
     return {
-        'u_matrix': matrix,
-        'u_instance': instance,
-        'u_node_matrix': nodeMatrix
+        'u_matrix': matrix as Float32Array,
+        'u_instance': instance as Float32Array,
+        'u_node_matrix': nodeMatrix as Float32Array
     };
 };
 

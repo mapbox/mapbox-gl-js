@@ -1,41 +1,19 @@
 import {mat4} from 'gl-matrix';
-
 import StyleLayer from '../style_layer';
-
 import assert from 'assert';
 import SymbolBucket from '../../data/bucket/symbol_bucket';
 import resolveTokens from '../../util/resolve_tokens';
-import properties from './symbol_style_layer_properties';
+import {getLayoutProperties, getPaintProperties} from './symbol_style_layer_properties';
 import {computeColorAdjustmentMatrix} from '../../util/util';
-
-import type {FormattedSection} from '../../style-spec/expression/types/formatted';
-import type {FormattedSectionExpression} from '../../style-spec/expression/definitions/format';
-import type {CreateProgramParams} from '../../render/painter';
-import type {ConfigOptions} from '../properties';
-
 import {
-    Transitionable,
-    Transitioning,
-    Layout,
-    PossiblyEvaluated,
-    PossiblyEvaluatedPropertyValue,
-    PropertyValue
+    PossiblyEvaluatedPropertyValue
 } from '../properties';
-
 import {
     isExpression,
     StyleExpression,
     ZoomConstantExpression,
     ZoomDependentExpression
 } from '../../style-spec/expression/index';
-
-import type {BucketParameters} from '../../data/bucket';
-import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
-import type EvaluationParameters from '../evaluation_parameters';
-import type {LayerSpecification} from '../../style-spec/types';
-import type {Feature, SourceExpression, CompositeExpression} from '../../style-spec/expression/index';
-import type {Expression} from '../../style-spec/expression/expression';
-import type {CanonicalTileID} from '../../source/tile_id';
 import {FormattedType} from '../../style-spec/expression/types';
 import {typeOf} from '../../style-spec/expression/values';
 import Formatted from '../../style-spec/expression/types/formatted';
@@ -43,17 +21,53 @@ import FormatSectionOverride from '../format_section_override';
 import FormatExpression from '../../style-spec/expression/definitions/format';
 import Literal from '../../style-spec/expression/definitions/literal';
 import ProgramConfiguration from '../../data/program_configuration';
+
+import type {FormattedSection} from '../../style-spec/expression/types/formatted';
+import type {FormattedSectionExpression} from '../../style-spec/expression/definitions/format';
+import type {CreateProgramParams} from '../../render/painter';
+import type {ConfigOptions, Properties,
+    Transitionable,
+    Transitioning,
+    Layout,
+    PossiblyEvaluated,
+    PropertyValue
+} from '../properties';
+import type {BucketParameters} from '../../data/bucket';
+import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
+import type EvaluationParameters from '../evaluation_parameters';
+import type {LayerSpecification} from '../../style-spec/types';
+import type {Feature, SourceExpression, CompositeExpression} from '../../style-spec/expression/index';
+import type {Expression} from '../../style-spec/expression/expression';
+import type {CanonicalTileID} from '../../source/tile_id';
 import type {LUT} from "../../util/lut";
 
+let properties: {
+    layout: Properties<LayoutProps>;
+    paint: Properties<PaintProps>;
+};
+
+const getProperties = () => {
+    if (properties) {
+        return properties;
+    }
+
+    properties = {
+        layout: getLayoutProperties(),
+        paint: getPaintProperties()
+    };
+
+    return properties;
+};
+
 class SymbolStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
-    _colorAdjustmentMatrix: Float32Array;
+    _colorAdjustmentMatrix: mat4;
     _saturation: number;
     _contrast: number;
     _brightnessMin: number;
@@ -62,14 +76,12 @@ class SymbolStyleLayer extends StyleLayer {
     hasInitialOcclusionOpacityProperties: boolean;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
-        super(layer, properties, scope, lut, options);
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
-        this._colorAdjustmentMatrix = mat4.identity([] as any);
-
+        super(layer, getProperties(), scope, lut, options);
+        this._colorAdjustmentMatrix = mat4.identity([] as unknown as mat4);
         this.hasInitialOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
     }
 
-    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
         super.recalculate(parameters, availableImages);
 
         if (this.layout.get('icon-rotation-alignment') === 'auto') {
@@ -121,7 +133,7 @@ class SymbolStyleLayer extends StyleLayer {
         contrast: number,
         brightnessMin: number,
         brightnessMax: number,
-    ): Float32Array {
+    ): mat4 {
         if (this._saturation !== saturation ||
             this._contrast !== contrast ||
             this._brightnessMin !== brightnessMin ||
@@ -156,17 +168,17 @@ class SymbolStyleLayer extends StyleLayer {
         return new SymbolBucket(parameters);
     }
 
-    queryRadius(): number {
+    override queryRadius(): number {
         return 0;
     }
 
-    queryIntersectsFeature(): boolean {
+    override queryIntersectsFeature(): boolean {
         assert(false); // Should take a different path in FeatureIndex
         return false;
     }
 
     _setPaintOverrides() {
-        for (const overridable of properties.paint.overridableProperties) {
+        for (const overridable of getProperties().paint.overridableProperties) {
             if (!SymbolStyleLayer.hasPaintOverride(this.layout, overridable)) {
                 continue;
             }
@@ -198,7 +210,7 @@ class SymbolStyleLayer extends StyleLayer {
         }
     }
 
-    _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
+    override _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
         if (!this.layout || oldValue.isDataDriven() || newValue.isDataDriven()) {
             return false;
         }
@@ -207,7 +219,7 @@ class SymbolStyleLayer extends StyleLayer {
 
     static hasPaintOverride(layout: PossiblyEvaluated<LayoutProps>, propertyName: string): boolean {
         const textField = layout.get('text-field');
-        const property = properties.paint.properties[propertyName];
+        const property = getProperties().paint.properties[propertyName];
         let hasOverrides = false;
 
         const checkSections = (sections: Array<FormattedSection> | Array<FormattedSectionExpression>) => {
@@ -247,22 +259,11 @@ class SymbolStyleLayer extends StyleLayer {
         return hasOverrides;
     }
 
-    getProgramIds(): string[] {
-
-        const hasIcon = (this.paint.get('icon-opacity').constantOr(1) !== 0);
-
-        const hasText = (this.paint.get('text-opacity').constantOr(1) !== 0);
-        const ids = [];
-        if (hasIcon) {
-            ids.push('symbolIcon');
-        }
-        if (hasText) {
-            ids.push('symbolSDF');
-        }
-        return ids;
+    override getProgramIds(): string[] {
+        return ['symbol'];
     }
 
-    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),
             overrideFog: false

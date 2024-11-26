@@ -1,5 +1,4 @@
 import assert from 'assert';
-
 import {BooleanType, ColorType, NumberType, StringType, ValueType, array, NullType} from '../types';
 import {Color, isValue, toString as valueToString, typeOf, validateRGBA} from '../values';
 import RuntimeError from '../runtime_error';
@@ -7,12 +6,12 @@ import Formatted from '../types/formatted';
 import FormatExpression from '../definitions/format';
 import ImageExpression from '../definitions/image';
 import ResolvedImage from '../types/resolved_image';
+import getType from '../../util/get_type';
 
 import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type {Type, ArrayType} from '../types';
-import getType from '../../util/get_type';
 
 const types = {
     'to-boolean': BooleanType,

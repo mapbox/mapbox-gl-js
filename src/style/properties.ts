@@ -1,19 +1,19 @@
 import assert from 'assert';
-import type {Direction, Position} from '../util/util';
 import {clone, extend, endsWith, easeCubicInOut, sphericalDirectionToCartesian, sphericalPositionToCartesian} from '../util/util';
 import * as interpolate from '../style-spec/util/interpolate';
 import {number as interpolateValue} from '../style-spec/util/interpolate';
 import {normalizePropertyExpression} from '../style-spec/expression/index';
-import Color from '../style-spec/util/color';
 import {register} from '../util/web_worker_transfer';
 import EvaluationParameters from './evaluation_parameters';
+
+import type Color from '../style-spec/util/color';
+import type {Direction, Position} from '../util/util';
 import type {CanonicalTileID} from '../source/tile_id';
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 import type {
     TransitionSpecification,
     PropertyValueSpecification
 } from '../style-spec/types';
-
 import type {
     Feature,
     FeatureState,
@@ -21,7 +21,6 @@ import type {
     SourceExpression,
     CompositeExpression
 } from '../style-spec/expression/index';
-
 import type {ConfigOptions} from '../style-spec/types/config_options';
 export type {ConfigOptions};
 
@@ -63,13 +62,13 @@ type TimePoint = number;
  */
 export interface Property<T, R> {
     specification: StylePropertySpecification;
-    possiblyEvaluate(
+    possiblyEvaluate: (
         value: PropertyValue<T, R>,
         parameters: EvaluationParameters,
         canonical?: CanonicalTileID,
         availableImages?: Array<string>,
-    ): R;
-    interpolate(a: R, b: R, t: number): R;
+    ) => R;
+    interpolate: (a: R, b: R, t: number) => R;
 }
 
 /**
@@ -188,8 +187,8 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         this.configDependencies = new Set();
     }
 
-    getValue<S extends keyof Props, T>(name: S): PropertyValueSpecification<T> | void {
-        return clone(this._values[name].value.value as PropertyValueSpecification<T> | void);
+    getValue<S extends keyof Props, T>(name: S): PropertyValueSpecification<T> | undefined {
+        return clone(this._values[name].value.value as PropertyValueSpecification<T> | undefined);
     }
 
     setValue<S extends keyof Props, T>(name: S, value?: PropertyValueSpecification<T>) {
@@ -223,7 +222,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         }
     }
 
-    getTransition<S extends keyof Props>(name: S): TransitionSpecification | void {
+    getTransition<S extends keyof Props>(name: S): TransitionSpecification | undefined {
         return clone(this._values[name].transition);
     }
 
@@ -395,9 +394,7 @@ export class Transitioning<Props extends {
  * @private
  */
 type PropertyValues<Props> = {
-    [Key in keyof Props]: Props[Key] extends Property<infer T, infer R>
-    ? PropertyValue<T, R>
-    : never;
+    [Key in keyof Props]: Props[Key] extends Property<infer T, infer R> ? PropertyValue<T, R> : never;
 };
 
 /**
@@ -407,9 +404,7 @@ type PropertyValues<Props> = {
  * @private
  */
 type PropertyValueSpecifications<Props> = {
-    [Key in keyof Props]: Props[Key] extends Property<infer T, infer R>
-    ? PropertyValueSpecification<T>
-    : never;
+    [Key in keyof Props]: Props[Key] extends Property<infer T, any> ? PropertyValueSpecification<T> : never;
 };
 
 /**
@@ -560,9 +555,7 @@ export class PossiblyEvaluatedPropertyValue<T> {
  * @private
  */
 type PossiblyEvaluatedPropertyValues<Properties> = {
-    [Key in keyof Properties]: Properties[Key] extends Property<infer T, infer R>
-    ? R
-    : never;
+    [Key in keyof Properties]: Properties[Key] extends Property<any, infer R> ? R : never;
 };
 
 /**

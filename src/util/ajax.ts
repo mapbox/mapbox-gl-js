@@ -24,7 +24,8 @@ const ResourceType = {
     SpriteJSON: 'SpriteJSON',
     Image: 'Image',
     Model: 'Model'
-};
+} as const;
+
 export {ResourceType};
 
 if (typeof Object.freeze == 'function') {
@@ -71,10 +72,10 @@ export type RequestParameters = {
 };
 
 export type ResponseCallback<T> = (
-    error?: Error | null | undefined,
-    data?: T | null | undefined,
-    cacheControl?: string | null | undefined,
-    expires?: string | null | undefined,
+    error?: Error | null,
+    data?: T | null,
+    cacheControl?: string | null,
+    expires?: string | null,
 ) => void;
 
 export class AJAXError extends Error {
@@ -89,7 +90,7 @@ export class AJAXError extends Error {
         this.url = url;
     }
 
-    toString(): string {
+    override toString(): string {
         return `${this.name}: ${this.message} (${this.status}): ${this.url}`;
     }
 }

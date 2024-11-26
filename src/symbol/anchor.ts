@@ -1,9 +1,8 @@
 import Point from '@mapbox/point-geometry';
-
 import {register} from '../util/web_worker_transfer';
 
 class Anchor extends Point {
-    angle: any;
+    override angle: any;
     z: number;
     segment: number | undefined;
 
@@ -16,7 +15,7 @@ class Anchor extends Point {
         }
     }
 
-    clone(): Anchor {
+    override clone(): Anchor {
         return new Anchor(this.x, this.y, this.z, this.angle, this.segment);
     }
 }

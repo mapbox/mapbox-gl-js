@@ -1,5 +1,4 @@
 import Point from '@mapbox/point-geometry';
-
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const toGeoJSON = VectorTileFeature.prototype.toGeoJSON;
 import EXTENT from '../style-spec/data/extent';

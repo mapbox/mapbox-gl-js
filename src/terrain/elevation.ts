@@ -1,11 +1,11 @@
 import MercatorCoordinate, {mercatorZfromAltitude} from '../geo/mercator_coordinate';
-import DEMData from '../data/dem_data';
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../style-spec/data/extent';
 import {vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id';
 
+import type DEMData from '../data/dem_data';
 import type {vec4} from 'gl-matrix';
 import type SourceCache from '../source/source_cache';
 import type Projection from '../geo/projection/projection';

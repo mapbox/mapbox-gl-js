@@ -1,5 +1,4 @@
 import Queue from 'tinyqueue';
-
 import Point from '@mapbox/point-geometry';
 import {distToSegmentSquared} from './intersection_tests';
 

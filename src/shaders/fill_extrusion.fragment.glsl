@@ -35,11 +35,12 @@ in float v_flood_radius;
 in float v_has_floodlight;
 #endif
 
-uniform float u_emissive_strength;
-
 in float v_height;
 
+#pragma mapbox: define highp float emissive_strength
+
 void main() {
+    #pragma mapbox: initialize highp float emissive_strength
 
 #if defined(ZERO_ROOF_RADIUS) || defined(RENDER_SHADOWS) || defined(LIGHTING_3D_MODE)
     vec3 normal = normalize(v_normal);
@@ -120,7 +121,7 @@ float flood_radiance = 0.0;
 #endif // FLOOD_LIGHT
 #endif // !RENDER_SHADOWS
 
-    color.rgb = mix(color.rgb, v_flat.rgb, u_emissive_strength);
+    color.rgb = mix(color.rgb, v_flat.rgb, emissive_strength);
     color *= u_opacity;
 #endif // LIGHTING_3D_MODE
 

@@ -1,15 +1,14 @@
 import {getImage, ResourceType} from '../util/ajax';
 import {extend, prevPowerOfTwo} from '../util/util';
-import {Evented} from '../util/evented';
 import browser from '../util/browser';
 import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
 import {OverscaledTileID} from './tile_id';
 import RasterTileSource from './raster_tile_source';
-
 // Import DEMData as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../data/dem_data';
 
+import type {Evented} from '../util/evented';
 import type DEMData from '../data/dem_data';
 import type {ISource} from './source';
 import type Dispatcher from '../util/dispatcher';
@@ -19,7 +18,7 @@ import type {TextureImage} from '../render/texture';
 import type {RasterDEMSourceSpecification} from '../style-spec/types';
 
 class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISource {
-    type: 'raster-dem';
+    override type: 'raster-dem';
     encoding: 'mapbox' | 'terrarium';
 
     constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
@@ -30,9 +29,8 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
         this.encoding = options.encoding || "mapbox";
     }
 
-    loadTile(tile: Tile, callback: Callback<undefined>) {
+    override loadTile(tile: Tile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
         function imageLoaded(
@@ -97,11 +95,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
         }
     }
 
-    _getNeighboringTiles(tileID: OverscaledTileID): {
-        [key: number]: {
-            backfilled: boolean;
-        };
-    } {
+    _getNeighboringTiles(tileID: OverscaledTileID): {[key: number]: {backfilled: boolean}} {
         const canonical = tileID.canonical;
         const dim = Math.pow(2, canonical.z);
 

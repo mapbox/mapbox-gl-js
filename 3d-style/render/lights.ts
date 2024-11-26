@@ -1,10 +1,10 @@
-import Context from '../../src/gl/context';
 import {Uniform3f} from '../../src/render/uniform_binding';
 import {sRGBToLinearAndScale, linearVec3TosRGB, clamp} from '../../src/util/util';
 import {vec3} from 'gl-matrix';
-import type Style from '../../src/style/style';
 
-import Lights from '../style/lights';
+import type Context from '../../src/gl/context';
+import type Style from '../../src/style/style';
+import type Lights from '../style/lights';
 import type {UniformValues} from '../../src/render/uniform_binding';
 import type {LightProps as Ambient} from '../style/ambient_light_properties';
 import type {LightProps as Directional} from '../style/directional_light_properties';
@@ -52,21 +52,17 @@ function calculateAmbientDirectionalFactor(dir: vec3, normal: vec3, dirColor: ve
 }
 
 function calculateGroundRadiance(dir: vec3, dirColor: vec3, ambientColor: vec3): [number, number, number] {
-    const groundNormal = [0.0, 0.0, 1.0];
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
+    const groundNormal: vec3 = [0.0, 0.0, 1.0];
     const ambientDirectionalFactor = calculateAmbientDirectionalFactor(dir, groundNormal, dirColor);
 
-    const ambientContrib = [0, 0, 0];
-    // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array' is not assignable to parameter of type 'ReadonlyVec3'.
-    vec3.scale(ambientContrib as [number, number, number], ambientColor.slice(0, 3), ambientDirectionalFactor);
-    const dirConrib = [0, 0, 0];
-    // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array' is not assignable to parameter of type 'ReadonlyVec3'.
-    vec3.scale(dirConrib as [number, number, number], dirColor.slice(0, 3), dir[2]);
+    const ambientContrib: vec3 = [0, 0, 0];
+    vec3.scale(ambientContrib, ambientColor.slice(0, 3) as vec3, ambientDirectionalFactor);
+    const dirConrib: vec3 = [0, 0, 0];
+    vec3.scale(dirConrib, dirColor.slice(0, 3) as vec3, dir[2]);
 
-    const radiance = [0, 0, 0];
-    vec3.add(radiance as [number, number, number], ambientContrib as [number, number, number], dirConrib as [number, number, number]);
+    const radiance: vec3 = [0, 0, 0];
+    vec3.add(radiance, ambientContrib, dirConrib);
 
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number, number]'.
     return linearVec3TosRGB(radiance);
 }
 

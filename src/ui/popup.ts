@@ -1,6 +1,5 @@
 import {extend, bindAll} from '../util/util';
 import {Event, Evented} from '../util/evented';
-import {MapMouseEvent, type MapEventOf} from '../ui/events';
 import * as DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
@@ -8,6 +7,7 @@ import smartWrap from '../util/smart_wrap';
 import {anchorTranslate} from './anchor';
 import {isLngLatBehindGlobe} from '../geo/projection/globe_util';
 
+import type {MapMouseEvent, MapEventOf} from '../ui/events';
 import type {Map} from './map';
 import type {Anchor} from './anchor';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -108,7 +108,7 @@ export default class Popup extends Evented<PopupEvents> {
     _map: Map | null | undefined;
     options: PopupOptions;
     _content: HTMLElement | null | undefined;
-    _container: HTMLElement | null | undefined;
+    _container: HTMLElement | undefined;
     _closeButton: HTMLElement | null | undefined;
     _tip: HTMLElement | null | undefined;
     _lngLat: LngLat;
@@ -339,7 +339,7 @@ export default class Popup extends Evented<PopupEvents> {
      * popupElem.style.fontSize = "25px";
      * @returns {HTMLElement} Returns container element.
      */
-    getElement(): HTMLElement | null | undefined {
+    getElement(): HTMLElement | undefined {
         return this._container;
     }
 
@@ -402,7 +402,7 @@ export default class Popup extends Evented<PopupEvents> {
      * @example
      * const maxWidth = popup.getMaxWidth();
      */
-    getMaxWidth(): string | null | undefined {
+    getMaxWidth(): string | undefined {
         return this._container && this._container.style.maxWidth;
     }
 

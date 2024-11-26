@@ -2,17 +2,20 @@ import Dispatcher from './dispatcher';
 import getWorkerPool from './global_worker_pool';
 import {PerformanceUtils} from './performance';
 
+import type {Callback} from '../types/callback';
+import type {PerformanceMetrics, WorkerPerformanceMetrics} from './performance';
+
 // separate from PerformanceUtils to avoid circular dependency
 
 export const WorkerPerformanceUtils = {
 
-    getPerformanceMetricsAsync(callback: (error?: Error | null | undefined, result?: any | null | undefined) => void) {
+    getPerformanceMetricsAsync(callback: Callback<PerformanceMetrics>) {
         const metrics = PerformanceUtils.getPerformanceMetrics();
         const dispatcher = new Dispatcher(getWorkerPool(), WorkerPerformanceUtils);
 
         const createTime = performance.getEntriesByName('create', 'mark')[0].startTime;
 
-        dispatcher.broadcast('getWorkerPerformanceMetrics', {}, (err, results) => {
+        dispatcher.broadcast('getWorkerPerformanceMetrics', {}, (err, results: WorkerPerformanceMetrics[]) => {
             dispatcher.remove();
             if (err) return callback(err);
 

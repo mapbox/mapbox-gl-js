@@ -6,63 +6,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.js"></script>
-    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.2/mapbox-gl-draw.css" type="text/css">
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.css" type="text/css">
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-        #debugcanvas {
-            position:absolute;
-            left: 0px;
-            top: 0px;
-            pointer-events:none;
-        }
-        .btn-control {
-            font: bold 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-            background-color: white;
-            color: #000;
+        #pane {
             position: absolute;
-            top: 10px;
-            left: 50%;
+            top: 1em;
+            left: 1em;
             z-index: 1;
-            border: none;
-            width: 200px;
-            margin-left: -100px;
-            display: block;
-            cursor: pointer;
-            padding: 10px 20px;
-            border-radius: 3px;
         }
     </style>
 </head>
 
 <body>
+<div id='pane'></div>
 <div id='map'></div>
-<button id="zoomto" class="btn-control">Zoom to bounds</button>
-
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
-<script>
+<script type="module">
+import {Pane} from 'https://esm.sh/tweakpane@4';
+
+const url = new URL(window.location.href);
+const searchParams = new URLSearchParams(url.search);
+const PARAMS = {
+    projection: searchParams.get('projection') || 'globe',
+    centerLng: -96,
+    centerLat: 37.5,
+    parallelLat1: 29.5,
+    parallelLat2: 45.5
+};
+
+// Florida
+const initialBbox = [
+    -87.978515625, 24.906367237907997, // southwestern corner of the bounds
+    -79.3212890625, 31.203404950917395 // northeastern corner of the bounds
+];
+
+const projections = {
+    globe: 'Globe',
+    albers: 'Albers USA',
+    mercator: 'Mercator',
+    equalEarth: 'Equal Earth',
+    equirectangular: 'Equirectangular',
+    lambertConformalConic: 'Lambert Conformal Conic',
+    naturalEarth: 'Natural Earth',
+    winkelTripel: 'Winkel Tripel'
+};
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    devtools: true,
     zoom: 5,
     center: [-68.13734351262877, 45.137451890638886],
-    style: 'mapbox://styles/mapbox/dark-v10',
+    style: 'mapbox://styles/mapbox/light-v11',
     hash: true,
-    projection: 'globe'
+    projection: PARAMS['projection']
+});
+
+map.setPadding(120);
+map.showPadding = true;
+
+map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+const pane = new Pane({title: 'Parameters', container: document.querySelector('#pane')});
+
+const projectionBinding = pane.addBinding(PARAMS, 'projection', {
+    label: 'Projection',
+    view: 'list',
+    options: Object.keys(projections).map((projection) => ({text: projections[projection], value: projection}), {})
+});
+
+const centerFolder = window.centerFolder = pane.addFolder({
+    title: 'Center',
+});
+
+const parallelsFolder = pane.addFolder({
+    title: 'Parallels',
+});
+
+const centerLatBinding = centerFolder.addBinding(PARAMS, 'centerLat', {
+    view: 'slider',
+    label: 'Latitude',
+    min: -90,
+    max: 90
+});
+
+const centerLngBinding = centerFolder.addBinding(PARAMS, 'centerLng', {
+    view: 'slider',
+    label: 'Longitude',
+    min: -180,
+    max: 180
+});
+
+const parallelLat1Binding = parallelsFolder.addBinding(PARAMS, 'parallelLat1', {
+    view: 'slider',
+    label: 'Southern Latitude',
+    min: -90,
+    max: 90
+});
+
+const parallelLat2Binding = parallelsFolder.addBinding(PARAMS, 'parallelLat2', {
+    view: 'slider',
+    label: 'Northern Latitude',
+    min: -90,
+    max: 90
+});
+
+centerFolder.hidden = parallelsFolder.hidden = !['albers', 'lambertConformalConic'].includes(PARAMS['projection']);
+[projectionBinding, centerLatBinding, centerLngBinding, parallelLat1Binding, parallelLat2Binding].forEach((binding) => {
+    binding.on('change', () => {
+        const projection = PARAMS['projection'];
+
+        url.searchParams.set('projection', projection);
+        window.history.replaceState({}, '', url);
+
+        centerFolder.hidden = parallelsFolder.hidden = !['albers', 'lambertConformalConic'].includes(projection);
+
+        map.setProjection({
+            name: projection,
+            center: [PARAMS['centerLng'], PARAMS['centerLat']],
+            parallels: [PARAMS['parallelLat1'], PARAMS['parallelLat2']]
+        });
+    });
+});
+
+pane.addBlade({view: 'separator'});
+
+let bbox;
+pane.addButton({title: 'Zoom to bounds'}).on('click', () => {
+    if (!bbox) return;
+    const bounds = [[bbox[0], bbox[1]], [bbox[2], bbox[3]]];
+    const camera = map.cameraForBounds(bounds, {bearing: map.getBearing(), pitch: map.getPitch()});
+    map.easeTo(camera);
 });
 
 /*global MapboxDraw, turf*/
 
 const draw = new MapboxDraw({
     displayControlsDefault: false,
+    boxSelect: false,
     controls: {
         polygon: true,
         trash: true
     },
-    defaultMode: 'draw_polygon'
 });
 map.addControl(draw);
 
@@ -79,9 +166,7 @@ const data = {
     }
 };
 
-let bbox;
-
-function updatePolygon(e) {
+function updatePolygon() {
     bbox = turf.bbox(draw.getAll());
     const bboxpolygon = [];
     bboxpolygon.push([bbox[0], bbox[1]]); // x0, y0
@@ -122,14 +207,8 @@ map.on('load', function() {
         'exaggeration': 1.5
     });
 
-    document.getElementById('zoomto').addEventListener('click', () => {
-        const bounds = [
-            [bbox[0], bbox[1]],
-            [bbox[2], bbox[3]]
-        ];
-        const camera = map.cameraForBounds(bounds, {bearing: map.getBearing()});
-        map.easeTo(camera);
-    });
+    draw.set(turf.featureCollection([turf.bboxPolygon(initialBbox)]));
+    updatePolygon();
 });
 
 </script>

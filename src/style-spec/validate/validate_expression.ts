@@ -1,5 +1,4 @@
 import ValidationError from '../error/validation_error';
-
 import {createExpression, createPropertyExpression} from '../expression/index';
 import {deepUnbundle} from '../util/unbundle_jsonlint';
 import {isStateConstant, isGlobalPropertyConstant, isFeatureConstant} from '../expression/is_constant';

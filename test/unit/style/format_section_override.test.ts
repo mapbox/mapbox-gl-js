@@ -2,7 +2,7 @@
 import {describe, test, expect} from '../../util/vitest';
 import {createExpression, ZoomConstantExpression} from '../../../src/style-spec/expression/index';
 import EvaluationContext from '../../../src/style-spec/expression/evaluation_context';
-import properties from '../../../src/style/style_layer/symbol_style_layer_properties';
+import {getPaintProperties} from '../../../src/style/style_layer/symbol_style_layer_properties';
 import {PossiblyEvaluatedPropertyValue} from '../../../src/style/properties';
 import FormatSectionOverride from '../../../src/style/format_section_override';
 
@@ -11,7 +11,7 @@ describe('evaluate', () => {
         const defaultColor = {"r": 0, "g": 1, "b": 0, "a": 1};
         const overridenColor = {"r": 1, "g": 0, "b": 0, "a": 1};
         const overriden = new PossiblyEvaluatedPropertyValue(
-            properties.paint.properties['text-color'],
+            getPaintProperties().properties['text-color'],
             {kind: 'constant', value: defaultColor},
             {zoom: 0}
         );
@@ -34,11 +34,11 @@ describe('evaluate', () => {
         const overridenColor = {"r": 0, "g": 0, "b": 1, "a": 1};
         const styleExpr = createExpression(
             ["get", "color"],
-            properties.paint.properties['text-color'].specification);
+            getPaintProperties().properties['text-color'].specification);
 
         const sourceExpr = new ZoomConstantExpression('source', styleExpr.value);
         const overriden = new PossiblyEvaluatedPropertyValue(
-            properties.paint.properties['text-color'],
+            getPaintProperties().properties['text-color'],
             sourceExpr,
             {zoom: 0}
         );

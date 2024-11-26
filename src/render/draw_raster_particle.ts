@@ -12,12 +12,7 @@ import {computeRasterColorMix, computeRasterColorOffset} from './raster';
 import {COLOR_RAMP_RES} from '../style/style_layer/raster_particle_style_layer';
 import RasterArrayTile from '../source/raster_array_tile';
 import RasterArrayTileSource from '../source/raster_array_tile_source';
-
-import type {DynamicDefinesType} from "./program/program_uniforms";
-import type Painter from './painter';
-import type SourceCache from '../source/source_cache';
-import type RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
-import {OverscaledTileID, neighborCoord} from '../source/tile_id';
+import {neighborCoord} from '../source/tile_id';
 import {
     calculateGlobeMercatorMatrix,
     getGridMatrix,
@@ -29,10 +24,18 @@ import {
 import RasterParticleState from './raster_particle_state';
 import Texture from './texture';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
-import Transform from '../geo/transform';
 import rasterFade from './raster_fade';
 import assert from 'assert';
 import {RGBAImage} from '../util/image';
+import {smoothstep} from '../util/util';
+import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
+
+import type Transform from '../geo/transform';
+import type {OverscaledTileID} from '../source/tile_id';
+import type RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
+import type SourceCache from '../source/source_cache';
+import type Painter from './painter';
+import type {DynamicDefinesType} from "./program/program_uniforms";
 
 export default drawRasterParticle;
 
@@ -130,7 +133,7 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
         if (!data) continue;
         assert(data.texture);
 
-        const textureSize = [tile.tileSize, tile.tileSize];
+        const textureSize: [number, number] = [tile.tileSize, tile.tileSize];
         let tileFramebuffer = layer.tileFramebuffer;
         if (!tileFramebuffer) {
             const fbWidth = textureSize[0];
@@ -141,7 +144,6 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
 
         let state = tile.rasterParticleState;
         if (!state) {
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
             state = tile.rasterParticleState = new RasterParticleState(context, id, textureSize, particlePositionRGBAImage);
         }
 
@@ -174,7 +176,7 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
         // Allocate a texture if not allocated
         context.activeTexture.set(gl.TEXTURE0 + RASTER_COLOR_TEXTURE_UNIT);
         let tex = layer.colorRampTexture;
-        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA8);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 
@@ -227,7 +229,7 @@ function getTileData(
         uint8: 'DATA_FORMAT_UINT8',
         uint16: 'DATA_FORMAT_UINT16',
         uint32: 'DATA_FORMAT_UINT32',
-    }[format];
+    }[format] as DynamicDefinesType;
 
     return {
         texture,
@@ -236,7 +238,6 @@ function getTileData(
         scalarData,
         scale: mix,
         offset,
-        // @ts-expect-error - TS2322 - Type 'string' is not assignable to type 'DynamicDefinesType'.
         defines: ['RASTER_ARRAY', dataFormatDefine]
     };
 }
@@ -336,11 +337,10 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
             const rasterParticleTextureRes = state.particleTexture0.size;
             assert(rasterParticleTextureRes[0] === rasterParticleTextureRes[1]);
             const rasterParticleTextureSideLen = rasterParticleTextureRes[0];
-            const tileOffset = [nx - x, ny - y];
+            const tileOffset: [number, number] = [nx - x, ny - y];
             const uniforms = rasterParticleDrawUniformValues(
                 RASTER_PARTICLE_TEXTURE_UNIT,
                 rasterParticleTextureSideLen,
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
                 tileOffset,
                 VELOCITY_TEXTURE_UNIT,
                 targetTileData.texture.size,
@@ -425,7 +425,10 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
     const context = painter.context;
     const gl = context.gl;
 
-    const rasterElevation = 250.0;
+    // Add minimum elevation for globe zoom level to avoid clipping with globe tiles
+    const tileSize = sourceCache.getSource().tileSize;
+    const minLiftForZoom = (1.0 - smoothstep(GLOBE_ZOOM_THRESHOLD_MAX, GLOBE_ZOOM_THRESHOLD_MAX + 1.0, painter.transform.zoom)) * 5.0 * tileSize;
+    const rasterElevation = minLiftForZoom + layer.paint.get('raster-particle-elevation');
     const align = !painter.options.moving;
     const isGlobeProjection = painter.transform.projection.name === 'globe';
 
@@ -497,7 +500,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
         }
 
         const uniformValues = rasterParticleUniformValues(
-            projMatrix,
+            projMatrix as Float32Array,
             normalizeMatrix,
             globeMatrix,
             globeMercatorMatrix,
@@ -516,7 +519,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 
         if (isGlobeProjection) {
-            const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+            const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
             const skirtHeightValue = 0;
             const sharedBuffers = painter.globeSharedBuffers;
             if (sharedBuffers) {
@@ -525,7 +528,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
                 assert(indexBuffer);
                 assert(segments);
                 // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
-                program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.backCCW, uniformValues, layer.id, buffer, indexBuffer, segments);
+                program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, painter.renderElevatedRasterBackface ? CullFaceMode.frontCCW : CullFaceMode.backCCW, uniformValues, layer.id, buffer, indexBuffer, segments);
             }
         } else {
             const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);

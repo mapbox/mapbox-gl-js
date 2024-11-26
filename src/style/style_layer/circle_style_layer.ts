@@ -1,18 +1,18 @@
 import StyleLayer from '../style_layer';
-
 import CircleBucket from '../../data/bucket/circle_bucket';
 import {polygonIntersectsBufferedPoint} from '../../util/intersection_tests';
 import {getMaximumPaintValue, translateDistance, tilespaceTranslate} from '../query_utils';
-import properties from './circle_style_layer_properties';
-import {Transitionable, Transitioning, Layout, PossiblyEvaluated} from '../properties';
+import {getLayoutProperties, getPaintProperties} from './circle_style_layer_properties';
 import {vec4, vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import ProgramConfiguration from '../../data/program_configuration';
-import {Ray} from '../../util/primitives';
 import assert from 'assert';
 import {latFromMercatorY, mercatorZfromAltitude} from '../../geo/mercator_coordinate';
 import EXTENT from '../../style-spec/data/extent';
+import {circleDefinesValues} from '../../render/program/circle_program';
 
+import type {Transitionable, Transitioning, Layout, PossiblyEvaluated, ConfigOptions} from '../properties';
+import type {Ray} from '../../util/primitives';
 import type {FeatureState} from '../../style-spec/expression/index';
 import type Transform from '../../geo/transform';
 import type {Bucket, BucketParameters} from '../../data/bucket';
@@ -21,21 +21,23 @@ import type {LayerSpecification} from '../../style-spec/types';
 import type {TilespaceQueryGeometry} from '../query_geometry';
 import type {DEMSampler} from '../../terrain/elevation';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
-import {circleDefinesValues} from '../../render/program/circle_program';
 import type {CreateProgramParams} from '../../render/painter';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
-import type {ConfigOptions} from '../properties';
 import type {LUT} from "../../util/lut";
 
 class CircleStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        const properties = {
+            layout: getLayoutProperties(),
+            paint: getPaintProperties()
+        };
         super(layer, properties, scope, lut, options);
     }
 
@@ -43,7 +45,7 @@ class CircleStyleLayer extends StyleLayer {
         return new CircleBucket(parameters);
     }
 
-    queryRadius(bucket: Bucket): number {
+    override queryRadius(bucket: Bucket): number {
         const circleBucket: CircleBucket<CircleStyleLayer> = (bucket as any);
         return getMaximumPaintValue('circle-radius', this, circleBucket) +
             getMaximumPaintValue('circle-stroke-width', this, circleBucket) +
@@ -51,7 +53,7 @@ class CircleStyleLayer extends StyleLayer {
             translateDistance(this.paint.get('circle-translate'));
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,
@@ -61,16 +63,13 @@ class CircleStyleLayer extends StyleLayer {
         pixelPosMatrix: Float32Array,
         elevationHelper?: DEMSampler | null,
     ): boolean {
-
         const translation = tilespaceTranslate(
-
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
-            transform.angle, queryGeometry.pixelToTileUnitsFactor);
+            transform.angle, queryGeometry.pixelToTileUnitsFactor
+        );
 
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
         const size = this.paint.get('circle-radius').evaluate(feature, featureState) +
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
             this.paint.get('circle-stroke-width').evaluate(feature, featureState);
 
         return queryIntersectsCircle(queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
@@ -78,11 +77,11 @@ class CircleStyleLayer extends StyleLayer {
             this.paint.get('circle-pitch-scale') === 'map', translation, size);
     }
 
-    getProgramIds(): Array<string> {
+    override getProgramIds(): Array<string> {
         return ['circle'];
     }
 
-    getDefaultProgramParams(_: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(_: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         const definesValues = (circleDefinesValues(this) as DynamicDefinesType[]);
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),

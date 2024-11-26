@@ -1,12 +1,12 @@
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
-import Program from './program';
 import {circleUniformValues, circleDefinesValues} from './program/circle_program';
 import SegmentVector from '../data/segment';
-import {OverscaledTileID} from '../source/tile_id';
 import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 
+import type {OverscaledTileID} from '../source/tile_id';
+import type Program from './program';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type CircleStyleLayer from '../style/style_layer/circle_style_layer';
@@ -62,7 +62,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
     const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
     const isGlobeProjection = tr.projection.name === 'globe';
-    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+    const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
     const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
 
@@ -79,13 +79,17 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         if (isGlobeProjection) {
             definesValues.push('PROJECTION_GLOBE_VIEW');
         }
-        definesValues.push('TERRAIN_DEPTH_D24');
+        definesValues.push('DEPTH_D24');
+
+        if (painter.terrain && tr.depthOcclusionForSymbolsAndCircles) {
+            definesValues.push('DEPTH_OCCLUSION');
+        }
+
         const program = painter.getOrCreateProgram('circle', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
         const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
         const uniformValues = circleUniformValues(painter, coord, tile, invMatrix, mercatorCenter, layer);
 
         const state: TileRenderState = {
@@ -127,7 +131,9 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const {programConfiguration, program, layoutVertexBuffer, globeExtVertexBuffer, indexBuffer, uniformValues, tile} = segmentsState.state;
         const segments = segmentsState.segments;
 
-        if (painter.terrain) painter.terrain.setupElevationDraw(tile, program, terrainOptions);
+        if (painter.terrain) {
+            painter.terrain.setupElevationDraw(tile, program, terrainOptions);
+        }
 
         painter.uploadCommonUniforms(context, program, tile.tileID.toUnwrapped());
 

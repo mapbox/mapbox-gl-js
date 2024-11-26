@@ -1,5 +1,4 @@
 import createStyleLayer from './create_style_layer';
-
 import {values} from '../util/util';
 import groupByLayout from '../style-spec/group_by_layout';
 
@@ -51,7 +50,7 @@ class StyleLayerIndex {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
             const layer = this._layers[layerConfig.id] = (createStyleLayer(layerConfig, this.scope, null, this._options) as TypedStyleLayer);
-            layer.compileFilter();
+            layer.compileFilter(options);
             if (this.keyCache[layerConfig.id])
                 delete this.keyCache[layerConfig.id];
         }

@@ -1,0 +1,15 @@
+{
+  "expression": ["image", "poi_circle", {"params": []}],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]",
+          "error": "Image options \"params\" should be an object"
+        }
+      ]
+    }
+  }
+}

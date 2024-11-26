@@ -36,7 +36,7 @@ function getCaches() {
 
 function cacheOpen() {
     const caches = getCaches();
-    if (caches && !sharedCache) {
+    if (caches && sharedCache == null) {
         sharedCache = caches.open(CACHE_NAME);
     }
 }
@@ -48,7 +48,7 @@ export function cacheClose() {
 }
 
 let responseConstructorSupportsReadableStream;
-function prepareBody(response: Response, callback: (body?: Blob | ReadableStream | null | undefined) => void) {
+function prepareBody(response: Response, callback: (body?: Blob | ReadableStream | null) => void) {
     if (responseConstructorSupportsReadableStream === undefined) {
         try {
             new Response(new ReadableStream()); // eslint-disable-line no-undef
@@ -77,7 +77,7 @@ function isNullBodyStatus(status: Response["status"]): boolean {
 
 export function cachePut(request: Request, response: Response, requestTime: number) {
     cacheOpen();
-    if (!sharedCache) return;
+    if (sharedCache == null) return;
 
     const cacheControl = parseCacheControl(response.headers.get('Cache-Control') || '');
     if (cacheControl['no-store']) return;
@@ -115,7 +115,7 @@ export function cachePut(request: Request, response: Response, requestTime: numb
         const clonedResponse = new Response(isNullBodyStatus(response.status) ? null : body, options);
 
         cacheOpen();
-        if (!sharedCache) return;
+        if (sharedCache == null) return;
         sharedCache
             .then(cache => cache.put(strippedURL, clonedResponse))
             .catch(e => warnOnce(e.message));
@@ -124,14 +124,10 @@ export function cachePut(request: Request, response: Response, requestTime: numb
 
 export function cacheGet(
     request: Request,
-    callback: (
-        error?: any | null | undefined,
-        response?: Response | null | undefined,
-        fresh?: boolean | null | undefined,
-    ) => void,
+    callback: (error?: Error, response?: Response, fresh?: boolean) => void,
 ): void {
     cacheOpen();
-    if (!sharedCache) return callback(null);
+    if (sharedCache == null) return callback(null);
 
     sharedCache
         .then(cache => {
@@ -188,7 +184,7 @@ export function cacheEntryPossiblyAdded(dispatcher: Dispatcher) {
 // runs on worker, see above comment
 export function enforceCacheSizeLimit(limit: number) {
     cacheOpen();
-    if (!sharedCache) return;
+    if (sharedCache == null) return;
 
     sharedCache
         .then(cache => {
@@ -200,7 +196,7 @@ export function enforceCacheSizeLimit(limit: number) {
         });
 }
 
-export function clearTileCache(callback?: (err?: Error | null | undefined) => void) {
+export function clearTileCache(callback?: (err?: Error | null) => void) {
     const caches = getCaches();
     if (!caches) return;
 

@@ -6,15 +6,15 @@ import {
     hillshadeUniformValues,
     hillshadeUniformPrepareValues
 } from './program/hillshade_program';
+import ColorMode from '../gl/color_mode';
+import assert from 'assert';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type Tile from '../source/tile';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
-import ColorMode from '../gl/color_mode';
 import type {OverscaledTileID} from '../source/tile_id';
-import assert from 'assert';
-import DEMData from '../data/dem_data';
+import type DEMData from '../data/dem_data';
 import type {DynamicDefinesType} from './program/program_uniforms';
 
 export default drawHillshade;
@@ -114,7 +114,7 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
     context.activeTexture.set(gl.TEXTURE0);
     let fbo = tile.hillshadeFBO;
     if (!fbo) {
-        const renderTexture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA);
+        const renderTexture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA8);
         renderTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
         fbo = tile.hillshadeFBO = context.createFramebuffer(tileSize, tileSize, true, 'renderbuffer');

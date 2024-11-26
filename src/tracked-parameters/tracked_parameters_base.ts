@@ -4,28 +4,28 @@ import {warnOnce} from '../util/util';
 export type Description = any;
 
 export interface ITrackedParameters {
-  registerParameter(
+  registerParameter: (
     containerObject: any,
     scope: Array<string>,
     name: string,
-    description?: Description | null,
-    changeValueCallback?: any | null
-  ): void;
+    description?: Description,
+    changeValueCallback?: any
+  ) => void;
 
-  registerButton(
+  registerButton: (
     scope: Array<string>,
     buttonTitle: string,
     onClick: any
-  ): void;
+  ) => void;
 
-  registerBinding(
+  registerBinding: (
     containerObject: any,
     scope: Array<string>,
     name: string,
     description?: object,
-  ): void;
+  ) => void;
 
-  refreshUI(): void;
+  refreshUI: () => void;
 }
 
 // For fast prototyping in case of only one map present
@@ -35,7 +35,7 @@ export function setGlobal(tp: ITrackedParameters) {
     global = tp;
 }
 
-export function registerParameter(object: any, scope: Array<string>, name: string, description: Description | null | undefined, onChange: any) {
+export function registerParameter(object: any, scope: Array<string>, name: string, description: Description, onChange: any) {
     Debug.run(() => {
         if (global) {
             global.registerParameter(object, scope, name, description, onChange);
@@ -55,7 +55,7 @@ export function registerButton(scope: Array<string>, buttonTitle: string, onClic
     });
 }
 
-export function registerBinding(containerObject: any, scope: Array<string>, name: string, description?: any | null) {
+export function registerBinding(containerObject: any, scope: Array<string>, name: string, description?: Description) {
     Debug.run(() => {
         if (global) {
             global.registerBinding(containerObject, scope, name, description);

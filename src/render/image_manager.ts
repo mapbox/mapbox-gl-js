@@ -1,8 +1,7 @@
 import potpack from 'potpack';
-
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import {RGBAImage} from '../util/image';
-import {ImagePosition} from './image_atlas';
+import {ImagePosition, PATTERN_PADDING} from './image_atlas';
 import Texture from './texture';
 import assert from 'assert';
 import {renderStyleImage} from '../style/style_image';
@@ -19,12 +18,6 @@ type Pattern = {
     bin: PotpackBox;
     position: ImagePosition;
 };
-
-// When copied into the atlas texture, image data is padded by one pixel on each side. Icon
-// images are padded with fully transparent pixels, while pattern images are padded with a
-// copy of the image data wrapped from the opposite side. In both cases, this ensures the
-// correct behavior of GL_LINEAR texture sampling mode.
-const padding = 1;
 
 /*
     ImageManager does three things:
@@ -286,10 +279,10 @@ class ImageManager extends Evented {
         }
 
         if (!pattern) {
-            const w = image.data.width + padding * 2;
-            const h = image.data.height + padding * 2;
+            const w = image.data.width + PATTERN_PADDING * 2;
+            const h = image.data.height + PATTERN_PADDING * 2;
             const bin = {w, h, x: 0, y: 0};
-            const position = new ImagePosition(bin, image);
+            const position = new ImagePosition(bin, image, PATTERN_PADDING);
             this.patterns[scope][id] = {bin, position};
         } else {
             pattern.position.version = image.version;
@@ -305,7 +298,7 @@ class ImageManager extends Evented {
         let atlasTexture = this.atlasTexture[scope];
 
         if (!atlasTexture) {
-            atlasTexture = new Texture(context, this.atlasImage[scope], gl.RGBA);
+            atlasTexture = new Texture(context, this.atlasImage[scope], gl.RGBA8);
             this.atlasTexture[scope] = atlasTexture;
         } else if (this.dirty) {
             atlasTexture.update(this.atlasImage[scope]);
@@ -327,20 +320,31 @@ class ImageManager extends Evented {
         dst.resize({width: w || 1, height: h || 1});
 
         for (const id in this.patterns[scope]) {
-            const {bin} = this.patterns[scope][id];
+            const {bin, position} = this.patterns[scope][id];
+            let padding = position.padding;
             const x = bin.x + padding;
             const y = bin.y + padding;
             const src = this.images[scope][id].data;
             const w = src.width;
             const h = src.height;
 
+            assert(padding > 1);
+            padding = padding > 1 ? padding - 1 : padding;
+
             RGBAImage.copy(src, dst, {x: 0, y: 0}, {x, y}, {width: w, height: h}, lut);
 
-            // Add 1 pixel wrapped padding on each side of the image.
-            RGBAImage.copy(src, dst, {x: 0, y: h - 1}, {x, y: y - 1}, {width: w, height: 1}, lut); // T
-            RGBAImage.copy(src, dst, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: 1}, lut); // B
-            RGBAImage.copy(src, dst, {x: w - 1, y: 0}, {x: x - 1, y}, {width: 1, height: h}, lut); // L
-            RGBAImage.copy(src, dst, {x: 0,     y: 0}, {x: x + w, y}, {width: 1, height: h}, lut); // R
+            // Add wrapped padding on each side of the image.
+            // Leave one pixel transparent to avoid bleeding to neighbouring images
+            RGBAImage.copy(src, dst, {x: 0, y: h - padding}, {x, y: y - padding}, {width: w, height: padding}, lut); // T
+            RGBAImage.copy(src, dst, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: padding}, lut); // B
+            RGBAImage.copy(src, dst, {x: w - padding, y: 0}, {x: x - padding, y}, {width: padding, height: h}, lut); // L
+            RGBAImage.copy(src, dst, {x: 0,     y: 0}, {x: x + w, y}, {width: padding, height: h}, lut); // R
+            // Fill corners
+            RGBAImage.copy(src, dst, {x: w - padding, y: h - padding}, {x: x - padding, y: y - padding}, {width: padding, height: padding}, lut); // TL
+            RGBAImage.copy(src, dst, {x: 0, y: h - padding}, {x: x + w, y: y - padding}, {width: padding, height: padding}, lut); // TR
+            RGBAImage.copy(src, dst, {x: 0, y: 0}, {x: x + w, y: y + h}, {width: padding, height: padding}, lut); // BL
+            RGBAImage.copy(src, dst, {x: w - padding, y: 0}, {x: x - padding, y: y + h}, {width: padding, height: padding}, lut); // BR
+
         }
 
         this.dirty = true;

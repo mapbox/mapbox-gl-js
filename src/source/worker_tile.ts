@@ -1,5 +1,4 @@
 import FeatureIndex from '../data/feature_index';
-
 import {performSymbolLayout} from '../symbol/symbol_layout';
 import {CollisionBoxArray} from '../data/array_types';
 import DictionaryCoder from '../util/dictionary_coder';
@@ -13,9 +12,12 @@ import LineAtlas from '../render/line_atlas';
 import ImageAtlas from '../render/image_atlas';
 import GlyphAtlas from '../render/glyph_atlas';
 import EvaluationParameters from '../style/evaluation_parameters';
-import {CanonicalTileID, OverscaledTileID} from './tile_id';
+import {OverscaledTileID} from './tile_id';
 import {PerformanceUtils} from '../util/performance';
 import tileTransform from '../geo/projection/tile_transform';
+import {makeFQID} from "../util/fqid";
+
+import type {CanonicalTileID} from './tile_id';
 import type Projection from '../geo/projection/projection';
 import type {Bucket} from '../data/bucket';
 import type Actor from '../util/actor';
@@ -52,15 +54,18 @@ class WorkerTile {
     extraShadowCaster: boolean | null | undefined;
     tessellationStep: number | null | undefined;
     projection: Projection;
+    worldview?: string | null;
+    localizableLayerIds?: Set<string>;
     tileTransform: TileTransform;
     brightness: number;
+    scaleFactor: number;
 
     status: 'parsing' | 'done';
     data: VectorTile;
     collisionBoxArray: CollisionBoxArray;
 
     abort: () => void | null | undefined;
-    reloadCallback: WorkerTileCallback | null | undefined;
+    reloadCallback?: WorkerTileCallback | null | undefined;
     vectorTile: VectorTile;
 
     constructor(params: WorkerTileParameters) {
@@ -76,14 +81,17 @@ class WorkerTile {
         this.scope = params.scope;
         this.overscaling = this.tileID.overscaleFactor();
         this.showCollisionBoxes = params.showCollisionBoxes;
-        this.collectResourceTiming = !!params.collectResourceTiming;
+        this.collectResourceTiming = params.request ? params.request.collectResourceTiming : false;
         this.promoteId = params.promoteId;
         this.isSymbolTile = params.isSymbolTile;
         this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
         this.projection = params.projection;
+        this.worldview = params.worldview;
+        this.localizableLayerIds = params.localizableLayerIds;
         this.brightness = params.brightness;
         this.extraShadowCaster = !!params.extraShadowCaster;
         this.tessellationStep = params.tessellationStep;
+        this.scaleFactor = params.scaleFactor;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
@@ -97,9 +105,7 @@ class WorkerTile {
         const featureIndex = new FeatureIndex(this.tileID, this.promoteId);
         featureIndex.bucketLayerIDs = [];
 
-        const buckets: {
-            [_: string]: Bucket;
-        } = {};
+        const buckets: Record<string, Bucket> = {};
 
         // we initially reserve space for a 256x256 atlas, but trim it after processing all line features
         const lineAtlas = new LineAtlas(256, 256);
@@ -153,10 +159,30 @@ class WorkerTile {
 
             const sourceLayerIndex = sourceLayerCoder.encode(sourceLayerId);
             const features = [];
-            for (let index = 0; index < sourceLayer.length; index++) {
+            for (let index = 0, currentFeatureIndex = 0; index < sourceLayer.length; index++) {
                 const feature = sourceLayer.feature(index);
                 const id = featureIndex.getId(feature, sourceLayerId);
-                features.push({feature, id, index, sourceLayerIndex});
+
+                // Handle feature localization based on the map worldview:
+                // 1. If the feature layer is localizable, check if it has a 'worldview' property
+                // 2. Check if the feature worldview is 'all' (visible in all worldviews) or matches the current map worldview
+                // 3. Mark the feature with '$localized' property or skip it otherwise
+                if (this.localizableLayerIds && this.localizableLayerIds.has(sourceLayerId)) {
+                    const worldview = feature.properties ? feature.properties.worldview : null;
+                    if (this.worldview && typeof worldview === 'string') {
+                        if (worldview === 'all') {
+                            feature.properties['$localized'] = true;
+                        } else if (worldview.split(',').includes(this.worldview)) {
+                            feature.properties['$localized'] = true;
+                            feature.properties['worldview'] = this.worldview;
+                        } else {
+                            continue; // Skip features that don't match the current worldview
+                        }
+                    }
+                }
+
+                features.push({feature, id, index: currentFeatureIndex, sourceLayerIndex});
+                currentFeatureIndex++;
             }
 
             for (const family of layerFamilies[sourceLayerId]) {
@@ -174,7 +200,7 @@ class WorkerTile {
 
                 recalculateLayers(family, this.zoom, options.brightness, availableImages);
 
-                const bucket = buckets[layer.id] = layer.createBucket({
+                const bucket: Bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,
                     // @ts-expect-error - TS2322 - Type 'Family<TypedStyleLayer>' is not assignable to type 'ClipStyleLayer[] & ModelStyleLayer[] & SymbolStyleLayer[] & LineStyleLayer[] & HeatmapStyleLayer[] & FillExtrusionStyleLayer[] & FillStyleLayer[] & CircleStyleLayer[]'.
                     layers: family,
@@ -192,7 +218,7 @@ class WorkerTile {
 
                 assert(this.tileTransform.projection.name === this.projection.name);
                 bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
-                featureIndex.bucketLayerIDs.push(family.map((l) => l.id));
+                featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
             }
         }
 
@@ -256,6 +282,7 @@ class WorkerTile {
                                 this.tileID.canonical,
                                 this.tileZoom,
                                 this.projection,
+                                this.scaleFactor,
                                 this.brightness);
                     } else if (bucket.hasPattern &&
                             (bucket instanceof LineBucket ||

@@ -1,9 +1,10 @@
-import type IndexBuffer from '../gl/index_buffer';
-import type VertexBuffer from '../gl/vertex_buffer';
 import SegmentVector from '../data/segment';
-import type Context from '../gl/context';
 import {atmosphereLayout} from './atmosphere_attributes';
 import {TriangleIndexArray, AtmosphereVertexArray} from '../data/array_types';
+
+import type IndexBuffer from '../gl/index_buffer';
+import type VertexBuffer from '../gl/vertex_buffer';
+import type Context from '../gl/context';
 
 export class AtmosphereBuffer {
     vertexBuffer: VertexBuffer;

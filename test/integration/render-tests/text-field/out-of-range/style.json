@@ -1,0 +1,36 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 32,
+      "width": 128
+    }
+  },
+  "center": [0, 0],
+  "zoom": 0,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0, 0]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "text-field": "𐓏𐒰𐓓𐒰𐓓𐒷 𐒼𐓂𐓊𐒻 𐓆𐒻𐒿𐒷 𐓀𐒰^𐓓𐒰^(Osage)",
+        "text-size": 24,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

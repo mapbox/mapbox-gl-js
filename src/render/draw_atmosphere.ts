@@ -1,5 +1,4 @@
 import Color from '../style-spec/util/color';
-
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import {default as ColorMode, ZERO, ONE, ONE_MINUS_SRC_ALPHA} from '../gl/color_mode';
@@ -12,12 +11,13 @@ import {atmosphereUniformValues} from '../terrain/globe_raster_program';
 import {AtmosphereBuffer} from '../render/atmosphere_buffer';
 import {degToRad, mapValue, clamp} from '../util/util';
 import {mat3, vec3, mat4, quat} from 'gl-matrix';
-import Fog from '../style/fog';
 import SegmentVector from '../data/segment';
 import {TriangleIndexArray, StarsVertexArray} from '../data/array_types';
 import {starsLayout} from './stars_attributes';
 import {starsUniformValues} from '../terrain/stars_program';
 import {mulberry32} from '../style-spec/util/random';
+
+import type Fog from '../style/fog';
 import type Painter from './painter';
 import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -158,8 +158,7 @@ class Atmosphere {
             tr.worldSize / (2.0 * Math.PI * 1.025) - 1.0 : tr.globeRadius;
 
         const temporalOffset = (painter.frameCounter / 1000.0) % 1;
-        const globeCenterInViewSpace = ((tr.globeCenterInViewSpace) as Array<number>);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
+        const globeCenterInViewSpace = tr.globeCenterInViewSpace;
         const globeCenterDistance = vec3.length(globeCenterInViewSpace);
         const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(globeRadius, 2.0));
         const horizonAngle = Math.acos(distanceToHorizon / globeCenterDistance);
@@ -206,7 +205,6 @@ class Atmosphere {
     }
 
     drawStars(painter: Painter, fog: Fog) {
-
         const starIntensity = clamp(fog.properties.get('star-intensity'), 0.0, 1.0);
 
         if (starIntensity === 0) {
@@ -219,31 +217,26 @@ class Atmosphere {
 
         const program = painter.getOrCreateProgram('stars');
 
-        const orientation = quat.identity([] as any);
-
+        const orientation = quat.identity([] as unknown as quat);
         quat.rotateX(orientation, orientation, -tr._pitch);
         quat.rotateZ(orientation, orientation, -tr.angle);
         quat.rotateX(orientation, orientation, degToRad(tr._center.lat));
         quat.rotateY(orientation, orientation, -degToRad(tr._center.lng));
 
         const rotationMatrix = mat4.fromQuat(new Float32Array(16), orientation);
+        const mvp = mat4.multiply([] as unknown as mat4, tr.starsProjMatrix, rotationMatrix);
+        const modelView3 = mat3.fromMat4([] as unknown as mat3, rotationMatrix);
+        const modelviewInv = mat3.invert([] as unknown as mat3, modelView3);
 
-        const mvp = mat4.multiply([] as any, tr.starsProjMatrix, rotationMatrix);
-
-        const modelView3 = mat3.fromMat4([] as any, rotationMatrix);
-
-        const modelviewInv = mat3.invert([] as any, modelView3);
-
-        const camUp = [0, 1, 0];
-        vec3.transformMat3(camUp as [number, number, number], camUp as [number, number, number], modelviewInv);
-        vec3.scale(camUp as [number, number, number], camUp as [number, number, number], this.params.sizeMultiplier);
-        const camRight = [1, 0, 0];
-        vec3.transformMat3(camRight as [number, number, number], camRight as [number, number, number], modelviewInv);
-        vec3.scale(camRight as [number, number, number], camRight as [number, number, number], this.params.sizeMultiplier);
+        const camUp: vec3 = [0, 1, 0];
+        vec3.transformMat3(camUp, camUp, modelviewInv);
+        vec3.scale(camUp, camUp, this.params.sizeMultiplier);
+        const camRight: vec3 = [1, 0, 0];
+        vec3.transformMat3(camRight, camRight, modelviewInv);
+        vec3.scale(camRight, camRight, this.params.sizeMultiplier);
 
         const uniforms = starsUniformValues(
               mvp,
-              // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number, number]'.
               camUp,
               camRight,
               starIntensity);

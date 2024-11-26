@@ -1,0 +1,72 @@
+{
+  "version": 8,
+  "metadata": {
+    "description": "Checks fill-extrusion-height-alignment works as expected",
+    "test": {
+      "height": 256,
+      "allowed": 0.001,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}-terrain-512.png"
+      ],
+      "maxzoom": 14,
+      "tileSize": 512
+    },
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 4.0
+  },
+  "pitch": 65,
+  "zoom": 17.5,
+  "center": [
+    -122.464761,
+    37.753219
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "green"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "#888",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "filter": ["==", "extrude", "true"],
+      "paint": {
+        "fill-extrusion-color": "gray",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-height-alignment": "terrain",
+        "fill-extrusion-base-alignment": "flat"
+      }
+    }
+  ]
+}

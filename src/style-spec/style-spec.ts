@@ -26,8 +26,9 @@ export type StylePropertySpecification = {
     'property-type': ExpressionType,
     expression?: ExpressionSpecification,
     transition?: boolean,
+    overridable?: boolean,
     default?: boolean,
-    tokens: never
+    tokens?: never
 } | {
     type: 'enum',
     'property-type': ExpressionType,
@@ -82,13 +83,11 @@ import ValidationError from './error/validation_error';
 import ParsingError from './error/parsing_error';
 import {StyleExpression, isExpression, createExpression, createPropertyExpression, normalizePropertyExpression, ZoomConstantExpression, ZoomDependentExpression, StylePropertyFunction} from './expression/index';
 import featureFilter, {isExpressionFilter} from './feature_filter/index';
-
 import convertFilter from './feature_filter/convert';
 import Color from './util/color';
 import {createFunction, isFunction} from './function/index';
 import convertFunction from './function/convert';
 import {eachSource, eachLayer, eachProperty} from './visit';
-
 import validate from './validate_style';
 import validateMapboxApiSupported from './validate_mapbox_api_supported';
 

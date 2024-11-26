@@ -25,7 +25,7 @@ export default defineConfig({
                 singleThread: true
             }
         },
-        retry: 2,
+        retry: process.env.CI ? 2 : 0,
         testTimeout: 5_000,
         browser: {
             name: 'chromium',
@@ -33,6 +33,7 @@ export default defineConfig({
             enabled: true,
             headless: true,
             fileParallelism: false,
+            screenshotFailures: false,
         },
         restoreMocks: true,
         unstubGlobals: true,

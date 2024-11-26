@@ -1,8 +1,8 @@
 import StyleLayer from '../style_layer';
-import MercatorCoordinate from '../../geo/mercator_coordinate';
-import type {Map} from '../../ui/map';
 import assert from 'assert';
 
+import type MercatorCoordinate from '../../geo/mercator_coordinate';
+import type {Map} from '../../ui/map';
 import type {ValidationErrors} from '../validate_style';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type SourceCache from '../../source/source_cache';
@@ -169,6 +169,14 @@ export interface CustomLayerInterface {
     shouldRerenderTiles?: () => boolean;
     onAdd?: (map: Map, gl: WebGL2RenderingContext) => void;
     onRemove?: (map: Map, gl: WebGL2RenderingContext) => void;
+
+    source?: never;
+    'source-layer'?: never;
+    minzoom?: never;
+    maxzoom?: never;
+    filter?: never;
+    layout?: never;
+    paint?: never;
 }
 
 export function validateCustomStyleLayer(layerObject: CustomLayerInterface): ValidationErrors {
@@ -208,15 +216,15 @@ class CustomStyleLayer extends StyleLayer {
         if (implementation.slot) this.slot = implementation.slot;
     }
 
-    is3D(): boolean {
+    override is3D(): boolean {
         return this.implementation.renderingMode === '3d';
     }
 
-    hasOffscreenPass(): boolean {
+    override hasOffscreenPass(): boolean {
         return this.implementation.prerender !== undefined;
     }
 
-    isDraped(_?: SourceCache | null): boolean {
+    override isDraped(_?: SourceCache | null): boolean {
         return this.implementation.renderToTile !== undefined;
     }
 
@@ -224,23 +232,23 @@ class CustomStyleLayer extends StyleLayer {
         return !!this.implementation.shouldRerenderTiles && this.implementation.shouldRerenderTiles();
     }
 
-    recalculate() {}
-    updateTransitions() {}
-    hasTransition(): boolean {
+    override recalculate() {}
+    override updateTransitions() {}
+    override hasTransition(): boolean {
         return false;
     }
 
-    serialize(): any {
+    override serialize(): any {
         assert(false, "Custom layers cannot be serialized");
     }
 
-    onAdd(map: Map) {
+    override onAdd(map: Map) {
         if (this.implementation.onAdd) {
             this.implementation.onAdd(map, map.painter.context.gl);
         }
     }
 
-    onRemove(map: Map) {
+    override onRemove(map: Map) {
         if (this.implementation.onRemove) {
             this.implementation.onRemove(map, map.painter.context.gl);
         }

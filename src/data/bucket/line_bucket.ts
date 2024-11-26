@@ -4,8 +4,7 @@ import {
     LinePatternLayoutArray,
     ZOffsetVertexArray,
 } from '../array_types';
-
-import {members as layoutAttributes} from './line_attributes';
+import {members as layoutAttributes, zOffsetAttributes} from './line_attributes';
 import {members as layoutAttributesExt} from './line_attributes_ext';
 import {members as layoutAttributesPattern} from './line_attributes_pattern';
 import SegmentVector from '../segment';
@@ -19,16 +18,15 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
-import {zOffsetAttributes} from './symbol_attributes';
 import assert from 'assert';
-
+import {Point4D, clipLine} from '../../util/polygon_clipping';
+import {warnOnce} from '../../util/util';
 // Import LineAtlas as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../../render/line_atlas';
 
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
-import Point from "@mapbox/point-geometry";
 import type {
     Bucket,
     BucketParameters,
@@ -48,8 +46,8 @@ import type LineAtlas from '../../render/line_atlas';
 import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
-import {Point4D, clipLine} from '../../util/polygon_clipping';
-import {warnOnce} from '../../util/util';
+import type {PossiblyEvaluatedValue} from '../../style/properties';
+import type Point from "@mapbox/point-geometry";
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -67,11 +65,8 @@ const EXTRUDE_SCALE = 63;
  *
  * COS_HALF_SHARP_CORNER controls how sharp a corner has to be for us to add an
  * extra vertex. The default is 75 degrees.
- *
- * The newly created vertices are placed SHARP_CORNER_OFFSET pixels from the corner.
  */
 const COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
-const SHARP_CORNER_OFFSET = 15;
 
 /*
  * Straight corners are used to reduce vertex count for line-join: none lines.
@@ -99,11 +94,15 @@ type GradientTexture = {
  */
 class LineBucket implements Bucket {
     distance: number;
+    prevDistance: number;
     totalDistance: number;
+    totalFeatureLength: number;
     maxLineLength: number;
     scaledDistance: number;
     lineSoFar: number;
     lineClips: LineClips | null | undefined;
+    zOffsetValue: PossiblyEvaluatedValue<number>;
+    lineFeature: BucketFeature;
 
     e1: number;
     e2: number;
@@ -141,6 +140,7 @@ class LineBucket implements Bucket {
 
     hasPattern: boolean;
     hasZOffset: boolean;
+    hasCrossSlope: boolean;
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
     segments: SegmentVector;
     uploaded: boolean;
@@ -149,8 +149,11 @@ class LineBucket implements Bucket {
     currentVertexIsOutside: boolean;
     tessellationStep: number;
 
+    evaluationGlobals = {'zoom': 0, 'lineProgress': undefined};
+
     constructor(options: BucketParameters<LineStyleLayer>) {
         this.zoom = options.zoom;
+        this.evaluationGlobals.zoom = this.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.fqid);
@@ -158,6 +161,7 @@ class LineBucket implements Bucket {
         this.projection = options.projection;
         this.hasPattern = false;
         this.hasZOffset = false;
+        this.hasCrossSlope = false;
         this.patternFeatures = [];
         this.lineClipsArray = [];
         this.gradients = {};
@@ -187,9 +191,16 @@ class LineBucket implements Bucket {
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         this.hasPattern = hasPattern('line', this.layers, options);
         const lineSortKey = this.layers[0].layout.get('line-sort-key');
-        const zOffset = this.layers[0].layout.get('line-z-offset');
 
-        this.hasZOffset = !zOffset.isConstant() || !!zOffset.constantOr(0);
+        this.hasZOffset = !this.layers[0].isDraped();
+        const elevationReference = this.layers[0].layout.get('line-elevation-reference');
+        if (this.hasZOffset && elevationReference === 'none') {
+            warnOnce(`line-elevation-reference: ground is used for the layer ${this.layerIds[0]} because non-zero line-z-offset value was found.`);
+        }
+
+        const crossSlope = this.layers[0].layout.get('line-cross-slope');
+        this.hasCrossSlope = this.hasZOffset && crossSlope !== undefined;
+
         const bucketFeatures = [];
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
@@ -200,18 +211,15 @@ class LineBucket implements Bucket {
                 continue;
 
             const sortKey = lineSortKey ?
-
                 lineSortKey.evaluate(evaluationFeature, {}, canonical) :
                 undefined;
 
             const bucketFeature: BucketFeature = {
                 id,
                 properties: feature.properties,
-                // @ts-expect-error - TS2322 - Type '0 | 2 | 1 | 3' is not assignable to type '2 | 1 | 3'.
                 type: feature.type,
                 sourceLayerIndex,
                 index,
-                // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
                 geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
                 patterns: {},
                 sortKey
@@ -381,9 +389,10 @@ class LineBucket implements Bucket {
         const miterLimit = layout.get('line-miter-limit');
         const roundLimit = layout.get('line-round-limit');
         this.lineClips = this.lineFeatureClips(feature);
+        this.lineFeature = feature;
+        this.zOffsetValue = layout.get('line-z-offset').value;
 
         for (const line of geometry) {
-
             this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit);
         }
 
@@ -392,12 +401,12 @@ class LineBucket implements Bucket {
 
     addLine(vertices: Array<Point>, feature: BucketFeature, canonical: CanonicalTileID, join: string, cap: string, miterLimit: number, roundLimit: number) {
         this.distance = 0;
+        this.prevDistance = 0;
         this.scaledDistance = 0;
         this.totalDistance = 0;
+        this.totalFeatureLength = 0;
         this.lineSoFar = 0;
         this.currentVertex = undefined;
-        const evaluationGlobals = {'zoom': this.zoom, 'lineProgress': undefined};
-        const layout = this.layers[0].layout;
 
         const joinNone = join === 'none';
         this.patternJoinNone = this.hasPattern && joinNone;
@@ -411,6 +420,8 @@ class LineBucket implements Bucket {
             for (let i = 0; i < vertices.length - 1; i++) {
                 this.totalDistance += vertices[i].dist(vertices[i + 1]);
             }
+            const featureShare = this.lineClips.end - this.lineClips.start;
+            this.totalFeatureLength = this.totalDistance / featureShare;
             this.updateScaledDistance();
             this.maxLineLength = Math.max(this.maxLineLength, this.totalDistance);
         }
@@ -432,10 +443,6 @@ class LineBucket implements Bucket {
 
         if (join === 'bevel') miterLimit = 1.05;
 
-        const sharpCornerOffset = this.overscaling <= 16 ?
-            SHARP_CORNER_OFFSET * EXTENT / (512 * this.overscaling) :
-            0;
-
         // we could be more precise, but it would only save a negligible amount of space
         const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
 
@@ -455,7 +462,6 @@ class LineBucket implements Bucket {
 
         let fixedElevation: number | null | undefined;
         for (let i = first; i < len; i++) {
-
             nextVertex = i === len - 1 ?
                 (isPolygon ? vertices[first + 1] : (undefined as any)) : // if it's a polygon, treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
@@ -467,24 +473,7 @@ class LineBucket implements Bucket {
             if (currentVertex) prevVertex = currentVertex;
 
             currentVertex = vertices[i];
-            if (this.hasZOffset) {
-
-                const value = layout.get('line-z-offset').value;
-                if (value.kind === 'constant') {
-                    fixedElevation = value.value;
-                } else {
-                    if (this.lineClips) {
-                        const featureShare = this.lineClips.end - this.lineClips.start;
-                        const totalFeatureLength = this.totalDistance / featureShare;
-                        evaluationGlobals['lineProgress'] = (totalFeatureLength * this.lineClips.start + this.distance + (prevVertex ? prevVertex.dist(currentVertex) : 0)) / totalFeatureLength;
-                    } else {
-                        warnOnce(`line-z-offset evaluation for ${this.layerIds[0]} requires enabling 'lineMetrics' for the source.`);
-                        evaluationGlobals['lineProgress'] = 0;
-                    }
-                    fixedElevation = value.evaluate(evaluationGlobals, feature);
-                }
-                fixedElevation = fixedElevation || 0;
-            }
+            fixedElevation = this.hasZOffset ? this.evaluateElevationValue(prevVertex ? prevVertex.dist(currentVertex) : 0) : null;
 
             // Calculate the normal towards the next vertex in this line. In case
             // there is no next vertex, pretend that the line is continuing straight,
@@ -578,22 +567,20 @@ class LineBucket implements Bucket {
 
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
             const lineTurnsLeft = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0;
-
-            if (isSharpCorner && i > first) {
-                const prevSegmentLength = currentVertex.dist(prevVertex);
-                if (prevSegmentLength > 2 * sharpCornerOffset) {
-                    const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
-                    this.updateDistance(prevVertex, newPrevVertex);
-                    this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, segment, fixedElevation);
-                    prevVertex = newPrevVertex;
-                }
-            }
+            // Fixed offset from the corners to straighted up edges (require for pattern, gradient and trim-offset)
+            const SHARP_CORNER_OFFSET = 15;
+            const sharpCornerOffset = this.overscaling <= 16 ? SHARP_CORNER_OFFSET * EXTENT / (512 * this.overscaling) : 0;
 
             if (middleVertex && currentJoin === 'round') {
                 if (miterLength < roundLimit) {
                     currentJoin = 'miter';
                 } else if (miterLength <= 2) {
-                    currentJoin = 'fakeround';
+                    const boundsMin = -10;
+                    const boundsMax = EXTENT + 10;
+                    const outside = pointOutsideBounds(currentVertex, boundsMin, boundsMax);
+                    // Disable 'fakeround' for line-z-offset when either outside tile bounds or when using line-cross-slope.
+                    // In these cases, using 'fakeround' either causes some rendering artifacts or doesn't look good.
+                    currentJoin = (this.hasZOffset && (outside || this.hasCrossSlope)) ? 'miter' : 'fakeround';
                 }
             }
 
@@ -611,17 +598,36 @@ class LineBucket implements Bucket {
                 if (miterLength < miterLimit) currentJoin = 'miter';
             }
 
+            const sharpMiter = currentJoin === 'miter' && isSharpCorner;
+
             // Calculate how far along the line the currentVertex is
-            if (prevVertex) this.updateDistance(prevVertex, currentVertex);
+            if (prevVertex && !sharpMiter) this.updateDistance(prevVertex, currentVertex);
 
             if (currentJoin === 'miter') {
-
-                joinNormal._mult(miterLength);
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment, fixedElevation);
-
+                if (isSharpCorner) {
+                    const prevSegmentLength = currentVertex.dist(prevVertex);
+                    if (prevSegmentLength > 2 * sharpCornerOffset) {
+                        const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
+                        this.updateDistance(prevVertex, newPrevVertex);
+                        this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, segment, fixedElevation);
+                        prevVertex = newPrevVertex;
+                    }
+                    this.updateDistance(prevVertex, currentVertex);
+                    joinNormal._mult(miterLength);
+                    this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment, fixedElevation);
+                    const nextSegmentLength = currentVertex.dist(nextVertex);
+                    if (nextSegmentLength > 2 * sharpCornerOffset) {
+                        const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
+                        this.updateDistance(currentVertex, newCurrentVertex);
+                        this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, segment, fixedElevation);
+                        currentVertex = newCurrentVertex;
+                    }
+                } else {
+                    joinNormal._mult(miterLength);
+                    this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment, fixedElevation);
+                }
             } else if (currentJoin === 'flipbevel') {
                 // miter is too big, flip the direction to make a beveled join
-
                 if (miterLength > 100) {
                     // Almost parallel lines
                     joinNormal = nextNormal.mult(-1);
@@ -634,13 +640,26 @@ class LineBucket implements Bucket {
                 this.addCurrentVertex(currentVertex, joinNormal.mult(-1), 0, 0, segment, fixedElevation);
 
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
-                const offset = -Math.sqrt(miterLength * miterLength - 1);
-                const offsetA = lineTurnsLeft ? offset : 0;
-                const offsetB = lineTurnsLeft ? 0 : offset;
+                if (fixedElevation != null && prevVertex) {
+                    // Close previous segment with butt
+                    this.addCurrentVertex(currentVertex, prevNormal, -1, -1, segment, fixedElevation);
+                }
 
-                // Close previous segment with a bevel
-                if (prevVertex) {
-                    this.addCurrentVertex(currentVertex, prevNormal, offsetA, offsetB, segment, fixedElevation);
+                const dist = currentVertex.dist(prevVertex);
+                const skipStraightEdges = dist <= 2 * sharpCornerOffset && currentJoin !== 'bevel';
+                const join = joinNormal.mult(lineTurnsLeft ? 1.0 : -1.0);
+                join._mult(miterLength);
+                const next = nextNormal.mult(lineTurnsLeft ? -1.0 : 1.0);
+                const prev = prevNormal.mult(lineTurnsLeft ? -1.0 : 1.0);
+                const z = this.evaluateElevationValue(this.distance);
+
+                if (fixedElevation == null) {
+                    // This vertex is placed at the inner side of the corner
+                    this.addHalfVertex(currentVertex, join.x, join.y, false, !lineTurnsLeft, 0, segment, z);
+                    if (!skipStraightEdges) {
+                        // This vertex is responsible to straighten up the line before the corner
+                        this.addHalfVertex(currentVertex, join.x + prev.x * 2.0, join.y + prev.y * 2.0, false, lineTurnsLeft, 0, segment, z);
+                    }
                 }
 
                 if (currentJoin === 'fakeround') {
@@ -652,7 +671,8 @@ class LineBucket implements Bucket {
                     // pick the number of triangles for approximating round join by based on the angle between normals
                     const n = Math.round((approxAngle * 180 / Math.PI) / DEG_PER_TRIANGLE);
 
-                    for (let m = 1; m < n; m++) {
+                    this.addHalfVertex(currentVertex, prev.x, prev.y, false, lineTurnsLeft, 0, segment, z);
+                    for (let m = 0; m < n; m++) {
                         let t = m / n;
                         if (t !== 0.5) {
                             // approximate spherical interpolation https://observablehq.com/@mourner/approximating-geometric-slerp
@@ -661,16 +681,22 @@ class LineBucket implements Bucket {
                             const B = 0.848013 + cosAngle * (-1.06021 + cosAngle * 0.215638);
                             t = t + t * t2 * (t - 1) * (A * t2 * t2 + B);
                         }
-                        const extrude = nextNormal.sub(prevNormal)._mult(t)._add(prevNormal)._unit()._mult(lineTurnsLeft ? -1 : 1);
-                        this.addHalfVertex(currentVertex, extrude.x, extrude.y, false, lineTurnsLeft, 0, segment, fixedElevation);
+                        const extrude = next.sub(prev)._mult(t)._add(prev)._unit();
+                        this.addHalfVertex(currentVertex, extrude.x, extrude.y, false, lineTurnsLeft, 0, segment, z);
                     }
+                    // These vertices are placed on the outer side of the line
+                    this.addHalfVertex(currentVertex, next.x, next.y, false, lineTurnsLeft, 0, segment, z);
                 }
 
-                if (nextVertex) {
-                    // Start next segment
-                    this.addCurrentVertex(currentVertex, nextNormal, -offsetA, -offsetB, segment, fixedElevation);
+                if (!skipStraightEdges && fixedElevation == null) {
+                    // This vertex is responsible to straighten up the line after the corner
+                    this.addHalfVertex(currentVertex, join.x + next.x * 2.0, join.y + next.y * 2.0, false, lineTurnsLeft, 0, segment, z);
                 }
 
+                if (fixedElevation != null && nextVertex) {
+                    // Start next segment with a butt
+                    this.addCurrentVertex(currentVertex, nextNormal, 1, 1, segment, fixedElevation);
+                }
             } else if (currentJoin === 'butt') {
                 this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment, fixedElevation); // butt cap
 
@@ -703,16 +729,6 @@ class LineBucket implements Bucket {
                     this.addCurrentVertex(currentVertex, nextNormal, 0, 0, segment, fixedElevation);
                 }
             }
-
-            if (isSharpCorner && i < len - 1) {
-                const nextSegmentLength = currentVertex.dist(nextVertex);
-                if (nextSegmentLength > 2 * sharpCornerOffset) {
-                    const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
-                    this.updateDistance(currentVertex, newCurrentVertex);
-                    this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, segment, fixedElevation);
-                    currentVertex = newCurrentVertex;
-                }
-            }
         }
     }
 
@@ -720,6 +736,9 @@ class LineBucket implements Bucket {
         // one vector tile is usually rendered over 64x64 terrain grid. This should be enough for higher res grid, too.
         const STEP = this.tessellationStep;
         const steps = ((to.w - from.w) / STEP) | 0;
+        let stepsDistance = 0;
+        const scaledDistance = this.scaledDistance;
+
         if (steps > 1) {
             this.lineSoFar = from.w;
             const stepX = (to.x - from.x) / steps;
@@ -731,13 +750,35 @@ class LineBucket implements Bucket {
                 from.y += stepY;
                 from.z += stepZ;
                 this.lineSoFar += stepW;
-                this.addHalfVertex(from, leftX, leftY, round, false, endLeft, segment, from.z);
-                this.addHalfVertex(from, rightX, rightY, round, true, -endRight, segment, from.z);
+                stepsDistance += stepW;
+                const z = this.evaluateElevationValue(this.prevDistance + stepsDistance);
+                this.scaledDistance = (this.prevDistance + stepsDistance) / this.totalDistance;
+                this.addHalfVertex(from, leftX, leftY, round, false, endLeft, segment, z);
+                this.addHalfVertex(from, rightX, rightY, round, true, -endRight, segment, z);
             }
         }
         this.lineSoFar = to.w;
-        this.addHalfVertex(to, leftX, leftY, round, false, endLeft, segment, to.z);
-        this.addHalfVertex(to, rightX, rightY, round, true, -endRight, segment, to.z);
+        this.scaledDistance = scaledDistance;
+        const z = this.evaluateElevationValue(this.distance);
+        this.addHalfVertex(to, leftX, leftY, round, false, endLeft, segment, z);
+        this.addHalfVertex(to, rightX, rightY, round, true, -endRight, segment, z);
+    }
+
+    evaluateElevationValue(distance: number): number | undefined {
+        assert(distance >= 0);
+        if (!this.hasZOffset) {
+            return undefined;
+        } else if (this.zOffsetValue.kind === 'constant') {
+            return this.zOffsetValue.value;
+        } else {
+            this.evaluationGlobals.lineProgress = 0;
+            if (this.lineClips) {
+                this.evaluationGlobals.lineProgress = Math.min(1.0, (this.totalFeatureLength * this.lineClips.start + distance) / this.totalFeatureLength);
+            } else {
+                warnOnce(`line-z-offset evaluation for ${this.layerIds[0]} requires enabling 'lineMetrics' for the source.`);
+            }
+            return this.zOffsetValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
+        }
     }
 
     /**
@@ -766,6 +807,7 @@ class LineBucket implements Bucket {
             // tesellated chunks outside tile borders are not added.
             const outside = pointOutsideBounds(p, boundsMin, boundsMax);
             const lineSoFar = this.lineSoFar;
+            const distance = this.distance;
 
             if (!this.currentVertex) {
                 if (!outside) { // add the first point
@@ -782,11 +824,19 @@ class LineBucket implements Bucket {
                     if (prevOutside) {
                         // add half vertex to start the segment
                         this.e1 = this.e2 = -1;
+                        // Previously calculated distance is not correct after clipLine()
+                        this.distance -= prev.dist(vertex);
                         this.lineSoFar = prev.w;
-                        this.addHalfVertex(prev, leftX, leftY, round, false, endLeft, segment, prev.z);
-                        this.addHalfVertex(prev, rightX, rightY, round, true, -endRight, segment, prev.z);
+                        const z = this.evaluateElevationValue(prev.w - this.totalFeatureLength * (this.lineClips ? this.lineClips.start : 0));
+                        this.addHalfVertex(prev, leftX, leftY, round, false, endLeft, segment, z);
+                        this.addHalfVertex(prev, rightX, rightY, round, true, -endRight, segment, z);
+                        this.prevDistance = this.distance;
                     }
+                    this.distance = this.prevDistance + prev.dist(next);
+                    this.scaledDistance = this.distance / this.totalDistance;
                     this.addVerticesTo(prev, next, leftX, leftY, rightX, rightY, endLeft, endRight, segment, round);
+                    this.distance = distance;
+                    this.scaledDistance = this.distance / this.totalDistance;
                 }
             } else {
                 // inside
@@ -797,9 +847,16 @@ class LineBucket implements Bucket {
                     assert(vertex.x === p.x && vertex.y === p.y);
                     // add half vertex to start the segment
                     this.e1 = this.e2 = -1;
+                    // Previously calculated distance is not correct after clipLine()
+                    this.distance -= prev.dist(vertex);
+                    this.scaledDistance = this.distance / this.totalDistance;
                     this.lineSoFar = prev.w;
-                    this.addHalfVertex(prev, leftX, leftY, round, false, endLeft, segment, prev.z);
-                    this.addHalfVertex(prev, rightX, rightY, round, true, -endRight, segment, prev.z);
+                    const z = this.evaluateElevationValue(prev.w - this.totalFeatureLength * (this.lineClips ? this.lineClips.start : 0));
+                    this.addHalfVertex(prev, leftX, leftY, round, false, endLeft, segment, z);
+                    this.addHalfVertex(prev, rightX, rightY, round, true, -endRight, segment, z);
+                    this.prevDistance = this.distance;
+                    this.distance = distance;
+                    this.scaledDistance = this.distance / this.totalDistance;
                 }
                 this.addVerticesTo(prev, vertex, leftX, leftY, rightX, rightY, endLeft, endRight, segment, round);
             }
@@ -869,16 +926,15 @@ class LineBucket implements Bucket {
         // (in tile units) of the current vertex, we can determine the relative distance
         // of this vertex along the full linestring feature.
         if (this.lineClips) {
-            const featureShare = this.lineClips.end - this.lineClips.start;
-            const totalFeatureLength = this.totalDistance / featureShare;
             this.scaledDistance = this.distance / this.totalDistance;
-            this.lineSoFar = totalFeatureLength * this.lineClips.start + this.distance;
+            this.lineSoFar = this.totalFeatureLength * this.lineClips.start + this.distance;
         } else {
             this.lineSoFar = this.distance;
         }
     }
 
     updateDistance(prev: Point, next: Point) {
+        this.prevDistance = this.distance;
         this.distance += prev.dist(next);
         this.updateScaledDistance();
     }

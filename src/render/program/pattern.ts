@@ -1,14 +1,13 @@
 import assert from 'assert';
-import {
+import pixelsToTileUnits from '../../source/pixels_to_tile_units';
+
+import type {
     Uniform1i,
     Uniform1f,
     Uniform2f
-} from '../uniform_binding';
-import pixelsToTileUnits from '../../source/pixels_to_tile_units';
-
+    , UniformValues} from '../uniform_binding';
 import type Painter from '../painter';
 import type {OverscaledTileID} from '../../source/tile_id';
-import type {UniformValues} from '../uniform_binding';
 import type Tile from '../../source/tile';
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
 import type {ImagePosition} from "../image_atlas";
@@ -21,7 +20,7 @@ type BackgroundPatternUniformsType = {
     ['u_pattern_size']: Uniform2f;
     ['u_pixel_coord_upper']: Uniform2f;
     ['u_pixel_coord_lower']: Uniform2f;
-    ['u_tile_units_to_pixels']: Uniform1f;
+    ['u_pattern_units_to_pixels']: Uniform2f;
 };
 
 export type PatternUniformsType = {
@@ -55,6 +54,7 @@ function bgPatternUniformValues(
     scope: string,
     patternPosition: ImagePosition | null | undefined,
     painter: Painter,
+    isViewport: boolean,
     tile: {
         tileID: OverscaledTileID;
         tileSize: number;
@@ -75,7 +75,7 @@ function bgPatternUniformValues(
         'u_pattern_br': (patternPosition as any).br,
         'u_texsize': [width, height],
         'u_pattern_size': (patternPosition as any).displaySize,
-        'u_tile_units_to_pixels': 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom),
+        'u_pattern_units_to_pixels': isViewport ? [painter.transform.width, -1.0 * painter.transform.height] : [1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom), 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom)],
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
         'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],
         'u_pixel_coord_lower': [pixelX & 0xFFFF, pixelY & 0xFFFF]

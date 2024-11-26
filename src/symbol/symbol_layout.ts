@@ -1,10 +1,9 @@
 import Anchor from './anchor';
-
 import {getAnchors, getCenterAnchor} from './get_anchors';
 import clipLine from './clip_line';
 import {shapeText, shapeIcon, WritingMode, fitIconToText} from './shaping';
 import {getGlyphQuads, getIconQuads} from './quads';
-import {warnOnce, degToRad} from '../util/util';
+import {warnOnce, degToRad, clamp} from '../util/util';
 import {
     allowsVerticalWritingMode,
     allowsLetterSpacing
@@ -47,6 +46,10 @@ import type {vec3} from 'gl-matrix';
 // (1) and (2) are stored in `bucket.layers[0].layout`. The remainder are below.
 //
 type Sizes = {
+    textScaleFactor: number
+    iconScaleFactor: number
+    textSizeScaleRange: [number, number]
+    iconSizeScaleRange: [number, number]
     layoutTextSize: PossiblyEvaluatedPropertyValue<number> // (3);
     layoutIconSize: PossiblyEvaluatedPropertyValue<number> // (3);
     textMaxSize: PossiblyEvaluatedPropertyValue<number>    // (4);
@@ -173,6 +176,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                              canonical: CanonicalTileID,
                              tileZoom: number,
                              projection: Projection,
+                             scaleFactor: number = 1,
                              brightness?: number | null) {
     bucket.createArrays();
 
@@ -185,6 +189,12 @@ export function performSymbolLayout(bucket: SymbolBucket,
     const unevaluatedLayoutValues = bucket.layers[0]._unevaluatedLayout._values;
 
     const sizes: Record<string, any> = {};
+
+    sizes.scaleFactor = scaleFactor;
+    sizes.textSizeScaleRange = layout.get('text-size-scale-range');
+    sizes.iconSizeScaleRange = layout.get('icon-size-scale-range');
+    sizes.textScaleFactor = clamp(sizes.scaleFactor, sizes.textSizeScaleRange[0], sizes.textSizeScaleRange[1]);
+    sizes.iconScaleFactor = clamp(sizes.scaleFactor, sizes.iconSizeScaleRange[0], sizes.iconSizeScaleRange[1]);
 
     if (bucket.textSizeData.kind === 'composite') {
         const {minZoom, maxZoom} = bucket.textSizeData;
@@ -221,9 +231,9 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
         const fontstack = layout.get('text-font').evaluate(feature, {}, canonical).join(',');
 
-        const layoutTextSizeThisZoom = textSize.evaluate(feature, {}, canonical);
-        const layoutTextSize = sizes.layoutTextSize.evaluate(feature, {}, canonical);
-        const layoutIconSize = sizes.layoutIconSize.evaluate(feature, {}, canonical);
+        const layoutTextSizeThisZoom = textSize.evaluate(feature, {}, canonical) * sizes.textScaleFactor;
+        const layoutTextSize = sizes.layoutTextSize.evaluate(feature, {}, canonical) * sizes.textScaleFactor;
+        const layoutIconSize = sizes.layoutIconSize.evaluate(feature, {}, canonical) * sizes.iconScaleFactor;
 
         const shapedTextOrientations = {
             horizontal: {},
@@ -337,7 +347,8 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
                     layout.get('icon-offset').evaluate(feature, {}, canonical),
 
-                    layout.get('icon-anchor').evaluate(feature, {}, canonical));
+                    layout.get('icon-anchor').evaluate(feature, {}, canonical)
+                );
                 isSDFIcon = image.sdf;
                 if (bucket.sdfIcons === undefined) {
                     bucket.sdfIcons = image.sdf;
@@ -364,7 +375,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
     }
 
     if (showCollisionBoxes) {
-        bucket.generateCollisionDebugBuffers(tileZoom, bucket.collisionBoxArray);
+        bucket.generateCollisionDebugBuffers(tileZoom, bucket.collisionBoxArray, sizes.textScaleFactor);
     }
 }
 
@@ -427,7 +438,9 @@ function addFeature(bucket: SymbolBucket,
     // use the same value when calculating anchor positions.
     let textMaxSize = sizes.textMaxSize.evaluate(feature, {}, canonical);
     if (textMaxSize === undefined) {
-        textMaxSize = layoutTextSize;
+        textMaxSize = layoutTextSize * sizes.textScaleFactor;
+    } else {
+        textMaxSize *= sizes.textScaleFactor;
     }
     const layout = bucket.layers[0].layout;
 
@@ -436,7 +449,7 @@ function addFeature(bucket: SymbolBucket,
     const isGlobe = projection.name === 'globe';
 
     const glyphSize = ONE_EM,
-        fontScale = layoutTextSize / glyphSize,
+        fontScale = layoutTextSize * sizes.textScaleFactor / glyphSize,
         textMaxBoxScale = bucket.tilePixelRatio * textMaxSize / glyphSize,
         iconBoxScale = bucket.tilePixelRatio * layoutIconSize,
 
@@ -597,16 +610,15 @@ function addTextVertices(bucket: SymbolBucket,
 
     if (sizeData.kind === 'source') {
         textSizeData = [
-
-            SIZE_PACK_FACTOR * layer.layout.get('text-size').evaluate(feature, {}, canonical)
+            SIZE_PACK_FACTOR * layer.layout.get('text-size').evaluate(feature, {}, canonical) * sizes.textScaleFactor
         ];
         if (textSizeData[0] > MAX_PACKED_SIZE) {
             warnOnce(`${bucket.layerIds[0]}: Value for "text-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "text-size".`);
         }
     } else if (sizeData.kind === 'composite') {
         textSizeData = [
-            SIZE_PACK_FACTOR * sizes.compositeTextSizes[0].evaluate(feature, {}, canonical),
-            SIZE_PACK_FACTOR * sizes.compositeTextSizes[1].evaluate(feature, {}, canonical)
+            SIZE_PACK_FACTOR * sizes.compositeTextSizes[0].evaluate(feature, {}, canonical) * sizes.textScaleFactor,
+            SIZE_PACK_FACTOR * sizes.compositeTextSizes[1].evaluate(feature, {}, canonical) * sizes.textScaleFactor
         ];
         if (textSizeData[0] > MAX_PACKED_SIZE || textSizeData[1] > MAX_PACKED_SIZE) {
             warnOnce(`${bucket.layerIds[0]}: Value for "text-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "text-size".`);
@@ -643,8 +655,7 @@ function addTextVertices(bucket: SymbolBucket,
 function getDefaultHorizontalShaping(horizontalShaping: Partial<Record<TextJustify, Shaping>>): Shaping | null {
     // We don't care which shaping we get because this is used for collision purposes
     // and all the justifications have the same collision box
-// @ts-expect-error - TS2404 - The left-hand side of a 'for...in' statement cannot use a type annotation.
-    for (const justification: any in horizontalShaping) {
+    for (const justification in horizontalShaping) {
         return horizontalShaping[justification];
     }
     return null;
@@ -796,7 +807,6 @@ function addSymbol(bucket: SymbolBucket,
                 verticalIconCircle = evaluateCircleCollisionFeature(verticallyShapedIcon);
             }
         } else {
-
             const textRotation = layer.layout.get('text-rotate').evaluate(feature, {}, canonical);
             const verticalTextRotation = textRotation + 90.0;
             verticalTextBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textPadding, verticalTextRotation, textOffset);
@@ -814,8 +824,8 @@ function addSymbol(bucket: SymbolBucket,
     if (shapedIcon) {
 
         const iconRotate = layer.layout.get('icon-rotate').evaluate(feature, {}, canonical);
-        const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit);
-        const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit) : undefined;
+        const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, sizes.iconScaleFactor);
+        const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit, sizes.iconScaleFactor) : undefined;
         iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconRotate);
         numIconVertices = iconQuads.length * 4;
 
@@ -825,15 +835,15 @@ function addSymbol(bucket: SymbolBucket,
         if (sizeData.kind === 'source') {
             iconSizeData = [
 
-                SIZE_PACK_FACTOR * layer.layout.get('icon-size').evaluate(feature, {}, canonical)
+                SIZE_PACK_FACTOR * layer.layout.get('icon-size').evaluate(feature, {}, canonical) * sizes.iconScaleFactor
             ];
             if (iconSizeData[0] > MAX_PACKED_SIZE) {
                 warnOnce(`${bucket.layerIds[0]}: Value for "icon-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "icon-size".`);
             }
         } else if (sizeData.kind === 'composite') {
             iconSizeData = [
-                SIZE_PACK_FACTOR * sizes.compositeIconSizes[0].evaluate(feature, {}, canonical),
-                SIZE_PACK_FACTOR * sizes.compositeIconSizes[1].evaluate(feature, {}, canonical)
+                SIZE_PACK_FACTOR * sizes.compositeIconSizes[0].evaluate(feature, {}, canonical) * sizes.iconScaleFactor,
+                SIZE_PACK_FACTOR * sizes.compositeIconSizes[1].evaluate(feature, {}, canonical) * sizes.iconScaleFactor
             ];
             if (iconSizeData[0] > MAX_PACKED_SIZE || iconSizeData[1] > MAX_PACKED_SIZE) {
                 warnOnce(`${bucket.layerIds[0]}: Value for "icon-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "icon-size".`);
@@ -887,8 +897,7 @@ function addSymbol(bucket: SymbolBucket,
         }
     }
 
-    // @ts-expect-error - TS2404 - The left-hand side of a 'for...in' statement cannot use a type annotation.
-    for (const justification: any in shapedTextOrientations.horizontal) {
+    for (const justification in shapedTextOrientations.horizontal) {
         const shaping = shapedTextOrientations.horizontal[justification];
 
         if (!textBoxIndex) {
@@ -979,8 +988,6 @@ function addSymbol(bucket: SymbolBucket,
         textOffset1,
         collisionCircleDiameter,
         0,
-        1, // Occlusion state
-        1, // Occlusion opacity
         hasIconTextFit ? 1 : 0,
     );
 }

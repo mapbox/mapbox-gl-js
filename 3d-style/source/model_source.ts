@@ -1,6 +1,5 @@
 import {Evented, ErrorEvent, Event} from '../../src/util/evented';
 import {ResourceType} from '../../src/util/ajax';
-
 import Model from '../data/model';
 import convertModel from './model_loader';
 import {loadGLTF} from '../util/loaders';
@@ -32,6 +31,10 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
+    vectorLayers?: never;
+    vectorLayerIds?: never;
+    rasterLayers?: never;
+    rasterLayerIds?: never;
     map: Map;
     uri: string;
     models: Array<Model>;
@@ -68,7 +71,6 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
             // @ts-expect-error - TS2339 - Property 'models' does not exist on type 'ModelSourceSpecification'.
             const modelSpec = this._options.models[modelId];
 
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type '"Unknown" | "Style" | "Source" | "Tile" | "Glyphs" | "SpriteImage" | "SpriteJSON" | "Image" | "Model"'.
             const modelPromise = loadGLTF(this.map._requestManager.transformRequest(modelSpec.uri, ResourceType.Model).url).then(gltf => {
                 if (!gltf) return;
                 const nodes = convertModel(gltf);

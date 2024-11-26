@@ -39,7 +39,7 @@ export default class LambertConformalConic extends Projection {
         this.f = cy0 * Math.pow(tany(y0), this.n) / this.n;
     }
 
-    project(lng: number, lat: number): ProjectedPoint {
+    override project(lng: number, lat: number): ProjectedPoint {
         lat = degToRad(lat);
         if (this.southernCenter) lat = -lat;
         lng = degToRad(lng - this.center[0]);
@@ -66,7 +66,7 @@ export default class LambertConformalConic extends Projection {
         };
     }
 
-    unproject(x: number, y: number): LngLat {
+    override unproject(x: number, y: number): LngLat {
         x = (2 * x - 0.5) * Math.PI;
         if (this.southernCenter) y = 1 - y;
         y = (2 * (1 - y) - 0.5) * Math.PI;

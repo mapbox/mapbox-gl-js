@@ -86,16 +86,16 @@ function packColor(color: RenderColor): [number, number] {
 
 interface AttributeBinder {
     context: ProgramConfigurationContext;
-    populatePaintArray(
+    populatePaintArray: (
         length: number,
         feature: Feature,
         imagePositions: SpritePositions,
         availableImages: Array<string>,
         canonical?: CanonicalTileID,
-        brightness?: number | null | undefined,
+        brightness?: number | null,
         formattedSection?: FormattedSection,
-    ): void;
-    updatePaintArray(
+    ) => void;
+    updatePaintArray: (
         start: number,
         length: number,
         feature: Feature,
@@ -103,22 +103,22 @@ interface AttributeBinder {
         availableImages: Array<string>,
         imagePositions: SpritePositions,
         brightness: number,
-    ): void;
-    upload(arg1: Context): void;
-    destroy(): void;
+    ) => void;
+    upload: (arg1: Context) => void;
+    destroy: () => void;
 }
 
 interface UniformBinder {
     uniformNames: Array<string>;
     context: ProgramConfigurationContext;
-    setUniform(
+    setUniform: (
         program: WebGLProgram,
         uniform: IUniform<any>,
         globals: GlobalProperties,
         currentValue: PossiblyEvaluatedPropertyValue<any>,
         uniformName: string,
-    ): void;
-    getBinding(context: Context, name: string): Partial<IUniform<any>>;
+    ) => void;
+    getBinding: (context: Context, name: string) => Partial<IUniform<any>>;
 }
 
 class ConstantBinder implements UniformBinder {
@@ -525,7 +525,6 @@ export default class ProgramConfiguration {
                     const state = featureStates[id.toString()];
                     featureMap.eachPosition(id, (index, start, end) => {
                         const feature = vtLayer.feature(index);
-                        // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'Feature'.
                         (binder as AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness);
                     });
                 }
@@ -534,7 +533,6 @@ export default class ProgramConfiguration {
                         const state = featureStates[id.toString()];
                         featureMapWithoutIds.eachPosition(id, (index, start, end) => {
                             const feature = vtLayer.feature(index);
-                            // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'Feature'.
                             (binder as AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness);
                         });
                     }
@@ -609,8 +607,7 @@ export default class ProgramConfiguration {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguration's binder members.
         for (const {name, property, binding} of binderUniforms) {
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'keyof Properties'.
-            (this.binders[property] as any).setUniform(program, binding, globals, properties.get(property), name);
+            (this.binders[property] as any).setUniform(program, binding, globals, properties.get(property as keyof Properties), name);
         }
     }
 
@@ -724,6 +721,7 @@ const attributeNameExceptions = {
     'icon-halo-blur': ['halo_blur'],
     'text-halo-width': ['halo_width'],
     'icon-halo-width': ['halo_width'],
+    'symbol-z-offset': ['z_offset'],
     'line-gap-width': ['gapwidth'],
     'line-pattern': ['pattern', 'pixel_ratio'],
     'fill-pattern': ['pattern', 'pixel_ratio'],

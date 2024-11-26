@@ -3,7 +3,6 @@ import {register} from '../../../src/util/web_worker_transfer';
 import loadGeometry from '../../../src/data/load_geometry';
 import toEvaluationFeature from '../../../src/data/evaluation_feature';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
-import Point from '@mapbox/point-geometry';
 import {vec3} from 'gl-matrix';
 import {InstanceVertexArray} from '../../../src/data/array_types';
 import assert from 'assert';
@@ -11,11 +10,13 @@ import {warnOnce} from '../../../src/util/util';
 import {rotationScaleYZFlipMatrix} from '../../util/model_util';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate';
 import {instanceAttributes} from '../model_attributes';
-import {ReplacementSource, regionsEquals, transformPointToTile, pointInFootprint} from '../../../3d-style/source/replacement_source';
+import {regionsEquals, transformPointToTile, pointInFootprint, skipClipping} from '../../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
+import {isValidUrl} from '../../../src/style-spec/validate/validate_model';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
-import {isValidUrl} from '../../../src/style-spec/validate/validate_model';
+import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import type Point from '@mapbox/point-geometry';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type {mat4} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../../src/source/tile_id';
@@ -26,7 +27,6 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../../../src/data/bucket';
-
 import type Context from '../../../src/gl/context';
 import type VertexBuffer from '../../../src/gl/vertex_buffer';
 import type {FeatureState} from '../../../src/style-spec/expression/index';
@@ -39,12 +39,13 @@ import type {TileFootprint} from '../../../3d-style/util/conflation';
 
 class ModelFeature {
     feature: EvaluationFeature;
+    featureStates: FeatureState;
     instancedDataOffset: number;
     instancedDataCount: number;
 
-    rotation: Array<number>;
-    scale: Array<number>;
-    translation: Array<number>;
+    rotation: vec3;
+    scale: vec3;
+    translation: vec3;
 
     constructor(feature: EvaluationFeature, offset: number) {
         this.feature = feature;
@@ -83,9 +84,7 @@ class ModelBucket implements Bucket {
     stateDependentLayerIds: Array<string>;
     hasPattern: boolean;
 
-    instancesPerModel: {
-        string: PerModelAttributes;
-    };
+    instancesPerModel: Record<string, PerModelAttributes>;
 
     uploaded: boolean;
 
@@ -128,7 +127,6 @@ class ModelBucket implements Bucket {
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.hasPattern = false;
-        // @ts-expect-error - TS2741 - Property 'string' is missing in type '{}' but required in type '{ string: PerModelAttributes; }'.
         this.instancesPerModel = {};
         this.validForExaggeration = 0;
         this.maxVerticalOffset = 0;
@@ -169,10 +167,8 @@ class ModelBucket implements Bucket {
                 id: featureId,
                 sourceLayerIndex,
                 index,
-                // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
                 geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
                 properties: feature.properties,
-                // @ts-expect-error - TS2322 - Type '0 | 2 | 1 | 3' is not assignable to type '2 | 1 | 3'.
                 type: feature.type,
                 patterns: {}
             };
@@ -237,7 +233,7 @@ class ModelBucket implements Bucket {
         return reuploadNeeded;
     }
 
-    updateReplacement(coord: OverscaledTileID, source: ReplacementSource, layerIndex: number): boolean {
+    updateReplacement(coord: OverscaledTileID, source: ReplacementSource, layerIndex: number, scope: string): boolean {
         // Replacement has to be re-checked if the source has been updated since last time
         if (source.updateTime === this.replacementUpdateTime) {
             return false;
@@ -249,10 +245,10 @@ class ModelBucket implements Bucket {
         if (regionsEquals(this.activeReplacements, newReplacements)) {
             return false;
         }
+
         this.activeReplacements = newReplacements;
 
         let reuploadNeeded = false;
-
         for (const modelId in this.instancesPerModel) {
             const perModelVertexArray: PerModelAttributes = this.instancesPerModel[modelId];
             const va = perModelVertexArray.instancedDataArray;
@@ -265,26 +261,27 @@ class ModelBucket implements Bucket {
                     const i16 = (i + offset) * 16;
 
                     let x_ = va.float32[i16 + 0];
-                    x_ = x_ > EXTENT ? x_ - EXTENT : x_;
+                    const wasHidden = x_ > EXTENT;
+                    x_ = wasHidden ? x_ - EXTENT : x_;
                     const x = Math.floor(x_);
                     const y = va.float32[i16 + 1];
 
                     let hidden = false;
                     for (const region of this.activeReplacements) {
-                        if (region.order < layerIndex || region.order === Infinity || !(region.clipMask & LayerTypeMask.Model)) continue;
+                        if (skipClipping(region, layerIndex, LayerTypeMask.Model, scope)) continue;
 
                         if (region.min.x > x || x > region.max.x || region.min.y > y || y > region.max.y) {
                             continue;
                         }
 
                         const p = transformPointToTile(x, y, coord.canonical, region.footprintTileId.canonical);
-                        hidden = pointInFootprint(p, region);
+                        hidden = pointInFootprint(p, region.footprint);
 
                         if (hidden) break;
                     }
 
                     va.float32[i16] = hidden ? x_ + EXTENT : x_;
-                    reuploadNeeded = reuploadNeeded || hidden;
+                    reuploadNeeded = reuploadNeeded || (hidden !== wasHidden);
                 }
             }
         }
@@ -420,8 +417,7 @@ class ModelBucket implements Bucket {
         const color = layer.paint.get('model-color').evaluate(evaluationFeature, featureState, canonical);
 
         color.a = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
-        // @ts-expect-error - TS2322 - Type '[]' is not assignable to type 'mat4'.
-        const rotationScaleYZFlip: mat4 = [];
+        const rotationScaleYZFlip = [] as unknown as mat4;
         if (this.maxVerticalOffset < translation[2]) this.maxVerticalOffset = translation[2];
         this.maxScale = Math.max(Math.max(this.maxScale, scale[0]), Math.max(scale[1], scale[2]));
 

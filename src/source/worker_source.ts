@@ -1,3 +1,5 @@
+import type Actor from '../util/actor';
+import type StyleLayerIndex from '../style/style_layer_index';
 import type {RequestParameters} from '../util/ajax';
 import type {AlphaImage} from '../util/image';
 import type {GlyphPositions} from '../render/glyph_atlas';
@@ -12,7 +14,11 @@ import type {StyleGlyph} from '../style/style_glyph';
 import type {StyleImage} from '../style/style_image';
 import type {PromoteIdSpecification} from '../style-spec/types';
 import type Projection from '../geo/projection/projection';
-import type {LUT} from "../util/lut";
+import type {LUT} from '../util/lut';
+import type {Callback} from '../types/callback';
+import type {SourceType} from './source';
+
+type TDecodingResult = any;
 
 export type TileParameters = {
     source: string;
@@ -21,27 +27,30 @@ export type TileParameters = {
 };
 
 export type RequestedTileParameters = TileParameters & {
+    brightness: number;
+    lut: LUT | null;
+    maxZoom: number;
+    pixelRatio: number;
+    promoteId: PromoteIdSpecification | null | undefined;
+    scaleFactor: number;
+    showCollisionBoxes: boolean;
     tileID: OverscaledTileID;
+    tileSize: number;
     tileZoom: number;
-    request: RequestParameters;
+    type: SourceType;
+    zoom: number;
     data?: unknown;
-    isSymbolTile: boolean | null | undefined;
+    extraShadowCaster?: boolean;
+    isSymbolTile?: boolean | null;
+    partial?: boolean;
+    request?: RequestParameters;
+    tessellationStep?: number // test purpose only;
+    worldview?: string | null;
+    localizableLayerIds?: Set<string>;
 };
 
 export type WorkerTileParameters = RequestedTileParameters & {
-    zoom: number;
-    lut: LUT | null;
-    maxZoom: number;
-    tileSize: number;
-    promoteId: PromoteIdSpecification | null | undefined;
-    pixelRatio: number;
-    showCollisionBoxes: boolean;
-    collectResourceTiming?: boolean;
     projection: Projection;
-    brightness: number;
-    extraShadowCaster?: boolean;
-    tessellationStep?: number // test purpose only;
-    partial?: boolean;
 };
 
 export type DEMSourceEncoding = 'mapbox' | 'terrarium';
@@ -78,24 +87,21 @@ export type WorkerTileResult = {
     glyphMap?: {
         [_: string]: {
             glyphs: {
-                [_: number]: StyleGlyph | null | undefined;
+                [_: number]: StyleGlyph | undefined;
             };
             ascender?: number;
             descender?: number;
         };
-    } | null;
+    };
     iconMap?: {
         [_: string]: StyleImage;
-    } | null;
-    glyphPositions?: GlyphPositions | null;
+    };
+    glyphPositions?: GlyphPositions;
 };
 
-export type WorkerTileCallback = (
-    error?: Error | null | undefined,
-    result?: WorkerTileResult | null | undefined,
-) => void;
-export type WorkerDEMTileCallback = (err?: Error | null | undefined, result?: DEMData | null | undefined) => void;
-export type WorkerRasterArrayTileCallback = (err?: Error | null | undefined, result?: any | null | undefined) => void;
+export type WorkerTileCallback = (error?: Error, result?: WorkerTileResult) => void;
+export type WorkerDEMTileCallback = (err?: Error, result?: DEMData) => void;
+export type WorkerRasterArrayTileCallback = (err?: Error, result?: TDecodingResult) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on
@@ -113,37 +119,41 @@ export type WorkerRasterArrayTileCallback = (err?: Error | null | undefined, res
  */
 export interface WorkerSource {
     availableImages: Array<string>;
-    // Disabled due to https://github.com/facebook/flow/issues/5208
-    // constructor(actor: Actor, layerIndex: StyleLayerIndex): WorkerSource;
 
     /**
      * Loads a tile from the given params and parse it into buckets ready to send
-     * back to the main thread for rendering.  Should call the callback with:
+     * back to the main thread for rendering. Should call the callback with:
      * `{ buckets, featureIndex, collisionIndex, rawTileData}`.
      */
-    loadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void;
+    loadTile: (params: WorkerTileParameters, callback: WorkerTileCallback) => void;
     /**
-     * Re-parses a tile that has already been loaded.  Yields the same data as
+     * Re-parses a tile that has already been loaded. Yields the same data as
      * {@link WorkerSource#loadTile}.
      */
-    reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void;
+    reloadTile: (params: WorkerTileParameters, callback: WorkerTileCallback) => void;
     /**
      * Aborts loading a tile that is in progress.
      */
-    abortTile(params: TileParameters, callback: WorkerTileCallback): void;
+    abortTile: (params: TileParameters, callback: WorkerTileCallback) => void;
     /**
      * Removes this tile from any local caches.
      */
-    removeTile(params: TileParameters, callback: WorkerTileCallback): void;
+    removeTile: (params: TileParameters, callback: WorkerTileCallback) => void;
     /**
      * Tells the WorkerSource to abort in-progress tasks and release resources.
      * The foreground Source is responsible for ensuring that 'removeSource' is
      * the last message sent to the WorkerSource.
      */
-    removeSource?: (
-        params: {
-            source: string;
-        },
-        callback: WorkerTileCallback,
-    ) => void;
+    removeSource?: (params: {source: string}, callback: WorkerTileCallback) => void;
+}
+
+export interface WorkerSourceConstructor {
+    new(
+        actor: Actor,
+        layerIndex: StyleLayerIndex,
+        availableImages: Array<string>,
+        isSpriteLoaded: boolean,
+        loadData?: (params: {source: string; scope: string}, callback: Callback<unknown>) => () => void | undefined,
+        brightness?: number
+    ): WorkerSource;
 }

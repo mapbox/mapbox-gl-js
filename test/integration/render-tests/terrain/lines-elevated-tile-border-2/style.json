@@ -1,0 +1,174 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 300,
+      "width": 512,
+      "allowed": 0.0021
+    }
+  },
+  "center": [-113.28710696303395, 35.960330133637115],
+  "zoom": 12.07669901582268,
+  "pitch": 50.5,
+  "bearing": 95.6,
+  "terrain": {
+    "source": "rgbterrain"
+  },
+  "sprite": "local://sprites/emerald",
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "cast-shadows" : true,
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.7
+      }
+    }
+  ],
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 256
+    },
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "elevation": [5000.0, 4878.642665576566, 4760.230851676805, 4644.693066196867, 4531.959552251135, 4421.962246055933, 4314.634735835451, 4209.9122217251015, 4107.731476648063, 4008.030808141414, 3910.7500211088054, 3815.830381477175, 3723.2145807355705, 3632.846701334664, 3544.6721829260764, 3458.6377894211155, 3374.6915768490553, 3292.7828619955317, 3212.862191802143, 3134.8813135087557, 3058.793145520505, 2984.5517489818967, 2912.112300040849, 2841.4310627859186, 2772.46536284039, 2705.1735615972684, 2639.5150310796303, 2575.4501294111483, 2512.940176881983, 2451.947432595593, 2392.4350716823565, 2334.3671630662548, 2277.7086477711923, 2222.4253177538494, 2168.483795250297, 2115.8515126239, 2064.4966927023347, 2014.3883295918647, 1965.4961699572762, 1917.7906947561796, 1871.2431014166445, 1825.8252864474116, 1781.5098284701799, 1738.2699716637221, 1696.0796096098404, 1654.9132695314029, 1614.7460969129427, 1575.5538404945432, 1537.312837629939, 1500.0]
+
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -113.30644631862066,
+              35.97008174332019
+            ],
+            [
+              -113.28690927723653,
+              35.98343257640977
+            ],
+            [
+              -113.25311040297527,
+              35.95219086719196
+            ],
+            [
+              -113.27542291315574,
+              35.936889653404776
+            ],
+            [
+              -113.30644631862066,
+              35.97008174332019
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "line1",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "round",
+        "line-z-offset": [
+          "-",
+          ["at", ["*", [ "line-progress" ], 49], ["get", "elevation"]], 
+          400
+        ],
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 8,
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "line2",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "bevel",
+        "line-z-offset": [
+          "+",
+          ["at", ["*", [ "line-progress" ], 49], ["get", "elevation"]], 
+          100
+        ],
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 8,
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "line3",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "miter",
+        "line-z-offset": [
+          "+",
+          ["at", ["*", [ "line-progress" ], 49], ["get", "elevation"]], 
+          200
+        ],
+        "line-elevation-reference": "ground"
+      },
+      "paint": {
+        "line-width": 8,
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "line4",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "miter",
+        "line-z-offset": [
+          "+",
+          ["at", ["*", [ "line-progress" ], 49], ["get", "elevation"]], 
+          500
+        ],
+        "line-cross-slope": 0,
+        "line-elevation-reference": "sea"
+      },
+      "paint": {
+        "line-width": 8,
+        "line-color": "red"
+      }
+    }
+  ]
+}
