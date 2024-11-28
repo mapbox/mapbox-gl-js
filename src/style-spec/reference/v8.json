@@ -105,6 +105,16 @@
       "type": "fog",
       "doc": "A global effect that fades layers and markers based on their distance to the camera. The fog can be used to approximate the effect of atmosphere on distant objects and enhance the depth perception of the map when used with terrain or 3D features. Note: fog is renamed to atmosphere in the Android and iOS SDKs and planned to be changed in GL-JS v.3.0.0."
     },
+    "snow": {
+      "type": "snow",
+      "doc": "Global precipitation particle-based snow effect. For uninterrupted animations map should be created with constant repaint mode enabled.",
+      "experimental": true
+    },
+    "rain": {
+      "type": "rain",
+      "doc": "Global precipitation particle-based rain effect. For uninterrupted animations map should be created with constant repaint mode enabled.",
+      "experimental": true
+    },
     "camera": {
       "type": "camera",
       "doc": "Global setting to control additional camera intrinsics parameters, e.g. projection type (perspective / orthographic)."
@@ -5234,11 +5244,11 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Snow particles density.",
+      "doc": "Snow particles density. Controls the overall particles number.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
@@ -5258,11 +5268,11 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Snow particles movement factor.",
+      "doc": "Snow particles movement factor. Controls the overall particles movement speed.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
@@ -5283,15 +5293,15 @@
       "doc": "Snow particles color.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
     "opacity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.9,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5307,15 +5317,15 @@
       "doc": "Snow particles opacity.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
     "vignette": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0,
+      "default": 0.3,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5328,15 +5338,37 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Snow vignette screen-space effect.",
+      "doc": "Snow vignette screen-space effect. Adds snow tint to screen corners",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
-    "centerThinning": {
+    "vignette-color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow vignette screen-space corners tint color.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      }
+    },
+    "center-thinning": {
       "type": "number",
       "property-type": "data-constant",
       "default": 1,
@@ -5355,8 +5387,8 @@
       "doc": "Thinning factor of snow particles from center. 0 - no thinning. 1 - maximal central area thinning.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
@@ -5381,15 +5413,39 @@
         ],
         "relaxZoomRestriction": true
       },
-      "doc": "Main snow particles direction. Heading & pitch",
+      "doc": "Main snow particles direction. Azimuth and polar angles",
       "example": [
         0,
         45
       ],
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      }
+    },
+    "flake-size": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 5,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow flake particle size. Correlates with individual particle screen size",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     }
@@ -5411,11 +5467,11 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Rain particles density.",
+      "doc": "Rain particles density. Controls the overall screen density of the rain.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
@@ -5435,18 +5491,18 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Rain particles movement factor.",
+      "doc": "Rain particles movement factor. Controls the overall rain particles speed",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
     "color": {
       "type": "color",
       "property-type": "data-constant",
-      "default": "#ffffff",
+      "default": "#919191",
       "experimental": true,
       "expression": {
         "interpolated": true,
@@ -5457,18 +5513,18 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "",
+      "doc": "Individual rain particle dorplets color.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
     "opacity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.19,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5484,15 +5540,15 @@
       "doc": "Rain particles opacity.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
     "vignette": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0,
+      "default": 0.3,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5505,15 +5561,37 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Rain vignette screen-space effect.",
+      "doc": "Screen-space vignette rain tinting effect intensity.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
-    "centerThinning": {
+    "vignette-color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain vignette screen-space corners tint color.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      }
+    },
+    "center-thinning": {
       "type": "number",
       "property-type": "data-constant",
       "default": 1,
@@ -5532,8 +5610,8 @@
       "doc": "Thinning factor of rain particles from center. 0 - no thinning. 1 - maximal central area thinning.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     },
@@ -5558,15 +5636,72 @@
         ],
         "relaxZoomRestriction": true
       },
-      "doc": "Main rain particles direction. Heading & pitch",
+      "doc": "Main rain particles direction. Azimuth and polar angles.",
       "example": [
         0,
         45
       ],
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      }
+    },
+    "droplet-size": {
+      "type": "array",
+      "default": [
+        1.0,
+        10.0
+      ],
+      "minimum": 0,
+      "maximum": 20,
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "doc": "Rain droplet size. x - normal to direction, y - along direction",
+      "example": [
+        0,
+        45
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      }
+    },
+    "distortion-strength": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0.5,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain particles screen-space distortion strength.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       }
     }

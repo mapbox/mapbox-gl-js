@@ -1016,21 +1016,22 @@ class Painter {
             }
         }
 
-        Debug.run(() => {
-            if (this._debugParams.forceEnablePrecipitation) {
-                if (!this._snow) {
-                    this._snow = new Snow(this);
-                }
+        const snow = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.snow);
+        const rain = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.rain);
 
-                if (!this._rain) {
-                    this._rain = new Rain(this);
-                }
+        Debug.run(() => {
+            if (snow && !this._snow) {
+                this._snow = new Snow(this);
             }
 
-            if (this._debugParams.forceEnablePrecipitation && this._snow) {
+            if (rain && !this._rain) {
+                this._rain = new Rain(this);
+            }
+
+            if (this._snow) {
                 this._snow.update(this);
             }
-            if (this._debugParams.forceEnablePrecipitation && this._rain) {
+            if (this._rain) {
                 this._rain.update(this);
             }
         });
@@ -1295,11 +1296,11 @@ class Painter {
         }
 
         Debug.run(() => {
-            if (this._debugParams.forceEnablePrecipitation && this._snow) {
+            if (this._snow) {
                 this._snow.draw(this);
             }
 
-            if (this._debugParams.forceEnablePrecipitation && this._rain) {
+            if (this._rain) {
                 this._rain.draw(this);
             }
         });

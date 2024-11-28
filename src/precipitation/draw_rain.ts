@@ -14,6 +14,8 @@ import {rainLayout} from "./rain_attributes.js";
 import {earthRadius} from '../geo/lng_lat.js';
 import Texture from '../render/texture.js';
 import {PrecipitationRevealParams} from './precipitation_reveal_params.js';
+import {createTpBindings, defaultVignetteParams} from './vignette';
+import {Vignette, type VignetteParams} from './vignette';
 
 import type VertexBuffer from '../gl/vertex_buffer.js';
 import type {vec4} from 'gl-matrix';
@@ -57,6 +59,7 @@ export class Rain {
     _accumulatedElevation: number;
 
     _params: {
+        overrideStyleParameters: boolean,
         intensity: number,
         timeFactor: number,
         velocityConeAperture: number,
@@ -76,7 +79,11 @@ export class Rain {
         color: { r: number, g: number, b: number, a: number },
         direction: {x: number, y: number},
         shapeDirPower: number;
+        shapeNormalPower: number;
     };
+
+    vignetteParams: VignetteParams;
+    vignette: Vignette;
 
     constructor(painter: Painter) {
 
@@ -88,7 +95,10 @@ export class Rain {
         this._accumulatedOffsetY = 0;
         this._accumulatedElevation = 0;
 
+        this.vignette = new Vignette();
+
         this._params = {
+            overrideStyleParameters: false,
             intensity: 1.0,
             timeFactor: 1.0,
             velocityConeAperture: 5.0,
@@ -107,13 +117,15 @@ export class Rain {
             },
             color: {r: 0.57, g: 0.57, b: 0.57, a: 0.19},
             direction: {x: -50, y: -35},
-            shapeDirPower: 2.0
+            shapeDirPower: 2.0,
+            shapeNormalPower: 1.0
         };
 
         const tp = painter.tp;
 
         const scope = ["Precipitation", "Rain"];
         this._revealParams = new PrecipitationRevealParams(painter.tp, scope);
+        tp.registerParameter(this._params, scope, 'overrideStyleParameters');
         tp.registerParameter(this._params, scope, 'intensity', {min: 0.0, max: 1.0});
         tp.registerParameter(this._params, scope, 'timeFactor', {min: 0.0, max: 3.0, step: 0.01});
         tp.registerParameter(this._params, scope, 'velocityConeAperture', {min: 0.0, max: 160.0, step: 1.0});
@@ -132,6 +144,7 @@ export class Rain {
 
         const shapeScope = [...scope, "Shape"];
         tp.registerParameter(this._params, shapeScope, 'shapeDirPower', {min: 1.0, max: 10.0, step: 0.01});
+        tp.registerParameter(this._params, shapeScope, 'shapeNormalPower', {min: 1.0, max: 10.0, step: 0.01});
 
         tp.registerParameter(this._params, scope, 'color', {
             color: {type: 'float'},
@@ -145,6 +158,10 @@ export class Rain {
         tp.registerParameter(this._params.screenThinning, thinningScope, 'fadePower', {min: -1.0, max: 1.0, step: 0.01});
         tp.registerParameter(this._params.screenThinning, thinningScope, 'affectedRatio', {min: 0.0, max: 1.0, step: 0.01});
         tp.registerParameter(this._params.screenThinning, thinningScope, 'particleOffset', {min: -1.0, max: 1.0, step: 0.01});
+
+        const vignetteScope = [...scope, "Vignette"];
+        this.vignetteParams = defaultVignetteParams([0.4, 0.4, 0.4, 0.3]);
+        createTpBindings(this.vignetteParams, painter, vignetteScope);
 
         this.particlesCount = 16000;
     }
@@ -192,8 +209,12 @@ export class Rain {
     }
 
     draw(painter: Painter) {
+        if (!this._params.overrideStyleParameters && !painter.style.rain) {
+            return;
+        }
+
         // Global parameters
-        const gp = this._revealParams;
+        const gp = this._params.overrideStyleParameters ? this._revealParams : {revealStart: 0, revealRange: 0.01};
         const zoom = painter.transform.zoom;
         const lerpClamp = (a: number, b: number, t1: number, t2: number, tMid: number,) => {
             const t = clamp((tMid - t1) / (t2 - t1), 0, 1);
@@ -204,6 +225,30 @@ export class Rain {
 
         if (!this.particlesVx || !this.particlesIdx) {
             return;
+        }
+
+        const params = structuredClone(this._params);
+
+        let rainDirection: vec3 = [-params.direction.x, params.direction.y, -100];
+        vec3.normalize(rainDirection, rainDirection);
+
+        const vignetteParams = structuredClone(this.vignetteParams);
+
+        vignetteParams.strength *= revealFactor;
+
+        // Use values from stylespec if not overriden
+        if (!params.overrideStyleParameters) {
+            params.intensity = painter.style.rain.state.density;
+            params.timeFactor = painter.style.rain.state.intensity;
+            params.color = structuredClone(painter.style.rain.state.color);
+            rainDirection = structuredClone(painter.style.rain.state.direction);
+            params.screenThinning.intensity = painter.style.rain.state.centerThinning;
+            params.dropletSizeX = painter.style.rain.state.dropletSize[0];
+            params.dropletSizeYScale = painter.style.rain.state.dropletSize[1] / painter.style.rain.state.dropletSize[0];
+            params.distortionStrength = painter.style.rain.state.distortionStrength * 100;
+
+            vignetteParams.strength = 1;
+            vignetteParams.color = structuredClone(painter.style.rain.state.vignetteColor);
         }
 
         const context = painter.context;
@@ -219,14 +264,14 @@ export class Rain {
             this.screenTexture = new Texture(context, {width: painter.width, height: painter.height, data: null}, gl.RGBA8);
         }
 
-        if (this._params.distortionStrength > 0) {
+        if (params.distortionStrength > 0) {
             context.activeTexture.set(gl.TEXTURE0);
             this.screenTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
             gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, painter.width, painter.height);
         }
 
         const curTime = Date.now() / 1000;
-        this.accumulatedTimeFromStart += (curTime - this.prevTime) * this._params.timeFactor;
+        this.accumulatedTimeFromStart += (curTime - this.prevTime) * params.timeFactor;
 
         this.prevTime = curTime;
 
@@ -292,10 +337,7 @@ export class Rain {
 
         const depthMode = new DepthMode(painter.context.gl.ALWAYS, DepthMode.ReadOnly, painter.depthRangeFor3D);
 
-        const rainDirection: vec3 = [-this._params.direction.x, this._params.direction.y, -100];
-        vec3.normalize(rainDirection, rainDirection);
-
-        const colorVec: vec4 = [this._params.color.r, this._params.color.g, this._params.color.b, this._params.color.a];
+        const colorVec: vec4 = [params.color.r, params.color.g, params.color.b, params.color.a];
 
         const drawParticlesBox = (boxSize: number, distortionOnly: boolean) => {
             const offsetX = this._accumulatedOffsetX;
@@ -308,40 +350,39 @@ export class Rain {
 
             const camPos: vec3 = [-wrappedOffsetX, -wrappedOffsetY, -wrappedOffsetZ];
 
-            const sizeX = this._params.dropletSizeX;
-            const sizeY = this._params.dropletSizeX * this._params.dropletSizeYScale;
+            const sizeX = params.dropletSizeX;
+            const sizeY = params.dropletSizeX * params.dropletSizeYScale;
 
             const thinningX = painter.width  / 2;
             const thinningY = painter.height  / 2;
 
-            const dp = this._params;
-
-            const thinningStart = lerpClamp(0, dp.screenThinning.start, 0, 1, dp.screenThinning.intensity);
-            const thinningRange = lerpClamp(0.001, dp.screenThinning.range, 0, 1, dp.screenThinning.intensity);
-            const thinningParticleOffset = lerpClamp(0.0, dp.screenThinning.particleOffset, 0, 1, dp.screenThinning.intensity);
+            const thinningStart = lerpClamp(0, params.screenThinning.start, 0, 1, params.screenThinning.intensity);
+            const thinningRange = lerpClamp(0.001, params.screenThinning.range, 0, 1, params.screenThinning.intensity);
+            const thinningParticleOffset = lerpClamp(0.0, params.screenThinning.particleOffset, 0, 1, params.screenThinning.intensity);
 
             const uniforms = rainUniformValues({
                 modelview: modelviewMatrix,
                 projection: projectionMatrix,
                 time: this.accumulatedTimeFromStart,
                 camPos,
-                velocityConeAperture: this._params.velocityConeAperture,
-                velocity: this._params.velocity,
+                velocityConeAperture: params.velocityConeAperture,
+                velocity: params.velocity,
                 boxSize,
                 rainDropletSize: [sizeX, sizeY],
-                distortionStrength: this._params.distortionStrength,
-                rainDirection,
+                distortionStrength: params.distortionStrength,
+                rainDirection: rainDirection as [number, number, number],
                 color: colorVec,
                 screenSize: [tr.width, tr.height],
                 thinningCenterPos: [thinningX, thinningY],
-                thinningShape: [thinningStart, thinningRange, Math.pow(10.0, dp.screenThinning.fadePower)],
-                thinningAffectedRatio: dp.screenThinning.affectedRatio,
+                thinningShape: [thinningStart, thinningRange, Math.pow(10.0, params.screenThinning.fadePower)],
+                thinningAffectedRatio: params.screenThinning.affectedRatio,
                 thinningParticleOffset,
-                shapeDirectionalPower: dp.shapeDirPower,
+                shapeDirectionalPower: params.shapeDirPower,
+                shapeNormalPower: params.shapeNormalPower,
                 mode: distortionOnly ? 0 : 1
             });
 
-            const count = Math.round(revealFactor * this._params.intensity * this.particlesCount);
+            const count = Math.round(revealFactor * params.intensity * this.particlesCount);
             const particlesSegments = SegmentVector.simpleSegment(0, 0, count * 4, count * 2);
 
             program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
@@ -350,12 +391,14 @@ export class Rain {
         };
 
         // Distortion only
-        if (this._params.distortionStrength > 0) {
-            drawParticlesBox(this._params.boxSize, true);
+        if (params.distortionStrength > 0) {
+            drawParticlesBox(params.boxSize, true);
         }
 
         // Same data alpha blended only
-        drawParticlesBox(this._params.boxSize, false);
+        drawParticlesBox(params.boxSize, false);
+
+        this.vignette.draw(painter, vignetteParams);
     }
 
 }

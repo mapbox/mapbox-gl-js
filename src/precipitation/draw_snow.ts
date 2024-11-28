@@ -12,6 +12,8 @@ import {mulberry32} from '../style-spec/util/random';
 import {snowLayout} from "./snow_attributes";
 import {earthRadius} from '../geo/lng_lat';
 import {PrecipitationRevealParams} from './precipitation_reveal_params';
+import {createTpBindings, defaultVignetteParams} from './vignette';
+import {Vignette, type VignetteParams} from './vignette';
 
 import type Painter from '../render/painter';
 import type IndexBuffer from '../gl/index_buffer';
@@ -69,11 +71,6 @@ export class Snow {
         billboardSize: number,
         shapeFadeStart: number,
         shapeFadePower: number,
-        firstBatch: boolean,
-        secondBatch: boolean,
-        secondaryBoxSize: number,
-        secondaryBillboardSizeScale: number,
-        secondaryIntensity: number,
         screenThinning:{
             intensity: number,
             start: number,
@@ -83,8 +80,11 @@ export class Snow {
             particleOffset: number
         },
         color: { r: number, g: number, b: number, a: number },
-        direction: {x: number, y: number}
+        direction: {x: number, y: number},
     };
+
+    vignetteParams: VignetteParams;
+    vignette: Vignette;
 
     constructor(painter: Painter) {
         this.accumulatedTimeFromStart = 0;
@@ -103,8 +103,10 @@ export class Snow {
         this._offsetYPrev = undefined;
         this._elevationPrev = undefined;
 
+        this.vignette = new Vignette();
+
         this._params = {
-            overrideStyleParameters: true,
+            overrideStyleParameters: false,
             intensity: 1.0,
             timeFactor: 0.75,
             velocityConeAperture: 60.0,
@@ -115,11 +117,6 @@ export class Snow {
             billboardSize: 2.79,
             shapeFadeStart: 0.54,
             shapeFadePower: 0.21,
-            firstBatch: true,
-            secondBatch: false,
-            secondaryBoxSize: 2440,
-            secondaryBillboardSizeScale: 1.3,
-            secondaryIntensity: 1.0,
             screenThinning: {
                 intensity: 0.0,
                 start: 0.56,
@@ -144,11 +141,6 @@ export class Snow {
         tp.registerParameter(this._params, scope, 'horizontalOscillationRate', {min: 0.3, max: 3.0, step: 0.05});
         tp.registerParameter(this._params, scope, 'boxSize', {min: 100.0, max: 10000.0, step: 50.0});
         tp.registerParameter(this._params, scope, 'billboardSize', {min: 0.1, max: 10.0, step: 0.01});
-        tp.registerParameter(this._params, scope, 'firstBatch');
-        tp.registerParameter(this._params, scope, 'secondBatch');
-        tp.registerParameter(this._params, scope, 'secondaryBoxSize', {min: 100.0, max: 24000.0, step: 100.0});
-        tp.registerParameter(this._params, scope, 'secondaryBillboardSizeScale', {min: 0.1, max: 10.0, step: 0.05});
-        tp.registerParameter(this._params, scope, 'secondaryIntensity', {min: 0.0, max: 1.0});
 
         const thinningScope = [...scope, "ScreenThinning"];
 
@@ -163,10 +155,13 @@ export class Snow {
         tp.registerParameter(this._params, shapeScope, 'shapeFadeStart', {min: 0.0, max: 1.0, step: 0.01});
         tp.registerParameter(this._params, shapeScope, 'shapeFadePower', {min: -1.0, max: 0.99, step: 0.01});
 
-        // const colorScope = ["Precipitation", "Snow", "Color"];
         tp.registerParameter(this._params, scope, 'color', {
             color: {type: 'float'},
         });
+
+        const vignetteScope = [...scope, "Vignette"];
+        this.vignetteParams = defaultVignetteParams([1, 0, 0, 0.3]);
+        createTpBindings(this.vignetteParams, painter, vignetteScope);
 
         tp.registerParameter(this._params, scope, 'direction', {
             picker: 'inline',
@@ -224,11 +219,27 @@ export class Snow {
         if (this.particlesIdx) {
             this.particlesIdx.destroy();
         }
+
+        if (this.vignette) {
+            this.vignette.destroy();
+        }
     }
 
     draw(painter: Painter) {
+        if (!this._params.overrideStyleParameters && !painter.style.snow) {
+            return;
+        }
+
+        const params = structuredClone(this._params);
+
+        let snowDirection: vec3 = [-params.direction.x, params.direction.y, -100];
+        vec3.normalize(snowDirection, snowDirection);
+
+        const vignetteParams = structuredClone(this.vignetteParams);
+
         // Global parameters
-        const gp = this._revealParams;
+        const gp = params.overrideStyleParameters ? this._revealParams : {revealStart: 0, revealRange: 0.01};
+
         const zoom = painter.transform.zoom;
         const lerpClamp = (a: number, b: number, t1: number, t2: number, tMid: number,) => {
             const t = clamp((tMid - t1) / (t2 - t1), 0, 1);
@@ -237,12 +248,28 @@ export class Snow {
         if (gp.revealStart > zoom) { return; }
         const revealFactor = lerpClamp(0, 1, gp.revealStart, gp.revealStart + gp.revealRange, zoom);
 
+        vignetteParams.strength *= revealFactor;
+
+        // Use values from stylespec if not overriden
+        if (!params.overrideStyleParameters) {
+            params.intensity = painter.style.snow.state.density;
+            params.timeFactor = painter.style.snow.state.intensity;
+            params.color = structuredClone(painter.style.snow.state.color);
+            snowDirection = structuredClone(painter.style.snow.state.direction);
+            params.screenThinning.intensity = painter.style.snow.state.centerThinning;
+
+            params.billboardSize = 2.79 * painter.style.snow.state.flakeSize;
+
+            vignetteParams.strength = 1;
+            vignetteParams.color = structuredClone(painter.style.snow.state.vignetteColor);
+        }
+
         if (!this.particlesVx || !this.particlesIdx) {
             return;
         }
 
         const curTime = Date.now() / 1000;
-        this.accumulatedTimeFromStart += (curTime - this.prevTime) * this._params.timeFactor;
+        this.accumulatedTimeFromStart += (curTime - this.prevTime) * params.timeFactor;
 
         this.prevTime = curTime;
 
@@ -328,9 +355,6 @@ export class Snow {
 
             const camPos: [number, number, number] = [-wrappedOffsetX, -wrappedOffsetY, -wrappedOffsetZ];
 
-            const snowDirection: [number, number, number] = [-dp.direction.x, dp.direction.y, -100];
-            vec3.normalize(snowDirection, snowDirection);
-
             const thinningX = tr.width  / 2;
             const thinningY = tr.height  / 2;
 
@@ -356,7 +380,7 @@ export class Snow {
                 thinningAffectedRatio: dp.screenThinning.affectedRatio,
                 thinningParticleOffset,
                 color: [dp.color.r, dp.color.g, dp.color.b, dp.color.a],
-                direction: snowDirection
+                direction: snowDirection as [number, number, number]
             }
             );
 
@@ -370,16 +394,8 @@ export class Snow {
             }
         };
 
-        const batchBoxSize = this._params.boxSize;
-        if (this._params.firstBatch) {
-            drawParticlesBox(batchBoxSize, 1.0, this._params);
-        }
+        drawParticlesBox(params.boxSize, 1.0, params);
 
-        const dp2 = structuredClone(this._params);
-        dp2.intensity = dp2.secondaryIntensity;
-        const boxSize2 = this._params.secondaryBoxSize;
-        if (this._params.secondBatch) {
-            drawParticlesBox(boxSize2, this._params.secondaryBillboardSizeScale, dp2);
-        }
+        this.vignette.draw(painter, vignetteParams);
     }
 }

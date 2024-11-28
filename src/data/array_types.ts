@@ -1041,6 +1041,38 @@ register(StructArrayLayout9f36, 'StructArrayLayout9f36');
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Float32[2]
+ *
+ * @private
+ */
+class StructArrayLayout2f8 extends StructArray implements IStructArrayLayout {
+    override uint8: Uint8Array;
+    override float32: Float32Array;
+
+    override _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
+    }
+
+    override emplaceBack(v0: number, v1: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1);
+    }
+
+    override emplace(i: number, v0: number, v1: number): number {
+        const o4 = i * 2;
+        this.float32[o4 + 0] = v0;
+        this.float32[o4 + 1] = v1;
+        return i;
+    }
+}
+
+StructArrayLayout2f8.prototype.bytesPerElement = 8;
+register(StructArrayLayout2f8, 'StructArrayLayout2f8');
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Uint32[1]
  * [4]: Uint16[3]
  *
@@ -1107,38 +1139,6 @@ class StructArrayLayout1ui2 extends StructArray implements IStructArrayLayout {
 
 StructArrayLayout1ui2.prototype.bytesPerElement = 2;
 register(StructArrayLayout1ui2, 'StructArrayLayout1ui2');
-
-/**
- * Implementation of the StructArray layout:
- * [0]: Float32[2]
- *
- * @private
- */
-class StructArrayLayout2f8 extends StructArray implements IStructArrayLayout {
-    override uint8: Uint8Array;
-    override float32: Float32Array;
-
-    override _refreshViews() {
-        this.uint8 = new Uint8Array(this.arrayBuffer);
-        this.float32 = new Float32Array(this.arrayBuffer);
-    }
-
-    override emplaceBack(v0: number, v1: number): number {
-        const i = this.length;
-        this.resize(i + 1);
-        return this.emplace(i, v0, v1);
-    }
-
-    override emplace(i: number, v0: number, v1: number): number {
-        const o4 = i * 2;
-        this.float32[o4 + 0] = v0;
-        this.float32[o4 + 1] = v1;
-        return i;
-    }
-}
-
-StructArrayLayout2f8.prototype.bytesPerElement = 8;
-register(StructArrayLayout2f8, 'StructArrayLayout2f8');
 
 /**
  * Implementation of the StructArray layout:
@@ -1557,9 +1557,9 @@ export {
     StructArrayLayout7f28,
     StructArrayLayout11f44,
     StructArrayLayout9f36,
+    StructArrayLayout2f8,
     StructArrayLayout1ul3ui12,
     StructArrayLayout1ui2,
-    StructArrayLayout2f8,
     StructArrayLayout16f64,
     StructArrayLayout4ui3f20,
     StructArrayLayout1i2,
@@ -1594,6 +1594,7 @@ export {
     StructArrayLayout7f28 as StarsVertexArray,
     StructArrayLayout11f44 as SnowVertexArray,
     StructArrayLayout9f36 as RainVertexArray,
+    StructArrayLayout2f8 as VignetteVertexArray,
     StructArrayLayout3ui6 as TriangleIndexArray,
     StructArrayLayout2ui4 as LineIndexArray,
     StructArrayLayout1ui2 as LineStripIndexArray,

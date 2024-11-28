@@ -82,6 +82,8 @@ import type {
     LightsSpecification,
     TerrainSpecification,
     FogSpecification,
+    SnowSpecification,
+    RainSpecification,
     SourceSpecification,
     ProjectionSpecification,
     CameraSpecification,
@@ -3645,6 +3647,77 @@ export class Map extends Camera {
      */
     getFog(): FogSpecification | null | undefined {
         return this.style ? this.style.getFog() : null;
+    }
+
+    /**
+     * Sets the snow property of the style.
+     * *This API is experimental, not production ready and subject to change in future versions*.
+     *
+     * @experimental
+     * @param {SnowSpecification} snow The snow properties to set.
+     * If `null` or `undefined` is provided, this function call removes the snow from the map.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     *   map.setSnow({
+     *       density: 1,
+     *       intensity: 0.3
+     *   });
+     * */
+    setSnow(snow?: SnowSpecification | null): this {
+        Debug.run(() => {
+            this._lazyInitEmptyStyle();
+            this.style.setSnow(snow);
+        });
+        return this._update(true);
+    }
+
+    /**
+     * Returns the snow specification or `null` if snow is not set on the map.
+     * *This API is experimental, not production ready and subject to change in future versions*.
+     *
+     * @experimental
+     * @returns {SnowSpecification} Snow specification properties of the style.
+     * @example
+     * const snow = map.getSnow();
+     */
+    getSnow(): SnowSpecification | null | undefined {
+        return this.style ? this.style.getSnow() : null;
+    }
+
+    /**
+     * Sets the rain property of the style.
+     * *This API is experimental, not production ready and subject to change in future versions*.
+     *
+     * @experimental
+     * @param {RainSpecification} rain The rain properties to set.
+     * If `null` or `undefined` is provided, this function call removes the rain from the map.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     *   map.setRain({
+     *       density: 1,
+     *       intensity: 0.3,
+     *       "distortion-strength": 0.3
+     *   });
+     * */
+    setRain(rain?: RainSpecification | null): this {
+        Debug.run(() => {
+            this._lazyInitEmptyStyle();
+            this.style.setRain(rain);
+        });
+        return this._update(true);
+    }
+
+    /**
+     * Returns the rain specification or `null` if rain is not set on the map.
+     * *This API is experimental, not production ready and subject to change in future versions*.
+     *
+     * @experimental
+     * @returns {RainSpecification} Rain specification properties of the style.
+     * @example
+     * const rain = map.getRain();
+     */
+    getRain(): RainSpecification | null | undefined {
+        return this.style ? this.style.getRain() : null;
     }
 
     /**

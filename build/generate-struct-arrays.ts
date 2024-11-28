@@ -215,6 +215,9 @@ createStructArrayType('snow_vertex', snowLayout);
 import {rainLayout} from '../src/precipitation/rain_attributes.js';
 createStructArrayType('rain_vertex', rainLayout);
 
+import {vignetteLayout} from '../src/precipitation/vignette_attributes.js';
+createStructArrayType('vignette_vertex', vignetteLayout);
+
 // feature index array
 createStructArrayType('feature_index', createLayout([
     // the index of the feature in the original vectortile

@@ -9,6 +9,8 @@ import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager';
 import Light from './light';
 import Terrain, {DrapeRenderMode} from './terrain';
 import Fog from './fog';
+import Snow from './snow';
+import Rain from './rain';
 import {pick, clone, extend, deepEqual, filterObject, cartesianPositionToSpherical, warnOnce} from '../util/util';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax';
 import {isMapboxURL} from '../util/mapbox_url';
@@ -81,6 +83,8 @@ import type {ColorThemeSpecification,
     LightsSpecification,
     FlatLightSpecification,
     FogSpecification,
+    SnowSpecification,
+    RainSpecification,
     ProjectionSpecification,
     TransitionSpecification,
     ConfigSpecification,
@@ -145,6 +149,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setGeoJSONSourceData',
     'setTerrain',
     'setFog',
+    'setSnow',
+    'setRain',
     'setProjection',
     'setCamera',
     'addImport',
@@ -245,6 +251,8 @@ class Style extends Evented<MapEvents> {
     terrain: Terrain | null | undefined;
     disableElevatedTerrain: boolean | null | undefined;
     fog: Fog | null | undefined;
+    snow: Snow | null | undefined;
+    rain: Rain | null | undefined;
     camera: CameraSpecification;
     _styleColorTheme: StyleColorTheme;
     _styleColorThemeForScope: {
@@ -792,6 +800,14 @@ class Style extends Evented<MapEvents> {
                 this._createFog(this.stylesheet.fog);
             }
 
+            if (this.stylesheet.snow) {
+                this._createSnow(this.stylesheet.snow);
+            }
+
+            if (this.stylesheet.rain) {
+                this._createRain(this.stylesheet.rain);
+            }
+
             if (this.stylesheet.transition) {
                 this.setTransition(this.stylesheet.transition);
             }
@@ -837,6 +853,8 @@ class Style extends Evented<MapEvents> {
         let directionalLight;
         let terrain;
         let fog;
+        let snow;
+        let rain;
         let projection;
         let transition;
         let camera;
@@ -874,6 +892,12 @@ class Style extends Evented<MapEvents> {
             if (style.stylesheet.fog && style.fog != null)
                 fog = style.fog;
 
+            if (style.stylesheet.snow && style.snow != null)
+                snow = style.snow;
+
+            if (style.stylesheet.rain && style.rain != null)
+                rain = style.rain;
+
             if (style.stylesheet.camera != null)
                 camera = style.stylesheet.camera;
 
@@ -890,6 +914,8 @@ class Style extends Evented<MapEvents> {
         this.ambientLight = ambientLight;
         this.directionalLight = directionalLight;
         this.fog = fog;
+        this.snow = snow;
+        this.rain = rain;
         this._styleColorThemeForScope = styleColorThemeForScope;
 
         if (terrain === null) {
@@ -1372,12 +1398,30 @@ class Style extends Evented<MapEvents> {
         return this.fog.hasTransition();
     }
 
+    hasSnowTransition(): boolean {
+        if (!this.snow) return false;
+        return this.snow.hasTransition();
+    }
+
+    hasRainTransition(): boolean {
+        if (!this.rain) return false;
+        return this.rain.hasTransition();
+    }
+
     hasTransitions(): boolean {
         if (this.hasLightTransitions()) {
             return true;
         }
 
         if (this.hasFogTransition()) {
+            return true;
+        }
+
+        if (this.hasSnowTransition()) {
+            return true;
+        }
+
+        if (this.hasRainTransition()) {
             return true;
         }
 
@@ -1534,6 +1578,14 @@ class Style extends Evented<MapEvents> {
                 this.fog.updateTransitions(parameters);
             }
 
+            if (this.snow) {
+                this.snow.updateTransitions(parameters);
+            }
+
+            if (this.rain) {
+                this.rain.updateTransitions(parameters);
+            }
+
             this._changes.reset();
         }
 
@@ -1595,6 +1647,14 @@ class Style extends Evented<MapEvents> {
 
         if (this.fog) {
             this.fog.recalculate(parameters);
+        }
+
+        if (this.snow) {
+            this.snow.recalculate(parameters);
+        }
+
+        if (this.rain) {
+            this.rain.recalculate(parameters);
         }
 
         this.z = parameters.zoom;
@@ -2218,6 +2278,14 @@ class Style extends Evented<MapEvents> {
             this.fog.updateConfig(this.options);
         }
 
+        if (this.snow) {
+            this.snow.updateConfig(this.options);
+        }
+
+        if (this.rain) {
+            this.rain.updateConfig(this.options);
+        }
+
         this.forEachFragmentStyle((style: Style) => {
             const colorTheme = style._styleColorTheme.colorThemeOverride ? style._styleColorTheme.colorThemeOverride : style._styleColorTheme.colorTheme;
             if (colorTheme) {
@@ -2770,6 +2838,8 @@ class Style extends Evented<MapEvents> {
             lights: this.stylesheet.lights,
             terrain: scopedTerrain,
             fog: this.stylesheet.fog,
+            snow: this.stylesheet.snow,
+            rain: this.stylesheet.rain,
             center: this.stylesheet.center,
             "color-theme": this.stylesheet["color-theme"],
             zoom: this.stylesheet.zoom,
@@ -3263,6 +3333,20 @@ class Style extends Evented<MapEvents> {
         fog.updateTransitions(parameters);
     }
 
+    _createSnow(snowOptions: SnowSpecification) {
+        const snow = this.snow = new Snow(snowOptions, this.map.transform, this.scope, this.options);
+        this.stylesheet.snow = snow.get();
+        const parameters = this._getTransitionParameters({duration: 0});
+        snow.updateTransitions(parameters);
+    }
+
+    _createRain(rainOptions: RainSpecification) {
+        const rain = this.rain = new Rain(rainOptions, this.map.transform, this.scope, this.options);
+        this.stylesheet.rain = rain.get();
+        const parameters = this._getTransitionParameters({duration: 0});
+        rain.updateTransitions(parameters);
+    }
+
     _updateMarkersOpacity() {
         if (this.map._markers.length === 0) {
             return;
@@ -3300,6 +3384,68 @@ class Style extends Evented<MapEvents> {
                 this.stylesheet.fog = fog.get();
                 const parameters = this._getTransitionParameters({duration: 0});
                 fog.updateTransitions(parameters);
+            }
+        }
+
+        this._markersNeedUpdate = true;
+    }
+
+    getSnow(): SnowSpecification | null | undefined {
+        return this.snow ? this.snow.get() : null;
+    }
+
+    setSnow(snowOptions?: SnowSpecification) {
+        this._checkLoaded();
+
+        if (!snowOptions) {
+            // Remove snow
+            delete this.snow;
+            delete this.stylesheet.snow;
+            return;
+        }
+
+        if (!this.snow) {
+            // Initialize Snow
+            this._createSnow(snowOptions);
+        } else {
+            // Updating snow
+            const snow = this.snow;
+            if (!deepEqual(snow.get(), snowOptions)) {
+                snow.set(snowOptions, this.options);
+                this.stylesheet.snow = snow.get();
+                const parameters = this._getTransitionParameters({duration: 0});
+                snow.updateTransitions(parameters);
+            }
+        }
+
+        this._markersNeedUpdate = true;
+    }
+
+    getRain(): RainSpecification | null | undefined {
+        return this.rain ? this.rain.get() : null;
+    }
+
+    setRain(rainOptions?: RainSpecification) {
+        this._checkLoaded();
+
+        if (!rainOptions) {
+            // Remove rain
+            delete this.rain;
+            delete this.stylesheet.rain;
+            return;
+        }
+
+        if (!this.rain) {
+            // Initialize Rain
+            this._createRain(rainOptions);
+        } else {
+            // Updating rain
+            const rain = this.rain;
+            if (!deepEqual(rain.get(), rainOptions)) {
+                rain.set(rainOptions, this.options);
+                this.stylesheet.rain = rain.get();
+                const parameters = this._getTransitionParameters({duration: 0});
+                rain.updateTransitions(parameters);
             }
         }
 
@@ -3463,6 +3609,8 @@ class Style extends Evented<MapEvents> {
         this.setEventedParent(null);
 
         delete this.fog;
+        delete this.snow;
+        delete this.rain;
         delete this.terrain;
         delete this.ambientLight;
         delete this.directionalLight;

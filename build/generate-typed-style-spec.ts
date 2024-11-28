@@ -313,6 +313,10 @@ ${tsObjectDeclaration('TerrainSpecification', spec.terrain)}
 
 ${tsObjectDeclaration('FogSpecification', spec.fog)}
 
+${tsObjectDeclaration('SnowSpecification', spec.snow)}
+
+${tsObjectDeclaration('RainSpecification', spec.rain)}
+
 ${tsObjectDeclaration('CameraSpecification', spec.camera)}
 
 ${tsObjectDeclaration('ColorThemeSpecification', spec.colorTheme)}

@@ -32,6 +32,7 @@ export type RainUniformsType = {
     'u_thinningAffectedRatio': Uniform1f,
     'u_thinningParticleOffset': Uniform1f,
     'u_shapeDirectionalPower': Uniform1f,
+    'u_shapeNormalPower': Uniform1f,
     'u_mode': Uniform1f,
 };
 
@@ -54,6 +55,7 @@ const rainUniforms = (context: Context): RainUniformsType => ({
     'u_thinningAffectedRatio': new Uniform1f(context),
     'u_thinningParticleOffset': new Uniform1f(context),
     'u_shapeDirectionalPower': new Uniform1f(context),
+    'u_shapeNormalPower': new Uniform1f(context),
     'u_mode': new Uniform1f(context),
 });
 
@@ -75,6 +77,7 @@ const rainUniformValues = (values: {
     thinningAffectedRatio: number,
     thinningParticleOffset: number,
     shapeDirectionalPower: number,
+    shapeNormalPower: number,
     mode: number,
 }
 ): UniformValues<RainUniformsType> => ({
@@ -96,6 +99,7 @@ const rainUniformValues = (values: {
     'u_thinningAffectedRatio': values.thinningAffectedRatio,
     'u_thinningParticleOffset': values.thinningParticleOffset,
     'u_shapeDirectionalPower': values.shapeDirectionalPower,
+    'u_shapeNormalPower': values.shapeNormalPower,
     'u_mode': values.mode,
 });
 

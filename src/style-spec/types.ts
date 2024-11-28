@@ -88,6 +88,14 @@ export type StyleSpecification = {
     "lights"?: Array<LightsSpecification>,
     "terrain"?: TerrainSpecification | null | undefined,
     "fog"?: FogSpecification,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
+    "snow"?: SnowSpecification,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
+    "rain"?: RainSpecification,
     "camera"?: CameraSpecification,
     "color-theme"?: ColorThemeSpecification,
     /**
@@ -148,6 +156,50 @@ export type FogSpecification = {
     "star-intensity-transition"?: TransitionSpecification,
     "vertical-range"?: PropertyValueSpecification<[number, number]>,
     "vertical-range-transition"?: TransitionSpecification
+}
+
+export type SnowSpecification = {
+    "density"?: PropertyValueSpecification<number>,
+    "density-transition"?: TransitionSpecification,
+    "intensity"?: PropertyValueSpecification<number>,
+    "intensity-transition"?: TransitionSpecification,
+    "color"?: PropertyValueSpecification<ColorSpecification>,
+    "color-transition"?: TransitionSpecification,
+    "opacity"?: PropertyValueSpecification<number>,
+    "opacity-transition"?: TransitionSpecification,
+    "vignette"?: PropertyValueSpecification<number>,
+    "vignette-transition"?: TransitionSpecification,
+    "vignette-color"?: PropertyValueSpecification<ColorSpecification>,
+    "vignette-color-transition"?: TransitionSpecification,
+    "center-thinning"?: PropertyValueSpecification<number>,
+    "center-thinning-transition"?: TransitionSpecification,
+    "direction"?: PropertyValueSpecification<[number, number]>,
+    "direction-transition"?: TransitionSpecification,
+    "flake-size"?: PropertyValueSpecification<number>,
+    "flake-size-transition"?: TransitionSpecification
+}
+
+export type RainSpecification = {
+    "density"?: PropertyValueSpecification<number>,
+    "density-transition"?: TransitionSpecification,
+    "intensity"?: PropertyValueSpecification<number>,
+    "intensity-transition"?: TransitionSpecification,
+    "color"?: PropertyValueSpecification<ColorSpecification>,
+    "color-transition"?: TransitionSpecification,
+    "opacity"?: PropertyValueSpecification<number>,
+    "opacity-transition"?: TransitionSpecification,
+    "vignette"?: PropertyValueSpecification<number>,
+    "vignette-transition"?: TransitionSpecification,
+    "vignette-color"?: PropertyValueSpecification<ColorSpecification>,
+    "vignette-color-transition"?: TransitionSpecification,
+    "center-thinning"?: PropertyValueSpecification<number>,
+    "center-thinning-transition"?: TransitionSpecification,
+    "direction"?: PropertyValueSpecification<[number, number]>,
+    "direction-transition"?: TransitionSpecification,
+    "droplet-size"?: PropertyValueSpecification<[number, number]>,
+    "droplet-size-transition"?: TransitionSpecification,
+    "distortion-strength"?: PropertyValueSpecification<number>,
+    "distortion-strength-transition"?: TransitionSpecification
 }
 
 export type CameraSpecification = {

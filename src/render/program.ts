@@ -55,8 +55,8 @@ const debugWireframe2DLayerProgramNames = [
 
 const debugWireframe3DLayerProgramNames = [
     "stars",
-    "rain_particle",
-    "snow_particle",
+    "rainParticle",
+    "snowParticle",
     "fillExtrusion",  "fillExtrusionGroundEffect",
     "model",
     "symbol"];
