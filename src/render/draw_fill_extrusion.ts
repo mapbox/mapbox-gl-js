@@ -137,7 +137,9 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             const aoRadius = layer.paint.get('fill-extrusion-ambient-occlusion-ground-radius');
             const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
 
-            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(layer.lut).toArray01().slice(0, 3);
+            const floodLightIgnoreLut = layer.paint.get('fill-extrusion-flood-light-color-use-theme').constantOr("default") === 'none';
+
+            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(floodLightIgnoreLut ? null : layer.lut).toArray01().slice(0, 3);
 
             const aoEnabled = aoIntensity > 0 && aoRadius > 0;
 
@@ -280,7 +282,8 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
     const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
-    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(layer.lut).toArray01().slice(0, 3) as any);
+    const floodLightColorUseTheme = layer.paint.get('fill-extrusion-flood-light-color-use-theme').constantOr('default') === 'none';
+    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(floodLightColorUseTheme ? null : layer.lut).toArray01().slice(0, 3) as any);
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
     const wallMode = layer.paint.get('fill-extrusion-line-width').constantOr(1.0) !== 0.0;

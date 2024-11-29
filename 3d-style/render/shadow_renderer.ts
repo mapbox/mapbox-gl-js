@@ -606,20 +606,22 @@ export function calculateGroundShadowFactor(
     directionalLight: Lights<Directional>,
     ambientLight: Lights<Ambient>,
 ): [number, number, number] {
+    const dirColorIgnoreLut = directionalLight.properties.get('color-use-theme') === 'none';
     const dirColor = directionalLight.properties.get('color');
     const dirIntensity = directionalLight.properties.get('intensity');
     const dirDirection = directionalLight.properties.get('direction');
 
     const directionVec: vec3 = [dirDirection.x, dirDirection.y, dirDirection.z];
+    const ambientColorIgnoreLut = ambientLight.properties.get('color-use-theme') === 'none';
     const ambientColor = ambientLight.properties.get('color');
     const ambientIntensity = ambientLight.properties.get('intensity');
 
     const groundNormal: vec3 = [0.0, 0.0, 1.0];
     const dirDirectionalFactor = Math.max(vec3.dot(groundNormal, directionVec), 0.0);
     const ambStrength: vec3 = [0, 0, 0];
-    vec3.scale(ambStrength, ambientColor.toRenderColor(style.getLut(directionalLight.scope)).toArray01Linear().slice(0, 3) as vec3, ambientIntensity);
+    vec3.scale(ambStrength, ambientColor.toRenderColor(ambientColorIgnoreLut ? null : style.getLut(directionalLight.scope)).toArray01Linear().slice(0, 3) as vec3, ambientIntensity);
     const dirStrength: vec3 = [0, 0, 0];
-    vec3.scale(dirStrength, dirColor.toRenderColor(style.getLut(ambientLight.scope)).toArray01Linear().slice(0, 3) as vec3, dirDirectionalFactor * dirIntensity);
+    vec3.scale(dirStrength, dirColor.toRenderColor(dirColorIgnoreLut ? null : style.getLut(ambientLight.scope)).toArray01Linear().slice(0, 3) as vec3, dirDirectionalFactor * dirIntensity);
 
     // Multiplier X to get from lit surface color L to shadowed surface color S
     // X = A / (A + D)

@@ -105,6 +105,7 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
     setupTexture(normalTexture, 'HAS_TEXTURE_u_normalTexture', TextureSlots.Normal);
     setupTexture(occlusionTexture, 'HAS_TEXTURE_u_occlusionTexture', TextureSlots.Occlusion);
     setupTexture(emissionTexture, 'HAS_TEXTURE_u_emissionTexture', TextureSlots.Emission);
+
     if (lut) {
         if (!lut.texture) {
             lut.texture = new Texture3D(painter.context, lut.image, [lut.image.height, lut.image.height, lut.image.height], context.gl.RGBA8);
@@ -179,6 +180,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     const normalMatrix = mat4.invert([] as any, lightingMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
 
+    const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
     const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
     const uniformValues = modelUniformValues(
         new Float32Array(sortedMesh.worldViewProjection),
@@ -206,7 +208,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
 
-    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
+    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
 
     let fogMatrixArray = null;
     if (fog) {
@@ -672,7 +674,9 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.matrix));
                 colorMode = shadowRenderer.getShadowPassColorMode();
             } else {
-                setupMeshDraw(definesValues, dynamicBuffers, mesh, painter, layer.lut);
+
+                const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
+                setupMeshDraw(definesValues, dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                 program = painter.getOrCreateProgram('model', {defines: (definesValues as DynamicDefinesType[]), overrideFog: affectedByFog});
                 const material = mesh.material;
                 const pbr = material.pbrMetallicRoughness;
@@ -955,6 +959,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 lightingMatrix = mat4.multiply(lightingMatrix, lightingMatrix, node.matrix);
 
                 const isLightBeamPass = painter.renderPass === 'light-beam';
+                const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
                 const hasMapboxFeatures = modelTraits & ModelTraits.HasMapboxMeshFeatures;
                 const emissiveStrength = hasMapboxFeatures ? 0.0 : nodeInfo.evaluatedRMEA[0][2];
 
@@ -984,7 +989,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         shadowRenderer.useNormalOffset = !!mesh.normalBuffer;
                     }
 
-                    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
+                    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                     if (!hasMapboxFeatures) {
                         programOptions.defines.push('DIFFUSE_SHADED');
                     }

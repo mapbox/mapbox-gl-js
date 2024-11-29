@@ -99,6 +99,19 @@ function tsObject(properties, indent, overrides = {}) {
 ${Object.keys(properties)
         .map(k => {
             const property = `    ${indent}${tsProperty(k, properties[k], overrides[k])}`;
+
+            if( properties[k].type === 'color') {
+
+                if (properties[k].transition) {
+                    const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification` + `,\n    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
+                    return [property, propertyTransition].join(',\n');
+                }
+                else {
+                    const propertyUseTheme = `    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
+                    return [property, propertyUseTheme].join(',\n');
+                }
+            }
+            
             if (properties[k].transition) {
                 const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification`;
                 return [property, propertyTransition].join(',\n');

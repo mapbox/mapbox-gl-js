@@ -61,6 +61,10 @@ export type PaintProps = {
     "line-border-width": DataDrivenProperty<number>;
     "line-border-color": DataDrivenProperty<Color>;
     "line-occlusion-opacity": DataConstantProperty<number>;
+    "line-color-use-theme": DataDrivenProperty<string>;
+    "line-gradient-use-theme": DataDrivenProperty<string>;
+    "line-trim-color-use-theme": DataDrivenProperty<string>;
+    "line-border-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -83,4 +87,8 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "line-border-width": new DataDrivenProperty(styleSpec["paint_line"]["line-border-width"]),
     "line-border-color": new DataDrivenProperty(styleSpec["paint_line"]["line-border-color"]),
     "line-occlusion-opacity": new DataConstantProperty(styleSpec["paint_line"]["line-occlusion-opacity"]),
+    "line-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "line-gradient-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "line-trim-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "line-border-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

@@ -114,7 +114,14 @@ global.overrides = function (property) {
 
 global.propertyValue = function (type, property, valueType) {
     const valueTypeString = valueType ? `${valueType}_` : "";
-    const spec = `styleSpec["${valueTypeString}${property.type_}"]["${property.name}"]`;
+    let spec = `styleSpec["${valueTypeString}${property.type_}"]["${property.name}"]`;
+    if (property.name.endsWith('-use-theme')) {
+        spec = JSON.stringify({
+            "type": "string",
+            "default": "default",
+            "property-type": property['property-type']
+        });
+    }
     if (customTypeBindings[`${type}.${property.name}`]) {
         return `new ${customTypeBindings[`${type}.${property.name}`]}(${spec})`;
     }
@@ -148,12 +155,24 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
         return memo;
     }, []);
 
-    const paintProperties = Object.keys(paintSpec).reduce<Array<any>>((memo, name) => {
+    let paintProperties = Object.keys(paintSpec).reduce<Array<any>>((memo, name) => {
         paintSpec[name].name = name;
         paintSpec[name].type_ = type;
         memo.push(paintSpec[name]);
         return memo;
     }, []);
+
+    for (const prop of paintProperties) {
+        if (prop.type === 'color') {
+            paintProperties.push({
+                'type': 'string',
+                'type_': prop.type_,
+                'default': 'default',
+                'property-type': 'data-driven',
+                'name': `${prop.name}-use-theme`
+            });
+        }
+    }
 
     return {type, layoutProperties, paintProperties};
 });
@@ -179,6 +198,17 @@ const lights = Object.keys(spec['light-3d'].type.values).map((type) => {
         spec[`properties_light_${type}`][name].name = name;
         spec[`properties_light_${type}`][name].type_ = `light_${type}`;
         memo.push(spec[`properties_light_${type}`][name]);
+
+        if (name === 'color') {
+            memo.push({
+                'type': 'string',
+                'type_': `light_${type}`,
+                'default': 'default',
+                'property-type': 'data-constant',
+                'name': `${name}-use-theme`
+            });
+        }
+
         return memo;
     }, []);
 

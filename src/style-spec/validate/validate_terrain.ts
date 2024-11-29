@@ -25,8 +25,17 @@ export default function validateTerrain(options: ValidationOptions): Array<Valid
 
     for (const key in terrain) {
         const transitionMatch = key.match(/^(.*)-transition$/);
+        const useThemeMatch = key.match(/^(.*)-use-theme$/);
 
-        if (transitionMatch && terrainSpec[transitionMatch[1]] && terrainSpec[transitionMatch[1]].transition) {
+        if (useThemeMatch && terrainSpec[useThemeMatch[1]]) {
+            errors = errors.concat(validate({
+                key,
+                value: terrain[key],
+                valueSpec: {type:'string'},
+                style,
+                styleSpec
+            }));
+        } else if (transitionMatch && terrainSpec[transitionMatch[1]] && terrainSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
                 value: terrain[key],

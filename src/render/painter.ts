@@ -1080,14 +1080,15 @@ class Painter {
                 const fogLUT = this.style.getLut(fog.scope);
                 if (!shouldRenderAtmosphere) {
 
-                    const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
+                    const ignoreLutColor = fog.properties.get('color-use-theme') === 'none';
+                    const fogColor = fog.properties.get('color').toRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...fogColor);
                 }
 
                 if (shouldRenderAtmosphere) {
-
-                    const spaceColor = fog.properties.get('space-color').toRenderColor(fogLUT).toArray01();
+                    const ignoreLutColor = fog.properties.get('space-color-use-theme') === 'none';
+                    const spaceColor = fog.properties.get('space-color').toRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...spaceColor);
                 }
