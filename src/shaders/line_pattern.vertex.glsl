@@ -28,6 +28,10 @@ in highp vec3 a_pattern_data; // [position_in_segment & offset_sign, segment_len
 out vec2 v_pattern_data; // [position_in_segment, segment_length]
 #endif
 
+#ifdef INDICATOR_CUTOUT
+out highp float v_z_offset;
+#endif
+
 uniform mat4 u_matrix;
 uniform float u_tile_units_to_pixels;
 uniform vec2 u_units_to_pixels;
@@ -234,5 +238,9 @@ void main() {
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);
+#endif
+
+#ifdef INDICATOR_CUTOUT
+    v_z_offset = a_z_offset;
 #endif
 }

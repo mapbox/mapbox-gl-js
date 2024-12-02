@@ -64,6 +64,10 @@ out vec2 v_tex;
 uniform float u_image_height;
 #endif
 
+#ifdef INDICATOR_CUTOUT
+out highp float v_z_offset;
+#endif
+
 #ifdef RENDER_SHADOWS
 uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
@@ -241,5 +245,9 @@ void main() {
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);
+#endif
+
+#ifdef INDICATOR_CUTOUT
+    v_z_offset = a_z_offset;
 #endif
 }

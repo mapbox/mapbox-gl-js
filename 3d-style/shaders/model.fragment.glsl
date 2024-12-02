@@ -541,7 +541,7 @@ vec4 finalColor;
 #endif
 
 #ifdef INDICATOR_CUTOUT
-    finalColor = applyCutout(finalColor);
+    finalColor = applyCutout(finalColor, v_position_height.w);
 #endif
 
     glFragColor = finalColor;

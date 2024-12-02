@@ -29,6 +29,10 @@ in highp float v_road_z_offset;
 in vec2 v_pattern_data; // [pos_in_segment, segment_length];
 #endif
 
+#ifdef INDICATOR_CUTOUT
+in highp float v_z_offset;
+#endif
+
 #ifdef RENDER_SHADOWS
 uniform vec3 u_ground_shadow_factor;
 
@@ -143,7 +147,7 @@ void main() {
         }
     }
 #ifdef INDICATOR_CUTOUT
-    color = applyCutout(color);
+    color = applyCutout(color, v_z_offset);
 #endif
 
     glFragColor = color;

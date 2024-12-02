@@ -26,6 +26,10 @@ in vec2 v_tex;
 uniform sampler2D u_gradient_image;
 #endif
 
+#ifdef INDICATOR_CUTOUT
+in highp float v_z_offset;
+#endif
+
 #ifdef RENDER_SHADOWS
 uniform vec3 u_ground_shadow_factor;
 
@@ -154,7 +158,7 @@ void main() {
     out_color *= (alpha * opacity);
 
 #ifdef INDICATOR_CUTOUT
-    out_color = applyCutout(out_color);
+    out_color = applyCutout(out_color, v_z_offset);
 #endif
 
     glFragColor = out_color;
