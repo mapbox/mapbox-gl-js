@@ -1,0 +1,75 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 200,
+      "height": 200,
+      "allowed": 0.003
+    }
+  },
+  "zoom": 3,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -1,
+              8
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              1,
+              -8
+            ],
+            [
+              -8,
+              -1
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              4,
+              -1
+            ],
+            [
+              -1,
+              -4
+            ],
+            [
+              -2,
+              0
+            ]
+          ]
+        }
+      },
+      "lineMetrics": true
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-width": 20,
+        "line-pattern": "generic_icon",
+        "line-trim-offset": [0.5, 0.7],
+        "line-trim-fade-range": [0.05, 0.05]
+      },
+      "layout": {
+        "line-join": "none"
+      }
+    }
+  ]
+}

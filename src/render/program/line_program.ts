@@ -42,6 +42,8 @@ export type LinePatternUniformsType = {
     ['u_tile_units_to_pixels']: Uniform1f;
     ['u_alpha_discard_threshold']: Uniform1f;
     ['u_trim_offset']: Uniform2f;
+    ['u_trim_fade_range']: Uniform2f;
+    ['u_trim_color']: Uniform4f;
     ['u_emissive_strength']: Uniform1f;
     ['u_zbias_factor']: Uniform1f;
     ['u_tile_to_meter']: Uniform1f;
@@ -80,6 +82,8 @@ const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
     'u_tile_units_to_pixels': new Uniform1f(context),
     'u_alpha_discard_threshold': new Uniform1f(context),
     'u_trim_offset': new Uniform2f(context),
+    'u_trim_fade_range': new Uniform2f(context),
+    'u_trim_color': new Uniform4f(context),
     'u_emissive_strength': new Uniform1f(context),
     'u_zbias_factor': new Uniform1f(context),
     'u_tile_to_meter': new Uniform1f(context)
@@ -139,6 +143,8 @@ const linePatternUniformValues = (
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
     const zbiasFactor = transform.pitch < 15.0 ? lerp(0.07, 0.7, clamp((14.0 - transform.zoom) / (14.0 - 9.0), 0.0, 1.0)) : 0.07;
+    const ignoreLut = layer.paint.get('line-trim-color-use-theme').constantOr("default") === 'none';
+
     // Increase zbias factor for low pitch values based on the zoom level. Lower zoom level increases the zbias factor.
     // The values were found experimentally, to make an elevated line look good over a terrain with high elevation differences.
     return {
@@ -156,6 +162,8 @@ const linePatternUniformValues = (
         ],
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset,
+        'u_trim_fade_range': layer.paint.get('line-trim-fade-range'),
+        'u_trim_color': layer.paint.get('line-trim-color').toRenderColor(ignoreLut ? null : layer.lut).toArray01(),
         'u_emissive_strength': layer.paint.get('line-emissive-strength'),
         'u_zbias_factor': zbiasFactor,
         'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0)
