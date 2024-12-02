@@ -4304,9 +4304,9 @@
         "group": "Color",
         "sdk-support": {
           "basic functionality": {
-            "js": "3.10.0",
-            "android": "11.10.0",
-            "ios": "11.10.0"
+            "js": "3.9.0",
+            "android": "11.9.0",
+            "ios": "11.9.0"
           }
         }
       },
