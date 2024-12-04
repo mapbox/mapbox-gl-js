@@ -5,6 +5,7 @@ import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomCon
 import CompoundExpression from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions/index';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
+import {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import {AJAXError} from './ajax';
 import Formatted, {FormattedSection} from '../style-spec/expression/types/formatted';
 
@@ -98,6 +99,9 @@ Object.defineProperty(Grid, 'name', {value: 'Grid'});
 
 register(Grid as Class<Grid>, 'Grid');
 
+if (typeof DOMMatrix !== 'undefined') {
+    register(DOMMatrix, 'DOMMatrix');
+}
 register(Color, 'Color');
 register(Error, 'Error');
 register(Formatted, 'Formatted');
@@ -106,6 +110,7 @@ register(AJAXError, 'AJAXError');
 register(ResolvedImage, 'ResolvedImage');
 register(StylePropertyFunction, 'StylePropertyFunction');
 register(StyleExpression, 'StyleExpression', {omit: ['_evaluator']});
+register(ImageIdWithOptions, 'ImageIdWithOptions');
 
 register(ZoomDependentExpression, 'ZoomDependentExpression');
 register(ZoomConstantExpression, 'ZoomConstantExpression');

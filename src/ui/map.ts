@@ -99,6 +99,7 @@ import type {GeoJSONFeature, FeaturesetDescriptor} from '../util/vectortile_to_g
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 import type {Callback} from '../types/callback';
 import type {Interaction} from './interactions';
+import type {SpriteFormat} from '../render/image_manager';
 
 export type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
 /* eslint-disable no-use-before-define */
@@ -207,6 +208,7 @@ export type MapOptions = {
     performanceMetricsCollection?: boolean;
     tessellationStep?: number;
     scaleFactor?: number;
+    spriteFormat?: SpriteFormat;
 };
 
 const defaultMinZoom = -2;
@@ -265,7 +267,8 @@ const defaultOptions: Omit<MapOptions, 'container'> = {
     collectResourceTiming: false,
     testMode: false,
     precompilePrograms: true,
-    scaleFactor: 1.0
+    scaleFactor: 1.0,
+    spriteFormat: 'auto',
 };
 
 /**
@@ -566,6 +569,8 @@ export class Map extends Camera {
     // Current frame id, iterated on each render
     _frameId: number;
 
+    _spriteFormat: SpriteFormat;
+
     constructor(options: MapOptions) {
         LivePerformanceUtils.mark(LivePerformanceMarkers.create);
 
@@ -674,6 +679,8 @@ export class Map extends Camera {
         if (options.maxBounds) {
             this.setMaxBounds(options.maxBounds);
         }
+
+        this._spriteFormat = options.spriteFormat;
 
         bindAll([
             '_onWindowOnline',
@@ -2537,7 +2544,7 @@ export class Map extends Camera {
 
         if (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) {
             const {width, height, data} = browser.getImageData(image);
-            this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version});
+            this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version, usvg: false});
         } else if (image.width === undefined || image.height === undefined) {
             this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
@@ -2554,6 +2561,7 @@ export class Map extends Camera {
                 stretchY,
                 content,
                 sdf,
+                usvg: false,
                 version,
                 userImage
             });
@@ -2610,7 +2618,10 @@ export class Map extends Camera {
             return;
         }
 
-        if (width !== existingImage.data.width || height !== existingImage.data.height) {
+        const existingImageWidth = existingImage.usvg ? existingImage.icon.usvg_tree.width : existingImage.data.width;
+        const existingImageHeight = existingImage.usvg ? existingImage.icon.usvg_tree.height : existingImage.data.height;
+
+        if (width !== existingImageWidth || height !== existingImageHeight) {
             this.fire(new ErrorEvent(new Error(
                 `The width and height of the updated image (${width}, ${height})
                 must be that same as the previous version of the image
@@ -2619,9 +2630,19 @@ export class Map extends Camera {
         }
 
         const copy = !(image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap));
-        existingImage.data.replace(data, copy);
 
-        this.style.updateImage(id, existingImage);
+        let performSymbolLayout = false;
+
+        if (existingImage.usvg) {
+            existingImage.data = new RGBAImage({width, height}, new Uint8Array(data));
+            existingImage.usvg = false;
+            existingImage.icon = undefined;
+            performSymbolLayout = true;
+        } else {
+            existingImage.data.replace(data, copy);
+        }
+
+        this.style.updateImage(id, existingImage, performSymbolLayout);
     }
 
     /**

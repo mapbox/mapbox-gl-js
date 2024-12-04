@@ -1,17 +1,29 @@
 import WorkerPool, {PRELOAD_POOL_ID} from './worker_pool';
 
 let globalWorkerPool: WorkerPool | null | undefined;
+let imageRasterizerWorkerPool: WorkerPool | null | undefined;
 
 /**
  * Creates (if necessary) and returns the single, global WorkerPool instance
  * to be shared across each Map
  * @private
  */
-export default function getGlobalWorkerPool(): WorkerPool {
+export function getGlobalWorkerPool(): WorkerPool {
     if (!globalWorkerPool) {
         globalWorkerPool = new WorkerPool();
     }
     return globalWorkerPool;
+}
+
+// We have a separate worker pool for image rasterization because:
+//   - We need to share cache between tile workers
+//   - To unblock tiles worker pool when image rasterization is in progress
+export function getImageRasterizerWorkerPool(): WorkerPool {
+    if (!imageRasterizerWorkerPool) {
+        imageRasterizerWorkerPool = new WorkerPool();
+    }
+
+    return imageRasterizerWorkerPool;
 }
 
 export function prewarm() {

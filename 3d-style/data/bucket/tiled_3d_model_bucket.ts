@@ -16,7 +16,7 @@ import type {OverscaledTileID, CanonicalTileID, UnwrappedTileID} from '../../../
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {ReplacementSource} from '../../source/replacement_source';
 import type {Bucket} from '../../../src/data/bucket';
-import type {Node} from '../model';
+import type {ModelNode} from '../model';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type Context from '../../../src/gl/context';
 import type {ProjectionSpecification} from '../../../src/style-spec/types';
@@ -32,7 +32,7 @@ import type {FeatureState} from '../../../src/style-spec/expression/index';
 const lookup = new Float32Array(512 * 512);
 const passLookup = new Uint8Array(512 * 512);
 
-function getNodeHeight(node: Node): number {
+function getNodeHeight(node: ModelNode): number {
     let height = 0;
     if (node.meshes) {
         for (const mesh of node.meshes) {
@@ -47,7 +47,7 @@ function getNodeHeight(node: Node): number {
     return height;
 }
 
-function addAABBsToGridIndex(node: Node, key: number, grid: GridIndex) {
+function addAABBsToGridIndex(node: ModelNode, key: number, grid: GridIndex) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (mesh.aabb.min[0] === Infinity) continue;
@@ -80,12 +80,12 @@ export class Tiled3dModelFeature {
     evaluatedScale: [number, number, number];
     hiddenByReplacement: boolean;
     hasTranslucentParts: boolean;
-    node: Node;
+    node: ModelNode;
     aabb: Aabb;
     emissionHeightBasedParams: Array<[number, number, number, number, number]>;
     cameraCollisionOpacity: number;
     state: FeatureState | null;
-    constructor(node: Node) {
+    constructor(node: ModelNode) {
         this.node = node;
         this.evaluatedRMEA = [[1, 0, 0, 1],
             [1, 0, 0, 1],   // wall
@@ -146,7 +146,7 @@ class Tiled3dModelBucket implements Bucket {
     states: FeatureStates;
     constructor(
         layers: Array<ModelStyleLayer>,
-        nodes: Array<Node>,
+        nodes: Array<ModelNode>,
         id: OverscaledTileID,
         hasMbxMeshFeatures: boolean,
         hasMeshoptCompression: boolean,
@@ -236,7 +236,7 @@ class Tiled3dModelBucket implements Bucket {
         this.needsUpload = false;
     }
 
-    updatePbrBuffer(node: Node): boolean {
+    updatePbrBuffer(node: ModelNode): boolean {
         let result = false;
         if (!node.meshes) return result;
         for (const mesh of node.meshes) {

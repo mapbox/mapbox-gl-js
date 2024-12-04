@@ -22,7 +22,7 @@ import type {TilespaceQueryGeometry} from '../../../src/style/query_geometry';
 import type {FeatureState} from '../../../src/style-spec/expression/index';
 import type Transform from '../../../src/geo/transform';
 import type ModelManager from '../../render/model_manager';
-import type {Node} from '../../data/model';
+import type {ModelNode} from '../../data/model';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {FeatureFilter} from '../../../src/style-spec/feature_filter/index';
 import type {CanonicalTileID} from '../../../src/source/tile_id';
@@ -212,7 +212,7 @@ class ModelStyleLayer extends StyleLayer {
         const screenQuery = queryGeometry.queryGeometry;
         const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
 
-        const checkNode = function(n: Node) {
+        const checkNode = function(n: ModelNode) {
             const worldViewProjectionForNode = mat4.multiply([] as any, modelMatrix, n.matrix);
             mat4.multiply(worldViewProjectionForNode, transform.expandedFarZProjMatrix, worldViewProjectionForNode);
             for (let i = 0; i < n.meshes.length; ++i) {

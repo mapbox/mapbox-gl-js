@@ -73,7 +73,7 @@ class Color {
      * var translucentGreen = new Color.parse('rgba(26, 207, 26, .73)');
      * translucentGreen.toString(); // = "rgba(26,207,26,0.73)"
      */
-    toString(): string {
+    toStringPremultipliedAlpha(): string {
         const [r, g, b, a] = this.a === 0 ? [0, 0, 0, 0] : [
             this.r * 255 / this.a,
             this.g * 255 / this.a,
@@ -83,9 +83,23 @@ class Color {
         return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
     }
 
+    toString(): string {
+        const [r, g, b, a] = [
+            this.r,
+            this.g,
+            this.b,
+            this.a
+        ];
+        return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${a})`;
+    }
+
     toRenderColor(lut: LUT | null): RenderColor {
         const {r, g, b, a} = this;
         return new RenderColor(lut, r, g, b, a);
+    }
+
+    clone(): Color {
+        return new Color(this.r, this.g, this.b, this.a);
     }
 }
 

@@ -9,9 +9,9 @@ export function waitFor(evented, event) {
     });
 }
 
-export function createStyleJSON(options) {
+export function createStyleJSON(options = {}) {
     return {
-        version: 8,
+        version: 8 as const,
         sources: {},
         layers: [],
         ...options

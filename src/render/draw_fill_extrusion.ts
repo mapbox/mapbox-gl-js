@@ -3,6 +3,7 @@ import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import EXTENT from '../style-spec/data/extent';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import FillExtrusionBucket, {
     fillExtrusionHeightLift,
     ELEVATION_SCALE,
@@ -382,7 +383,8 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
             const atlas = tile.imageAtlas;
-            const posTo = atlas.patternPositions[constantPattern.toString()];
+            const patternImage = ResolvedImage.from(constantPattern);
+            const posTo = atlas.patternPositions[patternImage.getSerializedPrimary()];
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 

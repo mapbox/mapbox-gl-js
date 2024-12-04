@@ -11,6 +11,7 @@ import browser from '../util/browser';
 import {clamp, nextPowerOfTwo, warnOnce} from '../util/util';
 import {renderColorRamp} from '../util/color_ramp';
 import EXTENT from '../style-spec/data/extent';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import assert from 'assert';
 import pixelsToTileUnits from '../source/pixels_to_tile_units';
 
@@ -129,7 +130,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog, overrideRtt: hasZOffset ? false : undefined});
 
         if (constantPattern && tile.imageAtlas) {
-            const posTo = tile.imageAtlas.patternPositions[constantPattern.toString()];
+            const patternImage = ResolvedImage.from(constantPattern);
+            const posTo = tile.imageAtlas.patternPositions[patternImage.getSerializedPrimary()];
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 

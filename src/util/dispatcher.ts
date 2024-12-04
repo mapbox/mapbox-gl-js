@@ -1,8 +1,8 @@
 import {uniqueId, asyncAll} from './util';
 import Actor from './actor';
 import assert from 'assert';
+import WorkerPool from './worker_pool';
 
-import type WorkerPool from './worker_pool';
 import type {Class} from '../types/class';
 import type {Callback} from '../types/callback';
 
@@ -22,16 +22,16 @@ class Dispatcher {
     // exposed to allow stubbing in unit tests
     static Actor: Class<Actor>;
 
-    constructor(workerPool: WorkerPool, parent: any) {
+    constructor(workerPool: WorkerPool, parent: any, name = 'Worker', count = WorkerPool.workerCount) {
         this.workerPool = workerPool;
         this.actors = [];
         this.currentActor = 0;
         this.id = uniqueId();
-        const workers = this.workerPool.acquire(this.id);
+        const workers = this.workerPool.acquire(this.id, count);
         for (let i = 0; i < workers.length; i++) {
             const worker = workers[i];
             const actor = new Dispatcher.Actor(worker, parent, this.id);
-            actor.name = `Worker ${i}`;
+            actor.name = `${name} ${i}`;
             this.actors.push(actor);
         }
         assert(this.actors.length);

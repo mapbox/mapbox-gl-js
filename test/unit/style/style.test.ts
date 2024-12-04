@@ -13,8 +13,7 @@ import SourceCache from '../../../src/source/source_cache';
 import StyleLayer from '../../../src/style/style_layer';
 import Transform from '../../../src/geo/transform';
 import {extend} from '../../../src/util/util';
-import {RequestManager} from '../../../src/util/mapbox';
-import {Event, Evented} from '../../../src/util/evented';
+import {Event} from '../../../src/util/evented';
 import styleSpec from '../../../src/style-spec/reference/latest';
 import {
     setRTLTextPlugin,
@@ -22,6 +21,7 @@ import {
     evented as rtlTextPluginEvented
 } from '../../../src/source/rtl_text_plugin';
 import {OverscaledTileID} from '../../../src/source/tile_id';
+import {StubMap} from './utils';
 
 function createStyleJSON(properties) {
     return extend({
@@ -49,25 +49,6 @@ function createGeoJSONSource() {
             "features": []
         }
     };
-}
-
-class StubMap extends Evented {
-    constructor() {
-        super();
-        this.transform = new Transform();
-        this._requestManager = new RequestManager();
-        this._markers = [];
-        this._triggerCameraUpdate = () => {};
-        this._prioritizeAndUpdateProjection = () => {};
-    }
-
-    setCamera() {}
-
-    _getMapId() {
-        return 1;
-    }
-
-    getWorldview() {}
 }
 
 describe('Style', () => {
@@ -223,37 +204,6 @@ describe('Style#loadJSON', () => {
         expect(e.dataType).toEqual('style');
     });
 
-    test('fires "data" when the sprite finishes loading', async () => {
-        mockFetch({
-            'http://example.com/sprite.json': () => new Response(JSON.stringify({})),
-            'http://example.com/sprite.png': async () => new Response(await getPNGResponse())
-        });
-
-        const style = new Style(new StubMap());
-
-        style.loadJSON({
-            "version": 8,
-            "sources": {},
-            "layers": [],
-            "sprite": "http://example.com/sprite"
-        });
-
-        await new Promise(resolve => {
-            style.once('error', () => expect.unreachable());
-
-            style.once('data', (e) => {
-                expect(e.target).toBe(style);
-                expect(e.dataType).toEqual('style');
-
-                style.once('data', (e) => {
-                    expect(e.target).toBe(style);
-                    expect(e.dataType).toEqual('style');
-                    resolve();
-                });
-            });
-        });
-    });
-
     test('validates the style', async () => {
         const style = new Style(new StubMap());
 
@@ -299,31 +249,6 @@ describe('Style#loadJSON', () => {
 
         await waitFor(style, "style.load");
         expect(style.getLayer('fill') instanceof StyleLayer).toBeTruthy();
-    });
-
-    test('transforms sprite json and image URLs before request', async () => {
-        mockFetch({
-            'http://example.com/sprites/bright-v8.json': () => new Response(JSON.stringify({})),
-            'http://example.com/sprites/bright-v8.png': async () => new Response(await getPNGResponse())
-        });
-
-        const map = new StubMap();
-        const transformSpy = vi.spyOn(map._requestManager, 'transformRequest');
-        const style = new Style(map);
-
-        style.loadJSON(extend(createStyleJSON(), {
-            "sprite": "http://example.com/sprites/bright-v8"
-        }));
-
-        await waitFor(style, 'style.load');
-
-        expect(transformSpy).toHaveBeenCalledTimes(2);
-        expect(transformSpy.mock.calls[0][0]).toEqual('http://example.com/sprites/bright-v8.json');
-        expect(transformSpy.mock.calls[0][1]).toEqual('SpriteJSON');
-        expect(transformSpy.mock.calls[1][0]).toEqual('http://example.com/sprites/bright-v8.png');
-        expect(transformSpy.mock.calls[1][1]).toEqual('SpriteImage');
-
-        await waitFor(style, "data");
     });
 
     test('emits an error on non-existant vector source layer', async () => {

@@ -21,7 +21,7 @@ import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
 import WorkerClass from './util/worker_class';
-import {prewarm, clearPrewarmedResources} from './util/global_worker_pool';
+import {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
 import {clearTileCache} from './util/tile_request_cache';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils';
 import {FreeCameraOptions} from './ui/free_camera';

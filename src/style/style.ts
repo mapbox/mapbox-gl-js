@@ -43,7 +43,7 @@ import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '
 import SourceCache from '../source/source_cache';
 import BuildingIndex from '../source/building_index';
 import styleSpec from '../style-spec/reference/latest';
-import getWorkerPool from '../util/global_worker_pool';
+import {getGlobalWorkerPool as getWorkerPool} from '../util/worker_pool_factory';
 import deref from '../style-spec/deref';
 import emptyStyle from '../style-spec/empty';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff';
@@ -64,6 +64,7 @@ import {evaluateColorThemeProperties} from '../util/lut';
 import EvaluationParameters from './evaluation_parameters';
 import Point from '@mapbox/point-geometry';
 import {expandSchemaWithIndoor} from './indoor_manager';
+import {loadIconset} from './load_iconset';
 
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
@@ -114,6 +115,7 @@ import type {QueryResult} from '../source/query_features';
 import type {GeoJSONFeature, FeaturesetDescriptor, default as Feature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
+import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -377,7 +379,7 @@ class Style extends Evented<MapEvents> {
         if (options.imageManager) {
             this.imageManager = options.imageManager;
         } else {
-            this.imageManager = new ImageManager();
+            this.imageManager = new ImageManager(this.map._spriteFormat);
             this.imageManager.setEventedParent(this);
         }
         this.imageManager.createScope(this.scope);
@@ -741,7 +743,7 @@ class Style extends Evented<MapEvents> {
             }
 
             if (json.sprite) {
-                this._loadSprite(json.sprite);
+                this._loadIconset(json.sprite);
             } else {
                 this.imageManager.setLoaded(true, this.scope);
                 this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
@@ -1214,7 +1216,7 @@ class Style extends Evented<MapEvents> {
                 if (this.getImage(styleLutName)) {
                     this.removeImage(styleLutName);
                 }
-                this.addImage(styleLutName, {data: new RGBAImage({width, height}, data), pixelRatio: 1, sdf: false, version: 0});
+                this.addImage(styleLutName, {data: new RGBAImage({width, height}, data), pixelRatio: 1, sdf: false, usvg: false, version: 0});
 
                 const image = this.imageManager.getImage(styleLutName, this.scope);
                 if (!image) {
@@ -1275,6 +1277,42 @@ class Style extends Evented<MapEvents> {
             this._spriteRequest = null;
             if (err) {
                 this.fire(new ErrorEvent(err));
+            } else if (images) {
+                for (const id in images) {
+                    this.imageManager.addImage(id, this.scope, images[id]);
+                }
+            }
+
+            this.imageManager.setLoaded(true, this.scope);
+            this._availableImages = this.imageManager.listImages(this.scope);
+            this.dispatcher.broadcast('setImages', {
+                scope: this.scope,
+                images: this._availableImages
+            });
+            this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
+            this.fire(new Event('data', {dataType: 'style'}));
+        });
+    }
+
+    _loadIconset(url: string) {
+        // If the sprite is not a mapbox URL, we load
+        // raster sprite if icon_set is not specified explicitly.
+        if ((!isMapboxURL(url) && this.map._spriteFormat !== 'icon_set') || this.map._spriteFormat === 'raster') {
+            this._loadSprite(url);
+            return;
+        }
+
+        const isFallbackExists = this.map._spriteFormat === 'auto';
+
+        this._spriteRequest = loadIconset(url, this.map._requestManager, (err, images) => {
+            this._spriteRequest = null;
+            if (err) {
+                // Try to fallback to raster sprite
+                if (isFallbackExists) {
+                    this._loadSprite(url);
+                } else {
+                    this.fire(new ErrorEvent(err));
+                }
             } else if (images) {
                 for (const id in images) {
                     this.imageManager.addImage(id, this.scope, images[id]);
@@ -1755,8 +1793,11 @@ class Style extends Evented<MapEvents> {
         return this;
     }
 
-    updateImage(id: string, image: StyleImage) {
+    updateImage(id: string, image: StyleImage, performSymbolLayout = false) {
         this.imageManager.updateImage(id, this.scope, image);
+        if (performSymbolLayout) {
+            this._afterImageUpdated(id);
+        }
     }
 
     getImage(id: string): StyleImage | null | undefined {
@@ -4071,6 +4112,10 @@ class Style extends Evented<MapEvents> {
         };
         setDependencies(this._otherSourceCaches[params.source]);
         setDependencies(this._symbolSourceCaches[params.source]);
+    }
+
+    rasterizeImages(mapId: string, params: {scope: string, imageTasks: {[_: string]: ImageIdWithOptions}}, callback: Callback<{[_: string]: RGBAImage}>) {
+        this.imageManager.rasterizeImages(params, callback);
     }
 
     getGlyphs(mapId: string, params: {

@@ -29,7 +29,7 @@ import type Painter from '../../src/render/painter';
 import type {CreateProgramParams} from '../../src/render/painter';
 import type SourceCache from '../../src/source/source_cache';
 import type ModelStyleLayer from '../style/style_layer/model_style_layer';
-import type {Mesh, Node, ModelTexture} from '../data/model';
+import type {Mesh, ModelNode, ModelTexture} from '../data/model';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms';
 import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type {CutoffParams} from '../../src/render/cutoff';
@@ -273,7 +273,7 @@ export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painte
     }
 }
 
-function prepareMeshes(transform: Transform, node: Node, modelMatrix: mat4, projectionMatrix: mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>,  opaqueMeshes: Array<SortedMesh>) {
+function prepareMeshes(transform: Transform, node: ModelNode, modelMatrix: mat4, projectionMatrix: mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>,  opaqueMeshes: Array<SortedMesh>) {
 
     let nodeModelMatrix;
     if (transform.projection.name === 'globe') {
@@ -646,7 +646,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
 const minimumInstanceCount = 20;
 
-function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
+function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: ModelNode, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
     const context = painter.context;
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;

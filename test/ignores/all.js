@@ -39,18 +39,6 @@ const todo = [
     "expression-tests/image/two-arguments/available",
     "render-tests/image-fallback-nested/add-image-after",
 
-    // https://mapbox.atlassian.net/browse/GLJS-873
-    "expression-tests/image/options/one-image",
-    "expression-tests/image/options/options-for-both-images",
-    "expression-tests/image/options/options-for-first-image-only",
-    "expression-tests/image/options/options-for-second-image-only",
-    "expression-tests/image/options/options-with-invalid-params/array",
-    "expression-tests/image/options/options-with-invalid-params/empty-parameter-name",
-    "expression-tests/image/options/options-with-invalid-params/integer-parameter-value",
-    "expression-tests/image/options/options-with-invalid-params/parameter-value-with-unknown-color",
-    "expression-tests/image/options/options-with-invalid-params/string",
-    "expression-tests/image/options/options-without-params",
-
     // Known issues with the elevated lines implementation
     // https://github.com/mapbox/mapbox-gl-js-internal/pull/1909
     "render-tests/elevated-line/join-none",

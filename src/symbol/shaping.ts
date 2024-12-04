@@ -15,6 +15,7 @@ import type {ImagePosition} from '../render/image_atlas';
 import type {GlyphRect, GlyphPositions} from '../render/glyph_atlas';
 import type {FormattedSection} from '../style-spec/expression/types/formatted';
 import type Formatted from '../style-spec/expression/types/formatted';
+import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 
 const WritingMode = {
     horizontal: 1,
@@ -86,12 +87,12 @@ class SectionOptions {
     scale: number;
     fontStack: string;
     // Image options
-    imageName: string | null;
+    image: ImageIdWithOptions | null;
 
     constructor() {
         this.scale = 1.0;
         this.fontStack = "";
-        this.imageName = null;
+        this.image = null;
     }
 
     static forText(scale: number | null | undefined, fontStack: string): SectionOptions {
@@ -101,9 +102,9 @@ class SectionOptions {
         return textOptions;
     }
 
-    static forImage(imageName: string): SectionOptions {
+    static forImage(image: ImageIdWithOptions | null): SectionOptions {
         const imageOptions = new SectionOptions();
-        imageOptions.imageName = imageName;
+        imageOptions.image = image;
         return imageOptions;
     }
 
@@ -202,8 +203,8 @@ class TaggedString {
     }
 
     addImageSection(section: FormattedSection) {
-        const imageName = section.image ? section.image.namePrimary : '';
-        if (imageName.length === 0) {
+        const image = section.image && section.image.namePrimary ? section.image.getPrimary() : null;
+        if (!image) {
             warnOnce(`Can't add FormattedSection with an empty image.`);
             return;
         }
@@ -215,7 +216,7 @@ class TaggedString {
         }
 
         this.text += String.fromCodePoint(nextImageSectionCharCode);
-        this.sections.push(SectionOptions.forImage(imageName));
+        this.sections.push(SectionOptions.forImage(image));
         this.sectionIndex.push(this.sections.length - 1);
     }
 
@@ -383,13 +384,13 @@ function getGlyphAdvance(
     spacing: number,
     layoutTextSize: number,
 ): number {
-    if (!section.imageName) {
+    if (!section.image) {
         const positions = glyphMap[section.fontStack];
         const glyph = positions && positions.glyphs[codePoint];
         if (!glyph) return 0;
         return glyph.metrics.advance * section.scale + spacing;
     } else {
-        const imagePosition = imagePositions[section.imageName];
+        const imagePosition = imagePositions[section.image.serialize()];
         if (!imagePosition) return 0;
         return imagePosition.displaySize[0] * section.scale * ONE_EM / layoutTextSize + spacing;
     }
@@ -548,7 +549,7 @@ function determineLineBreaks(
         // surrounding spaces.
         if ((i < logicalInput.length() - 1)) {
             const ideographicBreak = charAllowsIdeographicBreaking(codePoint);
-            if (breakable[codePoint] || ideographicBreak || section.imageName) {
+            if (breakable[codePoint] || ideographicBreak || section.image) {
 
                 potentialLineBreaks.push(
                     evaluateBreak(
@@ -641,7 +642,7 @@ function shapeLines(shaping: Shaping,
     for (const line of lines) {
         const sections = line.getSections();
         for (const section of sections) {
-            if (section.imageName) continue;
+            if (section.image) continue;
 
             const glyphData = glyphMap[section.fontStack];
             if (!glyphData) continue;
@@ -690,7 +691,7 @@ function shapeLines(shaping: Shaping,
                 // are from complex text layout script, or whitespaces.
                 (allowVerticalPlacement && (whitespace[codePoint] || charInComplexShapingScript(codePoint))));
 
-            if (!section.imageName) {
+            if (!section.image) {
                 // Find glyph position in the glyph atlas, if bitmap is null,
                 // glyphPosition will not exit in the glyphPosition map
                 const glyphPositionData = glyphPositions[section.fontStack];
@@ -730,9 +731,9 @@ function shapeLines(shaping: Shaping,
                     glyphOffset = SHAPING_DEFAULT_OFFSET + (lineMaxScale - sectionScale) * ONE_EM;
                 }
             } else {
-                const imagePosition = imagePositions[section.imageName];
+                const imagePosition = imagePositions[section.image.serialize()];
                 if (!imagePosition) continue;
-                imageName = section.imageName;
+                imageName = section.image.id;
                 shaping.iconsInText = shaping.iconsInText || true;
                 rect = imagePosition.paddedRect;
                 const size = imagePosition.displaySize;

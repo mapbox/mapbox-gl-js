@@ -25,13 +25,13 @@ describe('shaping', () => {
     }
 
     const images = {
-        'square': new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-        'tall': new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-        'wide': new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        [ResolvedImage.build('square').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        [ResolvedImage.build('tall').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        [ResolvedImage.build('wide').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
     };
 
     const sectionForImage = (name) => {
-        return new FormattedSection('', ResolvedImage.fromString(name), null, null, null);
+        return new FormattedSection('', ResolvedImage.build(name), null, null, null);
     };
 
     const sectionForText = (name, scale) => {

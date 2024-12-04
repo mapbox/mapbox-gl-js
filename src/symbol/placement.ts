@@ -333,10 +333,10 @@ export class Placement {
             tile.tileID
         );
 
-        const textSizeScaleRange = symbolBucket.layers[0].layout.get('text-size-scale-range');
-        const textScaleFactor = clamp(scaleFactor, textSizeScaleRange[0], textSizeScaleRange[1]);
-        const iconSizeScaleRange = symbolBucket.layers[0].layout.get('icon-size-scale-range');
-        const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRange[0], iconSizeScaleRange[1]);
+        const [textSizeScaleRangeMin, textSizeScaleRangeMax] = symbolBucket.layers[0].layout.get('text-size-scale-range');
+        const textScaleFactor = clamp(scaleFactor, textSizeScaleRangeMin, textSizeScaleRangeMax);
+        const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
+        const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
 
         const parameters = {
             bucket: symbolBucket,
@@ -470,10 +470,10 @@ export class Placement {
         const zOffset = layout.get('symbol-z-elevate');
         const symbolZOffset = paint.get('symbol-z-offset');
         const elevationFromSea = layout.get('symbol-elevation-reference') === 'sea';
-        const textSizeScaleRange = layout.get('text-size-scale-range');
-        const iconSizeScaleRange = layout.get('icon-size-scale-range');
-        const textScaleFactor = clamp(scaleFactor, textSizeScaleRange[0], textSizeScaleRange[1]);
-        const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRange[0], iconSizeScaleRange[1]);
+        const [textSizeScaleRangeMin, textSizeScaleRangeMax] = layout.get('text-size-scale-range');
+        const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
+        const textScaleFactor = clamp(scaleFactor, textSizeScaleRangeMin, textSizeScaleRangeMax);
+        const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
 
         this.transform.setProjection(bucket.projection);
 
