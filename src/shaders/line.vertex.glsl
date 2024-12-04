@@ -32,6 +32,7 @@ uniform mat2 u_pixels_to_tile_units;
 uniform vec2 u_units_to_pixels;
 uniform lowp float u_device_pixel_ratio;
 uniform float u_width_scale;
+uniform highp float u_floor_width_scale;
 
 #ifdef ELEVATED
 uniform lowp float u_zbias_factor;
@@ -238,7 +239,7 @@ void main() {
     float scale = dash.z == 0.0 ? 0.0 : u_tile_units_to_pixels / dash.z;
     float height = dash.y;
 
-    v_tex = vec2(a_linesofar * scale / floorwidth, (-normal.y * height + dash.x + 0.5) / u_texsize.y);
+    v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * height + dash.x + 0.5) / u_texsize.y);
 #endif
 
     v_width2 = vec2(outset, inset);

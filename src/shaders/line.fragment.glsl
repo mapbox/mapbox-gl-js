@@ -4,6 +4,7 @@
 
 uniform lowp float u_device_pixel_ratio;
 uniform highp float u_width_scale;
+uniform highp float u_floor_width_scale;
 uniform float u_alpha_discard_threshold;
 uniform highp vec2 u_trim_offset;
 uniform highp vec2 u_trim_fade_range;
@@ -77,7 +78,8 @@ void main() {
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture(u_dash_image, v_tex).r;
     float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / dash.z;
-    alpha *= linearstep(0.5 - sdfgamma / floorwidth, 0.5 + sdfgamma / floorwidth, sdfdist);
+    float scaled_floorwidth = (floorwidth * u_floor_width_scale);
+    alpha *= linearstep(0.5 - sdfgamma / scaled_floorwidth, 0.5 + sdfgamma / scaled_floorwidth, sdfdist);
 #endif
 
     highp vec4 out_color;

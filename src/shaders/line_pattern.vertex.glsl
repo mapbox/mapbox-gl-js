@@ -38,6 +38,7 @@ uniform vec2 u_units_to_pixels;
 uniform mat2 u_pixels_to_tile_units;
 uniform float u_device_pixel_ratio;
 uniform float u_width_scale;
+uniform float u_floor_width_scale;
 
 #ifdef ELEVATED
 uniform lowp float u_zbias_factor;
@@ -216,11 +217,11 @@ void main() {
 
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
-    v_width = floorwidth;
+    v_width = (floorwidth * u_floor_width_scale);
 
 #ifdef LINE_JOIN_NONE
     // Needs to consider antialiasing width extension to get accurate pattern aspect ratio
-    v_width = floorwidth + ANTIALIASING;
+    v_width = (floorwidth * u_floor_width_scale) + ANTIALIASING;
 
     mediump float pixels_to_tile_units = 1.0 / u_tile_units_to_pixels;
     mediump float pixel_ratio_inverse = 1.0 / pixel_ratio;
