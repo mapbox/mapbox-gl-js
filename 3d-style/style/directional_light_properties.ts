@@ -18,6 +18,7 @@ export type LightProps = {
     "color-use-theme": DataConstantProperty<string>;
     "intensity": DataConstantProperty<number>;
     "cast-shadows": DataConstantProperty<boolean>;
+    "shadow-quality": DataConstantProperty<number>;
     "shadow-intensity": DataConstantProperty<number>;
 };
 
@@ -28,5 +29,6 @@ export const getProperties = (): Properties<LightProps> => properties || (proper
     "color-use-theme": new DataConstantProperty({"type":"string","default":"default","property-type":"data-constant"}),
     "intensity": new DataConstantProperty(styleSpec["properties_light_directional"]["intensity"]),
     "cast-shadows": new DataConstantProperty(styleSpec["properties_light_directional"]["cast-shadows"]),
+    "shadow-quality": new DataConstantProperty(styleSpec["properties_light_directional"]["shadow-quality"]),
     "shadow-intensity": new DataConstantProperty(styleSpec["properties_light_directional"]["shadow-intensity"]),
 }));

@@ -427,6 +427,10 @@ export type DirectionalLightSpecification = {
         "intensity"?: PropertyValueSpecification<number>,
         "intensity-transition"?: TransitionSpecification,
         "cast-shadows"?: boolean,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "shadow-quality"?: PropertyValueSpecification<number>,
         "shadow-intensity"?: PropertyValueSpecification<number>,
         "shadow-intensity-transition"?: TransitionSpecification
     },

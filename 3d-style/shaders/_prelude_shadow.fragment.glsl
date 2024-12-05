@@ -72,7 +72,12 @@ float shadow_occlusion_0(highp vec4 pos, highp float bias) {
 
 float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth, highp float bias) {
 #ifdef SHADOWS_SINGLE_CASCADE
-    light_view_pos0.xyz = light_view_pos0.xyz / light_view_pos0.w * 0.5 + 0.5;
+    light_view_pos0.xyz /= light_view_pos0.w;
+    vec2 abs_bounds = abs(light_view_pos0.xy);
+    if (abs_bounds.x >= 1.0 || abs_bounds.y >= 1.0) {
+        return 0.0;
+    }
+    light_view_pos0.xyz = light_view_pos0.xyz * 0.5 + 0.5;
     return shadow_occlusion_0(light_view_pos0, bias);
 #else // SHADOWS_SINGLE_CASCADE
 

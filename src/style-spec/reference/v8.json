@@ -516,6 +516,28 @@
         }
       }
     },
+    "shadow-quality": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": false,
+      "doc": "Determines the quality of the shadows on the map. A value of 1 ensures the highest quality and is the default value.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "experimental": true
+    },
     "shadow-intensity": {
       "type": "number",
       "property-type": "data-constant",
