@@ -4,29 +4,22 @@ import type {LayerSpecification} from '../style-spec/types';
 
 const customProps = ['id', 'tile', 'layer', 'source', 'sourceLayer', 'state'] as const;
 
-/**
- * A descriptor for a featureset, which can be either a reference to a layer
- * or a reference to a featureset in a style fragment.
- */
-export type FeaturesetDescriptor = {layerId: string} | {featuresetId: string, importId?: string};
-
 export interface GeoJSONFeature extends GeoJSON.Feature {
     layer?: LayerSpecification;
     source?: string;
     sourceLayer?: string;
-    namespace?: string;
-    featureset?: FeaturesetDescriptor;
     state?: FeatureState;
+    variants?: Record<string, FeatureVariant[]>;
     clone: () => GeoJSONFeature;
     toJSON: () => GeoJSON.Feature;
 }
 
 class Feature implements GeoJSONFeature {
     type: 'Feature';
-    _geometry?: GeoJSON.Geometry;
-    properties: Record<any, any>;
     id?: number | string;
-    namespace?: string;
+    properties: Record<any, any>;
+    tile?: {z: number; x: number; y: number};
+    _geometry?: GeoJSON.Geometry;
     _vectorTileFeature: VectorTileFeature;
     _x: number;
     _y: number;
@@ -36,7 +29,7 @@ class Feature implements GeoJSONFeature {
     source: string;
     sourceLayer?: string;
     state?: FeatureState;
-    tile?: {z: number; x: number; y: number};
+    variants?: Record<string, FeatureVariant[]>;
 
     constructor(vectorTileFeature: VectorTileFeature, z: number, x: number, y: number, id?: string | number) {
         this.type = 'Feature';
@@ -54,7 +47,8 @@ class Feature implements GeoJSONFeature {
         const feature = new Feature(this._vectorTileFeature, this._z, this._x, this._y, this.id);
         if (this.state) feature.state = {...this.state};
         if (this.layer) feature.layer = {...this.layer};
-        if (this.namespace) feature.namespace = this.namespace;
+        if (this.source) feature.source = this.source;
+        if (this.sourceLayer) feature.sourceLayer = this.sourceLayer;
         return feature;
     }
 
@@ -82,6 +76,61 @@ class Feature implements GeoJSONFeature {
         }
 
         return json as GeoJSON.Feature;
+    }
+}
+
+/**
+ * Featureset descriptor is a reference to a featureset in a style fragment.
+ */
+export type FeaturesetDescriptor = {featuresetId: string, importId?: string};
+
+/**
+ * A descriptor for a query target, which can be either a reference to a layer
+ * or a reference to a featureset in a style fragment.
+ */
+export type TargetDescriptor =
+    | {layerId: string}
+    | FeaturesetDescriptor;
+
+/**
+ * A variant of a feature, which can be used to reference this feature from different featuresets.
+ * During the QRF query, the original feature will have a reference to all its variants grouped by the query target.
+ */
+export type FeatureVariant = {
+    target: TargetDescriptor;
+    namespace?: string;
+    properties?: Record<string, unknown>;
+};
+
+/**
+ * TargetFeature is a derivative of a Feature and its variant that is used to represent a feature in a specific query target.
+ * It includes the `featureset` and `namespace` of the variant and omits the `layer`, `source`, and `sourceLayer` of the original feature.
+ */
+export class TargetFeature extends Feature {
+    override layer: never;
+    override source: never;
+    override sourceLayer: never;
+    override variants: never;
+
+    target?: TargetDescriptor;
+    namespace?: string;
+
+    constructor(feature: Feature, variant: FeatureVariant) {
+        super(feature._vectorTileFeature, feature._z, feature._x, feature._y, feature.id);
+        if (feature.state) this.state = {...feature.state};
+
+        this.target = variant.target;
+        this.namespace = variant.namespace;
+        if (variant.properties) this.properties = variant.properties;
+    }
+
+    override toJSON(): GeoJSON.Feature & FeatureVariant {
+        const json = super.toJSON() as GeoJSON.Feature & FeatureVariant;
+
+        json.target = this.target;
+        json.namespace = this.namespace;
+
+        return json;
     }
 }
 

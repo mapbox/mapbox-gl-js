@@ -1,0 +1,31 @@
+[
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [0, 0]
+    },
+    "type": "Feature",
+    "properties": {
+      "key": "value"
+    },
+    "source": "geojson",
+    "state": {}
+  },
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [0, 0]
+    },
+    "type": "Feature",
+    "target": {
+      "featuresetId": "circle",
+      "importId": "basemap"
+    },
+    "namespace": "a",
+    "properties": {
+      "a-constant-value": "constant-a",
+      "a-property-value": "value"
+    },
+    "state": {}
+  }
+]

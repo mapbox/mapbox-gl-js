@@ -40,7 +40,8 @@ export type {PointLike} from './types/point-like';
 export type {PluginStatus} from './source/rtl_text_plugin';
 
 export type {Event, ErrorEvent} from './util/evented';
-export type {GeoJSONFeature} from './util/vectortile_to_geojson';
+export type {GeoJSONFeature, TargetFeature} from './util/vectortile_to_geojson';
+export type {InteractionEvent} from './ui/interactions';
 export type {PaddingOptions} from './geo/edge_insets';
 export type {RequestParameters} from './util/ajax';
 export type {RequestTransformFunction, ResourceType} from './util/mapbox';

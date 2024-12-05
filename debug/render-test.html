@@ -21,7 +21,7 @@
 
         async function fetchStyle() {
             let test = new URLSearchParams(location.search).get('test');
-            if (!test) test = prompt('test name:') || 'text-writing-mode/line_label/mixed-multiline-horizontal-mode';
+            if (!test) test = prompt('test name:', 'text-writing-mode/line_label/mixed-multiline-horizontal-mode');
 
             const response = await fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`);
             const style = await response.json();

@@ -29,7 +29,6 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
-import type Feature from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 
 const TRANSITION_SUFFIX = '-transition';
@@ -388,17 +387,6 @@ class StyleLayer extends Evented {
         _layoutVertexArrayOffset: number,
         // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
     ): boolean | number {}
-
-    queryIntersectsMatchingFeature(
-        _queryGeometry: TilespaceQueryGeometry,
-        _featureIndex: number,
-        _filter: FeatureFilter,
-        _transform: Transform,
-        // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
-    ): {
-        queryFeature: Feature | null | undefined;
-        intersectionZ: number;
-    } {}
 }
 
 export default StyleLayer;

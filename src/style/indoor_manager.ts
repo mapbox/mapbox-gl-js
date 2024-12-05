@@ -178,7 +178,7 @@ class IndoorManager extends Evented<IndoorEvents> {
         if (this._queryFeatureSetId && this._buildingEntryFeatureSetId) {
             this._map.addInteraction('mbx-indoor-buildingclick', {
                 type: 'click',
-                featureset: {
+                target: {
                     featuresetId: this._buildingEntryFeatureSetId,
                     importId: this._scope
                 },
@@ -221,7 +221,7 @@ class IndoorManager extends Evented<IndoorEvents> {
         }
 
         const queryParams = {
-            featureset: {
+            target: {
                 featuresetId: this._queryFeatureSetId,
                 importId: this._scope
             }
@@ -410,7 +410,7 @@ class IndoorManager extends Evented<IndoorEvents> {
     // Selects a floorplan based on a provided ID, if the associated feature is visible on the screen.
     selectFloorplan(floorplanId) {
         const queryParams = {
-            featureset: {
+            target: {
                 featuresetId: this._queryFeatureSetId,
                 importId: this._scope
             }

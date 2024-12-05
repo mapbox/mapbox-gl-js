@@ -1,0 +1,16 @@
+[
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [0, 0]
+    },
+    "type": "Feature",
+    "properties": {
+      "a-property-value": "value",
+      "a-constant-value": "constant-a"
+    },
+    "target": {"featuresetId": "circle"},
+    "namespace": "a",
+    "state": {}
+  }
+]
