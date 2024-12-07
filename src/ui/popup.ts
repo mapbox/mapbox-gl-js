@@ -33,7 +33,7 @@ export type PopupOptions = {
     offset?: Offset;
     className?: string;
     maxWidth?: string;
-    altitube?: number;
+    altitude?: number;
 };
 
 type PopupEvents = {
@@ -77,7 +77,7 @@ const focusQuerySelector = [
  *
  * Negative offsets indicate left and up.
  * @param {string} [options.className] Space-separated CSS class names to add to popup container.
- * @param {number} [options.altitube=0] The altitude above ground level,how many meters.
+ * @param {number} [options.altitude=0] The altitude above ground level,how many meters.
  * @param {string} [options.maxWidth='240px'] -
  * A string that sets the CSS property of the popup's maximum width (for example, `'300px'`).
  * To ensure the popup resizes to fit its content, set this property to `'none'`.
@@ -119,12 +119,12 @@ export default class Popup extends Evented<PopupEvents> {
     _anchor: Anchor;
     _classList: Set<string>;
     _marker: Marker | null | undefined;
-    _altitube: number;
+    _altitude: number;
 
     constructor(options?: PopupOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
-        this._altitube = (options && options.altitube) || 0;
+        this._altitude = (options && options.altitude) || 0;
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
@@ -623,11 +623,11 @@ export default class Popup extends Evented<PopupEvents> {
         }
 
         if (map.transform.renderWorldCopies && !this._trackPointer) {
-            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitube || 0));
+            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitude || 0));
         }
 
         if (!this._trackPointer || cursor) {
-            const pos = this._pos = this._trackPointer && cursor instanceof Point ? cursor : map.project(this._lngLat, (this._altitube || 0));
+            const pos = this._pos = this._trackPointer && cursor instanceof Point ? cursor : map.project(this._lngLat, (this._altitude || 0));
 
             const offsetBottom = normalizeOffset(this.options.offset);
             const anchor = this._anchor = this._getAnchor(offsetBottom.y);

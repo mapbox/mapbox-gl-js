@@ -29,7 +29,7 @@ export type MarkerOptions = {
     pitchAlignment?: string;
     occludedOpacity?: number;
     className?: string;
-    altitube?: number;
+    altitude?: number;
 };
 
 type MarkerEvents = {
@@ -55,7 +55,7 @@ type MarkerEvents = {
  * @param {string} [options.rotationAlignment='auto'] The alignment of the marker's rotation.`'map'` is aligned with the map plane, consistent with the cardinal directions as the map rotates. `'viewport'` is screenspace-aligned. `'horizon'` is aligned according to the nearest horizon, on non-globe projections it is equivalent to `'viewport'`. `'auto'` is equivalent to `'viewport'`.
  * @param {number} [options.occludedOpacity=0.2] The opacity of a marker that's occluded by 3D terrain.
  * @param {string} [options.className] Space-separated CSS class names to add to marker element.
- * @param {number} [options.altitube=0] The altitude above ground level,how many meters.
+ * @param {number} [options.altitude=0] The altitude above ground level,how many meters.
  * @example
  * // Create a new marker.
  * const marker = new mapboxgl.Marker()
@@ -96,7 +96,7 @@ export default class Marker extends Evented<MarkerEvents> {
     _updateFrameId: number;
     _updateMoving: () => void;
     _occludedOpacity: number;
-    _altitube: number;
+    _altitude: number;
 
     constructor(options?: MarkerOptions, legacyOptions?: MarkerOptions) {
         super();
@@ -128,7 +128,7 @@ export default class Marker extends Evented<MarkerEvents> {
         this._pitchAlignment = (options && options.pitchAlignment && options.pitchAlignment) || 'auto';
         this._updateMoving = () => this._update(true);
         this._occludedOpacity = (options && options.occludedOpacity) || 0.2;
-        this._altitube = (options && options.altitube) || 0;
+        this._altitude = (options && options.altitude) || 0;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -359,7 +359,7 @@ export default class Marker extends Evented<MarkerEvents> {
             }
             this._popup = popup;
             popup._marker = this;
-            popup._altitube = this._altitube;
+            popup._altitude = this._altitude;
             if (this._lngLat) this._popup.setLngLat(this._lngLat);
 
             this._element.setAttribute('role', 'button');
@@ -441,7 +441,7 @@ export default class Marker extends Evented<MarkerEvents> {
         const map = this._map;
         const pos = this._pos;
         if (!map || !pos) return false;
-        const unprojected = map.unproject(pos, (this._altitube || 0));
+        const unprojected = map.unproject(pos, (this._altitude || 0));
         const camera = map.getFreeCameraOptions();
         if (!camera.position) return false;
         const cameraLngLat = camera.position.toLngLat();
@@ -461,7 +461,7 @@ export default class Marker extends Evented<MarkerEvents> {
             this._clearFadeTimer();
             return;
         }
-        const mapLocation = map.unproject(pos, (this._altitube || 0));
+        const mapLocation = map.unproject(pos, (this._altitude || 0));
         let opacity;
         if (map._showingGlobe() && isLngLatBehindGlobe(map.transform, this._lngLat)) {
             opacity = 0;
@@ -540,8 +540,8 @@ export default class Marker extends Evented<MarkerEvents> {
         const alignment = this.getRotationAlignment();
         if (alignment === 'map') {
             if (map._showingGlobe()) {
-                const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001), (this._altitube || 0));
-                const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001), (this._altitube || 0));
+                const north = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat + .001), (this._altitude || 0));
+                const south = map.project(new LngLat(this._lngLat.lng, this._lngLat.lat - .001), (this._altitude || 0));
                 const diff = south.sub(north);
                 rotation = radToDeg(Math.atan2(diff.y, diff.x)) - 90;
             } else {
@@ -573,10 +573,10 @@ export default class Marker extends Evented<MarkerEvents> {
         if (!map) return;
 
         if (map.transform.renderWorldCopies) {
-            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitube || 0));
+            this._lngLat = smartWrap(this._lngLat, this._pos, map.transform, (this._altitude || 0));
         }
 
-        this._pos = map.project(this._lngLat, (this._altitube || 0));
+        this._pos = map.project(this._lngLat, (this._altitude || 0));
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
@@ -691,7 +691,7 @@ export default class Marker extends Evented<MarkerEvents> {
         }
 
         this._pos = e.point.sub(posDelta);
-        this._lngLat = map.unproject(this._pos, (this._altitube || 0));
+        this._lngLat = map.unproject(this._pos, (this._altitude || 0));
         this.setLngLat(this._lngLat);
         // suppress click event so that popups don't toggle on drag
         this._element.style.pointerEvents = 'none';
