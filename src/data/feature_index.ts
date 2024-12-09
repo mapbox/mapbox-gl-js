@@ -205,7 +205,7 @@ class FeatureIndex {
         for (let l = 0; l < layerIDs.length; l++) {
             const layerId = layerIDs[l];
 
-            if (!queryLayers[layerId]) return;
+            if (!queryLayers[layerId]) continue;
             const {styleLayer, targets} = queryLayers[layerId];
 
             let featureState: FeatureState = {};
