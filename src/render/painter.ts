@@ -1019,22 +1019,28 @@ class Painter {
         const snow = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.snow);
         const rain = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.rain);
 
-        Debug.run(() => {
-            if (snow && !this._snow) {
-                this._snow = new Snow(this);
-            }
+        if (snow && !this._snow) {
+            this._snow = new Snow(this);
+        }
+        if (!snow && this._snow) {
+            this._snow.destroy();
+            delete this._snow;
+        }
 
-            if (rain && !this._rain) {
-                this._rain = new Rain(this);
-            }
+        if (rain && !this._rain) {
+            this._rain = new Rain(this);
+        }
+        if (!rain && this._rain) {
+            this._rain.destroy();
+            delete this._rain;
+        }
 
-            if (this._snow) {
-                this._snow.update(this);
-            }
-            if (this._rain) {
-                this._rain.update(this);
-            }
-        });
+        if (this._snow) {
+            this._snow.update(this);
+        }
+        if (this._rain) {
+            this._rain.update(this);
+        }
 
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
@@ -1296,15 +1302,13 @@ class Painter {
             this.terrain.postRender();
         }
 
-        Debug.run(() => {
-            if (this._snow) {
-                this._snow.draw(this);
-            }
+        if (this._snow) {
+            this._snow.draw(this);
+        }
 
-            if (this._rain) {
-                this._rain.draw(this);
-            }
-        });
+        if (this._rain) {
+            this._rain.draw(this);
+        }
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             // Use source with highest maxzoom
             let selectedSource = null;

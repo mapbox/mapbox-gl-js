@@ -3714,10 +3714,8 @@ export class Map extends Camera {
      *   });
      * */
     setSnow(snow?: SnowSpecification | null): this {
-        Debug.run(() => {
-            this._lazyInitEmptyStyle();
-            this.style.setSnow(snow);
-        });
+        this._lazyInitEmptyStyle();
+        this.style.setSnow(snow);
         return this._update(true);
     }
 
@@ -3750,10 +3748,8 @@ export class Map extends Camera {
      *   });
      * */
     setRain(rain?: RainSpecification | null): this {
-        Debug.run(() => {
-            this._lazyInitEmptyStyle();
-            this.style.setRain(rain);
-        });
+        this._lazyInitEmptyStyle();
+        this.style.setRain(rain);
         return this._update(true);
     }
 
@@ -4369,6 +4365,11 @@ export class Map extends Camera {
         }
 
         if (this.style && (this.style.hasTransitions())) {
+            this._styleDirty = true;
+        }
+
+        // Whenever precipitation effects are present -> force constant redraw
+        if (this.style && (this.style.snow || this.style.rain)) {
             this._styleDirty = true;
         }
 

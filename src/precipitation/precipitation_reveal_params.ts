@@ -1,4 +1,3 @@
-// @flow
 import {type ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 
 export class PrecipitationRevealParams {

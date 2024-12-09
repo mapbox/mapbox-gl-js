@@ -3,61 +3,23 @@ import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import {default as ColorMode} from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
-import {degToRad, clamp} from '../util/util';
-import {vec3, mat4, quat} from 'gl-matrix';
+import {vec3} from 'gl-matrix';
 import SegmentVector from '../data/segment';
 import {TriangleIndexArray, SnowVertexArray} from '../data/array_types';
 import {snowUniformValues} from './snow_program';
 import {mulberry32} from '../style-spec/util/random';
 import {snowLayout} from "./snow_attributes";
-import {earthRadius} from '../geo/lng_lat';
 import {PrecipitationRevealParams} from './precipitation_reveal_params';
 import {createTpBindings, defaultVignetteParams} from './vignette';
-import {Vignette, type VignetteParams} from './vignette';
+import {type VignetteParams} from './vignette';
+import {boxWrap, generateUniformDistributedPointsInsideCube, lerpClamp, PrecipitationBase} from './common';
+import {Debug} from '../util/debug';
 
 import type Painter from '../render/painter';
-import type IndexBuffer from '../gl/index_buffer';
-import type VertexBuffer from '../gl/vertex_buffer';
 import type {vec2, vec4} from 'gl-matrix';
 
-function generateUniformDistributedPointsInsideCube(pointsCount: number): Array<vec3> {
-    const sRand = mulberry32(1323123451230);
-    // const sRand = Math.random;
-
-    const points: Array<vec3> = [];
-    for (let i = 0; i < pointsCount; ++i) {
-        const vx = -1 + 2 * sRand();
-        const vy = -1 + 2 * sRand();
-        const vz = -1 + 2 * sRand();
-
-        points.push(vec3.fromValues(vx, vy, vz));
-    }
-
-    return points;
-}
-
-export class Snow {
-    particlesVx: VertexBuffer | null | undefined;
-    particlesIdx: IndexBuffer | null | undefined;
-    particlesCount: number;
-    particlesSegments: SegmentVector;
-    startTime: number;
-    prevTime: number;
-    accumulatedTimeFromStart: number;
-
+export class Snow extends PrecipitationBase {
     _revealParams: PrecipitationRevealParams;
-
-    _offsetX: number | undefined;
-    _offsetY: number | undefined;
-    _elevation: number | undefined;
-
-    _offsetYPrev: number | undefined;
-    _offsetXPrev: number | undefined;
-    _elevationPrev: number | undefined;
-
-    _offsetXAccum: number | undefined;
-    _offsetYAccum: number | undefined;
-    _elevationAccum: number | undefined;
 
     _params: {
         overrideStyleParameters: boolean,
@@ -83,27 +45,10 @@ export class Snow {
         direction: {x: number, y: number},
     };
 
-    vignetteParams: VignetteParams;
-    vignette: Vignette;
+    _vignetteParams: VignetteParams;
 
     constructor(painter: Painter) {
-        this.accumulatedTimeFromStart = 0;
-        this.startTime = Date.now() / 1000;
-        this.prevTime = Date.now() / 1000;
-
-        this._offsetX = undefined;
-        this._offsetY = undefined;
-        this._elevation = undefined;
-
-        this._offsetXAccum = undefined;
-        this._offsetYAccum = undefined;
-        this._elevationAccum = undefined;
-
-        this._offsetXPrev = undefined;
-        this._offsetYPrev = undefined;
-        this._elevationPrev = undefined;
-
-        this.vignette = new Vignette();
+        super(2.25);
 
         this._params = {
             overrideStyleParameters: false,
@@ -132,45 +77,47 @@ export class Snow {
         const tp = painter.tp;
         const scope = ["Precipitation", "Snow"];
         this._revealParams = new PrecipitationRevealParams(painter.tp, scope);
-        tp.registerParameter(this._params, scope, 'overrideStyleParameters');
-        tp.registerParameter(this._params, scope, 'intensity', {min: 0.0, max: 1.0});
-        tp.registerParameter(this._params, scope, 'timeFactor', {min: 0.0, max: 1.0, step: 0.01});
-        tp.registerParameter(this._params, scope, 'velocityConeAperture', {min: 0.0, max: 160.0, step: 1.0});
-        tp.registerParameter(this._params, scope, 'velocity', {min: 0.0, max: 500.0, step: 0.5});
-        tp.registerParameter(this._params, scope, 'horizontalOscillationRadius', {min: 0.0, max: 10.0, step: 0.1});
-        tp.registerParameter(this._params, scope, 'horizontalOscillationRate', {min: 0.3, max: 3.0, step: 0.05});
-        tp.registerParameter(this._params, scope, 'boxSize', {min: 100.0, max: 10000.0, step: 50.0});
-        tp.registerParameter(this._params, scope, 'billboardSize', {min: 0.1, max: 10.0, step: 0.01});
-
-        const thinningScope = [...scope, "ScreenThinning"];
-
-        tp.registerParameter(this._params.screenThinning, thinningScope, 'intensity', {min: 0.0, max: 1.0});
-        tp.registerParameter(this._params.screenThinning, thinningScope, 'start', {min: 0.0, max: 2.0});
-        tp.registerParameter(this._params.screenThinning, thinningScope, 'range', {min: 0.0, max: 2.0});
-        tp.registerParameter(this._params.screenThinning, thinningScope, 'fadePower', {min: -1.0, max: 1.0, step: 0.01});
-        tp.registerParameter(this._params.screenThinning, thinningScope, 'affectedRatio', {min: 0.0, max: 1.0, step: 0.01});
-        tp.registerParameter(this._params.screenThinning, thinningScope, 'particleOffset', {min: -1.0, max: 1.0, step: 0.01});
-
-        const shapeScope = [...scope, "Shape"];
-        tp.registerParameter(this._params, shapeScope, 'shapeFadeStart', {min: 0.0, max: 1.0, step: 0.01});
-        tp.registerParameter(this._params, shapeScope, 'shapeFadePower', {min: -1.0, max: 0.99, step: 0.01});
-
-        tp.registerParameter(this._params, scope, 'color', {
-            color: {type: 'float'},
-        });
-
-        const vignetteScope = [...scope, "Vignette"];
-        this.vignetteParams = defaultVignetteParams([1, 0, 0, 0.3]);
-        createTpBindings(this.vignetteParams, painter, vignetteScope);
-
-        tp.registerParameter(this._params, scope, 'direction', {
-            picker: 'inline',
-            expanded: true,
-            x: {min: -200, max: 200},
-            y: {min: -200, max: 200},
-        });
-
+        this._vignetteParams = defaultVignetteParams([1, 0, 0, 0.3]);
         this.particlesCount = 16000;
+
+        Debug.run(() => {
+            tp.registerParameter(this._params, scope, 'overrideStyleParameters');
+            tp.registerParameter(this._params, scope, 'intensity', {min: 0.0, max: 1.0});
+            tp.registerParameter(this._params, scope, 'timeFactor', {min: 0.0, max: 1.0, step: 0.01});
+            tp.registerParameter(this._params, scope, 'velocityConeAperture', {min: 0.0, max: 160.0, step: 1.0});
+            tp.registerParameter(this._params, scope, 'velocity', {min: 0.0, max: 500.0, step: 0.5});
+            tp.registerParameter(this._params, scope, 'horizontalOscillationRadius', {min: 0.0, max: 10.0, step: 0.1});
+            tp.registerParameter(this._params, scope, 'horizontalOscillationRate', {min: 0.3, max: 3.0, step: 0.05});
+            tp.registerParameter(this._params, scope, 'boxSize', {min: 100.0, max: 10000.0, step: 50.0});
+            tp.registerParameter(this._params, scope, 'billboardSize', {min: 0.1, max: 10.0, step: 0.01});
+
+            const thinningScope = [...scope, "ScreenThinning"];
+
+            tp.registerParameter(this._params.screenThinning, thinningScope, 'intensity', {min: 0.0, max: 1.0});
+            tp.registerParameter(this._params.screenThinning, thinningScope, 'start', {min: 0.0, max: 2.0});
+            tp.registerParameter(this._params.screenThinning, thinningScope, 'range', {min: 0.0, max: 2.0});
+            tp.registerParameter(this._params.screenThinning, thinningScope, 'fadePower', {min: -1.0, max: 1.0, step: 0.01});
+            tp.registerParameter(this._params.screenThinning, thinningScope, 'affectedRatio', {min: 0.0, max: 1.0, step: 0.01});
+            tp.registerParameter(this._params.screenThinning, thinningScope, 'particleOffset', {min: -1.0, max: 1.0, step: 0.01});
+
+            const shapeScope = [...scope, "Shape"];
+            tp.registerParameter(this._params, shapeScope, 'shapeFadeStart', {min: 0.0, max: 1.0, step: 0.01});
+            tp.registerParameter(this._params, shapeScope, 'shapeFadePower', {min: -1.0, max: 0.99, step: 0.01});
+
+            tp.registerParameter(this._params, scope, 'color', {
+                color: {type: 'float'},
+            });
+
+            const vignetteScope = [...scope, "Vignette"];
+            createTpBindings(this._vignetteParams, painter, vignetteScope);
+
+            tp.registerParameter(this._params, scope, 'direction', {
+                picker: 'inline',
+                expanded: true,
+                x: {min: -200, max: 200},
+                y: {min: -200, max: 200},
+            });
+        });
     }
 
     update(painter: Painter) {
@@ -184,7 +131,6 @@ export class Snow {
 
             let base = 0;
             const sRand = mulberry32(1323123451230);
-            // const sRand = Math.random;
             for (let i = 0; i < positions.length; ++i) {
                 const p = positions[i];
 
@@ -207,21 +153,6 @@ export class Snow {
 
             this.particlesVx = context.createVertexBuffer(vertices, snowLayout.members);
             this.particlesIdx = context.createIndexBuffer(triangles);
-            this.particlesSegments = SegmentVector.simpleSegment(0, 0, vertices.length, triangles.length);
-        }
-    }
-
-    destroy() {
-        if (this.particlesVx) {
-            this.particlesVx.destroy();
-        }
-
-        if (this.particlesIdx) {
-            this.particlesIdx.destroy();
-        }
-
-        if (this.vignette) {
-            this.vignette.destroy();
         }
     }
 
@@ -235,16 +166,12 @@ export class Snow {
         let snowDirection: vec3 = [-params.direction.x, params.direction.y, -100];
         vec3.normalize(snowDirection, snowDirection);
 
-        const vignetteParams = structuredClone(this.vignetteParams);
+        const vignetteParams = structuredClone(this._vignetteParams);
 
         // Global parameters
         const gp = params.overrideStyleParameters ? this._revealParams : {revealStart: 0, revealRange: 0.01};
 
         const zoom = painter.transform.zoom;
-        const lerpClamp = (a: number, b: number, t1: number, t2: number, tMid: number,) => {
-            const t = clamp((tMid - t1) / (t2 - t1), 0, 1);
-            return (1 - t) * a + t * b;
-        };
         if (gp.revealStart > zoom) { return; }
         const revealFactor = lerpClamp(0, 1, gp.revealStart, gp.revealStart + gp.revealRange, zoom);
 
@@ -264,14 +191,11 @@ export class Snow {
             vignetteParams.color = structuredClone(painter.style.snow.state.vignetteColor);
         }
 
+        const drawData = this.updateOnRender(painter, params.timeFactor);
+
         if (!this.particlesVx || !this.particlesIdx) {
             return;
         }
-
-        const curTime = Date.now() / 1000;
-        this.accumulatedTimeFromStart += (curTime - this.prevTime) * params.timeFactor;
-
-        this.prevTime = curTime;
 
         const context = painter.context;
         const gl = context.gl;
@@ -279,81 +203,10 @@ export class Snow {
 
         const program = painter.getOrCreateProgram('snowParticle');
 
-        const projectionMatrix = tr.starsProjMatrix;
-
-        const orientation = quat.identity([] as any);
-
-        quat.rotateX(orientation, orientation, degToRad(90) - tr._pitch);
-        quat.rotateZ(orientation, orientation, -tr.angle);
-
-        const rotationMatrix = mat4.fromQuat(new Float32Array(16), orientation);
-
-        const swapAxesT = mat4.fromValues(1, 0, 0, 0,
-            0, 0, 1, 0,
-            0, -1, 0, 0,
-            0, 0, 0, 1);
-        const swapAxes = mat4.transpose([] as any, swapAxesT);
-
-        const modelviewMatrix = mat4.multiply([] as any, swapAxes, rotationMatrix);
-
-        const options = tr.getFreeCameraOptions();
-
-        const cameraMercatorPos = options.position;
-
-        if (!cameraMercatorPos) {
-            return;
-        }
-
-        const ppmScale = tr.pixelsPerMeter / 2.25;
-        const altitudeMeters = cameraMercatorPos.toAltitude();
-        const elevation = altitudeMeters;
-
-        // Calculate mercator meters
-        const latLngF = cameraMercatorPos.toLngLat();
-        const lng = degToRad(latLngF.lng);
-        const lat = degToRad(latLngF.lat);
-
-        // Mercator meters
-        const offsetXCur = lng * earthRadius;
-        const offsetYCur = earthRadius * Math.log(Math.tan(Math.PI / 4 + lat / 2));
-
-        if (this._offsetXPrev === undefined) {
-            this._offsetXPrev = 0;
-            this._offsetYPrev = 0;
-            this._elevationPrev = 0;
-
-            this._offsetXAccum = 0;
-            this._offsetYAccum = 0;
-            this._elevationAccum = 0;
-        } else {
-            const deltaX = -this._offsetXPrev + offsetXCur;
-            const deltaY = -this._offsetYPrev + offsetYCur;
-            const deltaE = -this._elevationPrev + elevation;
-
-            this._offsetXAccum += deltaX * ppmScale;
-            this._offsetYAccum += deltaY * ppmScale;
-            this._elevationAccum += deltaE * ppmScale;
-
-            this._offsetXPrev = offsetXCur;
-            this._offsetYPrev = offsetYCur;
-            this._elevationPrev = elevation;
-        }
-
         painter.uploadCommonUniforms(context, program);
 
-        const depthMode = new DepthMode(painter.context.gl.ALWAYS, DepthMode.ReadOnly, painter.depthRangeFor3D);
-
         const drawParticlesBox = (boxSize: number, sizeScale: number, dp: any) => {
-
-            const offsetX = this._offsetXAccum;
-            const offsetY = this._offsetYAccum;
-            const offsetZ = this._elevationAccum;
-
-            const wrappedOffsetX = offsetX - Math.floor(offsetX / boxSize) * boxSize;
-            const wrappedOffsetY = offsetY - Math.floor(offsetY / boxSize) * boxSize;
-            const wrappedOffsetZ = offsetZ - Math.floor(offsetZ / boxSize) * boxSize;
-
-            const camPos: [number, number, number] = [-wrappedOffsetX, -wrappedOffsetY, -wrappedOffsetZ];
+            const camPos = boxWrap(this._movement.getPosition(), boxSize);
 
             const thinningX = tr.width  / 2;
             const thinningY = tr.height  / 2;
@@ -363,10 +216,10 @@ export class Snow {
             const thinningParticleOffset = lerpClamp(0.0, dp.screenThinning.particleOffset, 0, 1, dp.screenThinning.intensity);
 
             const uniforms = snowUniformValues({
-                modelview: modelviewMatrix,
-                projection: projectionMatrix,
-                time: this.accumulatedTimeFromStart,
-                camPos,
+                modelview: drawData.modelviewMatrix,
+                projection: drawData.projectionMatrix,
+                time: this._accumulatedTimeFromStart,
+                camPos: camPos as [number, number, number],
                 velocityConeAperture: dp.velocityConeAperture,
                 velocity: dp.velocity,
                 horizontalOscillationRadius: dp.horizontalOscillationRadius,
@@ -388,7 +241,7 @@ export class Snow {
             const particlesSegments = SegmentVector.simpleSegment(0, 0, count * 4, count * 2);
 
             if (this.particlesVx && this.particlesIdx) {
-                program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
+                program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
                 ColorMode.alphaBlended, CullFaceMode.disabled, uniforms, "snow_particles",
                 this.particlesVx, this.particlesIdx, particlesSegments, {});
             }
@@ -396,6 +249,6 @@ export class Snow {
 
         drawParticlesBox(params.boxSize, 1.0, params);
 
-        this.vignette.draw(painter, vignetteParams);
+        this._vignette.draw(painter, vignetteParams);
     }
 }

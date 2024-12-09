@@ -107,12 +107,12 @@
     },
     "snow": {
       "type": "snow",
-      "doc": "Global precipitation particle-based snow effect. For uninterrupted animations map should be created with constant repaint mode enabled.",
+      "doc": "Global precipitation particle-based snow. Having snow present in the style forces constant map repaint mode",
       "experimental": true
     },
     "rain": {
       "type": "rain",
-      "doc": "Global precipitation particle-based rain effect. For uninterrupted animations map should be created with constant repaint mode enabled.",
+      "doc": "Global precipitation particle-based rain effect. Having rain present in the style forces constant map repaint mode.",
       "experimental": true
     },
     "camera": {
