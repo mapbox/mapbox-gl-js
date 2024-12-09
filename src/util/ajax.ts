@@ -22,6 +22,7 @@ const ResourceType = {
     Glyphs: 'Glyphs',
     SpriteImage: 'SpriteImage',
     SpriteJSON: 'SpriteJSON',
+    Iconset: 'Iconset',
     Image: 'Image',
     Model: 'Model'
 } as const;

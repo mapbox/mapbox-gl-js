@@ -130,7 +130,7 @@ float flood_radiance = 0.0;
 #endif
 
 #ifdef INDICATOR_CUTOUT
-    color = applyCutout(color);
+    color = applyCutout(color, h);
 #endif
 
     glFragColor = color;

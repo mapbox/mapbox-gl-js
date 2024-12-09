@@ -1,6 +1,8 @@
 // @ts-nocheck
 /* eslint-disable */
 
+import {LRUCache} from '../../util/lru';
+
 function readTileHeader(pbf, end) {
   return pbf.readFields(readTileHeaderTag, {
     headerLength: 0,
@@ -118,41 +120,6 @@ function readUint32ValuesTag(tag, values, pbf) {
     while (pbf.pos < end) {
       values[i++] = pbf.readVarint();
     }
-  }
-}
-
-class LRUCache {
-  /**
-   * @param {number} capacity - max size of cache
-   */
-  constructor(capacity) {
-    this.capacity = capacity;
-    this.cache = new Map();
-  }
-
-  /**
-   * @param {string} key - value of key to get
-   * @return {any} - returned value or undefined
-   */
-  get(key) {
-    if (!this.cache.has(key)) return undefined;
-    const value = this.cache.get(key);
-    this.cache.delete(key);
-    this.cache.set(key, value);
-    return value;
-  }
-
-  /**
-   * @param {string} key - value of key to set
-   * @param {any} value - value to associate with key
-   */
-  put(key, value) {
-    if (this.cache.has(key)) {
-      this.cache.delete(key);
-    } else if (this.cache.size === this.capacity) {
-      this.cache.delete(this.cache.keys().next().value);
-    }
-    this.cache.set(key, value);
   }
 }
 

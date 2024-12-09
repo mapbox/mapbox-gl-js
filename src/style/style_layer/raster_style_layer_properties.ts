@@ -39,6 +39,7 @@ export type PaintProps = {
     "raster-emissive-strength": DataConstantProperty<number>;
     "raster-array-band": DataConstantProperty<string>;
     "raster-elevation": DataConstantProperty<number>;
+    "raster-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -57,4 +58,5 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "raster-emissive-strength": new DataConstantProperty(styleSpec["paint_raster"]["raster-emissive-strength"]),
     "raster-array-band": new DataConstantProperty(styleSpec["paint_raster"]["raster-array-band"]),
     "raster-elevation": new DataConstantProperty(styleSpec["paint_raster"]["raster-elevation"]),
+    "raster-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

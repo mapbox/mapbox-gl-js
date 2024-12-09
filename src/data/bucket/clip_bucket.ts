@@ -23,6 +23,7 @@ import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {Footprint, TileFootprint} from '../../../3d-style/util/conflation';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {SpritePositions} from '../../util/image';
+import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 
 class ClipBucket implements Bucket {
     index: number;
@@ -98,7 +99,7 @@ class ClipBucket implements Bucket {
     upload(_context: Context) {
     }
 
-    update(_states: FeatureStates, _vtLayer: VectorTileLayer, _availableImages: Array<string>, _imagePositions: SpritePositions, _brightness?: number | null) {
+    update(_states: FeatureStates, _vtLayer: VectorTileLayer, _availableImages: Array<string>, _imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
     }
 
     destroy() {

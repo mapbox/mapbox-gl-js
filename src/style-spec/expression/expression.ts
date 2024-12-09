@@ -22,6 +22,7 @@ export type ExpressionParser = (args: ReadonlyArray<unknown>, context: ParsingCo
 export type ExpressionRegistration = {
     new(...args: any[]): Expression;
     readonly parse: ExpressionParser;
+    _classRegistryKey?: string;
 };
 
 export type ExpressionRegistry = {

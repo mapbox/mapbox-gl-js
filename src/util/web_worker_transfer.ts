@@ -5,6 +5,7 @@ import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomCon
 import CompoundExpression from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions/index';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
+import {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import {AJAXError} from './ajax';
 import Formatted, {FormattedSection} from '../style-spec/expression/types/formatted';
 
@@ -13,25 +14,42 @@ import type {GridIndex} from '../types/grid-index';
 import type {Transferable} from '../types/transferable';
 
 type SerializedObject = {
+    $name?: string;
+    message?: string;
     [_: string]: Serialized;
 };
 
-export type Serialized = null | undefined | boolean | number | string | Date | RegExp | ArrayBuffer | ArrayBufferView | ImageData | Array<Serialized> | SerializedObject;
+export type Serialized =
+    | null
+    | undefined
+    | boolean
+    | number
+    | string
+    | Date
+    | RegExp
+    | ArrayBuffer
+    | ArrayBufferView
+    | ImageData
+    | ImageBitmap
+    | Array<Serialized>
+    | SerializedObject;
 
-type Klass = Class<any> & {
-    _classRegistryKey: string;
-    serialize?: (input: any, transferables?: Set<Transferable>) => SerializedObject;
+/**
+ * A class that can be serialized and deserialized.
+ */
+type Klass<T extends Class<unknown> = Class<unknown>> = T & {
+    _classRegistryKey?: string;
+    serialize?: (input: unknown, transferables?: Set<Transferable>) => SerializedObject;
+    deserialize?: (input: Serialized) => unknown;
 };
 
-type Registry = {
-    [_: string]: {
-        klass: Klass;
-        omit: ReadonlyArray<string>;
-    };
-};
+type Registry = Record<string, {
+    klass: Klass;
+    omit: ReadonlyArray<string>;
+}>;
 
-type RegisterOptions<T> = {
-    omit?: ReadonlyArray<keyof T>;
+type RegisterOptions<T extends Class<unknown>> = {
+    omit?: ReadonlyArray<keyof InstanceType<T>>;
 };
 
 const registry: Registry = {};
@@ -44,17 +62,19 @@ const registry: Registry = {};
  *
  * @private
  */
-export function register<T extends any>(klass: Class<T>, name: string, options: RegisterOptions<T> = {}) {
+export function register<T extends Class<unknown>>(klass: T, name: string, options: RegisterOptions<T> = {}) {
     assert(name, 'Can\'t register a class without a name.');
-    assert(!registry[name], `${name} is already registered.`);
+    assert(!registry[name], `Class "${name}" is already registered.`);
+
     Object.defineProperty(klass, '_classRegistryKey', {
         value: name,
         writable: false
     });
+
     registry[name] = {
         klass,
         omit: options.omit || []
-    } as unknown as Registry[string];
+    } as Registry[string];
 }
 
 register(Object, 'Object');
@@ -79,6 +99,9 @@ Object.defineProperty(Grid, 'name', {value: 'Grid'});
 
 register(Grid as Class<Grid>, 'Grid');
 
+if (typeof DOMMatrix !== 'undefined') {
+    register(DOMMatrix, 'DOMMatrix');
+}
 register(Color, 'Color');
 register(Error, 'Error');
 register(Formatted, 'Formatted');
@@ -87,20 +110,21 @@ register(AJAXError, 'AJAXError');
 register(ResolvedImage, 'ResolvedImage');
 register(StylePropertyFunction, 'StylePropertyFunction');
 register(StyleExpression, 'StyleExpression', {omit: ['_evaluator']});
+register(ImageIdWithOptions, 'ImageIdWithOptions');
 
 register(ZoomDependentExpression, 'ZoomDependentExpression');
 register(ZoomConstantExpression, 'ZoomConstantExpression');
 register(CompoundExpression, 'CompoundExpression', {omit: ['_evaluate']});
 for (const name in expressions) {
-    if (!registry[(expressions[name] as any)._classRegistryKey]) register(expressions[name], `Expression${name}`);
+    if (!registry[(expressions[name])._classRegistryKey]) register(expressions[name], `Expression${name}`);
 }
 
-function isArrayBuffer(val: any): boolean {
+function isArrayBuffer(val: any): val is ArrayBuffer {
     return val && typeof ArrayBuffer !== 'undefined' &&
            (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
 }
 
-function isImageBitmap(val: any): boolean {
+function isImageBitmap(val: any): val is ImageBitmap {
     return self.ImageBitmap && val instanceof ImageBitmap;
 }
 
@@ -134,22 +158,21 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
 
     if (isArrayBuffer(input) || isImageBitmap(input)) {
         if (transferables) {
-            transferables.add((input as ArrayBuffer));
+            transferables.add(input);
         }
-        return input as any;
+        return input;
     }
 
     if (ArrayBuffer.isView(input)) {
-        const view: ArrayBufferView = (input as any);
         if (transferables) {
-            transferables.add(view.buffer);
+            transferables.add(input.buffer as ArrayBuffer);
         }
-        return view;
+        return input;
     }
 
     if (input instanceof ImageData) {
         if (transferables) {
-            transferables.add(input.data.buffer);
+            transferables.add(input.data.buffer as ArrayBuffer);
         }
         return input;
     }
@@ -163,7 +186,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
     }
 
     if (input instanceof Map) {
-        const properties = {'$name': 'Map'};
+        const properties: SerializedObject = {'$name': 'Map'};
         for (const [key, value] of input.entries()) {
             properties[key] = serialize(value);
         }
@@ -171,7 +194,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
     }
 
     if (input instanceof Set) {
-        const properties = {'$name': 'Set'};
+        const properties: SerializedObject = {'$name': 'Set'};
         let idx = 0;
         for (const value of input.values()) {
             properties[++idx] = serialize(value);
@@ -183,7 +206,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         const klass = input.constructor as Klass;
         const name = klass._classRegistryKey;
         if (!name) {
-            throw new Error(`can't serialize object of unregistered class ${name}`);
+            throw new Error(`Can't serialize object of unregistered class "${name}".`);
         }
         assert(registry[name]);
 
@@ -201,7 +224,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
             for (const key in input) {
                 if (!input.hasOwnProperty(key)) continue;
                 if (registry[name].omit.indexOf(key) >= 0) continue;
-                const property = (input as any)[key];
+                const property = input[key];
                 properties[key] = serialize(property, transferables);
             }
             if (input instanceof Error) {
@@ -248,14 +271,14 @@ export function deserialize(input: Serialized): unknown {
     }
 
     if (typeof input === 'object') {
-        const name = (input as any).$name || 'Object';
+        const name = input.$name || 'Object';
 
         if (name === 'Map') {
             const map = new Map();
             for (const key of Object.keys(input)) {
                 if (key === '$name')
                     continue;
-                const value = (input as SerializedObject)[key];
+                const value = input[key];
                 map.set(key, deserialize(value));
             }
             return map;
@@ -266,7 +289,7 @@ export function deserialize(input: Serialized): unknown {
             for (const key of Object.keys(input)) {
                 if (key === '$name')
                     continue;
-                const value = (input as SerializedObject)[key];
+                const value = input[key];
                 set.add(deserialize(value));
             }
             return set;
@@ -274,23 +297,19 @@ export function deserialize(input: Serialized): unknown {
 
         const {klass} = registry[name];
         if (!klass) {
-            throw new Error(`can't deserialize unregistered class ${name}`);
+            throw new Error(`Can't deserialize unregistered class "${name}".`);
         }
 
-        // @ts-expect-error - TS2339 - Property 'deserialize' does not exist on type 'Class<any>'.
         if (klass.deserialize) {
-            // @ts-expect-error - TS2339 - Property 'deserialize' does not exist on type 'Class<any>'.
-            return (klass.deserialize as typeof deserialize)(input);
+            return klass.deserialize(input);
         }
 
-        const result: {
-            [_: string]: any;
-        } = Object.create(klass.prototype);
+        const result: Record<string, unknown> = Object.create(klass.prototype);
 
         for (const key of Object.keys(input)) {
             if (key === '$name')
                 continue;
-            const value = (input as SerializedObject)[key];
+            const value = input[key];
             result[key] = deserialize(value);
         }
 

@@ -81,6 +81,8 @@ import snowFrag from './snow_particle.fragment.glsl';
 import snowVert from './snow_particle.vertex.glsl';
 import rainFrag from './rain_particle.fragment.glsl';
 import rainVert from './rain_particle.vertex.glsl';
+import vignetteFrag from './vignette.fragment.glsl';
+import vignetteVert from './vignette.vertex.glsl';
 import occlusionFrag from './occlusion.fragment.glsl';
 import occlusionVert from './occlusion.vertex.glsl';
 // 3d-style related shaders
@@ -172,6 +174,7 @@ export default {
     stars: compile(starsFrag, starsVert),
     snowParticle: compile(snowFrag, snowVert),
     rainParticle: compile(rainFrag, rainVert),
+    vignette: compile(vignetteFrag, vignetteVert),
     occlusion: compile(occlusionFrag, occlusionVert)
 };
 

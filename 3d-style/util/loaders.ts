@@ -3,7 +3,7 @@
 import config from '../../src/util/config';
 import browser from '../../src/util/browser';
 import Dispatcher from '../../src/util/dispatcher';
-import getWorkerPool from '../../src/util/global_worker_pool';
+import {getGlobalWorkerPool as getWorkerPool} from '../../src/util/worker_pool_factory';
 import {Evented} from '../../src/util/evented';
 import {isWorker, warnOnce} from '../../src/util/util';
 import assert from 'assert';

@@ -21,7 +21,7 @@
       {
         "namePrimary": "poi_circle",
         "nameSecondary": "alternative_poi_circle",
-        "optionsSecondary": {"params": {"fill_color": "rgb(238, 130, 238)"}},
+        "optionsSecondary": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
         "available": false
       }
     ],

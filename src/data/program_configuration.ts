@@ -86,6 +86,9 @@ function packColor(color: RenderColor): [number, number] {
 
 interface AttributeBinder {
     context: ProgramConfigurationContext;
+    checkUseTheme: boolean;
+    ignoreLut: boolean;
+
     populatePaintArray: (
         length: number,
         feature: Feature,
@@ -111,6 +114,9 @@ interface AttributeBinder {
 interface UniformBinder {
     uniformNames: Array<string>;
     context: ProgramConfigurationContext;
+    checkUseTheme: boolean;
+    ignoreLut: boolean;
+
     setUniform: (
         program: WebGLProgram,
         uniform: IUniform<any>,
@@ -120,12 +126,13 @@ interface UniformBinder {
     ) => void;
     getBinding: (context: Context, name: string) => Partial<IUniform<any>>;
 }
-
 class ConstantBinder implements UniformBinder {
     value: unknown;
     type: string;
     uniformNames: Array<string>;
     context: ProgramConfigurationContext;
+    checkUseTheme: boolean;
+    ignoreLut: boolean;
 
     constructor(value: unknown, names: Array<string>, type: string, context: ProgramConfigurationContext) {
         this.value = value;
@@ -143,7 +150,7 @@ class ConstantBinder implements UniformBinder {
     ): void {
         const value = currentValue.constantOr(this.value);
         if (value instanceof Color) {
-            uniform.set(program, uniformName, value.toRenderColor(this.context.lut));
+            uniform.set(program, uniformName, value.toRenderColor(this.ignoreLut ? null : this.context.lut));
         } else {
             uniform.set(program, uniformName, value);
         }
@@ -161,6 +168,8 @@ class PatternConstantBinder implements UniformBinder {
     pattern: Array<number> | null | undefined;
     pixelRatio: number;
     context: ProgramConfigurationContext;
+    checkUseTheme: boolean;
+    ignoreLut: boolean;
 
     constructor(value: unknown, names: Array<string>) {
         this.uniformNames = names.map(name => `u_${name}`);
@@ -192,6 +201,8 @@ class SourceExpressionBinder implements AttributeBinder {
     type: string;
     maxValue: number;
     context: ProgramConfigurationContext;
+    checkUseTheme: boolean;
+    ignoreLut: boolean;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -225,7 +236,7 @@ class SourceExpressionBinder implements AttributeBinder {
 
     _setPaintValue(start: number, end: number, value: any, context: ProgramConfigurationContext) {
         if (this.type === 'color') {
-            const color = packColor(value.toRenderColor(context.lut));
+            const color = packColor(value.toRenderColor(this.ignoreLut ? null : context.lut));
             for (let i = start; i < end; i++) {
                 this.paintVertexArray.emplace(i, color[0], color[1]);
             }
@@ -261,6 +272,8 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     useIntegerZoom: boolean;
     context: ProgramConfigurationContext;
     maxValue: number;
+    checkUseTheme: boolean;
+    ignoreLut: boolean;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -298,8 +311,8 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
 
     _setPaintValue(start: number, end: number, min: any, max: any, context: ProgramConfigurationContext) {
         if (this.type === 'color') {
-            const minColor = packColor(min.toRenderColor(context.lut));
-            const maxColor = packColor(min.toRenderColor(context.lut));
+            const minColor = packColor(min.toRenderColor(this.ignoreLut ? null : context.lut));
+            const maxColor = packColor(min.toRenderColor(this.ignoreLut ? null : context.lut));
             for (let i = start; i < end; i++) {
                 this.paintVertexArray.emplace(i, minColor[0], minColor[1], maxColor[0], maxColor[1]);
             }
@@ -348,6 +361,8 @@ class PatternCompositeBinder implements AttributeBinder {
     expression: CompositeExpression;
     layerId: string;
     context: ProgramConfigurationContext;
+    checkUseTheme: boolean;
+    ignoreLut: boolean;
 
     paintVertexArray: StructArray;
     paintVertexBuffer: VertexBuffer | null | undefined;
@@ -433,10 +448,13 @@ export default class ProgramConfiguration {
         this.context = context;
 
         const keys = [];
-
         for (const property in layer.paint._values) {
             // @ts-expect-error - TS2349 - This expression is not callable.
             const value = layer.paint.get(property);
+
+            // @ts-expect-error - TS2345: Argument of type 'string' is not assignable to parameter of type '"text-color" | "fill-pattern" | "fill-antialias" | "fill-translate" | "fill-extrusion-pattern" | "fill-extrusion-translate" | "fill-extrusion-height" | "line-pattern" | ... 265 more ... | "sky-opacity-transition"'.
+            const valueUseTheme = layer.paint.get(`${property}-use-theme`);
+            if (property.endsWith('-use-theme')) continue;
             if (!filterProperties(property)) continue;
             if (!(value instanceof PossiblyEvaluatedPropertyValue) || !supportsPropertyExpression(value.property.specification)) {
                 continue;
@@ -469,6 +487,11 @@ export default class ProgramConfiguration {
                 // @ts-expect-error - TS2345 - Argument of type 'CompositeExpression | { kind: "constant"; value: any; }' is not assignable to parameter of type 'CompositeExpression'.
                 this.binders[property] = new CompositeExpressionBinder(expression, names, type, useIntegerZoom, context, StructArrayLayout);
                 keys.push(`/z_${property}`);
+            }
+            if (valueUseTheme) {
+                this.binders[property].ignoreLut = valueUseTheme.constantOr('default') === 'none';//will be evaluated again
+
+                this.binders[property].checkUseTheme = true;
             }
         }
 
@@ -504,11 +527,12 @@ export default class ProgramConfiguration {
         layer: TypedStyleLayer,
         availableImages: Array<string>,
         imagePositions: SpritePositions,
+        isBrightnessChanged: boolean,
         brightness: number,
     ): boolean {
         let dirty: boolean = false;
         const keys = Object.keys(featureStates);
-        const featureStateUpdate = (keys.length !== 0);
+        const featureStateUpdate = (keys.length !== 0) && !isBrightnessChanged;
         const ids = featureStateUpdate ? keys : featureMap.uniqueIds;
         this.context.lut = layer.lut;
         for (const property in this.binders) {
@@ -607,6 +631,13 @@ export default class ProgramConfiguration {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguration's binder members.
         for (const {name, property, binding} of binderUniforms) {
+
+            if (this.binders[property].checkUseTheme && this.binders[property] instanceof ConstantBinder) {
+                const pvalue = (properties.get((`${property}-use-theme`) as keyof Properties) as PossiblyEvaluatedPropertyValue<unknown>);
+                if (pvalue.isConstant())
+                    this.binders[property].ignoreLut = pvalue.constantOr('default') === 'none';
+            }
+
             (this.binders[property] as any).setUniform(program, binding, globals, properties.get(property as keyof Properties), name);
         }
     }
@@ -681,9 +712,9 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
         this.needsUpload = true;
     }
 
-    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: Array<string>, imagePositions: SpritePositions, brightness?: number | null) {
+    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: Array<string>, imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null) {
         for (const layer of layers) {
-            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, this._featureMapWithoutIds, vtLayer, layer, availableImages, imagePositions, brightness || 0) || this.needsUpload;
+            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, this._featureMapWithoutIds, vtLayer, layer, availableImages, imagePositions, isBrightnessChanged, brightness || 0) || this.needsUpload;
         }
     }
 

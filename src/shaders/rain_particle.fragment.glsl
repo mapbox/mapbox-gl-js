@@ -16,7 +16,6 @@ uniform vec3 u_thinningShape;
 uniform float u_thinningAffectedRatio;
 uniform float u_thinningParticleOffset;
 
-
 uniform float u_shapeDirectionalPower;
 
 uniform float u_mode;

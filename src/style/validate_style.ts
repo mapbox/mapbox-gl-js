@@ -31,6 +31,8 @@ export {
     validateLights,
     validateModel,
     validateFog,
+    validateSnow,
+    validateRain,
     validateLayer,
     validateFilter,
     validatePaintProperty,

@@ -37,8 +37,6 @@ export default mergeConfig(baseConfig, defineConfig({
             ['basic']
         ] : ['basic'],
     },
-    // For msw mock worker
-    publicDir: 'test/unit/mock-worker',
     plugins: [
         styleSpecFixtures()
     ]

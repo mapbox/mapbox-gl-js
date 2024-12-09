@@ -184,7 +184,7 @@ export default function validateFunction(options: ValidationOptions): any {
         }
 
         if (functionType === 'categorical' && type === 'number' && (typeof value !== 'number' || !isFinite(value) || Math.floor(value) !== value)) {
-            return [new ValidationError(options.key, reportValue, `integer expected, found ${String(value)}`)];
+            return [new ValidationError(options.key, reportValue, `integer expected, found ${String(value as number)}`)];
         }
 
         if (functionType !== 'categorical' && type === 'number' && typeof value === 'number' && typeof previousStopDomainValue === 'number' && previousStopDomainValue !== undefined && value < previousStopDomainValue) {

@@ -67,12 +67,15 @@ function calculateGroundRadiance(dir: vec3, dirColor: vec3, ambientColor: vec3):
 }
 
 export const lightsUniformValues = (directional: Lights<Directional>, ambient: Lights<Ambient>, style: Style): UniformValues<LightsUniformsType> => {
+
     const direction = directional.properties.get('direction');
 
-    const directionalColor = directional.properties.get('color').toRenderColor(style.getLut(directional.scope)).toArray01();
+    const dirIgnoreLut = directional.properties.get('color-use-theme') === 'none';
+    const directionalColor = directional.properties.get('color').toRenderColor(dirIgnoreLut ? null : style.getLut(directional.scope)).toArray01();
     const directionalIntensity = directional.properties.get('intensity');
 
-    const ambientColor = ambient.properties.get('color').toRenderColor(style.getLut(ambient.scope)).toArray01();
+    const ambIgnoreLut = ambient.properties.get('color-use-theme') === 'none';
+    const ambientColor = ambient.properties.get('color').toRenderColor(ambIgnoreLut ? null : style.getLut(ambient.scope)).toArray01();
     const ambientIntensity = ambient.properties.get('intensity');
 
     const dirVec: [number, number, number] = [direction.x, direction.y, direction.z];

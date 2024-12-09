@@ -19,7 +19,7 @@ function coerceValue(type: string, value: any): any {
         return Formatted.fromString(valueToString(value));
     }
     case 'resolvedImage': {
-        return ResolvedImage.fromString(valueToString(value));
+        return ResolvedImage.build(valueToString(value));
     }
     }
     return value;

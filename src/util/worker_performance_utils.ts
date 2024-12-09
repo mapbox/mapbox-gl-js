@@ -1,5 +1,5 @@
 import Dispatcher from './dispatcher';
-import getWorkerPool from './global_worker_pool';
+import {getGlobalWorkerPool as getWorkerPool} from './worker_pool_factory';
 import {PerformanceUtils} from './performance';
 
 import type {Callback} from '../types/callback';

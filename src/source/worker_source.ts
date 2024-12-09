@@ -1,7 +1,7 @@
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {RequestParameters} from '../util/ajax';
-import type {AlphaImage} from '../util/image';
+import type {AlphaImage, RGBAImage} from '../util/image';
 import type {GlyphPositions} from '../render/glyph_atlas';
 import type ImageAtlas from '../render/image_atlas';
 import type LineAtlas from '../render/line_atlas';
@@ -102,6 +102,7 @@ export type WorkerTileResult = {
 export type WorkerTileCallback = (error?: Error, result?: WorkerTileResult) => void;
 export type WorkerDEMTileCallback = (err?: Error, result?: DEMData) => void;
 export type WorkerRasterArrayTileCallback = (err?: Error, result?: TDecodingResult) => void;
+export type WorkerImageRaserizeCallback = (err?: Error, result?: {[_: string]: RGBAImage}) => void;
 
 /**
  * May be implemented by custom source types to provide code that can be run on

@@ -70,6 +70,14 @@ out float v_has_floodlight;
 
 out float v_height;
 
+// linear to sRGB approximation
+vec3 linearTosRGB(vec3 color) {
+    return pow(color, vec3(1./2.2));
+}
+vec3 sRGBToLinear(vec3 srgbIn) {
+    return pow(srgbIn, vec3(2.2));
+}
+
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 
@@ -246,7 +254,10 @@ void main() {
 #endif // FLOOD_LIGHT
 
     v_color = vec4(color.rgb, 1.0);
-    v_flat = vec4(linearProduct(color.rgb, vec3(calculate_NdotL(normal))), 1.0);
+    float ndotl = calculate_NdotL(normal);
+    v_flat.rgb = sRGBToLinear(color.rgb);
+    v_flat.rgb = v_flat.rgb * (ndotl + (1.0 - min(ndotl * 57.29, 1.0)) * emissive_strength);
+    v_flat = vec4(linearTosRGB(v_flat.rgb), 1.0);
 #else // LIGHTING_3D_MODE
     // Assign final color based on surface + ambient light color, diffuse light NdotL, and light color
     // with lower bounds adjusted to hue of light

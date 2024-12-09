@@ -1,8 +1,10 @@
 import UnitBezier from '@mapbox/unitbezier';
 import * as interpolate from '../../util/interpolate';
-import {toString, NumberType, ColorType} from '../types';
+import {toString, NumberType, ColorType, ValueType} from '../types';
 import {findStopLessThanOrEqualTo} from '../stops';
 import {hcl, lab} from '../../util/color_spaces';
+import Literal from './literal';
+import RuntimeError from '../runtime_error';
 
 import type Color from '../../util/color';
 import type {Stops} from '../stops';
@@ -27,14 +29,16 @@ class Interpolate implements Expression {
     operator: 'interpolate' | 'interpolate-hcl' | 'interpolate-lab';
     interpolation: InterpolationType;
     input: Expression;
+    dynamicStops: Expression | null;
     labels: Array<number>;
     outputs: Array<Expression>;
 
-    constructor(type: Type, operator: 'interpolate' | 'interpolate-hcl' | 'interpolate-lab', interpolation: InterpolationType, input: Expression, stops: Stops) {
+    constructor(type: Type, operator: 'interpolate' | 'interpolate-hcl' | 'interpolate-lab', interpolation: InterpolationType, input: Expression, dynamicStops: Expression | null, stops: Stops) {
         this.type = type;
         this.operator = operator;
         this.interpolation = interpolation;
         this.input = input;
+        this.dynamicStops = dynamicStops;
 
         this.labels = [];
         this.outputs = [];
@@ -101,12 +105,12 @@ class Interpolate implements Expression {
             return context.error(`Unknown interpolation type ${String(interpolation[0])}`, 1, 0);
         }
 
-        if (args.length - 1 < 4) {
+        if (args.length - 1 < 3) {
             // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
-            return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
+            return context.error(`Expected at least 3 arguments, but found only ${args.length - 1}.`);
         }
 
-        if ((args.length - 1) % 2 !== 0) {
+        if (args.length - 1 > 3 && (args.length - 1) % 2 !== 0) {
             // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
             return context.error(`Expected an even number of arguments.`);
         }
@@ -121,6 +125,15 @@ class Interpolate implements Expression {
             outputType = ColorType;
         } else if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
+        }
+
+        // Exactly 3 arguments means that the steps are created by an expression
+        if (args.length - 1 === 3) {
+            const dynamicStops = context.parse(rest[0], 3, ValueType);
+            if (!dynamicStops) return null;
+
+            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'InterpolationType'.
+            return new Interpolate(outputType, (operator as any), interpolation, input, dynamicStops, stops);
         }
 
         for (let i = 0; i < rest.length; i += 2) {
@@ -159,12 +172,36 @@ class Interpolate implements Expression {
         }
 
         // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'InterpolationType'.
-        return new Interpolate(outputType, (operator as any), interpolation, input, stops);
+        return new Interpolate(outputType, (operator as any), interpolation, input, null, stops);
     }
 
     evaluate(ctx: EvaluationContext): Color {
-        const labels = this.labels;
-        const outputs = this.outputs;
+        let labels = this.labels;
+        let outputs = this.outputs;
+
+        if (this.dynamicStops) {
+            const dynamicStopsValue = (this.dynamicStops.evaluate(ctx) as [number]);
+            if (dynamicStopsValue.length % 2 !== 0) {
+                throw new RuntimeError('Expected an even number of arguments.');
+            }
+            labels = [];
+            outputs = [];
+            for (let i = 0; i < dynamicStopsValue.length; i += 2) {
+                const label = dynamicStopsValue[i];
+                const output = new Literal(NumberType, dynamicStopsValue[i + 1]);
+                if (typeof label !== 'number') {
+                    throw new RuntimeError('Input/output pairs for "interpolate" expressions must be defined using literal numeric values (not computed expressions) for the input values.');
+                }
+                if (labels.length && labels[labels.length - 1] >= label) {
+                    throw new RuntimeError('Input/output pairs for "interpolate" expressions must be arranged with input values in strictly ascending order.');
+                }
+                labels.push(label);
+                outputs.push(output);
+            }
+            if (labels.length === 0) {
+                throw new RuntimeError('Expected at least one input/output pair.');
+            }
+        }
 
         if (labels.length === 1) {
             return outputs[0].evaluate(ctx);
@@ -225,11 +262,15 @@ class Interpolate implements Expression {
 
         const serialized = [this.operator, interpolation, this.input.serialize()];
 
-        for (let i = 0; i < this.labels.length; i++) {
-            serialized.push(
-                this.labels[i],
-                this.outputs[i].serialize()
-            );
+        if (this.dynamicStops) {
+            serialized.push(this.dynamicStops.serialize());
+        } else {
+            for (let i = 0; i < this.labels.length; i++) {
+                serialized.push(
+                    this.labels[i],
+                    this.outputs[i].serialize()
+                );
+            }
         }
         return serialized;
     }

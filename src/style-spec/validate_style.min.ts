@@ -5,6 +5,8 @@ import _validateLight from './validate/validate_light';
 import _validateLights from './validate/validate_lights';
 import _validateTerrain from './validate/validate_terrain';
 import _validateFog from './validate/validate_fog';
+import _validateSnow from './validate/validate_snow';
+import _validateRain from './validate/validate_rain';
 import _validateLayer from './validate/validate_layer';
 import _validateFilter from './validate/validate_filter';
 import _validatePaintProperty from './validate/validate_paint_property';
@@ -46,6 +48,8 @@ export const validateLight: Validator = opts => sortErrors(_validateLight(opts))
 export const validateLights: Validator = opts => sortErrors(_validateLights(opts));
 export const validateTerrain: Validator = opts => sortErrors(_validateTerrain(opts));
 export const validateFog: Validator = opts => sortErrors(_validateFog(opts));
+export const validateSnow: Validator = opts => sortErrors(_validateSnow(opts));
+export const validateRain: Validator = opts => sortErrors(_validateRain(opts));
 export const validateLayer: Validator = opts => sortErrors(_validateLayer(opts));
 export const validateFilter: Validator = opts => sortErrors(_validateFilter(opts));
 export const validatePaintProperty: Validator = opts => sortErrors(_validatePaintProperty(opts));

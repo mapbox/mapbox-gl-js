@@ -30,6 +30,7 @@ export type PaintProps = {
     "heatmap-intensity": DataConstantProperty<number>;
     "heatmap-color": ColorRampProperty;
     "heatmap-opacity": DataConstantProperty<number>;
+    "heatmap-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -39,4 +40,5 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "heatmap-intensity": new DataConstantProperty(styleSpec["paint_heatmap"]["heatmap-intensity"]),
     "heatmap-color": new ColorRampProperty(styleSpec["paint_heatmap"]["heatmap-color"]),
     "heatmap-opacity": new DataConstantProperty(styleSpec["paint_heatmap"]["heatmap-opacity"]),
+    "heatmap-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

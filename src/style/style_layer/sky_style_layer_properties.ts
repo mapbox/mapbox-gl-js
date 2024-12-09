@@ -34,6 +34,9 @@ export type PaintProps = {
     "sky-atmosphere-halo-color": DataConstantProperty<Color>;
     "sky-atmosphere-color": DataConstantProperty<Color>;
     "sky-opacity": DataConstantProperty<number>;
+    "sky-gradient-use-theme": DataDrivenProperty<string>;
+    "sky-atmosphere-halo-color-use-theme": DataDrivenProperty<string>;
+    "sky-atmosphere-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -47,4 +50,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "sky-atmosphere-halo-color": new DataConstantProperty(styleSpec["paint_sky"]["sky-atmosphere-halo-color"]),
     "sky-atmosphere-color": new DataConstantProperty(styleSpec["paint_sky"]["sky-atmosphere-color"]),
     "sky-opacity": new DataConstantProperty(styleSpec["paint_sky"]["sky-opacity"]),
+    "sky-gradient-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "sky-atmosphere-halo-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "sky-atmosphere-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

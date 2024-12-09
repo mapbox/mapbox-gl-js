@@ -29,7 +29,7 @@ import type Painter from '../../src/render/painter';
 import type {CreateProgramParams} from '../../src/render/painter';
 import type SourceCache from '../../src/source/source_cache';
 import type ModelStyleLayer from '../style/style_layer/model_style_layer';
-import type {Mesh, Node, ModelTexture} from '../data/model';
+import type {Mesh, ModelNode, ModelTexture} from '../data/model';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms';
 import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type {CutoffParams} from '../../src/render/cutoff';
@@ -105,6 +105,7 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
     setupTexture(normalTexture, 'HAS_TEXTURE_u_normalTexture', TextureSlots.Normal);
     setupTexture(occlusionTexture, 'HAS_TEXTURE_u_occlusionTexture', TextureSlots.Occlusion);
     setupTexture(emissionTexture, 'HAS_TEXTURE_u_emissionTexture', TextureSlots.Emission);
+
     if (lut) {
         if (!lut.texture) {
             lut.texture = new Texture3D(painter.context, lut.image, [lut.image.height, lut.image.height, lut.image.height], context.gl.RGBA8);
@@ -157,7 +158,7 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
 }
 
 function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer, modelParameters: ModelParameters, stencilMode: StencilMode, colorMode: ColorMode) {
-    const opacity = layer.paint.get('model-opacity');
+    const opacity = layer.paint.get('model-opacity').constantOr(1.0);
 
     assert(opacity > 0);
     const context = painter.context;
@@ -179,6 +180,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     const normalMatrix = mat4.invert([] as any, lightingMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
 
+    const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
     const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
     const uniformValues = modelUniformValues(
         new Float32Array(sortedMesh.worldViewProjection),
@@ -206,7 +208,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
 
-    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
+    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
 
     let fogMatrixArray = null;
     if (fog) {
@@ -271,7 +273,7 @@ export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painte
     }
 }
 
-function prepareMeshes(transform: Transform, node: Node, modelMatrix: mat4, projectionMatrix: mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>,  opaqueMeshes: Array<SortedMesh>) {
+function prepareMeshes(transform: Transform, node: ModelNode, modelMatrix: mat4, projectionMatrix: mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>,  opaqueMeshes: Array<SortedMesh>) {
 
     let nodeModelMatrix;
     if (transform.projection.name === 'globe') {
@@ -324,7 +326,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         return;
     }
     // early return if totally transparent
-    const opacity = layer.paint.get('model-opacity');
+    const opacity = layer.paint.get('model-opacity').constantOr(1.0);
     if (opacity === 0) {
         return;
     }
@@ -644,7 +646,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
 const minimumInstanceCount = 20;
 
-function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
+function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: ModelNode, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
     const context = painter.context;
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;
@@ -672,11 +674,13 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.matrix));
                 colorMode = shadowRenderer.getShadowPassColorMode();
             } else {
-                setupMeshDraw(definesValues, dynamicBuffers, mesh, painter, layer.lut);
+
+                const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
+                setupMeshDraw(definesValues, dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                 program = painter.getOrCreateProgram('model', {defines: (definesValues as DynamicDefinesType[]), overrideFog: affectedByFog});
                 const material = mesh.material;
                 const pbr = material.pbrMetallicRoughness;
-                const layerOpacity = layer.paint.get('model-opacity');
+                const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
 
                 const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
                 uniformValues = modelUniformValues(
@@ -779,7 +783,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     const pixelsPerMeter = 1.0 / metersPerPixel;
     const zScaleMatrix = mat4.fromScaling([] as any, [1.0, 1.0, pixelsPerMeter]);
     mat4.translate(negCameraPosMatrix, negCameraPosMatrix, negCameraPos);
-    const layerOpacity = layer.paint.get('model-opacity');
+    const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
 
     const depthModeRW = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     const depthModeRO = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
@@ -955,6 +959,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 lightingMatrix = mat4.multiply(lightingMatrix, lightingMatrix, node.matrix);
 
                 const isLightBeamPass = painter.renderPass === 'light-beam';
+                const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
                 const hasMapboxFeatures = modelTraits & ModelTraits.HasMapboxMeshFeatures;
                 const emissiveStrength = hasMapboxFeatures ? 0.0 : nodeInfo.evaluatedRMEA[0][2];
 
@@ -984,7 +989,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         shadowRenderer.useNormalOffset = !!mesh.normalBuffer;
                     }
 
-                    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
+                    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                     if (!hasMapboxFeatures) {
                         programOptions.defines.push('DIFFUSE_SHADED');
                     }

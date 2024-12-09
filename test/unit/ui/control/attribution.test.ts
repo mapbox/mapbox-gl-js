@@ -1,5 +1,5 @@
 // @ts-nocheck
-import {test, expect, waitFor, createMap as globalCreateMap} from '../../../util/vitest';
+import {test, expect, waitFor, createMap as globalCreateMap, doneAsync} from '../../../util/vitest';
 import config from '../../../../src/util/config';
 import AttributionControl from '../../../../src/ui/control/attribution_control';
 import simulate from '../../../util/simulate_interaction';
@@ -139,6 +139,7 @@ test('AttributionControl dedupes attributions that are substrings of others', as
 });
 
 test('AttributionControl has the correct edit map link', async () => {
+    const {wait, withAsync} = doneAsync();
     config.FEEDBACK_URL = "https://feedback.com";
     const map = createMap();
     const attribution = new AttributionControl();
@@ -146,23 +147,21 @@ test('AttributionControl has the correct edit map link', async () => {
 
     await waitFor(map, 'load');
 
-    await new Promise(resolve => {
-        map.on('data', (e) => {
-            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                expect(attribution._editLink.rel).toEqual('noopener nofollow');
-                expect(attribution._editLink.href).toEqual(
-                    'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0'
-                );
-                map.setZoom(2);
-                expect(attribution._editLink.href).toEqual(
-                    'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2'
-                );
-                resolve();
-            }
-        });
-        map.addSource('1', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: '<a class="mapbox-improve-map" href="https://feedback.com" target="_blank">Improve this map</a>'});
-        map.addLayer({id: '1', type: 'fill', source: '1'});
-    });
+    map.on('idle', withAsync((e, doneRef) => {
+        expect(attribution._editLink.rel).toEqual('noopener nofollow');
+        expect(attribution._editLink.href).toEqual(
+            'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/0'
+        );
+        map.setZoom(2);
+        expect(attribution._editLink.href).toEqual(
+            'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2'
+        );
+        doneRef.resolve();
+    }));
+    map.addSource('1', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: '<a class="mapbox-improve-map" href="https://feedback.com" target="_blank">Improve this map</a>'});
+    map.addLayer({id: '1', type: 'fill', source: '1'});
+
+    await wait;
 });
 
 test.skip('AttributionControl is hidden if empty', async () => {

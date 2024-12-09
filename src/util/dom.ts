@@ -2,8 +2,8 @@ import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 
 // refine the return type based on tagName, e.g. 'button' -> HTMLButtonElement
-export function create<T extends string>(tagName: T, className?: string | null, container?: HTMLElement): ReturnType<typeof document.createElement> {
-    const el = document.createElement(tagName);
+export function create<T extends keyof HTMLElementTagNameMap>(tagName: T, className?: string | null, container?: HTMLElement) {
+    const el = document.createElement<T>(tagName);
     if (className !== undefined && className !== null) el.className = className;
     if (container) container.appendChild(el);
     return el;

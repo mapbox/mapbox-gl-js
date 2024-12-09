@@ -113,7 +113,15 @@ global.overrides = function (property) {
 };
 
 global.propertyValue = function (type, property, valueType) {
-    const spec = `styleSpec["${valueType}_${property.type_}"]["${property.name}"]`;
+    const valueTypeString = valueType ? `${valueType}_` : "";
+    let spec = `styleSpec["${valueTypeString}${property.type_}"]["${property.name}"]`;
+    if (property.name.endsWith('-use-theme')) {
+        spec = JSON.stringify({
+            "type": "string",
+            "default": "default",
+            "property-type": property['property-type']
+        });
+    }
     if (customTypeBindings[`${type}.${property.name}`]) {
         return `new ${customTypeBindings[`${type}.${property.name}`]}(${spec})`;
     }
@@ -147,12 +155,24 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
         return memo;
     }, []);
 
-    const paintProperties = Object.keys(paintSpec).reduce<Array<any>>((memo, name) => {
+    let paintProperties = Object.keys(paintSpec).reduce<Array<any>>((memo, name) => {
         paintSpec[name].name = name;
         paintSpec[name].type_ = type;
         memo.push(paintSpec[name]);
         return memo;
     }, []);
+
+    for (const prop of paintProperties) {
+        if (prop.type === 'color') {
+            paintProperties.push({
+                'type': 'string',
+                'type_': prop.type_,
+                'default': 'default',
+                'property-type': 'data-driven',
+                'name': `${prop.name}-use-theme`
+            });
+        }
+    }
 
     return {type, layoutProperties, paintProperties};
 });
@@ -178,6 +198,17 @@ const lights = Object.keys(spec['light-3d'].type.values).map((type) => {
         spec[`properties_light_${type}`][name].name = name;
         spec[`properties_light_${type}`][name].type_ = `light_${type}`;
         memo.push(spec[`properties_light_${type}`][name]);
+
+        if (name === 'color') {
+            memo.push({
+                'type': 'string',
+                'type_': `light_${type}`,
+                'default': 'default',
+                'property-type': 'data-constant',
+                'name': `${name}-use-theme`
+            });
+        }
+
         return memo;
     }, []);
 
@@ -187,3 +218,23 @@ const lights = Object.keys(spec['light-3d'].type.values).map((type) => {
 for (const light of lights) {
     fs.writeFileSync(`3d-style/style/${light.type}_light_properties.ts`, lightPropertiesJs(light));
 }
+
+// Snow
+const snowPropertiesJs = ejs.compile(fs.readFileSync('3d-style/style/snow_properties.js.ejs', 'utf8'), {strict: true});
+const snowProperties = Object.keys(spec[`snow`]).reduce<Array<any>>((memo, name) => {
+    spec[`snow`][name].name = name;
+    spec[`snow`][name].type_ = `snow`;
+    memo.push(spec[`snow`][name]);
+    return memo;
+}, []);
+fs.writeFileSync(`3d-style/style/snow_properties.ts`, snowPropertiesJs(snowProperties));
+
+// Rain
+const rainPropertiesJs = ejs.compile(fs.readFileSync('3d-style/style/rain_properties.js.ejs', 'utf8'), {strict: true});
+const rainProperties = Object.keys(spec[`rain`]).reduce<Array<any>>((memo, name) => {
+    spec[`rain`][name].name = name;
+    spec[`rain`][name].type_ = `rain`;
+    memo.push(spec[`rain`][name]);
+    return memo;
+}, []);
+fs.writeFileSync(`3d-style/style/rain_properties.ts`, rainPropertiesJs(rainProperties));

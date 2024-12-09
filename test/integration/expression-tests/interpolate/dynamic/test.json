@@ -1,0 +1,56 @@
+{
+  "propertySpec": {
+    "type": "number",
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
+  },
+  "expression": ["interpolate", ["linear"], ["get", "x"], ["get", "y"]],
+  "inputs": [
+    [{}, {"properties": {"x": 0, "y": [ 0, 100, 10, 200]}}],
+    [{}, {"properties": {"x": 5, "y": [ 0, 100, 10, 200]}}],
+    [{}, {"properties": {"x": 10, "y": [ 0, 100, 10, 200]}}],
+    [{}, {"properties": {"x": -1234, "y": [ 0, 100, 10, 200]}}],
+    [{}, {"properties": {"x": 1234, "y": [ 0, 100, 10, 200]}}],
+    [{}, {"properties": {"x": "abcd", "y": [ 0, 100, 10, 200]}}],
+    [{}, {"properties": {"x": 0, "y": []}}],
+    [{}, {"properties": {"x": 0, "y": [0]}}],
+    [{}, {"properties": {"x": 0, "y": ["abcd", 0]}}],
+    [{}, {"properties": {"x": 0, "y": [10, 100, 1, 200]}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      100,
+      150,
+      200,
+      100,
+      200,
+      {
+        "error": "The expression [\"get\",\"x\"] evaluated to string but was expected to be of type number."
+      },
+      {
+        "error": "Expected at least one input/output pair."
+      },
+      {
+        "error": "Expected an even number of arguments."
+      },
+      {
+        "error": "Input/output pairs for \"interpolate\" expressions must be defined using literal numeric values (not computed expressions) for the input values."
+      },
+      {
+        "error": "Input/output pairs for \"interpolate\" expressions must be arranged with input values in strictly ascending order."
+      }
+    ],
+    "serialized": [
+      "interpolate",
+      ["linear"],
+      ["number", ["get", "x"]],
+      ["get", "y"]
+    ]
+  }
+}

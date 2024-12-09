@@ -38,6 +38,8 @@ export type PaintProps = {
     "fill-pattern": DataDrivenProperty<ResolvedImage | null | undefined>;
     "fill-emissive-strength": DataConstantProperty<number>;
     "fill-z-offset": DataDrivenProperty<number>;
+    "fill-color-use-theme": DataDrivenProperty<string>;
+    "fill-outline-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -51,4 +53,6 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-pattern": new DataDrivenProperty(styleSpec["paint_fill"]["fill-pattern"]),
     "fill-emissive-strength": new DataConstantProperty(styleSpec["paint_fill"]["fill-emissive-strength"]),
     "fill-z-offset": new DataDrivenProperty(styleSpec["paint_fill"]["fill-z-offset"]),
+    "fill-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "fill-outline-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

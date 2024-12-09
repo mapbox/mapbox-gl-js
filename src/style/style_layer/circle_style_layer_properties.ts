@@ -39,6 +39,8 @@ export type PaintProps = {
     "circle-stroke-color": DataDrivenProperty<Color>;
     "circle-stroke-opacity": DataDrivenProperty<number>;
     "circle-emissive-strength": DataConstantProperty<number>;
+    "circle-color-use-theme": DataDrivenProperty<string>;
+    "circle-stroke-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -55,4 +57,6 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "circle-stroke-color": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-color"]),
     "circle-stroke-opacity": new DataDrivenProperty(styleSpec["paint_circle"]["circle-stroke-opacity"]),
     "circle-emissive-strength": new DataConstantProperty(styleSpec["paint_circle"]["circle-emissive-strength"]),
+    "circle-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "circle-stroke-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

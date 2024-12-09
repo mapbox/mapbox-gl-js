@@ -1,6 +1,8 @@
 import {vi, describe, test, afterEach, expect, waitFor, createMap} from '../../util/vitest';
 
+import type {Mock} from 'vitest';
 import type {Map} from '../../../src/ui/map';
+import type {InteractionEvent} from '../../../src/ui/interactions';
 
 const style = {
     "version": 8,
@@ -15,21 +17,12 @@ const style = {
                         "selectors": [
                             {
                                 "layer": "poi-label-1",
+                                "featureNamespace": "A",
                                 "properties": {
-                                    "type": [
-                                        "get",
-                                        "type"
-                                    ],
-                                    "name": [
-                                        "get",
-                                        "name"
-                                    ],
-                                    "others": [
-                                        "get",
-                                        "others"
-                                    ]
+                                    "type": ["get", "type"],
+                                    "name": ["get", "name"],
+                                    "others": ["get", "others"]
                                 },
-                                "featureNamespace": "A"
                             }
                         ]
                     }
@@ -50,10 +43,7 @@ const style = {
                                     },
                                     "geometry": {
                                         "type": "Point",
-                                        "coordinates": [
-                                            0,
-                                            0
-                                        ]
+                                        "coordinates": [0, 0]
                                     },
                                     "id": 11
                                 },
@@ -66,10 +56,7 @@ const style = {
                                     },
                                     "geometry": {
                                         "type": "Point",
-                                        "coordinates": [
-                                            0,
-                                            0
-                                        ]
+                                        "coordinates": [0, 0]
                                     },
                                     "id": 12
                                 },
@@ -82,10 +69,7 @@ const style = {
                                     },
                                     "geometry": {
                                         "type": "Point",
-                                        "coordinates": [
-                                            0.01,
-                                            0.01
-                                        ]
+                                        "coordinates": [0.01, 0.01]
                                     },
                                     "id": 13
                                 }
@@ -116,43 +100,18 @@ const style = {
                 "features": [
                     {
                         "type": "Feature",
-                        "properties": {
-                            "filter": "true",
-                            "foo": 1
-                        },
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [
-                                0,
-                                0
-                            ]
-                        }
+                        "properties": {"filter": "true", "foo": 1},
+                        "geometry": {"type": "Point", "coordinates": [0, 0]}
                     },
                     {
                         "type": "Feature",
-                        "properties": {
-                            "foo": 2
-                        },
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [
-                                0,
-                                0
-                            ]
-                        }
+                        "properties": {"foo": 2},
+                        "geometry": {"type": "Point", "coordinates": [0, 0]}
                     },
                     {
                         "type": "Feature",
-                        "properties": {
-                            "foo": 3
-                        },
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [
-                                0.01,
-                                0.01
-                            ]
-                        }
+                        "properties": {"foo": 3},
+                        "geometry": {"type": "Point", "coordinates": [0.01, 0.01]}
                     }
                 ]
             }
@@ -164,18 +123,9 @@ const style = {
                 "features": [
                     {
                         "type": "Feature",
-                        "properties": {
-                            "filter": "true",
-                            "foo": "foo-value"
-                        },
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [
-                                0.02,
-                                0.02
-                            ]
-                        },
-                        "id": 4
+                        "id": 4,
+                        "properties": {"filter": "true", "foo": "foo-value"},
+                        "geometry": {"type": "Point", "coordinates": [0.02, 0.02]},
                     }
                 ]
             }
@@ -216,87 +166,401 @@ const style = {
     ]
 };
 
-function dispatchEvent(map: Map, type: string, lnglat: {lng: number, lat: number}) {
-    const p = map.project(lnglat);
+function dispatchEvent(map: Map, type: string, {x, y}: {x: number, y: number}) {
     const canvas = map.getCanvas();
-    canvas.dispatchEvent(new MouseEvent(type, {bubbles: true, clientX: p.x, clientY: p.y}));
+    canvas.dispatchEvent(new MouseEvent(type, {bubbles: true, clientX: x, clientY: y}));
 }
 
-describe('Interaction 1', async () => {
-    const map = createMap({
-        style,
-        zoom: 10,
-        center: [0, 0],
+// Given a map of mocks, return an array of mock names in the order of their invocation.
+function getCallSequence(mocks: Record<string, Mock>): string[] {
+    const callSequence = Object.entries(mocks).reduce((acc: Record<number, string>, [name, {mock}]) => {
+        mock.invocationCallOrder.forEach(order => { acc[order] = name; });
+        return acc;
+    }, {});
+    return Object.values(callSequence);
+}
+
+describe('Interaction', () => {
+    describe('Single Interaction on a layer with two features and one targetless Interaction', async () => {
+        const map = createMap({
+            style,
+            zoom: 10,
+            center: [0, 0],
+        });
+
+        await waitFor(map, 'load');
+
+        const handler = vi.fn((_: InteractionEvent): boolean | void => {});
+        map.addInteraction('click', {
+            type: 'click',
+            target: {layerId: 'circle-1'},
+            handler
+        });
+
+        const targetlessHandler = vi.fn((_: InteractionEvent): boolean | void => {});
+        map.addInteraction('no-target', {
+            type: 'click',
+            handler: targetlessHandler
+        });
+
+        afterEach(() => {
+            vi.clearAllMocks();
+        });
+
+        const point = map.project({lng: 0, lat: 0});
+
+        test('When handler returns `undefined`, it is called once with the topmost feature. Targetless handler is never called.', () => {
+            handler.mockReturnValue(undefined);
+            dispatchEvent(map, 'click', point);
+
+            expect(targetlessHandler).toHaveBeenCalledTimes(0);
+            expect(handler).toHaveBeenCalledTimes(1);
+
+            const event = handler.mock.calls[0][0];
+            expect(event.feature).toMatchObject({id: 2, properties: {foo: 2}});
+        });
+
+        test('When handler returns `true`, it is called once with the topmost feature. Targetless handler is never called.', () => {
+            handler.mockReturnValue(true);
+            dispatchEvent(map, 'click', point);
+
+            expect(targetlessHandler).toHaveBeenCalledTimes(0);
+            expect(handler).toHaveBeenCalledTimes(1);
+
+            const event = handler.mock.calls[0][0];
+            expect(event.feature).toMatchObject({id: 2, properties: {foo: 2}});
+        });
+
+        test('When handler returns `false`, it is called for each feature. Targetless handler is called once.', () => {
+            handler.mockReturnValue(false);
+            dispatchEvent(map, 'click', point);
+            expect(handler).toHaveBeenCalledTimes(2);
+
+            const event1 = handler.mock.calls[0][0];
+            expect(event1.feature).toMatchObject({id: 2, properties: {foo: 2}});
+
+            const event2 = handler.mock.calls[1][0];
+            expect(event2.feature).toMatchObject({id: 1, properties: {foo: 1, filter: 'true'}});
+
+            expect(targetlessHandler).toHaveBeenCalledTimes(1);
+            const event3 = targetlessHandler.mock.calls[0][0];
+            expect(event3.feature).toBeFalsy();
+        });
     });
 
-    await waitFor(map, 'load');
+    describe('Interactions could target root-level layers and featuresets', async () => {
+        const map = createMap({
+            style,
+            zoom: 10,
+            center: [0, 0],
+        });
 
-    const layer1Click = vi.fn();
-    map.addInteraction('circle-1', {
-        type: 'click',
-        featureset: {layerId: 'circle-1'},
-        handler: layer1Click
+        await waitFor(map, 'load');
+
+        const layerClick = vi.fn((_: InteractionEvent): boolean | void => {});
+        map.addInteraction('layer-click', {
+            type: 'click',
+            target: {layerId: 'circle-1'},
+            handler: layerClick
+        });
+
+        const featuresetClick = vi.fn((_: InteractionEvent): boolean | void => {});
+        map.addInteraction('featureset-click', {
+            type: 'click',
+            target: {featuresetId: 'circle-2-featureset', importId: ''},
+            handler: featuresetClick
+        });
+
+        const mapClick = vi.fn((_: InteractionEvent): boolean | void => {});
+        map.addInteraction('map-click', {
+            type: 'click',
+            handler: mapClick
+        });
+
+        afterEach(() => {
+            vi.clearAllMocks();
+        });
+
+        test('Click 1, layer1', () => {
+            layerClick
+                .mockReturnValueOnce(false)
+                .mockReturnValueOnce(true);
+
+            const point = map.project({lng: 0, lat: 0});
+            dispatchEvent(map, 'click', point);
+
+            expect(layerClick).toHaveBeenCalledTimes(2);
+            expect(featuresetClick).toHaveBeenCalledTimes(0);
+            expect(mapClick).toHaveBeenCalledTimes(0);
+
+            let event = layerClick.mock.calls[0][0];
+            expect(event.feature).toMatchObject({id: 2, properties: {'foo': 2}});
+
+            event = layerClick.mock.calls[1][0];
+            expect(event.feature).toMatchObject({id: 1, properties: {'foo': 1, 'filter': 'true'}});
+        });
+
+        test('Click 2, root featureset', () => {
+            featuresetClick.mockReturnValueOnce(false);
+
+            const point = map.project({lng: 0.02, lat: 0.02});
+            dispatchEvent(map, 'click', point);
+
+            expect(layerClick).toHaveBeenCalledTimes(0);
+            expect(featuresetClick).toHaveBeenCalledTimes(1);
+            expect(mapClick).toHaveBeenCalledTimes(1);
+
+            let event = featuresetClick.mock.calls[0][0];
+            expect(event.feature).toMatchObject({id: 4, properties: {bar: 'foo-value', baz: 'constant'}});
+
+            event = mapClick.mock.calls[0][0];
+            expect(event.feature).toBeFalsy();
+        });
+
+        test('Click 3, map', () => {
+            const point = map.project({lng: -0.01, lat: -0.01});
+            dispatchEvent(map, 'click', point);
+
+            expect(layerClick).toHaveBeenCalledTimes(0);
+            expect(featuresetClick).toHaveBeenCalledTimes(0);
+            expect(mapClick).toHaveBeenCalledTimes(1);
+
+            const event = mapClick.mock.calls[0][0];
+            expect(event.feature).toBeFalsy();
+        });
     });
 
-    const featuresetClick = vi.fn();
-    map.addInteraction('circle-2-featureset', {
-        type: 'click',
-        featureset: {featuresetId: 'circle-2-featureset', importId: ''},
-        handler: featuresetClick
+    describe('Interactions could target root-level layers and featuresets with delegated event listeners like hover', async () => {
+        const map = createMap({
+            style,
+            zoom: 10,
+            center: [0, 0],
+        });
+
+        await waitFor(map, 'load');
+
+        const mouseenter = vi.fn((e: InteractionEvent): boolean | void => {
+            map.setFeatureState(e.feature, {hover: true});
+        });
+
+        map.addInteraction('mouseenter', {
+            type: 'mouseenter',
+            target: {layerId: 'circle-1'},
+            handler: mouseenter
+        });
+
+        const mouseleave = vi.fn((e: InteractionEvent): boolean | void => {
+            map.setFeatureState(e.feature, {hover: false});
+        });
+
+        map.addInteraction('mouseleave', {
+            type: 'mouseleave',
+            target: {layerId: 'circle-1'},
+            handler: mouseleave
+        });
+
+        test('Hover with setFeatureState', () => {
+            const point = map.project({lng: 0.01, lat: 0.01});
+
+            // hover events are delegated to `mousemove` and `mouseout`
+            dispatchEvent(map, 'mousemove', point);
+            dispatchEvent(map, 'mouseout', point);
+            dispatchEvent(map, 'mousemove', point);
+
+            expect(mouseenter).toHaveBeenCalledTimes(2);
+            expect(mouseleave).toHaveBeenCalledTimes(1);
+
+            let event = mouseenter.mock.calls[0][0];
+            expect(event.feature).toMatchObject({
+                id: 3,
+                namespace: undefined,
+                target: {layerId: 'circle-1'},
+                properties: {foo: 3},
+                state: {} // initial state
+            });
+
+            event = mouseleave.mock.calls[0][0];
+            expect(event.feature).toMatchObject({
+                id: 3,
+                namespace: undefined,
+                target: {layerId: 'circle-1'},
+                properties: {foo: 3},
+                state: {hover: true} // state after mousemove
+            });
+
+            event = mouseenter.mock.calls[1][0];
+            expect(event.feature).toMatchObject({
+                id: 3,
+                namespace: undefined,
+                target: {layerId: 'circle-1'},
+                properties: {foo: 3},
+                state: {hover: false} // state after mouseleave
+            });
+        });
     });
 
-    const mapClick = vi.fn();
-    map.addInteraction('map-click', {
-        type: 'click',
-        handler: mapClick
+    describe('Interactions could target layers and featuresets in imported style with event propagation', async () => {
+        const map = createMap({
+            style,
+            zoom: 10,
+            center: [0, 0],
+        });
+
+        await waitFor(map, 'load');
+
+        // 2 features with types A and B
+        const poiClick = vi.fn((_: InteractionEvent) => false);
+        map.addInteraction('poi-click', {
+            type: 'click',
+            target: {featuresetId: 'poi', importId: 'nested'},
+            handler: poiClick
+        });
+
+        // 1 feature with type A
+        const poiClickTypeA = vi.fn((_: InteractionEvent) => false);
+        map.addInteraction('poi-click-type-A', {
+            type: 'click',
+            target: {featuresetId: 'poi', importId: 'nested'},
+            filter: ['==', ['get', 'type'], 'A'],
+            handler: poiClickTypeA
+        });
+
+        // 1 feature with type B
+        const poiClickTypeB = vi.fn((_: InteractionEvent) => false);
+        map.addInteraction('poi-click-type-B', {
+            type: 'click',
+            target: {featuresetId: 'poi', importId: 'nested'},
+            filter: ['==', ['get', 'type'], 'B'],
+            handler: poiClickTypeB
+        });
+
+        const mapClick = vi.fn();
+        map.addInteraction('map-click', {
+            type: 'click',
+            handler: mapClick
+        });
+
+        afterEach(() => {
+            vi.clearAllMocks();
+        });
+
+        test('Click 1 #debug', () => {
+            const point = map.project({lng: 0.0, lat: 0.0});
+            dispatchEvent(map, 'click', point);
+
+            // Each filtered interaction handler returns false, so each feature is handled by every possible handler.
+            expect(poiClick).toHaveBeenCalledTimes(2);
+            expect(poiClickTypeA).toHaveBeenCalledTimes(1);
+            expect(poiClickTypeB).toHaveBeenCalledTimes(1);
+
+            // When no specific handler handled the interaction, the map itself handles it
+            expect(mapClick).toHaveBeenCalledTimes(1);
+
+            // order of calls: B, common with feature B, A, common with featureA, map
+            const callSequence = getCallSequence({poiClick, poiClickTypeA, poiClickTypeB, mapClick});
+
+            expect(callSequence).toEqual([
+                'poiClickTypeB',
+                'poiClick',
+                'poiClickTypeA',
+                'poiClick',
+                'mapClick'
+            ]);
+
+            const event = poiClickTypeB.mock.calls[0][0];
+            expect(event.feature).toMatchObject({
+                id: 12,
+                namespace: 'A',
+                geometry: {type: 'Point', coordinates: [0, 0]},
+                properties: {name: 'nest2', type: 'B', others: 4}
+            });
+        });
+
+        test('Click 2, poi with type A handles it', () => {
+            poiClickTypeA.mockReturnValueOnce(true);
+
+            const point = map.project({lng: 0.0, lat: 0.0});
+            dispatchEvent(map, 'click', point);
+
+            // Handling sequence:
+            // - poiClickTypeB, because it is rendered top-most, and the poiClickTypeB added latest
+            // - poiClick with feature B as argumnent
+            // - poiClickTypeA, because it's rendered below
+            // - poiClick and mapClick don't receive any more call because poiClickTypeA handled it.
+            expect(getCallSequence({poiClick, poiClickTypeA, poiClickTypeB, mapClick})).toEqual([
+                'poiClickTypeB',
+                'poiClick',
+                'poiClickTypeA'
+            ]);
+        });
     });
 
-    afterEach(() => {
-        vi.clearAllMocks();
-    });
+    describe('Interactions could target layers and featuresets in imported style with delegated event listeners like hover', async () => {
+        const map = createMap({
+            style,
+            zoom: 10,
+            center: [0, 0],
+        });
 
-    test('Click 1, layer1', () => {
-        layer1Click
-            .mockReturnValueOnce(false)
-            .mockReturnValueOnce(true);
+        await waitFor(map, 'load');
 
-        dispatchEvent(map, 'click', {lng: 0, lat: 0});
+        const mouseenter = vi.fn((e: InteractionEvent): boolean | void => {
+            map.setFeatureState(e.feature, {hover: true});
+        });
 
-        expect(layer1Click).toHaveBeenCalledTimes(2);
-        expect(featuresetClick).toHaveBeenCalledTimes(0);
-        expect(mapClick).toHaveBeenCalledTimes(0);
+        map.addInteraction('mouseenter', {
+            type: 'mouseenter',
+            target: {featuresetId: 'poi', importId: 'nested'},
+            handler: mouseenter
+        });
 
-        let event = layer1Click.mock.calls[0][0];
-        expect(event.feature).toMatchObject({id: 2, properties: {'foo': 2}});
+        const mouseleave = vi.fn((e: InteractionEvent): boolean | void => {
+            map.setFeatureState(e.feature, {hover: false});
+        });
 
-        event = layer1Click.mock.calls[1][0];
-        expect(event.feature).toMatchObject({id: 1, properties: {'foo': 1, 'filter': 'true'}});
-    });
+        map.addInteraction('mouseleave', {
+            type: 'mouseleave',
+            target: {featuresetId: 'poi', importId: 'nested'},
+            handler: mouseleave
+        });
 
-    test('Click 2, root featureset', () => {
-        featuresetClick.mockReturnValueOnce(false);
+        test('Hover with setFeatureState', () => {
+            const point = map.project({lng: 0.01, lat: 0.01});
 
-        dispatchEvent(map, 'click', {lng: 0.02, lat: 0.02});
+            // hover events are delegated to `mousemove` and `mouseout`
+            dispatchEvent(map, 'mousemove', point);
+            dispatchEvent(map, 'mouseout', point);
+            dispatchEvent(map, 'mousemove', point);
 
-        expect(layer1Click).toHaveBeenCalledTimes(0);
-        expect(featuresetClick).toHaveBeenCalledTimes(1);
-        expect(mapClick).toHaveBeenCalledTimes(1);
+            expect(mouseenter).toHaveBeenCalledTimes(2);
+            expect(mouseleave).toHaveBeenCalledTimes(1);
 
-        let event = featuresetClick.mock.calls[0][0];
-        expect(event.feature).toMatchObject({id: 4, properties: {'bar': 'foo-value', 'baz': 'constant'}});
+            let event = mouseenter.mock.calls[0][0];
+            expect(event.feature).toMatchObject({
+                id: 13,
+                namespace: 'A',
+                target: {featuresetId: 'poi', importId: 'nested'},
+                properties: {name: 'nest3', type: 'C', others: 4},
+                state: {} // initial state
+            });
 
-        event = mapClick.mock.calls[0][0];
-        expect(event.feature).toBeFalsy();
-    });
+            event = mouseleave.mock.calls[0][0];
+            expect(event.feature).toMatchObject({
+                id: 13,
+                namespace: 'A',
+                target: {featuresetId: 'poi', importId: 'nested'},
+                properties: {name: 'nest3', type: 'C', others: 4},
+                state: {hover: true} // state after mousemove
+            });
 
-    test('Click 3, map', () => {
-        dispatchEvent(map, 'click', {lng: -0.01, lat: -0.01});
-
-        expect(layer1Click).toHaveBeenCalledTimes(0);
-        expect(featuresetClick).toHaveBeenCalledTimes(0);
-        expect(mapClick).toHaveBeenCalledTimes(1);
-
-        const event = mapClick.mock.calls[0][0];
-        expect(event.feature).toBeFalsy();
+            event = mouseenter.mock.calls[1][0];
+            expect(event.feature).toMatchObject({
+                id: 13,
+                namespace: 'A',
+                target: {featuresetId: 'poi', importId: 'nested'},
+                properties: {name: 'nest3', type: 'C', others: 4},
+                state: {hover: false} // state after mouseleave
+            });
+        });
     });
 });

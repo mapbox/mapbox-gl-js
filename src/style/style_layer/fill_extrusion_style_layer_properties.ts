@@ -53,6 +53,8 @@ export type PaintProps = {
     "fill-extrusion-emissive-strength": DataDrivenProperty<number>;
     "fill-extrusion-line-width": DataDrivenProperty<number>;
     "fill-extrusion-cast-shadows": DataConstantProperty<boolean>;
+    "fill-extrusion-color-use-theme": DataDrivenProperty<string>;
+    "fill-extrusion-flood-light-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -83,4 +85,6 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-extrusion-emissive-strength": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-emissive-strength"]),
     "fill-extrusion-line-width": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-line-width"]),
     "fill-extrusion-cast-shadows": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-cast-shadows"]),
+    "fill-extrusion-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "fill-extrusion-flood-light-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

@@ -1016,24 +1016,31 @@ class Painter {
             }
         }
 
-        Debug.run(() => {
-            if (this._debugParams.forceEnablePrecipitation) {
-                if (!this._snow) {
-                    this._snow = new Snow(this);
-                }
+        const snow = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.snow);
+        const rain = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.rain);
 
-                if (!this._rain) {
-                    this._rain = new Rain(this);
-                }
-            }
+        if (snow && !this._snow) {
+            this._snow = new Snow(this);
+        }
+        if (!snow && this._snow) {
+            this._snow.destroy();
+            delete this._snow;
+        }
 
-            if (this._debugParams.forceEnablePrecipitation && this._snow) {
-                this._snow.update(this);
-            }
-            if (this._debugParams.forceEnablePrecipitation && this._rain) {
-                this._rain.update(this);
-            }
-        });
+        if (rain && !this._rain) {
+            this._rain = new Rain(this);
+        }
+        if (!rain && this._rain) {
+            this._rain.destroy();
+            delete this._rain;
+        }
+
+        if (this._snow) {
+            this._snow.update(this);
+        }
+        if (this._rain) {
+            this._rain.update(this);
+        }
 
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
@@ -1079,14 +1086,15 @@ class Painter {
                 const fogLUT = this.style.getLut(fog.scope);
                 if (!shouldRenderAtmosphere) {
 
-                    const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
+                    const ignoreLutColor = fog.properties.get('color-use-theme') === 'none';
+                    const fogColor = fog.properties.get('color').toRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...fogColor);
                 }
 
                 if (shouldRenderAtmosphere) {
-
-                    const spaceColor = fog.properties.get('space-color').toRenderColor(fogLUT).toArray01();
+                    const ignoreLutColor = fog.properties.get('space-color-use-theme') === 'none';
+                    const spaceColor = fog.properties.get('space-color').toRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...spaceColor);
                 }
@@ -1294,15 +1302,13 @@ class Painter {
             this.terrain.postRender();
         }
 
-        Debug.run(() => {
-            if (this._debugParams.forceEnablePrecipitation && this._snow) {
-                this._snow.draw(this);
-            }
+        if (this._snow) {
+            this._snow.draw(this);
+        }
 
-            if (this._debugParams.forceEnablePrecipitation && this._rain) {
-                this._rain.draw(this);
-            }
-        });
+        if (this._rain) {
+            this._rain.draw(this);
+        }
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             // Use source with highest maxzoom
             let selectedSource = null;

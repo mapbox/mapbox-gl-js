@@ -56,7 +56,6 @@ class AttributionControl implements IControl {
 
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
-        // @ts-expect-error - TS2740 - Type 'HTMLElement' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 15 more.
         this._compactButton = DOM.create('button', 'mapboxgl-ctrl-attrib-button', this._container);
         this._compactButton.type = 'button';
         this._compactButton.addEventListener('click', this._toggleAttribution);

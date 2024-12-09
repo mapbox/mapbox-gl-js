@@ -13,7 +13,7 @@
 in vec2 a_pos_normal;
 in vec4 a_data;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)
-in float a_z_offset;
+in vec2 a_z_offset_width;
 #endif
 // Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
 // to reduce attribute count on older devices.
@@ -28,11 +28,17 @@ in highp vec3 a_pattern_data; // [position_in_segment & offset_sign, segment_len
 out vec2 v_pattern_data; // [position_in_segment, segment_length]
 #endif
 
+#ifdef INDICATOR_CUTOUT
+out highp float v_z_offset;
+#endif
+
 uniform mat4 u_matrix;
 uniform float u_tile_units_to_pixels;
 uniform vec2 u_units_to_pixels;
 uniform mat2 u_pixels_to_tile_units;
 uniform float u_device_pixel_ratio;
+uniform float u_width_scale;
+uniform float u_floor_width_scale;
 
 #ifdef ELEVATED
 uniform lowp float u_zbias_factor;
@@ -54,6 +60,9 @@ out float v_gamma_scale;
 out float v_width;
 #ifdef RENDER_LINE_TRIM_OFFSET
 out highp vec4 v_uv;
+#endif
+#ifdef ELEVATED_ROADS
+out highp float v_road_z_offset;
 #endif
 
 #ifdef RENDER_SHADOWS
@@ -84,6 +93,11 @@ void main() {
     #pragma mapbox: initialize mediump vec4 pattern
     #pragma mapbox: initialize mediump float pixel_ratio
 
+    float a_z_offset;
+#if defined(ELEVATED) || defined(ELEVATED_ROADS)
+    a_z_offset = a_z_offset_width.x;
+#endif
+
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
@@ -103,8 +117,8 @@ void main() {
     // these transformations used to be applied in the JS and native code bases.
     // moved them into the shader for clarity and simplicity.
     gapwidth = gapwidth / 2.0;
-    float halfwidth = width / 2.0;
-    offset = -1.0 * offset;
+    float halfwidth = (u_width_scale * width) / 2.0;
+    offset = -1.0 * offset * u_width_scale;
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
     float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : ANTIALIASING);
@@ -126,6 +140,7 @@ void main() {
     vec4 projected_extrude = u_matrix * vec4(extrude, 0.0, 0.0);
     vec2 projected_extrude_xy = projected_extrude.xy;
 #ifdef ELEVATED_ROADS
+    v_road_z_offset = a_z_offset;
     // Apply slight vertical offset (1cm) for elevated vertices above the ground plane
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset + 0.01 * step(0.01, a_z_offset), 1.0) + projected_extrude;
 #else
@@ -202,11 +217,11 @@ void main() {
 
     v_linesofar = a_linesofar;
     v_width2 = vec2(outset, inset);
-    v_width = floorwidth;
+    v_width = (floorwidth * u_floor_width_scale);
 
 #ifdef LINE_JOIN_NONE
     // Needs to consider antialiasing width extension to get accurate pattern aspect ratio
-    v_width = floorwidth + ANTIALIASING;
+    v_width = (floorwidth * u_floor_width_scale) + ANTIALIASING;
 
     mediump float pixels_to_tile_units = 1.0 / u_tile_units_to_pixels;
     mediump float pixel_ratio_inverse = 1.0 / pixel_ratio;
@@ -224,5 +239,9 @@ void main() {
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);
+#endif
+
+#ifdef INDICATOR_CUTOUT
+    v_z_offset = a_z_offset;
 #endif
 }

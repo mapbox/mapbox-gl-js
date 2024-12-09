@@ -149,7 +149,7 @@ class NavigationControl implements IControl {
     }
 
     _createButton(className: string, fn: (e: Event) => unknown): HTMLButtonElement {
-        const a = DOM.create('button', className, this._container) as HTMLButtonElement;
+        const a = DOM.create('button', className, this._container);
         a.type = 'button';
         a.addEventListener('click', fn);
         return a;

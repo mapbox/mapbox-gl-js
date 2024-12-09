@@ -20,7 +20,7 @@ import type {vec2, vec4} from 'gl-matrix';
 import type {Class} from '../../src/types/class';
 import type {Footprint} from '../util/conflation';
 import type {TextureImage} from '../../src/render/texture';
-import type {Mesh, Node, Material, ModelTexture, Sampler, AreaLight, PbrMetallicRoughness} from '../data/model';
+import type {Mesh, ModelNode, Material, ModelTexture, Sampler, AreaLight, PbrMetallicRoughness} from '../data/model';
 
 function convertTextures(gltf: any, images: Array<TextureImage>): Array<ModelTexture> {
     const textures: ModelTexture[] = [];
@@ -249,9 +249,9 @@ function convertMeshes(gltf: any, textures: Array<ModelTexture>): Array<Array<Me
     return meshes;
 }
 
-function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): Node {
+function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): ModelNode {
     const {matrix, rotation, translation, scale, mesh, extras, children} = nodeDesc;
-    const node = {} as Node;
+    const node = {} as ModelNode;
     node.matrix = matrix || mat4.fromRotationTranslationScale([] as unknown as mat4, rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
     if (mesh !== undefined) {
         node.meshes = meshes[mesh];
@@ -273,7 +273,7 @@ function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): Node
         }
     }
     if (children) {
-        const converted: Node[] = [];
+        const converted: ModelNode[] = [];
         for (const childNodeIdx of children) {
             converted.push(convertNode(gltf.json.nodes[childNodeIdx], gltf, meshes));
         }
@@ -418,7 +418,7 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
     return {vertices, indices};
 }
 
-function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNodes: any) {
+function convertFootprints(convertedNodes: Array<ModelNode>, sceneNodes: any, modelNodes: any) {
     // modelNodes == a list of nodes in the gltf file
     // sceneNodes == an index array pointing to modelNodes being parsed
     assert(convertedNodes.length === sceneNodes.length);
@@ -493,7 +493,7 @@ function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNo
     }
 }
 
-export default function convertModel(gltf: any): Array<Node> {
+export default function convertModel(gltf: any): Array<ModelNode> {
     const textures = convertTextures(gltf, gltf.images);
     const meshes = convertMeshes(gltf, textures);
 
@@ -501,7 +501,7 @@ export default function convertModel(gltf: any): Array<Node> {
     const {scenes, scene, nodes} = gltf.json;
     const gltfNodes = scenes ? scenes[scene || 0].nodes : nodes;
 
-    const resultNodes: Node[] = [];
+    const resultNodes: ModelNode[] = [];
     for (const nodeIdx of gltfNodes) {
         resultNodes.push(convertNode(nodes[nodeIdx], gltf, meshes));
     }
@@ -509,7 +509,7 @@ export default function convertModel(gltf: any): Array<Node> {
     return resultNodes;
 }
 
-export function process3DTile(gltf: any, zScale: number): Array<Node> {
+export function process3DTile(gltf: any, zScale: number): Array<ModelNode> {
     const nodes = convertModel(gltf);
     for (const node of nodes) {
         for (const mesh of node.meshes) {

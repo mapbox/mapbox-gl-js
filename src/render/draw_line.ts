@@ -11,7 +11,9 @@ import browser from '../util/browser';
 import {clamp, nextPowerOfTwo, warnOnce} from '../util/util';
 import {renderColorRamp} from '../util/color_ramp';
 import EXTENT from '../style-spec/data/extent';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import assert from 'assert';
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -31,6 +33,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const emissiveStrength = layer.paint.get('line-emissive-strength');
     const occlusionOpacity = layer.paint.get('line-occlusion-opacity');
     const elevationReference = layer.layout.get('line-elevation-reference');
+    const unitInMeters = layer.layout.get('line-width-unit') === 'meters';
     const elevationFromSea = elevationReference === 'sea';
 
     const context = painter.context;
@@ -110,6 +113,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
     }
 
+    if (width.value.kind !== 'constant' && width.value.isLineProgressConstant === false) {
+        definesValues.push("VARIABLE_LINE_WIDTH");
+    }
+
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         if (image && !tile.patternsLoaded()) continue;
@@ -123,7 +130,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog, overrideRtt: hasZOffset ? false : undefined});
 
         if (constantPattern && tile.imageAtlas) {
-            const posTo = tile.imageAtlas.patternPositions[constantPattern.toString()];
+            const patternImage = ResolvedImage.from(constantPattern);
+            const posTo = tile.imageAtlas.patternPositions[patternImage.getSerializedPrimary()];
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 
@@ -152,9 +160,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
 
         const matrix = isDraping ? coord.projMatrix : null;
+        const lineWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, painter.transform.zoom) : 1.0;
+        const lineFloorWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, Math.floor(painter.transform.zoom)) : 1.0;
         const uniformValues = image ?
-            linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, [trimStart, trimEnd]) :
-            lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, [trimStart, trimEnd]);
+            linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd]) :
+            lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd]);
 
         if (gradient) {
             const layerGradient = bucket.gradients[layer.id];

@@ -1,3 +1,5 @@
+import ResolvedImage from '../../style-spec/expression/types/resolved_image';
+
 import type FillStyleLayer from '../../style/style_layer/fill_style_layer';
 import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer';
@@ -5,8 +7,28 @@ import type {
     BucketFeature,
     PopulateParameters
 } from '../bucket';
+import type {ImageIdWithOptions} from '../../style-spec/expression/types/image_id_with_options';
 
 type PatternStyleLayers = Array<LineStyleLayer> | Array<FillStyleLayer> | Array<FillExtrusionStyleLayer>;
+
+function addPattern(
+    pattern: string | ResolvedImage,
+    patterns: Record<string, Array<ImageIdWithOptions>>
+): string | null {
+    if (!pattern) {
+        return null;
+    }
+
+    const patternId = typeof pattern === 'string' ? pattern : pattern.getPrimary().id;
+
+    if (!patterns[patternId]) {
+        patterns[patternId] = [];
+    }
+
+    const patternPrimary = (ResolvedImage.from(pattern)).getPrimary();
+    patterns[patternId].push(patternPrimary);
+    return patternPrimary.serialize();
+}
 
 export function hasPattern(type: string, layers: PatternStyleLayers, options: PopulateParameters): boolean {
     const patterns = options.patternDependencies;
@@ -21,9 +43,9 @@ export function hasPattern(type: string, layers: PatternStyleLayers, options: Po
         }
 
         const constantPattern = patternProperty.constantOr(null);
-        if (constantPattern) {
+
+        if (addPattern(constantPattern, patterns)) {
             hasPattern = true;
-            patterns[constantPattern] =  true;
         }
     }
 
@@ -47,11 +69,12 @@ export function addPatternDependencies(
             let pattern = patternPropertyValue.evaluate({zoom}, patternFeature, {}, options.availableImages);
             pattern = pattern && pattern.name ? pattern.name : pattern;
 
-            // add to patternDependencies
-            patterns[pattern] = true;
+            const patternSerialized: string | null = addPattern(pattern, patterns);
 
             // save for layout
-            patternFeature.patterns[layer.id] = pattern;
+            if (patternSerialized) {
+                patternFeature.patterns[layer.id] = patternSerialized;
+            }
         }
     }
     return patternFeature;

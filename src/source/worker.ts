@@ -11,7 +11,9 @@ import {enforceCacheSizeLimit} from '../util/tile_request_cache';
 import {PerformanceUtils} from '../util/performance';
 import {Event} from '../util/evented';
 import {getProjection} from '../geo/projection/index';
+import {ImageRasterizer} from '../render/image_rasterizer';
 
+import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import type {
     WorkerSource,
     WorkerTileParameters,
@@ -21,13 +23,16 @@ import type {
     TileParameters,
     WorkerRasterArrayTileParameters,
     WorkerRasterArrayTileCallback,
-    WorkerSourceConstructor
+    WorkerSourceConstructor,
+    WorkerImageRaserizeCallback
 } from './worker_source';
 import type {Callback} from '../types/callback';
 import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types';
 import type {ConfigOptions} from '../style/properties';
 import type {RtlTextPlugin, PluginState} from './rtl_text_plugin';
 import type Projection from '../geo/projection/projection';
+import type {RGBAImage} from '../util/image';
+import type {StyleImage} from '../style/style_image';
 
 /**
  * @private
@@ -77,6 +82,7 @@ export default class MapWorker {
     referrer: string | null | undefined;
     dracoUrl: string | null | undefined;
     brightness: number | null | undefined;
+    imageRasterizer: ImageRasterizer;
 
     constructor(self: Worker) {
         PerformanceUtils.measure('workerEvaluateScript');
@@ -86,6 +92,7 @@ export default class MapWorker {
         this.layerIndexes = {};
         this.availableImages = {};
         this.isSpriteLoaded = {};
+        this.imageRasterizer = new ImageRasterizer();
 
         this.projections = {};
         this.defaultProjection = getProjection({name: 'mercator'});
@@ -382,6 +389,22 @@ export default class MapWorker {
         }
 
         return this.workerSources[mapId][scope][type][source];
+    }
+
+    rasterizeImages(mapId: string, input: {imageTasks: {[_: string]:  {image: StyleImage, imageIdWithOptions: ImageIdWithOptions}}, scope: string}, callback: WorkerImageRaserizeCallback) {
+        const {imageTasks, scope} = input;
+        const images: {[key: string]: RGBAImage} = {};
+        for (const id in imageTasks) {
+            const {image, imageIdWithOptions} = imageTasks[id];
+            images[id] = this.imageRasterizer.rasterize(imageIdWithOptions, image, scope, mapId);
+        }
+        callback(undefined, images);
+    }
+
+    removeRasterizedImages(mapId: string, input: {imageIds: Array<string>, scope: string}, callback: WorkerTileCallback) {
+        const {imageIds, scope} = input;
+        this.imageRasterizer.removeImagesFromCacheByIds(imageIds, scope, mapId);
+        callback();
     }
 
     getDEMWorkerSource(mapId: string, source: string, scope: string): RasterDEMTileWorkerSource {

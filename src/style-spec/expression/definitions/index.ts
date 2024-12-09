@@ -182,6 +182,13 @@ CompoundExpression.register(expressions, {
             return v.evaluate(ctx).toRenderColor(null).toArray();
         }
     ],
+    'to-hsla': [
+        array(NumberType, 4),
+        [ColorType],
+        (ctx, [v]) => {
+            return v.evaluate(ctx).toRenderColor(null).toHslaArray();
+        }
+    ],
     'rgb': [
         ColorType,
         [NumberType, NumberType, NumberType],

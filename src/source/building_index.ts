@@ -58,7 +58,7 @@ class BuildingIndex {
                 visible = !layer.isHidden(zoom) && (layer as FillExtrusionStyleLayer).paint.get('fill-extrusion-opacity') > 0.0;
             } else if (layer.type === 'model') {
 
-                visible = !layer.isHidden(zoom) && (layer as ModelStyleLayer).paint.get('model-opacity') > 0.0;
+                visible = !layer.isHidden(zoom) && (layer as ModelStyleLayer).paint.get('model-opacity').constantOr(1.0) > 0.0;
             }
             this.layersGotHidden = this.layersGotHidden || (!visible && l.visible);
             l.visible = visible;

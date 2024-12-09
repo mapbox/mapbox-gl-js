@@ -6,7 +6,7 @@
       "operations": [
         [
           "setFeatureState",
-          {"id": "1000059876748", "namespace": "poi", "featureset": {"featuresetId": "poi", "importId": "basemap"}},
+          {"id": "1000059876748", "namespace": "poi", "target": {"featuresetId": "poi", "importId": "basemap"}},
           {"color": "red"}
         ],
         ["wait"]

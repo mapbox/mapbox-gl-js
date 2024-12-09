@@ -77,7 +77,6 @@ class FullscreenControl implements IControl {
     _setupUI() {
         const button = this._fullscreenButton = DOM.create('button', (`mapboxgl-ctrl-fullscreen`), this._controlContainer);
         DOM.create('span', `mapboxgl-ctrl-icon`, button).setAttribute('aria-hidden', 'true');
-        // @ts-expect-error - TS2339 - Property 'type' does not exist on type 'HTMLElement'.
         button.type = 'button';
         this._updateTitle();
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);

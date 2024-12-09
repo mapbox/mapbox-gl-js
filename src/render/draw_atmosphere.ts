@@ -138,12 +138,14 @@ class Atmosphere {
         const transitionT = globeToMercatorTransition(tr.zoom);
 
         const fogLUT = painter.style.getLut(fog.scope);
+        const colorIgnoreLut = fog.properties.get('color-use-theme') === 'none';
+        const fogColor = fog.properties.get('color').toRenderColor(colorIgnoreLut ? null : fogLUT).toArray01();
 
-        const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
+        const hignoreLutIgnoreLut = fog.properties.get('high-color-use-theme') === 'none';
+        const highColor = fog.properties.get('high-color').toRenderColor(hignoreLutIgnoreLut ? null : fogLUT).toArray01();
 
-        const highColor = fog.properties.get('high-color').toRenderColor(fogLUT).toArray01();
-
-        const spaceColor = fog.properties.get('space-color').toRenderColor(fogLUT).toArray01PremultipliedAlpha();
+        const spaceColorIgnoreLut = fog.properties.get('space-color-use-theme') === 'none';
+        const spaceColor = fog.properties.get('space-color').toRenderColor(spaceColorIgnoreLut ? null : fogLUT).toArray01PremultipliedAlpha();
 
         // https://www.desmos.com/calculator/oanvvpr36d
         // Ensure horizon blend is 0-exclusive to prevent division by 0 in the shader

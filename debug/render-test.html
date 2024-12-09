@@ -21,7 +21,7 @@
 
         async function fetchStyle() {
             let test = new URLSearchParams(location.search).get('test');
-            if (!test) test = prompt('test name:') || 'text-writing-mode/line_label/mixed-multiline-horizontal-mode';
+            if (!test) test = prompt('test name:', 'text-writing-mode/line_label/mixed-multiline-horizontal-mode');
 
             const response = await fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`);
             const style = await response.json();
@@ -43,6 +43,10 @@
             ...options
         } = style.metadata.test;
 
+        if (options.spriteFormat === 'icon_set' && style.sprite && !style.sprite.endsWith('.pbf')) {
+            style.sprite += '.pbf';
+        }
+
         const container = document.getElementById('map');
         container.style.width = width + 'px';
         container.style.height = height + 'px';
@@ -58,7 +62,8 @@
             interactive: false,
             attributionControl: false,
             performanceMetricsCollection: false,
-            scaleFactor
+            scaleFactor,
+            spriteFormat: options.spriteFormat || 'auto',
         });
 
         map.removeControl(map._logoControl);

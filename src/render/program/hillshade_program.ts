@@ -62,9 +62,13 @@ const hillshadeUniformValues = (
     layer: HillshadeStyleLayer,
     matrix?: mat4 | null,
 ): UniformValues<HillshadeUniformsType> => {
+
     const shadow = layer.paint.get("hillshade-shadow-color");
+    const shadowIgnoreLut = layer.paint.get("hillshade-shadow-color-use-theme").constantOr("default") === 'none';
     const highlight = layer.paint.get("hillshade-highlight-color");
+    const highlightIgnoreLut = layer.paint.get("hillshade-highlight-color-use-theme").constantOr("default") === 'none';
     const accent = layer.paint.get("hillshade-accent-color");
+    const accentIgnoreLut = layer.paint.get("hillshade-accent-color-use-theme").constantOr("default") === 'none';
     const emissiveStrength = layer.paint.get("hillshade-emissive-strength");
 
     let azimuthal = degToRad(layer.paint.get('hillshade-illumination-direction'));
@@ -87,12 +91,12 @@ const hillshadeUniformValues = (
         'u_latrange': getTileLatRange(painter, tile.tileID),
         'u_light': [layer.paint.get('hillshade-exaggeration'), azimuthal],
 
-        'u_shadow': shadow.toRenderColor(layer.lut),
+        'u_shadow': shadow.toRenderColor(shadowIgnoreLut ? null : layer.lut),
 
-        'u_highlight': highlight.toRenderColor(layer.lut),
+        'u_highlight': highlight.toRenderColor(highlightIgnoreLut ? null : layer.lut),
         'u_emissive_strength': emissiveStrength,
 
-        'u_accent': accent.toRenderColor(layer.lut)
+        'u_accent': accent.toRenderColor(accentIgnoreLut ? null : layer.lut)
     };
 };
 

@@ -21,7 +21,7 @@ import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
 import WorkerClass from './util/worker_class';
-import {prewarm, clearPrewarmedResources} from './util/global_worker_pool';
+import {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
 import {clearTileCache} from './util/tile_request_cache';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils';
 import {FreeCameraOptions} from './ui/free_camera';
@@ -40,7 +40,8 @@ export type {PointLike} from './types/point-like';
 export type {PluginStatus} from './source/rtl_text_plugin';
 
 export type {Event, ErrorEvent} from './util/evented';
-export type {GeoJSONFeature} from './util/vectortile_to_geojson';
+export type {GeoJSONFeature, TargetFeature} from './util/vectortile_to_geojson';
+export type {InteractionEvent} from './ui/interactions';
 export type {PaddingOptions} from './geo/edge_insets';
 export type {RequestParameters} from './util/ajax';
 export type {RequestTransformFunction, ResourceType} from './util/mapbox';

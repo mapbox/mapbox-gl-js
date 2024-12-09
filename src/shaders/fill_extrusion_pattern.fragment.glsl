@@ -61,7 +61,8 @@ void main() {
 #endif
 
 #ifdef INDICATOR_CUTOUT
-    out_color = applyCutout(out_color);
+    // TODO: maybe use height from vertex shader?
+    out_color = applyCutout(out_color, height);
 #endif
 
     glFragColor = out_color;

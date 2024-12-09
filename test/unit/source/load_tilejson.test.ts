@@ -1,6 +1,6 @@
 // @ts-nocheck
-import {vi, beforeAll, afterEach, afterAll, describe, test, expect, doneAsync, assert} from '../../util/vitest';
-import {getNetworkWorker, http, HttpResponse} from '../../util/network';
+import {vi, describe, test, expect, doneAsync, assert} from '../../util/vitest';
+import {mockFetch} from '../../util/network';
 import {Evented} from '../../../src/util/evented';
 import loadTileJSON from '../../../src/source/load_tilejson';
 import {RequestManager} from '../../../src/util/mapbox';
@@ -11,20 +11,6 @@ class StubMap extends Evented {
         this._requestManager = new RequestManager();
     }
 }
-
-let networkWorker: any;
-
-beforeAll(async () => {
-    networkWorker = await getNetworkWorker(window);
-});
-
-afterEach(() => {
-    networkWorker.resetHandlers();
-});
-
-afterAll(() => {
-    networkWorker.stop();
-});
 
 describe('Inlined TileJSON', () => {
     const map = new StubMap();
@@ -72,12 +58,13 @@ describe('Inlined TileJSON', () => {
     test('should request tileJSON because of another language', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
-        networkWorker.use(
-            http.get('/source.json', () => {
+
+        mockFetch({
+            'source.json': () => {
                 requestFn();
-                return HttpResponse.json({});
-            })
-        );
+                return new Response(JSON.stringify({}));
+            }
+        });
         loadTileJSON({
             type: 'vector',
             data: {
@@ -102,12 +89,12 @@ describe('Inlined TileJSON', () => {
     test('should request tileJSON because of another worldview', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
-        networkWorker.use(
-            http.get('/source.json', () => {
+        mockFetch({
+            'source.json': () => {
                 requestFn();
-                return HttpResponse.json({});
-            })
-        );
+                return new Response(JSON.stringify({}));
+            }
+        });
 
         loadTileJSON({
             type: 'vector',
@@ -137,13 +124,12 @@ describe('Inlined TileJSON', () => {
     test('should request tileJSON because of only unsupported language', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
-        networkWorker.use(
-            http.get('/source.json', () => {
+        mockFetch({
+            'source.json': () => {
                 requestFn();
-                return HttpResponse.json({});
-            })
-        );
-
+                return new Response(JSON.stringify({}));
+            }
+        });
         loadTileJSON({
             type: 'vector',
             data: {
@@ -172,13 +158,12 @@ describe('Inlined TileJSON', () => {
     test('should request tileJSON because of only unsupported worldview', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
-        networkWorker.use(
-            http.get('/source.json', () => {
+        mockFetch({
+            'source.json': () => {
                 requestFn();
-                return HttpResponse.json({});
-            })
-        );
-
+                return new Response(JSON.stringify({}));
+            }
+        });
         loadTileJSON({
             type: 'vector',
             data: {
@@ -212,13 +197,12 @@ describe('Inlined TileJSON', () => {
     test('should not request tileJSON because of unsupported language/worldview', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
-        networkWorker.use(
-            http.get('/source.json', () => {
+        mockFetch({
+            'source.json': () => {
                 requestFn();
-                return HttpResponse.json({});
-            }),
-        );
-
+                return new Response(JSON.stringify({}));
+            }
+        });
         loadTileJSON({
             type: 'vector',
             data: {
@@ -247,13 +231,12 @@ describe('Inlined TileJSON', () => {
     test('should request tileJSON if we don\'t have inlined data', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
-        networkWorker.use(
-            http.get('/source.json', () => {
+        mockFetch({
+            'source.json': () => {
                 requestFn();
-                return HttpResponse.json({});
-            }),
-        );
-
+                return new Response(JSON.stringify({}));
+            }
+        });
         loadTileJSON({
             type: 'vector',
             url: '/source.json'
@@ -269,13 +252,12 @@ describe('Inlined TileJSON', () => {
     test('should request tileJSON if some source of different language', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
-        networkWorker.use(
-            http.get('/source.json', () => {
+        mockFetch({
+            'source.json': () => {
                 requestFn();
-                return HttpResponse.json({});
-            }),
-        );
-
+                return new Response(JSON.stringify({}));
+            }
+        });
         loadTileJSON({
             type: 'vector',
             data: {
@@ -306,13 +288,12 @@ describe('Inlined TileJSON', () => {
     test('should request tileJSON if some source of different worldview', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
-        networkWorker.use(
-            http.get('/source.json', () => {
+        mockFetch({
+            'source.json': () => {
                 requestFn();
-                return HttpResponse.json({});
-            }),
-        );
-
+                return new Response(JSON.stringify({}));
+            }
+        });
         loadTileJSON({
             type: 'vector',
             data: {
@@ -344,13 +325,12 @@ describe('Inlined TileJSON', () => {
     test('should request tileJSON if we don\'t have language options', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
-        networkWorker.use(
-            http.get('/source.json', () => {
+        mockFetch({
+            'source.json': () => {
                 requestFn();
-                return HttpResponse.json({});
-            }),
-        );
-
+                return new Response(JSON.stringify({}));
+            }
+        });
         loadTileJSON({
             type: 'vector',
             data: {
@@ -379,13 +359,12 @@ describe('Inlined TileJSON', () => {
     test('should request tileJSON if we don\'t have worldview options', async () => {
         const {withAsync, wait} = doneAsync();
         const requestFn = vi.fn();
-        networkWorker.use(
-            http.get('/source.json', () => {
+        mockFetch({
+            'source.json': () => {
                 requestFn();
-                return HttpResponse.json({});
-            }),
-        );
-
+                return new Response(JSON.stringify({}));
+            }
+        });
         loadTileJSON({
             type: 'vector',
             data: {
@@ -477,12 +456,11 @@ describe('LoadTileJson#variants', () => {
             ]
         };
 
-        networkWorker.use(
-            http.get('/source.json', () => {
-                return HttpResponse.json(tileJSON);
-            }),
-        );
-
+        mockFetch({
+            '/source.json': () => {
+                return new Response(JSON.stringify(tileJSON));
+            }
+        });
         loadTileJSON(options, map._requestManager, null, null, withAsync((err, result, doneRef) => {
             expect(err).toEqual(null);
             expect(result.tiles).toEqual(["http://dataset2"]);
@@ -512,12 +490,11 @@ describe('LoadTileJson#variants', () => {
             ]
         };
 
-        networkWorker.use(
-            http.get('/source.json', () => {
-                return HttpResponse.json(tileJSON);
-            }),
-        );
-
+        mockFetch({
+            '/source.json': () => {
+                return new Response(JSON.stringify(tileJSON));
+            }
+        });
         loadTileJSON(options, map._requestManager, null, null, withAsync((err, result, doneRef) => {
             expect(err).toEqual(null);
             expect(result.tiles).toEqual(["http://dataset3"]);
@@ -547,11 +524,11 @@ describe('LoadTileJson#variants', () => {
                 }
             ]
         };
-        networkWorker.use(
-            http.get('/source.json', () => {
-                return HttpResponse.json(tileJSON);
-            }),
-        );
+        mockFetch({
+            '/source.json': () => {
+                return new Response(JSON.stringify(tileJSON));
+            }
+        });
         loadTileJSON(options, map._requestManager, null, null, withAsync((err, result, doneRef) => {
             expect(err).toEqual(null);
             expect(result.minzoom).toEqual(14);

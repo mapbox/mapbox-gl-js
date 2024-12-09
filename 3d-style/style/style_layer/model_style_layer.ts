@@ -9,8 +9,6 @@ import {latFromMercatorY, lngFromMercatorX} from '../../../src/geo/mercator_coor
 import EXTENT from '../../../src/style-spec/data/extent';
 import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '../../util/model_util';
 import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
-import EvaluationParameters from '../../../src/style/evaluation_parameters';
-import Feature from '../../../src/util/vectortile_to_geojson';
 
 import type {vec3} from 'gl-matrix';
 import type {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue, ConfigOptions} from '../../../src/style/properties';
@@ -22,11 +20,11 @@ import type {TilespaceQueryGeometry} from '../../../src/style/query_geometry';
 import type {FeatureState} from '../../../src/style-spec/expression/index';
 import type Transform from '../../../src/geo/transform';
 import type ModelManager from '../../render/model_manager';
-import type {Node} from '../../data/model';
+import type {ModelNode} from '../../data/model';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
-import type {FeatureFilter} from '../../../src/style-spec/feature_filter/index';
 import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type {LUT} from "../../../src/util/lut";
+import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 
 class ModelStyleLayer extends StyleLayer {
     override _transitionablePaint: Transitionable<PaintProps>;
@@ -86,9 +84,8 @@ class ModelStyleLayer extends StyleLayer {
     ): number | boolean {
         if (!this.modelManager) return false;
         const modelManager = this.modelManager;
-        const b = queryGeometry.tile.getBucket(this);
-        if (!b || !(b instanceof ModelBucket)) return false;
-        const bucket: ModelBucket = (b as any);
+        const bucket = queryGeometry.tile.getBucket(this);
+        if (!bucket || !(bucket instanceof ModelBucket)) return false;
 
         for (const modelId in bucket.instancesPerModel) {
             const instances = bucket.instancesPerModel[modelId];
@@ -166,96 +163,68 @@ class ModelStyleLayer extends StyleLayer {
             this._isPropertyZoomDependent('model-rotation') ||
             this._isPropertyZoomDependent('model-translation');
     }
-
-    override queryIntersectsMatchingFeature(
-        queryGeometry: TilespaceQueryGeometry,
-        featureIndex: number,
-        filter: FeatureFilter,
-        transform: Transform,
-    ): {
-        queryFeature: Feature | null | undefined;
-        intersectionZ: number;
-    } {
-
-        const tile = queryGeometry.tile;
-        const b = tile.getBucket(this);
-        let queryFeature = null;
-        let intersectionZ = Number.MAX_VALUE;
-        if (!b || !(b instanceof Tiled3dModelBucket)) return {queryFeature, intersectionZ};
-        const bucket: Tiled3dModelBucket = (b as any);
-
-        const nodeInfo = bucket.getNodesInfo()[featureIndex];
-
-        if (nodeInfo.hiddenByReplacement ||
-            !nodeInfo.node.meshes ||
-            !filter.filter(new EvaluationParameters(tile.tileID.overscaledZ), nodeInfo.feature, tile.tileID.canonical)) {
-            return {queryFeature, intersectionZ};
-        }
-
-        // AABB check
-        const node = nodeInfo.node;
-        const tileMatrix = transform.calculatePosMatrix(tile.tileID.toUnwrapped(), transform.worldSize);
-        const modelMatrix = tileMatrix;
-        const scale = nodeInfo.evaluatedScale;
-        let elevation = 0;
-        if (transform.elevation && node.elevation) {
-            elevation = node.elevation * transform.elevation.exaggeration();
-        }
-        const anchorX = node.anchor ? node.anchor[0] : 0;
-        const anchorY = node.anchor ? node.anchor[1] : 0;
-
-        mat4.translate(modelMatrix, modelMatrix, [anchorX * (scale[0] - 1),
-            anchorY * (scale[1] - 1),
-            elevation]);
-        mat4.scale(modelMatrix, modelMatrix, scale);
-        // Collision checks are performed in screen space. Corners are in ndc space.
-        const screenQuery = queryGeometry.queryGeometry;
-        const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
-
-        const checkNode = function(n: Node) {
-            const worldViewProjectionForNode = mat4.multiply([] as any, modelMatrix, n.matrix);
-            mat4.multiply(worldViewProjectionForNode, transform.expandedFarZProjMatrix, worldViewProjectionForNode);
-            for (let i = 0; i < n.meshes.length; ++i) {
-                const mesh = n.meshes[i];
-                if (i === n.lightMeshIndex) {
-                    continue;
-                }
-                const depth = queryGeometryIntersectsProjectedAabb(projectedQueryGeometry, transform, worldViewProjectionForNode, mesh.aabb);
-                if (depth != null) {
-                    intersectionZ = Math.min(depth, intersectionZ);
-                }
-            }
-            if (n.children) {
-                for (const child of n.children) {
-                    checkNode(child);
-                }
-            }
-        };
-
-        checkNode(node);
-        if (intersectionZ === Number.MAX_VALUE) {
-            return {queryFeature, intersectionZ};
-        }
-
-        const position = new LngLat(0, 0);
-        tileToLngLat(tile.tileID.canonical, position, nodeInfo.node.anchor[0], nodeInfo.node.anchor[1]);
-
-        const {z, x, y} = tile.tileID.canonical;
-        queryFeature = new Feature({} as unknown as VectorTileFeature, z, x, y, nodeInfo.feature.id);
-        queryFeature.properties = nodeInfo.feature.properties;
-        queryFeature.geometry = {type: 'Point', coordinates: [position.lng, position.lat]};
-        queryFeature.layer = {...this.serialize(), id: this.fqid};
-        queryFeature.state = {};
-        queryFeature.tile = tile.tileID.canonical;
-
-        return {queryFeature, intersectionZ};
-    }
 }
-
-export default ModelStyleLayer;
 
 function tileToLngLat(id: CanonicalTileID, position: LngLat, pointX: number, pointY: number) {
     const tileCount = 1 << id.z;
     position.lat = latFromMercatorY((pointY / EXTENT + id.y) / tileCount);
     position.lng = lngFromMercatorX((pointX / EXTENT + id.x) / tileCount);
 }
+
+export function loadMatchingModelFeature(bucket: Tiled3dModelBucket, featureIndex: number, tilespaceGeometry: TilespaceQueryGeometry, transform: Transform): {feature: EvaluationFeature, intersectionZ: number, position: LngLat} | undefined {
+    const nodeInfo = bucket.getNodesInfo()[featureIndex];
+
+    if (nodeInfo.hiddenByReplacement || !nodeInfo.node.meshes) return;
+
+    let intersectionZ = Number.MAX_VALUE;
+
+    // AABB check
+    const node = nodeInfo.node;
+    const tile = tilespaceGeometry.tile;
+    const tileMatrix = transform.calculatePosMatrix(tile.tileID.toUnwrapped(), transform.worldSize);
+    const modelMatrix = tileMatrix;
+    const scale = nodeInfo.evaluatedScale;
+    let elevation = 0;
+    if (transform.elevation && node.elevation) {
+        elevation = node.elevation * transform.elevation.exaggeration();
+    }
+    const anchorX = node.anchor ? node.anchor[0] : 0;
+    const anchorY = node.anchor ? node.anchor[1] : 0;
+
+    mat4.translate(modelMatrix, modelMatrix, [anchorX * (scale[0] - 1), anchorY * (scale[1] - 1), elevation]);
+    mat4.scale(modelMatrix, modelMatrix, scale);
+
+    // Collision checks are performed in screen space. Corners are in ndc space.
+    const screenQuery = tilespaceGeometry.queryGeometry;
+    const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
+
+    const checkNode = function (n: ModelNode) {
+        const worldViewProjectionForNode = mat4.multiply([] as unknown as mat4, modelMatrix, n.matrix);
+        mat4.multiply(worldViewProjectionForNode, transform.expandedFarZProjMatrix, worldViewProjectionForNode);
+        for (let i = 0; i < n.meshes.length; ++i) {
+            const mesh = n.meshes[i];
+            if (i === n.lightMeshIndex) {
+                continue;
+            }
+            const depth = queryGeometryIntersectsProjectedAabb(projectedQueryGeometry, transform, worldViewProjectionForNode, mesh.aabb);
+            if (depth != null) {
+                intersectionZ = Math.min(depth, intersectionZ);
+            }
+        }
+        if (n.children) {
+            for (const child of n.children) {
+                checkNode(child);
+            }
+        }
+    };
+
+    checkNode(node);
+    if (intersectionZ === Number.MAX_VALUE) return;
+
+    const position = new LngLat(0, 0);
+    tileToLngLat(tile.tileID.canonical, position, nodeInfo.node.anchor[0], nodeInfo.node.anchor[1]);
+
+    return {intersectionZ, position, feature: nodeInfo.feature};
+}
+
+export default ModelStyleLayer;

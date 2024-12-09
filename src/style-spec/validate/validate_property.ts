@@ -26,6 +26,17 @@ export default function validateProperty(options: PropertyValidationOptions, pro
 
     if (!layerSpec) return [];
 
+    const useThemeMatch = propertyKey.match(/^(.*)-use-theme$/);
+    if (propertyType === 'paint' && useThemeMatch && layerSpec[useThemeMatch[1]]) {
+        return validate({
+            key,
+            value,
+            valueSpec: {type:'string'},
+            style,
+            styleSpec
+        });
+    }
+
     const transitionMatch = propertyKey.match(/^(.*)-transition$/);
     if (propertyType === 'paint' && transitionMatch && layerSpec[transitionMatch[1]] && layerSpec[transitionMatch[1]].transition) {
         return validate({

@@ -1,6 +1,7 @@
 import assert from 'assert';
 import {RGBAImage} from '../util/image';
 import {register} from '../util/web_worker_transfer';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import potpack from 'potpack';
 
 import type {StyleImage} from '../style/style_image';
@@ -161,8 +162,9 @@ export default class ImageAtlas {
         this.haveRenderCallbacks = this.haveRenderCallbacks.filter(id => imageManager.hasImage(id, scope));
         imageManager.dispatchRenderCallbacks(this.haveRenderCallbacks, scope);
         for (const name in imageManager.getUpdatedImages(scope)) {
-            this.patchUpdatedImage(this.iconPositions[name], imageManager.getImage(name, scope), texture);
-            this.patchUpdatedImage(this.patternPositions[name], imageManager.getImage(name, scope), texture);
+            const imageKey = ResolvedImage.build(name).getSerializedPrimary();
+            this.patchUpdatedImage(this.iconPositions[imageKey], imageManager.getImage(name, scope), texture);
+            this.patchUpdatedImage(this.patternPositions[imageKey], imageManager.getImage(name, scope), texture);
         }
     }
 

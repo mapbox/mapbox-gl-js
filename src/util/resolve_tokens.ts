@@ -15,6 +15,6 @@ function resolveTokens(
     text: string,
 ): string {
     return text.replace(/{([^{}]+)}/g, (match, key: string) => {
-        return key in properties ? String(properties[key]) : '';
+        return key in properties ? String(properties[key] as string | number) : '';
     });
 }

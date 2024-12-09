@@ -22,6 +22,10 @@ in vec2 a_texb;
 in float a_occlusion_query_opacity;
 #endif
 
+#ifdef INDICATOR_CUTOUT
+out highp float v_z_offset;
+#endif
+
 // contents of a_size vary based on the type of property value
 // used for {text,icon}-size.
 // For constants, a_size is disabled.
@@ -256,6 +260,10 @@ void main() {
 #endif
 #ifdef ICON_TRANSITION
     v_tex_b = a_texb / u_texsize;
+#endif
+
+#ifdef INDICATOR_CUTOUT
+    v_z_offset = e;
 #endif
 
 }

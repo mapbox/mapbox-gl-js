@@ -22,6 +22,7 @@ export type FilterExpression = (
     featureTileCoord?: Point,
     featureDistanceData?: FeatureDistanceData,
 ) => boolean;
+
 export type FeatureFilter = {
     filter: FilterExpression;
     dynamicFilter?: FilterExpression;

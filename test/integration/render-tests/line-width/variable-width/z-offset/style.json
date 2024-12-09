@@ -1,0 +1,92 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 100,
+      "height": 100
+    }
+  },
+  "zoom": 2,
+  "pitch": 45.0,
+  "sources": {
+    "gradient": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "elevation": [
+            100000.0,
+            0.0,
+            100000.0,
+            0.0,
+            100000.0,
+            0.0,
+            100000.0
+          ]
+        },
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -1,
+              8
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              1,
+              -8
+            ],
+            [
+              -8,
+              -1
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              4,
+              -1
+            ],
+            [
+              -1,
+              -4
+            ],
+            [
+              -2,
+              0
+            ]
+          ]
+        }
+      },
+      "lineMetrics": true
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "gradient",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-z-offset":[
+          "at", 
+          ["*", [ "line-progress" ], ["-", ["length", ["get", "elevation"]], 1]], 
+          ["get", "elevation"]
+        ]
+      },
+      "paint": {
+        "line-width": [
+          "*",
+          ["line-progress"],
+          10.0
+        ],
+        "line-color": "purple"
+      }
+    }
+  ]
+}

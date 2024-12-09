@@ -32,7 +32,7 @@ export default class Formatted {
     isEmpty(): boolean {
         if (this.sections.length === 0) return true;
         return !this.sections.some(section => section.text.length !== 0 ||
-                                             (section.image && section.image.namePrimary.length !== 0));
+                                             (section.image && section.image.namePrimary));
     }
 
     static factory(text: Formatted | string): Formatted {

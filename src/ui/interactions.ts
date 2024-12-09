@@ -1,14 +1,17 @@
-import {createExpression} from '../style-spec/expression/index';
-import {deepEqual} from '../util/util';
+import assert from 'assert';
 import {Event} from '../util/evented';
+import {TargetFeature} from '../util/vectortile_to_geojson';
+import featureFilter from '../style-spec/feature_filter/index';
 
-import type {MapEvents, MapInteractionEventType, MapMouseEvent} from './events';
-import type {Map as MapboxMap} from './map';
-import type {GeoJSONFeature, FeaturesetDescriptor} from '../util/vectortile_to_geojson';
-import type {FilterSpecification} from '../style-spec/types';
-import type {StyleExpression} from '../style-spec/expression/index';
-import type LngLat from '../geo/lng_lat';
 import type Point from '@mapbox/point-geometry';
+import type LngLat from '../geo/lng_lat';
+import type Feature from '../util/vectortile_to_geojson';
+import type {QrfTarget} from '../source/query_features';
+import type {FeatureFilter} from '../style-spec/feature_filter/index';
+import type {Map as MapboxMap} from './map';
+import type {FilterSpecification} from '../style-spec/types';
+import type {TargetDescriptor} from '../util/vectortile_to_geojson';
+import type {MapEvents, MapInteractionEventType, MapMouseEvent, MapMouseEventType} from './events';
 
 /**
  * Configuration object for adding an interaction to a map in `Map#addInteraction()`.
@@ -23,7 +26,7 @@ export type Interaction = {
     /**
      * A featureset to add interaction to.
      */
-    featureset?: FeaturesetDescriptor;
+    target?: TargetDescriptor;
     /**
      * A feature namespace to distinguish between features in the same sources but different featuresets.
      */
@@ -34,11 +37,6 @@ export type Interaction = {
      */
     filter?: FilterSpecification;
     /**
-     * Radius of an extra area around click or touch. Default value: 0.
-     * This parameter only applies when the featureset is specified.
-     */
-    radius?: number;
-    /**
      * A function that will be called when the interaction is triggered.
      * @param event - The event object.
      * @returns
@@ -47,9 +45,16 @@ export type Interaction = {
 };
 
 /**
- * Event types that require a featureset to be specified.
+ * Event types that require would be delegated to `mousemove` and `mouseout` events.
  */
-const delegatedEventTypes = ['mouseenter', 'mouseover', 'mouseleave', 'mouseout'];
+const delegatedEventTypes = ['mouseenter', 'mouseover', 'mouseleave', 'mouseout'] as const;
+
+type DelegatedEventType = typeof delegatedEventTypes[number];
+
+type DelegatedHandlers = {
+    mousemove: (InteractionEvent) => boolean | void;
+    mouseout: (InteractionEvent) => boolean | void;
+};
 
 export class InteractionEvent extends Event<MapEvents, MapInteractionEventType> {
     override type: MapInteractionEventType;
@@ -61,9 +66,9 @@ export class InteractionEvent extends Event<MapEvents, MapInteractionEventType> 
 
     id: string;
     interaction: Interaction;
-    feature?: GeoJSONFeature;
+    feature?: TargetFeature;
 
-    constructor(e: MapMouseEvent, id: string, interaction: Interaction, feature?: GeoJSONFeature) {
+    constructor(e: MapMouseEvent, id: string, interaction: Interaction, feature?: TargetFeature) {
         const {point, lngLat, originalEvent, target} = e;
         super(e.type, {point, lngLat, originalEvent, target} as MapEvents[MapInteractionEventType]);
         this.preventDefault = () => { e.preventDefault(); };
@@ -76,9 +81,10 @@ export class InteractionEvent extends Event<MapEvents, MapInteractionEventType> 
 
 export class InteractionSet {
     map: MapboxMap;
-    interactionsByType: Map<MapInteractionEventType, Map<string, Interaction>>;
     typeById: Map<string, MapInteractionEventType>;
-    filters: Map<string, StyleExpression>;
+    filters: Map<string, FeatureFilter>;
+    delegatedHandlers: Map<string, DelegatedHandlers>;
+    interactionsByType: Map<MapInteractionEventType, Map<string, Interaction>>;
 
     constructor(map) {
         this.map = map;
@@ -86,6 +92,7 @@ export class InteractionSet {
         this.typeById = new Map(); // keep track of each id type for easy removal
         this.filters = new Map(); // cache compiled filter expressions for each interaction
 
+        this.delegatedHandlers = new Map(); // keep track of delegated handlers for easy removal
         this.handleType = this.handleType.bind(this);
     }
 
@@ -93,31 +100,40 @@ export class InteractionSet {
         if (this.typeById.has(id)) {
             throw new Error(`Interaction id "${id}" already exists.`);
         }
+
         const {type, filter} = interaction;
 
         if (filter) {
-            const compiled = createExpression(filter, {type: 'boolean', 'property-type': 'data-driven', overridable: false, transition: false});
-            if (compiled.result === 'error')
-                throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
-
-            this.filters.set(id, compiled.value);
+            this.filters.set(id, featureFilter(filter));
         }
 
         const interactions = this.interactionsByType.get(type) || new Map();
 
         // if we didn't have an interaction of this type before, add a map listener for it
         if (interactions.size === 0) {
-            if (delegatedEventTypes.includes(type)) {
-                this.map.on(type, interaction.featureset, this.handleType);
+            if (delegatedEventTypes.includes(type as DelegatedEventType)) {
+                const {mousemove, mouseout} = this._createDelegatedHandlers(id, interaction);
+                this.map.on('mousemove', mousemove);
+                this.map.on('mouseout', mouseout);
+                this.delegatedHandlers.set(id, {mousemove, mouseout});
             } else {
                 this.map.on(type, this.handleType);
             }
-
             this.interactionsByType.set(type, interactions);
         }
 
         interactions.set(id, interaction);
         this.typeById.set(id, type);
+    }
+
+    get(id: string): Interaction | undefined {
+        const type = this.typeById.get(id);
+        if (!type) return;
+
+        const interactions = this.interactionsByType.get(type);
+        if (!interactions) return;
+
+        return interactions.get(id);
     }
 
     remove(id: string) {
@@ -132,67 +148,166 @@ export class InteractionSet {
 
         interactions.delete(id);
 
+        // remove delegated handlers if they exist
+        if (this.delegatedHandlers.has(id)) {
+            const {mousemove, mouseout} = this.delegatedHandlers.get(id);
+            this.map.off('mousemove', mousemove);
+            this.map.off('mouseout', mouseout);
+            this.delegatedHandlers.delete(id);
+        }
+
         // if there are no more interactions of this type, remove the map listener
         if (interactions.size === 0) {
             this.map.off(type, this.handleType);
         }
     }
 
-    handleType(event: MapMouseEvent) {
+    queryTargets(point: Point, interactions: [string, Interaction][]): Feature[] {
+        const targets: QrfTarget[] = [];
+        for (const [targetId, interaction] of interactions) {
+            if (interaction.target) {
+                targets.push({targetId, target: interaction.target, filter: this.filters.get(targetId)});
+            }
+        }
+        return this.map.style.queryRenderedTargets(point, targets, this.map.transform);
+    }
+
+    handleType(event: MapMouseEvent, features?: Feature[]) {
         const interactions = this.interactionsByType.get(event.type);
         // The interactions are handled in reverse order of addition,
         // so that the last added interaction to the same target handles it first.
         const reversedInteractions = Array.from(interactions).reverse();
+        features = features || this.queryTargets(event.point, reversedInteractions);
 
-        const targets = [];
-        for (const [, interaction] of reversedInteractions) {
-            if (interaction.featureset) {
-                targets.push({featureset: interaction.featureset, filter: interaction.filter, radius: interaction.radius});
-            }
-        }
-
-        let features = this.map.style.queryRenderedFeaturesForInteractions(event.point, targets, this.map.transform);
-
-        // To handle event types that require a featureset to be specified
-        // but no features are returned, we create an empty feature
-        // to trigger the interactions processing loop.
-        if (!features.length && delegatedEventTypes.includes(event.type)) {
-            features = [null];
-        }
-
-        let handled = false;
+        let eventHandled = false;
         for (const feature of features) {
             for (const [id, interaction] of reversedInteractions) {
-                const {handler, featureset} = interaction;
-                if (!featureset) continue;
+                // Skip interactions that don't have a featureset, they will be handled later.
+                if (!interaction.target) continue;
 
-                // check if the feature belongs to the interaction
-                if (feature != null && !deepEqual(feature.featureset, featureset)) continue;
+                // Skip feature if it doesn't have variants for the interaction.
+                const variants = feature.variants ? feature.variants[id] : null;
+                if (!variants) continue;
 
-                // if we explicitly returned false in a feature handler, pass through to the feature below it
-                const stop = handler(new InteractionEvent(event, id, interaction, feature));
-                if (stop !== false) {
-                    handled = true;
-                    break;
+                for (const variant of variants) {
+                    const targetFeature = new TargetFeature(feature, variant);
+                    const stop = interaction.handler(new InteractionEvent(event, id, interaction, targetFeature));
+
+                    // If the interaction handler explicitly returned `false`, continue to the next interaction.
+                    // Otherwise, mark the event as handled and quit the feature processing loop.
+                    if (stop !== false) {
+                        eventHandled = true;
+                        break;
+                    }
                 }
+
+                // If the event was handled, quit the feature processing loop.
+                if (eventHandled) break;
             }
 
-            if (handled) break;
+            if (eventHandled) break;
         }
 
-        if (handled) return;
+        if (eventHandled) return;
 
-        // If no interactions targeted to a featureset handled it, the targetless intaractions have chance to handle.
+        // If no interactions handled target, the targetless intaractions have chance to handle it.
         for (const [id, interaction] of reversedInteractions) {
-            const {handler, featureset} = interaction;
-            if (featureset) {
-                continue;
-            }
+            const {handler, target} = interaction;
+            if (target) continue;
 
             const stop = handler(new InteractionEvent(event, id, interaction, null));
             if (stop !== false) {
                 break;
             }
+        }
+    }
+
+    /**
+     * Create delegated handlers for `mouseenter`, `mouseover`, `mouseleave`, and `mouseout` events.
+     */
+    _createDelegatedHandlers(id: string, interaction: Interaction): DelegatedHandlers {
+        switch (interaction.type as DelegatedEventType) {
+        case 'mouseenter':
+        case 'mouseover': {
+            let mousein = false;
+            let prevFeatureIds = new Set();
+
+            const mousemove = (event: MapMouseEvent) => {
+                const features = this.queryTargets(event.point, [[id, interaction]]);
+                const nextFeatureIds = new Set();
+
+                if (!features.length) {
+                    mousein = false;
+                    prevFeatureIds.clear();
+                    return;
+                }
+
+                const featuresToHandle = [];
+                for (const feature of features) {
+                    if (!prevFeatureIds.has(feature.id)) {
+                        nextFeatureIds.add(feature.id);
+                        featuresToHandle.push(feature);
+                    }
+                }
+
+                if (!mousein || featuresToHandle.length) {
+                    mousein = true;
+                    prevFeatureIds = nextFeatureIds;
+
+                    event.type = interaction.type as MapMouseEventType;
+                    this.handleType(event, featuresToHandle);
+                }
+            };
+
+            const mouseout = () => {
+                mousein = false;
+                prevFeatureIds.clear();
+            };
+
+            return {mousemove, mouseout};
+        }
+        case 'mouseleave':
+        case 'mouseout': {
+            let prevFeatures: Feature[] = [];
+
+            const mousemove = (event: MapMouseEvent) => {
+                const features = this.queryTargets(event.point, [[id, interaction]]);
+
+                if (!features.length) {
+                    event.type = interaction.type as MapMouseEventType;
+                    this.handleType(event, prevFeatures);
+                    prevFeatures = features;
+                    return;
+                }
+
+                const featuresToHandle = [];
+                const featureIds = new Set(features.map(f => f.id));
+                for (const prevFeature of prevFeatures) {
+                    if (!featureIds.has(prevFeature.id)) {
+                        featuresToHandle.push(prevFeature);
+                    }
+                }
+
+                if (featuresToHandle.length) {
+                    event.type = interaction.type as MapMouseEventType;
+                    this.handleType(event, featuresToHandle);
+                }
+
+                prevFeatures = features;
+            };
+
+            const mouseout = (event) => {
+                if (prevFeatures.length) {
+                    event.type = interaction.type;
+                    this.handleType(event, prevFeatures);
+                    prevFeatures = [];
+                }
+            };
+
+            return {mousemove, mouseout};
+        }
+        default:
+            assert(false, `Unknown delegated event type "${interaction.type}"`);
         }
     }
 }

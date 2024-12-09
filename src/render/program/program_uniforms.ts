@@ -21,6 +21,7 @@ import {starsUniforms} from '../../terrain/stars_program';
 import {occlusionUniforms} from './occlusion_program';
 import {snowUniforms} from '../../precipitation/snow_program';
 import {rainUniforms} from "../../precipitation/rain_program";
+import {vignetteUniforms} from "../../precipitation/vignette_program";
 
 import type {GlobeDefinesType} from '../../terrain/globe_raster_program';
 import type {HeatmapDefinesType} from './heatmap_program';
@@ -105,5 +106,6 @@ export const programUniforms = {
     stars: starsUniforms,
     snowParticle: snowUniforms,
     rainParticle: rainUniforms,
+    vignette: vignetteUniforms,
     occlusion: occlusionUniforms
 } as const;

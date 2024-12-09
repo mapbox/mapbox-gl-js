@@ -3,10 +3,8 @@ import Pbf from 'pbf';
 import {server, page} from '@vitest/browser/context';
 import pixelmatch from 'pixelmatch';
 import {describe, test, expect, afterEach, afterAll, onTestFailed, onTestFinished} from 'vitest';
-import {readIconSet} from '../../src/data/usvg/usvg_pb_decoder.js';
-// @ts-expect-error - importing .ts extension is not allowed, but we need to import the ts file to avoid conflict with the js file produced with `start-usvg`
-// eslint-disable-next-line import/extensions
-import {renderIcon} from '../../src/data/usvg/usvg_pb_renderer.ts';
+import {readIconSet} from '../../src/data/usvg/usvg_pb_decoder';
+import {renderIcon} from '../../src/data/usvg/usvg_pb_renderer';
 // @ts-expect-error - virtual modules are not typed
 import {fixtures, ignores} from 'virtual:usvg-fixtures';
 
@@ -33,7 +31,9 @@ describe('uSVG', async () => {
     window.document.body.style.padding = '0';
 
     const expectedCanvas = document.createElement('canvas');
-    const expectedContext = expectedCanvas.getContext('2d');
+    const expectedContext = expectedCanvas.getContext('2d', {
+        willReadFrequently: true,
+    });
     expectedContext.clearRect(0, 0, expectedCanvas.width, expectedCanvas.height);
     window.document.body.appendChild(expectedCanvas);
 
@@ -86,7 +86,7 @@ describe('uSVG', async () => {
 
             // Render uSVG icon with x2 scale
             const transform = new DOMMatrix().scale(2);
-            const actualImageData = renderIcon(icon, transform);
+            const actualImageData = renderIcon(icon, {transform, params: {}});
 
             // align canvas sizes with the image size
             diffCanvas.width = actualCanvas.width = expectedCanvas.width = actualImageData.width;

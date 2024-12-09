@@ -27,7 +27,5 @@ export default mergeConfig(baseConfig, defineConfig({
         virtual({
             'virtual:usvg-fixtures': `export const fixtures = ${JSON.stringify(fixtures)}; export const ignores = ${JSON.stringify(ignores)}`
         })
-    ],
-    // For msw mock worker
-    publicDir: './test/usvg/mock-worker'
+    ]
 }));

@@ -33,6 +33,7 @@ export type PaintProps = {
     "raster-particle-fade-opacity-factor": DataConstantProperty<number>;
     "raster-particle-reset-rate-factor": DataConstantProperty<number>;
     "raster-particle-elevation": DataConstantProperty<number>;
+    "raster-particle-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -45,4 +46,5 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "raster-particle-fade-opacity-factor": new DataConstantProperty(styleSpec["paint_raster-particle"]["raster-particle-fade-opacity-factor"]),
     "raster-particle-reset-rate-factor": new DataConstantProperty(styleSpec["paint_raster-particle"]["raster-particle-reset-rate-factor"]),
     "raster-particle-elevation": new DataConstantProperty(styleSpec["paint_raster-particle"]["raster-particle-elevation"]),
+    "raster-particle-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

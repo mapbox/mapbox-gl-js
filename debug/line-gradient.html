@@ -53,7 +53,11 @@
             id: 'line',
             paint: {
                 'line-color': 'red',
-                'line-width': 14,
+                'line-width': [
+                    "-",
+                    100.0,
+                    ["*", 100.0, ["line-progress"]]
+                ],
                 'line-gradient': [
                     'interpolate',
                     ['linear'],
@@ -68,7 +72,8 @@
             },
             layout: {
                 'line-cap': 'round',
-                'line-join': 'round'
+                'line-join': 'round',
+                'line-width-unit': 'meters'
             }
         });
     });
