@@ -111,7 +111,7 @@ void main() {
         highp float end_transition = max(0.0, min(1.0, (trim_end - line_progress) / max(u_trim_fade_range[1], 1.0e-9)));
         highp float transition_factor = min(start_transition, end_transition);
         out_color = mix(out_color, u_trim_color, transition_factor);
-        trim_alpha = out_color.a;
+        trim_alpha = 1.0 - transition_factor;
     }
 #endif
 
@@ -122,7 +122,7 @@ void main() {
     }
 
 #ifdef RENDER_LINE_BORDER
-    float edgeBlur = (border_width + 1.0 / u_device_pixel_ratio);
+    float edgeBlur = ((border_width * u_width_scale) + 1.0 / u_device_pixel_ratio);
     float alpha2 = clamp(min(dist - (v_width2.t - edgeBlur), v_width2.s - dist) / edgeBlur, 0.0, 1.0);
     if (alpha2 < 1.) {
         float smoothAlpha = smoothstep(0.6, 1.0, alpha2);
@@ -136,7 +136,7 @@ void main() {
                 out_color.rgb *= (0.6  + 0.4 * smoothAlpha);
             }
         } else {
-            out_color.rgb = mix(border_color.rgb * border_color.a * trim_alpha, out_color.rgb, smoothAlpha);
+            out_color = mix(border_color * trim_alpha, out_color, smoothAlpha);
         }
     }
 #endif
