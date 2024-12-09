@@ -105,6 +105,8 @@ export interface Bucket {
         vtLayer: VectorTileLayer,
         availableImages: Array<string>,
         imagePositions: SpritePositions,
+        layers: Array<TypedStyleLayer>,
+        isBrightnessChanged: boolean,
         brightness?: number | null,
     ) => void;
     isEmpty: () => boolean;

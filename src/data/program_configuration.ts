@@ -527,11 +527,12 @@ export default class ProgramConfiguration {
         layer: TypedStyleLayer,
         availableImages: Array<string>,
         imagePositions: SpritePositions,
+        isBrightnessChanged: boolean,
         brightness: number,
     ): boolean {
         let dirty: boolean = false;
         const keys = Object.keys(featureStates);
-        const featureStateUpdate = (keys.length !== 0);
+        const featureStateUpdate = (keys.length !== 0) && !isBrightnessChanged;
         const ids = featureStateUpdate ? keys : featureMap.uniqueIds;
         this.context.lut = layer.lut;
         for (const property in this.binders) {
@@ -711,9 +712,9 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
         this.needsUpload = true;
     }
 
-    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: Array<string>, imagePositions: SpritePositions, brightness?: number | null) {
+    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: Array<string>, imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null) {
         for (const layer of layers) {
-            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, this._featureMapWithoutIds, vtLayer, layer, availableImages, imagePositions, brightness || 0) || this.needsUpload;
+            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, this._featureMapWithoutIds, vtLayer, layer, availableImages, imagePositions, isBrightnessChanged, brightness || 0) || this.needsUpload;
         }
     }
 

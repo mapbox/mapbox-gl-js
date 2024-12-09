@@ -453,8 +453,8 @@ class Tile {
         if (this._lastUpdatedBrightness && brightness && Math.abs(this._lastUpdatedBrightness - brightness) < 0.001) {
             return;
         }
+        this.updateBuckets(painter, this._lastUpdatedBrightness !== brightness);
         this._lastUpdatedBrightness = brightness;
-        this.updateBuckets(painter);
     }
 
     // Queries non-symbol features rendered for this tile.
@@ -613,7 +613,7 @@ class Tile {
         this.updateBuckets(painter);
     }
 
-    updateBuckets(painter: Painter) {
+    updateBuckets(painter: Painter, isBrightnessChanged?: boolean) {
         if (!this.latestFeatureIndex) return;
 
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
@@ -636,7 +636,11 @@ class Tile {
             }
 
             const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
-            bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, brightness);
+            const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
+            const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
+            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged) {
+                bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
+            }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {
                     painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);
