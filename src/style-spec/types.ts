@@ -1185,13 +1185,7 @@ export type ClipLayerSpecification = {
     "maxzoom"?: number,
     "filter"?: FilterSpecification,
     "layout"?: {
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "clip-layer-types"?: ExpressionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "clip-layer-scope"?: ExpressionSpecification
     },
     "paint"?: never

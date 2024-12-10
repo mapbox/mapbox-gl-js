@@ -1584,8 +1584,7 @@
       "expression": {
         "interpolated": false
       },
-      "property-type": "data-constant",
-      "experimental": true
+      "property-type": "data-constant"
     },
     "clip-layer-scope": {
       "type": "array",
@@ -1602,8 +1601,7 @@
       "expression": {
         "interpolated": false
       },
-      "property-type": "data-constant",
-      "experimental": true
+      "property-type": "data-constant"
     }
   },
   "layout_fill": {
