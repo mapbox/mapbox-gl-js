@@ -112,6 +112,11 @@ const pages = [
         "url": "./featuresets.html"
     },
     {
+        "key": "precipitation",
+        "title": "Precipitation",
+        "url": "./precipitation.html"
+    },
+    {
         "key": "scroll_zoom_blocker",
         "title": "Gestures",
         "url": "./scroll_zoom_blocker.html"
