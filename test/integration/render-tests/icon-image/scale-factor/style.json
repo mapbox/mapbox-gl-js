@@ -73,7 +73,7 @@
       }
     }
   },
-  "sprite": "local://sprites/standard.pbf",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "icon-x4",

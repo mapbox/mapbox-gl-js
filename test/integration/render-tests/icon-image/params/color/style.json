@@ -20,7 +20,7 @@
       }
     }
   },
-  "sprite": "local://sprites/park.pbf",
+  "sprite": "local://sprites/park",
   "layers": [
     {
       "id": "symbol",
