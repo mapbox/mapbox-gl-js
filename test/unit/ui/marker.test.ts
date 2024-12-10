@@ -1128,6 +1128,8 @@ describe('Marker and fog', () => {
         map.setBearing(90);
         map.setPitch(70);
         marker.setLngLat([4, 0]);
+        
+        expect(marker.getElement().style.opacity).toEqual('0');
 
         await new Promise(resolve => {
             setTimeout(() => {
