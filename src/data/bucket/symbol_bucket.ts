@@ -677,18 +677,21 @@ class SymbolBucket implements Bucket {
             this.features.push(symbolFeature);
 
             if (icon) {
-                const iconPrimary = icon.getPrimary().scaleSelf(this.pixelRatio * iconScaleFactor);
+                const layer = this.layers[0];
+                const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
+                const iconSizeFactor = symbolSize.getRasterizedIconSize(this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature);
+                const scaleFactor = iconSizeFactor * iconScaleFactor * this.pixelRatio;
+                const iconPrimary = icon.getPrimary().scaleSelf(scaleFactor);
                 icons[iconPrimary.id] = (icons[iconPrimary.id] || []);
                 icons[iconPrimary.id].push(iconPrimary);
                 if (icon.nameSecondary) {
-                    const iconSecondary = icon.getSecondary().scaleSelf(this.pixelRatio * iconScaleFactor);
+                    const iconSecondary = icon.getSecondary().scaleSelf(scaleFactor);
                     icons[iconSecondary.id] = (icons[iconSecondary.id] || []);
                     icons[iconSecondary.id].push(iconSecondary);
                 }
             }
 
             if (text) {
-
                 const fontStack = textFont.evaluate(evaluationFeature, {}, canonical).join(',');
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
                 this.allowVerticalPlacement = this.writingModes && this.writingModes.indexOf(WritingMode.vertical) >= 0;
