@@ -305,7 +305,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 doc = doc.replace(apiKeyRegex, '<script>mapboxgl.accessToken="' + params.access_token + '"</script>');
             }
 
-            iframeDoc.write([doc].join(''));
+            // Sanitize the document content before writing
+            const sanitizedDoc = sanitizeHTML(doc);
+
+            iframeDoc.write([sanitizedDoc].join(''));
             iframeDoc.close();
         }
 
@@ -338,3 +341,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     load();
 });
+
+function sanitizeHTML(str) {
+    const tempDiv = document.createElement('div');
+    tempDiv.textContent = str;
+    return tempDiv.innerHTML;
+}
