@@ -9,7 +9,7 @@ import { cacheEntryPossiblyAdded } from "../util/tile_request_cache";
 import { makeFQID } from "../util/fqid";
 import Texture from "../render/texture";
 
-import type { ISource, SourceEvents } from "./source";
+import type { ISource, SourceEvents, SourceRasterLayer } from "./source";
 import type { OverscaledTileID } from "./tile_id";
 import type { Map } from "../ui/map";
 import type Dispatcher from "../util/dispatcher";
@@ -70,6 +70,10 @@ class RasterTileSource<
   dispatcher: Dispatcher;
   map: Map;
   tiles: Array<string>;
+  vectorLayers?: never;
+  vectorLayerIds?: never;
+  rasterLayers?: Array<SourceRasterLayer>;
+  rasterLayerIds?: Array<string>;
 
   _loaded: boolean;
   _options:
