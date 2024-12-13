@@ -1077,6 +1077,7 @@ class SourceCache extends Evented {
 
     const expiryTimeout = tile.getExpiryTimeout();
     if (expiryTimeout) {
+      // @ts-expect-error - TS2322 - Type 'Timeout' is not assignable to type 'number'. This errors locally because setTimeout works differently in node and the browser.
       this._timers[id] = setTimeout(() => {
         this._reloadTile(id, "expired");
         delete this._timers[id];
