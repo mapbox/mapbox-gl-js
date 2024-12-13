@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* eslint-env browser */
-import template from 'lodash.template';
+import template from 'lodash/template.js';
 
 const CI = process.env.CI;
 
@@ -22,6 +22,12 @@ const generateResultHTML = template(`
       <% if (r.imgDiff) { %>
           <img title="diff" src="<%- r.imgDiff %>">
       <% } %>
+      <% if (r.jsonDiff) { %>
+          <details>
+            <summary><strong style="color: red">JSON Diff</strong></summary>
+            <pre><%- r.jsonDiff %></pre>
+          </details>
+      <% } %>
       <% if (r.error) { %>
           <p style="color: red">
             <strong>Error:</strong>
@@ -37,6 +43,7 @@ const generateResultHTML = template(`
                     <dd><pre><%- error.stack %></pre></dd>
                 <% }); %>
             </dl>
+          </p>
       <% } %>
     </div>
   </div>

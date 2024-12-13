@@ -11,8 +11,9 @@ import {enforceCacheSizeLimit} from '../util/tile_request_cache';
 import {PerformanceUtils} from '../util/performance';
 import {Event} from '../util/evented';
 import {getProjection} from '../geo/projection/index';
+import {ImageRasterizer} from '../render/image_rasterizer';
 
-import type {Class} from '../types/class';
+import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import type {
     WorkerSource,
     WorkerTileParameters,
@@ -21,20 +22,23 @@ import type {
     WorkerDEMTileCallback,
     TileParameters,
     WorkerRasterArrayTileParameters,
-    WorkerRasterArrayTileCallback
-} from '../source/worker_source';
-import type {WorkerGlobalScopeInterface} from '../util/web_worker';
+    WorkerRasterArrayTileCallback,
+    WorkerSourceConstructor,
+    WorkerImageRaserizeCallback
+} from './worker_source';
 import type {Callback} from '../types/callback';
 import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types';
 import type {ConfigOptions} from '../style/properties';
-import type {PluginState} from './rtl_text_plugin';
+import type {RtlTextPlugin, PluginState} from './rtl_text_plugin';
 import type Projection from '../geo/projection/projection';
+import type {RGBAImage} from '../util/image';
+import type {StyleImage} from '../style/style_image';
 
 /**
  * @private
  */
-export default class Worker {
-    self: WorkerGlobalScopeInterface;
+export default class MapWorker {
+    self: Worker;
     actor: Actor;
     layerIndexes: {
         [mapId: string]: {
@@ -47,7 +51,7 @@ export default class Worker {
         };
     };
     workerSourceTypes: {
-        [_: string]: Class<WorkerSource>;
+        [_: string]: WorkerSourceConstructor;
     };
     workerSources: {
         [mapId: string]: {
@@ -78,15 +82,17 @@ export default class Worker {
     referrer: string | null | undefined;
     dracoUrl: string | null | undefined;
     brightness: number | null | undefined;
+    imageRasterizer: ImageRasterizer;
 
-    constructor(self: WorkerGlobalScopeInterface) {
+    constructor(self: Worker) {
         PerformanceUtils.measure('workerEvaluateScript');
         this.self = self;
-        this.actor = new Actor(self, this);
+        this.actor = new Actor(self, this as unknown as Worker);
 
         this.layerIndexes = {};
         this.availableImages = {};
         this.isSpriteLoaded = {};
+        this.imageRasterizer = new ImageRasterizer();
 
         this.projections = {};
         this.defaultProjection = getProjection({name: 'mercator'});
@@ -94,7 +100,6 @@ export default class Worker {
         this.workerSourceTypes = {
             vector: VectorTileWorkerSource,
             geojson: GeoJSONWorkerSource,
-            // @ts-expect-error - TS2419 - Types of construct signatures are incompatible.
             'batched-model': Tiled3dModelWorkerSource
         };
 
@@ -102,7 +107,7 @@ export default class Worker {
         this.workerSources = {};
         this.demWorkerSources = {};
 
-        this.self.registerWorkerSource = (name: string, WorkerSource: Class<WorkerSource>) => {
+        this.self.registerWorkerSource = (name: string, WorkerSource: WorkerSourceConstructor) => {
             if (this.workerSourceTypes[name]) {
                 throw new Error(`Worker source with name "${name}" already registered.`);
             }
@@ -110,11 +115,7 @@ export default class Worker {
         };
 
         // This is invoked by the RTL text plugin when the download via the `importScripts` call has finished, and the code has been parsed.
-        this.self.registerRTLTextPlugin = (rtlTextPlugin: {
-            applyArabicShaping: any;
-            processBidirectionalText: any;
-            processStyledBidirectionalText?: any;
-        }) => {
+        this.self.registerRTLTextPlugin = (rtlTextPlugin: RtlTextPlugin) => {
             if (globalRTLTextPlugin.isParsed()) {
                 throw new Error('RTL text plugin already registered.');
             }
@@ -296,9 +297,7 @@ export default class Worker {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    loadWorkerSource(map: string, params: {
-        url: string;
-    }, callback: Callback<undefined>) {
+    loadWorkerSource(map: string, params: {url: string}, callback: Callback<undefined>) {
         try {
             this.self.importScripts(params.url);
             callback();
@@ -377,17 +376,35 @@ export default class Worker {
                     this.actor.send(type, data, callback, mapId, mustQueue, metadata);
                 },
                 scheduler: this.actor.scheduler
-            };
-            this.workerSources[mapId][scope][type][source] = new (this.workerSourceTypes[type] as any)(
-                (actor as any),
+            } as Actor;
+
+            this.workerSources[mapId][scope][type][source] = new this.workerSourceTypes[type](
+                actor,
                 this.getLayerIndex(mapId, scope),
                 this.getAvailableImages(mapId, scope),
                 this.isSpriteLoaded[mapId][scope],
                 undefined,
-                this.brightness);
+                this.brightness
+            );
         }
 
         return this.workerSources[mapId][scope][type][source];
+    }
+
+    rasterizeImages(mapId: string, input: {imageTasks: {[_: string]:  {image: StyleImage, imageIdWithOptions: ImageIdWithOptions}}, scope: string}, callback: WorkerImageRaserizeCallback) {
+        const {imageTasks, scope} = input;
+        const images: {[key: string]: RGBAImage} = {};
+        for (const id in imageTasks) {
+            const {image, imageIdWithOptions} = imageTasks[id];
+            images[id] = this.imageRasterizer.rasterize(imageIdWithOptions, image, scope, mapId);
+        }
+        callback(undefined, images);
+    }
+
+    removeRasterizedImages(mapId: string, input: {imageIds: Array<string>, scope: string}, callback: WorkerTileCallback) {
+        const {imageIds, scope} = input;
+        this.imageRasterizer.removeImagesFromCacheByIds(imageIds, scope, mapId);
+        callback();
     }
 
     getDEMWorkerSource(mapId: string, source: string, scope: string): RasterDEMTileWorkerSource {
@@ -426,6 +443,6 @@ if (typeof WorkerGlobalScope !== 'undefined' &&
     typeof self !== 'undefined' &&
     // @ts-expect-error - TS2304
     self instanceof WorkerGlobalScope) {
-// @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2345 - Argument of type 'Window & typeof globalThis' is not assignable to parameter of type 'WorkerGlobalScopeInterface'.
-    self.worker = new Worker(self);
+    // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2345 - Argument of type 'Window & typeof globalThis' is not assignable to parameter of type 'WorkerGlobalScopeInterface'.
+    self.worker = new MapWorker(self);
 }

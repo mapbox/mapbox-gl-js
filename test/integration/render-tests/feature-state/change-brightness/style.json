@@ -1,0 +1,117 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "operations": [
+        [
+          "setFeatureState",
+          {
+            "source": "mapbox",
+            "sourceLayer": "poi_label",
+            "id": "1000051799141"
+          },
+          {
+            "select": true
+          }
+        ],
+        ["wait"],
+        [
+          "setLights",
+          [
+            {
+              "id": "ambient",
+              "type": "ambient",
+              "properties": {
+                "color": "hsl(217, 100%, 11%)",
+                "intensity": 0.2
+              }
+            },
+            {
+              "id": "directional",
+              "type": "directional",
+              "properties": {
+                "direction": [
+                  270,
+                  20
+                ],
+                "color": "hsl(0, 0%, 29%)",
+                "intensity": 0.8
+              }
+            }
+          ]
+        ],
+        ["wait", 500]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "id": "ambient",
+      "type": "ambient",
+      "properties": {
+        "color": "hsl(0, 0%, 100%)",
+        "intensity": 0.3
+      }
+    },
+    {
+      "id": "directional",
+      "type": "directional",
+      "properties": {
+        "direction": [
+          270,
+          20
+        ],
+        "color": "hsl(0, 0%, 100%)",
+        "intensity": 0.8
+      }
+    }
+  ],
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 14,
+  "bearing": 42,
+  "sources": {
+    "mapbox": {
+        "type": "vector",
+        "tiles": [ "local://tiles/{z}-{x}-{y}.mvt"],
+        "maxzoom": 14
+    }
+  },
+  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "poi_label",
+      "type": "circle",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "paint": {
+        "circle-radius": 5,
+        "circle-color": [
+          "case",
+          [
+              "to-boolean",
+              [
+                  "feature-state",
+                  "select"
+              ]
+          ],
+          "#F00",
+          [
+            "interpolate",
+            ["linear"],
+            ["measure-light", "brightness"],
+            0.22,
+            "hsl(0, 0%, 100%)",
+            0.44,
+            "hsl(128, 100%, 50%)"
+          ]
+        ],
+        "circle-emissive-strength": 1
+      }
+    }
+  ]
+}

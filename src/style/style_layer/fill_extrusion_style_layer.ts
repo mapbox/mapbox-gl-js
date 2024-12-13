@@ -22,10 +22,10 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {LUT} from "../../../src/util/lut";
 
 class FillExtrusionStyleLayer extends StyleLayer {
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {
@@ -40,36 +40,34 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return new FillExtrusionBucket(parameters);
     }
 
-    queryRadius(): number {
-
+    override queryRadius(): number {
         return translateDistance(this.paint.get('fill-extrusion-translate'));
     }
 
-    is3D(): boolean {
+    override is3D(): boolean {
         return true;
     }
 
-    hasShadowPass(): boolean {
+    override hasShadowPass(): boolean {
         return this.paint.get('fill-extrusion-cast-shadows');
     }
 
-    cutoffRange(): number {
-
+    override cutoffRange(): number {
         return this.paint.get('fill-extrusion-cutoff-fade-range');
     }
 
-    canCastShadows(): boolean {
+    override canCastShadows(): boolean {
         return true;
     }
 
-    getProgramIds(): string[] {
+    override getProgramIds(): string[] {
         const patternProperty = this.paint.get('fill-extrusion-pattern');
 
         const image = patternProperty.constantOr((1 as any));
         return [image ? 'fillExtrusionPattern' : 'fillExtrusion'];
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,
@@ -87,7 +85,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         const height = this.paint.get('fill-extrusion-height').evaluate(feature, featureState);
         const base = this.paint.get('fill-extrusion-base').evaluate(feature, featureState);
 
-        const centroid = [0, 0];
+        const centroid: [number, number] = [0, 0];
         const terrainVisible = elevationHelper && transform.elevation;
         const exaggeration = transform.elevation ? transform.elevation.exaggeration() : 1;
         const bucket = queryGeometry.tile.getBucket(this);
@@ -109,14 +107,12 @@ class FillExtrusionStyleLayer extends StyleLayer {
         if (transform.projection.name === 'globe') {
             // Fill extrusion geometry has to be resampled so that large planar polygons
             // can be rendered on the curved surface
-            const bounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
-            // @ts-expect-error - TS2345 - Argument of type 'Point[]' is not assignable to parameter of type '[Point, Point]'.
+            const bounds: [Point, Point] = [new Point(0, 0), new Point(EXTENT, EXTENT)];
             const resampledGeometry = resampleFillExtrusionPolygonsForGlobe([geometry], bounds, queryGeometry.tileID.canonical);
             geometry = resampledGeometry.map(clipped => clipped.polygon).flat();
         }
 
         const demSampler = terrainVisible ? elevationHelper : null;
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec2'.
         const [projectedBase, projectedTop] = projectExtrusion(transform, geometry, base, height, translation, pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat, queryGeometry.tileID.canonical);
 
         const screenQuery = queryGeometry.queryGeometry;
@@ -233,8 +229,8 @@ function projectExtrusionGlobe(tr: Transform, geometry: Array<Array<Point>>, zBa
     const projectedBase = [];
     const projectedTop = [];
     const elevationScale = tr.projection.upVectorScale(tileID, tr.center.lat, tr.worldSize).metersToTile;
-    const basePoint = [0, 0, 0, 1];
-    const topPoint = [0, 0, 0, 1];
+    const basePoint: vec4 = [0, 0, 0, 1];
+    const topPoint: vec4 = [0, 0, 0, 1];
 
     const setPoint = (point: Array<number>, x: number, y: number, z: number) => {
         point[0] = x;
@@ -288,10 +284,8 @@ function projectExtrusionGlobe(tr: Transform, geometry: Array<Array<Point>>, zBa
                 reproj.y + dir[1] * elevationScale * zTopPoint,
                 reproj.z + dir[2] * elevationScale * zTopPoint);
 
-            // @ts-expect-error - TS2345 - Argument of type '[number, number, number, number]' is not assignable to parameter of type 'vec3'.
-            vec3.transformMat4(basePoint as [number, number, number, number], basePoint as [number, number, number, number], m);
-            // @ts-expect-error - TS2345 - Argument of type '[number, number, number, number]' is not assignable to parameter of type 'vec3'.
-            vec3.transformMat4(topPoint as [number, number, number, number], topPoint as [number, number, number, number], m);
+            vec3.transformMat4(basePoint as unknown as vec3, basePoint as unknown as vec3, m);
+            vec3.transformMat4(topPoint as unknown as vec3, topPoint as unknown as vec3, m);
 
             ringBase.push(new Point3D(basePoint[0], basePoint[1], basePoint[2]));
             ringTop.push(new Point3D(topPoint[0], topPoint[1], topPoint[2]));
@@ -418,8 +412,7 @@ function getTerrainHeightOffset(
     const flatRoof = centroid[0] !== 0;
     const centroidElevation = flatRoof ? centroid[1] === 0 ? exaggeration * elevationFromUint16(centroid[0]) : exaggeration * flatElevation(demSampler, centroid, lat) : ele;
     return {
-        // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'number' and 'boolean'.
-        base: ele + (zBase === 0) ? -1 : zBase, // Use -1 instead of -5 in shader to prevent picking underground
+        base: ele + ((zBase === 0) ? -1 : zBase), // Use -1 instead of -5 in shader to prevent picking underground
         top: flatRoof ? Math.max(centroidElevation + zTop, ele + zBase + 2) : ele + zTop
     };
 }

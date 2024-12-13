@@ -10,9 +10,9 @@ import type {LayerSpecification} from '../../style-spec/types';
 import type {LUT} from "../../util/lut";
 
 class ClipStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {
@@ -22,7 +22,7 @@ class ClipStyleLayer extends StyleLayer {
         super(layer, properties, scope, lut, options);
     }
 
-    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
         super.recalculate(parameters, availableImages);
     }
 
@@ -30,11 +30,11 @@ class ClipStyleLayer extends StyleLayer {
         return new ClipBucket(parameters);
     }
 
-    isTileClipped(): boolean {
+    override isTileClipped(): boolean {
         return true;
     }
 
-    is3D(): boolean {
+    override is3D(): boolean {
         return true;
     }
 }

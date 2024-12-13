@@ -23,22 +23,15 @@ import type {mat4, vec3} from 'gl-matrix';
 type Props = {
     ["range"]: DataConstantProperty<[number, number]>;
     ["color"]: DataConstantProperty<Color>;
+    ["color-use-theme"]: DataConstantProperty<string>;
     ["high-color"]: DataConstantProperty<Color>;
+    ["high-color-use-theme"]: DataConstantProperty<string>;
     ["space-color"]: DataConstantProperty<Color>;
+    ["space-color-use-theme"]: DataConstantProperty<string>;
     ["horizon-blend"]: DataConstantProperty<number>;
     ["star-intensity"]: DataConstantProperty<number>;
     ["vertical-range"]: DataConstantProperty<[number, number]>;
 };
-
-const fogProperties: Properties<Props> = new Properties({
-    "range": new DataConstantProperty(styleSpec.fog.range),
-    "color": new DataConstantProperty(styleSpec.fog.color),
-    "high-color": new DataConstantProperty(styleSpec.fog["high-color"]),
-    "space-color": new DataConstantProperty(styleSpec.fog["space-color"]),
-    "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
-    "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
-    "vertical-range": new DataConstantProperty(styleSpec.fog["vertical-range"]),
-});
 
 class Fog extends Evented {
     _transitionable: Transitionable<Props>;
@@ -53,6 +46,20 @@ class Fog extends Evented {
 
     constructor(fogOptions: FogSpecification | null | undefined, transform: Transform, scope: string, configOptions?: ConfigOptions | null) {
         super();
+
+        const fogProperties: Properties<Props> = new Properties({
+            "range": new DataConstantProperty(styleSpec.fog.range),
+            "color": new DataConstantProperty(styleSpec.fog.color),
+            "color-use-theme": new DataConstantProperty({"type": "string", "property-type": "data-constant", "default": "default"}),
+            "high-color": new DataConstantProperty(styleSpec.fog["high-color"]),
+            "high-color-use-theme": new DataConstantProperty({"type": "string", "property-type": "data-constant", "default": "default"}),
+            "space-color": new DataConstantProperty(styleSpec.fog["space-color"]),
+            "space-color-use-theme": new DataConstantProperty({"type": "string", "property-type": "data-constant", "default": "default"}),
+            "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
+            "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
+            "vertical-range": new DataConstantProperty(styleSpec.fog["vertical-range"]),
+        });
+
         this._transitionable = new Transitionable(fogProperties, scope, new Map(configOptions));
         this.set(fogOptions, configOptions);
         this._transitioning = this._transitionable.untransitioned();

@@ -60,11 +60,15 @@ const hillshadeUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: HillshadeStyleLayer,
-    matrix?: Float32Array | null,
+    matrix?: mat4 | null,
 ): UniformValues<HillshadeUniformsType> => {
+
     const shadow = layer.paint.get("hillshade-shadow-color");
+    const shadowIgnoreLut = layer.paint.get("hillshade-shadow-color-use-theme").constantOr("default") === 'none';
     const highlight = layer.paint.get("hillshade-highlight-color");
+    const highlightIgnoreLut = layer.paint.get("hillshade-highlight-color-use-theme").constantOr("default") === 'none';
     const accent = layer.paint.get("hillshade-accent-color");
+    const accentIgnoreLut = layer.paint.get("hillshade-accent-color-use-theme").constantOr("default") === 'none';
     const emissiveStrength = layer.paint.get("hillshade-emissive-strength");
 
     let azimuthal = degToRad(layer.paint.get('hillshade-illumination-direction'));
@@ -82,22 +86,21 @@ const hillshadeUniformValues = (
     }
     const align = !painter.options.moving;
     return {
-        'u_matrix': matrix ? matrix : painter.transform.calculateProjMatrix(tile.tileID.toUnwrapped(), align),
+        'u_matrix': (matrix ? matrix : painter.transform.calculateProjMatrix(tile.tileID.toUnwrapped(), align)) as Float32Array,
         'u_image': 0,
         'u_latrange': getTileLatRange(painter, tile.tileID),
         'u_light': [layer.paint.get('hillshade-exaggeration'), azimuthal],
 
-        'u_shadow': shadow.toRenderColor(layer.lut),
+        'u_shadow': shadow.toRenderColor(shadowIgnoreLut ? null : layer.lut),
 
-        'u_highlight': highlight.toRenderColor(layer.lut),
+        'u_highlight': highlight.toRenderColor(highlightIgnoreLut ? null : layer.lut),
         'u_emissive_strength': emissiveStrength,
 
-        'u_accent': accent.toRenderColor(layer.lut)
+        'u_accent': accent.toRenderColor(accentIgnoreLut ? null : layer.lut)
     };
 };
 
 const hillshadeUniformPrepareValues = (tileID: OverscaledTileID, dem: DEMData): UniformValues<HillshadePrepareUniformsType> => {
-
     const stride = dem.stride;
     const matrix = mat4.create() as Float32Array;
     // Flip rendering at y axis.

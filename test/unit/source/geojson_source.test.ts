@@ -245,6 +245,12 @@ describe('GeoJSONSource#update', () => {
 
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
+        source.onAdd({
+            getScaleFactor() {
+                return 1;
+            }
+        });
+
         await new Promise(resolve => {
 
             source.on('error', (err) => {
@@ -272,9 +278,12 @@ describe('GeoJSONSource#update', () => {
             });
 
             const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
-            source.map = {
-                transform: {}
-            };
+            source.onAdd({
+                transform: {},
+                getScaleFactor() {
+                    return 1;
+                }
+            });
 
             source.on('data', (e) => {
                 if (e.sourceDataType === 'metadata') {

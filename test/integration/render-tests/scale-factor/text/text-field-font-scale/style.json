@@ -1,0 +1,97 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "scaleFactor": 2,
+      "collisionDebug": true,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 0.5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [-50, 0]
+            }
+          }
+        ]
+      }
+    },
+    "geojson-2": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "base": "true"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [60, 0]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": [
+          "format",
+          "scale-2x\n",
+          {"font-scale": 2},
+          "scale-1.8x\n",
+          {"font-scale": 1.8},
+          "scale-1.6x\n",
+          {"font-scale": 1.6}
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 18
+      }
+    },
+    {
+      "id": "symbol-2",
+      "type": "symbol",
+      "source": "geojson-2",
+      "layout": {
+        "text-field": [
+          "format",
+          "scale-x2\n",
+          {"font-scale": 2},
+          "scale-1.8x\n",
+          {"font-scale": 1.8},
+          "scale-1.6x\n",
+          {"font-scale": 1.6}
+        ],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 18,
+        "text-size-scale-range": [1, 1]
+      }
+    }
+  ]
+}

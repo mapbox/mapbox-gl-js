@@ -21,8 +21,17 @@ export default function validateFog(options: ValidationOptions): Array<Validatio
 
     for (const key in fog) {
         const transitionMatch = key.match(/^(.*)-transition$/);
+        const useThemeMatch = key.match(/^(.*)-use-theme$/);
 
-        if (transitionMatch && fogSpec[transitionMatch[1]] && fogSpec[transitionMatch[1]].transition) {
+        if (useThemeMatch && fogSpec[useThemeMatch[1]]) {
+            errors = errors.concat(validate({
+                key,
+                value: fog[key],
+                valueSpec: {type:'string'},
+                style,
+                styleSpec
+            }));
+        } else if (transitionMatch && fogSpec[transitionMatch[1]] && fogSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
                 value: fog[key],

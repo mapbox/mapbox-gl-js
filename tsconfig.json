@@ -11,6 +11,8 @@
     "moduleResolution": "bundler",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
     "resolveJsonModule": true,
     "strict": false,
     "target": "es2022",
@@ -27,21 +29,20 @@
       "geojson",
       "offscreencanvas"
     ],
-    "baseUrl": ".",
   },
   "include": [
     "./src/**/*",
     "./test/unit/**/*",
+    "./test/usvg/**/*",
     "./test/util/**/*",
     "./vitest.config.*",
-    "./rollup.config.*",
+    "./rollup.config.*"
   ],
   "exclude": [
     "./dist",
     "./build",
     "./node_modules",
     "./src/style-spec/bin",
-    "./src/style-spec/dist",
-    "./test/unit/mock-worker/mockServiceWorker.js"
+    "./src/style-spec/dist"
   ]
 }

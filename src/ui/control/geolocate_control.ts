@@ -429,7 +429,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             return;
         }
         this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
-        this._geolocateButton = DOM.create('button', `mapboxgl-ctrl-geolocate`, this._container) as HTMLButtonElement;
+        this._geolocateButton = DOM.create('button', `mapboxgl-ctrl-geolocate`, this._container);
         DOM.create('span', `mapboxgl-ctrl-icon`, this._geolocateButton).setAttribute('aria-hidden', 'true');
 
         this._geolocateButton.type = 'button';

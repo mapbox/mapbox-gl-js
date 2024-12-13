@@ -38,6 +38,7 @@ export type SourceRasterLayer = {
 
 export type SourceVectorLayer = {
     id: string;
+    source?: string;
     maxzoom?: number;
     minzoom?: number;
 };
@@ -139,6 +140,8 @@ const sourceTypes: Record<Source['type'], Class<ISource>> = {
     canvas,
     custom
 };
+
+export type SourceType = keyof typeof sourceTypes;
 
 /*
  * Creates a tiled data source instance given an options object.

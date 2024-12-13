@@ -1,0 +1,107 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 100,
+      "height": 100,
+      "allowed": 0.0004,
+      "operations": [
+        ["wait"],
+        ["wait"],
+        ["setPaintProperty", "line", "line-trim-offset", [0.0, 0.2]],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 2,
+  "pitch": 68,
+  "sources": {
+    "mapbox-dem": {
+      "type": "raster-dem",
+      "tiles": ["asset://missing.png"],
+      "tileSize": 514
+    },
+    "gradient": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              -1,
+              8
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              1,
+              -8
+            ],
+            [
+              -8,
+              -1
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              4,
+              -1
+            ],
+            [
+              -1,
+              -4
+            ],
+            [
+              -2,
+              0
+            ]
+          ]
+        }
+      },
+      "lineMetrics": true
+    }
+  },
+  "terrain": {
+    "source": "mapbox-dem",
+    "exaggeration": 0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "gray"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "gradient",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-gradient": [
+          "interpolate",
+          ["linear"],
+          ["line-progress"],
+          0, "rgba(0, 0, 255, 1)",
+          0.1, "royalblue",
+          0.3, "cyan",
+          0.5, "lime",
+          0.7, "yellow",
+          1, "red"
+        ],
+        "line-trim-offset": [0.0, 0.0]
+      }
+    }
+  ]
+}

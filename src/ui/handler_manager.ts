@@ -37,12 +37,12 @@ const isMoving = (p: {
 }) => p.zoom || p.drag || p.pitch || p.rotate;
 
 class RenderFrameEvent extends Event<{renderFrame: {timeStamp: number}}, 'renderFrame'> {
-    type: 'renderFrame';
+    override type: 'renderFrame';
     timeStamp: number;
 }
 
 class TrackingEllipsoid {
-    constants: Array<number>;
+    constants: vec3;
     radius: number;
 
     constructor() {
@@ -54,7 +54,6 @@ class TrackingEllipsoid {
     setup(center: vec3, pointOnSurface: vec3) {
         const centerToSurface = vec3.sub([] as any, pointOnSurface, center);
         if (centerToSurface[2] < 0) {
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
             this.radius = vec3.length(vec3.div([] as any, centerToSurface, this.constants));
         } else {
             // The point on surface is above the center. This can happen for example when the camera is
@@ -66,10 +65,8 @@ class TrackingEllipsoid {
     // Cast a ray from the center of the ellipsoid and the intersection point.
     projectRay(dir: vec3): vec3 {
         // Perform the intersection test against a unit sphere
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
         vec3.div(dir, dir, this.constants);
         vec3.normalize(dir, dir);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
         vec3.mul(dir, dir, this.constants);
 
         const intersection = vec3.scale([] as any, dir, this.radius);
@@ -323,17 +320,15 @@ class HandlerManager {
                 mapTouches.push(t);
             }
         }
-        // @ts-expect-error - TS2352 - Conversion of type 'any[]' to type 'TouchList' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-        return mapTouches as TouchList;
+        return mapTouches as unknown as TouchList;
     }
 
     handleEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
-
         this._updatingCamera = true;
         assert(e.timeStamp !== undefined);
 
         const isRenderFrame = e.type === 'renderFrame';
-        const inputEvent = isRenderFrame ? undefined : (e as InputEvent);
+        const inputEvent = isRenderFrame ? undefined : e;
 
         /*
          * We don't call e.preventDefault() for any events by default.
@@ -344,8 +339,7 @@ class HandlerManager {
         const eventsInProgress: Record<string, any> = {};
         const activeHandlers: Record<string, any> = {};
 
-        // @ts-expect-error - TS2339 - Property 'touches' does not exist on type 'InputEvent | RenderFrameEvent'.
-        const mapTouches = e.touches ? this._getMapTouches((e as TouchEvent).touches) : undefined;
+        const mapTouches = (e as TouchEvent).touches ? this._getMapTouches((e as TouchEvent).touches) : undefined;
         const points = mapTouches ? DOM.touchPos(this._el, mapTouches) :
             isRenderFrame ? undefined : // renderFrame event doesn't have any points
             DOM.mousePos(this._el, (e as MouseEvent));
@@ -400,7 +394,7 @@ class HandlerManager {
         }
     }
 
-    mergeHandlerResult(mergedHandlerResult: HandlerResult, eventsInProgress: any, handlerResult: HandlerResult, name: string, e?: InputEvent) {
+    mergeHandlerResult(mergedHandlerResult: HandlerResult, eventsInProgress: any, handlerResult: HandlerResult, name: string, e?: InputEvent | RenderFrameEvent) {
         if (!handlerResult) return;
 
         extend(mergedHandlerResult, handlerResult);

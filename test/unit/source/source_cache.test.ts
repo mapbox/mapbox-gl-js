@@ -109,12 +109,12 @@ describe('SourceCache#addTile', () => {
         await new Promise(resolve => {
 
             const {sourceCache, eventedParent} = createSourceCache({
-                async loadTile(tile, callback) {
+                loadTile(tile, callback) {
                     eventedParent.on('data', () => {
                         expect(updateFeaturesSpy).toHaveBeenCalledTimes(1);
                         resolve();
                     });
-                    updateFeaturesSpy = vi.spyOn(tile, 'setFeatureState');
+                    updateFeaturesSpy = vi.spyOn(tile, 'refreshFeatureState');
                     tile.state = 'loaded';
                     callback();
                 }
@@ -124,7 +124,7 @@ describe('SourceCache#addTile', () => {
         });
     });
 
-    test('uses cached tile', async () => {
+    test('uses cached tile', () => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
         let load = 0,
             add = 0;
@@ -167,7 +167,7 @@ describe('SourceCache#addTile', () => {
         sourceCache.updateCacheSize(tr);
 
         const tile = sourceCache._addTile(tileID);
-        const updateFeaturesSpy = vi.spyOn(tile, 'setFeatureState');
+        const updateFeaturesSpy = vi.spyOn(tile, 'refreshFeatureState');
 
         sourceCache._removeTile(tileID.key);
         sourceCache._addTile(tileID);
@@ -216,7 +216,7 @@ describe('SourceCache#addTile', () => {
         expect(sourceCache._cache.has(tileID)).toBeFalsy();
     });
 
-    test('does not reuse wrapped tile', async () => {
+    test('does not reuse wrapped tile', () => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
         let load = 0,
             add = 0;
@@ -377,7 +377,7 @@ describe('SourceCache / Source lifecycle', () => {
         });
     });
 
-    test('suppress 404 errors', async () => {
+    test('suppress 404 errors', () => {
         const {sourceCache, eventedParent} = createSourceCache({status: 404, message: 'Not found'});
         eventedParent.on('error', expect.unreachable);
         sourceCache.getSource().onAdd();
@@ -394,7 +394,7 @@ describe('SourceCache / Source lifecycle', () => {
         });
     });
 
-    test('loaded() true after tile error', async () => {
+    test('loaded() true after tile error', () => {
         const transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 0;
@@ -423,7 +423,7 @@ describe('SourceCache / Source lifecycle', () => {
         expect.assertions(expected.length);
 
         const {sourceCache, eventedParent} = createSourceCache({
-            async loadTile(tile, callback) {
+            loadTile(tile, callback) {
                 expect(tile.tileID.key).toBe(expected.shift());
                 tile.state = 'loaded';
                 callback();
@@ -443,7 +443,7 @@ describe('SourceCache / Source lifecycle', () => {
         });
     });
 
-    test('does not reload errored tiles', async () => {
+    test('does not reload errored tiles', () => {
         const transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 1;
@@ -611,7 +611,7 @@ describe('SourceCache#update', () => {
         transform.center = new LngLat(360, 0);
 
         const {sourceCache, eventedParent} = createSourceCache({
-            async loadTile(tile) {
+            loadTile(tile) {
                 tile.state = (tile.tileID.key === new OverscaledTileID(0, 1, 0, 0, 0).key) ? 'loaded' : 'loading';
             }
         });

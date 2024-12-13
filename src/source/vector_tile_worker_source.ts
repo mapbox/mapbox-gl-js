@@ -33,16 +33,12 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     layerIndex: StyleLayerIndex;
     availableImages: Array<string>;
     loadVectorData: LoadVectorData;
-    loading: {
-        [_: number]: WorkerTile;
-    };
-    loaded: {
-        [_: number]: WorkerTile;
-    };
+    loading: Record<number, WorkerTile>;
+    loaded: Record<number, WorkerTile>;
     deduped: DedupedRequest;
     isSpriteLoaded: boolean;
-    scheduler: Scheduler | null | undefined;
-    brightness: number | null | undefined;
+    scheduler?: Scheduler | null;
+    brightness?: number | null;
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile
@@ -82,6 +78,8 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             const aborted = !this.loading[uid];
 
             delete this.loading[uid];
+
+            workerTile.cancelRasterize();
 
             if (aborted || err || !response) {
                 workerTile.status = 'done';
@@ -145,6 +143,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
+            workerTile.scaleFactor = params.scaleFactor;
             workerTile.showCollisionBoxes = params.showCollisionBoxes;
             workerTile.projection = params.projection;
             workerTile.brightness = params.brightness;

@@ -39,7 +39,7 @@ export default class Globe extends Mercator {
         this.range = [3, 5];
     }
 
-    projectTilePoint(x: number, y: number, id: CanonicalTileID): {
+    override projectTilePoint(x: number, y: number, id: CanonicalTileID): {
         x: number;
         y: number;
         z: number;
@@ -47,13 +47,12 @@ export default class Globe extends Mercator {
         const pos = tileCoordToECEF(x, y, id);
         const bounds = globeTileBounds(id);
         const normalizationMatrix = globeNormalizeECEF(bounds);
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
         vec3.transformMat4(pos, pos, normalizationMatrix);
 
         return {x: pos[0], y: pos[1], z: pos[2]};
     }
 
-    locationPoint(tr: Transform, lngLat: LngLat): Point {
+    override locationPoint(tr: Transform, lngLat: LngLat): Point {
         const pos = latLngToECEF(lngLat.lat, lngLat.lng);
         const up = vec3.normalize([] as any, pos);
 
@@ -63,20 +62,18 @@ export default class Globe extends Mercator {
 
         const upScale = mercatorZfromAltitude(1, 0) * EXTENT * elevation;
         vec3.scaleAndAdd(pos, pos, up, upScale);
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-        const matrix = mat4.identity(new Float64Array(16));
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
+        const matrix = mat4.identity(new Float64Array(16) as unknown as mat4);
         mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
         vec3.transformMat4(pos, pos, matrix);
 
         return new Point(pos[0], pos[1]);
     }
 
-    pixelsPerMeter(lat: number, worldSize: number): number {
+    override pixelsPerMeter(lat: number, worldSize: number): number {
         return mercatorZfromAltitude(1, 0) * worldSize;
     }
 
-    pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number {
+    override pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number {
         // Using only the center latitude to determine scale causes the globe to rapidly change
         // size as you pan up and down. As you approach the pole, the globe's size approaches infinity.
         // This is because zoom levels are based on mercator.
@@ -90,41 +87,37 @@ export default class Globe extends Mercator {
         return this.pixelsPerMeter(lat, worldSize) / combinedScale;
     }
 
-    createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
+    override createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): mat4 {
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float64Array'. | TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-        return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
+        return mat4.multiply(new Float64Array(16) as unknown as mat4, tr.globeMatrix, decode);
     }
 
-    createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
+    override createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {
         const {center} = tr;
         const matrix = globeNormalizeECEF(globeTileBounds(id));
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
         mat4.rotateY(matrix, matrix, degToRad(center.lng));
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
         mat4.rotateX(matrix, matrix, degToRad(center.lat));
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
         mat4.scale(matrix, matrix, [tr._pixelsPerMercatorPixel, tr._pixelsPerMercatorPixel, 1.0]);
         return Float32Array.from(matrix);
     }
 
-    pointCoordinate(tr: Transform, x: number, y: number, _: number): MercatorCoordinate {
+    override pointCoordinate(tr: Transform, x: number, y: number, _: number): MercatorCoordinate {
         const coord = globePointCoordinate(tr, x, y, true);
         if (!coord) { return new MercatorCoordinate(0, 0); } // This won't happen, is here for Flow
         return coord;
     }
 
-    pointCoordinate3D(tr: Transform, x: number, y: number): vec3 | null | undefined {
+    override pointCoordinate3D(tr: Transform, x: number, y: number): vec3 | null | undefined {
         const coord = this.pointCoordinate(tr, x, y, 0);
         return [coord.x, coord.y, coord.z];
     }
 
-    isPointAboveHorizon(tr: Transform, p: Point): boolean {
+    override isPointAboveHorizon(tr: Transform, p: Point): boolean {
         const raycastOnGlobe = globePointCoordinate(tr, p.x, p.y, false);
         return !raycastOnGlobe;
     }
 
-    farthestPixelDistance(tr: Transform): number {
+    override farthestPixelDistance(tr: Transform): number {
         const pixelsPerMeter = this.pixelsPerMeter(tr.center.lat, tr.worldSize);
         const globePixelDistance = farthestPixelDistanceOnSphere(tr, pixelsPerMeter);
         const t = globeToMercatorTransition(tr.zoom);
@@ -144,11 +137,11 @@ export default class Globe extends Mercator {
         return globePixelDistance;
     }
 
-    upVector(id: CanonicalTileID, x: number, y: number): [number, number, number] {
+    override upVector(id: CanonicalTileID, x: number, y: number): [number, number, number] {
         return tileCoordToECEF(x, y, id, 1);
     }
 
-    upVectorScale(id: CanonicalTileID): ElevationScale {
+    override upVectorScale(id: CanonicalTileID): ElevationScale {
         return {metersToTile: globeMetersToEcef(globeECEFNormalizationScale(globeTileBounds(id)))};
     }
 }

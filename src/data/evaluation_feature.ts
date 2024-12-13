@@ -26,7 +26,7 @@ export default function toEvaluationFeature(feature: VectorTileFeature, needGeom
     return {
         type: feature.type,
         id: feature.id,
-        properties:feature.properties,
+        properties: feature.properties,
         geometry: needGeometry ? loadGeometry(feature) : []
     };
 }

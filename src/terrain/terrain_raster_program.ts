@@ -1,5 +1,6 @@
 import {Uniform1i, Uniform1f, Uniform3f, UniformMatrix4f} from '../render/uniform_binding';
 
+import type {mat4} from 'gl-matrix';
 import type Context from '../gl/context';
 import type {UniformValues} from '../render/uniform_binding';
 
@@ -18,11 +19,11 @@ const terrainRasterUniforms = (context: Context): TerrainRasterUniformsType => (
 });
 
 const terrainRasterUniformValues = (
-    matrix: Float32Array,
+    matrix: mat4,
     skirtHeight: number,
     groundShadowFactor: [number, number, number],
 ): UniformValues<TerrainRasterUniformsType> => ({
-    'u_matrix': matrix,
+    'u_matrix': matrix as Float32Array,
     'u_image0': 0,
     'u_skirt_height': skirtHeight,
     'u_ground_shadow_factor': groundShadowFactor

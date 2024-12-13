@@ -35,12 +35,13 @@ class LayerPlacement {
         showCollisionBoxes: boolean,
         styleLayer: StyleLayer,
         shouldPausePlacement: () => boolean,
+        scaleFactor: number
     ): boolean {
         const bucketParts = this._bucketParts;
 
         while (this._currentTileIndex < tiles.length) {
             const tile = tiles[this._currentTileIndex];
-            placement.getBucketParts(bucketParts, styleLayer, tile, this._sortAcrossTiles);
+            placement.getBucketParts(bucketParts, styleLayer, tile, this._sortAcrossTiles, scaleFactor);
 
             this._currentTileIndex++;
             if (shouldPausePlacement()) {
@@ -55,7 +56,7 @@ class LayerPlacement {
 
         while (this._currentPartIndex < bucketParts.length) {
             const bucketPart = bucketParts[this._currentPartIndex];
-            placement.placeLayerBucketPart(bucketPart, this._seenCrossTileIDs, showCollisionBoxes, bucketPart.symbolInstanceStart === 0);
+            placement.placeLayerBucketPart(bucketPart, this._seenCrossTileIDs, showCollisionBoxes, bucketPart.symbolInstanceStart === 0, scaleFactor);
             this._currentPartIndex++;
             if (shouldPausePlacement()) {
                 return true;
@@ -99,7 +100,8 @@ class PauseablePlacement {
         [_: string]: Array<Tile>;
     }, layerTilesInYOrder: {
         [_: string]: Array<Tile>;
-    }) {
+    },
+    scaleFactor: number) {
         const startTime = browser.now();
 
         const shouldPausePlacement = () => {
@@ -133,7 +135,7 @@ class PauseablePlacement {
 
                 const sourceId = makeFQID(layer.source, layer.scope);
                 const sortTileByY = zOffset || sortSymbolByViewportY;
-                const pausePlacement = inProgressLayer.continuePlacement(sortTileByY ? layerTilesInYOrder[sourceId] : layerTiles[sourceId], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement);
+                const pausePlacement = inProgressLayer.continuePlacement(sortTileByY ? layerTilesInYOrder[sourceId] : layerTiles[sourceId], this.placement, this._showCollisionBoxes, layer, shouldPausePlacement, scaleFactor);
 
                 if (pausePlacement) {
                     PerformanceUtils.recordPlacementTime(browser.now() - startTime);

@@ -138,12 +138,14 @@ class Atmosphere {
         const transitionT = globeToMercatorTransition(tr.zoom);
 
         const fogLUT = painter.style.getLut(fog.scope);
+        const colorIgnoreLut = fog.properties.get('color-use-theme') === 'none';
+        const fogColor = fog.properties.get('color').toRenderColor(colorIgnoreLut ? null : fogLUT).toArray01();
 
-        const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
+        const hignoreLutIgnoreLut = fog.properties.get('high-color-use-theme') === 'none';
+        const highColor = fog.properties.get('high-color').toRenderColor(hignoreLutIgnoreLut ? null : fogLUT).toArray01();
 
-        const highColor = fog.properties.get('high-color').toRenderColor(fogLUT).toArray01();
-
-        const spaceColor = fog.properties.get('space-color').toRenderColor(fogLUT).toArray01PremultipliedAlpha();
+        const spaceColorIgnoreLut = fog.properties.get('space-color-use-theme') === 'none';
+        const spaceColor = fog.properties.get('space-color').toRenderColor(spaceColorIgnoreLut ? null : fogLUT).toArray01PremultipliedAlpha();
 
         // https://www.desmos.com/calculator/oanvvpr36d
         // Ensure horizon blend is 0-exclusive to prevent division by 0 in the shader
@@ -158,8 +160,7 @@ class Atmosphere {
             tr.worldSize / (2.0 * Math.PI * 1.025) - 1.0 : tr.globeRadius;
 
         const temporalOffset = (painter.frameCounter / 1000.0) % 1;
-        const globeCenterInViewSpace = ((tr.globeCenterInViewSpace) as Array<number>);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
+        const globeCenterInViewSpace = tr.globeCenterInViewSpace;
         const globeCenterDistance = vec3.length(globeCenterInViewSpace);
         const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(globeRadius, 2.0));
         const horizonAngle = Math.acos(distanceToHorizon / globeCenterDistance);
@@ -206,7 +207,6 @@ class Atmosphere {
     }
 
     drawStars(painter: Painter, fog: Fog) {
-
         const starIntensity = clamp(fog.properties.get('star-intensity'), 0.0, 1.0);
 
         if (starIntensity === 0) {
@@ -219,31 +219,26 @@ class Atmosphere {
 
         const program = painter.getOrCreateProgram('stars');
 
-        const orientation = quat.identity([] as any);
-
+        const orientation = quat.identity([] as unknown as quat);
         quat.rotateX(orientation, orientation, -tr._pitch);
         quat.rotateZ(orientation, orientation, -tr.angle);
         quat.rotateX(orientation, orientation, degToRad(tr._center.lat));
         quat.rotateY(orientation, orientation, -degToRad(tr._center.lng));
 
         const rotationMatrix = mat4.fromQuat(new Float32Array(16), orientation);
+        const mvp = mat4.multiply([] as unknown as mat4, tr.starsProjMatrix, rotationMatrix);
+        const modelView3 = mat3.fromMat4([] as unknown as mat3, rotationMatrix);
+        const modelviewInv = mat3.invert([] as unknown as mat3, modelView3);
 
-        const mvp = mat4.multiply([] as any, tr.starsProjMatrix, rotationMatrix);
-
-        const modelView3 = mat3.fromMat4([] as any, rotationMatrix);
-
-        const modelviewInv = mat3.invert([] as any, modelView3);
-
-        const camUp = [0, 1, 0];
-        vec3.transformMat3(camUp as [number, number, number], camUp as [number, number, number], modelviewInv);
-        vec3.scale(camUp as [number, number, number], camUp as [number, number, number], this.params.sizeMultiplier);
-        const camRight = [1, 0, 0];
-        vec3.transformMat3(camRight as [number, number, number], camRight as [number, number, number], modelviewInv);
-        vec3.scale(camRight as [number, number, number], camRight as [number, number, number], this.params.sizeMultiplier);
+        const camUp: vec3 = [0, 1, 0];
+        vec3.transformMat3(camUp, camUp, modelviewInv);
+        vec3.scale(camUp, camUp, this.params.sizeMultiplier);
+        const camRight: vec3 = [1, 0, 0];
+        vec3.transformMat3(camRight, camRight, modelviewInv);
+        vec3.scale(camRight, camRight, this.params.sizeMultiplier);
 
         const uniforms = starsUniformValues(
               mvp,
-              // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number, number]'.
               camUp,
               camRight,
               starIntensity);

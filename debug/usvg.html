@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            gap: 20px;
+            align-items: center;
+            font: 16px Helvetica, sans-serif;
+        }
+        .grid-item {
+            text-align: center;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+            text-align: left;
+            padding: 20px;
+        }
+        .label {
+            margin-top: 15px;
+        }
+        summary {
+            font: 1.2em sans-serif;
+        }
+        #debug {
+            padding: 20px;
+            text-align: center;
+        }
+        #debug canvas {
+            border: 1px solid red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <div class="grid-item">
+            <img id="expected" width="200px"></canvas>
+            <div class="label">Expected</div>
+        </div>
+        <div class="grid-item">
+            <canvas id="actual" width="200px"></canvas>
+            <div class="label">Actual</div>
+        </div>
+        <div class="grid-item">
+            <canvas id="diff" width="200px"></canvas>
+            <div class="label" id="diff-label">Diff</div>
+        </div>
+    </div>
+    <div id="debug"></div>
+    <details open>
+        <summary>Source</summary>
+        <p><pre><code id="source"></code></pre></p>
+    </details>
+    <details open>
+        <summary>uSVG</summary>
+        <p><pre><code id="parsed"></code></pre></p>
+    </details>
+
+
+    <script type="module">
+        import Pbf from 'https://esm.run/pbf';
+        import {Pane} from 'https://esm.run/tweakpane';
+        import pixelmatch from 'https://esm.run/pixelmatch';
+        import {readIconSet} from '../src/data/usvg/usvg_pb_decoder';
+        import {renderIcon} from '../src/data/usvg/usvg_pb_renderer';
+
+        async function fetchIconSet() {
+            const response = await fetch('../test/usvg/test-suite/test-suite.iconset');
+            const arrayBuffer = await response.arrayBuffer();
+            return readIconSet(new Pbf(arrayBuffer));
+        }
+
+        async function render(icon) {
+            if (!icon) return;
+
+            console.log(structuredClone(icon.usvg_tree));
+            document.getElementById('parsed').textContent = JSON.stringify(icon.usvg_tree, (key, value) => {
+                if (Array.isArray(value) && value[0] && typeof value[0] === 'number') return value.join(', ');
+                return value;
+            }, 2);
+
+            const actualCanvas = document.getElementById('actual');
+            const actualContext = actualCanvas.getContext('2d');
+            actualContext.clearRect(0, 0, actualCanvas.width, actualCanvas.height);
+
+            const transform = new DOMMatrix().scale(2);
+            const imageData = renderIcon(icon, transform);
+            actualCanvas.width = imageData.width;
+            actualCanvas.height = imageData.height;
+            actualContext.putImageData(imageData, 0, 0);
+
+            const expectedImage = document.getElementById('expected');
+            const expectedCanvas = document.createElement('canvas');
+            expectedCanvas.width = expectedImage.width = actualCanvas.width;
+            expectedCanvas.height = expectedImage.height = actualCanvas.height;
+            const expectedContext = expectedCanvas.getContext('2d');
+            expectedContext.clearRect(0, 0, expectedContext.width, expectedContext.height);
+
+            expectedImage.src = `../test/usvg/test-suite/${icon.name}.png`;
+            await new Promise((resolve) => {
+                expectedImage.onload = resolve;
+            });
+
+            expectedContext.drawImage(expectedImage, 0, 0, expectedCanvas.width, expectedCanvas.height);
+            const expectedImageData = expectedContext.getImageData(0, 0, expectedCanvas.width, expectedCanvas.height);
+
+            fetch(`../test/usvg/test-suite/${icon.name}.svg`)
+                .then(response => response.text())
+                .then(text => {
+                    document.getElementById('source').textContent = text;
+                });
+
+            const diffCanvas = document.getElementById('diff');
+            diffCanvas.width = imageData.width;
+            diffCanvas.height = imageData.height;
+            const diffContext = diffCanvas.getContext('2d');
+            diffContext.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
+
+            diffContext.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
+            const diffImageData = diffContext.createImageData(diffCanvas.width, diffCanvas.height);
+
+            try {
+                const threshold = 0.3;
+                const diff = pixelmatch(imageData.data, expectedImageData.data, diffImageData.data, imageData.width, imageData.height, {threshold}) / (imageData.width * imageData.height);
+                diffContext.putImageData(diffImageData, 0, 0);
+
+                const passed = diff <= 0.0002;
+                document.getElementById('diff-label').textContent = `Diff: ${diff.toFixed(6)} ${passed ? '✅' : '❌'}`;
+            } catch (error) {
+                document.getElementById('diff-label').textContent = `Diff: ${error.message} ❌`;
+            }
+        }
+
+        const iconSet = await fetchIconSet();
+        const initialOptions = iconSet.icons.map((icon, index) => {
+            return {text: icon.name, value: index};
+        });
+
+        if (!location.hash) location.hash = `#${iconSet.icons[0].name}`;
+        const iconIndex = iconSet.icons.findIndex(icon => icon.name === location.hash.slice(1));
+        const params = window.params = {icon: iconIndex, filter: ''};
+
+        const pane = new Pane({title: 'Parameters', expanded: false});
+        pane.addBinding(params, 'filter').on('change', () => {
+            const filteredOptions = initialOptions.filter(option => option.text.includes(params.filter));
+            iconBinding.options = filteredOptions;
+        });
+
+        const iconBinding = pane.addBinding(params, 'icon', {label: 'icon', options: initialOptions});
+        iconBinding.on('change', (e) => {
+            location.hash = `#${iconSet.icons[params.icon].name}`;
+            render(iconSet.icons[e.value]);
+        });
+
+        try {
+            render(iconSet.icons[params.icon]);
+
+            // render next icon on arrow right key press
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'ArrowRight') {
+                    const currentIconIndex = iconBinding.options.findIndex(option => option.value === params.icon);
+                    const nextIconIndex = (currentIconIndex + 1) % iconBinding.options.length;
+                    params.icon = iconBinding.options[nextIconIndex].value;
+                    iconBinding.refresh();
+                }
+            });
+
+            // render previous icon on arrow left key press
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'ArrowLeft') {
+                    const currentIconIndex = iconBinding.options.findIndex(option => option.value === params.icon);
+                    const previousIconIndex = (currentIconIndex - 1 + iconBinding.options.length) % iconBinding.options.length;
+                    params.icon = iconBinding.options[previousIconIndex].value;
+                    iconBinding.refresh();
+                }
+            });
+
+            // toggle page background color on space key press
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    document.body.style.color = document.body.style.color === 'white' ? 'black' : 'white';
+                    document.body.style.backgroundColor = document.body.style.backgroundColor === 'black' ? 'white' : 'black';
+                }
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    </script>
+</body>
+
+</html>

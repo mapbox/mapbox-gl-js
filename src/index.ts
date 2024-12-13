@@ -21,7 +21,7 @@ import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
 import WorkerClass from './util/worker_class';
-import {prewarm, clearPrewarmedResources} from './util/global_worker_pool';
+import {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
 import {clearTileCache} from './util/tile_request_cache';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils';
 import {FreeCameraOptions} from './ui/free_camera';
@@ -40,7 +40,8 @@ export type {PointLike} from './types/point-like';
 export type {PluginStatus} from './source/rtl_text_plugin';
 
 export type {Event, ErrorEvent} from './util/evented';
-export type {GeoJSONFeature} from './util/vectortile_to_geojson';
+export type {GeoJSONFeature, TargetFeature} from './util/vectortile_to_geojson';
+export type {InteractionEvent} from './ui/interactions';
 export type {PaddingOptions} from './geo/edge_insets';
 export type {RequestParameters} from './util/ajax';
 export type {RequestTransformFunction, ResourceType} from './util/mapbox';
@@ -228,7 +229,7 @@ const exported = {
      * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
      * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
      *
-     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/guides/browsers/#csp-directives) for more details.
      *
      * @var {string} workerUrl
      * @returns {string} A URL hosting a JavaScript bundle for mapbox-gl's WebWorker.
@@ -283,7 +284,7 @@ const exported = {
      * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
      * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
      *
-     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/guides/browsers/#csp-directives) for more details.
      *
      * @var {string} dracoUrl
      * @returns {string} A URL hosting Google Draco decoding library (`draco_wasm_wrapper_gltf.js` and `draco_decoder_gltf.wasm`).

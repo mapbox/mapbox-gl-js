@@ -186,7 +186,7 @@ const unicodeBlockLookup: UnicodeBlockLookup = {
     // 'Deseret': (char) => char >= 0x10400 && char <= 0x1044F,
     // 'Shavian': (char) => char >= 0x10450 && char <= 0x1047F,
     // 'Osmanya': (char) => char >= 0x10480 && char <= 0x104AF,
-    // 'Osage': (char) => char >= 0x104B0 && char <= 0x104FF,
+    'Osage': (char) => char >= 0x104B0 && char <= 0x104FF,
     // 'Elbasan': (char) => char >= 0x10500 && char <= 0x1052F,
     // 'Caucasian Albanian': (char) => char >= 0x10530 && char <= 0x1056F,
     // 'Linear A': (char) => char >= 0x10600 && char <= 0x1077F,

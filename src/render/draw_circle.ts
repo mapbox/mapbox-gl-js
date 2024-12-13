@@ -62,7 +62,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
 
     const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
     const isGlobeProjection = tr.projection.name === 'globe';
-    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+    const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
     const segmentsRenderStates: Array<SegmentsTileRenderState> = [];
 
@@ -90,7 +90,6 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
         const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
         const uniformValues = circleUniformValues(painter, coord, tile, invMatrix, mercatorCenter, layer);
 
         const state: TileRenderState = {

@@ -5,7 +5,7 @@
       "standardDerivatives": true,
       "height": 1024,
       "width": 1024,
-      "allowed": 0.00094,
+      "allowed": 0.0011,
       "operations": [
         ["wait"]
       ]
@@ -72,7 +72,7 @@
       "id": "3d-buildings",
       "source": "mapbox",
       "paint": {
-        "fill-extrusion-opacity": 0.6,
+        "fill-extrusion-opacity": 1,
         "fill-extrusion-color": [
           "interpolate",
           [

@@ -14,13 +14,13 @@ export default class Equirectangular extends Projection {
         this.supportsWorldCopies = true;
     }
 
-    project(lng: number, lat: number): ProjectedPoint {
+    override project(lng: number, lat: number): ProjectedPoint {
         const x = 0.5 + lng / 360;
         const y = 0.5 - lat / 360;
         return {x, y, z: 0};
     }
 
-    unproject(x: number, y: number): LngLat {
+    override unproject(x: number, y: number): LngLat {
         const lng = (x - 0.5) * 360;
         const lat = clamp((0.5 - y) * 360, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE);
         return new LngLat(lng, lat);

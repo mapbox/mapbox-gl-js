@@ -26,6 +26,7 @@
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script src='https://unpkg.com/d3@7.8.5/dist/d3.min.js'></script>
+
 <script type='module'>
     /* globals d3 */
 
@@ -38,7 +39,9 @@
         hue: 0.01,
         lutPreset: 'custom',
         styleURL: 'mapbox://styles/mapbox/streets-v12',
-        firstLoadDone: false
+        firstLoadDone: false,
+        'road-secondary-tertiary/line-color-use-theme': 'default',
+        'road-secondary-tertiary/line-color': 'red',
     };
 
     const pane = new Pane({title: 'Parameters', container: document.querySelector('#pane')});
@@ -56,7 +59,41 @@
         pitch: 50.0,
         bearing: 50.0,
         hash: true,
-        style: PARAMS.styleURL
+        style: {
+            version: 8,
+            imports: [
+                {
+                    id: 'standard',
+                    url: 'mapbox://styles/mapbox/standard'
+                }
+            ],
+            "lights": [
+                {
+                    "id": "ambient",
+                    "type": "ambient",
+                    "properties": {
+                        "color":  "hsl(0, 0%, 100%)",
+                        "intensity": 0.8
+                    }
+                },
+                {
+                    "id": "directional",
+                    "type": "directional",
+                    "properties": {
+                        "direction": [
+                            180,
+                            20
+                        ],
+                        "color": "hsl(0, 0%, 100%)",
+                        "intensity": 0.2,
+                        "cast-shadows": true,
+                        "shadow-intensity": 1
+                    }
+                }
+            ],
+            sources: {},
+            layers: []
+        }
     });
 
     async function fetchJSON(url) {
@@ -178,6 +215,7 @@
     }
 
     function updateLUT() {
+
         const canvas = document.getElementById('lutCanvas');
         if (PARAMS.lutPreset === 'custom') {
             // Generate LUT
@@ -189,6 +227,9 @@
             map.setColorTheme({
                 "data": lutData
             });
+            map.setImportColorTheme("standard", {
+                "data": lutData
+            });
         } else {
             // Load from preset
             const img = document.getElementById('canvasImageHolder');
@@ -198,6 +239,9 @@
                 ctx.drawImage(img, 0, 0);
                 lutData = canvas.toDataURL();
                 map.setColorTheme({
+                    "data": lutData
+                });
+                map.setImportColorTheme("standard", {
                     "data": lutData
                 });
             };
@@ -276,6 +320,20 @@
         label: 'styleURL'
     }).on('change', (e) => {
         map.setStyle(PARAMS.styleURL);
+    });
+
+    pane.addBinding(PARAMS, 'road-secondary-tertiary/line-color-use-theme', {
+        label: 'road-secondary-tertiary/line-color-use-theme'
+    }).on('change', (e) => {
+
+        map.setPaintProperty("road-secondary-tertiary", "line-color-use-theme", e.value, {});
+    });
+
+    pane.addBinding(PARAMS, 'road-secondary-tertiary/line-color', {
+        label: 'road-secondary-tertiary/line-color'
+    }).on('change', (e) => {
+
+        map.setPaintProperty("road-secondary-tertiary", "line-color", e.value, {});
     });
 
     map.on('style.load', () => {

@@ -25,13 +25,13 @@ describe('shaping', () => {
     }
 
     const images = {
-        'square': new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-        'tall': new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-        'wide': new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        [ResolvedImage.build('square').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        [ResolvedImage.build('tall').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        [ResolvedImage.build('wide').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
     };
 
     const sectionForImage = (name) => {
-        return new FormattedSection('', ResolvedImage.fromString(name), null, null, null);
+        return new FormattedSection('', ResolvedImage.build(name), null, null, null);
     };
 
     const sectionForText = (name, scale) => {
@@ -40,45 +40,45 @@ describe('shaping', () => {
 
     const basePath = '../../fixtures/expected';
 
-    test('Text shaping null', () => {
+    test('Text shaping null', async () => {
         const shaped = shaping.shapeText(Formatted.fromString(`hi${String.fromCharCode(0)}`), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-null.json`);
+        await expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-null.json`);
     });
 
     // Default shaping.
-    test('Default shaping', () => {
+    test('Default shaping', async () => {
         const shaped = shaping.shapeText(Formatted.fromString('abcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-default.json`);
+        await expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-default.json`);
     });
 
-    test('Letter spacing', () => {
+    test('Letter spacing', async () => {
         const shaped = shaping.shapeText(Formatted.fromString('abcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0.125 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-spacing.json`);
+        await expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-spacing.json`);
     });
 
-    test('Line break', () => {
+    test('Line break', async () => {
         const shaped = shaping.shapeText(Formatted.fromString('abcde abcde'), glyphMap, glyphPositions, images, fontStack, 4 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-linebreak.json`);
+        await expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-linebreak.json`);
     });
 
-    test('New line', () => {
+    test('New line', async () => {
         const shaped = shaping.shapeText(Formatted.fromString('abcde\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-newline.json`);
+        await expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-newline.json`);
     });
 
-    test('New line with carriage return', () => {
+    test('New line with carriage return', async () => {
         const shaped = shaping.shapeText(Formatted.fromString('abcde\r\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-newline-carriege.json`);
+        await expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-newline-carriege.json`);
     });
 
-    test('New lines in the middle', () => {
+    test('New lines in the middle', async () => {
         const shaped = shaping.shapeText(Formatted.fromString('abcde\n\nabcde'), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-newlines-in-middle.json`);
+        await expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-newlines-in-middle.json`);
     });
 
-    test('Zero width space', () => {
+    test('Zero width space', async () => {
         const shaped = shaping.shapeText(Formatted.fromString('三三\u200b三三\u200b三三\u200b三三三三三三\u200b三三'), glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-zero-width-space.json`);
+        await expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-zero-width-space.json`);
     });
 
     test('Null shaping', () => {
@@ -104,7 +104,7 @@ describe('shaping', () => {
         expect(shaped.left).toBe(-10.5); // 16 - 2px border * 1.5 scale factor
     });
 
-    test('images in horizontal layout', () => {
+    test('images in horizontal layout', async () => {
         const horizontalFormatted = new Formatted([
             sectionForText('Foo'),
             sectionForImage('square'),
@@ -115,10 +115,10 @@ describe('shaping', () => {
             sectionForText(' bar'),
         ]);
         const shaped = shaping.shapeText(horizontalFormatted, glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-images-horizontal.json`);
+        await expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-images-horizontal.json`);
     });
 
-    test('images in vertical layout', () => {
+    test('images in vertical layout', async () => {
         const horizontalFormatted = new Formatted([
             sectionForText('三'),
             sectionForImage('square'),
@@ -129,7 +129,7 @@ describe('shaping', () => {
             sectionForText('三'),
         ]);
         const shaped = shaping.shapeText(horizontalFormatted, glyphMap, glyphPositions, images, fontStack, 5 * oneEm, oneEm, 'center', 'center', 0, [0, 0], WritingMode.vertical, true, layoutTextSize, layoutTextSizeThisZoom);
-        expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-images-vertical.json`);
+        await expect(JSON.stringify(shaped, null, 2)).toMatchFileSnapshot(`${basePath}/text-shaping-images-vertical.json`);
     });
 });
 

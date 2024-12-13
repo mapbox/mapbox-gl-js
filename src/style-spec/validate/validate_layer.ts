@@ -8,7 +8,7 @@ import validateSpec from './validate';
 import extend from '../util/extend';
 
 import type {ValidationOptions} from './validate';
-import type {LayerSpecification} from '../types';
+import type {LayerSpecification, GeoJSONSourceSpecification} from '../types';
 
 type Options = ValidationOptions & {
     value: LayerSpecification;
@@ -26,7 +26,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
     if (!layer.type && !layer.ref) {
         errors.push(new ValidationError(key, layer, 'either "type" or "ref" is required'));
     }
-    let type = unbundle(layer.type);
+    let type = unbundle(layer.type) as string;
     const ref = unbundle(layer.ref);
 
     if (layer.id) {
@@ -59,7 +59,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
         } else if (parent.ref) {
             errors.push(new ValidationError(key, layer.ref, 'ref cannot reference another ref layer'));
         } else {
-            type = unbundle(parent.type);
+            type = unbundle(parent.type) as string;
         }
     } else if (!(type === 'background' || type === 'sky' || type === 'slot')) {
         if (!layer.source) {
@@ -77,12 +77,10 @@ export default function validateLayer(options: Options): Array<ValidationError> 
                 errors.push(new ValidationError(key, layer, `layer "${layer.id}" must specify a "source-layer"`));
             } else if (sourceType === 'raster-dem' && type !== 'hillshade') {
                 errors.push(new ValidationError(key, layer.source, 'raster-dem source can only be used with layer type \'hillshade\'.'));
-                // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string'.
             } else if (sourceType === 'raster-array' && !['raster', 'raster-particle'].includes(type)) {
                 errors.push(new ValidationError(key, layer.source, `raster-array source can only be used with layer type \'raster\'.`));
             } else if (type === 'line' && layer.paint && (layer.paint['line-gradient'] || layer.paint['line-trim-offset']) &&
-            // @ts-expect-error - TS2339 - Property 'lineMetrics' does not exist on type 'SourceSpecification'.
-                       (sourceType !== 'geojson' || !source.lineMetrics)) {
+                    (sourceType !== 'geojson' || !(source as GeoJSONSourceSpecification).lineMetrics)) {
                 errors.push(new ValidationError(key, layer, `layer "${layer.id}" specifies a line-gradient, which requires a GeoJSON source with \`lineMetrics\` enabled.`));
             } else if (type === 'raster-particle' && sourceType !== 'raster-array') {
                 errors.push(new ValidationError(key, layer.source, `layer "${layer.id}" requires a \'raster-array\' source.`));

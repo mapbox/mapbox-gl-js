@@ -154,7 +154,7 @@ class StyleChanges {
     }
 
     /**
-     * Mark an image as having changed.
+     * Mark an image as having changes.
      * @param {string} id
      */
     updateImage(id: string) {

@@ -26,6 +26,7 @@ import type {RequestParameters, ResourceType as ResourceTypeEnum} from './ajax';
 import type {Cancelable} from '../types/cancelable';
 import type {TileJSON} from '../types/tilejson';
 import type {Map as MapboxMap} from "../ui/map";
+import '../types/import-meta.d';
 
 export type ResourceType = keyof typeof ResourceTypeEnum;
 export type RequestTransformFunction = (url: string, resourceTypeEnum?: ResourceType) => RequestParameters;
@@ -76,7 +77,9 @@ export class RequestManager {
     normalizeStyleURL(url: string, accessToken?: string): string {
         if (!isMapboxURL(url)) return url;
         const urlObject = parseUrl(url);
-        urlObject.params.push(`sdk=js-${sdkVersion}`);
+        if (import.meta.env.mode !== 'dev') {
+            urlObject.params.push(`sdk=js-${sdkVersion}`);
+        }
         urlObject.path = `/styles/v1${urlObject.path}`;
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
@@ -114,6 +117,15 @@ export class RequestManager {
             urlObject.params.push(`worldview=${worldview}`);
         }
 
+        return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
+    }
+
+    normalizeIconsetURL(url: string, accessToken?: string): string {
+        const urlObject = parseUrl(url);
+        if (!isMapboxURL(url)) {
+            return formatUrl(urlObject);
+        }
+        urlObject.path = `/styles/v1${urlObject.path}/iconset.pbf`;
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
@@ -418,7 +430,7 @@ export class PerformanceEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
@@ -468,7 +480,7 @@ export class MapLoadEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) return;
         const {id, timestamp} = this.queue.shift();
 
@@ -574,7 +586,7 @@ export class StyleLoadEvent extends TelemetryEvent {
         }, customAccessToken);
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }
@@ -632,7 +644,7 @@ export class MapSessionAPI extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) return;
         const {id, timestamp} = this.queue.shift();
 
@@ -670,7 +682,7 @@ export class TurnstileEvent extends TelemetryEvent {
         }
     }
 
-    processRequests(customAccessToken?: string | null) {
+    override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) {
             return;
         }

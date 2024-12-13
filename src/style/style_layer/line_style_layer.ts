@@ -43,9 +43,9 @@ const getProperties = () => {
 };
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
-    useIntegerZoom: boolean | null | undefined;
+    override useIntegerZoom: boolean | null | undefined;
 
-    possiblyEvaluate(
+    override possiblyEvaluate(
         value: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>,
         parameters: EvaluationParameters,
     ): PossiblyEvaluatedPropertyValue<number> {
@@ -57,7 +57,7 @@ class LineFloorwidthProperty extends DataDrivenProperty<number> {
         return super.possiblyEvaluate(value, parameters);
     }
 
-    evaluate(
+    override evaluate(
         value: PossiblyEvaluatedValue<number>,
         globals: EvaluationParameters,
         feature: Feature,
@@ -83,15 +83,15 @@ const getLineFloorwidthProperty = () => {
 };
 
 class LineStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
 
     gradientVersion: number;
     stepInterpolant: boolean;
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = getProperties();
@@ -102,7 +102,7 @@ class LineStyleLayer extends StyleLayer {
         this.gradientVersion = 0;
     }
 
-    _handleSpecialPaintPropertyUpdate(name: string) {
+    override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'line-gradient') {
             const expression: ZoomConstantExpression<'source'> = ((this._transitionablePaint._values['line-gradient'].value.expression) as any);
             this.stepInterpolant = expression._styleExpression && expression._styleExpression.expression instanceof Step;
@@ -118,7 +118,7 @@ class LineStyleLayer extends StyleLayer {
         return this._transitionablePaint._values['line-width'].value.expression;
     }
 
-    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
         super.recalculate(parameters, availableImages);
         (this.paint._values as any)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
     }
@@ -127,7 +127,7 @@ class LineStyleLayer extends StyleLayer {
         return new LineBucket(parameters);
     }
 
-    getProgramIds(): string[] {
+    override getProgramIds(): string[] {
         const patternProperty = this.paint.get('line-pattern');
 
         const image = patternProperty.constantOr((1 as any));
@@ -135,7 +135,7 @@ class LineStyleLayer extends StyleLayer {
         return [programId];
     }
 
-    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         const definesValues = (lineDefinesValues(this) as DynamicDefinesType[]);
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),
@@ -144,7 +144,7 @@ class LineStyleLayer extends StyleLayer {
         };
     }
 
-    queryRadius(bucket: Bucket): number {
+    override queryRadius(bucket: Bucket): number {
         const lineBucket: LineBucket = (bucket as any);
         const width = getLineWidth(
             getMaximumPaintValue('line-width', this, lineBucket),
@@ -154,7 +154,7 @@ class LineStyleLayer extends StyleLayer {
         return width / 2 + Math.abs(offset) + translateDistance(this.paint.get('line-translate'));
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,
@@ -180,14 +180,17 @@ class LineStyleLayer extends StyleLayer {
         return polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth);
     }
 
-    isTileClipped(): boolean {
+    override isTileClipped(): boolean {
         return true;
     }
 
-    isDraped(_?: SourceCache | null): boolean {
+    override isDraped(_?: SourceCache | null): boolean {
         const zOffset = this.layout.get('line-z-offset');
+        const zOffsetZero = zOffset.isConstant() && !zOffset.constantOr(0);
+        const elevationReference = this.layout.get('line-elevation-reference');
+        const seaOrGroundReference = elevationReference === 'sea' || elevationReference === 'ground';
 
-        return zOffset.isConstant() && !zOffset.constantOr(0);
+        return !seaOrGroundReference && (zOffsetZero || elevationReference !== 'none');
     }
 }
 

@@ -59,13 +59,14 @@ export const fogUniformValues = (
 ): UniformValues<FogUniformsType> => {
     const tr = painter.transform;
 
-    const fogColor = fog.properties.get('color').toRenderColor(painter.style.getLut(fog.scope)).toArray01();
+    const ignoreLUT = fog.properties.get('color-use-theme') === 'none';
+    const fogColor = fog.properties.get('color').toRenderColor(ignoreLUT ? null : painter.style.getLut(fog.scope)).toArray01();
     fogColor[3] = fogOpacity; // Update Alpha
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
 
     const [verticalRangeMin, verticalRangeMax] = fog.properties.get('vertical-range');
     return {
-        'u_fog_matrix': tileID ? tr.calculateFogTileMatrix(tileID) : fogMatrix ? fogMatrix : painter.identityMat,
+        'u_fog_matrix': (tileID ? tr.calculateFogTileMatrix(tileID) : fogMatrix ? fogMatrix : painter.identityMat) as Float32Array,
         'u_fog_range': fog.getFovAdjustedRange(tr._fov),
         'u_fog_color': fogColor,
         'u_fog_horizon_blend': fog.properties.get('horizon-blend'),

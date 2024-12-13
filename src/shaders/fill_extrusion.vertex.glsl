@@ -31,6 +31,11 @@ uniform vec3 u_up_dir;
 uniform float u_height_lift;
 #endif
 
+#ifdef TERRAIN
+uniform int u_height_type;
+uniform int u_base_type;
+#endif
+
 uniform highp float u_vertical_scale;
 
 out vec4 v_color;
@@ -64,6 +69,14 @@ out float v_has_floodlight;
 #endif
 
 out float v_height;
+
+// linear to sRGB approximation
+vec3 linearTosRGB(vec3 color) {
+    return pow(color, vec3(1./2.2));
+}
+vec3 sRGBToLinear(vec3 srgbIn) {
+    return pow(srgbIn, vec3(2.2));
+}
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
@@ -116,11 +129,13 @@ void main() {
     float c_ele = 0.0;
     vec3 pos;
 #ifdef TERRAIN
-    bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
+    bool is_flat_height = centroid_pos.x != 0.0 && u_height_type == 1;
+    bool is_flat_base = centroid_pos.x != 0.0 && u_base_type == 1;
     ele = elevation(pos_nx.xy);
-    c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
-    // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
-    h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
+    c_ele = is_flat_height || is_flat_base ? (centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos)) : ele;
+    float h_height = is_flat_height ? max(c_ele + height, ele + base + 2.0) : ele + height;
+    float h_base = is_flat_base ? max(c_ele + base, ele + base) : ele + (base == 0.0 ? -5.0 : base);
+    h = t > 0.0 ? max(h_base, h_height) : h_base;
     pos = vec3(pos_nx.xy, h);
 #else
     h = t > 0.0 ? height : base;
@@ -239,7 +254,10 @@ void main() {
 #endif // FLOOD_LIGHT
 
     v_color = vec4(color.rgb, 1.0);
-    v_flat = vec4(linearProduct(color.rgb, vec3(calculate_NdotL(normal))), 1.0);
+    float ndotl = calculate_NdotL(normal);
+    v_flat.rgb = sRGBToLinear(color.rgb);
+    v_flat.rgb = v_flat.rgb * (ndotl + (1.0 - min(ndotl * 57.29, 1.0)) * emissive_strength);
+    v_flat = vec4(linearTosRGB(v_flat.rgb), 1.0);
 #else // LIGHTING_3D_MODE
     // Assign final color based on surface + ambient light color, diffuse light NdotL, and light color
     // with lower bounds adjusted to hue of light

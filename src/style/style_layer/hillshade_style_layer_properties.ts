@@ -32,6 +32,9 @@ export type PaintProps = {
     "hillshade-highlight-color": DataConstantProperty<Color>;
     "hillshade-accent-color": DataConstantProperty<Color>;
     "hillshade-emissive-strength": DataConstantProperty<number>;
+    "hillshade-shadow-color-use-theme": DataDrivenProperty<string>;
+    "hillshade-highlight-color-use-theme": DataDrivenProperty<string>;
+    "hillshade-accent-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -43,4 +46,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "hillshade-highlight-color": new DataConstantProperty(styleSpec["paint_hillshade"]["hillshade-highlight-color"]),
     "hillshade-accent-color": new DataConstantProperty(styleSpec["paint_hillshade"]["hillshade-accent-color"]),
     "hillshade-emissive-strength": new DataConstantProperty(styleSpec["paint_hillshade"]["hillshade-emissive-strength"]),
+    "hillshade-shadow-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "hillshade-highlight-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "hillshade-accent-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

@@ -10,12 +10,17 @@ uniform highp float u_gamma_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_text;
 uniform bool u_is_halo;
+uniform lowp float u_scale_factor;
 #ifdef ICON_TRANSITION
 uniform float u_icon_transition;
 #endif
 
 #ifdef COLOR_ADJUSTMENT
 uniform mat4 u_color_adj_mat;
+#endif
+
+#ifdef INDICATOR_CUTOUT
+in highp float v_z_offset;
 #endif
 
 in vec2 v_tex_a;
@@ -76,8 +81,8 @@ void main() {
     bool draw_halo = v_draw_halo > 0.0;
     if (draw_halo) {
         out_color = halo_color;
-        gamma = (halo_blur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
-        buff = (6.0 - halo_width / fontScale) / SDF_PX;
+        gamma = (halo_blur * u_scale_factor * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
+        buff = (6.0 - halo_width * u_scale_factor / fontScale) / SDF_PX;
     }
 
     lowp float dist = texture(u_texture, v_tex_a).r;
@@ -104,6 +109,10 @@ void main() {
     #ifdef LIGHTING_3D_MODE
         out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
     #endif
+
+#ifdef INDICATOR_CUTOUT
+    out_color = applyCutout(out_color, v_z_offset);
+#endif
 
     glFragColor = out_color;
 

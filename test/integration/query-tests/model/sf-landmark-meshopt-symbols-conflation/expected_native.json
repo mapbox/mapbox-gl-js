@@ -1,0 +1,94 @@
+[
+  {
+    "type": "Feature",
+    "id": 441062131,
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -122.39314824342728,
+        37.79250507149591
+      ]
+    },
+    "properties": {
+      "localrank": 1,
+      "name_de": "Rincon Center",
+      "name_zh": "Rincon Center",
+      "ref": "",
+      "scalerank": 3,
+      "name_es": "Rincon Center",
+      "name_zh-Hans": "Rincon Center",
+      "name_ko": "Rincon Center",
+      "name_pt": "Rincon Center",
+      "type": "Yes",
+      "name_ru": "Rincon Center",
+      "name_ja": "Rincon Center",
+      "name_en": "Rincon Center",
+      "name_ar": "Rincon Center",
+      "name": "Rincon Center",
+      "name_fr": "Rincon Center",
+      "maki": "marker"
+    },
+    "source": "composite",
+    "sourceLayer": "poi_label",
+    "state": {}
+  },
+  {
+    "type": "Feature",
+    "id": "44106213",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -122.39312142133713,
+        37.79248811488655
+      ]
+    },
+    "properties": {
+      "height": 29.037949727615928
+    },
+    "source": "file-system-tiles",
+    "state": {
+      "hover": true
+    }
+  },
+  {
+    "type": "Feature",
+    "id": 49,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -122.39359080791474,
+            37.79202180660444
+          ],
+          [
+            -122.39327162504196,
+            37.79176533579482
+          ],
+          [
+            -122.39359080791474,
+            37.7915152229082
+          ],
+          [
+            -122.3939099907875,
+            37.79177169458599
+          ],
+          [
+            -122.39359080791474,
+            37.79202180660444
+          ]
+        ]
+      ]
+    },
+    "properties": {
+      "extrude": "true",
+      "type": "building",
+      "min_height": 0,
+      "height": 80,
+      "underground": "false"
+    },
+    "source": "composite",
+    "sourceLayer": "building",
+    "state": {}
+  }
+]

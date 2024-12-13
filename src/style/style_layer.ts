@@ -4,8 +4,10 @@ import {Layout, Transitionable, PossiblyEvaluated, PossiblyEvaluatedPropertyValu
 import {supportsPropertyExpression} from '../style-spec/util/properties';
 import featureFilter from '../style-spec/feature_filter/index';
 import {makeFQID} from '../util/fqid';
+import {createExpression, type FeatureState} from '../style-spec/expression/index';
+import latest from '../style-spec/reference/latest';
+import assert from 'assert';
 
-import type {FeatureState} from '../style-spec/expression/index';
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
 import type {FeatureFilter, FilterExpression} from '../style-spec/feature_filter/index';
@@ -27,7 +29,6 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 
 const TRANSITION_SUFFIX = '-transition';
@@ -94,10 +95,17 @@ class StyleLayer extends Evented {
         this.minzoom = layer.minzoom;
         this.maxzoom = layer.maxzoom;
 
-        if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'slot') {
+        if (layer.type && layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'slot') {
             this.source = layer.source;
             this.sourceLayer = layer['source-layer'];
             this.filter = layer.filter;
+
+            const filterSpec = latest[`filter_${layer.type}`];
+            assert(filterSpec);
+            const compiledStaticFilter = createExpression(this.filter, filterSpec);
+            if (compiledStaticFilter.result !== 'error') {
+                this.configDependencies = new Set([...this.configDependencies, ...compiledStaticFilter.value.configDependencies]);
+            }
         }
 
         if (layer.slot) this.slot = layer.slot;
@@ -162,6 +170,10 @@ class StyleLayer extends Evented {
     }
 
     possiblyEvaluateVisibility() {
+        if (!this._unevaluatedLayout._values.visibility) {
+            // Early return for layers which don't have a visibility property, like clip-layer
+            return;
+        }
         // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type '"none" | "visible"'. | TS2345 - Argument of type '{ zoom: number; }' is not assignable to parameter of type 'EvaluationParameters'.
         this.visibility = this._unevaluatedLayout._values.visibility.possiblyEvaluate({zoom: 0});
     }
@@ -375,17 +387,6 @@ class StyleLayer extends Evented {
         _layoutVertexArrayOffset: number,
         // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
     ): boolean | number {}
-
-    queryIntersectsMatchingFeature(
-        _queryGeometry: TilespaceQueryGeometry,
-        _featureIndex: number,
-        _filter: FeatureFilter,
-        _transform: Transform,
-        // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
-    ): {
-        queryFeature: GeoJSONFeature | null | undefined;
-        intersectionZ: number;
-    } {}
 }
 
 export default StyleLayer;

@@ -31,6 +31,10 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
+    vectorLayers?: never;
+    vectorLayerIds?: never;
+    rasterLayers?: never;
+    rasterLayerIds?: never;
     map: Map;
     uri: string;
     models: Array<Model>;

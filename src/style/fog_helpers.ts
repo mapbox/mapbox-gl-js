@@ -85,7 +85,7 @@ export function getFogOpacityForBounds(
     y1: number,
     transform: Transform,
 ): [number, number] {
-    const points = [
+    const points: vec3[] = [
         [x0, y0, 0],
         [x1, y0, 0],
         [x1, y1, 0],
@@ -96,8 +96,7 @@ export function getFogOpacityForBounds(
     let max = -Number.MAX_VALUE;
 
     for (const point of points) {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
-        const transformedPoint = vec3.transformMat4([] as any, point, matrix);
+        const transformedPoint = vec3.transformMat4([] as unknown as vec3, point, matrix);
         const distance = vec3.length(transformedPoint);
 
         min = Math.min(min, distance);

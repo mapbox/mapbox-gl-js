@@ -19,13 +19,13 @@ export default class Mercator extends Projection {
         this.range = null;
     }
 
-    project(lng: number, lat: number): ProjectedPoint {
+    override project(lng: number, lat: number): ProjectedPoint {
         const x = mercatorXfromLng(lng);
         const y = mercatorYfromLat(lat);
         return {x, y, z: 0};
     }
 
-    unproject(x: number, y: number): LngLat {
+    override unproject(x: number, y: number): LngLat {
         const lng = lngFromMercatorX(x);
         const lat = latFromMercatorY(y);
         return new LngLat(lng, lat);

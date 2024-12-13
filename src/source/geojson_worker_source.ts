@@ -23,6 +23,7 @@ import type {Callback} from '../types/callback';
 
 export type GeoJSONWorkerOptions = {
     source: string;
+    scope: string;
     cluster: boolean;
     superclusterOptions?: any;
     geojsonVtOptions?: any;
@@ -200,7 +201,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     * @param params.uid The UID for this tile.
     * @private
     */
-    reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void {
+    override reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void {
         const loaded = this.loaded,
             uid = params.uid;
 

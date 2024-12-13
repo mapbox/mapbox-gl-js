@@ -34,6 +34,11 @@ uniform vec3 u_up_dir;
 uniform float u_height_lift;
 #endif
 
+#ifdef TERRAIN
+uniform int u_height_type;
+uniform int u_base_type;
+#endif
+
 out highp vec2 v_pos;
 out vec4 v_lighting;
 
@@ -48,6 +53,7 @@ out vec3 v_normal;
 
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
+#pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump vec4 pattern
 #pragma mapbox: define highp float pixel_ratio
 #pragma mapbox: define highp float line_width
@@ -55,6 +61,7 @@ out vec3 v_normal;
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
+    #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize mediump vec4 pattern
     #pragma mapbox: initialize highp float pixel_ratio
     #pragma mapbox: initialize highp float line_width
@@ -93,11 +100,13 @@ void main() {
     vec3 p;
     float c_ele;
 #ifdef TERRAIN
-    bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
+    bool is_flat_height = centroid_pos.x != 0.0 && u_height_type == 1;
+    bool is_flat_base = centroid_pos.x != 0.0 && u_base_type == 1;
     ele = elevation(pos_nx.xy);
-    c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
-    // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
-    h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base == 0.0 ? -5.0 : base);
+    c_ele = is_flat_height || is_flat_base ? (centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos)) : ele;
+    float h_height = is_flat_height ? max(c_ele + height, ele + base + 2.0) : ele + height;
+    float h_base = is_flat_base ? max(c_ele + base, ele + base) : ele + (base == 0.0 ? -5.0 : base);
+    h = t > 0.0 ? max(h_base, h_height) : h_base;
     p = vec3(pos_nx.xy, h);
 #else
     p = vec3(pos_nx.xy, z);
@@ -118,7 +127,7 @@ void main() {
     p.xy += (1.0 - a_join_normal_inside.z) * wall_offset * 0.5;
     p.xy -= a_join_normal_inside.z * wall_offset * 0.5;
 #endif
-    float hidden = float(centroid_pos.x == 0.0 && centroid_pos.y == 1.0);
+    float hidden = float((centroid_pos.x == 0.0 && centroid_pos.y == 1.0) || (color.a == 0.0));
     gl_Position = mix(u_matrix * vec4(p, 1), AWAY, hidden);
 
     vec2 pos = normal.z == 1.0

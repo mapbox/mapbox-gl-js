@@ -17,6 +17,7 @@ import type {ProjectionSpecification} from '../style-spec/types';
 import type {VectorTileFeature, VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../3d-style/util/conflation';
 import type {LUT} from "../util/lut";
+import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 
 export type BucketParameters<Layer extends TypedStyleLayer> = {
     index: number;
@@ -35,12 +36,13 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
 
 export type PopulateParameters = {
     featureIndex: FeatureIndex;
-    iconDependencies: Record<any, any>;
-    patternDependencies: Record<any, any>;
+    iconDependencies: Record<string, Array<ImageIdWithOptions>>;
+    patternDependencies: Record<string, Array<ImageIdWithOptions>>;
     glyphDependencies: Record<any, any>;
     availableImages: Array<string>;
     lineAtlas: LineAtlas;
     brightness: number | null | undefined;
+    scaleFactor: number;
 };
 
 export type IndexedFeature = {
@@ -103,6 +105,8 @@ export interface Bucket {
         vtLayer: VectorTileLayer,
         availableImages: Array<string>,
         imagePositions: SpritePositions,
+        layers: Array<TypedStyleLayer>,
+        isBrightnessChanged: boolean,
         brightness?: number | null,
     ) => void;
     isEmpty: () => boolean;
@@ -119,10 +123,8 @@ export interface Bucket {
     updateFootprints: (id: UnwrappedTileID, footprints: Array<TileFootprint>) => void;
 }
 
-export function deserialize(input: Array<Bucket>, style: Style): {
-    [_: string]: Bucket;
-} {
-    const output: Record<string, any> = {};
+export function deserialize(input: Array<Bucket>, style: Style): Record<string, Bucket> {
+    const output: Record<string, Bucket> = {};
 
     // Guard against the case where the map's style has been set to null while
     // this bucket has been parsing.
@@ -139,7 +141,8 @@ export function deserialize(input: Array<Bucket>, style: Style): {
 
         // look up StyleLayer objects from layer ids (since we don't
         // want to waste time serializing/copying them from the worker)
-        (bucket as any).layers = layers;
+        // @ts-expect-error - layers is a readonly property
+        bucket.layers = layers;
         if (bucket.stateDependentLayerIds) {
             (bucket as any).stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
         }

@@ -1,0 +1,115 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "scaleFactor": 2,
+      "collisionDebug": true,
+      "width": 500,
+      "height": 500
+    }
+  },
+  "center": [
+    -122.44457503313436,
+    37.74686908936074
+  ],
+  "zoom": 16,
+  "sources": {
+    "data": {
+      "type": "vector",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "counties",
+      "type": "symbol",
+      "source": "data",
+      "source-layer": "road",
+      "layout": {
+        "text-field": "{name}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-padding": 1,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "motorway",
+              "trunk",
+              "primary",
+              "secondary",
+              "tertiary"
+            ],
+            9,
+            [
+              "motorway_link",
+              "trunk_link",
+              "primary_link",
+              "secondary_link",
+              "tertiary_link",
+              "street",
+              "street_limited"
+            ],
+            8,
+            6.5
+          ],
+          18,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "motorway",
+              "trunk",
+              "primary",
+              "secondary",
+              "tertiary"
+            ],
+            16,
+            [
+              "motorway_link",
+              "trunk_link",
+              "primary_link",
+              "secondary_link",
+              "tertiary_link",
+              "street",
+              "street_limited"
+            ],
+            14,
+            13
+          ]
+        ],
+        "symbol-placement": "line",
+        "text-letter-spacing": 0.15
+      },
+      "interactive": true
+    }
+  ]
+}

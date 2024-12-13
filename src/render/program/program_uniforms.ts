@@ -19,6 +19,9 @@ import {modelUniforms, modelDepthUniforms} from '../../../3d-style/render/progra
 import {groundShadowUniforms} from '../../../3d-style/render/program/ground_shadow_program';
 import {starsUniforms} from '../../terrain/stars_program';
 import {occlusionUniforms} from './occlusion_program';
+import {snowUniforms} from '../../precipitation/snow_program';
+import {rainUniforms} from "../../precipitation/rain_program";
+import {vignetteUniforms} from "../../precipitation/vignette_program";
 
 import type {GlobeDefinesType} from '../../terrain/globe_raster_program';
 import type {HeatmapDefinesType} from './heatmap_program';
@@ -32,7 +35,25 @@ import type {ModelDefinesType} from '../../../3d-style/render/program/model_prog
 
 export type FogDefinesType = ['FOG', 'FOG_DITHERING'];
 export type TerrainDepthAccessDefinesType = 'DEPTH_D24' | 'DEPTH_OCCLUSION';
+
+type GlobalDefinesType =
+    | 'DEBUG_WIREFRAME'
+    | 'DEPTH_TEXTURE'
+    | 'FOG_DITHERING'
+    | 'FOG'
+    | 'GLOBE'
+    | 'LIGHTING_3D_ALPHA_EMISSIVENESS'
+    | 'LIGHTING_3D_MODE'
+    | 'NORMAL_OFFSET'
+    | 'OVERDRAW_INSPECTOR'
+    | 'RENDER_CUTOFF'
+    | 'RENDER_SHADOWS'
+    | 'RENDER_TO_TEXTURE'
+    | 'TERRAIN_DEM_FLOAT_FORMAT'
+    | 'TERRAIN';
+
 export type DynamicDefinesType =
+    | GlobalDefinesType
     | CircleDefinesType
     | SymbolDefinesType
     | LineDefinesType
@@ -83,5 +104,8 @@ export const programUniforms = {
     modelDepth: modelDepthUniforms,
     groundShadow: groundShadowUniforms,
     stars: starsUniforms,
+    snowParticle: snowUniforms,
+    rainParticle: rainUniforms,
+    vignette: vignetteUniforms,
     occlusion: occlusionUniforms
 } as const;

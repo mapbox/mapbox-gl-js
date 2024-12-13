@@ -34,6 +34,8 @@ map.on('style.load', (event) => {
 });
 
 map.on('click', (event) => {
+    event satisfies mapboxgl.MapMouseEvent;
+
     event.type === 'click';
     event.target satisfies mapboxgl.Map;
 
@@ -46,6 +48,8 @@ map.on('click', (event) => {
 });
 
 map.on('touchstart', 'layerId', (event) => {
+    event satisfies mapboxgl.MapTouchEvent;
+
     event.type === 'touchstart';
     event.target satisfies mapboxgl.Map;
 
@@ -64,6 +68,47 @@ map.on('flystart', () => {});
 map.off('flystart', () => {});
 
 await new Promise((resolve) => map.on('style.load', resolve));
+
+//
+// Interactions
+//
+
+map.addInteraction('click', {
+    type: 'click',
+    handler: (event) => {
+        event satisfies mapboxgl.InteractionEvent;
+        event.feature satisfies mapboxgl.TargetFeature | undefined;
+    }
+});
+
+map.addInteraction('touchstart', {
+    type: 'touchstart',
+    target: {layerId: 'layer-id'},
+    handler: (event) => {
+        event satisfies mapboxgl.InteractionEvent;
+        event.feature satisfies mapboxgl.TargetFeature | undefined;
+    }
+});
+
+map.addInteraction('mouseenter', {
+    type: 'mouseenter',
+    target: {featuresetId: 'layer-id'},
+    filter: ['>=', 'area', 80000],
+    handler: (event) => {
+        event satisfies mapboxgl.InteractionEvent;
+        event.feature satisfies mapboxgl.TargetFeature | undefined;
+    }
+});
+
+map.addInteraction('mouseleave', {
+    type: 'mouseleave',
+    target: {featuresetId: 'layer-id', importId: 'basemap'},
+    filter: ['>=', 'area', 80000],
+    handler: (event) => {
+        event satisfies mapboxgl.InteractionEvent;
+        event.feature satisfies mapboxgl.TargetFeature | undefined;
+    }
+});
 
 //
 // Controls
@@ -413,10 +458,22 @@ map.setLights([
 //
 // Query features
 //
+map.queryRenderedFeatures([0, 0]) satisfies mapboxgl.GeoJSONFeature[] | mapboxgl.TargetFeature[];
+map.queryRenderedFeatures({layers: ['layer-id']}) satisfies mapboxgl.GeoJSONFeature[];
+map.queryRenderedFeatures({target: {layerId: 'layer-id'}}) satisfies mapboxgl.TargetFeature[];
+
+// @ts-expect-error can't mix featureset and layers in the same query
+map.queryRenderedFeatures({layers: ['layer-id'], target: {layerId: 'layer-id'}});
+// @ts-expect-error can't mix featureset and layers in the same query
+map.queryRenderedFeatures([0, 0], {layers: ['layer-id'], target: {layerId: 'layer-id'}});
 
 const features1 = map.queryRenderedFeatures([0, 0], {layers: ['layer-id'], filter: ['>=', 'area', 80000], validate: true}) satisfies mapboxgl.GeoJSONFeature[];
 const features2 = map.queryRenderedFeatures({validate: false});
 const features3 = map.querySourceFeatures('sourceId', {sourceLayer: 'sourceLayer', filter: ['>=', 'area', 80000], validate: true}) satisfies mapboxgl.GeoJSONFeature[];
+
+const features4 = map.queryRenderedFeatures([0, 0], {target: {layerId: 'layer-id'}, filter: ['>=', 'area', 80000]}) satisfies mapboxgl.TargetFeature[];
+const features5 = map.queryRenderedFeatures([0, 0], {target: {featuresetId: 'featureset-id'}, filter: ['>=', 'area', 80000]});
+const features6 = map.queryRenderedFeatures([0, 0], {target: {featuresetId: 'featureset-id', importId: 'basemap'}, filter: ['>=', 'area', 80000]}) satisfies mapboxgl.TargetFeature[];
 
 //
 // Set state
@@ -424,13 +481,16 @@ const features3 = map.querySourceFeatures('sourceId', {sourceLayer: 'sourceLayer
 
 const feature1: mapboxgl.GeoJSONFeature = features1[0];
 if (feature1.id) {
-    map.setFeatureState({id: feature1.id, ...feature1}, {hide: true});
+    map.setFeatureState(feature1, {hide: true});
 }
 
 const feature2 = features2[0];
 if (feature2.id) {
-    map.setFeatureState({id: feature2.id, ...feature2}, {hide: true});
+    map.setFeatureState(feature2, {hide: true});
 }
+
+const feature3 = features3[0];
+map.removeFeatureState(feature3, 'hide');
 
 map.removeFeatureState({
     id: 'featureId',
@@ -441,6 +501,19 @@ map.removeFeatureState({
 map.removeFeatureState({
     source: 'sourceId'
 });
+
+const feature4: mapboxgl.TargetFeature = features4[0];
+if (feature4.id) {
+    map.setFeatureState(feature4, {hide: true});
+}
+
+const feature5 = features5[0];
+if (feature5.id) {
+    map.setFeatureState(feature5, {hide: true});
+}
+
+const feature6 = features6[0];
+map.removeFeatureState(feature6);
 
 //
 // EasingOptions, CameraOptions, AnimationOptions

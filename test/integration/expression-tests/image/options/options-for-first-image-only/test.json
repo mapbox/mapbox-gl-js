@@ -1,0 +1,35 @@
+{
+  "expression": [
+    "image",
+    "poi_circle",
+    {"params": {"fill_color": ["get", "main_color"]}},
+    "alternative_poi_circle"
+  ],
+  "inputs": [
+    [{}, {}],
+    [{}, {"properties": {"main_color": "violet"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "resolvedImage"
+    },
+    "outputs": [
+      {"namePrimary": "poi_circle", "nameSecondary": "alternative_poi_circle", "available": false},
+      {
+        "namePrimary": "poi_circle",
+        "optionsPrimary": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
+        "nameSecondary": "alternative_poi_circle",
+        "available": false
+      }
+    ],
+    "serialized": [
+      "image",
+      "poi_circle",
+      {"params": {"fill_color": ["to-color", ["get", "main_color"]]}},
+      "alternative_poi_circle"
+    ]
+  }
+}

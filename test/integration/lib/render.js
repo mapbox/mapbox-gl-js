@@ -192,7 +192,9 @@ async function renderMap(style, options) {
         attributionControl: false,
         preserveDrawingBuffer: true,
         axonometric: options.axonometric || false,
+        spriteFormat: options.spriteFormat ?? 'auto',
         skew: options.skew || [0, 0],
+        scaleFactor: options.scaleFactor || 1,
         fadeDuration: options.fadeDuration || 0,
         localIdeographFontFamily: options.localIdeographFontFamily || false,
         projection: options.projection,
@@ -207,6 +209,8 @@ async function renderMap(style, options) {
             extStandardDerivativesForceOff: !options.standardDerivatives,
             // OES_texture_float_linear is enabled by default
             extTextureFloatLinearForceOff: options.textureFloatLinear === undefined ? false : !options.textureFloatLinear,
+            // ordinary instancing is enabled by default, manual is disabled
+            forceManualRenderingForInstanceIDShaders: options.forceManualRenderingForInstanceIDShaders,
         }
     });
 
@@ -336,6 +340,11 @@ async function runTest(t) {
 
         const style = parseStyle(currentFixture);
         const options = parseOptions(currentFixture, style);
+
+        if (options.spriteFormat === 'icon_set' && style.sprite && !style.sprite.endsWith('.pbf')) {
+            style.sprite += '.pbf';
+        }
+
         const {actualImageData, w, h} = await getActualImage(style, options);
 
         if (process.env.UPDATE) {

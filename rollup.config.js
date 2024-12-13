@@ -52,7 +52,7 @@ export default ({watch}) => {
             },
             preset: "recommended"
         } : false,
-        plugins: plugins({minified, production, bench, test: false, keepClassNames: false})
+        plugins: plugins({minified, production, bench, test: false, keepClassNames: false, mode: BUILD})
     }, {
         // Next, bundle together the three "chunks" produced in the previous pass
         // into a single, final bundle. See rollup/bundle_prelude.js and

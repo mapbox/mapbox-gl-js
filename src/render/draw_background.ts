@@ -18,6 +18,7 @@ export default drawBackground;
 
 function drawBackground(painter: Painter, sourceCache: SourceCache, layer: BackgroundStyleLayer, coords: Array<OverscaledTileID>) {
     const color = layer.paint.get('background-color');
+    const ignoreLut = layer.paint.get('background-color-use-theme').constantOr('default') === 'none';
     const opacity = layer.paint.get('background-opacity');
     const emissiveStrength = layer.paint.get('background-emissive-strength');
     const isViewportPitch = layer.paint.get('background-pitch-alignment') === 'viewport';
@@ -70,7 +71,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         const uniformValues = image ?
             backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
-            backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(layer.lut));
+            backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(ignoreLut ? null : layer.lut));
 
         // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
@@ -90,10 +91,9 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundTiles ? backgroundTiles[tileID.key] : new Tile(tileID, tileSize, transform.zoom, painter);
 
         const uniformValues = image ?
-
             backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
 
-            backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(layer.lut));
+            backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(ignoreLut ? null : layer.lut));
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 

@@ -1,11 +1,15 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
+#include "_prelude_shadow.fragment.glsl"
 
 uniform highp float u_device_pixel_ratio;
+uniform highp float u_width_scale;
 uniform highp float u_alpha_discard_threshold;
 uniform highp vec2 u_texsize;
 uniform highp float u_tile_units_to_pixels;
 uniform highp vec2 u_trim_offset;
+uniform highp vec2 u_trim_fade_range;
+uniform lowp vec4 u_trim_color;
 
 uniform sampler2D u_image;
 
@@ -17,10 +21,27 @@ in float v_width;
 #ifdef RENDER_LINE_TRIM_OFFSET
 in highp vec4 v_uv;
 #endif
+#ifdef ELEVATED_ROADS
+in highp float v_road_z_offset;
+#endif
 
 #ifdef LINE_JOIN_NONE
 in vec2 v_pattern_data; // [pos_in_segment, segment_length];
 #endif
+
+#ifdef INDICATOR_CUTOUT
+in highp float v_z_offset;
+#endif
+
+#ifdef RENDER_SHADOWS
+uniform vec3 u_ground_shadow_factor;
+
+in highp vec4 v_pos_light_view_0;
+in highp vec4 v_pos_light_view_1;
+in highp float v_depth;
+#endif
+
+uniform float u_emissive_strength;
 
 #pragma mapbox: define mediump vec4 pattern
 #pragma mapbox: define mediump float pixel_ratio
@@ -48,7 +69,7 @@ void main() {
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_width2.t) or when fading out
     // (v_width2.s)
-    float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
+    float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 
     highp float pattern_x = v_linesofar / pattern_size * aspect;
@@ -78,9 +99,10 @@ void main() {
     // Nested conditionals fixes the issue
     // https://github.com/mapbox/mapbox-gl-js/issues/12013
     if (trim_end > trim_start) {
-        if (line_progress <= trim_end && line_progress >= trim_start) {
-            color = vec4(0, 0, 0, 0);
-        }
+        highp float start_transition = max(0.0, min(1.0, (line_progress - trim_start) / max(u_trim_fade_range[0], 1.0e-9)));
+        highp float end_transition = max(0.0, min(1.0, (trim_end - line_progress) / max(u_trim_fade_range[1], 1.0e-9)));
+        highp float transition_factor = min(start_transition, end_transition);
+        color = mix(color, color.a * u_trim_color, transition_factor);
     }
 #endif
 
@@ -103,7 +125,15 @@ void main() {
 #endif
 
 #ifdef LIGHTING_3D_MODE
-    color = apply_lighting_ground(color);
+    color = apply_lighting_with_emission_ground(color, u_emissive_strength);
+#ifdef RENDER_SHADOWS
+    float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+#ifdef ELEVATED_ROADS
+    color.rgb *= mix(v_road_z_offset > 0.0 ? u_ground_shadow_factor : vec3(1.0), vec3(1.0), light);
+#else
+    color.rgb *= mix(u_ground_shadow_factor, vec3(1.0), light);
+#endif // ELEVATED_ROADS
+#endif // RENDER_SHADOWS
 #endif
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos));
@@ -117,7 +147,7 @@ void main() {
         }
     }
 #ifdef INDICATOR_CUTOUT
-    color = applyCutout(color);
+    color = applyCutout(color, v_z_offset);
 #endif
 
     glFragColor = color;

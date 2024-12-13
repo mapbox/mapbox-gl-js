@@ -99,6 +99,19 @@ function tsObject(properties, indent, overrides = {}) {
 ${Object.keys(properties)
         .map(k => {
             const property = `    ${indent}${tsProperty(k, properties[k], overrides[k])}`;
+
+            if( properties[k].type === 'color') {
+
+                if (properties[k].transition) {
+                    const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification` + `,\n    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
+                    return [property, propertyTransition].join(',\n');
+                }
+                else {
+                    const propertyUseTheme = `    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
+                    return [property, propertyUseTheme].join(',\n');
+                }
+            }
+            
             if (properties[k].transition) {
                 const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification`;
                 return [property, propertyTransition].join(',\n');
@@ -313,6 +326,10 @@ ${tsObjectDeclaration('TerrainSpecification', spec.terrain)}
 
 ${tsObjectDeclaration('FogSpecification', spec.fog)}
 
+${tsObjectDeclaration('SnowSpecification', spec.snow)}
+
+${tsObjectDeclaration('RainSpecification', spec.rain)}
+
 ${tsObjectDeclaration('CameraSpecification', spec.camera)}
 
 ${tsObjectDeclaration('ColorThemeSpecification', spec.colorTheme)}
@@ -320,6 +337,8 @@ ${tsObjectDeclaration('ColorThemeSpecification', spec.colorTheme)}
 ${tsObjectDeclaration('ProjectionSpecification', spec.projection)}
 
 ${tsObjectDeclaration('ImportSpecification', spec.import)}
+
+${tsObjectDeclaration('IndoorSpecification', spec.indoor)}
 
 ${tsObjectDeclaration('ConfigSpecification', spec.config)}
 

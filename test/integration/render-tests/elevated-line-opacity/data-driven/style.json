@@ -1,0 +1,160 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 18,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "data-driven-lines",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "filter": [
+        "has",
+        "type"
+      ],
+      "layout": {
+        "line-join": "round",
+        "line-z-offset": 0.01
+      },
+      "paint": {
+        "line-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "light_rail",
+              "monorail",
+              "rail"
+            ],
+            "hsl(255, 82%, 42%)",
+            "subway",
+            "hsl(360, 93%, 50%)",
+            "hsla(0, 0%, 0%, 0)"
+          ],
+          8,
+          [
+            "match",
+            [
+              "get",
+              "type"
+            ],
+            [
+              "light_rail",
+              "monorail",
+              "rail"
+            ],
+            "hsl(255, 82%, 42%)",
+            "subway",
+            "hsl(360, 93%, 50%)",
+            "#000000"
+          ]
+        ],
+        "line-opacity": 0.6,
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          [
+            "*",
+            [
+              "match",
+              [
+                "get",
+                "type"
+              ],
+              "platform",
+              0.5,
+              [
+                "rail",
+                "monorail",
+                "light_rail",
+                "subway"
+              ],
+              3,
+              0
+            ],
+            1.4
+          ],
+          3,
+          [
+            "*",
+            [
+              "match",
+              [
+                "get",
+                "type"
+              ],
+              "platform",
+              0.5,
+              [
+                "rail",
+                "monorail",
+                "light_rail",
+                "subway"
+              ],
+              3,
+              0
+            ],
+            1.4
+          ],
+          22,
+          [
+            "*",
+            [
+              "match",
+              [
+                "get",
+                "type"
+              ],
+              "platform",
+              0.5,
+              [
+                "rail",
+                "monorail",
+                "light_rail",
+                "subway"
+              ],
+              3,
+              0
+            ],
+            1.4
+          ]
+        ]
+      }
+    }
+  ],
+  "center": [
+    -74.001215,
+    40.753458
+  ],
+  "zoom": 16.5
+}

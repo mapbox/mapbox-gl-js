@@ -21,7 +21,7 @@ export default class CylindricalEqualArea extends Projection {
         this.supportsWorldCopies = true;
     }
 
-    project(lng: number, lat: number): ProjectedPoint {
+    override project(lng: number, lat: number): ProjectedPoint {
         const {scale, cosPhi} = this;
         const x = degToRad(lng) * cosPhi;
         const y = Math.sin(degToRad(lat)) / cosPhi;
@@ -33,7 +33,7 @@ export default class CylindricalEqualArea extends Projection {
         };
     }
 
-    unproject(x: number, y: number): LngLat {
+    override unproject(x: number, y: number): LngLat {
         const {scale, cosPhi} = this;
         const x_ = (x - 0.5) / scale;
         const y_ = -(y - 0.5) / scale;

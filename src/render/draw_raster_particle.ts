@@ -133,7 +133,7 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
         if (!data) continue;
         assert(data.texture);
 
-        const textureSize = [tile.tileSize, tile.tileSize];
+        const textureSize: [number, number] = [tile.tileSize, tile.tileSize];
         let tileFramebuffer = layer.tileFramebuffer;
         if (!tileFramebuffer) {
             const fbWidth = textureSize[0];
@@ -144,7 +144,6 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
 
         let state = tile.rasterParticleState;
         if (!state) {
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
             state = tile.rasterParticleState = new RasterParticleState(context, id, textureSize, particlePositionRGBAImage);
         }
 
@@ -230,7 +229,7 @@ function getTileData(
         uint8: 'DATA_FORMAT_UINT8',
         uint16: 'DATA_FORMAT_UINT16',
         uint32: 'DATA_FORMAT_UINT32',
-    }[format];
+    }[format] as DynamicDefinesType;
 
     return {
         texture,
@@ -239,7 +238,6 @@ function getTileData(
         scalarData,
         scale: mix,
         offset,
-        // @ts-expect-error - TS2322 - Type 'string' is not assignable to type 'DynamicDefinesType'.
         defines: ['RASTER_ARRAY', dataFormatDefine]
     };
 }
@@ -339,11 +337,10 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
             const rasterParticleTextureRes = state.particleTexture0.size;
             assert(rasterParticleTextureRes[0] === rasterParticleTextureRes[1]);
             const rasterParticleTextureSideLen = rasterParticleTextureRes[0];
-            const tileOffset = [nx - x, ny - y];
+            const tileOffset: [number, number] = [nx - x, ny - y];
             const uniforms = rasterParticleDrawUniformValues(
                 RASTER_PARTICLE_TEXTURE_UNIT,
                 rasterParticleTextureSideLen,
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
                 tileOffset,
                 VELOCITY_TEXTURE_UNIT,
                 targetTileData.texture.size,
@@ -503,7 +500,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
         }
 
         const uniformValues = rasterParticleUniformValues(
-            projMatrix,
+            projMatrix as Float32Array,
             normalizeMatrix,
             globeMatrix,
             globeMercatorMatrix,

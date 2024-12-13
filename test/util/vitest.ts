@@ -9,9 +9,9 @@ export function waitFor(evented, event) {
     });
 }
 
-export function createStyleJSON(options) {
+export function createStyleJSON(options = {}) {
     return {
-        version: 8,
+        version: 8 as const,
         sources: {},
         layers: [],
         ...options
@@ -29,7 +29,7 @@ export function doneAsync() {
         doneRef.reject = reject;
     });
 
-    const withAsync = (fn) => {
+    const withAsync = (fn): void => {
         return async (...args) => {
             try {
                 await fn(...args, doneRef);
@@ -46,7 +46,7 @@ export function doneAsync() {
     };
 }
 
-export function createMap(options, callback) {
+export function createMap(options, callback?: (err: any, map: Map) => void) {
     const container = window.document.createElement('div');
     const defaultOptions = {
         container,

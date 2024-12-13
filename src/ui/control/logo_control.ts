@@ -26,11 +26,8 @@ class LogoControl implements IControl {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl');
         const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
-        // @ts-expect-error - TS2339 - Property 'target' does not exist on type 'HTMLElement'.
         anchor.target = "_blank";
-        // @ts-expect-error - TS2339 - Property 'rel' does not exist on type 'HTMLElement'.
         anchor.rel = "noopener nofollow";
-        // @ts-expect-error - TS2339 - Property 'href' does not exist on type 'HTMLElement'.
         anchor.href = "https://www.mapbox.com/";
         anchor.setAttribute("aria-label", this._map._getUIString('LogoControl.Title'));
         anchor.setAttribute("rel", "noopener nofollow");

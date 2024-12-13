@@ -16,11 +16,11 @@ import {base64DecToArr} from '../../src/util/util';
 import TriangleGridIndex from '../../src/util/triangle_grid_index';
 import {HEIGHTMAP_DIM} from '../data/model';
 
-import type {vec2} from 'gl-matrix';
+import type {vec2, vec4} from 'gl-matrix';
 import type {Class} from '../../src/types/class';
 import type {Footprint} from '../util/conflation';
 import type {TextureImage} from '../../src/render/texture';
-import type {Mesh, Node, Material, ModelTexture, Sampler, AreaLight} from '../data/model';
+import type {Mesh, ModelNode, Material, ModelTexture, Sampler, AreaLight, PbrMetallicRoughness} from '../data/model';
 
 function convertTextures(gltf: any, images: Array<TextureImage>): Array<ModelTexture> {
     const textures: ModelTexture[] = [];
@@ -92,7 +92,7 @@ function convertMaterial(materialDesc: any, textures: Array<ModelTexture>): Mate
 }
 
 function computeCentroid(indexArray: ArrayBufferView, vertexArray: ArrayBufferView): vec3 {
-    const out = [0.0, 0.0, 0.0];
+    const out: vec3 = [0.0, 0.0, 0.0];
     // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'ArrayBufferView'.
     const indexSize = indexArray.length;
     if (indexSize > 0) {
@@ -106,7 +106,6 @@ function computeCentroid(indexArray: ArrayBufferView, vertexArray: ArrayBufferVi
         out[1] /= indexSize;
         out[2] /= indexSize;
     }
-    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec3'.
     return out;
 }
 
@@ -250,11 +249,10 @@ function convertMeshes(gltf: any, textures: Array<ModelTexture>): Array<Array<Me
     return meshes;
 }
 
-function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): Node {
+function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): ModelNode {
     const {matrix, rotation, translation, scale, mesh, extras, children} = nodeDesc;
-    // @ts-expect-error - TS2740 - Type '{}' is missing the following properties from type 'Node': id, matrix, meshes, children, and 6 more.
-    const node: Node = {};
-    node.matrix = matrix || mat4.fromRotationTranslationScale([] as any, rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
+    const node = {} as ModelNode;
+    node.matrix = matrix || mat4.fromRotationTranslationScale([] as unknown as mat4, rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
     if (mesh !== undefined) {
         node.meshes = meshes[mesh];
         const anchor: vec2 = node.anchor = [0, 0];
@@ -275,7 +273,7 @@ function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): Node
         }
     }
     if (children) {
-        const converted: Node[] = [];
+        const converted: ModelNode[] = [];
         for (const childNodeIdx of children) {
             converted.push(convertNode(gltf.json.nodes[childNodeIdx], gltf, meshes));
         }
@@ -383,7 +381,7 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
 
     let baseVertex = 0;
 
-    const tempVertex = [];
+    const tempVertex = [] as unknown as vec3;
     for (const mesh of meshes) {
         baseVertex = vertices.length;
 
@@ -394,8 +392,7 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
             tempVertex[0] = vArray[i * 3 + 0];
             tempVertex[1] = vArray[i * 3 + 1];
             tempVertex[2] = vArray[i * 3 + 2];
-            // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'vec3'.
-            vec3.transformMat4(tempVertex as [], tempVertex as [], matrix);
+            vec3.transformMat4(tempVertex, tempVertex, matrix);
             vertices.push(new Point(tempVertex[0], tempVertex[1]));
         }
 
@@ -421,7 +418,7 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
     return {vertices, indices};
 }
 
-function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNodes: any) {
+function convertFootprints(convertedNodes: Array<ModelNode>, sceneNodes: any, modelNodes: any) {
     // modelNodes == a list of nodes in the gltf file
     // sceneNodes == an index array pointing to modelNodes being parsed
     assert(convertedNodes.length === sceneNodes.length);
@@ -433,8 +430,8 @@ function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNo
     //     connected to correct models via matching ids.
 
     // Find footprint-only nodes from the list.
-    const nodeFootprintLookup: Record<string, any> = {};
-    const footprintNodeIndices = new Set();
+    const nodeFootprintLookup: Record<string, number> = {};
+    const footprintNodeIndices = new Set<number>();
 
     for (let i = 0; i < convertedNodes.length; i++) {
         const gltfNode = modelNodes[sceneNodes[i]];
@@ -488,17 +485,15 @@ function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNo
 
     // Remove footprint nodes as they serve no other purpose
     if (footprintNodeIndices.size > 0) {
-        // @ts-expect-error - TS2362 - The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type. | TS2363 - The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
-        const nodesToRemove = Array.from(footprintNodeIndices.values()).sort((a, b) => a - b);
+        const nodesToRemove: number[] = Array.from(footprintNodeIndices.values()).sort((a, b) => a - b);
 
         for (let i = nodesToRemove.length - 1; i >= 0; i--) {
-            // @ts-expect-error - TS2769 - No overload matches this call.
             convertedNodes.splice(nodesToRemove[i], 1);
         }
     }
 }
 
-export default function convertModel(gltf: any): Array<Node> {
+export default function convertModel(gltf: any): Array<ModelNode> {
     const textures = convertTextures(gltf, gltf.images);
     const meshes = convertMeshes(gltf, textures);
 
@@ -506,7 +501,7 @@ export default function convertModel(gltf: any): Array<Node> {
     const {scenes, scene, nodes} = gltf.json;
     const gltfNodes = scenes ? scenes[scene || 0].nodes : nodes;
 
-    const resultNodes: Node[] = [];
+    const resultNodes: ModelNode[] = [];
     for (const nodeIdx of gltfNodes) {
         resultNodes.push(convertNode(nodes[nodeIdx], gltf, meshes));
     }
@@ -514,7 +509,7 @@ export default function convertModel(gltf: any): Array<Node> {
     return resultNodes;
 }
 
-export function process3DTile(gltf: any, zScale: number): Array<Node> {
+export function process3DTile(gltf: any, zScale: number): Array<ModelNode> {
     const nodes = convertModel(gltf);
     for (const node of nodes) {
         for (const mesh of node.meshes) {
@@ -561,9 +556,7 @@ function parseHeightmap(mesh: Mesh) {
 }
 
 function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
-
-    // @ts-expect-error - TS2740 - Type '{}' is missing the following properties from type 'Mesh': indexArray, indexBuffer, vertexArray, vertexBuffer, and 14 more.
-    const mesh: Mesh = {};
+    const mesh = {} as Mesh;
     mesh.indexArray = new TriangleIndexArray();
     mesh.indexArray.reserve(4 * lights.length);
     mesh.vertexArray = new ModelLayoutArray();
@@ -649,18 +642,11 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
         mesh.indexArray.emplaceBack(1 + currentVertex, 3 + currentVertex, 2 + currentVertex);
         currentVertex += 10;
     }
-    //mesh.featureArray = new FeatureVertexArray();
-    //mesh.featureArray.reserve(10 * lights.length);
-    //for (let i = 0; i < 10 * lights.length; i++) {
-    //    mesh.featureArray.emplaceBack(0xffff, 0xffff, 0xffff, 0xffff, 0, 0, 0);
-    //}
-    // @ts-expect-error - TS2740 - Type '{}' is missing the following properties from type 'Material': normalTexture, occlusionTexture, emissionTexture, pbrMetallicRoughness, and 5 more.
-    const material: Material = {};
+    const material = {} as Material;
     material.defined = true;
     material.emissiveFactor = [0, 0, 0];
-    const pbrMetallicRoughness: Record<string, any> = {};
+    const pbrMetallicRoughness = {} as PbrMetallicRoughness;
     pbrMetallicRoughness.baseColorFactor = Color.white;
-    // @ts-expect-error - TS2739 - Type 'Record<string, any>' is missing the following properties from type 'PbrMetallicRoughness': baseColorFactor, metallicFactor, roughnessFactor, baseColorTexture, metallicRoughnessTexture
     material.pbrMetallicRoughness = pbrMetallicRoughness;
     mesh.material = material;
     mesh.aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
@@ -689,10 +675,9 @@ function decodeLights(base64: string): Array<AreaLight> {
         const dx = x1 - x0;
         const dy = y1 - y0;
         const width = Math.hypot(dx, dy);
-        const normal = [dy / width, -dx / width, 0];
-        const pos = [x0 + dx * 0.5, y0 + dy * 0.5, elevation];
-        const points = [x0, y0, x1, y1];
-        // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec3'. | TS2322 - Type 'number[]' is not assignable to type 'vec3'. | TS2322 - Type 'number[]' is not assignable to type 'vec4'.
+        const normal: vec3 = [dy / width, -dx / width, 0];
+        const pos: vec3 = [x0 + dx * 0.5, y0 + dy * 0.5, elevation];
+        const points: vec4 = [x0, y0, x1, y1];
         lights.push({pos, normal, width, height, depth, points});
     }
     return lights;

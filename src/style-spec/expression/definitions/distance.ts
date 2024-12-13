@@ -80,20 +80,18 @@ function splitRange(range: IndexRange, isLine: boolean) {
 }
 
 function getBBox(pointSets: Array<GeoJSON.Position>, range: IndexRange) {
-    const bbox = [Infinity, Infinity, -Infinity, -Infinity];
+    const bbox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
     if (!isRangeSafe(range, pointSets.length)) return bbox;
     for (let i = range[0]; i <= range[1]; ++i) {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         updateBBox(bbox, pointSets[i]);
     }
     return bbox;
 }
 
 function getPolygonBBox(polygon: Array<Array<GeoJSON.Position>>) {
-    const bbox = [Infinity, Infinity, -Infinity, -Infinity];
+    const bbox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
     for (let i = 0; i < polygon.length; ++i) {
         for (let j = 0; j < polygon[i].length; ++j) {
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
             updateBBox(bbox, polygon[i][j]);
         }
     }
@@ -263,11 +261,9 @@ function polygonIntersect(polygon1: Array<Array<GeoJSON.Position>>, polygon2: Ar
 function polygonToPolygonDistance(polygon1: Array<Array<GeoJSON.Position>>, polygon2: Array<Array<GeoJSON.Position>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
     const bbox1 = getPolygonBBox(polygon1);
     const bbox2 = getPolygonBBox(polygon2);
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
     if (currentMiniDist !== Infinity && bboxToBBoxDistance(bbox1, bbox2, ruler) >= currentMiniDist) {
         return currentMiniDist;
     }
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
     if (boxWithinBox(bbox1, bbox2)) {
         if (polygonIntersect(polygon1, polygon2)) return 0.0;
     } else if (polygonIntersect(polygon2, polygon1)) {
@@ -289,7 +285,6 @@ function polygonToPolygonDistance(polygon1: Array<Array<GeoJSON.Position>>, poly
 
 function updateQueue(distQueue: any, miniDist: number, ruler: CheapRuler, pointSet1: Array<GeoJSON.Position>, pointSet2: Array<GeoJSON.Position>, r1: IndexRange | null, r2: IndexRange | null) {
     if (r1 === null || r2 === null) return;
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
     const tempDist = bboxToBBoxDistance(getBBox(pointSet1, r1), getBBox(pointSet2, r2), ruler);
     // Insert new pair to the queue if the bbox distance is less than miniDist, the pair with biggest distance will be at the top
     if (tempDist < miniDist) distQueue.push({dist: tempDist, range1: r1, range2: r2});
@@ -330,12 +325,10 @@ function pointSetToPolygonDistance(pointSets: Array<GeoJSON.Position>, isLine: b
         } else {
             const newRanges = splitRange(range, isLine);
             if (newRanges[0] !== null) {
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
                 const tempDist = bboxToBBoxDistance(getBBox(pointSets, newRanges[0]), polyBBox, ruler);
                 if (tempDist < miniDist) distQueue.push({dist: tempDist, range1: newRanges[0], range2: [0, 0]});
             }
             if (newRanges[1] !== null) {
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
                 const tempDist = bboxToBBoxDistance(getBBox(pointSets, newRanges[1]), polyBBox, ruler);
                 if (tempDist < miniDist) distQueue.push({dist: tempDist, range1: newRanges[1], range2: [0, 0]});
             }
@@ -394,7 +387,6 @@ function pointSetToLinesDistance(pointSet: Array<GeoJSON.Position>, isLine: bool
     let dist = currentMiniDist;
     const bbox1 = getBBox(pointSet, [0, pointSet.length - 1]);
     for (const line of lines) {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         if (dist !== Infinity && bboxToBBoxDistance(bbox1, getBBox(line, [0, line.length - 1]), ruler) >= dist) continue;
         dist = Math.min(dist, pointSetsDistance(pointSet, isLine, line, true /*isLine*/, ruler, dist));
         if (dist === 0.0) return dist;
@@ -406,7 +398,6 @@ function pointSetToPolygonsDistance(points: Array<GeoJSON.Position>, isLine: boo
     let dist = currentMiniDist;
     const bbox1 = getBBox(points, [0, points.length - 1]);
     for (const polygon of polygons) {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         if (dist !== Infinity && bboxToBBoxDistance(bbox1, getPolygonBBox(polygon), ruler) >= dist) continue;
         const tempDist = pointSetToPolygonDistance(points, isLine, polygon, ruler, dist);
         if (isNaN(tempDist)) return tempDist;

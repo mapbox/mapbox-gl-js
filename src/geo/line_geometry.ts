@@ -42,10 +42,10 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
 
     // If the line has duplicate vertices at the ends, adjust start/length to remove them.
     let len = vertices.length;
-    if (len < (isPolygon ? 3 : 2)) return wallGeometry;
     while (len >= 2 && vertices[len - 1].equals(vertices[len - 2])) {
         len--;
     }
+    if (len < (isPolygon ? 3 : 2)) return wallGeometry;
     let first = 0;
     while (first < len - 1 && vertices[first].equals(vertices[first + 1])) {
         first++;

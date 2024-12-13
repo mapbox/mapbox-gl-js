@@ -2,6 +2,7 @@ import latest from '../reference/latest';
 import {deepUnbundle} from '../util/unbundle_jsonlint';
 import {createExpression} from '../expression/index';
 import {isFeatureConstant} from '../expression/is_constant';
+import assert from 'assert';
 
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../types/tile_id';
@@ -21,6 +22,7 @@ export type FilterExpression = (
     featureTileCoord?: Point,
     featureDistanceData?: FeatureDistanceData,
 ) => boolean;
+
 export type FeatureFilter = {
     filter: FilterExpression;
     dynamicFilter?: FilterExpression;
@@ -109,14 +111,18 @@ ${JSON.stringify(filterExp, null, 2)}
     }
 
     // Compile the static component of the filter
-    const filterSpec = latest[`filter_${layerType}`];
-    const compiledStaticFilter = createExpression(staticFilter, filterSpec, scope, options);
-
     let filterFunc = null;
-    if (compiledStaticFilter.result === 'error') {
-        throw new Error(compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
-    } else {
-        filterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical);
+    let filterSpec = null;
+    if (layerType !== 'background' && layerType !== 'sky' && layerType !== 'slot') {
+        filterSpec = latest[`filter_${layerType}`];
+        assert(filterSpec);
+        const compiledStaticFilter = createExpression(staticFilter, filterSpec, scope, options);
+
+        if (compiledStaticFilter.result === 'error') {
+            throw new Error(compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
+        } else {
+            filterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical);
+        }
     }
 
     // If the static component is not equal to the entire filter then we have a dynamic component

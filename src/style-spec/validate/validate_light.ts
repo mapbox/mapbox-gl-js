@@ -22,8 +22,17 @@ export default function validateLight(options: ValidationOptions): Array<Validat
 
     for (const key in light) {
         const transitionMatch = key.match(/^(.*)-transition$/);
+        const useThemeMatch = key.match(/^(.*)-use-theme$/);
 
-        if (transitionMatch && lightSpec[transitionMatch[1]] && lightSpec[transitionMatch[1]].transition) {
+        if (useThemeMatch && lightSpec[useThemeMatch[1]]) {
+            errors = errors.concat(validate({
+                key,
+                value: light[key],
+                valueSpec: {type:'string'},
+                style,
+                styleSpec
+            }));
+        } else if (transitionMatch && lightSpec[transitionMatch[1]] && lightSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
                 value: light[key],

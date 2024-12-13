@@ -59,10 +59,8 @@ class NavigationControl implements IControl {
                 '_setButtonTitle',
                 '_updateZoomButtons'
             ], this);
-            // @ts-expect-error - TS2345 - Argument of type '(e: any) => void' is not assignable to parameter of type '() => unknown'.
             this._zoomInButton = this._createButton('mapboxgl-ctrl-zoom-in', (e) => { if (this._map) this._map.zoomIn({}, {originalEvent: e}); });
             DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomInButton).setAttribute('aria-hidden', 'true');
-            // @ts-expect-error - TS2345 - Argument of type '(e: any) => void' is not assignable to parameter of type '() => unknown'.
             this._zoomOutButton = this._createButton('mapboxgl-ctrl-zoom-out', (e) => { if (this._map) this._map.zoomOut({}, {originalEvent: e}); });
             DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomOutButton).setAttribute('aria-hidden', 'true');
         }
@@ -70,7 +68,6 @@ class NavigationControl implements IControl {
             bindAll([
                 '_rotateCompassArrow'
             ], this);
-            // @ts-expect-error - TS2345 - Argument of type '(e: any) => void' is not assignable to parameter of type '() => unknown'.
             this._compass = this._createButton('mapboxgl-ctrl-compass', (e) => {
                 const map = this._map;
                 if (!map) return;
@@ -151,8 +148,8 @@ class NavigationControl implements IControl {
         this._map = undefined;
     }
 
-    _createButton(className: string, fn: () => unknown): HTMLButtonElement {
-        const a = DOM.create('button', className, this._container) as HTMLButtonElement;
+    _createButton(className: string, fn: (e: Event) => unknown): HTMLButtonElement {
+        const a = DOM.create('button', className, this._container);
         a.type = 'button';
         a.addEventListener('click', fn);
         return a;

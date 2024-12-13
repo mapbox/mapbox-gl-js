@@ -1,3 +1,58 @@
+## 3.9.0-beta.1
+
+### Breaking changes ⚠️
+
+- Rename `featureset` property to `target` in `addInteraction` and `queryRenderedFetures` options.
+
+### Features and improvements ✨
+
+- Add _experimental_ features for interactive indoor maps.
+- Add _experimental_ vector icons support.
+- Add _experimental_ precipitation support through `snow` and `rain` style properties.
+- Add `to-hsla` expression.
+- Add `*-use-theme` property to override the color theme for specific layers.
+- Add support for `color-theme` overrides in imports.
+- Add per-feature `mouseenter`, `mouseover`, `mouseleave`, and `mouseout` events for `addInteraction`.
+- Enable mixing `featuresets` and `layers` in the `Map#queryRenderedFeatures`.
+- Improve landmark rendering performance.
+
+### Bug fixes 🐞
+
+- Fix crash on devices with PowerVR GPUs.
+- Fix dark shade of fill-extrusion buildings caused by specific light directions.
+- Fix double shadowing on lines at ground level.
+- Fix shadow acne from 3D structures close to the ground.
+- Fix update of state-dependent features during brightness changes.
+
+## 3.8.0
+
+### Features and improvements ✨
+
+- Add _experimental_ support for style-defined `featuresets`, an upcoming way to query features in Mapbox Standard and other fragment-based styles.
+- Add _experimental_ `Map` `addInteraction`/`removeInteraction` methods that make it easier to manage map interactions like clicking and hovering over features.
+- Add _experimental_ support for elevated lines with `line-cross-slope` and `line-elevation-reference` properties.
+- Add _experimental_ `scaleFactor` map option and `setScaleFactor` method to increase map label size (useful for improving accessibility or adjusting text size for different devices).
+- Add support for using `line-progress` expression in non-data-driven line properties.
+- Improve performance of dynamic brightness changes.
+- Minor optimizations to reduce load time.
+
+### Bug fixes 🐞
+
+- Fix localization when setting a worldview on the Mapbox Standard style.
+- Fix raster array rendering on some Android devices.
+- Fix an issue where fill-extrusion buildings would disappear when zooming out.
+- Fix line joins for thick semi-transparent or blurred lines.
+- Improve appearance of line corners with densely placed vertices.
+- Fix anti-alising aftifacts on blurred lines.
+- Fix call stack overflow caused by repeated `addImport` calls.
+- Fix failures when handling non-renderable characters.
+- Fix rendering of Osage script.
+- Fix certain edge cases when using config expression in filter properties.
+- Fix patterned fill extrusions being visible with zero opacity alpha.
+- Fix data-driven `symbol-z-offset` not working properly.
+- Fix fill extrusions on terrain producing WebGL warnings in some cases.
+- Fix `line-emissive-strength` not being applied to patterned lines.
+
 ## v3.7.0
 
 ### Features and improvements ✨

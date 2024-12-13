@@ -1,6 +1,9 @@
 import {Uniform1i, Uniform1f, Uniform2f, Uniform4f, UniformMatrix2f, UniformMatrix4f} from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
+import {clamp} from '../../../src/util/util';
+import {tileToMeter} from '../../../src/geo/mercator_coordinate';
 
+import type {mat4} from 'gl-matrix';
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';
 import type Transform from '../../geo/transform';
@@ -12,6 +15,8 @@ export type LineUniformsType = {
     ['u_matrix']: UniformMatrix4f;
     ['u_pixels_to_tile_units']: UniformMatrix2f;
     ['u_device_pixel_ratio']: Uniform1f;
+    ['u_width_scale']: Uniform1f;
+    ['u_floor_width_scale']: Uniform1f;
     ['u_units_to_pixels']: Uniform2f;
     ['u_dash_image']: Uniform1i;
     ['u_gradient_image']: Uniform1i;
@@ -23,6 +28,8 @@ export type LineUniformsType = {
     ['u_trim_fade_range']: Uniform2f;
     ['u_trim_color']: Uniform4f;
     ['u_emissive_strength']: Uniform1f;
+    ['u_zbias_factor']: Uniform1f;
+    ['u_tile_to_meter']: Uniform1f;
 };
 
 export type LinePatternUniformsType = {
@@ -30,19 +37,28 @@ export type LinePatternUniformsType = {
     ['u_texsize']: Uniform2f;
     ['u_pixels_to_tile_units']: UniformMatrix2f;
     ['u_device_pixel_ratio']: Uniform1f;
+    ['u_width_scale']: Uniform1f;
+    ['u_floor_width_scale']: Uniform1f;
     ['u_units_to_pixels']: Uniform2f;
     ['u_image']: Uniform1i;
     ['u_tile_units_to_pixels']: Uniform1f;
     ['u_alpha_discard_threshold']: Uniform1f;
     ['u_trim_offset']: Uniform2f;
+    ['u_trim_fade_range']: Uniform2f;
+    ['u_trim_color']: Uniform4f;
+    ['u_emissive_strength']: Uniform1f;
+    ['u_zbias_factor']: Uniform1f;
+    ['u_tile_to_meter']: Uniform1f;
 };
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'VARIABLE_LINE_WIDTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA';
 
 const lineUniforms = (context: Context): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_pixels_to_tile_units': new UniformMatrix2f(context),
     'u_device_pixel_ratio': new Uniform1f(context),
+    'u_width_scale': new Uniform1f(context),
+    'u_floor_width_scale': new Uniform1f(context),
     'u_units_to_pixels': new Uniform2f(context),
     'u_dash_image': new Uniform1i(context),
     'u_gradient_image': new Uniform1i(context),
@@ -53,7 +69,9 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_trim_offset': new Uniform2f(context),
     'u_trim_fade_range': new Uniform2f(context),
     'u_trim_color': new Uniform4f(context),
-    'u_emissive_strength': new Uniform1f(context)
+    'u_emissive_strength': new Uniform1f(context),
+    'u_zbias_factor': new Uniform1f(context),
+    'u_tile_to_meter': new Uniform1f(context)
 });
 
 const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
@@ -61,28 +79,46 @@ const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
     'u_texsize': new Uniform2f(context),
     'u_pixels_to_tile_units': new UniformMatrix2f(context),
     'u_device_pixel_ratio': new Uniform1f(context),
+    'u_width_scale': new Uniform1f(context),
+    'u_floor_width_scale': new Uniform1f(context),
     'u_image': new Uniform1i(context),
     'u_units_to_pixels': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context),
     'u_alpha_discard_threshold': new Uniform1f(context),
     'u_trim_offset': new Uniform2f(context),
+    'u_trim_fade_range': new Uniform2f(context),
+    'u_trim_color': new Uniform4f(context),
+    'u_emissive_strength': new Uniform1f(context),
+    'u_zbias_factor': new Uniform1f(context),
+    'u_tile_to_meter': new Uniform1f(context)
 });
+
+const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
 
 const lineUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: LineStyleLayer,
-    matrix: Float32Array | null | undefined,
+    matrix: mat4 | null | undefined,
     imageHeight: number,
     pixelRatio: number,
+    widthScale: number,
+    floorWidthScale: number,
     trimOffset: [number, number],
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
     const pixelsToTileUnits = transform.calculatePixelsToTileUnitsMatrix(tile);
+    const ignoreLut = layer.paint.get('line-trim-color-use-theme').constantOr("default") === 'none';
+
+    // Increase zbias factor for low pitch values based on the zoom level. Lower zoom level increases the zbias factor.
+    // The values were found experimentally, to make an elevated line look good over a terrain with high elevation differences.
+    const zbiasFactor = transform.pitch < 15.0 ? lerp(0.07, 0.7, clamp((14.0 - transform.zoom) / (14.0 - 9.0), 0.0, 1.0)) : 0.07;
     return {
-        'u_matrix': calculateMatrix(painter, tile, layer, matrix),
-        'u_pixels_to_tile_units': pixelsToTileUnits,
+        'u_matrix': calculateMatrix(painter, tile, layer, matrix) as Float32Array,
+        'u_pixels_to_tile_units': pixelsToTileUnits as Float32Array,
         'u_device_pixel_ratio': pixelRatio,
+        'u_width_scale': widthScale,
+        'u_floor_width_scale': floorWidthScale,
         'u_units_to_pixels': [
             1 / transform.pixelsToGLUnits[0],
             1 / transform.pixelsToGLUnits[1]
@@ -95,8 +131,10 @@ const lineUniformValues = (
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset,
         'u_trim_fade_range': layer.paint.get('line-trim-fade-range'),
-        'u_trim_color': layer.paint.get('line-trim-color').toRenderColor(layer.lut).toArray01(),
-        'u_emissive_strength': layer.paint.get('line-emissive-strength')
+        'u_trim_color': layer.paint.get('line-trim-color').toRenderColor(ignoreLut ? null : layer.lut).toArray01(),
+        'u_emissive_strength': layer.paint.get('line-emissive-strength'),
+        'u_zbias_factor': zbiasFactor,
+        'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0)
     };
 };
 
@@ -104,17 +142,26 @@ const linePatternUniformValues = (
     painter: Painter,
     tile: Tile,
     layer: LineStyleLayer,
-    matrix: Float32Array | null | undefined,
+    matrix: mat4 | null | undefined,
     pixelRatio: number,
+    widthScale: number,
+    floorWidthScale: number,
     trimOffset: [number, number],
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
+    const zbiasFactor = transform.pitch < 15.0 ? lerp(0.07, 0.7, clamp((14.0 - transform.zoom) / (14.0 - 9.0), 0.0, 1.0)) : 0.07;
+    const ignoreLut = layer.paint.get('line-trim-color-use-theme').constantOr("default") === 'none';
+
+    // Increase zbias factor for low pitch values based on the zoom level. Lower zoom level increases the zbias factor.
+    // The values were found experimentally, to make an elevated line look good over a terrain with high elevation differences.
     return {
-        'u_matrix': calculateMatrix(painter, tile, layer, matrix),
+        'u_matrix': calculateMatrix(painter, tile, layer, matrix) as Float32Array,
         'u_texsize': tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0],
         // camera zoom ratio
-        'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile),
+        'u_pixels_to_tile_units': transform.calculatePixelsToTileUnitsMatrix(tile) as Float32Array,
         'u_device_pixel_ratio': pixelRatio,
+        'u_width_scale': widthScale,
+        'u_floor_width_scale': floorWidthScale,
         'u_image': 0,
         'u_tile_units_to_pixels': calculateTileRatio(tile, transform),
         'u_units_to_pixels': [
@@ -122,7 +169,12 @@ const linePatternUniformValues = (
             1 / transform.pixelsToGLUnits[1]
         ],
         'u_alpha_discard_threshold': 0.0,
-        'u_trim_offset': trimOffset
+        'u_trim_offset': trimOffset,
+        'u_trim_fade_range': layer.paint.get('line-trim-fade-range'),
+        'u_trim_color': layer.paint.get('line-trim-color').toRenderColor(ignoreLut ? null : layer.lut).toArray01(),
+        'u_emissive_strength': layer.paint.get('line-emissive-strength'),
+        'u_zbias_factor': zbiasFactor,
+        'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0)
     };
 };
 
@@ -130,7 +182,7 @@ function calculateTileRatio(tile: Tile, transform: Transform) {
     return 1 / pixelsToTileUnits(tile, 1, transform.tileZoom);
 }
 
-function calculateMatrix(painter: Painter, tile: Tile, layer: LineStyleLayer, matrix?: Float32Array | null) {
+function calculateMatrix(painter: Painter, tile: Tile, layer: LineStyleLayer, matrix?: mat4) {
     return painter.translatePosMatrix(
         matrix ? matrix : tile.tileID.projMatrix,
         tile,
@@ -141,7 +193,7 @@ function calculateMatrix(painter: Painter, tile: Tile, layer: LineStyleLayer, ma
 }
 
 const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
-    const values = [];
+    const values: LineDefinesType[] = [];
     if (hasDash(layer)) values.push('RENDER_LINE_DASH');
     if (layer.paint.get('line-gradient')) values.push('RENDER_LINE_GRADIENT');
 
@@ -164,7 +216,6 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
 };
 
 function hasDash(layer: LineStyleLayer) {
-
     const dashPropertyValue = layer.paint.get('line-dasharray').value;
     // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'PossiblyEvaluatedValue<number[]>'.
     return dashPropertyValue.value || dashPropertyValue.kind !== "constant";

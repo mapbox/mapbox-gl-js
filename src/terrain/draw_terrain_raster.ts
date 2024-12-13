@@ -166,9 +166,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     vertexMorphing.update(now);
     const globeMercatorMatrix = calculateGlobeMercatorMatrix(tr);
-    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+    const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const sharedBuffers = painter.globeSharedBuffers;
-    const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
+    const viewport: [number, number] = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
     const globeMatrix = Float32Array.from(tr.globeMatrix);
     const elevationOptions = {useDenormalizedUpVectorScale: true};
 
@@ -209,7 +209,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod, tr.worldSize / tr._pixelsPerMercatorPixel);
             const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
             const uniformValues = globeRasterUniformValues(
-                // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'mat4'.
                 tr.expandedFarZProjMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
                 mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
                 tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, skirtHeightValue, tr._farZ, gridMatrix);
@@ -261,7 +260,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
                 const drawPole = (program: Program<any>, vertexBuffer: VertexBuffer) => program.draw(
                     painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                    // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'mat4'.
                     globeRasterUniformValues(tr.expandedFarZProjMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
                     tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
                     tr.globeCenterInViewSpace, tr.globeRadius, viewport, 0, tr._farZ), "globe_pole_raster", vertexBuffer,
@@ -275,7 +273,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                     drawPole(program, northPoleBuffer);
                 }
                 if (bottomCap && painter.renderDefaultSouthPole) {
-                    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
                     poleMatrix = mat4.scale(mat4.create(), poleMatrix, [1, -1, 1]);
                     drawPole(program, southPoleBuffer);
                 }
@@ -302,6 +299,12 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             modes.push(shaderDefines[mode]);
             if (cutoffParams.shouldRenderCutoff) {
                 modes.push('RENDER_CUTOFF');
+            }
+            if (shadowRenderer) {
+                modes.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+                if (shadowRenderer.useNormalOffset) {
+                    modes.push('NORMAL_OFFSET');
+                }
             }
             program = painter.getOrCreateProgram('terrainRaster', {defines: modes});
             programMode = mode;

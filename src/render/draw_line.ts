@@ -11,7 +11,9 @@ import browser from '../util/browser';
 import {clamp, nextPowerOfTwo, warnOnce} from '../util/util';
 import {renderColorRamp} from '../util/color_ramp';
 import EXTENT from '../style-spec/data/extent';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import assert from 'assert';
+import pixelsToTileUnits from '../source/pixels_to_tile_units';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -30,13 +32,20 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     const emissiveStrength = layer.paint.get('line-emissive-strength');
     const occlusionOpacity = layer.paint.get('line-occlusion-opacity');
+    const elevationReference = layer.layout.get('line-elevation-reference');
+    const unitInMeters = layer.layout.get('line-width-unit') === 'meters';
+    const elevationFromSea = elevationReference === 'sea';
 
     const context = painter.context;
     const gl = context.gl;
 
-    const zOffset = layer.layout.get('line-z-offset');
+    const hasZOffset = !layer.isDraped();
+    // line-z-offset is not supported for globe projection
+    if (hasZOffset && painter.transform.projection.name === 'globe') return;
 
-    const hasZOffset = !zOffset.isConstant() || !!zOffset.constantOr(0);
+    const crossSlope = layer.layout.get('line-cross-slope');
+    const hasCrossSlope = crossSlope !== undefined;
+    const crossSlopeHorizontal = crossSlope < 1.0;
 
     const depthMode = hasZOffset ?
         (new DepthMode(painter.depthOcclusion ? gl.GREATER : gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D)) :
@@ -64,7 +73,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const hasOpacity = lineOpacity !== 1.0;
     let useStencilMaskRenderPass = (!image && hasOpacity) ||
     // Only semi-transparent lines need stencil masking
-
         (painter.depthOcclusion && occlusionOpacity > 0 && occlusionOpacity < 1);
 
     const gradient = layer.paint.get('line-gradient');
@@ -89,11 +97,25 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     }
     if (hasZOffset) painter.forceTerrainMode = true;
     if (!hasZOffset && occlusionOpacity !== 0 && painter.terrain && !isDraping) {
-        warnOnce(`Occlusion opacity for layer ${layer.id} is supported on terrain only if the layer has non-zero line-z-offset.`);
+        warnOnce(`Occlusion opacity for layer ${layer.id} is supported on terrain only if the layer has line-z-offset enabled.`);
         return;
     }
     // No need for tile clipping, a single pass only even for transparent lines.
     const stencilMode3D = (useStencilMaskRenderPass && hasZOffset) ? painter.stencilModeFor3D() : StencilMode.disabled;
+
+    if (hasZOffset) {
+        definesValues.push("ELEVATED");
+        if (hasCrossSlope) {
+            definesValues.push(crossSlopeHorizontal ? "CROSS_SLOPE_HORIZONTAL" : "CROSS_SLOPE_VERTICAL");
+        }
+        if (elevationFromSea) {
+            definesValues.push('ELEVATION_REFERENCE_SEA');
+        }
+    }
+
+    if (width.value.kind !== 'constant' && width.value.isLineProgressConstant === false) {
+        definesValues.push("VARIABLE_LINE_WIDTH");
+    }
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -105,10 +127,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: hasZOffset ? [...definesValues, "ELEVATED"] : definesValues, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog, overrideRtt: hasZOffset ? false : undefined});
 
         if (constantPattern && tile.imageAtlas) {
-            const posTo = tile.imageAtlas.patternPositions[constantPattern.toString()];
+            const patternImage = ResolvedImage.from(constantPattern);
+            const posTo = tile.imageAtlas.patternPositions[patternImage.getSerializedPrimary()];
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 
@@ -137,9 +160,11 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
 
         const matrix = isDraping ? coord.projMatrix : null;
+        const lineWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, painter.transform.zoom) : 1.0;
+        const lineFloorWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, Math.floor(painter.transform.zoom)) : 1.0;
         const uniformValues = image ?
-            linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, [trimStart, trimEnd]) :
-            lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, [trimStart, trimEnd]);
+            linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd]) :
+            lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd]);
 
         if (gradient) {
             const layerGradient = bucket.gradients[layer.id];
@@ -190,7 +215,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             programConfiguration.updatePaintBuffers();
         }
 
-        if (hasZOffset) {
+        if (hasZOffset && !elevationFromSea) {
             assert(painter.terrain);
             painter.terrain.setupElevationDraw(tile, program);
         }
@@ -215,7 +240,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             // When terrain is on, ensure that the stencil buffer has 0 values.
             // As stencil may be disabled when it is not in overlapping stencil
             // mode. Refer to stencilModeForRTTOverlap logic.
-            if (stencilId === 0 && isDraping) {
+            const needsClearing = stencilId === 0 && isDraping;
+            if (needsClearing) {
                 context.clear({stencil: 0});
             }
             const stencilFunc = {func: gl.EQUAL, mask: 0xFF};
@@ -239,6 +265,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
     }
 
+    // It is important that this precedes resetStencilClippingMasks as in gl-js we don't clear stencil for terrain.
+    if (hasZOffset) painter.forceTerrainMode = false;
+
     // When rendering to stencil, reset the mask to make sure that the tile
     // clipping reverts the stencil mask we may have drawn in the buffer.
     // The stamp could be reverted by an extra draw call of line geometry,
@@ -251,5 +280,4 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     if (occlusionOpacity !== 0 && !painter.depthOcclusion && !isDraping) {
         painter.layersWithOcclusionOpacity.push(painter.currentLayer);
     }
-    if (hasZOffset) painter.forceTerrainMode = false;
 }

@@ -74,7 +74,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, cullMode,
                 heatmapUniformValues(painter, coord,
-                    tile, invMatrix, mercatorCenter, zoom, layer.paint.get('heatmap-intensity')),
+                    tile, invMatrix as Float32Array, mercatorCenter, zoom, layer.paint.get('heatmap-intensity')),
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
                 bucket.segments, layer.paint, painter.transform.zoom,
                 programConfiguration, isGlobeProjection ? [bucket.globeExtVertexBuffer] : null);

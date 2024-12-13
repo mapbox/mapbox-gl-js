@@ -7,6 +7,7 @@ import {
 } from '../uniform_binding';
 import {extend} from '../../util/util';
 
+import type {mat4} from 'gl-matrix';
 import type Painter from '../painter';
 import type {UniformValues} from '../uniform_binding';
 import type Context from '../../gl/context';
@@ -78,13 +79,13 @@ const fillOutlinePatternUniforms = (context: Context): FillOutlinePatternUniform
     'u_tile_units_to_pixels': new Uniform1f(context)
 });
 
-const fillUniformValues = (matrix: Float32Array, emissiveStrength: number): UniformValues<FillUniformsType> => ({
-    'u_matrix': matrix,
+const fillUniformValues = (matrix: mat4, emissiveStrength: number): UniformValues<FillUniformsType> => ({
+    'u_matrix': matrix as Float32Array,
     'u_emissive_strength': emissiveStrength
 });
 
 const fillPatternUniformValues = (
-    matrix: Float32Array,
+    matrix: mat4,
     emissiveStrength: number,
     painter: Painter,
     tile: Tile,
@@ -94,17 +95,17 @@ const fillPatternUniformValues = (
 );
 
 const fillOutlineUniformValues = (
-    matrix: Float32Array,
+    matrix: mat4,
     emissiveStrength: number,
     drawingBufferSize: [number, number],
 ): UniformValues<FillOutlineUniformsType> => ({
-    'u_matrix': matrix,
+    'u_matrix': matrix as Float32Array,
     'u_world': drawingBufferSize,
     'u_emissive_strength': emissiveStrength
 });
 
 const fillOutlinePatternUniformValues = (
-    matrix: Float32Array,
+    matrix: mat4,
     emissiveStrength: number,
     painter: Painter,
     tile: Tile,

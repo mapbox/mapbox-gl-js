@@ -1,0 +1,15 @@
+{
+  "expression": ["image", "poi_circle", {"params": {"fill_color": "not-supported-color"}}],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]['params']['fill_color']",
+          "error": "Could not parse color from value 'not-supported-color'"
+        }
+      ]
+    }
+  }
+}

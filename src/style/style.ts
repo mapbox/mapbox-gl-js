@@ -9,6 +9,8 @@ import GlyphManager, {LocalGlyphMode} from '../render/glyph_manager';
 import Light from './light';
 import Terrain, {DrapeRenderMode} from './terrain';
 import Fog from './fog';
+import Snow from './snow';
+import Rain from './rain';
 import {pick, clone, extend, deepEqual, filterObject, cartesianPositionToSpherical, warnOnce} from '../util/util';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax';
 import {isMapboxURL} from '../util/mapbox_url';
@@ -41,7 +43,7 @@ import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '
 import SourceCache from '../source/source_cache';
 import BuildingIndex from '../source/building_index';
 import styleSpec from '../style-spec/reference/latest';
-import getWorkerPool from '../util/global_worker_pool';
+import {getGlobalWorkerPool as getWorkerPool} from '../util/worker_pool_factory';
 import deref from '../style-spec/deref';
 import emptyStyle from '../style-spec/empty';
 import diffStyles, {operations as diffOperations} from '../style-spec/diff';
@@ -60,6 +62,10 @@ import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform';
 import {RGBAImage} from '../util/image';
 import {evaluateColorThemeProperties} from '../util/lut';
 import EvaluationParameters from './evaluation_parameters';
+import {expandSchemaWithIndoor} from './indoor_manager';
+import featureFilter from '../style-spec/feature_filter/index';
+import {TargetFeature} from '../util/vectortile_to_geojson';
+import {loadIconset} from './load_iconset';
 
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
@@ -79,11 +85,14 @@ import type {ColorThemeSpecification,
     LightsSpecification,
     FlatLightSpecification,
     FogSpecification,
+    SnowSpecification,
+    RainSpecification,
     ProjectionSpecification,
     TransitionSpecification,
     ConfigSpecification,
     SchemaSpecification,
-    CameraSpecification
+    CameraSpecification,
+    FeaturesetsSpecification,
 } from '../style-spec/types';
 import type {Callback} from '../types/callback';
 import type {StyleGlyph} from './style_glyph';
@@ -100,14 +109,29 @@ import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator, ValidationErrors} from './validate_style';
 import type {OverscaledTileID} from '../source/tile_id';
-import type {FeatureState} from '../style-spec/expression/index';
+import type {FeatureState, StyleExpression} from '../style-spec/expression/index';
 import type {PointLike} from '../types/point-like';
 import type {ISource, Source, SourceClass} from '../source/source';
 import type {TransitionParameters, ConfigOptions} from './properties';
-import type {QueryResult, QueryRenderedFeaturesParams} from '../source/query_features';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
+import type {QrfQuery, QrfTarget, QueryResult} from '../source/query_features';
+import type {GeoJSONFeature, FeaturesetDescriptor, TargetDescriptor, default as Feature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
+import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
+
+export type QueryRenderedFeaturesParams = {
+    layers?: string[];
+    filter?: FilterSpecification;
+    validate?: boolean;
+    target?: never;
+};
+
+export type QueryRenderedFeaturesetParams = {
+    target: TargetDescriptor;
+    filter?: FilterSpecification;
+    validate?: boolean;
+    layers?: never;
+};
 
 // We're skipping validation errors with the `source.canvas` identifier in order
 // to continue to allow canvas sources to be added at runtime/updated in
@@ -131,6 +155,8 @@ const supportedDiffOperations = pick(diffOperations, [
     'setGeoJSONSourceData',
     'setTerrain',
     'setFog',
+    'setSnow',
+    'setRain',
     'setProjection',
     'setCamera',
     'addImport',
@@ -146,6 +172,11 @@ const ignoredDiffOperations = pick(diffOperations, [
     'setBearing',
     'setPitch'
 ]);
+
+/**
+ * Layer types that has no features and are not queryable with QRF API.
+ */
+const featurelessLayerTypes = new Set(['background', 'sky', 'slot']);
 
 const empty = emptyStyle();
 
@@ -165,6 +196,12 @@ export type FeatureSelector = {
     sourceLayer?: string;
 }
 
+export type SourceSelector = {
+    id?: string | number;
+    source: string;
+    sourceLayer?: string;
+}
+
 export type StyleOptions = {
     validate?: boolean;
     localFontFamily?: string | null | undefined;
@@ -175,6 +212,7 @@ export type StyleOptions = {
     modelManager?: ModelManager;
     styleChanges?: StyleChanges;
     configOptions?: ConfigOptions;
+    colorThemeOverride?: ColorThemeSpecification;
     scope?: string;
     importDepth?: number;
     importsCache?: Map<string, StyleSpecification>;
@@ -202,6 +240,13 @@ type StyleColorTheme = {
     lutLoading: boolean;
     lutLoadingCorrelationID: number;
     colorTheme: ColorThemeSpecification | null;
+    colorThemeOverride: ColorThemeSpecification | null;
+};
+
+type FeaturesetSelector = {
+    layerId: string;
+    namespace?: string;
+    properties?: Record<string, StyleExpression>;
 };
 
 const MAX_IMPORT_DEPTH = 5;
@@ -223,6 +268,8 @@ class Style extends Evented<MapEvents> {
     terrain: Terrain | null | undefined;
     disableElevatedTerrain: boolean | null | undefined;
     fog: Fog | null | undefined;
+    snow: Snow | null | undefined;
+    rain: Rain | null | undefined;
     camera: CameraSpecification;
     _styleColorTheme: StyleColorTheme;
     _styleColorThemeForScope: {
@@ -253,13 +300,12 @@ class Style extends Evented<MapEvents> {
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
     _clipLayerPresent: boolean;
 
+    featuresetSelectors: Record<string, Array<FeaturesetSelector>>;
+
     _request: Cancelable | null | undefined;
     _spriteRequest: Cancelable | null | undefined;
     _layers: {
         [_: string]: StyleLayer;
-    };
-    _serializedLayers: {
-        [_: string]: any;
     };
     _order: Array<string>;
     _drapedFirstOrder: Array<string>;
@@ -347,7 +393,7 @@ class Style extends Evented<MapEvents> {
         if (options.imageManager) {
             this.imageManager = options.imageManager;
         } else {
-            this.imageManager = new ImageManager();
+            this.imageManager = new ImageManager(this.map._spriteFormat);
             this.imageManager.setEventedParent(this);
         }
         this.imageManager.createScope(this.scope);
@@ -370,7 +416,6 @@ class Style extends Evented<MapEvents> {
         }
 
         this._layers = {};
-        this._serializedLayers = {};
         this._sourceCaches = {};
         this._otherSourceCaches = {};
         this._symbolSourceCaches = {};
@@ -380,17 +425,18 @@ class Style extends Evented<MapEvents> {
         this._availableImages = [];
         this._order = [];
         this._markersNeedUpdate = false;
-        this._styleColorTheme = {
-            lut: null,
-            lutLoading: false,
-            lutLoadingCorrelationID: 0,
-            colorTheme: null
-        };
-        this._styleColorThemeForScope = {};
 
         this.options = options.configOptions ? options.configOptions : new Map();
         this._configDependentLayers = options.configDependentLayers ? options.configDependentLayers : new Set();
         this._config = options.config;
+        this._styleColorTheme = {
+            lut: null,
+            lutLoading: false,
+            lutLoadingCorrelationID: 0,
+            colorTheme: null,
+            colorThemeOverride: options.colorThemeOverride
+        };
+        this._styleColorThemeForScope = {};
         this._initialConfig = options.initialConfig;
 
         this.dispatcher.broadcast('setReferrer', getReferrer());
@@ -424,7 +470,6 @@ class Style extends Evented<MapEvents> {
             }
 
             const source = this.getOwnSource(event.sourceId);
-            // @ts-expect-error - TS2339 - Property 'vectorLayerIds' does not exist on type 'Source'.
             if (!source || !source.vectorLayerIds) {
                 return;
             }
@@ -656,6 +701,7 @@ class Style extends Evented<MapEvents> {
             modelManager: this.modelManager,
             config,
             configOptions: this.options,
+            colorThemeOverride: importSpec["color-theme"],
             configDependentLayers: this._configDependentLayers
         });
 
@@ -685,7 +731,7 @@ class Style extends Evented<MapEvents> {
     }
 
     _load(json: StyleSpecification, validate: boolean) {
-        const schema = json.schema;
+        const schema = json.indoor ? expandSchemaWithIndoor(json.schema) : json.schema;
 
         // This style was loaded as a root style, but it is marked as a fragment and/or has a schema. We instead load
         // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
@@ -711,7 +757,7 @@ class Style extends Evented<MapEvents> {
             }
 
             if (json.sprite) {
-                this._loadSprite(json.sprite);
+                this._loadIconset(json.sprite);
             } else {
                 this.imageManager.setLoaded(true, this.scope);
                 this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
@@ -740,13 +786,11 @@ class Style extends Evented<MapEvents> {
             }
 
             this._layers = {};
-            this._serializedLayers = {};
             for (const layer of layers) {
                 const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
                 if (styleLayer.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
                 styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
                 this._layers[styleLayer.id] = styleLayer;
-                this._serializedLayers[styleLayer.id] = styleLayer.serialize();
 
                 const sourceCache = this.getOwnLayerSourceCache(styleLayer);
                 const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
@@ -754,6 +798,10 @@ class Style extends Evented<MapEvents> {
                 if (sourceCache && styleLayer.canCastShadows() && shadowsEnabled) {
                     sourceCache.castsShadows = true;
                 }
+            }
+
+            if (this.stylesheet.featuresets) {
+                this.setFeaturesetSelectors(this.stylesheet.featuresets);
             }
 
             if (this.stylesheet.models) {
@@ -770,6 +818,14 @@ class Style extends Evented<MapEvents> {
 
             if (this.stylesheet.fog) {
                 this._createFog(this.stylesheet.fog);
+            }
+
+            if (this.stylesheet.snow) {
+                this._createSnow(this.stylesheet.snow);
+            }
+
+            if (this.stylesheet.rain) {
+                this._createRain(this.stylesheet.rain);
             }
 
             if (this.stylesheet.transition) {
@@ -791,8 +847,8 @@ class Style extends Evented<MapEvents> {
             }
         };
 
-        const colorTheme = this.stylesheet['color-theme'];
-        this._styleColorTheme.colorTheme = colorTheme;
+        this._styleColorTheme.colorTheme = this.stylesheet['color-theme'];
+        const colorTheme = this._styleColorTheme.colorThemeOverride ? this._styleColorTheme.colorThemeOverride : this._styleColorTheme.colorTheme;
         if (colorTheme) {
             const data = this._evaluateColorThemeData(colorTheme);
             this._loadColorTheme(data).then(() => {
@@ -817,6 +873,8 @@ class Style extends Evented<MapEvents> {
         let directionalLight;
         let terrain;
         let fog;
+        let snow;
+        let rain;
         let projection;
         let transition;
         let camera;
@@ -854,6 +912,12 @@ class Style extends Evented<MapEvents> {
             if (style.stylesheet.fog && style.fog != null)
                 fog = style.fog;
 
+            if (style.stylesheet.snow && style.snow != null)
+                snow = style.snow;
+
+            if (style.stylesheet.rain && style.rain != null)
+                rain = style.rain;
+
             if (style.stylesheet.camera != null)
                 camera = style.stylesheet.camera;
 
@@ -870,6 +934,8 @@ class Style extends Evented<MapEvents> {
         this.ambientLight = ambientLight;
         this.directionalLight = directionalLight;
         this.fog = fog;
+        this.snow = snow;
+        this.rain = rain;
         this._styleColorThemeForScope = styleColorThemeForScope;
 
         if (terrain === null) {
@@ -966,9 +1032,9 @@ class Style extends Evented<MapEvents> {
     }
 
     mergeSources() {
-        const mergedSourceCaches: Record<string, any> = {};
-        const mergedOtherSourceCaches: Record<string, any> = {};
-        const mergedSymbolSourceCaches: Record<string, any> = {};
+        const mergedSourceCaches: Record<string, SourceCache> = {};
+        const mergedOtherSourceCaches: Record<string, SourceCache> = {};
+        const mergedSymbolSourceCaches: Record<string, SourceCache> = {};
 
         this.forEachFragmentStyle((style: Style) => {
             for (const id in style._sourceCaches) {
@@ -1140,7 +1206,7 @@ class Style extends Evented<MapEvents> {
                 if (this.getImage(styleLutName)) {
                     this.removeImage(styleLutName);
                 }
-                this.addImage(styleLutName, {data: new RGBAImage({width, height}, data), pixelRatio: 1, sdf: false, version: 0});
+                this.addImage(styleLutName, {data: new RGBAImage({width, height}, data), pixelRatio: 1, sdf: false, usvg: false, version: 0});
 
                 const image = this.imageManager.getImage(styleLutName, this.scope);
                 if (!image) {
@@ -1218,6 +1284,42 @@ class Style extends Evented<MapEvents> {
         });
     }
 
+    _loadIconset(url: string) {
+        // If the sprite is not a mapbox URL, we load
+        // raster sprite if icon_set is not specified explicitly.
+        if ((!isMapboxURL(url) && this.map._spriteFormat !== 'icon_set') || this.map._spriteFormat === 'raster') {
+            this._loadSprite(url);
+            return;
+        }
+
+        const isFallbackExists = this.map._spriteFormat === 'auto';
+
+        this._spriteRequest = loadIconset(url, this.map._requestManager, (err, images) => {
+            this._spriteRequest = null;
+            if (err) {
+                // Try to fallback to raster sprite
+                if (isFallbackExists) {
+                    this._loadSprite(url);
+                } else {
+                    this.fire(new ErrorEvent(err));
+                }
+            } else if (images) {
+                for (const id in images) {
+                    this.imageManager.addImage(id, this.scope, images[id]);
+                }
+            }
+
+            this.imageManager.setLoaded(true, this.scope);
+            this._availableImages = this.imageManager.listImages(this.scope);
+            this.dispatcher.broadcast('setImages', {
+                scope: this.scope,
+                images: this._availableImages
+            });
+            this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
+            this.fire(new Event('data', {dataType: 'style'}));
+        });
+    }
+
     _validateLayer(layer: StyleLayer) {
         const source = this.getOwnSource(layer.source);
         if (!source) {
@@ -1229,7 +1331,6 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        // @ts-expect-error - TS2339 - Property 'vectorLayerIds' does not exist on type 'Source'. | TS2339 - Property 'vectorLayerIds' does not exist on type 'Source'.
         if (source.type === 'geojson' || (source.vectorLayerIds && source.vectorLayerIds.indexOf(sourceLayer) === -1)) {
             this.fire(new ErrorEvent(new Error(
                 `Source layer "${sourceLayer}" ` +
@@ -1325,12 +1426,30 @@ class Style extends Evented<MapEvents> {
         return this.fog.hasTransition();
     }
 
+    hasSnowTransition(): boolean {
+        if (!this.snow) return false;
+        return this.snow.hasTransition();
+    }
+
+    hasRainTransition(): boolean {
+        if (!this.rain) return false;
+        return this.rain.hasTransition();
+    }
+
     hasTransitions(): boolean {
         if (this.hasLightTransitions()) {
             return true;
         }
 
         if (this.hasFogTransition()) {
+            return true;
+        }
+
+        if (this.hasSnowTransition()) {
+            return true;
+        }
+
+        if (this.hasRainTransition()) {
             return true;
         }
 
@@ -1356,6 +1475,15 @@ class Style extends Evented<MapEvents> {
             return this._drapedFirstOrder;
         }
         return this._mergedOrder;
+    }
+
+    /**
+     * Returns active order for when terrain or globe are enabled (when draping is enabled).
+     * @param drapingEnabled {boolean} speficy if order is requested for draping enabled.
+     * @private
+     */
+    _getOrder(drapingEnabled: boolean): Array<string> {
+        return drapingEnabled ? this.order : this._mergedOrder;
     }
 
     isLayerDraped(layer: StyleLayer): boolean {
@@ -1478,6 +1606,14 @@ class Style extends Evented<MapEvents> {
                 this.fog.updateTransitions(parameters);
             }
 
+            if (this.snow) {
+                this.snow.updateTransitions(parameters);
+            }
+
+            if (this.rain) {
+                this.rain.updateTransitions(parameters);
+            }
+
             this._changes.reset();
         }
 
@@ -1539,6 +1675,14 @@ class Style extends Evented<MapEvents> {
 
         if (this.fog) {
             this.fog.recalculate(parameters);
+        }
+
+        if (this.snow) {
+            this.snow.recalculate(parameters);
+        }
+
+        if (this.rain) {
+            this.rain.recalculate(parameters);
         }
 
         this.z = parameters.zoom;
@@ -1639,8 +1783,11 @@ class Style extends Evented<MapEvents> {
         return this;
     }
 
-    updateImage(id: string, image: StyleImage) {
+    updateImage(id: string, image: StyleImage, performSymbolLayout = false) {
         this.imageManager.updateImage(id, this.scope, image);
+        if (performSymbolLayout) {
+            this._afterImageUpdated(id);
+        }
     }
 
     getImage(id: string): StyleImage | null | undefined {
@@ -1697,7 +1844,7 @@ class Style extends Evented<MapEvents> {
         return this.modelManager.listModels(this.scope);
     }
 
-    addSource(id: string, source: SourceSpecification, options: StyleSetterOptions = {}): void {
+    addSource(id: string, source: SourceSpecification & {collectResourceTiming?: boolean}, options: StyleSetterOptions = {}): void {
         this._checkLoaded();
 
         if (this.getOwnSource(id) !== undefined) {
@@ -1712,7 +1859,7 @@ class Style extends Evented<MapEvents> {
         const shouldValidate = builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._validate(validateSource, `sources.${id}`, source, null, options)) return;
 
-        if (this.map && this.map._collectResourceTiming) (source as any).collectResourceTiming = true;
+        if (this.map && this.map._collectResourceTiming) source.collectResourceTiming = true;
         const sourceInstance = createSource(id, source, this.dispatcher, this);
         sourceInstance.scope = this.scope;
 
@@ -1921,7 +2068,11 @@ class Style extends Evented<MapEvents> {
 
         const ambientBrightness = relativeLuminance(ambientColor) * ambientIntensity;
 
-        return (directionalBrightness + ambientBrightness) / 2.0;
+        const brightness = (directionalBrightness + ambientBrightness) / 2.0;
+
+        // Reduces decimal places to prevent bucket re-evaluation which was caused by small precision differences
+        // Since in most places we directly compare the previously evaluated brightness values
+        return Number(brightness.toFixed(6));
     }
 
     getBrightness(): number | null | undefined {
@@ -1944,20 +2095,85 @@ class Style extends Evented<MapEvents> {
         return !!this.ambientLight && !!this.directionalLight;
     }
 
-    getFragmentStyle(fragmentId?: string): Style | null | undefined {
+    /**
+     * Returns the fragment style associated with the provided fragmentId.
+     * If no fragmentId is provided, returns itself.
+     */
+    getFragmentStyle(fragmentId?: string): Style | undefined {
         if (!fragmentId) return this;
 
         if (isFQID(fragmentId)) {
             const scope = getScopeFromFQID(fragmentId);
             const fragment = this.fragments.find(({id}) => id === scope);
-            if (!fragment) throw new Error(`Style import not found: ${fragmentId}`);
+            if (!fragment) throw new Error(`Style import '${fragmentId}' not found`);
             const name = getNameFromFQID(fragmentId);
             return fragment.style.getFragmentStyle(name);
         } else {
             const fragment = this.fragments.find(({id}) => id === fragmentId);
-            if (!fragment) throw new Error(`Style import not found: ${fragmentId}`);
+            if (!fragment) throw new Error(`Style import '${fragmentId}' not found`);
             return fragment.style;
         }
+    }
+
+    setFeaturesetSelectors(featuresets?: FeaturesetsSpecification) {
+        if (!featuresets) return;
+
+        this.featuresetSelectors = {};
+        for (const featuresetId in featuresets) {
+            const featuresetSelectors: FeaturesetSelector[] = this.featuresetSelectors[featuresetId] = [];
+            for (const selector of featuresets[featuresetId].selectors) {
+
+                let properties;
+                if (selector.properties) {
+                    for (const name in selector.properties) {
+                        const expression = createExpression(selector.properties[name]);
+                        if (expression.result === 'success') {
+                            properties = properties || {};
+                            properties[name] = expression.value;
+                        }
+                    }
+                }
+
+                featuresetSelectors.push({layerId: selector.layer, namespace: selector.featureNamespace, properties});
+            }
+        }
+    }
+
+    /**
+     * Returns the featureset descriptors associated with a style fragment.
+     * If no fragmentId is provided, returns own featureset descriptors.
+     */
+    getFeaturesetDescriptors(fragmentId?: string): Array<FeaturesetDescriptor> {
+        const style = this.getFragmentStyle(fragmentId);
+        if (!style || !style.stylesheet.featuresets) return [];
+
+        const featuresetDescriptors: FeaturesetDescriptor[] = [];
+        for (const id in style.stylesheet.featuresets) {
+            featuresetDescriptors.push({featuresetId: id, importId: style.scope ? style.scope : undefined});
+        }
+
+        return featuresetDescriptors;
+    }
+
+    /**
+     * Returns the layers associated with a featureset in the style fragment.
+     * If no fragmentId is provided, returns the layers associated with own featuresets.
+     */
+    getFeaturesetLayers(featuresetId: string, fragmentId?: string): Array<StyleLayer> {
+        const style = this.getFragmentStyle(fragmentId);
+        const featuresets = style.stylesheet.featuresets;
+        if (!featuresets || !featuresets[featuresetId]) {
+            this.fire(new ErrorEvent(new Error(`The featureset '${featuresetId}' does not exist in the map's style and cannot be queried.`)));
+            return [];
+        }
+
+        const layers = [];
+        for (const selector of featuresets[featuresetId].selectors) {
+            const layer = style.getOwnLayer(selector.layer);
+            if (layer) layers.push(layer);
+        }
+
+        return layers;
     }
 
     getConfigProperty(fragmentId: string, key: string): SerializedExpression | null {
@@ -1973,7 +2189,7 @@ class Style extends Evented<MapEvents> {
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return;
 
-        const schema = fragmentStyle.stylesheet.schema;
+        const schema = fragmentStyle.stylesheet.indoor ? expandSchemaWithIndoor(fragmentStyle.stylesheet.schema) : fragmentStyle.stylesheet.schema;
         if (!schema || !schema[key]) return;
 
         const expressionParsed = createExpression(value);
@@ -2121,11 +2337,20 @@ class Style extends Evented<MapEvents> {
             this.fog.updateConfig(this.options);
         }
 
+        if (this.snow) {
+            this.snow.updateConfig(this.options);
+        }
+
+        if (this.rain) {
+            this.rain.updateConfig(this.options);
+        }
+
         this.forEachFragmentStyle((style: Style) => {
-            if (style._styleColorTheme.colorTheme) {
-                const data = style._evaluateColorThemeData(style._styleColorTheme.colorTheme);
+            const colorTheme = style._styleColorTheme.colorThemeOverride ? style._styleColorTheme.colorThemeOverride : style._styleColorTheme.colorTheme;
+            if (colorTheme) {
+                const data = style._evaluateColorThemeData(colorTheme);
                 if ((!style._styleColorTheme.lut && data !== '') || (style._styleColorTheme.lut && data !== style._styleColorTheme.lut.data)) {
-                    style.setColorTheme(style._styleColorTheme.colorTheme);
+                    style.setColorTheme(colorTheme);
                 }
             }
         });
@@ -2170,7 +2395,6 @@ class Style extends Evented<MapEvents> {
             this._validateLayer(layer);
 
             layer.setEventedParent(this, {layer: {id}});
-            this._serializedLayers[layer.id] = layer.serialize();
         }
 
         if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
@@ -2296,7 +2520,6 @@ class Style extends Evented<MapEvents> {
         this._order.splice(index, 1);
 
         delete this._layers[id];
-        delete this._serializedLayers[id];
 
         this._changes.setDirty();
         this._layerOrderChanged = true;
@@ -2510,8 +2733,27 @@ class Style extends Evented<MapEvents> {
         return layer.getPaintProperty(name);
     }
 
-    setFeatureState(target: FeatureSelector | GeoJSONFeature, state: FeatureState) {
+    setFeatureState(target: FeatureSelector | GeoJSONFeature | TargetFeature, state: FeatureState) {
         this._checkLoaded();
+
+        // target is TargetFeature
+        if ('target' in target) {
+            if ('featuresetId' in target.target) {
+                const {featuresetId, importId} = target.target;
+                const fragment = this.getFragmentStyle(importId);
+                const layers = fragment.getFeaturesetLayers(featuresetId);
+                for (const {source, sourceLayer} of layers) {
+                    fragment.setFeatureState({id: target.id, source, sourceLayer}, state);
+                }
+            } else if ('layerId' in target.target) {
+                const {layerId} = target.target;
+                const layer = this.getLayer(layerId);
+                this.setFeatureState({id: target.id, source: layer.source, sourceLayer: layer.sourceLayer}, state);
+            }
+
+            return;
+        }
+
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
 
@@ -2537,8 +2779,27 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    removeFeatureState(target: Omit<FeatureSelector, 'id'> & {id?: FeatureSelector['id']} | GeoJSONFeature, key?: string) {
+    removeFeatureState(target: FeatureSelector | SourceSelector | GeoJSONFeature | TargetFeature, key?: string) {
         this._checkLoaded();
+
+        // target is TargetFeature
+        if ('target' in target) {
+            if ('featuresetId' in target.target) {
+                const {featuresetId, importId} = target.target;
+                const fragment = this.getFragmentStyle(importId);
+                const layers = fragment.getFeaturesetLayers(featuresetId);
+                for (const {source, sourceLayer} of layers) {
+                    fragment.removeFeatureState({id: target.id, source, sourceLayer}, key);
+                }
+            } else if ('layerId' in target.target) {
+                const {layerId} = target.target;
+                const layer = this.getLayer(layerId);
+                this.removeFeatureState({id: target.id, source: layer.source, sourceLayer: layer.sourceLayer}, key);
+            }
+
+            return;
+        }
+
         const sourceId = target.source;
 
         const source = this._checkSource(sourceId);
@@ -2563,8 +2824,36 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    getFeatureState(target: FeatureSelector | GeoJSONFeature): FeatureState | null | undefined {
+    getFeatureState(target: FeatureSelector | GeoJSONFeature | TargetFeature): FeatureState | null | undefined {
         this._checkLoaded();
+
+        // target is TargetFeature
+        if ('target' in target) {
+            let finalState: FeatureState;
+            if ('featuresetId' in target.target) {
+                const {featuresetId, importId} = target.target;
+                const fragment = this.getFragmentStyle(importId);
+                const layers = fragment.getFeaturesetLayers(featuresetId);
+                for (const {source, sourceLayer} of layers) {
+                    const state = fragment.getFeatureState({id: target.id, source, sourceLayer});
+                    // There is possibility that the same feature id exists in multiple sources, and the states of the
+                    // features must be consistent through all the sources
+                    if (state && !finalState) {
+                        finalState = state;
+                    } else if (!deepEqual(finalState, state)) {
+                        this.fire(new ErrorEvent(new Error(`The same feature id exists in multiple sources in the featureset, but their feature states are not consistent through the sources.`)));
+                        return;
+                    }
+                }
+            } else if ('layerId' in target.target) {
+                const {layerId} = target.target;
+                const layer = this.getLayer(layerId);
+                finalState = this.getFeatureState({id: target.id, source: layer.source, sourceLayer: layer.sourceLayer});
+            }
+
+            return finalState;
+        }
+
         const sourceId = target.source;
         const sourceLayer = target.sourceLayer;
 
@@ -2614,6 +2903,8 @@ class Style extends Evented<MapEvents> {
             lights: this.stylesheet.lights,
             terrain: scopedTerrain,
             fog: this.stylesheet.fog,
+            snow: this.stylesheet.snow,
+            rain: this.stylesheet.rain,
             center: this.stylesheet.center,
             "color-theme": this.stylesheet["color-theme"],
             zoom: this.stylesheet.zoom,
@@ -2626,6 +2917,14 @@ class Style extends Evented<MapEvents> {
             sources: this._serializeSources(),
             layers: this._serializeLayers(this._order)
         }, (value) => { return value !== undefined; });
+    }
+
+    _updateFilteredLayers(filter: (layer: StyleLayer) => boolean) {
+        for (const layer of Object.values(this._mergedLayers)) {
+            if (filter(layer)) {
+                this._updateLayer(layer);
+            }
+        }
     }
 
     _updateLayer(layer: StyleLayer) {
@@ -2642,7 +2941,7 @@ class Style extends Evented<MapEvents> {
         layer.invalidateCompiledFilter();
     }
 
-    _flattenAndSortRenderedFeatures(sourceResults: Array<QueryResult>): Array<GeoJSONFeature> {
+    _flattenAndSortRenderedFeatures(sourceResults: Array<QueryResult>): Array<Feature> {
         // Feature order is complicated.
         // The order between features in two 2D layers is determined by layer order (subject to draped rendering modification).
         //  - if terrain/globe enabled layers are reordered in a drape-first, immediate-second manner
@@ -2667,7 +2966,7 @@ class Style extends Evented<MapEvents> {
         const order = this.order;
 
         const layerIndex: Record<string, any> = {};
-        const features3D = [];
+        const features3D: Array<{feature: Feature; featureIndex: number; intersectionZ: number}> = [];
         for (let l = order.length - 1; l >= 0; l--) {
             const layerId = order[l];
             if (isLayer3D(layerId)) {
@@ -2687,7 +2986,7 @@ class Style extends Evented<MapEvents> {
             return b.intersectionZ - a.intersectionZ;
         });
 
-        const features = [];
+        const features: Feature[] = [];
         for (let l = order.length - 1; l >= 0; l--) {
             const layerId = order[l];
 
@@ -2714,101 +3013,215 @@ class Style extends Evented<MapEvents> {
         return features;
     }
 
-    queryRenderedFeatures(
-        queryGeometry: PointLike | [PointLike, PointLike],
-        params: QueryRenderedFeaturesParams,
-        transform: Transform,
-    ): Array<GeoJSONFeature> {
-        if (params && params.filter) {
+    queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: QueryRenderedFeaturesParams | undefined, transform: Transform): GeoJSONFeature[] {
+        let filter;
+        if (params && !Array.isArray(params) && params.filter) {
             this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
+            filter = featureFilter(params.filter);
         }
 
-        params.scope = this.scope;
-        params.availableImages = this._availableImages;
-        params.serializedLayers = this._serializedLayers;
+        const queries: Record<string, QrfQuery & {has3DLayers?: boolean}> = {};
 
-        const includedSources: Record<string, any> = {};
+        const addLayerToQuery = (styleLayer: StyleLayer) => {
+            // Skip layers that don't have features.
+            if (featurelessLayerTypes.has(styleLayer.type)) return;
+
+            const sourceCache = this.getOwnLayerSourceCache(styleLayer);
+            assert(sourceCache, 'queryable layers must have a source');
+
+            const querySourceCache = queries[sourceCache.id] = queries[sourceCache.id] || {sourceCache, layers: {}, has3DLayers: false};
+            if (styleLayer.is3D()) querySourceCache.has3DLayers = true;
+            querySourceCache.layers[styleLayer.fqid] = querySourceCache.layers[styleLayer.fqid] || {styleLayer, targets: []};
+            querySourceCache.layers[styleLayer.fqid].targets.push({filter});
+        };
+
         if (params && params.layers) {
             if (!Array.isArray(params.layers)) {
                 this.fire(new ErrorEvent(new Error('parameters.layers must be an Array.')));
                 return [];
             }
+
             for (const layerId of params.layers) {
-                const layer = this._mergedLayers[layerId];
-                if (!layer) {
-                    // this layer is not in the style.layers array
+                const styleLayer = this._layers[layerId];
+                if (!styleLayer) {
                     this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style and cannot be queried for features.`)));
                     return [];
                 }
-                includedSources[layer.source] = true;
+
+                addLayerToQuery(styleLayer);
+            }
+        } else {
+            for (const layerId in this._layers) {
+                addLayerToQuery(this._layers[layerId]);
             }
         }
 
-        const sourceResults: Array<QueryResult> = [];
-        const serializedLayers = params.serializedLayers || {};
+        const renderedFeatures = this._queryRenderedFeatures(queryGeometry, queries, transform);
+        const sortedFeatures = this._flattenAndSortRenderedFeatures(renderedFeatures);
 
-        const has3DLayer = (params && params.layers) ?
-            params.layers.some((layerId) => {
-                const layer = this.getLayer(layerId);
-                return layer && layer.is3D();
-            }) : this.has3DLayers();
+        const features = [];
+        for (const feature of sortedFeatures) {
+            const scope = getScopeFromFQID(feature.layer.id);
+            if (scope === this.scope) features.push(feature);
+        }
 
+        return features;
+    }
+
+    queryRenderedFeatureset(queryGeometry: PointLike | [PointLike, PointLike], params: QueryRenderedFeaturesetParams | undefined, transform: Transform): TargetFeature[] {
+        let filter;
+        if (params && !Array.isArray(params) && params.filter) {
+            this._validate(validateFilter, 'queryRenderedFeatures.filter', params.filter, null, params);
+            filter = featureFilter(params.filter);
+        }
+
+        const targetId = 'mock'; // use mock target id for plain featureset queries
+        const targets: QrfTarget[] = [];
+
+        if (params && params.target) {
+            targets.push({...params, targetId, filter});
+        } else {
+            // Query all root-level featuresets
+            const featuresetDescriptors = this.getFeaturesetDescriptors();
+            for (const featureset of featuresetDescriptors) {
+                targets.push({targetId, filter, target: featureset});
+            }
+
+            // Query all root-level featuresets in imported styles
+            for (const {style} of this.fragments) {
+                const featuresetDescriptors = style.getFeaturesetDescriptors();
+                for (const featureset of featuresetDescriptors) {
+                    targets.push({targetId, filter, target: featureset});
+                }
+            }
+        }
+
+        const features = this.queryRenderedTargets(queryGeometry, targets, transform);
+
+        const targetFeatures = [];
+        for (const feature of features) {
+            for (const variant of feature.variants[targetId]) {
+                targetFeatures.push(new TargetFeature(feature, variant));
+            }
+        }
+
+        return targetFeatures;
+    }
+
+    queryRenderedTargets(queryGeometry: PointLike | [PointLike, PointLike], targets: QrfTarget[], transform: Transform): Feature[] {
+        const queries: Record<string, QrfQuery & {has3DLayers?: boolean}> = {};
+
+        const addLayerToQuery = (styleLayer: StyleLayer, sourceCache: SourceCache, target: QrfTarget, selector?: FeaturesetSelector) => {
+            assert(sourceCache, 'queryable layers must have a source');
+
+            const querySourceCache = queries[sourceCache.id] = queries[sourceCache.id] || {sourceCache, layers: {}, has3DLayers: false};
+            querySourceCache.layers[styleLayer.fqid] = querySourceCache.layers[styleLayer.fqid] || {styleLayer, targets: []};
+            if (styleLayer.is3D()) querySourceCache.has3DLayers = true;
+
+            if (!selector) {
+                querySourceCache.layers[styleLayer.fqid].targets.push(target);
+                return;
+            }
+
+            querySourceCache.layers[styleLayer.fqid].targets.push({
+                ...target,
+                namespace: selector.namespace,
+                properties: selector.properties
+            });
+        };
+
+        for (const target of targets) {
+            if ('featuresetId' in target.target) {
+                const {featuresetId, importId} = target.target;
+                const style = this.getFragmentStyle(importId);
+                const selectors = style.featuresetSelectors[featuresetId];
+                if (!selectors) {
+                    this.fire(new ErrorEvent(new Error(`The featureset '${featuresetId}' does not exist in the map's style and cannot be queried for features.`)));
+                    continue;
+                }
+
+                for (const selector of selectors) {
+                    const styleLayer = style.getOwnLayer(selector.layerId);
+                    if (!styleLayer || featurelessLayerTypes.has(styleLayer.type)) continue;
+                    const sourceCache = style.getOwnLayerSourceCache(styleLayer);
+                    addLayerToQuery(styleLayer, sourceCache, target, selector);
+                }
+            } else if ('layerId' in target.target) {
+                const {layerId} = target.target;
+                const styleLayer = this.getLayer(layerId);
+                if (!styleLayer || featurelessLayerTypes.has(styleLayer.type)) continue;
+                const sourceCache = this.getLayerSourceCache(styleLayer);
+                addLayerToQuery(styleLayer, sourceCache, target);
+            }
+        }
+
+        const renderedFeatures = this._queryRenderedFeatures(queryGeometry, queries, transform);
+        const sortedFeatures = this._flattenAndSortRenderedFeatures(renderedFeatures);
+        return sortedFeatures;
+    }
+
+    _queryRenderedFeatures(
+        queryGeometry: PointLike | [PointLike, PointLike],
+        queries: Record<string, QrfQuery & {has3DLayers?: boolean}>,
+        transform: Transform
+    ): Array<QueryResult> {
+        const queryResults: Array<QueryResult> = [];
+        const showQueryGeometry = !!this.map._showQueryGeometry;
         const queryGeometryStruct = QueryGeometry.createFromScreenPoints(queryGeometry, transform);
 
-        for (const id in this._mergedSourceCaches) {
-            const source = this._mergedSourceCaches[id].getSource();
-            if (!source || source.scope !== params.scope) continue;
-
-            const sourceId = this._mergedSourceCaches[id].getSource().id;
-            if (params.layers && !includedSources[sourceId]) continue;
-            const showQueryGeometry = !!this.map._showQueryGeometry;
-            sourceResults.push(
-                queryRenderedFeatures(
-                    this._mergedSourceCaches[id],
-                    this._mergedLayers,
-                    serializedLayers,
-                    queryGeometryStruct,
-                    (params as any),
-                    transform,
-                    has3DLayer,
-                    showQueryGeometry)
+        for (const sourceCacheId in queries) {
+            const queryResult = queryRenderedFeatures(
+                queryGeometryStruct,
+                queries[sourceCacheId],
+                this._availableImages,
+                transform,
+                showQueryGeometry,
             );
+
+            if (Object.keys(queryResult).length) queryResults.push(queryResult);
         }
 
+        // If a placement has run, query against its CollisionIndex
+        // for symbol results, and treat it as an extra source to merge
         if (this.placement) {
-            // If a placement has run, query against its CollisionIndex
-            // for symbol results, and treat it as an extra source to merge
-            sourceResults.push(
-                queryRenderedSymbols(
-                    this._mergedLayers,
-                    serializedLayers,
-                    this.getLayerSourceCache.bind(this),
+            for (const sourceCacheId in queries) {
+                // Skip non-symbol source caches
+                if (!queries[sourceCacheId].sourceCache._onlySymbols) continue;
+
+                const queryResult = queryRenderedSymbols(
                     queryGeometryStruct.screenGeometry,
-                    (params as any),
+                    queries[sourceCacheId],
+                    this._availableImages,
                     this.placement.collisionIndex,
-                    this.placement.retainedQueryData)
-            );
+                    this.placement.retainedQueryData,
+                );
+
+                if (Object.keys(queryResult).length) queryResults.push(queryResult);
+            }
         }
 
-        return this._flattenAndSortRenderedFeatures(sourceResults);
+        return queryResults;
     }
 
     querySourceFeatures(
-        sourceID: string,
+        sourceId: string,
         params?: {
             sourceLayer?: string;
             filter?: FilterSpecification;
             validate?: boolean;
-        },
-    ): Array<GeoJSONFeature> {
-        if (params && params.filter) {
-            this._validate(validateFilter, 'querySourceFeatures.filter', params.filter, null, params);
         }
-        const sourceCaches = this.getOwnSourceCaches(sourceID);
+    ): Array<Feature> {
+        const filter = params && params.filter;
+        if (filter) {
+            this._validate(validateFilter, 'querySourceFeatures.filter', filter, null, params);
+        }
+
         let results = [];
+        const sourceCaches = this.getOwnSourceCaches(sourceId);
         for (const sourceCache of sourceCaches) {
             results = results.concat(querySourceFeatures(sourceCache, params));
         }
+
         return results;
     }
 
@@ -2973,6 +3386,20 @@ class Style extends Evented<MapEvents> {
         fog.updateTransitions(parameters);
     }
 
+    _createSnow(snowOptions: SnowSpecification) {
+        const snow = this.snow = new Snow(snowOptions, this.map.transform, this.scope, this.options);
+        this.stylesheet.snow = snow.get();
+        const parameters = this._getTransitionParameters({duration: 0});
+        snow.updateTransitions(parameters);
+    }
+
+    _createRain(rainOptions: RainSpecification) {
+        const rain = this.rain = new Rain(rainOptions, this.map.transform, this.scope, this.options);
+        this.stylesheet.rain = rain.get();
+        const parameters = this._getTransitionParameters({duration: 0});
+        rain.updateTransitions(parameters);
+    }
+
     _updateMarkersOpacity() {
         if (this.map._markers.length === 0) {
             return;
@@ -3016,9 +3443,69 @@ class Style extends Evented<MapEvents> {
         this._markersNeedUpdate = true;
     }
 
-    setColorTheme(colorTheme?: ColorThemeSpecification) {
+    getSnow(): SnowSpecification | null | undefined {
+        return this.snow ? this.snow.get() : null;
+    }
+
+    setSnow(snowOptions?: SnowSpecification) {
         this._checkLoaded();
 
+        if (!snowOptions) {
+            // Remove snow
+            delete this.snow;
+            delete this.stylesheet.snow;
+            return;
+        }
+
+        if (!this.snow) {
+            // Initialize Snow
+            this._createSnow(snowOptions);
+        } else {
+            // Updating snow
+            const snow = this.snow;
+            if (!deepEqual(snow.get(), snowOptions)) {
+                snow.set(snowOptions, this.options);
+                this.stylesheet.snow = snow.get();
+                const parameters = this._getTransitionParameters({duration: 0});
+                snow.updateTransitions(parameters);
+            }
+        }
+
+        this._markersNeedUpdate = true;
+    }
+
+    getRain(): RainSpecification | null | undefined {
+        return this.rain ? this.rain.get() : null;
+    }
+
+    setRain(rainOptions?: RainSpecification) {
+        this._checkLoaded();
+
+        if (!rainOptions) {
+            // Remove rain
+            delete this.rain;
+            delete this.stylesheet.rain;
+            return;
+        }
+
+        if (!this.rain) {
+            // Initialize Rain
+            this._createRain(rainOptions);
+        } else {
+            // Updating rain
+            const rain = this.rain;
+            if (!deepEqual(rain.get(), rainOptions)) {
+                rain.set(rainOptions, this.options);
+                this.stylesheet.rain = rain.get();
+                const parameters = this._getTransitionParameters({duration: 0});
+                rain.updateTransitions(parameters);
+            }
+        }
+
+        this._markersNeedUpdate = true;
+    }
+
+    _reloadColorTheme() {
         const updateStyle = () => {
             for (const layerId in this._layers) {
                 const layer = this._layers[layerId];
@@ -3029,7 +3516,7 @@ class Style extends Evented<MapEvents> {
             }
         };
 
-        this._styleColorTheme.colorTheme = colorTheme;
+        const colorTheme = this._styleColorTheme.colorThemeOverride ? this._styleColorTheme.colorThemeOverride : this._styleColorTheme.colorTheme;
         if (!colorTheme) {
             this._styleColorTheme.lut = null;
             updateStyle();
@@ -3043,6 +3530,26 @@ class Style extends Evented<MapEvents> {
         }).catch((e) => {
             warnOnce(`Couldn\'t set color theme: ${e}`);
         });
+    }
+
+    setColorTheme(colorTheme?: ColorThemeSpecification) {
+        this._checkLoaded();
+
+        if (this._styleColorTheme.colorThemeOverride) {
+            // This is just for hardening and in practice shouldn't happen.
+            // In theory colorThemeOverride can have values only for imports, and it's not possible to call setColorTheme directly on an imported style.
+            warnOnce(`Note: setColorTheme is called on a style with a color-theme override, the passed color-theme won't be visible.`);
+        }
+
+        this._styleColorTheme.colorTheme = colorTheme;
+        this._reloadColorTheme();
+    }
+
+    setImportColorTheme(importId: string, colorTheme?: ColorThemeSpecification) {
+        const fragmentStyle = this.getFragmentStyle(importId);
+        if (!fragmentStyle) return;
+        fragmentStyle._styleColorTheme.colorThemeOverride = colorTheme;
+        fragmentStyle._reloadColorTheme();
     }
 
     _getTransitionParameters(transition?: TransitionSpecification | null): TransitionParameters {
@@ -3155,6 +3662,8 @@ class Style extends Evented<MapEvents> {
         this.setEventedParent(null);
 
         delete this.fog;
+        delete this.snow;
+        delete this.rain;
         delete this.terrain;
         delete this.ambientLight;
         delete this.directionalLight;
@@ -3277,7 +3786,7 @@ class Style extends Evented<MapEvents> {
             // render frame
             this.placement.setStale();
         } else {
-            this.pauseablePlacement.continuePlacement(this._mergedOrder, this._mergedLayers, layerTiles, layerTilesInYOrder);
+            this.pauseablePlacement.continuePlacement(this._mergedOrder, this._mergedLayers, layerTiles, layerTilesInYOrder, this.map.painter.scaleFactor);
 
             if (this.pauseablePlacement.isDone()) {
                 this.placement = this.pauseablePlacement.commit(browser.now());
@@ -3531,7 +4040,7 @@ class Style extends Evented<MapEvents> {
         return sourceCache && sourceCache.getSource();
     }
 
-    getSourceCache(id: string, scope?: string | null): SourceCache | void {
+    getSourceCache(id: string, scope?: string | null): SourceCache | undefined {
         const fqid = makeFQID(id, scope);
         return this._mergedOtherSourceCaches[fqid];
     }
@@ -3617,6 +4126,10 @@ class Style extends Evented<MapEvents> {
         setDependencies(this._symbolSourceCaches[params.source]);
     }
 
+    rasterizeImages(mapId: string, params: {scope: string, imageTasks: {[_: string]: ImageIdWithOptions}}, callback: Callback<{[_: string]: RGBAImage}>) {
+        this.imageManager.rasterizeImages(params, callback);
+    }
+
     getGlyphs(mapId: string, params: {
         stacks: {
             [_: string]: Array<number>;
@@ -3638,11 +4151,11 @@ class Style extends Evented<MapEvents> {
         return makeRequest(params, callback);
     }
 
-    getOwnSourceCache(source: string): SourceCache | void {
+    getOwnSourceCache(source: string): SourceCache | undefined {
         return this._otherSourceCaches[source];
     }
 
-    getOwnLayerSourceCache(layer: StyleLayer): SourceCache | void {
+    getOwnLayerSourceCache(layer: StyleLayer): SourceCache | undefined {
         return layer.type === 'symbol' ?
             this._symbolSourceCaches[layer.source] :
             this._otherSourceCaches[layer.source];

@@ -19,11 +19,13 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 export type LayoutProps = {
     "fill-sort-key": DataDrivenProperty<number>;
     "visibility": DataConstantProperty<"visible" | "none">;
+    "fill-elevation-reference": DataConstantProperty<"none" | "hd-road-base" | "hd-road-markup">;
 };
 let layout: Properties<LayoutProps>;
 export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "fill-sort-key": new DataDrivenProperty(styleSpec["layout_fill"]["fill-sort-key"]),
     "visibility": new DataConstantProperty(styleSpec["layout_fill"]["visibility"]),
+    "fill-elevation-reference": new DataConstantProperty(styleSpec["layout_fill"]["fill-elevation-reference"]),
 }));
 
 export type PaintProps = {
@@ -36,6 +38,8 @@ export type PaintProps = {
     "fill-pattern": DataDrivenProperty<ResolvedImage | null | undefined>;
     "fill-emissive-strength": DataConstantProperty<number>;
     "fill-z-offset": DataDrivenProperty<number>;
+    "fill-color-use-theme": DataDrivenProperty<string>;
+    "fill-outline-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -49,4 +53,6 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-pattern": new DataDrivenProperty(styleSpec["paint_fill"]["fill-pattern"]),
     "fill-emissive-strength": new DataConstantProperty(styleSpec["paint_fill"]["fill-emissive-strength"]),
     "fill-z-offset": new DataDrivenProperty(styleSpec["paint_fill"]["fill-z-offset"]),
+    "fill-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "fill-outline-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

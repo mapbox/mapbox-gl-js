@@ -49,6 +49,8 @@ import {WireframeDebugCache} from './wireframe_cache';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
 import Framebuffer from '../gl/framebuffer';
 import {OcclusionParams} from './occlusion_params';
+import {Rain} from '../precipitation/draw_rain';
+import {Snow} from '../precipitation/draw_snow';
 
 // 3D-style related
 import type {Source} from '../source/source';
@@ -195,7 +197,7 @@ class Painter {
     gpuTimers: GPUTimers;
     deferredRenderGpuTimeQueries: Array<any>;
     emptyTexture: Texture;
-    identityMat: Float32Array;
+    identityMat: mat4;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: Terrain | null | undefined;
@@ -208,6 +210,8 @@ class Painter {
         [key: number]: Tile;
     };
     _atmosphere: Atmosphere | null | undefined;
+    _rain: any;
+    _snow: any;
     replacementSource: ReplacementSource;
     conflationActive: boolean;
     firstLightBeamLayer: number;
@@ -230,6 +234,7 @@ class Painter {
     tp: ITrackedParameters;
 
     _debugParams: {
+        forceEnablePrecipitation: boolean;
         showTerrainProxyTiles: boolean;
         fpsWindow: number;
         continousRedraw: boolean;
@@ -253,7 +258,9 @@ class Painter {
 
     _clippingActiveLastFrame: boolean;
 
-    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, tp: ITrackedParameters) {
+    scaleFactor: number;
+
+    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, tp: ITrackedParameters) {
         this.context = new Context(gl, contextCreateOptions);
 
         this.transform = transform;
@@ -268,6 +275,7 @@ class Painter {
         this._dt = 0;
 
         this._debugParams = {
+            forceEnablePrecipitation: false,
             showTerrainProxyTiles: false,
             fpsWindow: 30,
             continousRedraw:false,
@@ -284,6 +292,8 @@ class Painter {
         tp.registerParameter(this._debugParams, ["Terrain"], "showTerrainProxyTiles", {}, () => {
             this.style.map.triggerRepaint();
         });
+
+        tp.registerParameter(this._debugParams, ["Precipitation"], "forceEnablePrecipitation");
 
         tp.registerParameter(this._debugParams, ["FPS"], "fpsWindow", {min: 1, max: 100, step: 1});
         tp.registerBinding(this._debugParams, ["FPS"], 'continousRedraw', {
@@ -337,6 +347,8 @@ class Painter {
         this.emptyDepthTexture = new Texture(this.context, emptyDepth, gl.RGBA8);
 
         this._clippingActiveLastFrame = false;
+
+        this.scaleFactor = scaleFactor;
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {
@@ -470,7 +482,6 @@ class Painter {
         this.emptyTexture = new Texture(context,
             new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0)), context.gl.RGBA8);
 
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
         this.identityMat = mat4.create();
 
         const gl = this.context.gl;
@@ -746,7 +757,8 @@ class Painter {
 
         const layers = this.style._mergedLayers;
 
-        const layerIds = this.style.order.filter((id) => {
+        const drapingEnabled = !!(this.terrain && this.terrain.enabled);
+        const layerIds = this.style._getOrder(drapingEnabled).filter((id) => {
             const layer = layers[id];
 
             if (layer.type in this._debugParams.enabledLayers) {
@@ -1004,6 +1016,32 @@ class Painter {
             }
         }
 
+        const snow = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.snow);
+        const rain = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.rain);
+
+        if (snow && !this._snow) {
+            this._snow = new Snow(this);
+        }
+        if (!snow && this._snow) {
+            this._snow.destroy();
+            delete this._snow;
+        }
+
+        if (rain && !this._rain) {
+            this._rain = new Rain(this);
+        }
+        if (!rain && this._rain) {
+            this._rain.destroy();
+            delete this._rain;
+        }
+
+        if (this._snow) {
+            this._snow.update(this);
+        }
+        if (this._rain) {
+            this._rain.update(this);
+        }
+
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
 
@@ -1048,14 +1086,15 @@ class Painter {
                 const fogLUT = this.style.getLut(fog.scope);
                 if (!shouldRenderAtmosphere) {
 
-                    const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
+                    const ignoreLutColor = fog.properties.get('color-use-theme') === 'none';
+                    const fogColor = fog.properties.get('color').toRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...fogColor);
                 }
 
                 if (shouldRenderAtmosphere) {
-
-                    const spaceColor = fog.properties.get('space-color').toRenderColor(fogLUT).toArray01();
+                    const ignoreLutColor = fog.properties.get('space-color-use-theme') === 'none';
+                    const spaceColor = fog.properties.get('space-color').toRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...spaceColor);
                 }
@@ -1263,6 +1302,13 @@ class Painter {
             this.terrain.postRender();
         }
 
+        if (this._snow) {
+            this._snow.draw(this);
+        }
+
+        if (this._rain) {
+            this._rain.draw(this);
+        }
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             // Use source with highest maxzoom
             let selectedSource = null;
@@ -1416,13 +1462,12 @@ class Painter {
 
     queryGpuTimeDeferredRender(gpuQueries: Array<any>): number {
         if (!this.options.gpuTimingDeferredRender) return 0;
-        const ext = this.context.extTimerQuery;
         const gl = this.context.gl;
 
         let gpuTime = 0;
         for (const query of gpuQueries) {
-            gpuTime += ext.getQueryParameter(query, gl.QUERY_RESULT) / (1000 * 1000);
-            ext.deleteQueryEXT(query);
+            gpuTime += gl.getQueryParameter(query, gl.QUERY_RESULT) / (1000 * 1000);
+            gl.deleteQuery(query);
         }
 
         return gpuTime;
@@ -1435,12 +1480,12 @@ class Painter {
      * @private
      */
     translatePosMatrix(
-        matrix: Float32Array,
+        matrix: mat4,
         tile: Tile,
         translate: [number, number],
         translateAnchor: 'map' | 'viewport',
         inViewportPixelUnitsUnits?: boolean,
-    ): Float32Array {
+    ): mat4 {
         if (!translate[0] && !translate[1]) return matrix;
 
         const angle = inViewportPixelUnitsUnits ?
@@ -1505,9 +1550,9 @@ class Painter {
      * @returns {string[]}
      * @private
      */
-    currentGlobalDefines(name: string, overrideFog?: boolean | null, overrideRtt?: boolean | null): string[] {
+    currentGlobalDefines(name: string, overrideFog?: boolean | null, overrideRtt?: boolean | null): DynamicDefinesType[] {
         const rtt = (overrideRtt === undefined) ? this.terrain && this.terrain.renderingToTexture : overrideRtt;
-        const defines = [];
+        const defines: DynamicDefinesType[] = [];
 
         if (this.style && this.style.enable3dLights()) {
             // In case of terrain and map optimized for terrain mode flag
@@ -1523,12 +1568,6 @@ class Painter {
         }
         if (this.renderPass === 'shadow') {
             if (!this._shadowMapDebug) defines.push('DEPTH_TEXTURE');
-        } else if (this.shadowRenderer) {
-            if (this.shadowRenderer.useNormalOffset) {
-                defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
-            } else {
-                defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
-            }
         }
         if (this.terrainRenderModeElevated()) {
             defines.push('TERRAIN');
@@ -1547,7 +1586,7 @@ class Painter {
 
     getOrCreateProgram(name: string, options?: CreateProgramParams): Program<any> {
         this.cache = this.cache || {};
-        const defines = (((options && options.defines) || []) as string[]);
+        const defines = ((options && options.defines) || []);
         const config = options && options.config;
         const overrideFog = options && options.overrideFog;
         const overrideRtt = options && options.overrideRtt;

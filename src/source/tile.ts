@@ -28,7 +28,6 @@ import {transitionTileAABBinECEF, globeNormalizeECEF, tileCoordToECEF, globeToMe
 import {vec3, mat4} from 'gl-matrix';
 
 import type RasterParticleState from '../render/raster_particle_state';
-import type SourceFeatureState from '../source/source_state';
 import type FeatureIndex from '../data/feature_index';
 import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
@@ -43,8 +42,7 @@ import type Context from '../gl/context';
 import type {CanonicalTileID, OverscaledTileID} from './tile_id';
 import type Framebuffer from '../gl/framebuffer';
 import type Transform from '../geo/transform';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
-import type {LayerFeatureStates} from './source_state';
+import type {FeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
 import type {FilterSpecification} from '../style-spec/types';
 import type {TilespaceQueryGeometry} from '../style/query_geometry';
@@ -53,7 +51,7 @@ import type IndexBuffer from '../gl/index_buffer';
 import type Projection from '../geo/projection/projection';
 import type {TileTransform} from '../geo/projection/tile_transform';
 import type Painter from '../render/painter';
-import type {QueryResult} from '../source/query_features';
+import type {QrfQuery, QueryResult} from '../source/query_features';
 import type {UserManagedTexture, TextureImage} from '../render/texture';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 
@@ -83,6 +81,16 @@ const BOUNDS_FEATURE = (() => {
         }
     };
 })();
+
+/*
+ * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
+ */
+function getPixelPosMatrix(transform: Transform, tileID: OverscaledTileID) {
+    const t = mat4.fromScaling([] as any, [transform.width * 0.5, -transform.height * 0.5, 1]);
+    mat4.translate(t, t, [1, -1, 0]);
+    mat4.multiply(t, t, transform.calculateProjMatrix(tileID.toUnwrapped()));
+    return Float32Array.from(t);
+}
 
 /**
  * A tile object is the combination of a Coordinate, which defines
@@ -385,6 +393,20 @@ class Tile {
         this.state = 'unloaded';
     }
 
+    loadModelData(data: WorkerTileResult | null | undefined, painter: Painter, justReloaded?: boolean | null) {
+        if (!data) {
+            return;
+        }
+
+        if (data.resourceTiming) this.resourceTiming = data.resourceTiming;
+
+        this.buckets = {...this.buckets, ...deserializeBucket(data.buckets, painter.style)};
+
+        if (data.featureIndex) {
+            this.latestFeatureIndex = data.featureIndex;
+        }
+    }
+
     getBucket(layer: StyleLayer): Bucket {
         return this.buckets[layer.fqid];
     }
@@ -431,28 +453,18 @@ class Tile {
         if (this._lastUpdatedBrightness && brightness && Math.abs(this._lastUpdatedBrightness - brightness) < 0.001) {
             return;
         }
+        this.updateBuckets(painter, this._lastUpdatedBrightness !== brightness);
         this._lastUpdatedBrightness = brightness;
-        this.updateBuckets(painter);
     }
 
     // Queries non-symbol features rendered for this tile.
     // Symbol features are queried globally
     queryRenderedFeatures(
-        layers: {
-            [_: string]: StyleLayer;
-        },
-        serializedLayers: {
-            [key: string]: any;
-        },
-        sourceFeatureState: SourceFeatureState,
-        tileResult: TilespaceQueryGeometry,
-        params: {
-            filter: FilterSpecification;
-            layers: Array<string>;
-            availableImages: Array<string>;
-        },
+        query: QrfQuery,
+        tilespaceGeometry: TilespaceQueryGeometry,
+        availableImages: Array<string>,
         transform: Transform,
-        pixelPosMatrix: Float32Array,
+        sourceCacheTransform: Transform,
         visualizeQueryGeometry: boolean,
     ): QueryResult {
         Debug.run(() => {
@@ -466,24 +478,30 @@ class Tile {
                     boundsViz = this.queryBoundsDebugViz = new TileSpaceDebugBuffer(this.tileSize, Color.blue);
                 }
 
-                geometryViz.addPoints(tileResult.tilespaceGeometry);
-                boundsViz.addPoints(tileResult.bufferedTilespaceGeometry);
+                geometryViz.addPoints(tilespaceGeometry.tilespaceGeometry);
+                boundsViz.addPoints(tilespaceGeometry.bufferedTilespaceGeometry);
             }
         });
 
-        if (!this.latestFeatureIndex || !(this.latestFeatureIndex.rawTileData || this.latestFeatureIndex.is3DTile))
+        if (!this.latestFeatureIndex || !(this.latestFeatureIndex.rawTileData || this.latestFeatureIndex.is3DTile)) {
             return {};
+        }
 
-        return this.latestFeatureIndex.query({
-            tileResult,
-            pixelPosMatrix,
-            transform,
-            params,
-            tileTransform: this.tileTransform
-        }, layers, serializedLayers, sourceFeatureState);
+        const pixelPosMatrix = getPixelPosMatrix(sourceCacheTransform, this.tileID);
+
+        return this.latestFeatureIndex.query(
+            query,
+            {
+                tilespaceGeometry,
+                pixelPosMatrix,
+                transform,
+                availableImages,
+                tileTransform: this.tileTransform
+            }
+        );
     }
 
-    querySourceFeatures(result: Array<GeoJSONFeature>, params?: {
+    querySourceFeatures(result: Array<Feature>, params?: {
         sourceLayer?: string;
         filter?: FilterSpecification;
         validate?: boolean;
@@ -587,19 +605,17 @@ class Tile {
         }
     }
 
-    setFeatureState(states: LayerFeatureStates, painter?: Painter | null) {
-        if (!this.latestFeatureIndex ||
-            !this.latestFeatureIndex.rawTileData ||
-            Object.keys(states).length === 0 ||
-            !painter) {
+    refreshFeatureState(painter?: Painter) {
+        if (!this.latestFeatureIndex || !(this.latestFeatureIndex.rawTileData || this.latestFeatureIndex.is3DTile) || !painter) {
             return;
         }
 
         this.updateBuckets(painter);
     }
 
-    updateBuckets(painter: Painter) {
+    updateBuckets(painter: Painter, isBrightnessChanged?: boolean) {
         if (!this.latestFeatureIndex) return;
+
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
         const availableImages = painter.style.listImages();
         const brightness = painter.style.getBrightness();
@@ -608,17 +624,23 @@ class Tile {
             if (!painter.style.hasLayer(id)) continue;
 
             const bucket = this.buckets[id];
+            const bucketLayer = bucket.layers[0] as StyleLayer;
             // Buckets are grouped by common source-layer
-            const sourceLayerId = bucket.layers[0]['sourceLayer'] || '_geojsonTileLayer';
+            const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
             const sourceLayer = vtLayers[sourceLayerId];
-            const sourceCache = painter.style.getOwnSourceCache(bucket.layers[0].source);
-            let sourceLayerStates: Record<string, any> = {};
+            const sourceCache = painter.style.getSourceCache(bucketLayer.source, bucketLayer.scope);
+
+            let sourceLayerStates: FeatureStates = {};
             if (sourceCache) {
-                sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined);
+                sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
             }
 
             const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
-            bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, brightness);
+            const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
+            const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
+            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged) {
+                bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
+            }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {
                     painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);
@@ -771,13 +793,13 @@ class Tile {
         y: number,
         id: CanonicalTileID,
         tr: Transform,
-        normalizationMatrix: Float64Array,
-        worldToECEFMatrix: Float64Array | null | undefined,
+        normalizationMatrix: mat4,
+        worldToECEFMatrix: mat4 | null | undefined,
         phase: number,
     ): vec3 {
         // The following is equivalent to doing globe.projectTilePoint.
         // This way we don't recompute the normalization matrix everytime since it remains the same for all points.
-        let ecef = tileCoordToECEF(x, y, id);
+        let ecef = tileCoordToECEF(x, y, id) as vec3;
         if (worldToECEFMatrix) {
             // When in globe-to-Mercator transition, interpolate between globe and Mercator positions in ECEF
             const tileCount = 1 << id.z;
@@ -799,18 +821,15 @@ class Tile {
             let mercatorY = (y / EXTENT + id.y) / tileCount;
             mercatorX = (mercatorX - camX) * tr._pixelsPerMercatorPixel + camX;
             mercatorY = (mercatorY - camY) * tr._pixelsPerMercatorPixel + camY;
-            const mercatorPos = [mercatorX * tr.worldSize, mercatorY * tr.worldSize, 0];
-            // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-            vec3.transformMat4(mercatorPos as [number, number, number], mercatorPos as [number, number, number], worldToECEFMatrix);
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
+            const mercatorPos: vec3 = [mercatorX * tr.worldSize, mercatorY * tr.worldSize, 0];
+            vec3.transformMat4(mercatorPos, mercatorPos, worldToECEFMatrix as unknown as mat4);
             ecef = interpolateVec3(ecef, mercatorPos, phase);
         }
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-        const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
+        const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix as unknown as mat4);
         return gp;
     }
 
-    _makeGlobeTileDebugBorderBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: Float64Array, worldToECEFMatrix: Float64Array | null | undefined, phase: number) {
+    _makeGlobeTileDebugBorderBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: mat4, worldToECEFMatrix: mat4 | null | undefined, phase: number) {
         const vertices = new PosArray();
         const indices = new LineStripIndexArray();
         const extraGlobe = new PosGlobeExtArray();
@@ -845,7 +864,7 @@ class Tile {
         this._tileDebugSegments = SegmentVector.simpleSegment(0, 0, vertices.length, indices.length);
     }
 
-    _makeGlobeTileDebugTextBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: Float64Array, worldToECEFMatrix: Float64Array | null | undefined, phase: number) {
+    _makeGlobeTileDebugTextBuffer(context: Context, id: CanonicalTileID, tr: Transform, normalizationMatrix: mat4, worldToECEFMatrix: mat4 | null | undefined, phase: number) {
         const SEGMENTS = 4;
         const numVertices = SEGMENTS + 1;
         const step = EXTENT / SEGMENTS;

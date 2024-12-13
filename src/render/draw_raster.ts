@@ -735,7 +735,12 @@ function configureRaster(
   let range = layer.paint.get("raster-color-range");
 
   // Unpack the offset for use in a separate uniform
-  const mix = [inputMix[0], inputMix[1], inputMix[2], 0];
+  const mix: [number, number, number, number] = [
+    inputMix[0],
+    inputMix[1],
+    inputMix[2],
+    0,
+  ];
   const offset = inputMix[3];
 
   let resampling = inputResampling === "nearest" ? gl.NEAREST : gl.LINEAR;
@@ -788,9 +793,7 @@ function configureRaster(
   }
 
   return {
-    // @ts-expect-error - TS2322 - Type 'any[]' is not assignable to type '[number, number, number, number]'.
     mix,
-
     range,
     offset,
     defines,

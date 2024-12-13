@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 16.7,
+    center: [24.9425, 60.1715],
+    pitch: 67,
+    bearing: -34,
+    hash: true,
+    style: 'mapbox://styles/mapbox-map-design/standard-experimental-ime',
+});
+
+// Selecting Buildings
+let selectedBuildings = [];
+map.addInteraction('building-click', {
+    type: 'click',
+    target: {featuresetId: 'buildings', importId: 'basemap'},
+    handler: (e) => {
+        map.setFeatureState(e.feature, {select: !e.feature.state.select});
+        selectedBuildings.push(e.feature);
+    }
+});
+
+// Selecting POIs
+let selectedPoi = null;
+const poiMarker = new mapboxgl.Marker({color: 'red'});
+poiMarker.getElement().style.cursor = 'pointer';
+
+map.addInteraction('poi-click', {
+    type: 'click',
+    target: {featuresetId: 'poi', importId: 'basemap'},
+    handler: (e) => {
+        if (selectedPoi) {
+            map.setFeatureState(selectedPoi, {hide: false});
+            poiMarker.remove();
+        }
+
+        selectedPoi = e.feature;
+        poiMarker
+            .setLngLat(selectedPoi.geometry.coordinates)
+            .addTo(map);
+
+        let html = '';
+        for (const key in e.feature.properties) {
+            html += `<div><b>${key}</b>: ${e.feature.properties[key]}</div>`;
+        }
+
+        const popup = new mapboxgl.Popup().setHTML(html);
+        poiMarker.setPopup(popup);
+
+        map.setFeatureState(e.feature, {hide: true});
+
+        // Highlight buildins underneath the selected pin.
+        const buildings = map.queryRenderedFeatures({
+            target: {featuresetId: 'buildings', importId: 'basemap'},
+            filter: ['<=', ['distance', e.feature.geometry], 0]
+        });
+
+        if (buildings.length > 0) {
+            selectedBuildings.forEach(f => map.setFeatureState(f, {select: false}));
+            buildings.forEach(f => map.setFeatureState(f, {select: true}));
+            selectedBuildings = buildings;
+        }
+    }
+});
+
+// Selecting Places
+let selectedPlace = null;
+let placePopup = new mapboxgl.Popup();
+map.addInteraction('place-click', {
+    type: 'click',
+    target: {featuresetId: 'place-labels', importId: 'basemap'},
+    handler: (e) => {
+        if (selectedPlace) {
+            map.setFeatureState(selectedPlace, {select: false});
+        }
+
+        selectedPlace = e.feature;
+        map.setFeatureState(e.feature, {select: true});
+
+        let html = '';
+        for (const key in e.feature.properties) {
+            html += `<div><b>${key}</b>: ${e.feature.properties[key]}</div>`;
+        }
+
+        placePopup
+            .setLngLat(e.feature.geometry.coordinates)
+            .setHTML(html)
+            .addTo(map);
+    }
+});
+
+// Clearing features selection
+map.addInteraction('map-click', {
+    type: 'click',
+    handler: (e) => {
+        // Clear selected POI
+        if (selectedPoi) {
+            map.setFeatureState(selectedPoi, {hide: false});
+            poiMarker.remove();
+            selectedPoi = null;
+        }
+
+        // Clear selected building
+        selectedBuildings.forEach(f => map.setFeatureState(f, {select: false}));
+
+        // Clear selected place
+        if (selectedPlace) {
+            map.setFeatureState(selectedPlace, {select: false});
+            selectedPlace = null;
+        }
+
+        placePopup.remove();
+        return false;
+    }
+});
+
+// Hover effects
+
+map.addInteraction('building-mouseenter', {
+    type: 'mouseenter',
+    target: {featuresetId: 'buildings', importId: 'basemap'},
+    handler: (e) => {
+        map.setFeatureState(e.feature, {highlight: true});
+    }
+});
+
+map.addInteraction('building-mouseleave', {
+    type: 'mouseleave',
+    target: {featuresetId: 'buildings', importId: 'basemap'},
+    handler: (e) => {
+        map.setFeatureState(e.feature, {highlight: false});
+
+        // Propagate the event so that the handler is called for each feature.
+        return false;
+    }
+});
+
+</script>
+</body>
+</html>

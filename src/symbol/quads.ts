@@ -1,4 +1,5 @@
 import Point from '@mapbox/point-geometry';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
 import {ICON_PADDING} from '../render/image_atlas';
 import {SDF_SCALE} from '../render/glyph_manager';
@@ -69,6 +70,7 @@ export function getIconQuads(
     iconRotate: number,
     isSDFIcon: boolean,
     hasIconTextFit: boolean,
+    iconScale: number = 1,
 ): Array<SymbolQuad> {
     const quads = [];
 
@@ -77,8 +79,8 @@ export function getIconQuads(
     const imageWidth = image.paddedRect.w - 2 * border;
     const imageHeight = image.paddedRect.h - 2 * border;
 
-    const iconWidth = shapedIcon.right - shapedIcon.left;
-    const iconHeight = shapedIcon.bottom - shapedIcon.top;
+    const iconWidth = (shapedIcon.right - shapedIcon.left) * iconScale;
+    const iconHeight = (shapedIcon.bottom - shapedIcon.top) * iconScale;
 
     const stretchX = image.stretchX || [[0, imageWidth]];
     const stretchY = image.stretchY || [[0, imageHeight]];
@@ -112,16 +114,16 @@ export function getIconQuads(
 
     const makeBox = (left: Size, top: Size, right: Size, bottom: Size) => {
 
-        const leftEm = getEmOffset(left.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left);
+        const leftEm = getEmOffset(left.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left * iconScale);
         const leftPx = getPxOffset(left.fixed - fixedOffsetX, fixedContentWidth, left.stretch, stretchWidth);
 
-        const topEm = getEmOffset(top.stretch - stretchOffsetY, stretchContentHeight, iconHeight, shapedIcon.top);
+        const topEm = getEmOffset(top.stretch - stretchOffsetY, stretchContentHeight, iconHeight, shapedIcon.top * iconScale);
         const topPx = getPxOffset(top.fixed - fixedOffsetY, fixedContentHeight, top.stretch, stretchHeight);
 
-        const rightEm = getEmOffset(right.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left);
+        const rightEm = getEmOffset(right.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left * iconScale);
         const rightPx = getPxOffset(right.fixed - fixedOffsetX, fixedContentWidth, right.stretch, stretchWidth);
 
-        const bottomEm = getEmOffset(bottom.stretch - stretchOffsetY, stretchContentHeight, iconHeight, shapedIcon.top);
+        const bottomEm = getEmOffset(bottom.stretch - stretchOffsetY, stretchContentHeight, iconHeight, shapedIcon.top * iconScale);
         const bottomPx = getPxOffset(bottom.fixed - fixedOffsetY, fixedContentHeight, bottom.stretch, stretchHeight);
 
         const tl = new Point(leftEm, topEm);
@@ -298,7 +300,7 @@ export function getGlyphQuads(
             let pixelRatio = 1.0;
             let lineOffset = 0.0;
             if (positionedGlyph.imageName) {
-                const image = imageMap[positionedGlyph.imageName];
+                const image = imageMap[ResolvedImage.build(positionedGlyph.imageName).getSerializedPrimary()];
                 if (!image) continue;
                 if (image.sdf) {
                     warnOnce("SDF images are not supported in formatted text and will be ignored.");

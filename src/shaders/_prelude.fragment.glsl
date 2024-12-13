@@ -21,14 +21,14 @@ highp vec4 pack_depth(highp float ndc_z) {
 }
 
 #ifdef INDICATOR_CUTOUT
-uniform vec2 u_indicator_cutout_centers;
+uniform vec3 u_indicator_cutout_centers;
 uniform vec4 u_indicator_cutout_params;
 #endif
 
-// TODO: could be moved to a separate prelude
-vec4 applyCutout(vec4 color) {
+vec4 applyCutout(vec4 color, float height) {
 #ifdef INDICATOR_CUTOUT
-    float holeMinOpacity = u_indicator_cutout_params.x;
+    float verticalFadeRange = u_indicator_cutout_centers.z * 0.25; // Fade relative to the height of the indicator
+    float holeMinOpacity = mix(1.0, u_indicator_cutout_params.x, smoothstep(u_indicator_cutout_centers.z, u_indicator_cutout_centers.z + verticalFadeRange, height));
     float holeRadius = max(u_indicator_cutout_params.y, 0.0);
     float holeAspectRatio = u_indicator_cutout_params.z;
     float fadeStart = u_indicator_cutout_params.w;

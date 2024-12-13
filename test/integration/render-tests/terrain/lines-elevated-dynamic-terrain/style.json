@@ -1,0 +1,305 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 300,
+      "width": 512,
+      "allowed": 0.0021
+    }
+  },
+  "center": [-113.32694547094238, 35.93455626259847],
+  "zoom": 12,
+  "pitch": 38,
+  "bearing": 90,
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": [
+      "interpolate",
+      [
+          "linear"
+      ],
+      [
+          "zoom"
+      ],
+      0,            
+      1,
+      11.3,
+      1,
+      12.3,
+      0
+    ]
+  },
+  "sprite": "local://sprites/emerald",
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "cast-shadows" : true,
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.7
+      }
+    }
+  ],
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 12,
+      "tileSize": 256
+    },
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "geojson": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "elevation": [10, 400, 100]
+        },
+        "geometry": {
+          "type": "MultiLineString",
+          "coordinates": [
+            [
+              [
+                -113.35094547094238,
+                35.91855626259847
+              ],
+              [
+                -113.35094547094238,
+                35.93455626259847
+              ],
+              [
+                -113.35094547094238,
+                35.95055626259847
+              ]
+            ],
+            [
+              [
+                -113.32894547094237,
+                35.91855626259847
+              ],
+              [
+                -113.32494547094238,
+                35.95055626259847
+              ],
+              [
+                -113.32094547094238,
+                35.91855626259847
+              ]
+            ],
+            [
+              [
+                -113.31294547094238,
+                35.91855626259847
+              ],
+              [
+                -113.31294547094238,
+                35.95055626259847
+              ],
+              [
+                -113.31294547094238,
+                35.93455626259847
+              ]
+            ]
+          ]
+        }
+      }
+    },
+    "geojson1": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "elevation": [400, 400, 400, 0, 400, 400, 400]
+        },
+        "geometry": {
+          "type": "MultiLineString",
+          "coordinates": [
+            [
+              [
+                -113.33994547094238,
+                35.91855626259847
+              ],
+              [
+                -113.33994547094238,
+                35.93455626259847
+              ],
+              [
+                -113.33694547094238,
+                35.95055626259847
+              ]
+            ],
+            [
+              [
+                -113.30294547094238,
+                35.91855626259847
+              ],
+              [
+                -113.30294547094238,
+                35.95055626259847
+              ],
+              [
+                -113.30274547094238,
+                35.91855626259847
+              ]
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "bckgnd",
+      "type": "background",
+      "paint": {
+        "background-color": "darkgray"
+      }
+    },
+    {
+      "id": "3d-hillshade",
+      "type": "hillshade",
+      "source": "rgbterrain",
+      "minzoom": 6,
+      "maxzoom": 14.49,
+      "paint": {
+          "hillshade-exaggeration": [
+              "interpolate",
+              [
+                  "exponential",
+                  1.5
+              ],
+              [
+                  "zoom"
+              ],
+              11,
+              1,
+              14,
+              0.5
+          ],
+          "hillshade-illumination-anchor": "map",
+          "hillshade-shadow-color": [
+              "interpolate",
+              [
+                  "exponential",
+                  1.5
+              ],
+              [
+                  "zoom"
+              ],
+              7,
+              [
+                  "interpolate",
+                  [
+                      "linear"
+                  ],
+                  [
+                      "measure-light",
+                      "brightness"
+                  ],
+                  0.28,
+                  "hsla(235, 10%, 0%, 0.2)",
+                  0.3,
+                  "hsla(0, 100%, 0%,0.2)"
+              ],
+              10,
+              [
+                  "interpolate",
+                  [
+                      "linear"
+                  ],
+                  [
+                      "measure-light",
+                      "brightness"
+                  ],
+                  0.28,
+                  "hsla(235, 10%, 0%, 0.3)",
+                  0.3,
+                  "hsla(0, 100%, 0%,0.2)"
+              ]
+          ],
+          "hillshade-highlight-color": [
+              "interpolate",
+              [
+                  "linear"
+              ],
+              [
+                  "measure-light",
+                  "brightness"
+              ],
+              0.28,
+              "hsla(235, 20%, 85%, 0.2)",
+              0.3,
+              "hsla(0, 100%, 100%, 0.8)"
+          ],
+          "hillshade-accent-color": [
+              "interpolate",
+              [
+                  "linear"
+              ],
+              [
+                  "measure-light",
+                  "brightness"
+              ],
+              0.28,
+              "hsla(235, 30%, 30%, 1)",
+              0.3,
+              "hsla(0, 100%, 100%, 1)"
+          ]
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "round",
+        "line-z-offset": [
+          "at",
+          ["*", [ "line-progress" ], 2],
+          ["get", "elevation"]
+        ]
+      },
+      "paint": {
+        "line-width": 12,
+        "line-color": "red"
+      }
+    },
+    {
+      "id": "line1",
+      "type": "line",
+      "source": "geojson1",
+      "layout": {
+        "line-join": "none",
+        "line-z-offset": [
+          "at",
+          ["*", [ "line-progress" ], 6],
+          ["get", "elevation"]
+        ]
+      },
+      "paint": {
+        "line-width": 14,
+        "line-pattern": "dot"
+      }
+    }
+  ]
+}

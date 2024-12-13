@@ -6,7 +6,7 @@ import {globSync} from 'glob';
 import shuffleSeed from 'shuffle-seed';
 import {queue} from 'd3-queue';
 import chalk from 'chalk';
-import template from 'lodash.template';
+import template from 'lodash/template.js';
 import createServer from './server.js';
 
 import {fileURLToPath} from 'url';

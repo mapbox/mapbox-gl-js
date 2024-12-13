@@ -5,6 +5,11 @@ uniform float u_edge_radius;
 uniform float u_width_scale;
 uniform float u_vertical_scale;
 
+#ifdef TERRAIN
+uniform int u_height_type;
+uniform int u_base_type;
+#endif
+
 in vec4 a_pos_normal_ed;
 in vec2 a_centroid_pos;
 
@@ -47,11 +52,13 @@ void main() {
 
 vec3 pos;
 #ifdef TERRAIN
-    bool flat_roof = centroid_pos.x != 0.0 && t > 0.0;
+    bool is_flat_height = centroid_pos.x != 0.0 && u_height_type == 1;
+    bool is_flat_base = centroid_pos.x != 0.0 && u_base_type == 1;
     float ele = elevation(pos_nx.xy);
-    float c_ele = flat_roof ? centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos) : ele;
-    // If centroid elevation lower than vertex elevation, roof at least 2 meters height above base.
-    float h = flat_roof ? max(c_ele + height, ele + base + 2.0) : ele + (t > 0.0 ? height : base);
+    float c_ele = is_flat_height || is_flat_base ? (centroid_pos.y == 0.0 ? elevationFromUint16(centroid_pos.x) : flatElevation(centroid_pos)) : ele;
+    float h_height = is_flat_height ? max(c_ele + height, ele + base + 2.0) : ele + height;
+    float h_base = is_flat_base ? max(c_ele + base, ele + base) : ele + (base == 0.0 ? -5.0 : base);
+    float h = t > 0.0 ? max(h_base, h_height) : h_base;
     pos = vec3(pos_nx.xy, h);
 #else
     pos = vec3(pos_nx.xy, t > 0.0 ? height : base);

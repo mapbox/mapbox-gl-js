@@ -42,8 +42,8 @@ import type {VideoSourceSpecification} from '../style-spec/types';
  * @see [Example: Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
 class VideoSource extends ImageSource<'video'> {
-    type: 'video';
-    options: VideoSourceSpecification;
+    override type: 'video';
+    override options: VideoSourceSpecification;
     urls: Array<string>;
     video: HTMLVideoElement;
 
@@ -57,7 +57,7 @@ class VideoSource extends ImageSource<'video'> {
         this.options = options;
     }
 
-    load() {
+    override load() {
         this._loaded = false;
         const options = this.options;
 
@@ -151,7 +151,7 @@ class VideoSource extends ImageSource<'video'> {
         return this.video;
     }
 
-    onAdd(map: Map) {
+    override onAdd(map: Map) {
         if (this.map) return;
         this.map = map;
         this.load();
@@ -195,7 +195,7 @@ class VideoSource extends ImageSource<'video'> {
      */
     // setCoordinates inherited from ImageSource
 
-    prepare() {
+    override prepare() {
         if (Object.keys(this.tiles).length === 0 || this.video.readyState < 2) {
             return; // not enough data for current position
         }
@@ -216,7 +216,7 @@ class VideoSource extends ImageSource<'video'> {
         this._prepareData(context);
     }
 
-    serialize(): VideoSourceSpecification {
+    override serialize(): VideoSourceSpecification {
         return {
             type: 'video',
             urls: this.urls,
@@ -224,7 +224,7 @@ class VideoSource extends ImageSource<'video'> {
         };
     }
 
-    hasTransition(): boolean {
+    override hasTransition(): boolean {
         return this.video && !this.video.paused;
     }
 }

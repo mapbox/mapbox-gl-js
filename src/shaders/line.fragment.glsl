@@ -1,7 +1,10 @@
 #include "_prelude_fog.fragment.glsl"
 #include "_prelude_lighting.glsl"
+#include "_prelude_shadow.fragment.glsl"
 
 uniform lowp float u_device_pixel_ratio;
+uniform highp float u_width_scale;
+uniform highp float u_floor_width_scale;
 uniform float u_alpha_discard_threshold;
 uniform highp vec2 u_trim_offset;
 uniform highp vec2 u_trim_fade_range;
@@ -11,6 +14,9 @@ in vec2 v_width2;
 in vec2 v_normal;
 in float v_gamma_scale;
 in highp vec4 v_uv;
+#ifdef ELEVATED_ROADS
+in highp float v_road_z_offset;
+#endif
 #ifdef RENDER_LINE_DASH
 uniform sampler2D u_dash_image;
 
@@ -19,6 +25,18 @@ in vec2 v_tex;
 
 #ifdef RENDER_LINE_GRADIENT
 uniform sampler2D u_gradient_image;
+#endif
+
+#ifdef INDICATOR_CUTOUT
+in highp float v_z_offset;
+#endif
+
+#ifdef RENDER_SHADOWS
+uniform vec3 u_ground_shadow_factor;
+
+in highp vec4 v_pos_light_view_0;
+in highp vec4 v_pos_light_view_1;
+in highp float v_depth;
 #endif
 
 float luminance(vec3 c) {
@@ -55,12 +73,13 @@ void main() {
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_width2.t) or when fading out
     // (v_width2.s)
-    float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
+    float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture(u_dash_image, v_tex).r;
     float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / dash.z;
-    alpha *= linearstep(0.5 - sdfgamma / floorwidth, 0.5 + sdfgamma / floorwidth, sdfdist);
+    float scaled_floorwidth = (floorwidth * u_floor_width_scale);
+    alpha *= linearstep(0.5 - sdfgamma / scaled_floorwidth, 0.5 + sdfgamma / scaled_floorwidth, sdfdist);
 #endif
 
     highp vec4 out_color;
@@ -92,7 +111,7 @@ void main() {
         highp float end_transition = max(0.0, min(1.0, (trim_end - line_progress) / max(u_trim_fade_range[1], 1.0e-9)));
         highp float transition_factor = min(start_transition, end_transition);
         out_color = mix(out_color, u_trim_color, transition_factor);
-        trim_alpha = out_color.a;
+        trim_alpha = 1.0 - transition_factor;
     }
 #endif
 
@@ -103,7 +122,7 @@ void main() {
     }
 
 #ifdef RENDER_LINE_BORDER
-    float edgeBlur = (border_width + 1.0 / u_device_pixel_ratio);
+    float edgeBlur = ((border_width * u_width_scale) + 1.0 / u_device_pixel_ratio);
     float alpha2 = clamp(min(dist - (v_width2.t - edgeBlur), v_width2.s - dist) / edgeBlur, 0.0, 1.0);
     if (alpha2 < 1.) {
         float smoothAlpha = smoothstep(0.6, 1.0, alpha2);
@@ -117,14 +136,22 @@ void main() {
                 out_color.rgb *= (0.6  + 0.4 * smoothAlpha);
             }
         } else {
-            out_color.rgb = mix(border_color.rgb * border_color.a * trim_alpha, out_color.rgb, smoothAlpha);
+            out_color = mix(border_color * trim_alpha, out_color, smoothAlpha);
         }
     }
 #endif
 
 #ifdef LIGHTING_3D_MODE
     out_color = apply_lighting_with_emission_ground(out_color, u_emissive_strength);
-#endif
+#ifdef RENDER_SHADOWS
+    float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+#ifdef ELEVATED_ROADS
+    out_color.rgb *= mix(v_road_z_offset > 0.0 ? u_ground_shadow_factor : vec3(1.0), vec3(1.0), light);
+#else
+    out_color.rgb *= mix(u_ground_shadow_factor, vec3(1.0), light);
+#endif // ELEVATED_ROADS
+#endif // RENDER_SHADOWS
+#endif // LIGHTING_3D_MODE
 
 #ifdef FOG
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
@@ -133,7 +160,7 @@ void main() {
     out_color *= (alpha * opacity);
 
 #ifdef INDICATOR_CUTOUT
-    out_color = applyCutout(out_color);
+    out_color = applyCutout(out_color, v_z_offset);
 #endif
 
     glFragColor = out_color;

@@ -99,23 +99,22 @@ const maxTangent = Math.tan(85 * Math.PI / 180);
  * See also `getLabelPlaneMatrixForPlacement`
  */
 function getLabelPlaneMatrixForRendering(
-    posMatrix: Float32Array,
+    posMatrix: mat4,
     tileID: CanonicalTileID,
     pitchWithMap: boolean,
     rotateWithMap: boolean,
     transform: Transform,
     projection: Projection,
-    pixelsToTileUnits: Float32Array,
-): Float32Array {
+    pixelsToTileUnits: mat2,
+): mat4 {
     const m = mat4.create();
 
     if (pitchWithMap) {
         if (projection.name === 'globe') {
             const lm = calculateGlobeLabelMatrix(transform, tileID);
-            // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
             mat4.multiply(m, m, lm);
         } else {
-            const s = mat2.invert([] as any, pixelsToTileUnits);
+            const s = mat2.invert([] as unknown as mat2, pixelsToTileUnits);
             m[0] = s[0];
             m[1] = s[1];
             m[4] = s[2];
@@ -128,7 +127,6 @@ function getLabelPlaneMatrixForRendering(
         mat4.multiply(m, transform.labelPlaneMatrix, posMatrix);
     }
 
-    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
     return m;
 }
 
@@ -140,14 +138,14 @@ function getLabelPlaneMatrixForRendering(
  * label placement.
  */
 function getLabelPlaneMatrixForPlacement(
-    posMatrix: Float32Array,
+    posMatrix: mat4,
     tileID: CanonicalTileID,
     pitchWithMap: boolean,
     rotateWithMap: boolean,
     transform: Transform,
     projection: Projection,
-    pixelsToTileUnits: Float32Array,
-): Float32Array {
+    pixelsToTileUnits: mat2,
+): mat4 {
     const m = getLabelPlaneMatrixForRendering(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, projection, pixelsToTileUnits);
 
     // Symbol placement logic is performed in 2D in most scenarios.
@@ -164,14 +162,14 @@ function getLabelPlaneMatrixForPlacement(
  * Returns a matrix for converting from the correct label coordinate space to gl coords.
  */
 function getGlCoordMatrix(
-    posMatrix: Float32Array,
+    posMatrix: mat4,
     tileID: CanonicalTileID,
     pitchWithMap: boolean,
     rotateWithMap: boolean,
     transform: Transform,
     projection: Projection,
-    pixelsToTileUnits: Float32Array,
-): Float32Array {
+    pixelsToTileUnits: mat2,
+): mat4 {
     if (pitchWithMap) {
         if (projection.name === 'globe') {
             const m = getLabelPlaneMatrixForRendering(posMatrix, tileID, pitchWithMap, rotateWithMap, transform, projection, pixelsToTileUnits);
@@ -180,7 +178,7 @@ function getGlCoordMatrix(
             return m;
         } else {
             const m = mat4.clone(posMatrix);
-            const s = mat4.identity([] as any);
+            const s = mat4.identity([] as unknown as mat4);
             s[0] = pixelsToTileUnits[0];
             s[1] = pixelsToTileUnits[1];
             s[4] = pixelsToTileUnits[2];
@@ -189,7 +187,6 @@ function getGlCoordMatrix(
             if (!rotateWithMap) {
                 mat4.rotateZ(m, m, -transform.angle);
             }
-            // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
             return m;
         }
     } else {
@@ -198,24 +195,22 @@ function getGlCoordMatrix(
 }
 
 function project(x: number, y: number, z: number, matrix: mat4): vec4 {
-    const pos = [x, y, z, 1];
+    const pos: vec4 = [x, y, z, 1];
     if (z) {
-        vec4.transformMat4(pos as [number, number, number, number], pos as [number, number, number, number], matrix);
+        vec4.transformMat4(pos, pos, matrix);
     } else {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec4'.
         xyTransformMat4(pos, pos, matrix);
     }
     const w = pos[3];
     pos[0] /= w;
     pos[1] /= w;
     pos[2] /= w;
-    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec4'.
     return pos;
 }
 
-function projectClamped([x, y, z]: [any, any, any], matrix: mat4): vec4 {
-    const pos = [x, y, z, 1];
-    vec4.transformMat4(pos as [number, number, number, number], pos as [number, number, number, number], matrix);
+function projectClamped([x, y, z]: vec3, matrix: mat4): vec4 {
+    const pos: vec4 = [x, y, z, 1];
+    vec4.transformMat4(pos, pos, matrix);
 
     // Clamp distance to a positive value so we can avoid screen coordinate
     // being flipped possibly due to perspective projection
@@ -223,7 +218,6 @@ function projectClamped([x, y, z]: [any, any, any], matrix: mat4): vec4 {
     pos[0] /= w;
     pos[1] /= w;
     pos[2] /= w;
-    // @ts-expect-error - TS2322 - Type 'any[]' is not assignable to type 'vec4'.
     return pos;
 }
 
@@ -248,11 +242,11 @@ function isVisible(anchorPos: [number, number, number, number],
  *  This is only run on labels that are aligned with lines. Horizontal labels are handled entirely in the shader.
  */
 function updateLineLabels(bucket: SymbolBucket,
-                          posMatrix: Float32Array,
+                          posMatrix: mat4,
                           painter: Painter,
                           isText: boolean,
-                          labelPlaneMatrix: Float32Array,
-                          glCoordMatrix: Float32Array,
+                          labelPlaneMatrix: mat4,
+                          glCoordMatrix: mat4,
                           pitchWithMap: boolean,
                           keepUpright: boolean,
                           getElevation: GetElevation | null | undefined,
@@ -316,8 +310,8 @@ function updateLineLabels(bucket: SymbolBucket,
             y += dy;
             z += dz;
         }
-        const anchorPos = [x, y, z, 1.0];
-        vec4.transformMat4(anchorPos as [number, number, number, number], anchorPos as [number, number, number, number], posMatrix);
+        const anchorPos: vec4 = [x, y, z, 1.0];
+        vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
         // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number, number, number]'.
@@ -379,7 +373,7 @@ function placeFirstAndLastGlyph(
     tileAnchorPoint: Point,
     symbol: PlacedSymbol,
     lineVertexArray: SymbolLineVertexArray,
-    labelPlaneMatrix: Float32Array,
+    labelPlaneMatrix: mat4,
     projectionCache: ProjectionCache,
     getElevation: GetElevation | null | undefined,
     returnPathInTileCoords: boolean | null | undefined,
@@ -445,9 +439,9 @@ function placeGlyphsAlongLine(
     fontSize: number,
     flip: boolean,
     keepUpright: boolean,
-    posMatrix: Float32Array,
-    labelPlaneMatrix: Float32Array,
-    glCoordMatrix: Float32Array,
+    posMatrix: mat4,
+    labelPlaneMatrix: mat4,
+    glCoordMatrix: mat4,
     glyphOffsetArray: GlyphOffsetArray,
     lineVertexArray: SymbolLineVertexArray,
     dynamicLayoutVertexArray: SymbolDynamicLayoutArray,
@@ -546,7 +540,7 @@ function placeGlyphsAlongLine(
     return {};
 }
 
-function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: Float32Array, projection: Projection, getElevation?: GetElevation) {
+function elevatePointAndProject(p: Point, tileID: CanonicalTileID, posMatrix: mat4, projection: Projection, getElevation?: GetElevation) {
     const {x, y, z} = projection.projectTilePoint(p.x, p.y, tileID);
     if (!getElevation) {
         return project(x, y, z, posMatrix);
@@ -560,7 +554,7 @@ function projectTruncatedLineSegment(
     currentTilePoint: Point,
     previousProjectedPoint: vec3,
     minimumLength: number,
-    projectionMatrix: Float32Array,
+    projectionMatrix: mat4,
     getElevation: GetElevation | null | undefined,
     projection: Projection,
     tileID: CanonicalTileID,
@@ -591,7 +585,7 @@ function placeGlyphAlongLine(
     lineStartIndex: number,
     lineEndIndex: number,
     lineVertexArray: SymbolLineVertexArray,
-    labelPlaneMatrix: Float32Array,
+    labelPlaneMatrix: mat4,
     projectionCache: ProjectionCache,
     getElevation: GetElevation | null | undefined,
     returnPathInTileCoords: boolean | null | undefined,
@@ -678,8 +672,8 @@ function placeGlyphAlongLine(
     // The point is on the current segment. Interpolate to find it. Compute points on both label plane and tile space
     const segmentInterpolationT = (absOffsetX - distanceToPrev) / currentSegmentDistance;
     const tilePoint = currentVertex.sub(prevVertex)._mult(segmentInterpolationT)._add(prevVertex);
-    const prevToCurrent = vec3.sub([] as any, current, prev);
-    const labelPlanePoint = vec3.scaleAndAdd([] as any, prev, prevToCurrent, segmentInterpolationT);
+    const prevToCurrent = vec3.sub([] as unknown as vec3, current, prev);
+    const labelPlanePoint = vec3.scaleAndAdd([] as unknown as vec3, prev, prevToCurrent, segmentInterpolationT);
 
     let axisZ: [number, number, number] = [0, 0, 1];
     let diffX = prevToCurrent[0];
@@ -691,7 +685,7 @@ function placeGlyphAlongLine(
         if (axisZ[0] !== 0 || axisZ[1] !== 0 || axisZ[2] !== 1) {
             // Compute coordinate frame that is aligned to the tangent of the surface
             const axisX: [number, number, number] = [axisZ[2], 0, -axisZ[0]];
-            const axisY = vec3.cross([] as any, axisZ, axisX);
+            const axisY = vec3.cross([] as unknown as vec3, axisZ, axisX);
             vec3.normalize(axisX, axisX);
             vec3.normalize(axisY, axisY);
             diffX = vec3.dot(prevToCurrent, axisX);
@@ -702,7 +696,7 @@ function placeGlyphAlongLine(
     // offset the point from the line to text-offset and icon-offset
     if (lineOffsetY) {
         // Find a coordinate frame for the vertical offset
-        const offsetDir = vec3.cross([] as any, axisZ, prevToCurrent);
+        const offsetDir = vec3.cross([] as unknown as vec3, axisZ, prevToCurrent);
         vec3.normalize(offsetDir, offsetDir);
         vec3.scaleAndAdd(labelPlanePoint, labelPlanePoint, offsetDir, lineOffsetY * dir);
     }

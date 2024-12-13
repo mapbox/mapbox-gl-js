@@ -1,0 +1,14 @@
+{
+  "expression": ["image", "poi_circle", {}],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "resolvedImage"
+    },
+    "outputs": [{"namePrimary": "poi_circle", "available": false}],
+    "serialized": ["image", "poi_circle"]
+  }
+}

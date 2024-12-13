@@ -1,16 +1,15 @@
 // @ts-nocheck
 import {
     describe,
-    beforeAll,
     beforeEach,
     afterEach,
-    afterAll,
     test,
     expect,
     vi,
     waitFor,
+    doneAsync,
 } from '../../util/vitest';
-import {getNetworkWorker, http, HttpResponse, getPNGResponse} from '../../util/network';
+import {mockFetch, getPNGResponse} from '../../util/network';
 import ImageSource from '../../../src/source/image_source';
 import {Evented} from '../../../src/util/evented';
 import Transform from '../../../src/geo/transform';
@@ -44,20 +43,6 @@ class StubMap extends Evented {
     }
 }
 
-let networkWorker: any;
-
-beforeAll(async () => {
-    networkWorker = await getNetworkWorker(window);
-});
-
-afterEach(() => {
-    networkWorker.resetHandlers();
-});
-
-afterAll(() => {
-    networkWorker.stop();
-});
-
 describe('ImageSource', () => {
     const img: Record<string, any> = {};
 
@@ -80,27 +65,23 @@ describe('ImageSource', () => {
     });
 
     test('fires dataloading event', async () => {
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
-        const source = createSource({url : '/image.png'});
-        await new Promise(resolve => {
-            source.on('dataloading', (e) => {
-                expect(e.dataType).toEqual('source');
-                resolve();
-            });
-            source.onAdd(new StubMap());
+        const {wait, withAsync} = doneAsync();
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse())
         });
+        const source = createSource({url : '/image.png'});
+        source.on('dataloading', withAsync((e, doneRef) => {
+            expect(e.dataType).toEqual('source');
+            doneRef.resolve();
+        }));
+        source.onAdd(new StubMap());
+        await wait;
     });
 
-    test('transforms url request', async () => {
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+    test('transforms url request', () => {
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse())
+        });
         const source = createSource({url : '/image.png'});
         const map = new StubMap();
         const spy = vi.spyOn(map._requestManager, 'transformRequest');
@@ -110,15 +91,11 @@ describe('ImageSource', () => {
         expect(spy.mock.calls[0][1]).toEqual('Image');
     });
 
-    test('updates url from updateImage', async () => {
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            }),
-            http.get('/image2.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+    test('updates url from updateImage', () => {
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse()),
+            '/image2.png': async () => new Response(await getPNGResponse())
+        });
         const source = createSource({url : '/image.png'});
         const map = new StubMap();
         const spy = vi.spyOn(map._requestManager, 'transformRequest');
@@ -132,12 +109,10 @@ describe('ImageSource', () => {
         expect(spy.mock.calls[1][1]).toEqual('Image');
     });
 
-    test('sets coordinates', async () => {
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+    test('sets coordinates', () => {
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse())
+        });
         const source = createSource({url : '/image.png'});
         const map = new StubMap();
         source.onAdd(map);
@@ -149,80 +124,66 @@ describe('ImageSource', () => {
     });
 
     test('sets coordinates via updateImage', async () => {
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            }),
-            http.get('/image2.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+        const {wait, withAsync} = doneAsync();
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse()),
+            '/image2.png': async () => new Response(await getPNGResponse())
+        });
         const source = createSource({url : '/image.png'});
         const map = new StubMap();
         source.onAdd(map);
         const beforeSerialized = source.serialize();
         expect(beforeSerialized.coordinates).toEqual([[0, 0], [1, 0], [1, 1], [0, 1]]);
 
-        await new Promise(resolve => {
-            source.on('data', (e) => {
-                if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                    const afterSerialized = source.serialize();
-                    expect(afterSerialized.coordinates).toEqual([[0, 0], [-1, 0], [-1, -1], [0, -1]]);
-                    resolve();
-                }
-            });
-            source.updateImage({
-                url: '/image2.png',
-                coordinates: [[0, 0], [-1, 0], [-1, -1], [0, -1]]
-            });
+        source.on('data', withAsync((e, doneRef) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                const afterSerialized = source.serialize();
+                expect(afterSerialized.coordinates).toEqual([[0, 0], [-1, 0], [-1, -1], [0, -1]]);
+                doneRef.resolve();
+            }
+        }));
+        source.updateImage({
+            url: '/image2.png',
+            coordinates: [[0, 0], [-1, 0], [-1, -1], [0, -1]]
         });
+        await wait;
     });
 
     test('fires data event when content is loaded', async () => {
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
-        const source = createSource({url : '/image.png'});
-
-        await new Promise(resolve => {
-            source.on('data', (e) => {
-                if (e.dataType === 'source' && e.sourceDataType === 'content') {
-                    expect(typeof source.tileID == 'object').toBeTruthy();
-                    resolve();
-                }
-
-            });
-            source.onAdd(new StubMap());
+        const {wait, withAsync} = doneAsync();
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse())
         });
+        const source = createSource({url : '/image.png'});
+        source.on('data', withAsync((e, doneRef) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                expect(typeof source.tileID == 'object').toBeTruthy();
+                doneRef.resolve();
+            }
+        }));
+        source.onAdd(new StubMap());
+        await wait;
     });
 
     test('fires data event when metadata is loaded', async () => {
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
-        const source = createSource({url : '/image.png'});
-
-        await new Promise(resolve => {
-            source.on('data', e => {
-                if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                    resolve();
-                }
-
-            });
-            source.onAdd(new StubMap());
+        const {wait, withAsync} = doneAsync();
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse())
         });
+        const source = createSource({url : '/image.png'});
+        source.on('data', withAsync((e, doneRef) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                doneRef.resolve();
+            }
+        }));
+        source.onAdd(new StubMap());
+        await wait;
     });
 
-    test('serialize url and coordinates', async () => {
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+    test('serialize url and coordinates', () => {
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse())
+        });
         const source = createSource({url: '/image.png'});
 
         const serialized = source.serialize();
@@ -232,14 +193,10 @@ describe('ImageSource', () => {
     });
 
     test('https://github.com/mapbox/mapbox-gl-js/issues/12209', async () => {
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            }),
-            http.get('/image2.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse()),
+            '/image2.png': async () => new Response(await getPNGResponse())
+        });
         const source = createSource({url : '/image.png'});
         source.tiles[0] = new OverscaledTileID(0, 0, 0, 0, 0);
         const map = new StubMap();
@@ -272,14 +229,10 @@ describe('ImageSource', () => {
     });
 
     test('reloading image retains loaded status', async () => {
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            }),
-            http.get('/image2.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse()),
+            '/image2.png': async() => new Response(await getPNGResponse())
+        });
         const source = createSource({url : '/image.png'});
         const map = new StubMap();
         const coordinates = [[0, 0], [-1, 0], [-1, -1], [0, -1]];
@@ -297,29 +250,23 @@ describe('ImageSource', () => {
         await waitFor(source, 'data');
     });
 
-    test('cancels image request when onRemove is called', async () => {
+    test('cancels image request when onRemove is called', () => {
         const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse())
+        });
         const source = createSource({url: '/image.png'});
         source.onAdd(new StubMap());
         source.onRemove();
         expect(abortSpy).toHaveBeenCalledTimes(1);
     });
 
-    test('cancels image request when updateImage is called', async () => {
+    test('cancels image request when updateImage is called', () => {
         const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            }),
-            http.get('/image2.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse()),
+            '/image2.png': async () => new Response(await getPNGResponse())
+        });
         const source = createSource({url: '/image.png'});
         source.image = img;
         source.onAdd(new StubMap());
@@ -329,13 +276,11 @@ describe('ImageSource', () => {
         expect(abortSpy).toHaveBeenCalledTimes(1);
     });
 
-    test('does not cancel image request when updateImage is called with the same url', async () => {
+    test('does not cancel image request when updateImage is called with the same url', () => {
         const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
-        networkWorker.use(
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+        mockFetch({
+            '/image.png': async () => new Response(await getPNGResponse()),
+        });
         const source = createSource({url: '/image.png'});
         source.image = img;
         source.onAdd(new StubMap());
@@ -345,17 +290,11 @@ describe('ImageSource', () => {
     });
 
     test('updates image before first image was loaded', async () => {
-        networkWorker.use(
-            http.get('/notfound.png', async () => {
-                return new HttpResponse(null, {status: 404});
-            }),
-            http.get('/image2.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            }),
-            http.get('/image.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+        mockFetch({
+            '/notfound.png': () => new Response(null, {status: 404}),
+            '/image.png': async () => new Response(await getPNGResponse()),
+            '/image2.png': async () => new Response(await getPNGResponse())
+        });
         const source = createSource({url : '/notfound.png'});
         const map = new StubMap();
         const spy = vi.spyOn(map._requestManager, 'transformRequest');
