@@ -94,6 +94,7 @@ export default class Marker extends Evented<MarkerEvents> {
     _updateFrameId: number;
     _updateMoving: () => void;
     _occludedOpacity: number;
+    _lngLatDirty: boolean;
 
     constructor(options?: MarkerOptions, legacyOptions?: MarkerOptions) {
         super();
@@ -125,6 +126,7 @@ export default class Marker extends Evented<MarkerEvents> {
         this._pitchAlignment = (options && options.pitchAlignment && options.pitchAlignment) || 'auto';
         this._updateMoving = () => this._update(true);
         this._occludedOpacity = (options && options.occludedOpacity) || 0.2;
+        this._lngLatDirty = false;
 
         if (!options || !options.element) {
             this._defaultMarker = true;
@@ -294,6 +296,7 @@ export default class Marker extends Evented<MarkerEvents> {
     * @see [Example: Add a marker using a place name](https://docs.mapbox.com/mapbox-gl-js/example/marker-from-geocode/)
     */
     setLngLat(lnglat: LngLatLike): this {
+        this._lngLatDirty = this._lngLat == null || this._lngLat[0] !== lnglat[0] || this._lngLat[1] !== lnglat[1];
         this._lngLat = LngLat.convert(lnglat);
         this._pos = null;
         if (this._popup) this._popup.setLngLat(this._lngLat);
@@ -575,8 +578,9 @@ export default class Marker extends Evented<MarkerEvents> {
 
         // because rounding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
-        // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
-        if (delaySnap === true) {
+        // no arguments (when the Marker is initialized or Marker#setLngLat is invoked) or
+        // when the coordinates have not changed.
+        if (delaySnap === true && this._lngLatDirty) {
             this._updateFrameId = requestAnimationFrame(() => {
                 if (this._element && this._pos && this._anchor) {
                     this._pos = this._pos.round();
@@ -586,6 +590,7 @@ export default class Marker extends Evented<MarkerEvents> {
         } else {
             this._pos = this._pos.round();
         }
+        this._lngLatDirty = false;
 
         map._requestDomTask(() => {
             if (!this._map) return;
