@@ -591,6 +591,7 @@ export default class Marker extends Evented<MarkerEvents> {
             if (!this._map) return;
 
             if (this._element && this._pos && this._anchor) {
+                this._pos = this._pos.round();
                 this._updateDOM();
             }
 
