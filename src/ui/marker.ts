@@ -296,8 +296,9 @@ export default class Marker extends Evented<MarkerEvents> {
     * @see [Example: Add a marker using a place name](https://docs.mapbox.com/mapbox-gl-js/example/marker-from-geocode/)
     */
     setLngLat(lnglat: LngLatLike): this {
-        this._lngLatDirty = this._lngLat == null || this._lngLat[0] !== lnglat[0] || this._lngLat[1] !== lnglat[1];
-        this._lngLat = LngLat.convert(lnglat);
+        const newLngLat = LngLat.convert(lnglat);
+        this._lngLatDirty = this._lngLat == null || this._lngLat.lat !== newLngLat.lat || this._lngLat.lng !== newLngLat.lng;
+        this._lngLat = newLngLat;
         this._pos = null;
         if (this._popup) this._popup.setLngLat(this._lngLat);
         this._update(true);
