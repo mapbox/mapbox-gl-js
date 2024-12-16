@@ -5251,7 +5251,15 @@
     "density": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        0.85
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5321,7 +5329,7 @@
     "opacity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.9,
+      "default": 1.0,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5345,7 +5353,15 @@
     "vignette": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.3,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        0.3
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5391,7 +5407,7 @@
     "center-thinning": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.4,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5416,7 +5432,7 @@
       "type": "array",
       "default": [
         0.0,
-        90.0
+        50.0
       ],
       "minimum": 0,
       "maximum": 360,
@@ -5448,7 +5464,7 @@
     "flake-size": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.71,
       "minimum": 0,
       "maximum": 5,
       "experimental": true,
@@ -5474,7 +5490,15 @@
     "density": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        0.5
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5522,7 +5546,15 @@
     "color": {
       "type": "color",
       "property-type": "data-constant",
-      "default": "#919191",
+      "default":  [
+        "interpolate",
+        ["linear"],
+        [ "measure-light", "brightness" ],
+        0,
+        "#03113d",
+        0.3,
+        "#a8adbc"
+      ],
       "experimental": true,
       "expression": {
         "interpolated": true,
@@ -5544,7 +5576,15 @@
     "opacity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.19,
+      "default": [
+        "interpolate",
+        ["linear"],
+        [ "measure-light", "brightness" ],
+        0,
+        0.88,
+        1,
+        0.7
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5568,7 +5608,15 @@
     "vignette": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.3,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        1.0
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5592,7 +5640,15 @@
     "vignette-color": {
       "type": "color",
       "property-type": "data-constant",
-      "default": "#ffffff",
+      "default": [
+        "interpolate",
+        ["linear"],
+        [ "measure-light", "brightness" ],
+        0,
+        "#001736",
+        0.3,
+        "#464646"
+      ],
       "experimental": true,
       "expression": {
         "interpolated": true,
@@ -5614,7 +5670,7 @@
     "center-thinning": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.57,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5671,11 +5727,11 @@
     "droplet-size": {
       "type": "array",
       "default": [
-        1.0,
-        10.0
+        2.6,
+        18.2
       ],
       "minimum": 0,
-      "maximum": 20,
+      "maximum": 50,
       "length": 2,
       "value": "number",
       "property-type": "data-constant",
@@ -5704,7 +5760,7 @@
     "distortion-strength": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.5,
+      "default": 0.7,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
