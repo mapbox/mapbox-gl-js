@@ -1,0 +1,20 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:m="https://www.mapbox.com">
+    <m:metadata>
+        <m:stretch-x-areas>
+            <m:stretch-x-area m:left="10" m:width="20" />
+        </m:stretch-x-areas>
+        <m:stretch-y-areas>
+            <m:stretch-y-area m:top="10" m:height="20" />
+        </m:stretch-y-areas>
+        <m:content m:left="10" m:width="20" m:top="10" m:height="20" />
+    </m:metadata>
+    <rect width="10" height="10" fill="#8371FE" />
+    <rect x="30" width="10" height="10" fill="#8371FE" />
+    <rect y="30" width="10" height="10" fill="#8371FE" />
+    <rect x="30" y="30" width="10" height="10" fill="#8371FE" />
+    <rect x="10" width="20" height="10" fill="#FF7E33" />
+    <rect x="10" y="30" width="20" height="10" fill="#FF7E33" />
+    <rect y="10" width="10" height="20" fill="#FF7E33" />
+    <rect x="30" y="10" width="10" height="20" fill="#FF7E33" />
+    <rect x="10" y="10" width="20" height="20" fill="#A693C5" />
+</svg>

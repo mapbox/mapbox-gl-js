@@ -200,10 +200,12 @@ class ImageManager extends Evented {
     ): boolean {
         if (!content) return true;
         if (content.length !== 4) return false;
-        if (content[0] < 0 || image.data.width < content[0]) return false;
-        if (content[1] < 0 || image.data.height < content[1]) return false;
-        if (content[2] < 0 || image.data.width < content[2]) return false;
-        if (content[3] < 0 || image.data.height < content[3]) return false;
+        if (!image.usvg) {
+            if (content[0] < 0 || image.data.width < content[0]) return false;
+            if (content[1] < 0 || image.data.height < content[1]) return false;
+            if (content[2] < 0 || image.data.width < content[2]) return false;
+            if (content[3] < 0 || image.data.height < content[3]) return false;
+        }
         if (content[2] < content[0]) return false;
         if (content[3] < content[1]) return false;
         return true;

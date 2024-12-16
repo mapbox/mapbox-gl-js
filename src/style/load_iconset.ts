@@ -12,11 +12,13 @@ function getContentArea(icon: Icon): [number, number, number, number] | undefine
         return undefined;
     }
 
+    const {left, top, width, height} = icon.metadata.content_area;
+
     return [
-        icon.metadata.content_area.left,
-        icon.metadata.content_area.top,
-        icon.metadata.content_area.width,
-        icon.metadata.content_area.height
+        left,
+        top,
+        left + width,
+        top + height
     ];
 }
 
