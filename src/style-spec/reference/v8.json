@@ -9042,9 +9042,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "3.0.0",
-          "android": "11.0.0",
-          "ios": "11.0.0"
+          "js": "3.1.0",
+          "android": "11.1.0",
+          "ios": "11.1.0"
         }
       },
       "expression": {
