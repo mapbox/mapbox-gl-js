@@ -80,21 +80,22 @@ class Feature implements GeoJSONFeature {
 }
 
 /**
- * Featureset descriptor is a reference to a featureset in a style fragment.
+ * `FeaturesetDescriptor` references a featureset in a style. If `importId` is not specified, the featureset is assumed to be in the root style.
  */
 export type FeaturesetDescriptor = {featuresetId: string, importId?: string};
 
 /**
- * A descriptor for a query target, which can be either a reference to a layer
- * or a reference to a featureset in a style fragment.
+ * `TargetDescriptor` defines the target for a {@link Map#queryRenderedFeatures} query to inspect,
+ * referencing either a [style layer ID](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-id) or a {@link FeaturesetDescriptor}.
+ * It acts as a universal target for {@link Map#addInteraction} and {@link Map#queryRenderedFeatures}.
  */
 export type TargetDescriptor =
     | {layerId: string}
     | FeaturesetDescriptor;
 
 /**
- * A variant of a feature, which can be used to reference this feature from different featuresets.
- * During the QRF query, the original feature will have a reference to all its variants grouped by the query target.
+ * `FeatureVariant` represents a feature variant, allowing references to the feature from different featuresets.
+ * In a {@link Map#queryRenderedFeatures} query, the original feature includes references to all its variants, grouped by the query target.
  */
 export type FeatureVariant = {
     target: TargetDescriptor;
@@ -103,8 +104,10 @@ export type FeatureVariant = {
 };
 
 /**
- * TargetFeature is a derivative of a Feature and its variant that is used to represent a feature in a specific query target.
- * It includes the `featureset` and `namespace` of the variant and omits the `layer`, `source`, and `sourceLayer` of the original feature.
+ * `TargetFeature` is a [GeoJSON](http://geojson.org/) [Feature object](https://tools.ietf.org/html/rfc7946#section-3.2) representing a feature
+ * associated with a specific query target in {@link Map#queryRenderedFeatures}. For featuresets in imports, `TargetFeature` includes a `target` reference as a {@link TargetDescriptor}
+ * and may also include a `namespace` property to prevent feature ID collisions when layers defined in the query target reference multiple sources.
+ * Unlike features returned for root style featuresets, `TargetFeature` omits the `layer`, `source`, and `sourceLayer` properties.
  */
 export class TargetFeature extends Feature {
     override layer: never;
@@ -112,9 +115,19 @@ export class TargetFeature extends Feature {
     override sourceLayer: never;
     override variants: never;
 
+    /**
+     * The target descriptor of the feature.
+     */
     target?: TargetDescriptor;
+
+    /**
+     * The namespace of the feature.
+     */
     namespace?: string;
 
+    /**
+     * @private
+     */
     constructor(feature: Feature, variant: FeatureVariant) {
         super(feature._vectorTileFeature, feature._z, feature._x, feature._y, feature.id);
         if (feature.state) this.state = {...feature.state};
