@@ -1516,6 +1516,10 @@ export type MapEvents = {
      * Fired immediately after all style resources have been downloaded
      * and the first visually complete rendering of the base style has occurred.
      *
+     * In general, it's recommended to add custom sources and layers after this event.
+     * This approach allows for a more efficient initialization and faster rendering
+     * of the added layers.
+     *
      * @event style.load
      * @memberof Map
      * @instance
