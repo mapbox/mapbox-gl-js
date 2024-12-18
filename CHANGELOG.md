@@ -1,4 +1,4 @@
-## 3.9.0-beta.1
+## 3.9.0
 
 ### Breaking changes ⚠️
 
@@ -6,15 +6,16 @@
 
 ### Features and improvements ✨
 
-- Add _experimental_ features for interactive indoor maps.
 - Add _experimental_ vector icons support.
 - Add _experimental_ precipitation support through `snow` and `rain` style properties.
+- Add _experimental_ features for interactive indoor maps.
 - Add `to-hsla` expression.
 - Add `*-use-theme` property to override the color theme for specific layers.
 - Add support for `color-theme` overrides in imports.
 - Add per-feature `mouseenter`, `mouseover`, `mouseleave`, and `mouseout` events for `addInteraction`.
 - Enable mixing `featuresets` and `layers` in the `Map#queryRenderedFeatures`.
 - Improve landmark rendering performance.
+- The `clip` layer is now stable and no longer marked _experimental_.
 
 ### Bug fixes 🐞
 
@@ -23,6 +24,8 @@
 - Fix double shadowing on lines at ground level.
 - Fix shadow acne from 3D structures close to the ground.
 - Fix update of state-dependent features during brightness changes.
+- Fix an edge case with fill extrusions around tile borders not being updated correctly on terrain load.
+- Fix a race condition where using `line-z-offset` would sometimes break layer rendering order.
 
 ## 3.8.0
 
