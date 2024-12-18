@@ -1,6 +1,5 @@
 import {ColorType, ResolvedImageType, StringType} from '../types';
 import ResolvedImage from '../types/resolved_image';
-import {isExpression} from '..';
 
 import type Color from '../../util/color';
 import type {Expression, SerializedExpression} from '../expression';
@@ -15,7 +14,7 @@ export type ImageOptions = {
 }
 
 function isImageOptions(value: unknown) {
-    if (typeof value !== 'string' && !isExpression(value)) {
+    if (value !== null && typeof value === 'object') {
         return true;
     }
 
