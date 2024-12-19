@@ -393,8 +393,8 @@ const defaultOptions: Omit<MapOptions, 'container'> = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  * see [`src/ui/default_locale.js`](https://github.com/mapbox/mapbox-gl-js/blob/main/src/ui/default_locale.js) for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
- * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * @param {'raster' | 'icon_set' | 'auto'} [options.spriteFormat='auto'] The format of the image sprite to use. If set to `'auto'`, vector iconset will be used for all mapbox-hosted sprites and raster sprite for all custom URLs.
+ * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * Supported projections are:
  * * [Albers](https://en.wikipedia.org/wiki/Albers_projection) equal-area conic projection as `albers`
  * * [Equal Earth](https://en.wikipedia.org/wiki/Equal_Earth_projection) equal-area pseudocylindrical projection as `equalEarth`
