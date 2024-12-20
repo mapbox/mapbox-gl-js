@@ -22,7 +22,7 @@
         "@babel/preset-env": "^7.24.3",
         "babel-loader": "^9.1.3",
         "url-loader": "^4.1.1",
-        "webpack": "^5.91.0",
+        "webpack": "^5.97.1",
         "webpack-cli": "^5.1.4",
         "worker-loader": "^3.0.6"
     }
