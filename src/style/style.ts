@@ -176,7 +176,7 @@ const ignoredDiffOperations = pick(diffOperations, [
 /**
  * Layer types that has no features and are not queryable with QRF API.
  */
-const featurelessLayerTypes = new Set(['background', 'sky', 'slot']);
+const featurelessLayerTypes = new Set(['background', 'sky', 'slot', 'custom']);
 
 const empty = emptyStyle();
 
