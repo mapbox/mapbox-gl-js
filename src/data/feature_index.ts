@@ -241,8 +241,10 @@ class FeatureIndex {
             // Iterave over all targets to check if the feature should be included and add feature variants if necessary
             let shouldInclude = false;
             for (const target of targets) {
+                this.updateFeatureProperties(geojsonFeature, target);
                 const {filter} = target;
                 if (filter) {
+                    feature.properties = geojsonFeature.properties;
                     if (filter.needGeometry) {
                         const evaluationFeature = toEvaluationFeature(feature, true);
                         if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
@@ -322,8 +324,10 @@ class FeatureIndex {
         // Iterave over all targets to check if the feature should be included and add feature variants if necessary
         let shouldInclude = false;
         for (const target of targets) {
+            this.updateFeatureProperties(geojsonFeature, target);
             const {filter} = target;
             if (filter) {
+                feature.properties = geojsonFeature.properties;
                 if (filter.needGeometry) {
                     if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature, this.tileID.canonical)) {
                         continue;
@@ -347,6 +351,24 @@ class FeatureIndex {
         }
     }
 
+    updateFeatureProperties(feature: Feature, target: QrfTarget, availableImages?: Array<string>) {
+        if (target.properties) {
+            const transformedProperties = {};
+            for (const name in target.properties) {
+                const expression = target.properties[name];
+                const value = expression.evaluate(
+                    {zoom: this.z},
+                    feature._vectorTileFeature,
+                    feature.state,
+                    feature.tile,
+                    availableImages
+                );
+                if (value != null) transformedProperties[name] = value;
+            }
+            feature.properties = transformedProperties;
+        }
+    }
+
     /**
      * Create a feature variant for a query target and add it to the original feature.
      *
@@ -361,21 +383,7 @@ class FeatureIndex {
         };
 
         if (target.properties) {
-            const transformedProperties = {};
-            for (const name in target.properties) {
-                const expression = target.properties[name];
-                const value = expression.evaluate(
-                    {zoom: this.z},
-                    feature._vectorTileFeature,
-                    feature.state,
-                    feature.tile,
-                    availableImages
-                );
-
-                if (value != null) transformedProperties[name] = value;
-            }
-
-            variant.properties = transformedProperties;
+            variant.properties = feature.properties;
         }
 
         feature.variants = feature.variants || {};

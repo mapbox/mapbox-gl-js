@@ -3,12 +3,13 @@
   "metadata": {
     "test": {
       "height": 256,
+      "width": 256,
       "operations": [
-        ["setFeatureState", {"target": {"featuresetId": "roads"}, "id": "4612696"}, {"stateA": 1}],
-        ["setFeatureState", {"target": {"featuresetId": "roads"}, "id": 4612696}, {"stateB": "feature_id as number"}],
-        ["setFeatureState", {"target": {"featuresetId": "roads"}, "id": "4612752"}, {"stateB": {"stateKey" : [4, 2]}}]
+        ["setFeatureState", {"target": {"featuresetId": "roads"}, "id": "22701544"}, {"stateA": 1}],
+        ["setFeatureState", {"target": {"featuresetId": "roads"}, "id": 22701544}, {"stateB": "feature_id as number"}],
+        ["setFeatureState", {"target": {"featuresetId": "roads"}, "id": "22701541"}, {"stateB": {"stateKey" : [4, 2]}}]
       ],
-      "queryGeometry": [10, 100],
+      "queryGeometry": [78, 231],
       "queryOptions": {
         "target": {"featuresetId": "roads"}
       }

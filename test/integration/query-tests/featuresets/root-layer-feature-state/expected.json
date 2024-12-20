@@ -37,7 +37,9 @@
     "state": {
       "stateA": 1,
       "stateB": "feature_id as number"
-    }
+    },
+    "source": "mapbox",
+    "sourceLayer": "road"
   },
   {
     "geometry": {
@@ -90,6 +92,8 @@
       "stateB": {
         "stateKey": [4, 2]
       }
-    }
+    },
+    "source": "mapbox",
+    "sourceLayer": "road"
   }
 ]

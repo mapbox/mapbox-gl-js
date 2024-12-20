@@ -11,6 +11,7 @@
       "a-constant-value": "constant-a"
     },
     "target": {"featuresetId": "featureset"},
+    "source": "geojson",
     "namespace": "a"
   }
 ]

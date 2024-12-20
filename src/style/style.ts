@@ -2118,11 +2118,28 @@ class Style extends Evented<MapEvents> {
     setFeaturesetSelectors(featuresets?: FeaturesetsSpecification) {
         if (!featuresets) return;
 
+        const sourceInfoMap: { [sourceInfo: string]: string } = {};
+        // Helper to create consistent keys
+        const createKey = (sourceId: string, sourcelayerId: string = '') => `${sourceId}::${sourcelayerId}`;
+
         this.featuresetSelectors = {};
         for (const featuresetId in featuresets) {
             const featuresetSelectors: FeaturesetSelector[] = this.featuresetSelectors[featuresetId] = [];
             for (const selector of featuresets[featuresetId].selectors) {
-
+                if (selector.featureNamespace) {
+                    const layer = this.getOwnLayer(selector.layer);
+                    if (!layer) {
+                        warnOnce(`Layer is undefined for selector: ${selector.layer}`);
+                        continue;
+                    }
+                    const sourceKey = createKey(layer.source, layer.sourceLayer);
+                    // Based on spec, "If the underlying source is the same for multiple selectors within a featureset, the same featureNamespace should be used across those selectors."
+                    if (sourceKey in sourceInfoMap && sourceInfoMap[sourceKey] !== selector.featureNamespace)  {
+                        warnOnce(`"featureNamespace ${selector.featureNamespace} of featureset ${featuresetId}'s selector is not associated to the same source, skip this selector`);
+                        continue;
+                    }
+                    sourceInfoMap[sourceKey] = selector.featureNamespace;
+                }
                 let properties;
                 if (selector.properties) {
                     for (const name in selector.properties) {

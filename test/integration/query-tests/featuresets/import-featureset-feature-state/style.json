@@ -3,12 +3,13 @@
   "metadata": {
     "test": {
       "height": 256,
+      "width": 500,
       "operations": [
-        ["setFeatureState", {"target": {"featuresetId": "roads", "importId": "basemap"}, "id": "4612696"}, {"stateA": 1}],
-        ["setFeatureState", {"target": {"featuresetId": "roads", "importId": "basemap"}, "id": 4612696}, {"stateB": "feature_id as number"}],
+        ["setFeatureState", {"target": {"featuresetId": "roads", "importId": "basemap"}, "id": "289597991"}, {"stateA": 1}],
+        ["setFeatureState", {"target": {"featuresetId": "roads", "importId": "basemap"}, "id": 289597991}, {"stateB": "feature_id as number"}],
         ["setFeatureState", {"target": {"featuresetId": "roads", "importId": "basemap"}, "id": "4612752"}, {"stateB": {"stateKey" : [4, 2]}}]
       ],
-      "queryGeometry": [10, 100],
+      "queryGeometry": [199, 184],
       "queryOptions": {
         "target": {"featuresetId": "roads", "importId": "basemap"}
       }
@@ -43,6 +44,16 @@
           }
         },
         "layers": [
+          {
+            "id": "line",
+            "type": "line",
+            "source": "mapbox",
+            "source-layer": "road",
+            "paint": {
+              "line-color": "red"
+            },
+            "interactive": true
+          },
           {
             "id": "road",
             "type": "circle",

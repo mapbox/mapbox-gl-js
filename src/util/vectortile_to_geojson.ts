@@ -107,12 +107,12 @@ export type FeatureVariant = {
  * `TargetFeature` is a [GeoJSON](http://geojson.org/) [Feature object](https://tools.ietf.org/html/rfc7946#section-3.2) representing a feature
  * associated with a specific query target in {@link Map#queryRenderedFeatures}. For featuresets in imports, `TargetFeature` includes a `target` reference as a {@link TargetDescriptor}
  * and may also include a `namespace` property to prevent feature ID collisions when layers defined in the query target reference multiple sources.
- * Unlike features returned for root style featuresets, `TargetFeature` omits the `layer`, `source`, and `sourceLayer` properties.
+ * Unlike features returned for root style featuresets, `TargetFeature` omits the `layer`, `source`, and `sourceLayer` properties if the feature belongs to import style.
  */
 export class TargetFeature extends Feature {
-    override layer: never;
-    override source: never;
-    override sourceLayer: never;
+    override layer;
+    override source;
+    override sourceLayer;
     override variants: never;
 
     /**
@@ -135,6 +135,12 @@ export class TargetFeature extends Feature {
         this.target = variant.target;
         this.namespace = variant.namespace;
         if (variant.properties) this.properties = variant.properties;
+
+        if (this.target && (('featuresetId' in this.target && !this.target.importId) || ('layerId' in this.target))) {
+            this.source = feature.source;
+            this.sourceLayer = feature.sourceLayer;
+            this.layer = feature.layer;
+        }
     }
 
     override toJSON(): GeoJSON.Feature & FeatureVariant {
