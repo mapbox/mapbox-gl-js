@@ -102,7 +102,9 @@ const todo = [
     "render-tests/elevated-line-pattern/line-join-none",
     "render-tests/elevated-line-pattern/overscaled",
     // line-width projected
-    "render-tests/elevated-line-width/projected"
+    "render-tests/elevated-line-width/projected",
+    // https://mapbox.atlassian.net/browse/MAPSNAT-2636
+    "render-tests/icon-text-fit/stretch-nine-part-content-interpolate-text-size"
 ];
 
 const skip = [
