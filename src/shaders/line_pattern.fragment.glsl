@@ -59,7 +59,7 @@ void main() {
 
     vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
 
-    float pattern_size = display_size.x / u_tile_units_to_pixels;
+    highp float pattern_size = display_size.x / u_tile_units_to_pixels;
 
     float aspect = display_size.y / v_width;
 
@@ -112,11 +112,11 @@ void main() {
     // negative). v_pattern_data.y is not modified because we can't access overlap info for other end of the segment.
     // All units are tile units.
     // Distance from segment start point to start of first pattern instance
-    float pattern_len = pattern_size / aspect;
-    float segment_phase = pattern_len - mod(v_linesofar - v_pattern_data.x + pattern_len, pattern_len);
+    highp float pattern_len = pattern_size / aspect;
+    highp float segment_phase = pattern_len - mod(v_linesofar - v_pattern_data.x + pattern_len, pattern_len);
     // Step is used to check if we can fit an extra pattern cycle when considering the segment overlap at the corner
-    float visible_start = segment_phase - step(pattern_len * 0.5, segment_phase) * pattern_len;
-    float visible_end = floor((v_pattern_data.y - segment_phase) / pattern_len) * pattern_len + segment_phase;
+    highp float visible_start = segment_phase - step(pattern_len * 0.5, segment_phase) * pattern_len;
+    highp float visible_end = floor((v_pattern_data.y - segment_phase) / pattern_len) * pattern_len + segment_phase;
     visible_end += step(pattern_len * 0.5, v_pattern_data.y - visible_end) * pattern_len;
 
     if (v_pattern_data.x < visible_start || v_pattern_data.x >= visible_end) {
