@@ -392,6 +392,13 @@ export type ModelSourceSpecification = {
     "tiles"?: Array<string>
 }
 
+export type CanvasSourceSpecification = {
+    ["type"]: 'canvas';
+    ["coordinates"]: [[number, number], [number, number], [number, number], [number, number]];
+    ["animate"]?: boolean;
+    ["canvas"]: string | HTMLCanvasElement;
+};
+
 export type SourceSpecification =
     | VectorSourceSpecification
     | RasterSourceSpecification
@@ -401,6 +408,7 @@ export type SourceSpecification =
     | VideoSourceSpecification
     | ImageSourceSpecification
     | ModelSourceSpecification
+    | CanvasSourceSpecification;
 
 export type ModelSpecification = string;
 
