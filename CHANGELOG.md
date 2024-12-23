@@ -1,8 +1,16 @@
+## 3.9.1
+
+- Fix an error when using background patterns on styles with vector icons enabled.
+- Fix `queryRenderedFeatures` not working on styles with custom layers.
+- Fix small rendering artifacts on line corners when using patterns with `line-join: none`.
+- When using `queryRenderedFeatures` and `querySourceFeatures` with `featureset`, fix `filter` option to apply to `featureset` selectors rather than original properties, and add `featureNamespace` validation.
+- Fix `queryRenderedFeatures` missing `source`, `sourceLayer` and `layer` properties in resulting features where they should be present.
+
 ## 3.9.0
 
 ### Breaking changes ⚠️
 
-- Rename `featureset` property to `target` in `addInteraction` and `queryRenderedFetures` options.
+- Rename `featureset` property to `target` in `addInteraction` and `queryRenderedFeatures` options.
 
 ### Features and improvements ✨
 
