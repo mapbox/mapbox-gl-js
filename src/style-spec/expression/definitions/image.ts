@@ -14,7 +14,7 @@ export type ImageOptions = {
 }
 
 function isImageOptions(value: unknown) {
-    if (value !== null && typeof value === 'object') {
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
         return true;
     }
 
