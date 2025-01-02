@@ -1,3 +1,8 @@
+## 3.9.2
+- Fix display of user-rendered images.
+- Fix a broken build issue in specific bundling configurations using Vite or ESBuild.
+- Fix console error issue that sometimes occur during map initialization.
+
 ## 3.9.1
 
 - Fix an error when using background patterns on styles with vector icons enabled.
