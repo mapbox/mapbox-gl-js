@@ -51,6 +51,14 @@ export const operationHandlers = {
         setTimeout(doneCb, params[0]);
     },
     addImage(map, params, doneCb) {
+        if (params[1].endsWith('.js')) {
+            import(params[1].replace('./', '../')).then(({image}) => {
+                map.addImage(params[0], image, params[2] || {});
+                doneCb();
+            });
+            return;
+        }
+
         const image = new Image();
         image.onload = () => {
             map.addImage(params[0], image, params[2] || {});

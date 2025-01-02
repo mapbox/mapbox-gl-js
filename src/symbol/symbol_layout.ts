@@ -344,7 +344,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         let isUSVGIcon = false;
         if (feature.icon && feature.icon.namePrimary) {
             const iconSizeFactor = getRasterizedIconSize(bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature);
-            const scaleFactor = iconSizeFactor  * sizes.iconScaleFactor * pixelRatio;
+            const scaleFactor = iconSizeFactor * sizes.iconScaleFactor * pixelRatio;
             const primaryImageSerialized = feature.icon.getPrimary().scaleSelf(scaleFactor).serialize();
             const image = imageMap[primaryImageSerialized];
             if (image) {
