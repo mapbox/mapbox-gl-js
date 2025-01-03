@@ -6,13 +6,7 @@ import ValidationError from '../style-spec/error/validation_error';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type {Evented} from '../util/evented';
-
-export type CanvasSourceSpecification = {
-    ["type"]: 'canvas';
-    ["coordinates"]: [[number, number], [number, number], [number, number], [number, number]];
-    ["animate"]?: boolean;
-    ["canvas"]: string | HTMLCanvasElement;
-};
+import type {CanvasSourceSpecification} from '../style-spec/types';
 
 /**
  * Options to add a canvas source type to the map.
