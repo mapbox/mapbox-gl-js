@@ -403,6 +403,11 @@ export type MapInteractionEventType = MapMouseEventType | MapTouchEventType | Ma
  * @see [Reference: `Map` events API documentation](https://docs.mapbox.com/mapbox-gl-js/api/map/#map-events)
  * @see [Example: Highlight features within a bounding box](https://docs.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
  */
+export type MapBoxZoomEvent = {
+    type: 'boxzoomstart' | 'boxzoomend' | 'boxzoomcancel';
+    target: Map;
+    originalEvent: MouseEvent;
+};
 
 export type MapStyleDataEvent = {
     dataType: 'style';
