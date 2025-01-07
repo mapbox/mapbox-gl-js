@@ -45,8 +45,8 @@ class Feature implements GeoJSONFeature {
 
     clone(): Feature {
         const feature = new Feature(this._vectorTileFeature, this._z, this._x, this._y, this.id);
-        if (this.state) feature.state = {...this.state};
-        if (this.layer) feature.layer = {...this.layer};
+        if (this.state) feature.state = Object.assign({}, this.state);
+        if (this.layer) feature.layer = Object.assign({}, this.layer);
         if (this.source) feature.source = this.source;
         if (this.sourceLayer) feature.sourceLayer = this.sourceLayer;
         return feature;
@@ -130,7 +130,7 @@ export class TargetFeature extends Feature {
      */
     constructor(feature: Feature, variant: FeatureVariant) {
         super(feature._vectorTileFeature, feature._z, feature._x, feature._y, feature.id);
-        if (feature.state) this.state = {...feature.state};
+        if (feature.state) this.state = Object.assign({}, feature.state);
 
         this.target = variant.target;
         this.namespace = variant.namespace;

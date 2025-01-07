@@ -2233,12 +2233,11 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        this.options.set(fqid, {
-            ...expressions,
+        this.options.set(fqid, Object.assign({}, expressions, {
             value: expression,
             default: defaultExpression,
             minValue, maxValue, stepValue, type, values
-        });
+        }));
 
         this.updateConfigDependencies(key);
     }
@@ -3096,7 +3095,7 @@ class Style extends Evented<MapEvents> {
         const targets: QrfTarget[] = [];
 
         if (params && params.target) {
-            targets.push({...params, targetId, filter});
+            targets.push(Object.assign({}, params, {targetId, filter}));
         } else {
             // Query all root-level featuresets
             const featuresetDescriptors = this.getFeaturesetDescriptors();
@@ -3140,11 +3139,10 @@ class Style extends Evented<MapEvents> {
                 return;
             }
 
-            querySourceCache.layers[styleLayer.fqid].targets.push({
-                ...target,
+            querySourceCache.layers[styleLayer.fqid].targets.push(Object.assign({}, target, {
                 namespace: selector.namespace,
                 properties: selector.properties
-            });
+            }));
         };
 
         for (const target of targets) {

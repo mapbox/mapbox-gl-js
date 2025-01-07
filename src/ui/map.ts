@@ -654,7 +654,7 @@ export class Map extends Camera {
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
         if (options.contextCreateOptions) {
-            this._contextCreateOptions = {...options.contextCreateOptions};
+            this._contextCreateOptions = Object.assign({}, options.contextCreateOptions);
         } else {
             this._contextCreateOptions = {};
         }

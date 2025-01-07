@@ -400,7 +400,7 @@ class Tile {
 
         if (data.resourceTiming) this.resourceTiming = data.resourceTiming;
 
-        this.buckets = {...this.buckets, ...deserializeBucket(data.buckets, painter.style)};
+        this.buckets = Object.assign({}, this.buckets, deserializeBucket(data.buckets, painter.style));
 
         if (data.featureIndex) {
             this.latestFeatureIndex = data.featureIndex;
