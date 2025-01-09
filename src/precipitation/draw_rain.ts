@@ -276,7 +276,7 @@ export class Rain extends PrecipitationBase {
                 mode: distortionOnly ? 0 : 1
             });
 
-            const count = Math.round(revealFactor * params.intensity * this.particlesCount);
+            const count = Math.round(params.intensity * this.particlesCount);
             const particlesSegments = SegmentVector.simpleSegment(0, 0, count * 4, count * 2);
 
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
