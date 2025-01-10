@@ -1,0 +1,20 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        -122.39312142133713,
+        37.79248811488655
+        ],
+      "type": "Point"
+    },
+    "id": "44106213",
+    "properties": {
+      "height": 29.037949727615928
+    },
+    "source": "file-system-tiles",
+    "state": {
+      "hover": true
+    },
+    "type": "Feature"
+  }
+]

@@ -238,7 +238,7 @@ class FeatureIndex {
             geojsonFeature.layer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
             geojsonFeature.layer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
 
-            // Iterave over all targets to check if the feature should be included and add feature variants if necessary
+            // Iterate over all targets to check if the feature should be included and add feature variants if necessary
             let shouldInclude = false;
             for (const target of targets) {
                 this.updateFeatureProperties(geojsonFeature, target);
@@ -321,7 +321,7 @@ class FeatureIndex {
 
         geojsonFeature.layer = extend({}, serializedLayer);
 
-        // Iterave over all targets to check if the feature should be included and add feature variants if necessary
+        // Iterate over all targets to check if the feature should be included and add feature variants if necessary
         let shouldInclude = false;
         for (const target of targets) {
             this.updateFeatureProperties(geojsonFeature, target);
