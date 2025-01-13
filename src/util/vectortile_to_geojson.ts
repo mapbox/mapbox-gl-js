@@ -101,6 +101,7 @@ export type FeatureVariant = {
     target: TargetDescriptor;
     namespace?: string;
     properties?: Record<string, unknown>;
+    uniqueFeatureID?: boolean;
 };
 
 /**

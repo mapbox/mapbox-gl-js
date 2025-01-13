@@ -2,11 +2,11 @@ import assert from 'assert';
 import {Event} from '../util/evented';
 import {TargetFeature} from '../util/vectortile_to_geojson';
 import featureFilter from '../style-spec/feature_filter/index';
+import {shouldSkipFeatureVariant, type QrfTarget} from '../source/query_features';
 
 import type Point from '@mapbox/point-geometry';
 import type LngLat from '../geo/lng_lat';
 import type Feature from '../util/vectortile_to_geojson';
-import type {QrfTarget} from '../source/query_features';
 import type {FeatureFilter} from '../style-spec/feature_filter/index';
 import type {Map as MapboxMap} from './map';
 import type {FilterSpecification} from '../style-spec/types';
@@ -204,6 +204,7 @@ export class InteractionSet {
         features = features || this.queryTargets(event.point, reversedInteractions);
 
         let eventHandled = false;
+        const uniqueFeatureSet = new Set<string>();
         for (const feature of features) {
             for (const [id, interaction] of reversedInteractions) {
                 // Skip interactions that don't have a featureset, they will be handled later.
@@ -214,6 +215,9 @@ export class InteractionSet {
                 if (!variants) continue;
 
                 for (const variant of variants) {
+                    if (shouldSkipFeatureVariant(variant, feature, uniqueFeatureSet, id)) {
+                        continue;
+                    }
                     const targetFeature = new TargetFeature(feature, variant);
                     const stop = interaction.handler(new InteractionEvent(event, id, interaction, targetFeature));
 

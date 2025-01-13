@@ -8,7 +8,7 @@ export type FormattedSpecification = string;
 
 export type ResolvedImageSpecification = string;
 
-export type PromoteIdSpecification = {[_: string]: string} | string;
+export type PromoteIdSpecification = {[_: string]: string | ExpressionSpecification} | string | ExpressionSpecification;
 
 export type FilterSpecification =
     | ExpressionSpecification
@@ -284,7 +284,8 @@ export type FeaturesetSpecification = {
 export type SelectorSpecification = {
     "layer": string,
     "properties"?: SelectorPropertySpecification,
-    "featureNamespace"?: string
+    "featureNamespace"?: string,
+    "_uniqueFeatureID"?: boolean
 }
 
 /**

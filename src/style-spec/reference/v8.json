@@ -271,6 +271,11 @@
       "type": "string",
       "required": false,
       "doc": "An optional field that represents the feature namespace defined by the selector within a featureset to which this feature belongs. If the underlying source is the same for multiple selectors within a featureset, the same featureNamespace should be used across those selectors."
+    },
+    "_uniqueFeatureID": {
+      "type": "boolean",
+      "required": false,
+      "doc": "Internal flag used for standard style, in case multiple features sharing the same featureId, only one feature will be returned for feature query."
     }
   },
   "selectorProperty": {
@@ -10165,8 +10170,8 @@
   },
   "promoteId": {
     "*": {
-      "type": "string",
-      "doc": "A name of a feature property to use as ID for feature state."
+      "type": "*",
+      "doc": "A feature property name to use as the ID, or an expression to evaluate as the ID for feature state."
     }
   }
 }
