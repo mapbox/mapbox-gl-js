@@ -145,7 +145,7 @@
     "watch-unit": "vitest --config vitest.config.unit.ts",
     "test-unit": "vitest --config vitest.config.unit.ts --run",
     "test-usvg": "vitest --config ./vitest.config.usvg.ts --run",
-    "start-usvg": "esbuild src/data/usvg/usvg_pb_renderer.ts --outfile=src/data/usvg/usvg_pb_renderer.js --bundle --format=esm --watch --serve=9966 --servedir=.",
+    "start-usvg": "esbuild src/data/usvg/usvg_pb_renderer.ts src/data/usvg/usvg_pb_decoder.ts --outdir=src/data/usvg/ --bundle --format=esm --watch --serve=9966 --servedir=.",
     "test-build": "tsx ./node_modules/.bin/tape test/build/**/*.test.js",
     "watch-render": "cross-env SUITE_NAME=render testem -f test/integration/testem/testem.js",
     "watch-query": "SUITE_NAME=query testem -f test/integration/testem/testem.js",
