@@ -256,6 +256,8 @@ function updateCanvas(imagePath) {
         const image = new Image();
         image.src = imagePath.replace('./', '');
         image.onload = () => {
+            canvas.width = image.width;
+            canvas.height = image.height;
             resolve(ctx.drawImage(image, 0, 0, image.width, image.height));
         };
 
