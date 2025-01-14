@@ -1,3 +1,7 @@
+## 3.9.3
+- Fix issues when updating feature state on symbol layers.
+- Fix canvas source not rendering correctly after a canvas resize.
+
 ## 3.9.2
 - Fix display of user-rendered images.
 - Fix a broken build issue in specific bundling configurations using Vite or ESBuild.
