@@ -274,6 +274,7 @@
     },
     "_uniqueFeatureID": {
       "type": "boolean",
+      "private": true,
       "required": false,
       "doc": "Internal flag used for standard style, in case multiple features sharing the same featureId, only one feature will be returned for feature query."
     }
