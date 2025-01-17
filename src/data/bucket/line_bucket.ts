@@ -202,8 +202,16 @@ class LineBucket implements Bucket {
         const lineSortKey = this.layers[0].layout.get('line-sort-key');
 
         this.tileToMeter = tileToMeter(canonical);
-        this.hasZOffset = !this.layers[0].isDraped();
+
+        const zOffset = this.layers[0].layout.get('line-z-offset');
+        const zOffsetZero = zOffset.isConstant() && !zOffset.constantOr(0);
         const elevationReference = this.layers[0].layout.get('line-elevation-reference');
+        const seaOrGroundReference = elevationReference === 'sea' || elevationReference === 'ground';
+        // The bucket has z-offset if elevationReference is 'sea' or 'ground'
+        // or when elevationReference is 'none' and z-offset property is non-zero.
+        // We need to explicitly compare elevationReference agains 'none', because the property
+        // can also have hd-road specific values which are unrelated to normal z-offset.
+        this.hasZOffset = seaOrGroundReference || (!zOffsetZero && elevationReference === 'none');
         if (this.hasZOffset && elevationReference === 'none') {
             warnOnce(`line-elevation-reference: ground is used for the layer ${this.layerIds[0]} because non-zero line-z-offset value was found.`);
         }
