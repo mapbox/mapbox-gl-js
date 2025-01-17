@@ -16,7 +16,6 @@ import assert from "assert";
 
 import type LngLat from '../geo/lng_lat';
 import type {ISource, SourceEvents} from './source';
-import type {CanvasSourceSpecification} from './canvas_source';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
@@ -26,6 +25,7 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type {ProjectedPoint} from '../geo/projection/projection';
 import type {
+    CanvasSourceSpecification,
     ImageSourceSpecification,
     VideoSourceSpecification
 } from '../style-spec/types';
