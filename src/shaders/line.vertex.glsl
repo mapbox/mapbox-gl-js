@@ -16,11 +16,11 @@ in vec4 a_data;
 in vec2 a_z_offset_width;
 #endif
 
-// Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
+// Includes in order: a_uv_x, a_split_index, a_line_progress
 // to reduce attribute count on older devices.
 // Only line-gradient and line-trim-offset will requires a_packed info.
 #if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
-in highp vec4 a_packed;
+in highp vec3 a_packed;
 #endif
 
 #ifdef RENDER_LINE_DASH
@@ -50,7 +50,7 @@ float sample_elevation(vec2 apos) {
 out vec2 v_normal;
 out vec2 v_width2;
 out float v_gamma_scale;
-out highp vec4 v_uv;
+out highp vec3 v_uv;
 #ifdef ELEVATED_ROADS
 out highp float v_road_z_offset;
 #endif
@@ -221,17 +221,16 @@ void main() {
 #endif
 
 #if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
-    float a_uv_x = a_packed[0];
+    highp float a_uv_x = a_packed[0];
     float a_split_index = a_packed[1];
-    highp float a_clip_start = a_packed[2];
-    highp float a_clip_end = a_packed[3];
+    highp float line_progress = a_packed[2];
 #ifdef RENDER_LINE_GRADIENT
     highp float texel_height = 1.0 / u_image_height;
     highp float half_texel_height = 0.5 * texel_height;
 
-    v_uv = vec4(a_uv_x, a_split_index * texel_height - half_texel_height, a_clip_start, a_clip_end);
+    v_uv = vec3(a_uv_x, a_split_index * texel_height - half_texel_height, line_progress);
 #else
-    v_uv = vec4(a_uv_x, 0.0, a_clip_start, a_clip_end);
+    v_uv = vec3(a_uv_x, 0.0, line_progress);
 #endif
 #endif
 
