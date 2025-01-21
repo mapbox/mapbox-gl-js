@@ -2,8 +2,7 @@
   "version": 8,
    "metadata": {
     "test": {
-      "allowed": 0.0012,
-      "standardDerivatives": true
+      "allowed": 0.0012
     }
   },
   "lights": [

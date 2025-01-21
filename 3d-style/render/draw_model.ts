@@ -145,8 +145,6 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
         definesValues.push('DIFFUSE_SHADED');
     }
 
-    definesValues.push('USE_STANDARD_DERIVATIVES');
-
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) {
         definesValues.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');

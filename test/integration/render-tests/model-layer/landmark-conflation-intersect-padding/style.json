@@ -2,7 +2,6 @@
   "version": 8,
   "metadata": {
     "test": {
-      "standardDerivatives": true,
       "height": 512,
       "width": 512,
       "allowed": 0.0014,
