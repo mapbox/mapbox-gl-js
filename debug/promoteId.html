@@ -50,7 +50,7 @@ const tooltip = document.getElementById('tooltip');
 let hoveredFeature;
 window.addEventListener('mousemove', function(e) {
     e.point = new mapboxgl.Point(e.clientX, e.clientY);
-    const features = map.queryRenderedFeatures(e.point, {featureset: {featuresetId: 'buildings', importId: "basemap"}});
+    const features = map.queryRenderedFeatures(e.point, {target: {featuresetId: 'buildings', importId: "basemap"}});
     const totalFeatures = features.length;
     const feature = features[0];
     if (feature) {
