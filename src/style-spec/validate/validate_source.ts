@@ -1,5 +1,5 @@
 import {default as ValidationError, ValidationWarning} from '../error/validation_error';
-import {unbundle} from '../util/unbundle_jsonlint';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import validateObject from './validate_object';
 import validateEnum from './validate_enum';
 import validateExpression from './validate_expression';
@@ -129,7 +129,8 @@ function validatePromoteId({
         return validateString({key, value});
     } else if (Array.isArray(value)) {
         const errors = [];
-        const expression = createExpression(value);
+        const unbundledValue = deepUnbundle(value);
+        const expression = createExpression(unbundledValue);
         if (expression.result === 'error') {
             expression.value.forEach((err) => {
                 errors.push(new ValidationError(`${key}${err.key}`, null, `${err.message}`));
