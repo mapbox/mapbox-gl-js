@@ -12,14 +12,26 @@ function getContentArea(icon: Icon): [number, number, number, number] | undefine
         return undefined;
     }
 
+    const dpr = browser.devicePixelRatio;
     const {left, top, width, height} = icon.metadata.content_area;
 
+    const scaledLeft = left * dpr;
+    const scaledTop = top * dpr;
+
     return [
-        left,
-        top,
-        left + width,
-        top + height
+        scaledLeft,
+        scaledTop,
+        scaledLeft + width * dpr,
+        scaledTop + height * dpr
     ];
+}
+
+function getStretchArea(stretchArea: [number, number][] | undefined): [number, number][] | undefined {
+    if (!stretchArea) {
+        return undefined;
+    }
+
+    return stretchArea.map(([l, r]) => [l * browser.devicePixelRatio, r * browser.devicePixelRatio]);
 }
 
 export function loadIconset(
@@ -44,8 +56,8 @@ export function loadIconset(
                 version: 1,
                 pixelRatio: browser.devicePixelRatio,
                 content: getContentArea(icon),
-                stretchX: icon.metadata ? icon.metadata.stretch_x_areas : undefined,
-                stretchY: icon.metadata ? icon.metadata.stretch_y_areas : undefined,
+                stretchX: icon.metadata ? getStretchArea(icon.metadata.stretch_x_areas) : undefined,
+                stretchY: icon.metadata ? getStretchArea(icon.metadata.stretch_y_areas) : undefined,
                 sdf: false,
                 usvg: true,
                 icon,
