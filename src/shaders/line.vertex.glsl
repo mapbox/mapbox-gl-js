@@ -13,7 +13,7 @@
 in vec2 a_pos_normal;
 in vec4 a_data;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS) || defined(VARIABLE_LINE_WIDTH)
-in vec2 a_z_offset_width;
+in vec3 a_z_offset_width;
 #endif
 
 // Includes in order: a_uv_x, a_split_index, a_line_progress
@@ -126,7 +126,8 @@ void main() {
     gapwidth = gapwidth / 2.0;
     float halfwidth;
 #ifdef VARIABLE_LINE_WIDTH
-    halfwidth = (u_width_scale * a_z_offset_width.y) / 2.0;
+    float left = a_pos_normal.y - 2.0 * floor(a_pos_normal.y * 0.5);
+    halfwidth = (u_width_scale * (left == 1.0 ? a_z_offset_width.y : a_z_offset_width.z)) / 2.0;
 #else
     halfwidth = (u_width_scale * width) / 2.0;
 #endif

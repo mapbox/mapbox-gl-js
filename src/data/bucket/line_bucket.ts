@@ -949,6 +949,7 @@ class LineBucket implements Bucket {
         if (lineProgressFeatures != null) {
             this.zOffsetVertexArray.emplaceBack(
                 lineProgressFeatures.zOffset,
+                lineProgressFeatures.variableWidth,
                 lineProgressFeatures.variableWidth
             );
         }

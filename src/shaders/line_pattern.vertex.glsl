@@ -13,7 +13,7 @@
 in vec2 a_pos_normal;
 in vec4 a_data;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)
-in vec2 a_z_offset_width;
+in vec3 a_z_offset_width;
 #endif
 // Includes in order: a_uv_x, a_split_index, a_line_progress
 // to reduce attribute count on older devices.
