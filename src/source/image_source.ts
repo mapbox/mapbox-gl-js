@@ -45,7 +45,7 @@ type ImageSourceTexture = {
 // (0, 1, 0) -> (b * x2, b * y2, b)
 // (0, 0, 1) -> (c * x3, c * y3, c)
 // (1, 1, 1) -> (x4, y4, 1)
-function basisToPoints(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
+function basisToPoints(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): mat3 {
     const m = [x1, y1, 1, x2, y2, 1, x3, y3, 1];
     const s = [x4, y4, 1];
     const ma = mat3.adjoint([] as any, m as [number, number, number, number, number, number, number, number, number]);
@@ -53,14 +53,14 @@ function basisToPoints(x1: number, y1: number, x2: number, y2: number, x3: numbe
     return mat3.multiply(m as [number, number, number, number, number, number, number, number, number], m as [number, number, number, number, number, number, number, number, number], [sx, 0, 0, 0, sy, 0, 0, 0, sz]);
 }
 
-function getTileToTextureTransformMatrix(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
+function getTileToTextureTransformMatrix(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): mat3 {
     const a = basisToPoints(0, 0, 1, 0, 1, 1, 0, 1);
     const b = basisToPoints(x1, y1, x2, y2, x3, y3, x4, y4);
     const adjB = mat3.adjoint([] as any, b);
     return mat3.multiply(a, a, adjB);
 }
 
-function getTextureToTileTransformMatrix(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
+function getTextureToTileTransformMatrix(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): mat3 {
     const a = basisToPoints(0, 0, 1, 0, 1, 1, 0, 1);
     const b = basisToPoints(x1, y1, x2, y2, x3, y3, x4, y4);
     const adjA = mat3.adjoint([] as any, a);
@@ -75,7 +75,7 @@ function getPerspectiveTransform(x1: number, y1: number, x2: number, y2: number,
     ];
 }
 
-function isConvex(coords: [ProjectedPoint, ProjectedPoint, ProjectedPoint, ProjectedPoint]) {
+function isConvex(coords: [ProjectedPoint, ProjectedPoint, ProjectedPoint, ProjectedPoint]): boolean {
     const dx1 = coords[1].x - coords[0].x;
     const dy1 = coords[1].y - coords[0].y;
     const dx2 = coords[2].x - coords[1].x;
@@ -106,7 +106,7 @@ function constrain(coords: Coordinates): Coordinates {
         constrainCoordinates(coords[3])];
 }
 
-function calculateMinAndSize(coords: Coordinates) {
+function calculateMinAndSize(coords: Coordinates): [number, number, number, number] {
     let minX = coords[0][0];
     let maxX = minX;
     let minY = coords[0][1];
@@ -127,7 +127,7 @@ function calculateMinAndSize(coords: Coordinates) {
     return [minX, minY, maxX - minX, maxY - minY];
 }
 
-function calculateMinAndSizeForPoints(coords: ProjectedPoint[]) {
+function calculateMinAndSizeForPoints(coords: ProjectedPoint[]): [number, number, number, number] {
     let minX = coords[0].x;
     let maxX = minX;
     let minY = coords[0].y;

@@ -24,9 +24,16 @@ export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | unde
 
 export type AbortVectorData = () => void;
 export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => AbortVectorData | undefined;
+
+interface DedupedRequestEntry {
+    callbacks: LoadVectorDataCallback[];
+    result?: [Error | null, LoadVectorTileResult | null];
+    cancel?: () => void;
+}
+
 export class DedupedRequest {
     entries: {
-        [key: string]: any;
+        [key: string]: DedupedRequestEntry;
     };
     scheduler: Scheduler | null | undefined;
 

@@ -26,10 +26,11 @@ import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer
 import {RGBAImage} from '../util/image';
 import Texture from './texture';
 import {Frustum} from '../util/primitives';
-import {mat4} from "gl-matrix";
+import {mat4, vec3} from "gl-matrix";
 import {getCutoffParams} from './cutoff';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
 
+import type {OverscaledTileID} from '../source/tile_id';
 import type {vec3} from 'gl-matrix';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
 import type SourceCache from '../source/source_cache';
@@ -37,7 +38,6 @@ import type Painter from './painter';
 import type Tile from '../source/tile';
 import type {Terrain} from '../terrain/terrain';
 import type Context from '../gl/context';
-import type {OverscaledTileID} from '../source/tile_id';
 import type {
     GroundEffect,
     PartData} from '../data/bucket/fill_extrusion_bucket';
@@ -46,7 +46,7 @@ export default draw;
 
 type GroundEffectSubpassType = 'clear' | 'sdf' | 'color';
 
-function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
+function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>): void {
     const opacity = layer.paint.get('fill-extrusion-opacity');
     const context = painter.context;
     const gl = context.gl;
@@ -262,7 +262,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     }
 }
 
-function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, replacementActive: boolean) {
+function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, replacementActive: boolean): void {
     layer.resetLayerRenderingStats(painter);
     const context = painter.context;
     const gl = context.gl;
@@ -452,7 +452,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     if (painter.shadowRenderer) painter.shadowRenderer.useNormalOffset = false;
 }
 
-function updateReplacement(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, layerIndex: number) {
+function updateReplacement(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, layerIndex: number): void {
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
@@ -464,7 +464,7 @@ function updateReplacement(painter: Painter, source: SourceCache, layer: FillExt
     }
 }
 
-function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number, replacementActive: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture | null) {
+function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number, replacementActive: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture | null): void {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -578,7 +578,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
 
 // Flat roofs array is prepared in the bucket, except for buildings that are on tile borders.
 // For them, join pieces, calculate joined size here, and then upload data.
-function updateBorders(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: Terrain | null | undefined, reconcileReplacementState: boolean) {
+function updateBorders(context: Context, source: SourceCache, coord: OverscaledTileID, bucket: FillExtrusionBucket, layer: FillExtrusionStyleLayer, terrain: Terrain | null | undefined, reconcileReplacementState: boolean): void {
     if (bucket.centroidVertexArray.length === 0) {
         bucket.createCentroidsBuffer();
     }
