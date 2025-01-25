@@ -77,7 +77,7 @@ class FeatureIndex {
         this.serializedLayersCache = new Map();
     }
 
-    insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, layoutVertexArrayOffset: number = 0, envelopePadding: number = 0) {
+    insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, layoutVertexArrayOffset: number = 0, envelopePadding: number = 0): void {
         const key = this.featureIndexArray.length;
         this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex, layoutVertexArrayOffset);
 
@@ -138,13 +138,13 @@ class FeatureIndex {
         const matching = this.grid.query(bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y, queryPredicate);
         matching.sort(topDownFeatureComparator);
 
-        let elevationHelper = null;
+        let elevationHelper: DEMSampler | null = null;
         if (transform.elevation && matching.length > 0) {
             elevationHelper = DEMSampler.create(transform.elevation, this.tileID);
         }
 
         const result: QueryResult = {};
-        let previousIndex;
+        let previousIndex: number | undefined;
         for (let k = 0; k < matching.length; k++) {
             const index = matching[k];
 
@@ -153,7 +153,7 @@ class FeatureIndex {
             previousIndex = index;
 
             const match = this.featureIndexArray.get(index);
-            let featureGeometry = null;
+            let featureGeometry: Array<Array<Point>> | null = null;
 
             if (this.is3DTile) {
                 this.loadMatchingModelFeature(result, match, query, tilespaceGeometry, transform);

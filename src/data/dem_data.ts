@@ -1,4 +1,4 @@
-import {Float32Image} from '../util/image';
+import {Float32Image, RGBAImage} from '../util/image';
 import {warnOnce, clamp} from '../util/util';
 import {register} from '../util/web_worker_transfer';
 import DemMinMaxQuadTree from './dem_tree';
@@ -6,33 +6,23 @@ import assert from 'assert';
 import browser from '../util/browser';
 
 import type {CanonicalTileID} from '../source/tile_id';
-import type {RGBAImage} from '../util/image';
 import type {DEMSourceEncoding} from '../source/worker_source';
 
-// DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
-// data can be populated either from a pngraw image tile or from serliazed data sent back from a worker. When data is initially
-// loaded from a image tile, we decode the pixel values using the appropriate decoding formula, but we store the
-// elevation data as an Int32 value. we add 65536 (2^16) to eliminate negative values and enable the use of
-// integer overflow when creating the texture used in the hillshadePrepare step.
+interface UnpackVectors {
+    mapbox: [number, number, number, number];
+    terrarium: [number, number, number, number];
+}
 
-// DEMData also handles the backfilling of data from a tile's neighboring tiles. This is necessary because we use a pixel's 8
-// surrounding pixel values to compute the slope at that pixel, and we cannot accurately calculate the slope at pixels on a
-// tile's edge without backfilling from neighboring tiles.
-
-const unpackVectors = {
+const unpackVectors: UnpackVectors = {
     mapbox: [6553.6, 25.6, 0.1, 10000.0],
     terrarium: [256.0, 1.0, 1.0 / 256.0, 32768.0]
-} as const;
+};
 
 function unpackMapbox(r: number, g: number, b: number): number {
-    // unpacking formula for mapbox.terrain-rgb:
-    // https://www.mapbox.com/help/access-elevation-data/#mapbox-terrain-rgb
     return ((r * 256 * 256 + g * 256.0 + b) / 10.0 - 10000.0);
 }
 
 function unpackTerrarium(r: number, g: number, b: number): number {
-    // unpacking formula for mapzen terrarium:
-    // https://aws.amazon.com/public-datasets/terrain/
     return ((r * 256 + g + b / 256) - 32768.0);
 }
 
@@ -41,27 +31,25 @@ export default class DEMData {
     stride: number;
     dim: number;
     borderReady: boolean;
-    _tree: DemMinMaxQuadTree;
+    _tree: DemMinMaxQuadTree | null;
     _modifiedForSources: {
         [key: string]: Array<CanonicalTileID>;
     };
     _timestamp: number;
     pixels: Uint8Array;
     floatView: Float32Array;
+
     get tree(): DemMinMaxQuadTree {
         if (!this._tree) this._buildQuadTree();
-        return this._tree;
+        return this._tree!;
     }
 
-    // RGBAImage data has uniform 1px padding on all sides: square tile edge size defines stride
-    // and dim is calculated as stride - 2.
     constructor(
         uid: number,
         data: ImageData,
         sourceEncoding: DEMSourceEncoding,
         borderReady: boolean = false,
     ) {
-        // debugger;
         this.uid = uid;
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
         if (sourceEncoding && sourceEncoding !== "mapbox" && sourceEncoding !== "terrarium") {
@@ -78,27 +66,18 @@ export default class DEMData {
         this._modifiedForSources = {};
 
         if (!borderReady) {
-            // in order to avoid flashing seams between tiles, here we are initially populating a 1px border of pixels around the image
-            // with the data of the nearest pixel from the image. this data is eventually replaced when the tile's neighboring
-            // tiles are loaded and the accurate data can be backfilled using DEMData#backfillBorder
             for (let x = 0; x < dim; x++) {
-                // left vertical border
                 values[this._idx(-1, x)] = values[this._idx(0, x)];
-                // right vertical border
                 values[this._idx(dim, x)] = values[this._idx(dim - 1, x)];
-                // left horizontal border
                 values[this._idx(x, -1)] = values[this._idx(x, 0)];
-                // right horizontal border
                 values[this._idx(x, dim)] = values[this._idx(x, dim - 1)];
             }
-            // corners
             values[this._idx(-1, -1)] = values[this._idx(0, 0)];
             values[this._idx(dim, -1)] = values[this._idx(dim - 1, 0)];
             values[this._idx(-1, dim)] = values[this._idx(0, dim - 1)];
             values[this._idx(dim, dim)] = values[this._idx(dim - 1, dim - 1)];
         }
 
-        // Convert to float
         const unpack = sourceEncoding === "terrarium" ? unpackTerrarium : unpackMapbox;
         for (let i = 0; i < values.length; ++i) {
             const byteIdx = i * 4;
@@ -108,9 +87,8 @@ export default class DEMData {
         this._timestamp = browser.now();
     }
 
-    _buildQuadTree() {
+    _buildQuadTree(): void {
         assert(!this._tree);
-        // Construct the implicit sparse quad tree by traversing mips from top to down
         this._tree = new DemMinMaxQuadTree(this);
     }
 
@@ -131,7 +109,7 @@ export default class DEMData {
         return v - p;
     }
 
-    static getUnpackVector(encoding: DEMSourceEncoding) {
+    static getUnpackVector(encoding: DEMSourceEncoding): [number, number, number, number] {
         return unpackVectors[encoding];
     }
 
@@ -196,7 +174,7 @@ export default class DEMData {
         }
     }
 
-    onDeserialize() {
+    onDeserialize(): void {
         if (this._tree) this._tree.dem = this;
     }
 }
