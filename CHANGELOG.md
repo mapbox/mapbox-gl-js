@@ -1,3 +1,6 @@
+## 3.9.4
+- Fix vector icons rendering with stretch areas on high DPI devices.
+
 ## 3.9.3
 - Fix issues when updating feature state on symbol layers.
 - Fix canvas source not rendering correctly after a canvas resize.
