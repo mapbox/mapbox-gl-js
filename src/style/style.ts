@@ -3901,8 +3901,10 @@ class Style extends Evented<MapEvents> {
             this.setImportUrl(importId, importSpecification.url);
         }
 
-        if (!deepEqual(importSpecification.config, imports[index].config)) {
+        if (importSpecification.config && !deepEqual(importSpecification.config, imports[index].config)) {
             this.setImportConfig(importId, importSpecification.config);
+        } else if (!importSpecification.config && imports[index].config) {
+            this.setImportConfig(importId, imports[index].config);
         }
 
         if (!deepEqual(importSpecification.data, imports[index].data)) {
