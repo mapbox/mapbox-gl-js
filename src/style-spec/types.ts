@@ -274,7 +274,13 @@ export type FeaturesetsSpecification = {
  * @experimental This is experimental and subject to change in future versions.
  */
 export type FeaturesetSpecification = {
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     "metadata"?: unknown,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     "selectors"?: Array<SelectorSpecification>
 }
 
@@ -282,9 +288,21 @@ export type FeaturesetSpecification = {
  * @experimental This is experimental and subject to change in future versions.
  */
 export type SelectorSpecification = {
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     "layer": string,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     "properties"?: SelectorPropertySpecification,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     "featureNamespace"?: string,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     "_uniqueFeatureID"?: boolean
 }
 
@@ -292,6 +310,9 @@ export type SelectorSpecification = {
  * @experimental This is experimental and subject to change in future versions.
  */
 export type SelectorPropertySpecification = {
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     [_: string]: unknown
 }
 

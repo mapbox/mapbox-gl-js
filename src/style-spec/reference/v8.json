@@ -246,10 +246,12 @@
   "featureset": {
     "experimental": true,
     "metadata": {
+      "experimental": true,
       "type": "*",
       "doc": "Arbitrary properties useful to track with the stylesheet, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
     },
     "selectors": {
+      "experimental": true,
       "type": "array",
       "value": "selector",
       "doc": "A collection of categorized selectors."
@@ -258,21 +260,25 @@
   "selector": {
     "experimental": true,
     "layer": {
+      "experimental": true,
       "type": "string",
       "doc": "The ID of a layer that exists in the current style.",
       "required": true
     },
     "properties": {
+      "experimental": true,
       "type": "selectorProperty",
       "required": false,
       "doc": "Properties accessible to the end user through queried feautures. If properties are empty, no feature properties are exposed. If undefined, all original feature properties will be accessible."
     },
     "featureNamespace": {
+      "experimental": true,
       "type": "string",
       "required": false,
       "doc": "An optional field that represents the feature namespace defined by the selector within a featureset to which this feature belongs. If the underlying source is the same for multiple selectors within a featureset, the same featureNamespace should be used across those selectors."
     },
     "_uniqueFeatureID": {
+      "experimental": true,
       "type": "boolean",
       "private": true,
       "required": false,
@@ -282,6 +288,7 @@
   "selectorProperty": {
     "experimental": true,
     "*": {
+      "experimental": true,
       "type": "*",
       "doc": "The value of the property. It can be an expression that generates the returned value from the feature, or a constant value specifying the returned value."
     }
