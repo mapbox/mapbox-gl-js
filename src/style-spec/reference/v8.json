@@ -220,6 +220,13 @@
       "experimental": true,
       "type": "featuresets",
       "doc": "Defines sets of features for querying, interaction, and state management on the map, referencing individual layers or subsets of layers within the map's style.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.9.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
       "example": {
         "poi": {
           "selectors": [
