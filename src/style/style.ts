@@ -3903,8 +3903,8 @@ class Style extends Evented<MapEvents> {
 
         if (importSpecification.config && !deepEqual(importSpecification.config, imports[index].config)) {
             this.setImportConfig(importId, importSpecification.config);
-        } else if (!importSpecification.config && imports[index].config) {
-            this.setImportConfig(importId, imports[index].config);
+        } else if (!importSpecification.config && importSpecification.data && importSpecification.data.schema) {
+            this.setImportConfig(importId, this.getConfigValuesFromSchema(importSpecification.data.schema));
         }
 
         if (!deepEqual(importSpecification.data, imports[index].data)) {
@@ -3912,6 +3912,19 @@ class Style extends Evented<MapEvents> {
         }
 
         return this;
+    }
+
+    getConfigValuesFromSchema(schema?: SchemaSpecification) {
+        const config = {};
+
+        if (!schema) return null;
+
+        for (const id in schema) {
+            const defaultExpression = schema[id].default;
+            if (defaultExpression) config[id] = defaultExpression;
+        }
+
+        return config;
     }
 
     moveImport(importId: string, beforeId: string): Style {
