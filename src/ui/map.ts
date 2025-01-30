@@ -4163,7 +4163,10 @@ export class Map extends Camera {
 
     _contextRestored(event: any) {
         this._setupPainter();
-        this.resize();
+        this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
+        this._updateTerrain();
+        this.style.reloadModels();
+        this.style.clearSources();
         this._update();
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }

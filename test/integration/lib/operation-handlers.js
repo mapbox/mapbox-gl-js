@@ -27,6 +27,18 @@ export const operationHandlers = {
 
         waitForRender(map, () => map.loaded(), doneCb);
     },
+    forceContextRestart(map, params, doneCb) {
+        const canvas = map.getCanvas();
+        const ext = map.painter.context.gl.getExtension('WEBGL_lose_context');
+        canvas.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+            setTimeout(() => {
+                ext.restoreContext();
+                doneCb();
+            });
+        });
+        ext.loseContext();
+    },
     waitFrameReady(map, params, doneCb) {
         let timeIterationInterval = 0;
         if (params.length) {

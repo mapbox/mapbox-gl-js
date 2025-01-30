@@ -3727,6 +3727,13 @@ class Style extends Evented<MapEvents> {
         }
     }
 
+    reloadModels() {
+        this.modelManager.reloadModels('');
+        this.forEachFragmentStyle((style) => {
+            style.modelManager.reloadModels(style.scope);
+        });
+    }
+
     updateSources(transform: Transform) {
         let lightDirection: vec3 | null | undefined;
         if (this.directionalLight) {
