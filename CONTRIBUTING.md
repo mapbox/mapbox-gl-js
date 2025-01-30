@@ -123,7 +123,7 @@ Here is a recommended way to get setup:
 
 ## Changelog Conventions
 
-`CHANGELOG.md` is a valuable document many people read. It contains a formatted, lightly editorialized history of changes in the project. Pull requests are the unit of change and are normally categorized and summarized when reviewed. The changelog is maintained by combining automated content search and formatting with a final human edit.
+`CHANGELOG.md` is a valuable document many people read. It contains a formatted, lightly editorialized history of changes in the project. Pull requests are the unit of change and are normally categorized and summarized when reviewed. The changelog is manually curated from the list of commits that go into a release.
 
 What warrants a changelog entry?
 
@@ -133,14 +133,12 @@ What warrants a changelog entry?
 - Any documentation related changes *should not* have a changelog entry
 - Any regression change introduced and fixed within the same release *should not* have a changelog entry
 - Any internal refactoring, technical debt reduction, render test, unit test or benchmark related change *should not* have a changelog entry
+- Any PR labeled `skip changelog` *should not* have a changelog entry
 
-How to add your changelog? Changelog entries are written inside the `<changelog></changelog>` tag in the PR template. A changelog entry should:
+A changelog entry should:
 
 - be descriptive and concise; it should explain the change to a reader without context
 - describe the surface bug and not the underlying problem. This might require some research.
-- be labeled `skip changelog` if the PR has no impact on end users and does not require a changelog entry
-- be labeled `breaking change` if the PR is a breaking change
-- reference a PR and optionally an issue.
 
 ## Documentation Conventions
 
@@ -165,14 +163,6 @@ Our labeling system is
  - **minimalistic:** Labels' usefulness are inversely proportional to how many we have.
  - **objective:** Labels should be objective enough that any two people would agree on a labeling decision.
  - **useful:** Labels should track state or capture semantic meaning that would otherwise be hard to search.
-
-We have divided our labels into categories to make them easier to use.
-
- - type (blue)
- - actionable status (red)
- - non-actionable status (grey)
- - importance / urgency (green)
- - topic / project / misc (yellow)
 
 ## Recommended Reading
 
