@@ -1,3 +1,16 @@
+## 3.10.0-beta.1
+
+### Features and improvements ✨
+
+- Add support for data-driven `*-use-theme` properties.
+- Improve rendering of complex SVG clip paths for vector icons.
+
+### Bug fixes 🐞
+- Fix issue where the close popup button was hidden from screen readers.
+- Fix `queryRenderedFeatures` not working on duplicated model layers.
+- Fix rendering of elevated and non-elevated lines on the same layer.
+- Fix a blank map issue after WebGL context loss.
+
 ## 3.9.4
 - Fix vector icons rendering with stretch areas on high DPI devices.
 
