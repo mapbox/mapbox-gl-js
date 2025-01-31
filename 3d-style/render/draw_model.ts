@@ -289,11 +289,10 @@ function prepareMeshes(transform: Transform, node: ModelNode, modelMatrix: mat4,
             }
 
             const centroidPos = vec3.transformMat4([] as any, mesh.centroid, worldViewProjection);
-            // Filter meshes behind the camera
-            if (centroidPos[2] > 0.0) {
-                const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix};
-                transparentMeshes.push(transparentMesh);
-            }
+            // Filter meshes behind the camera if in perspective mode
+            if (!transform.isOrthographic && centroidPos[2] <= 0.0) continue;
+            const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix};
+            transparentMeshes.push(transparentMesh);
         }
     }
     if (node.children) {
