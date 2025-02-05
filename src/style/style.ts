@@ -3999,7 +3999,10 @@ class Style extends Evented<MapEvents> {
 
         // Update related fragment
         const fragment = this.fragments[index];
-        const schema = importSchema ? importSchema : fragment.style.stylesheet && fragment.style.stylesheet.schema;
+        if (importSchema && fragment.style.stylesheet) {
+            fragment.style.stylesheet.schema = importSchema;
+        }
+        const schema = fragment.style.stylesheet && fragment.style.stylesheet.schema;
 
         fragment.config = config;
         fragment.style.updateConfig(config, schema);
