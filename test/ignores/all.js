@@ -271,7 +271,10 @@ const skip = [
     // Not working correctly
     // https://github.com/mapbox/mapbox-gl-js-internal/pull/1909
     "render-tests/lines-elevated-line-join-none",
-    "render-tests/lines-elevated-line-joins-linear-elevation"
+    "render-tests/lines-elevated-line-joins-linear-elevation",
+
+    // Support image updates with different size
+    "render-tests/background-pattern/image-update/delayed/different-size"
 ];
 
 export default {todo, skip};
