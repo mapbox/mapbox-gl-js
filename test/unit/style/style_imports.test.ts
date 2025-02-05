@@ -812,6 +812,45 @@ describe('Style#updateImport', () => {
             });
         });
     });
+
+    test('update import with no config should use values in schema', async () => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{id: 'basemap', url: '',
+                config: {
+                    lightPreset: "day"
+                },
+                data: createStyleJSON({
+                    sources: {new: {type: 'vector', tiles: []}},
+                    schema: {
+                        lightPreset: {
+                            default: 'night'
+                        }
+                    }
+                })
+            }],
+        });
+
+        style.loadJSON(initialStyle);
+
+        await waitFor(style, "style.load");
+
+        style.updateImport('basemap', {
+            id: 'basemap',
+            data: createStyleJSON({
+                sources: {mapbox: {type: 'vector', tiles: []}},
+                schema: {
+                    lightPreset: {
+                        default: 'day'
+                    }
+                }
+            })
+        });
+
+        expect(style.stylesheet.imports[style.getImportIndex('basemap')].config).toBeUndefined();
+        expect(style.options.get(makeFQID('lightPreset', 'basemap')).default.value).toStrictEqual('day');
+    });
 });
 
 describe('Style#getImportGlobalIds', () => {

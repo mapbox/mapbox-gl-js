@@ -3901,10 +3901,8 @@ class Style extends Evented<MapEvents> {
             this.setImportUrl(importId, importSpecification.url);
         }
 
-        if (importSpecification.config && !deepEqual(importSpecification.config, imports[index].config)) {
-            this.setImportConfig(importId, importSpecification.config);
-        } else if (!importSpecification.config && importSpecification.data && importSpecification.data.schema) {
-            this.setImportConfig(importId, this.getConfigValuesFromSchema(importSpecification.data.schema));
+        if (!deepEqual(importSpecification.config, imports[index].config)) {
+            this.setImportConfig(importId, importSpecification.config, importSpecification.data.schema);
         }
 
         if (!deepEqual(importSpecification.data, imports[index].data)) {
@@ -3912,19 +3910,6 @@ class Style extends Evented<MapEvents> {
         }
 
         return this;
-    }
-
-    getConfigValuesFromSchema(schema?: SchemaSpecification) {
-        const config = {};
-
-        if (!schema) return null;
-
-        for (const id in schema) {
-            const defaultExpression = schema[id].default;
-            if (defaultExpression) config[id] = defaultExpression;
-        }
-
-        return config;
     }
 
     moveImport(importId: string, beforeId: string): Style {
@@ -3999,7 +3984,7 @@ class Style extends Evented<MapEvents> {
         return this;
     }
 
-    setImportConfig(importId: string, config?: ConfigSpecification | null): Style {
+    setImportConfig(importId: string, config?: ConfigSpecification | null, importSchema?: SchemaSpecification | null): Style {
         this._checkLoaded();
 
         const index = this.getImportIndex(importId);
@@ -4014,7 +3999,7 @@ class Style extends Evented<MapEvents> {
 
         // Update related fragment
         const fragment = this.fragments[index];
-        const schema = fragment.style.stylesheet && fragment.style.stylesheet.schema;
+        const schema = importSchema ? importSchema : fragment.style.stylesheet && fragment.style.stylesheet.schema;
 
         fragment.config = config;
         fragment.style.updateConfig(config, schema);
