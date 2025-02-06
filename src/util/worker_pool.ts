@@ -16,12 +16,12 @@ export default class WorkerPool {
         this.active = {};
     }
 
-    acquire(mapId: number | string): Array<Worker> {
+    acquire(mapId: number | string, count = WorkerPool.workerCount): Array<Worker> {
         if (!this.workers) {
             // Lazily look up the value of mapboxgl.workerCount so that
             // client code has had a chance to set it.
             this.workers = [];
-            while (this.workers.length < WorkerPool.workerCount) {
+            while (this.workers.length < count) {
                 this.workers.push(createWorker());
             }
         }

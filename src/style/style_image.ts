@@ -1,8 +1,10 @@
 import type {RGBAImage} from '../util/image';
 import type {Map} from '../ui/map';
+import type {Icon} from '../data/usvg/usvg_pb_decoder';
 
 export type StyleImageData = {
-    data: RGBAImage;
+    data?: RGBAImage;
+    icon?: Icon;
     version: number;
     hasRenderCallback?: boolean;
     userImage?: StyleImageInterface;
@@ -11,6 +13,7 @@ export type StyleImageData = {
 export type StyleImageMetadata = {
     pixelRatio: number;
     sdf: boolean;
+    usvg: boolean;
     stretchX?: Array<[number, number]>;
     stretchY?: Array<[number, number]>;
     content?: [number, number, number, number];

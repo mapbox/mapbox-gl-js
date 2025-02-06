@@ -1,0 +1,29 @@
+<%
+  const properties = locals;
+-%>
+// This file is generated. Edit build/generate-style-code.ts, then run `npm run codegen`.
+/* eslint-disable */
+
+import styleSpec from '../../src/style-spec/reference/latest';
+
+import {
+    Properties,
+    DataConstantProperty
+} from '../../src/style/properties';
+
+import type Color from '../../src/style-spec/util/color';
+
+<% if (properties.length) { -%>
+export type SnowProps = {
+<% for (const property of properties) { -%>
+    "<%= property.name %>": <%- propertyType('snow', property) %>;
+<% } -%>
+};
+
+let properties: Properties<SnowProps>;
+export const getProperties = (): Properties<SnowProps> => properties || (properties = new Properties({
+<% for (const property of properties) { -%>
+    "<%= property.name %>": <%- propertyValue('snow', property, '') %>,
+<% } -%>
+}));
+<% } -%>

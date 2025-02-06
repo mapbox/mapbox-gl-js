@@ -1,4 +1,3 @@
-// @flow
 import {createLayout} from '../util/struct_array.js';
 
 import type {StructArrayLayout} from '../util/struct_array.js';

@@ -24,7 +24,7 @@ import symbol from './draw_symbol';
 import circle from './draw_circle';
 import assert from 'assert';
 import heatmap from './draw_heatmap';
-import line from './draw_line';
+import line, {prepare as prepareLine} from './draw_line';
 import fill from './draw_fill';
 import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
@@ -137,6 +137,7 @@ const draw = {
 };
 
 const prepare = {
+    line: prepareLine,
     model: modelPrepare,
     raster: prepareRaster,
     'raster-particle': prepareRasterParticle
@@ -758,15 +759,18 @@ class Painter {
         const layers = this.style._mergedLayers;
 
         const drapingEnabled = !!(this.terrain && this.terrain.enabled);
-        const layerIds = this.style._getOrder(drapingEnabled).filter((id) => {
-            const layer = layers[id];
+        const getLayerIds = () =>
+            this.style._getOrder(drapingEnabled).filter((id) => {
+                const layer = layers[id];
 
-            if (layer.type in this._debugParams.enabledLayers) {
-                return this._debugParams.enabledLayers[layer.type];
-            }
+                if (layer.type in this._debugParams.enabledLayers) {
+                    return this._debugParams.enabledLayers[layer.type];
+                }
 
-            return true;
-        });
+                return true;
+            });
+
+        let layerIds = getLayerIds();
 
         let layersRequireTerrainDepth = false;
         let layersRequireFinalDepth = false;
@@ -787,7 +791,7 @@ class Painter {
             }
         }
 
-        const orderedLayers = layerIds.map(id => layers[id]);
+        let orderedLayers = layerIds.map(id => layers[id]);
         const sourceCaches = this.style._mergedSourceCaches;
 
         this.imageManager = style.imageManager;
@@ -975,6 +979,10 @@ class Painter {
             // All render to texture is done in translucent pass to remove need
             // for depth buffer allocation per tile.
             this.opaquePassCutoff = 0;
+
+            // Calling updateTileBinding() has possibly changed drape first layer order.
+            layerIds = getLayerIds();
+            orderedLayers = layerIds.map(id => layers[id]);
         }
 
         const shadowRenderer = this._shadowRenderer;
@@ -1016,24 +1024,31 @@ class Painter {
             }
         }
 
-        Debug.run(() => {
-            if (this._debugParams.forceEnablePrecipitation) {
-                if (!this._snow) {
-                    this._snow = new Snow(this);
-                }
+        const snow = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.snow);
+        const rain = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.rain);
 
-                if (!this._rain) {
-                    this._rain = new Rain(this);
-                }
-            }
+        if (snow && !this._snow) {
+            this._snow = new Snow(this);
+        }
+        if (!snow && this._snow) {
+            this._snow.destroy();
+            delete this._snow;
+        }
 
-            if (this._debugParams.forceEnablePrecipitation && this._snow) {
-                this._snow.update(this);
-            }
-            if (this._debugParams.forceEnablePrecipitation && this._rain) {
-                this._rain.update(this);
-            }
-        });
+        if (rain && !this._rain) {
+            this._rain = new Rain(this);
+        }
+        if (!rain && this._rain) {
+            this._rain.destroy();
+            delete this._rain;
+        }
+
+        if (this._snow) {
+            this._snow.update(this);
+        }
+        if (this._rain) {
+            this._rain.update(this);
+        }
 
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
@@ -1079,14 +1094,15 @@ class Painter {
                 const fogLUT = this.style.getLut(fog.scope);
                 if (!shouldRenderAtmosphere) {
 
-                    const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
+                    const ignoreLutColor = fog.properties.get('color-use-theme') === 'none';
+                    const fogColor = fog.properties.get('color').toRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...fogColor);
                 }
 
                 if (shouldRenderAtmosphere) {
-
-                    const spaceColor = fog.properties.get('space-color').toRenderColor(fogLUT).toArray01();
+                    const ignoreLutColor = fog.properties.get('space-color-use-theme') === 'none';
+                    const spaceColor = fog.properties.get('space-color').toRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...spaceColor);
                 }
@@ -1294,15 +1310,13 @@ class Painter {
             this.terrain.postRender();
         }
 
-        Debug.run(() => {
-            if (this._debugParams.forceEnablePrecipitation && this._snow) {
-                this._snow.draw(this);
-            }
+        if (this._snow) {
+            this._snow.draw(this);
+        }
 
-            if (this._debugParams.forceEnablePrecipitation && this._rain) {
-                this._rain.draw(this);
-            }
-        });
+        if (this._rain) {
+            this._rain.draw(this);
+        }
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             // Use source with highest maxzoom
             let selectedSource = null;

@@ -77,6 +77,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             const aborted = !this.loading[uid];
             delete this.loading[uid];
 
+            workerTile.cancelRasterize();
             if (workerTile.status === 'done') {
                 return;
             }

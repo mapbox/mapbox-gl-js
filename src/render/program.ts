@@ -16,6 +16,7 @@ import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import Color from '../style-spec/util/color';
+import {Uniform1i} from './uniform_binding';
 
 import type ProgramConfiguration from '../data/program_configuration';
 import type Context from '../gl/context';
@@ -54,11 +55,18 @@ const debugWireframe2DLayerProgramNames = [
 
 const debugWireframe3DLayerProgramNames = [
     "stars",
-    "rain_particle",
-    "snow_particle",
+    "rainParticle",
+    "snowParticle",
     "fillExtrusion",  "fillExtrusionGroundEffect",
     "model",
     "symbol"];
+
+type InstancingUniformType = {
+    ['u_instanceID']: Uniform1i;
+}
+
+const instancingUniforms = (context: Context): InstancingUniformType => ({
+    'u_instanceID': new Uniform1i(context)});
 
 class Program<Us extends UniformBindings> {
     program: WebGLProgram;
@@ -79,6 +87,10 @@ class Program<Us extends UniformBindings> {
     name: string;
     configuration: ProgramConfiguration | null | undefined;
     fixedDefines: DynamicDefinesType[];
+
+    // Manually handle instancing by issuing draw calls and replacing gl_InstanceID with uniform
+    forceManualRenderingForInstanceIDShaders: boolean;
+    instancingUniforms: InstancingUniformType | null | undefined;
 
     static cacheKey(
         source: ShaderSource,
@@ -131,7 +143,20 @@ class Program<Us extends UniformBindings> {
         for (const include of source.vertexIncludes) {
             vertexSource += `\n${includeMap[include]}`;
         }
+
+        this.forceManualRenderingForInstanceIDShaders = context.forceManualRenderingForInstanceIDShaders && source.vertexSource.indexOf("gl_InstanceID") !== -1;
+
+        if (this.forceManualRenderingForInstanceIDShaders) {
+            vertexSource += `\nuniform int u_instanceID;\n`;
+        }
+
         vertexSource += `\n${source.vertexSource}`;
+
+        if (this.forceManualRenderingForInstanceIDShaders) {
+            vertexSource = vertexSource.replaceAll("gl_InstanceID", "u_instanceID");
+        }
+
+        // Replace
 
         const fragmentShader = (gl.createShader(gl.FRAGMENT_SHADER));
         if (gl.isContextLost()) {
@@ -174,6 +199,10 @@ class Program<Us extends UniformBindings> {
 
         this.fixedUniforms = fixedUniforms(context);
         this.binderUniforms = configuration ? configuration.getUniforms(context) : [];
+
+        if (this.forceManualRenderingForInstanceIDShaders) {
+            this.instancingUniforms = instancingUniforms(context);
+        }
 
         // Symbol and circle layer are depth (terrain + 3d layers) occluded
         // For the sake of native compatibility depth occlusion goes via terrain uniforms block
@@ -360,20 +389,34 @@ class Program<Us extends UniformBindings> {
         const count = segment.primitiveLength * 3 * 2; // One triangle corresponds to 3 lines (each has 2 indices)
         const offset = segment.primitiveOffset * 3 * 2 * 2; // One triangles corresponds to 3 lines (2 indices * 2 bytes per index)
 
-        if (instanceCount && instanceCount > 1) {
-            gl.drawElementsInstanced(
-                gl.LINES,
-                count,
-                gl.UNSIGNED_SHORT,
-                offset,
-                instanceCount);
+        if (this.forceManualRenderingForInstanceIDShaders) {
+            const renderInstanceCount = instanceCount ? instanceCount : 1;
+            for (let i = 0; i < renderInstanceCount; ++i) {
+                debugProgram.instancingUniforms["u_instanceID"].set(this.program, "u_instanceID", i);
+
+                gl.drawElements(
+                    gl.LINES,
+                    count,
+                    gl.UNSIGNED_SHORT,
+                    offset
+                );
+            }
         } else {
-            gl.drawElements(
-                gl.LINES,
-                count,
-                gl.UNSIGNED_SHORT,
-                offset
-            );
+            if (instanceCount && instanceCount > 1) {
+                gl.drawElementsInstanced(
+                    gl.LINES,
+                    count,
+                    gl.UNSIGNED_SHORT,
+                    offset,
+                    instanceCount);
+            } else {
+                gl.drawElements(
+                    gl.LINES,
+                    count,
+                    gl.UNSIGNED_SHORT,
+                    offset
+                );
+            }
         }
 
         // Revert to non-wireframe parameters
@@ -455,22 +498,40 @@ class Program<Us extends UniformBindings> {
                 vertexAttribDivisorValue
             );
 
-            if (instanceCount && instanceCount > 1) {
-                assert(indexBuffer);
-                gl.drawElementsInstanced(
-                    drawMode,
-                    segment.primitiveLength * primitiveSize,
-                    gl.UNSIGNED_SHORT,
-                    segment.primitiveOffset * primitiveSize * 2,
-                    instanceCount);
-            } else if (indexBuffer) {
-                gl.drawElements(
-                    drawMode,
-                    segment.primitiveLength * primitiveSize,
-                    gl.UNSIGNED_SHORT,
-                    segment.primitiveOffset * primitiveSize * 2);
+            if (this.forceManualRenderingForInstanceIDShaders) {
+                const renderInstanceCount = instanceCount ? instanceCount : 1;
+
+                for (let i = 0; i < renderInstanceCount; ++i) {
+                    this.instancingUniforms["u_instanceID"].set(this.program, "u_instanceID", i);
+
+                    if (indexBuffer) {
+                        gl.drawElements(
+                            drawMode,
+                            segment.primitiveLength * primitiveSize,
+                            gl.UNSIGNED_SHORT,
+                            segment.primitiveOffset * primitiveSize * 2);
+                    } else {
+                        gl.drawArrays(drawMode, segment.vertexOffset, segment.vertexLength);
+                    }
+                }
             } else {
-                gl.drawArrays(drawMode, segment.vertexOffset, segment.vertexLength);
+                if (instanceCount && instanceCount > 1) {
+                    assert(indexBuffer);
+                    gl.drawElementsInstanced(
+                        drawMode,
+                        segment.primitiveLength * primitiveSize,
+                        gl.UNSIGNED_SHORT,
+                        segment.primitiveOffset * primitiveSize * 2,
+                        instanceCount);
+                } else if (indexBuffer) {
+                    gl.drawElements(
+                        drawMode,
+                        segment.primitiveLength * primitiveSize,
+                        gl.UNSIGNED_SHORT,
+                        segment.primitiveOffset * primitiveSize * 2);
+                } else {
+                    gl.drawArrays(drawMode, segment.vertexOffset, segment.vertexLength);
+                }
             }
             if (drawMode === gl.TRIANGLES && indexBuffer) {
                 // Handle potential wireframe rendering for current draw call

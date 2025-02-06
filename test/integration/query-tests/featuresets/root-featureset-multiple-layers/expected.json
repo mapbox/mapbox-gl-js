@@ -1,0 +1,32 @@
+[
+  {
+    "type": "Feature",
+    "state": {},
+    "geometry": {
+      "type": "Point",
+      "coordinates": [0, 0]
+    },
+    "properties": {
+      "b-property-value": "value",
+      "b-constant-value": "constant-b"
+    },
+    "target": {"featuresetId": "featureset"},
+    "namespace": "b",
+     "source": "geojson1"
+  },
+  {
+    "type": "Feature",
+    "state": {},
+    "geometry": {
+      "type": "Point",
+      "coordinates": [0, 0]
+    },
+    "properties": {
+      "a-property-value": "value",
+      "a-constant-value": "constant-a"
+    },
+    "target": {"featuresetId": "featureset"},
+    "namespace": "a",
+    "source": "geojson"
+  }
+]

@@ -15,6 +15,10 @@ in highp vec4 v_pos_light_view_1;
 in highp float v_depth;
 #endif
 
+#ifdef INDICATOR_CUTOUT
+in highp float v_z_offset;
+#endif
+
 void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize lowp float opacity
@@ -33,7 +37,13 @@ void main() {
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
-    glFragColor = out_color * opacity;
+    out_color *= opacity;
+
+#ifdef INDICATOR_CUTOUT
+    out_color = applyCutout(out_color, v_z_offset);
+#endif
+
+    glFragColor = out_color;
 
 #ifdef OVERDRAW_INSPECTOR
     glFragColor = vec4(1.0);

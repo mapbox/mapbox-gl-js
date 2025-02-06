@@ -1,6 +1,57 @@
-import {PaintOrder, PathCommand, LineCap, LineJoin, PathRule, MaskType} from './usvg_pb_decoder.js';
+import {PaintOrder, PathCommand, LineCap, LineJoin, PathRule, MaskType} from './usvg_pb_decoder';
+import Color from '../../style-spec/util/color';
+import offscreenCanvasSupported from '../../util/offscreen_canvas_supported';
 
-import type {UsvgTree, Icon, Group, Node, Path, Transform, ClipPath, Mask, LinearGradient, RadialGradient} from './usvg_pb_decoder';
+import type {RasterizationOptions} from '../../style-spec/expression/types/resolved_image';
+import type {UsvgTree, Icon, Group, Node, Path, Transform, ClipPath, Mask, LinearGradient, RadialGradient, Variable} from './usvg_pb_decoder';
+
+class ColorReplacements {
+    static calculate(params: RasterizationOptions['params'], variables: Variable[]): Map<string, Color> {
+        const replacements = new Map<string, Color>();
+        const variablesMap = new Map<string, Color>();
+
+        if (Object.keys(params).length === 0) {
+            return replacements;
+        }
+
+        variables.forEach((variable) => {
+            variablesMap.set(variable.name, variable.rgb_color || new Color(0, 0, 0));
+        });
+
+        for (const [key, value] of Object.entries(params)) {
+            if (variablesMap.has(key)) {
+                replacements.set(variablesMap.get(key).toStringPremultipliedAlpha(), value);
+            } else {
+                console.warn(`Ignoring unknown image variable "${key}"`);
+            }
+        }
+
+        return replacements;
+    }
+}
+
+function getStyleColor(iconColor: Color, opacity: number = 255, colorReplacements: Map<string, Color>) {
+    const alpha = opacity / 255;
+    const serializedColor = iconColor.toStringPremultipliedAlpha();
+    const color = colorReplacements.has(serializedColor) ? colorReplacements.get(serializedColor).clone() : iconColor.clone();
+
+    color.a = alpha;
+
+    return color.toString();
+}
+
+function getCanvas(width: number, height: number): OffscreenCanvas | HTMLCanvasElement {
+    if (!offscreenCanvasSupported()) {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
+    }
+
+    return new OffscreenCanvas(width, height);
+}
+
+type Context = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
 /**
  * Renders a uSVG icon to an ImageData object.
@@ -9,41 +60,46 @@ import type {UsvgTree, Icon, Group, Node, Path, Transform, ClipPath, Mask, Linea
  * @param transform Transformation matrix.
  * @returns ImageData object.
  */
-export function renderIcon(icon: Icon, transform?: DOMMatrix): ImageData {
+export function renderIcon(icon: Icon, options: RasterizationOptions): ImageData {
+    const colorReplacements = ColorReplacements.calculate(options.params, icon.metadata ? icon.metadata.variables : []);
     const tree = icon.usvg_tree;
 
-    let naturalWidth = tree.width;
-    let naturalHeight = tree.height;
-    if (naturalWidth == null || naturalHeight == null) {
-        naturalWidth = naturalWidth || 0;
-        naturalHeight = naturalHeight || naturalWidth;
-    }
+    const naturalWidth = tree.width;
+    const naturalHeight = tree.height;
 
-    const tr = transform ? transform : new DOMMatrix();
-    const renderedWidth = Math.round(naturalWidth * tr.a); // transform.sx
-    const renderedHeight = Math.round(naturalHeight * tr.d); // transform.sy
+    const tr = options.transform ? options.transform : new DOMMatrix();
 
-    const offscreenCanvas = new OffscreenCanvas(renderedWidth, renderedHeight);
-    const context = offscreenCanvas.getContext('2d');
+    const renderedWidth = Math.max(1, Math.round(naturalWidth * tr.a)); // transform.sx
+    const renderedHeight = Math.max(1, Math.round(naturalHeight * tr.d)); // transform.sy
 
-    renderNodes(context, tr, tree, tree as unknown as Group);
+    // We need to apply transform to reflect icon size change
+    const finalTr = new DOMMatrix([
+        renderedWidth / naturalWidth, 0,
+        0, renderedHeight / naturalHeight,
+        0, 0
+    ]);
+
+    const canvas = getCanvas(renderedWidth, renderedHeight);
+    const context = canvas.getContext('2d') as Context;
+
+    renderNodes(context, finalTr, tree, tree as unknown as Group, colorReplacements);
     return context.getImageData(0, 0, renderedWidth, renderedHeight);
 }
 
-function renderNodes(context: OffscreenCanvasRenderingContext2D, transform: DOMMatrix, tree: UsvgTree, parent: Group) {
+function renderNodes(context: Context, transform: DOMMatrix, tree: UsvgTree, parent: Group, colorReplacements: Map<string, Color>) {
     for (const node of parent.children) {
-        renderNode(context, transform, tree, node);
+        renderNode(context, transform, tree, node, colorReplacements);
     }
 }
 
-function renderNode(context: OffscreenCanvasRenderingContext2D, transform: DOMMatrix, tree: UsvgTree, node: Node) {
+function renderNode(context: Context, transform: DOMMatrix, tree: UsvgTree, node: Node, colorReplacements: Map<string, Color>) {
     if (node.group) {
         context.save();
-        renderGroup(context, transform, tree, node.group);
+        renderGroup(context, transform, tree, node.group, colorReplacements);
         context.restore();
     } else if (node.path) {
         context.save();
-        renderPath(context, transform, tree, node.path);
+        renderPath(context, transform, tree, node.path, colorReplacements);
         context.restore();
     } else {
         assert(false, 'Not implemented');
@@ -54,7 +110,7 @@ function shouldIsolate(group: Group, hasClipPath: boolean, hasMask: boolean): bo
     return group.opacity !== 255 || hasClipPath || hasMask;
 }
 
-function renderGroup(context: OffscreenCanvasRenderingContext2D, transform: DOMMatrix, tree: UsvgTree, group: Group) {
+function renderGroup(context: Context, transform: DOMMatrix, tree: UsvgTree, group: Group, colorReplacements: Map<string, Color>) {
     const mask = group.mask_idx != null ? tree.masks[group.mask_idx] : null;
     const clipPath = group.clip_path_idx != null ? tree.clip_paths[group.clip_path_idx] : null;
 
@@ -63,70 +119,66 @@ function renderGroup(context: OffscreenCanvasRenderingContext2D, transform: DOMM
     }
 
     if (!shouldIsolate(group, clipPath != null, mask != null)) {
-        renderNodes(context, transform, tree, group);
+        renderNodes(context, transform, tree, group, colorReplacements);
         return;
     }
 
-    const groupCanvas = new OffscreenCanvas(context.canvas.width, context.canvas.height);
-    const groupContext = groupCanvas.getContext('2d');
+    const groupCanvas = getCanvas(context.canvas.width, context.canvas.height);
+    const groupContext = groupCanvas.getContext('2d') as Context;
+
+    renderNodes(groupContext, transform, tree, group, colorReplacements);
 
     if (clipPath) {
         applyClipPath(groupContext, transform, tree, clipPath);
     }
-
-    renderNodes(groupContext, transform, tree, group);
-
     if (mask) {
-        applyMask(groupContext, transform, tree, mask);
+        applyMask(groupContext, transform, tree, mask, colorReplacements);
     }
 
     context.globalAlpha = group.opacity / 255;
     context.drawImage(groupCanvas, 0, 0);
 }
 
-function renderPath(context: OffscreenCanvasRenderingContext2D, transform: DOMMatrix, tree: UsvgTree, path: Path) {
+function renderPath(context: Context, transform: DOMMatrix, tree: UsvgTree, path: Path, colorReplacements: Map<string, Color>) {
     const path2d = makePath2d(path);
     context.setTransform(transform);
 
     if (path.paint_order === PaintOrder.PAINT_ORDER_FILL_AND_STROKE) {
-        fillPath(context, tree, path, path2d);
-        strokePath(context, tree, path, path2d);
+        fillPath(context, tree, path, path2d, colorReplacements);
+        strokePath(context, tree, path, path2d, colorReplacements);
     } else {
-        strokePath(context, tree, path, path2d);
-        fillPath(context, tree, path, path2d);
+        strokePath(context, tree, path, path2d, colorReplacements);
+        fillPath(context, tree, path, path2d, colorReplacements);
     }
 }
 
-function fillPath(context: OffscreenCanvasRenderingContext2D, tree: UsvgTree, path: Path, path2d: Path2D) {
+function fillPath(context: Context, tree: UsvgTree, path: Path, path2d: Path2D, colorReplacements: Map<string, Color>) {
     const fill = path.fill;
     if (!fill) return;
 
     const alpha = fill.opacity / 255;
 
     switch (fill.paint) {
-    case 'rgb_color':
-        context.fillStyle = toRGBA(fill.rgb_color, fill.opacity);
+    case 'rgb_color': {
+        context.fillStyle = getStyleColor(fill.rgb_color, fill.opacity, colorReplacements);
         break;
+    }
     case 'linear_gradient_idx':
-        context.fillStyle = convertLinearGradient(context, tree.linear_gradients[fill.linear_gradient_idx], alpha);
+        context.fillStyle = convertLinearGradient(context, tree.linear_gradients[fill.linear_gradient_idx], alpha, colorReplacements);
         break;
     case 'radial_gradient_idx':
-        context.fillStyle = convertRadialGradient(context, tree.radial_gradients[fill.radial_gradient_idx], alpha);
+        context.fillStyle = convertRadialGradient(context, tree.radial_gradients[fill.radial_gradient_idx], alpha, colorReplacements);
     }
 
-    let fillRule: CanvasFillRule;
-    switch (path.rule) {
-    case PathRule.PATH_RULE_NON_ZERO:
-        fillRule = 'nonzero';
-        break;
-    case PathRule.PATH_RULE_EVEN_ODD:
-        fillRule = 'evenodd';
-    }
-
-    context.fill(path2d, fillRule);
+    context.fill(path2d, getFillRule(path));
 }
 
-function strokePath(context: OffscreenCanvasRenderingContext2D, tree: UsvgTree, path: Path, path2d: Path2D) {
+function getFillRule(path: Path): CanvasFillRule {
+    return path.rule === PathRule.PATH_RULE_NON_ZERO ? 'nonzero' :
+        path.rule === PathRule.PATH_RULE_EVEN_ODD ? 'evenodd' : undefined;
+}
+
+function strokePath(context: Context, tree: UsvgTree, path: Path, path2d: Path2D, colorReplacements: Map<string, Color>) {
     const stroke = path.stroke;
     if (!stroke) return;
 
@@ -138,14 +190,15 @@ function strokePath(context: OffscreenCanvasRenderingContext2D, tree: UsvgTree, 
     const alpha = stroke.opacity / 255;
 
     switch (stroke.paint) {
-    case 'rgb_color':
-        context.strokeStyle = toRGBA(stroke.rgb_color, stroke.opacity);
+    case 'rgb_color': {
+        context.strokeStyle = getStyleColor(stroke.rgb_color, stroke.opacity, colorReplacements);
         break;
+    }
     case 'linear_gradient_idx':
-        context.strokeStyle = convertLinearGradient(context, tree.linear_gradients[stroke.linear_gradient_idx], alpha);
+        context.strokeStyle = convertLinearGradient(context, tree.linear_gradients[stroke.linear_gradient_idx], alpha, colorReplacements);
         break;
     case 'radial_gradient_idx':
-        context.strokeStyle = convertRadialGradient(context, tree.radial_gradients[stroke.radial_gradient_idx], alpha);
+        context.strokeStyle = convertRadialGradient(context, tree.radial_gradients[stroke.radial_gradient_idx], alpha, colorReplacements);
     }
 
     switch (stroke.linejoin) {
@@ -174,10 +227,10 @@ function strokePath(context: OffscreenCanvasRenderingContext2D, tree: UsvgTree, 
     context.stroke(path2d);
 }
 
-function convertLinearGradient(context: OffscreenCanvasRenderingContext2D, gradient: LinearGradient, alpha: number): CanvasGradient | string {
+function convertLinearGradient(context: Context, gradient: LinearGradient, alpha: number, colorReplacements: Map<string, Color>): CanvasGradient | string {
     if (gradient.stops.length === 1) {
         const stop = gradient.stops[0];
-        return toRGBA(stop.rgb_color, stop.opacity * alpha);
+        return getStyleColor(stop.rgb_color, stop.opacity * alpha, colorReplacements);
     }
 
     const tr = makeTransform(gradient.transform);
@@ -187,16 +240,16 @@ function convertLinearGradient(context: OffscreenCanvasRenderingContext2D, gradi
 
     const linearGradient = context.createLinearGradient(start.x, start.y, end.x, end.y);
     for (const stop of gradient.stops) {
-        linearGradient.addColorStop(stop.offset, toRGBA(stop.rgb_color, stop.opacity * alpha));
+        linearGradient.addColorStop(stop.offset, getStyleColor(stop.rgb_color, stop.opacity * alpha, colorReplacements));
     }
 
     return linearGradient;
 }
 
-function convertRadialGradient(context: OffscreenCanvasRenderingContext2D, gradient: RadialGradient, alpha: number): CanvasGradient | string {
+function convertRadialGradient(context: Context, gradient: RadialGradient, alpha: number, colorReplacements: Map<string, Color>): CanvasGradient | string {
     if (gradient.stops.length === 1) {
         const stop = gradient.stops[0];
-        return toRGBA(stop.rgb_color, stop.opacity * alpha);
+        return getStyleColor(stop.rgb_color, stop.opacity * alpha, colorReplacements);
     }
 
     const tr = makeTransform(gradient.transform);
@@ -210,68 +263,70 @@ function convertRadialGradient(context: OffscreenCanvasRenderingContext2D, gradi
 
     const radialGradient = context.createRadialGradient(start.x, start.y, 0, end.x, end.y, r1);
     for (const stop of gradient.stops) {
-        radialGradient.addColorStop(stop.offset, toRGBA(stop.rgb_color, stop.opacity * alpha));
+        radialGradient.addColorStop(stop.offset, getStyleColor(stop.rgb_color, stop.opacity * alpha, colorReplacements));
     }
 
     return radialGradient;
 }
 
-function applyClipPath(context: OffscreenCanvasRenderingContext2D, transform: DOMMatrix, tree: UsvgTree, clipPath: ClipPath) {
-    const tr = makeTransform(clipPath.transform).preMultiplySelf(transform);
+function renderClipPath(context: Context, transform: DOMMatrix, tree: UsvgTree, clipPath: ClipPath) {
+    const tr = clipPath.transform ? makeTransform(clipPath.transform).preMultiplySelf(transform) : transform;
+    const groupCanvas = getCanvas(context.canvas.width, context.canvas.height);
+    const groupContext = groupCanvas.getContext('2d') as Context;
 
-    const selfClipPath = clipPath.clip_path_idx != null ? tree.clip_paths[clipPath.clip_path_idx] : null;
-    if (selfClipPath) {
-        applyClipPath(context, tr, tree, selfClipPath);
-    }
+    for (const node of clipPath.children) {
+        if (node.group) {
+            renderClipPath(groupContext, tr, tree, node.group);
 
-    const path2d = new Path2D();
-    let fillRule;
-
-    function addNode(node, tr) {
-        if (node.path) {
+        } else if (node.path) {
             const path = node.path;
+            const path2d = new Path2D();
             path2d.addPath(makePath2d(path), tr);
-
-            // Canvas doesn't support mixed fill rules in a single clip path, so we'll use evenodd for whole path if one part has it
-            if (path.rule === PathRule.PATH_RULE_EVEN_ODD) fillRule = 'evenodd';
-
-        } else if (node.group) {
-            const childTr = node.group.transform ? makeTransform(node.group.transform).preMultiplySelf(tr) : tr;
-            for (const child of node.group.children) {
-                addNode(child, childTr);
-            }
+            groupContext.fill(path2d, getFillRule(path));
         }
     }
 
-    for (const node of clipPath.children) {
-        addNode(node, tr);
+    const selfClipPath = clipPath.clip_path_idx != null ? tree.clip_paths[clipPath.clip_path_idx] : null;
+    if (selfClipPath) {
+        applyClipPath(groupContext, tr, tree, selfClipPath);
     }
 
-    context.clip(path2d, fillRule);
+    context.globalCompositeOperation = 'source-over';
+    context.drawImage(groupCanvas, 0, 0);
 }
 
-function applyMask(context: OffscreenCanvasRenderingContext2D, transform: DOMMatrix, tree: UsvgTree, mask: Mask) {
+function applyClipPath(context: Context, transform: DOMMatrix, tree: UsvgTree, clipPath: ClipPath) {
+    const maskCanvas = getCanvas(context.canvas.width, context.canvas.height);
+    const maskContext = maskCanvas.getContext('2d') as Context;
+
+    renderClipPath(maskContext, transform, tree, clipPath);
+
+    // Canvas doesn't support mixed fill rules in a single clip path, so we'll use masking via canvas compositing instead of context.clip
+    context.globalCompositeOperation = 'destination-in';
+    context.drawImage(maskCanvas, 0, 0);
+}
+
+function applyMask(context: Context, transform: DOMMatrix, tree: UsvgTree, mask: Mask, colorReplacements: Map<string, Color>) {
     if (mask.children.length === 0) {
         return;
     }
 
     const childMask = mask.mask_idx != null ? tree.masks[mask.mask_idx] : null;
     if (childMask) {
-        applyMask(context, transform, tree, childMask);
+        applyMask(context, transform, tree, childMask, colorReplacements);
     }
 
     const width = context.canvas.width;
     const height = context.canvas.height;
 
-    const maskCanvas = new OffscreenCanvas(width, height);
-
-    const maskContext = maskCanvas.getContext('2d');
+    const maskCanvas = getCanvas(width, height);
+    const maskContext = maskCanvas.getContext('2d') as Context;
 
     // clip mask to its defined size
-    const maskWidth = mask.width || 0;
-    const maskHeight = mask.height || maskWidth;
-    const maskLeft = mask.left || 0;
-    const maskTop = mask.top || maskLeft;
+    const maskWidth = mask.width;
+    const maskHeight = mask.height;
+    const maskLeft = mask.left;
+    const maskTop = mask.top;
     const clipPath = new Path2D();
     const rect = new Path2D();
     rect.rect(maskLeft, maskTop, maskWidth, maskHeight);
@@ -279,7 +334,7 @@ function applyMask(context: OffscreenCanvasRenderingContext2D, transform: DOMMat
     maskContext.clip(clipPath);
 
     for (const node of mask.children) {
-        renderNode(maskContext, transform, tree, node);
+        renderNode(maskContext, transform, tree, node, colorReplacements);
     }
 
     const maskImageData = maskContext.getImageData(0, 0, width, height);
@@ -303,10 +358,6 @@ function applyMask(context: OffscreenCanvasRenderingContext2D, transform: DOMMat
     context.drawImage(maskCanvas, 0, 0);
 }
 
-function toRGBA(color: number, opacity: number = 255) {
-    return `rgba(${(color >> 16) & 255}, ${(color >> 8) & 255}, ${color & 255}, ${opacity / 255})`;
-}
-
 // Transform
 // sx kx tx
 // ky sy ty
@@ -319,7 +370,7 @@ function makeTransform(transform?: Transform) {
 
 function makePath2d(path: Path): Path2D {
     const path2d = new Path2D();
-    const step = path.step || 1;
+    const step = path.step;
 
     let x = path.diffs[0] * step;
     let y = path.diffs[1] * step;

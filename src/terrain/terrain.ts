@@ -12,7 +12,7 @@ import EXTENT from '../style-spec/data/extent';
 import {clamp, warnOnce} from '../util/util';
 import assert from 'assert';
 import {vec3, mat4, vec4} from 'gl-matrix';
-import getWorkerPool from '../util/global_worker_pool';
+import {getGlobalWorkerPool as getWorkerPool} from '../util/worker_pool_factory';
 import Dispatcher from '../util/dispatcher';
 import ImageSource from '../source/image_source';
 import RasterTileSource from '../source/raster_tile_source';
@@ -1178,6 +1178,9 @@ export class Terrain extends Elevation {
     }
 
     _setupDrapedRenderBatches() {
+        // It's possible that the draping status of a layer has changed, which requires reordering of the layers
+        this._style.updateDrapeFirstLayers();
+
         const layerIds = this._style.order;
         const layerCount = layerIds.length;
         if (layerCount === 0) {

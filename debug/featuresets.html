@@ -32,7 +32,7 @@ var map = window.map = new mapboxgl.Map({
 let selectedBuildings = [];
 map.addInteraction('building-click', {
     type: 'click',
-    featureset: {featuresetId: 'buildings', importId: 'basemap'},
+    target: {featuresetId: 'buildings', importId: 'basemap'},
     handler: (e) => {
         map.setFeatureState(e.feature, {select: !e.feature.state.select});
         selectedBuildings.push(e.feature);
@@ -46,7 +46,7 @@ poiMarker.getElement().style.cursor = 'pointer';
 
 map.addInteraction('poi-click', {
     type: 'click',
-    featureset: {featuresetId: 'poi', importId: 'basemap'},
+    target: {featuresetId: 'poi', importId: 'basemap'},
     handler: (e) => {
         if (selectedPoi) {
             map.setFeatureState(selectedPoi, {hide: false});
@@ -70,7 +70,7 @@ map.addInteraction('poi-click', {
 
         // Highlight buildins underneath the selected pin.
         const buildings = map.queryRenderedFeatures({
-            featureset: {featuresetId: 'buildings', importId: 'basemap'},
+            target: {featuresetId: 'buildings', importId: 'basemap'},
             filter: ['<=', ['distance', e.feature.geometry], 0]
         });
 
@@ -87,7 +87,7 @@ let selectedPlace = null;
 let placePopup = new mapboxgl.Popup();
 map.addInteraction('place-click', {
     type: 'click',
-    featureset: {featuresetId: 'place-labels', importId: 'basemap'},
+    target: {featuresetId: 'place-labels', importId: 'basemap'},
     handler: (e) => {
         if (selectedPlace) {
             map.setFeatureState(selectedPlace, {select: false});
@@ -135,31 +135,22 @@ map.addInteraction('map-click', {
 
 // Hover effects
 
-let hoveredBuilding;
-map.addInteraction('building-mousemove', {
-    type: 'mousemove',
-    featureset: {featuresetId: 'buildings', importId: 'basemap'},
+map.addInteraction('building-mouseenter', {
+    type: 'mouseenter',
+    target: {featuresetId: 'buildings', importId: 'basemap'},
     handler: (e) => {
-        if (hoveredBuilding) {
-            // Hovering the same building
-            if(hoveredBuilding.id === e.feature.id && hoveredBuilding.namespace === e.feature.namespace) return;
-            // Clear the old building highlight
-            map.setFeatureState(hoveredBuilding, {highlight: false});
-        }
-
-        hoveredBuilding = e.feature;
         map.setFeatureState(e.feature, {highlight: true});
     }
 });
 
 map.addInteraction('building-mouseleave', {
     type: 'mouseleave',
-    featureset: {featuresetId: 'buildings', importId: 'basemap'},
+    target: {featuresetId: 'buildings', importId: 'basemap'},
     handler: (e) => {
-        if (hoveredBuilding) {
-            map.setFeatureState(hoveredBuilding, {highlight: false});
-            hoveredBuilding = null;
-        }
+        map.setFeatureState(e.feature, {highlight: false});
+
+        // Propagate the event so that the handler is called for each feature.
+        return false;
     }
 });
 

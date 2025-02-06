@@ -1,6 +1,6 @@
 // @ts-nocheck
-import {describe, test, beforeAll, afterEach, afterAll, expect, waitFor, vi} from '../../util/vitest';
-import {getNetworkWorker, http, HttpResponse} from '../../util/network';
+import {describe, test, expect, waitFor, vi} from '../../util/vitest';
+import {mockFetch} from '../../util/network';
 import Tile from '../../../src/source/tile';
 import Style from '../../../src/style/style';
 import Transform from '../../../src/geo/transform';
@@ -40,20 +40,6 @@ class StubMap extends Evented {
     getWorldview() {}
 }
 
-let networkWorker: any;
-
-beforeAll(async () => {
-    networkWorker = await getNetworkWorker(window);
-});
-
-afterEach(() => {
-    networkWorker.resetHandlers();
-});
-
-afterAll(() => {
-    networkWorker.stop();
-});
-
 describe('Style#loadURL', () => {
     test('wraps style with schema into import', async () => {
         const style = new Style(new StubMap());
@@ -65,7 +51,9 @@ describe('Style#loadURL', () => {
             }
         });
 
-        networkWorker.use(http.get('/style.json', () => HttpResponse.json(initialStyle)));
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle))
+        });
 
         await new Promise(resolve => {
             style.once('style.load', () => {
@@ -86,7 +74,9 @@ describe('Style#loadURL', () => {
             fragment: true,
         });
 
-        networkWorker.use(http.get('/style.json', () => HttpResponse.json(initialStyle)));
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle))
+        });
 
         await new Promise(resolve => {
             style.once('style.load', () => {
@@ -113,16 +103,16 @@ describe('Style#loadURL', () => {
 
         const spy = vi.fn();
 
-        networkWorker.use(
-            http.get('/style.json', ({request}) => {
+        mockFetch({
+            '/style.json': (request) => {
                 spy(request);
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/streets-v12.json', ({request}) => {
+                return new Response(JSON.stringify(initialStyle));
+            },
+            '/styles/streets-v12.json': (request) => {
                 spy(request);
-                return HttpResponse.json(fragment);
-            }),
-        );
+                return new Response(JSON.stringify(fragment));
+            }
+        });
 
         await new Promise(resolve => {
             style.once("style.load", () => {
@@ -137,14 +127,10 @@ describe('Style#loadURL', () => {
     });
 
     test('non existing imports don\'t block root style', async () => {
-        networkWorker.use(
-            http.get('/styles/not-found.json', () => {
-                return new HttpResponse(null, {status: 404});
-            }),
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-        );
+        mockFetch({
+            '/styles/not-found.json': () => new Response(null, {status: 404}),
+            '/style.json': () => new Response(JSON.stringify(initialStyle)),
+        });
 
         const style = new Style(new StubMap());
 
@@ -172,12 +158,12 @@ describe('Style#loadURL', () => {
 
         const spy = vi.fn();
 
-        networkWorker.use(
-            http.get('/style.json', ({request}) => {
+        mockFetch({
+            '/style.json': (request) => {
                 spy(request);
-                return HttpResponse.json(initialStyle);
-            }),
-        );
+                return new Response(JSON.stringify(initialStyle));
+            }
+        });
 
         style.loadURL('/style.json');
         await waitFor(style, "style.load");
@@ -252,24 +238,24 @@ describe('Style#loadURL', () => {
 
         const spy = vi.fn();
 
-        networkWorker.use(
-            http.get('/style.json', ({request}) => {
+        mockFetch({
+            '/style.json': (request) => {
                 spy(request);
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/parent.json', ({request}) => {
+                return new Response(JSON.stringify(initialStyle));
+            },
+            '/styles/parent.json': (request) => {
                 spy(request);
-                return HttpResponse.json(parentFragment);
-            }),
-            http.get('/styles/child1.json', ({request}) => {
+                return new Response(JSON.stringify(parentFragment));
+            },
+            '/styles/child1.json': (request) => {
                 spy(request);
-                return HttpResponse.json(childFragment1);
-            }),
-            http.get('/styles/child2.json', ({request}) => {
+                return new Response(JSON.stringify(childFragment1));
+            },
+            '/styles/child2.json': (request) => {
                 spy(request);
-                return HttpResponse.json(childFragment2);
-            }),
-        );
+                return new Response(JSON.stringify(childFragment2));
+            }
+        });
 
         style.loadURL('/style.json');
         await waitFor(style, "style.load");
@@ -297,14 +283,10 @@ describe('Style#loadURL', () => {
             imports: [{id: 'streets', url: '/styles/streets-v12.json'}],
         });
 
-        networkWorker.use(
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/streets-v12.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            })
-        );
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle)),
+            '/styles/streets-v12.json': () => new Response(JSON.stringify(createStyleJSON()))
+        });
 
         const spy = vi.fn();
         map.on('style.import.load', spy);
@@ -328,14 +310,10 @@ describe('Style#loadURL', () => {
             imports: [{id: 'streets', url: '/styles/streets-v12.json'}],
         });
 
-        networkWorker.use(
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/streets-v12.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            })
-        );
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle)),
+            '/styles/streets-v12.json': () => new Response(JSON.stringify(createStyleJSON()))
+        });
 
         const spy = vi.fn();
         map.on('dataloading', spy);
@@ -364,14 +342,10 @@ describe('Style#loadURL', () => {
             imports: [{id: 'streets', url: '/styles/streets-v12.json'}],
         });
 
-        networkWorker.use(
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/streets-v12.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            })
-        );
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle)),
+            '/styles/streets-v12.json': () => new Response(JSON.stringify(createStyleJSON()))
+        });
 
         const spy = vi.fn();
         map.on('data', spy);
@@ -402,14 +376,10 @@ describe('Style#loadURL', () => {
             imports: [{id: 'streets', url: '/styles/streets-v12.json'}],
         });
 
-        networkWorker.use(
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/streets-v12.json', () => {
-                return HttpResponse.json(createStyleJSON({version: 'invalid'}));
-            })
-        );
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle)),
+            '/styles/streets-v12.json': () => new Response(JSON.stringify(createStyleJSON({version: 'invalid'})))
+        });
 
         style.loadURL('/style.json');
         const {error} = await waitFor(map, "error");
@@ -434,12 +404,12 @@ describe('Style#loadJSON', () => {
 
         const spy = vi.fn();
 
-        networkWorker.use(
-            http.get('/styles/streets-v12.json', ({request}) => {
+        mockFetch({
+            '/styles/streets-v12.json': (request) => {
                 spy(request);
-                return HttpResponse.json(fragment);
-            })
-        );
+                return new Response(JSON.stringify(fragment));
+            }
+        });
 
         style.loadJSON(initialStyle);
         await waitFor(style, "style.load");
@@ -769,12 +739,12 @@ describe('Style#updateImport', () => {
         const map = new StubMap();
         const style = new Style(map);
 
-        networkWorker.use(
-            http.get('/style.json', ({request}) => {
+        mockFetch({
+            '/style.json': (request) => {
                 spy(request);
-                return HttpResponse.json(initialStyle);
-            }),
-        );
+                return new Response(JSON.stringify(initialStyle));
+            },
+        });
 
         const initialStyle = createStyleJSON({
             imports: [{id: 'streets', url: '/style.json', data: createStyleJSON({
@@ -811,15 +781,15 @@ describe('Style#updateImport', () => {
         const map = new StubMap();
         const style = new Style(map);
 
-        networkWorker.use(
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/style2.json', ({request}) => {
+        mockFetch({
+            '/style.json': (request) => {
+                return new Response(JSON.stringify(initialStyle));
+            },
+            '/style2.json': (request) => {
                 spy(request);
-                return HttpResponse.json(initialStyle);
-            }),
-        );
+                return new Response(JSON.stringify(initialStyle));
+            },
+        });
 
         const initialStyle = createStyleJSON({
             imports: [{id: 'streets', url: '/style.json'}],
@@ -848,20 +818,14 @@ describe('Style#getImportGlobalIds', () => {
     test('should return all imports', async () => {
         const style = new Style(new StubMap());
 
-        networkWorker.use(
-            http.get('/standard.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            }),
-            http.get('/standard-2.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            }),
-            http.get('/supplement.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            }),
-            http.get('/roads.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            }),
-        );
+        mockFetch({
+            '/standard.json': () => new Response(JSON.stringify(createStyleJSON())),
+            '/standard-2.json': () => new Response(JSON.stringify(createStyleJSON())),
+            '/supplement.json': () => new Response(JSON.stringify(createStyleJSON())),
+            '/roads.json': () => new Response(JSON.stringify(createStyleJSON())),
+            '/inner.json': () => new Response(JSON.stringify(createStyleJSON())),
+            '/non-standard.json': () => new Response(JSON.stringify(createStyleJSON())),
+        });
 
         style.loadJSON({
             version: 8,
@@ -1913,20 +1877,20 @@ describe('Terrain', () => {
 
             const spy = vi.fn();
 
-            networkWorker.use(
-                http.get('/style.json', ({request}) => {
+            mockFetch({
+                '/style.json': (request) => {
                     spy(request);
-                    return HttpResponse.json(initialStyle);
-                }),
-                http.get('/standard.json', ({request}) => {
+                    return new Response(JSON.stringify(initialStyle));
+                },
+                '/standard.json': (request) => {
                     spy(request);
-                    return HttpResponse.json(standardFragment);
-                }),
-                http.get('/navigation.json', ({request}) => {
+                    return new Response(JSON.stringify(standardFragment));
+                },
+                '/navigation.json': (request) => {
                     spy(request);
-                    return HttpResponse.json(navigationFragment);
-                })
-            );
+                    return new Response(JSON.stringify(navigationFragment));
+                }
+            });
 
             style.loadURL('/style.json');
 
@@ -2824,16 +2788,12 @@ describe('Style#setState', () => {
             schema: {lightPreset: {default: 'day'}}
         });
 
-        networkWorker.use(
-            http.get('/style1.json', () => {
-                return HttpResponse.json(createStyleJSON({
-                    schema: {lightPreset: {default: 'day'}}
-                }));
-            }),
-            http.get('/style2.json', () => {
-                return HttpResponse.json(data);
-            })
-        );
+        mockFetch({
+            '/style1.json': () => new Response(JSON.stringify(createStyleJSON({
+                schema: {lightPreset: {default: 'day'}}
+            }))),
+            '/style2.json': () => new Response(JSON.stringify(data))
+        });
 
         const initialStyle = createStyleJSON({
             imports: [{id: 'a', url: '/style1.json', config: {lightPreset: 'night'}}],

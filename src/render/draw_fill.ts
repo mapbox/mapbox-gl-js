@@ -1,4 +1,5 @@
 import Color from '../style-spec/util/color';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {
@@ -106,7 +107,8 @@ function drawFillTiles(painter: Painter, sourceCache: SourceCache, layer: FillSt
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
             const atlas = tile.imageAtlas;
-            const posTo = atlas.patternPositions[constantPattern.toString()];
+            const patternImage = ResolvedImage.from(constantPattern);
+            const posTo = atlas.patternPositions[patternImage.getSerializedPrimary()];
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 

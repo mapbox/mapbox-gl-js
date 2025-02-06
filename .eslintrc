@@ -235,6 +235,10 @@
                 "no-restricted-syntax": [
                     "error",
                     {
+                        "selector": "ObjectExpression > SpreadElement",
+                        "message": "Spread syntax is not allowed for object assignments. Use Object.assign() or other methods instead."
+                    },
+                    {
                         "selector": "AwaitExpression",
                         "message": "Async/await syntax is not allowed."
                     },

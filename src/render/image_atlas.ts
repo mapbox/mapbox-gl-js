@@ -2,6 +2,7 @@ import assert from 'assert';
 import {RGBAImage} from '../util/image';
 import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
+import {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 
 import type {StyleImage} from '../style/style_image';
 import type ImageManager from './image_manager';
@@ -152,7 +153,7 @@ export default class ImageAtlas {
             positions[id] = new ImagePosition(bin, src, padding);
 
             if (src.hasRenderCallback) {
-                this.haveRenderCallbacks.push(id);
+                this.haveRenderCallbacks.push(ImageIdWithOptions.deserializeId(id));
             }
         }
     }
@@ -160,9 +161,19 @@ export default class ImageAtlas {
     patchUpdatedImages(imageManager: ImageManager, texture: Texture, scope: string) {
         this.haveRenderCallbacks = this.haveRenderCallbacks.filter(id => imageManager.hasImage(id, scope));
         imageManager.dispatchRenderCallbacks(this.haveRenderCallbacks, scope);
+
         for (const name in imageManager.getUpdatedImages(scope)) {
-            this.patchUpdatedImage(this.iconPositions[name], imageManager.getImage(name, scope), texture);
-            this.patchUpdatedImage(this.patternPositions[name], imageManager.getImage(name, scope), texture);
+            for (const id of Object.keys(this.iconPositions)) {
+                if (ImageIdWithOptions.deserializeId(id) === name) {
+                    this.patchUpdatedImage(this.iconPositions[id], imageManager.getImage(name, scope), texture);
+                }
+            }
+
+            for (const id of Object.keys(this.patternPositions)) {
+                if (ImageIdWithOptions.deserializeId(id) === name) {
+                    this.patchUpdatedImage(this.patternPositions[id], imageManager.getImage(name, scope), texture);
+                }
+            }
         }
     }
 

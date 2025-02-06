@@ -5,7 +5,6 @@
       "width": 512,
       "height": 512,
       "allowed": 0.0005,
-      "standardDerivatives": true,
       "operations": [
         ["wait"]
       ]

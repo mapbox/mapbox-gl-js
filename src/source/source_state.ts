@@ -86,6 +86,8 @@ class SourceFeatureState {
         }
     }
 
+    getState(sourceLayer: string): FeatureStates;
+    getState(sourceLayer: string, featureId: number | string): FeatureState;
     getState(sourceLayer: string, featureId?: number | string): FeatureState | FeatureStates {
         const base = this.state[sourceLayer] || {};
         const changes = this.stateChanges[sourceLayer] || {};

@@ -12,7 +12,7 @@ import findPoleOfInaccessibility from '../util/find_pole_of_inaccessibility';
 import classifyRings from '../util/classify_rings';
 import EXTENT from '../style-spec/data/extent';
 import EvaluationParameters from '../style/evaluation_parameters';
-import {SIZE_PACK_FACTOR} from './symbol_size';
+import {getRasterizedIconSize, SIZE_PACK_FACTOR} from './symbol_size';
 import ONE_EM from './one_em';
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
@@ -177,6 +177,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                              tileZoom: number,
                              projection: Projection,
                              scaleFactor: number = 1,
+                             pixelRatio: number,
                              brightness?: number | null) {
     bucket.createArrays();
 
@@ -193,8 +194,10 @@ export function performSymbolLayout(bucket: SymbolBucket,
     sizes.scaleFactor = scaleFactor;
     sizes.textSizeScaleRange = layout.get('text-size-scale-range');
     sizes.iconSizeScaleRange = layout.get('icon-size-scale-range');
-    sizes.textScaleFactor = clamp(sizes.scaleFactor, sizes.textSizeScaleRange[0], sizes.textSizeScaleRange[1]);
-    sizes.iconScaleFactor = clamp(sizes.scaleFactor, sizes.iconSizeScaleRange[0], sizes.iconSizeScaleRange[1]);
+    const [textSizeScaleRangeMin, textSizeScaleRangeMax] = sizes.textSizeScaleRange;
+    const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = sizes.iconSizeScaleRange;
+    sizes.textScaleFactor = clamp(sizes.scaleFactor, textSizeScaleRangeMin, textSizeScaleRangeMax);
+    sizes.iconScaleFactor = clamp(sizes.scaleFactor, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
 
     if (bucket.textSizeData.kind === 'composite') {
         const {minZoom, maxZoom} = bucket.textSizeData;
@@ -338,18 +341,23 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
         let shapedIcon;
         let isSDFIcon = false;
+        let isUSVGIcon = false;
         if (feature.icon && feature.icon.namePrimary) {
-            const image = imageMap[feature.icon.namePrimary];
+            const iconSizeFactor = getRasterizedIconSize(bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature);
+            const scaleFactor = iconSizeFactor * sizes.iconScaleFactor * pixelRatio;
+            const primaryImageSerialized = feature.icon.getPrimary().scaleSelf(scaleFactor).serialize();
+            const image = imageMap[primaryImageSerialized];
             if (image) {
                 shapedIcon = shapeIcon(
-                    imagePositions[feature.icon.namePrimary],
-                    feature.icon.nameSecondary ? imagePositions[feature.icon.nameSecondary] : undefined,
+                    imagePositions[primaryImageSerialized],
+                    feature.icon.nameSecondary ? imagePositions[feature.icon.getSecondary().scaleSelf(scaleFactor).serialize()] : undefined,
 
                     layout.get('icon-offset').evaluate(feature, {}, canonical),
 
                     layout.get('icon-anchor').evaluate(feature, {}, canonical)
                 );
                 isSDFIcon = image.sdf;
+                isUSVGIcon = image.usvg;
                 if (bucket.sdfIcons === undefined) {
                     bucket.sdfIcons = image.sdf;
                 } else if (bucket.sdfIcons !== image.sdf) {
@@ -370,7 +378,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         }
         if (shapedText || shapedIcon) {
             // @ts-expect-error - TS2345 - Argument of type 'Record<string, any>' is not assignable to parameter of type 'Sizes'.
-            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, availableImages, canonical, projection, brightness, hasAnySecondaryIcon);
+            addFeature(bucket, feature, shapedTextOrientations, shapedIcon, imageMap, sizes, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, isUSVGIcon, availableImages, canonical, projection, brightness, hasAnySecondaryIcon);
         }
     }
 
@@ -427,6 +435,7 @@ function addFeature(bucket: SymbolBucket,
                     layoutIconSize: number,
                     textOffset: [number, number],
                     isSDFIcon: boolean,
+                    isUSVGIcon: boolean,
                     availableImages: Array<string>,
                     canonical: CanonicalTileID,
                     projection: Projection,
@@ -510,7 +519,7 @@ function addFeature(bucket: SymbolBucket,
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
-            feature, sizes, isSDFIcon, availableImages, canonical, brightness, hasAnySecondaryIcon);
+            feature, sizes, isSDFIcon, isUSVGIcon, availableImages, canonical, brightness, hasAnySecondaryIcon);
     };
 
     if (symbolPlacement === 'line') {
@@ -672,11 +681,12 @@ export function evaluateBoxCollisionFeature(
     padding: number,
     rotate: number,
     textOffset?: [number, number] | null,
+    iconScaledSize: number = 1
 ): number {
-    let y1 = shaped.top;
-    let y2 = shaped.bottom;
-    let x1 = shaped.left;
-    let x2 = shaped.right;
+    let y1 = shaped.top / iconScaledSize;
+    let y2 = shaped.bottom / iconScaledSize;
+    let x1 = shaped.left / iconScaledSize;
+    let x2 = shaped.right / iconScaledSize;
 
     const collisionPadding = shaped.collisionPadding;
     if (collisionPadding) {
@@ -768,6 +778,7 @@ function addSymbol(bucket: SymbolBucket,
                    feature: SymbolFeature,
                    sizes: Sizes,
                    isSDFIcon: boolean,
+                   isUSVGIcon: boolean,
                    availableImages: Array<string>,
                    canonical: CanonicalTileID,
                    brightness: number | null | undefined,
@@ -822,19 +833,19 @@ function addSymbol(bucket: SymbolBucket,
     // For more info check `updateVariableAnchors` in `draw_symbol.js` .
 
     if (shapedIcon) {
-
+        const sizeData = bucket.iconSizeData;
+        const unevaluatedLayoutValues = bucket.layers[0]._unevaluatedLayout._values;
+        const rasterizedIconScaleFactor = isUSVGIcon ? getRasterizedIconSize(bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature) : 1;
         const iconRotate = layer.layout.get('icon-rotate').evaluate(feature, {}, canonical);
-        const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, sizes.iconScaleFactor);
+        const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, isUSVGIcon ? 1 / rasterizedIconScaleFactor : sizes.iconScaleFactor);
         const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit, sizes.iconScaleFactor) : undefined;
-        iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconRotate);
+        iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconRotate, null, isUSVGIcon ? sizes.iconScaleFactor * rasterizedIconScaleFactor : 1);
         numIconVertices = iconQuads.length * 4;
 
-        const sizeData = bucket.iconSizeData;
         let iconSizeData = null;
 
         if (sizeData.kind === 'source') {
             iconSizeData = [
-
                 SIZE_PACK_FACTOR * layer.layout.get('icon-size').evaluate(feature, {}, canonical) * sizes.iconScaleFactor
             ];
             if (iconSizeData[0] > MAX_PACKED_SIZE) {

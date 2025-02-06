@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 128,
+      "spriteFormat": "icon_set"
+    }
+  },
+  "version": 8,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        },
+        "properties": {
+          "class": "nine-part-content",
+          "title": "Jófríđarstađarvegur"
+        }
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/stretch",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "icon-text-fit": "width",
+        "icon-image": [
+          "get",
+          "class"
+        ],
+        "text-field": [
+          "get",
+          "title"
+        ]
+      }
+    }
+  ]
+}

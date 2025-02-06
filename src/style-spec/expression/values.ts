@@ -13,14 +13,14 @@ export function validateRGBA(r: unknown, g: unknown, b: unknown, a?: unknown): s
         typeof g === 'number' && g >= 0 && g <= 255 &&
         typeof b === 'number' && b >= 0 && b <= 255
     )) {
-        const value = typeof a === 'number' ? [r, g, b, a] : [r, g, b];
+        const value = (typeof a === 'number' ? [r, g, b, a] : [r, g, b]) as number[];
         return `Invalid rgba value [${value.join(', ')}]: 'r', 'g', and 'b' must be between 0 and 255.`;
     }
 
     if (!(
         typeof a === 'undefined' || (typeof a === 'number' && a >= 0 && a <= 1)
     )) {
-        return `Invalid rgba value [${[r, g, b, a].join(', ')}]: 'a' must be between 0 and 1.`;
+        return `Invalid rgba value [${([r, g, b, a] as number[]).join(', ')}]: 'a' must be between 0 and 1.`;
     }
 
     return null;
@@ -30,7 +30,7 @@ export function validateHSLA(h: unknown, s: unknown, l: unknown, a?: unknown): s
     if (!(
         typeof h === 'number' && h >= 0 && h <= 360
     )) {
-        const value = typeof a === 'number' ? [h, s, l, a] : [h, s, l];
+        const value = (typeof a === 'number' ? [h, s, l, a] : [h, s, l]) as number[];
         return `Invalid hsla value [${value.join(', ')}]: 'h' must be between 0 and 360.`;
     }
 
@@ -38,14 +38,14 @@ export function validateHSLA(h: unknown, s: unknown, l: unknown, a?: unknown): s
         typeof s === 'number' && s >= 0 && s <= 100 &&
         typeof l === 'number' && l >= 0 && l <= 100
     )) {
-        const value = typeof a === 'number' ? [h, s, l, a] : [h, s, l];
+        const value = (typeof a === 'number' ? [h, s, l, a] : [h, s, l]) as number[];
         return `Invalid hsla value [${value.join(', ')}]: 's', and 'l' must be between 0 and 100.`;
     }
 
     if (!(
         typeof a === 'undefined' || (typeof a === 'number' && a >= 0 && a <= 1)
     )) {
-        return `Invalid hsla value [${[h, s, l, a].join(', ')}]: 'a' must be between 0 and 1.`;
+        return `Invalid hsla value [${([h, s, l, a] as number[]).join(', ')}]: 'a' must be between 0 and 1.`;
     }
 
     return null;
@@ -136,8 +136,10 @@ export function toString(value: Value): string {
     if (value === null) {
         return '';
     } else if (type === 'string' || type === 'number' || type === 'boolean') {
-        return String(value);
-    } else if (value instanceof Color || value instanceof Formatted || value instanceof ResolvedImage) {
+        return String(value as string | number | boolean);
+    } else if (value instanceof Color) {
+        return value.toStringPremultipliedAlpha();
+    } else if (value instanceof Formatted || value instanceof ResolvedImage) {
         return value.toString();
     } else {
         return JSON.stringify(value);

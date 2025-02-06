@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "spriteFormat": "icon_set",
+      "width": 64,
+      "height": 64,
+      "operations": [
+        ["wait"],
+        [
+          "updateImage",
+          "park",
+          "./image/marker_20x20.png"
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/park",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": ["image", "park", {"params": {"fill": "red"}}]
+      }
+    }
+  ]
+}

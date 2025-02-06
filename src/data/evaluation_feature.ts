@@ -6,7 +6,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 export type EvaluationFeature = {
     readonly type: 0 | 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
     readonly id?: any;
-    readonly properties: {
+    properties: {
         [_: string]: any;
     };
     readonly patterns?: {
@@ -26,7 +26,7 @@ export default function toEvaluationFeature(feature: VectorTileFeature, needGeom
     return {
         type: feature.type,
         id: feature.id,
-        properties:feature.properties,
+        properties: feature.properties,
         geometry: needGeometry ? loadGeometry(feature) : []
     };
 }

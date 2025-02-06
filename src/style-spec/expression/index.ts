@@ -186,11 +186,13 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
     configDependencies: Set<string>;
     _styleExpression: StyleExpression;
     isLightConstant: boolean | null | undefined;
+    isLineProgressConstant: boolean | null | undefined;
 
-    constructor(kind: Kind, expression: StyleExpression, isLightConstant?: boolean | null) {
+    constructor(kind: Kind, expression: StyleExpression, isLightConstant?: boolean | null, isLineProgressConstant?: boolean | null) {
         this.kind = kind;
         this._styleExpression = expression;
         this.isLightConstant = isLightConstant;
+        this.isLineProgressConstant = isLineProgressConstant;
         this.isStateDependent = kind !== ('constant' as EvaluationKind) && !isConstant.isStateConstant(expression.expression);
         this.configDependencies = isConstant.getConfigDependencies(expression.expression);
     }
@@ -223,17 +225,19 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
     zoomStops: Array<number>;
     isStateDependent: boolean;
     isLightConstant: boolean | null | undefined;
+    isLineProgressConstant: boolean | null | undefined;
     configDependencies: Set<string>;
 
     _styleExpression: StyleExpression;
     interpolationType: InterpolationType | null | undefined;
 
-    constructor(kind: Kind, expression: StyleExpression, zoomStops: Array<number>, interpolationType?: InterpolationType, isLightConstant?: boolean | null) {
+    constructor(kind: Kind, expression: StyleExpression, zoomStops: Array<number>, interpolationType?: InterpolationType, isLightConstant?: boolean | null, isLineProgressConstant?: boolean | null) {
         this.kind = kind;
         this.zoomStops = zoomStops;
         this._styleExpression = expression;
         this.isStateDependent = kind !== ('camera' as EvaluationKind) && !isConstant.isStateConstant(expression.expression);
         this.isLightConstant = isLightConstant;
+        this.isLineProgressConstant = isLineProgressConstant;
         this.configDependencies = isConstant.getConfigDependencies(expression.expression);
         this.interpolationType = interpolationType;
     }
@@ -285,6 +289,7 @@ export type SourceExpression = {
     kind: 'source';
     isStateDependent: boolean;
     isLightConstant: boolean | null | undefined;
+    isLineProgressConstant: boolean | null | undefined;
     configDependencies: Set<string>;
     readonly evaluate: (
         globals: GlobalProperties,
@@ -316,6 +321,7 @@ export interface CompositeExpression {
     kind: 'composite';
     isStateDependent: boolean;
     isLightConstant: boolean | null | undefined;
+    isLineProgressConstant: boolean | null | undefined;
     configDependencies: Set<string>;
     readonly evaluate: (
         globals: GlobalProperties,
@@ -381,18 +387,18 @@ export function createPropertyExpression(
     if (!zoomCurve) {
         return success((isFeatureConstant && isLineProgressConstant) ?
         // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
-            (new ZoomConstantExpression('constant', expression.value, isLightConstant) as ConstantExpression) :
+            (new ZoomConstantExpression('constant', expression.value, isLightConstant, isLineProgressConstant) as ConstantExpression) :
         // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
-            (new ZoomConstantExpression('source', expression.value, isLightConstant) as SourceExpression));
+            (new ZoomConstantExpression('source', expression.value, isLightConstant, isLineProgressConstant) as SourceExpression));
     }
 
     const interpolationType = zoomCurve instanceof Interpolate ? zoomCurve.interpolation : undefined;
 
     return success((isFeatureConstant && isLineProgressConstant) ?
     // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
-        (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType, isLightConstant) as CameraExpression) :
+        (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CameraExpression) :
     // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
-        (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType, isLightConstant) as CompositeExpression));
+        (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CompositeExpression));
 }
 
 // serialization wrapper for old-style stop functions normalized to the

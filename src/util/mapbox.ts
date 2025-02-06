@@ -120,6 +120,15 @@ export class RequestManager {
         return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
     }
 
+    normalizeIconsetURL(url: string, accessToken?: string): string {
+        const urlObject = parseUrl(url);
+        if (!isMapboxURL(url)) {
+            return formatUrl(urlObject);
+        }
+        urlObject.path = `/styles/v1${urlObject.path}/iconset.pbf`;
+        return this._makeAPIURL(urlObject, this._customAccessToken || accessToken);
+    }
+
     normalizeSpriteURL(url: string, format: string, extension: string, accessToken?: string): string {
         const urlObject = parseUrl(url);
         if (!isMapboxURL(url)) {

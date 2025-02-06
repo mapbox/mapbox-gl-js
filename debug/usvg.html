@@ -91,7 +91,7 @@
             actualContext.clearRect(0, 0, actualCanvas.width, actualCanvas.height);
 
             const transform = new DOMMatrix().scale(2);
-            const imageData = renderIcon(icon, transform);
+            const imageData = renderIcon(icon, {params: {transform}});
             actualCanvas.width = imageData.width;
             actualCanvas.height = imageData.height;
             actualContext.putImageData(imageData, 0, 0);

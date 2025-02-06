@@ -1,0 +1,54 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "spriteFormat": "icon_set"
+    }
+  },
+  "zoom": 1.99,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [ 0, 0 ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/standard",
+  "layers": [
+    {
+      "id": "back",
+      "type": "background",
+      "paint": {
+        "background-color": "black"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-size": [
+          "interpolate",
+          ["exponential", 2],
+          ["zoom"],
+          1, 1,
+          2, 4
+        ],
+        "icon-image": "alcohol-shop"
+      }
+    }
+  ]
+}

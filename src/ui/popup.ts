@@ -453,11 +453,9 @@ export default class Popup extends Evented<PopupEvents> {
 
         if (this.options.closeButton) {
             const button = this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', content);
-            // @ts-expect-error - TS2339 - Property 'type' does not exist on type 'HTMLElement'.
             button.type = 'button';
             button.setAttribute('aria-label', 'Close popup');
-            button.setAttribute('aria-hidden', 'true');
-            button.innerHTML = '&#215;';
+            button.innerHTML = '<span aria-hidden="true">&#215;</span>';
             button.addEventListener('click', this._onClose);
         }
         this._update();

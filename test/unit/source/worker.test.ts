@@ -1,6 +1,6 @@
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
-import '../../../src/util/global_worker_pool';
+import '../../../src/util/worker_pool_factory';
 import Worker from '../../../src/source/worker';
 
 const _self = {

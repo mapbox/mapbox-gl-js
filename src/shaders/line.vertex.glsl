@@ -12,15 +12,15 @@
 
 in vec2 a_pos_normal;
 in vec4 a_data;
-#if defined(ELEVATED) || defined(ELEVATED_ROADS)
-in float a_z_offset;
+#if defined(ELEVATED) || defined(ELEVATED_ROADS) || defined(VARIABLE_LINE_WIDTH)
+in vec3 a_z_offset_width;
 #endif
 
-// Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
+// Includes in order: a_uv_x, a_split_index, a_line_progress
 // to reduce attribute count on older devices.
 // Only line-gradient and line-trim-offset will requires a_packed info.
 #if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
-in highp vec4 a_packed;
+in highp vec3 a_packed;
 #endif
 
 #ifdef RENDER_LINE_DASH
@@ -31,6 +31,8 @@ uniform mat4 u_matrix;
 uniform mat2 u_pixels_to_tile_units;
 uniform vec2 u_units_to_pixels;
 uniform lowp float u_device_pixel_ratio;
+uniform float u_width_scale;
+uniform highp float u_floor_width_scale;
 
 #ifdef ELEVATED
 uniform lowp float u_zbias_factor;
@@ -48,7 +50,10 @@ float sample_elevation(vec2 apos) {
 out vec2 v_normal;
 out vec2 v_width2;
 out float v_gamma_scale;
-out highp vec4 v_uv;
+out highp vec3 v_uv;
+#ifdef ELEVATED_ROADS
+out highp float v_road_z_offset;
+#endif
 
 #ifdef RENDER_LINE_DASH
 uniform vec2 u_texsize;
@@ -58,6 +63,10 @@ out vec2 v_tex;
 
 #ifdef RENDER_LINE_GRADIENT
 uniform float u_image_height;
+#endif
+
+#ifdef INDICATOR_CUTOUT
+out highp float v_z_offset;
 #endif
 
 #ifdef RENDER_SHADOWS
@@ -92,6 +101,11 @@ void main() {
     #pragma mapbox: initialize lowp float border_width
     #pragma mapbox: initialize lowp vec4 border_color
 
+    float a_z_offset;
+#if defined(ELEVATED) || defined(ELEVATED_ROADS)
+    a_z_offset = a_z_offset_width.x;
+#endif
+
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
     float ANTIALIASING = 1.0 / u_device_pixel_ratio / 2.0;
@@ -110,8 +124,14 @@ void main() {
     // these transformations used to be applied in the JS and native code bases.
     // moved them into the shader for clarity and simplicity.
     gapwidth = gapwidth / 2.0;
-    float halfwidth = width / 2.0;
-    offset = -1.0 * offset;
+    float halfwidth;
+#ifdef VARIABLE_LINE_WIDTH
+    float left = a_pos_normal.y - 2.0 * floor(a_pos_normal.y * 0.5);
+    halfwidth = (u_width_scale * (left == 1.0 ? a_z_offset_width.y : a_z_offset_width.z)) / 2.0;
+#else
+    halfwidth = (u_width_scale * width) / 2.0;
+#endif
+    offset = -1.0 * offset * u_width_scale;
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
     float outset = gapwidth + halfwidth * (gapwidth > 0.0 ? 2.0 : 1.0) + (halfwidth == 0.0 ? 0.0 : ANTIALIASING);
@@ -133,6 +153,7 @@ void main() {
     vec4 projected_extrude = u_matrix * vec4(extrude, 0.0, 0.0);
     vec2 projected_extrude_xy = projected_extrude.xy;
 #ifdef ELEVATED_ROADS
+    v_road_z_offset = a_z_offset;
     // Apply slight vertical offset (1cm) for elevated vertices above the ground plane
     gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset + 0.01 * step(0.01, a_z_offset), 1.0) + projected_extrude;
 #else
@@ -201,17 +222,16 @@ void main() {
 #endif
 
 #if defined(RENDER_LINE_GRADIENT) || defined(RENDER_LINE_TRIM_OFFSET)
-    float a_uv_x = a_packed[0];
+    highp float a_uv_x = a_packed[0];
     float a_split_index = a_packed[1];
-    highp float a_clip_start = a_packed[2];
-    highp float a_clip_end = a_packed[3];
+    highp float line_progress = a_packed[2];
 #ifdef RENDER_LINE_GRADIENT
     highp float texel_height = 1.0 / u_image_height;
     highp float half_texel_height = 0.5 * texel_height;
 
-    v_uv = vec4(a_uv_x, a_split_index * texel_height - half_texel_height, a_clip_start, a_clip_end);
+    v_uv = vec3(a_uv_x, a_split_index * texel_height - half_texel_height, line_progress);
 #else
-    v_uv = vec4(a_uv_x, 0.0, a_clip_start, a_clip_end);
+    v_uv = vec3(a_uv_x, 0.0, line_progress);
 #endif
 #endif
 
@@ -219,12 +239,16 @@ void main() {
     float scale = dash.z == 0.0 ? 0.0 : u_tile_units_to_pixels / dash.z;
     float height = dash.y;
 
-    v_tex = vec2(a_linesofar * scale / floorwidth, (-normal.y * height + dash.x + 0.5) / u_texsize.y);
+    v_tex = vec2(a_linesofar * scale / (floorwidth * u_floor_width_scale), (-normal.y * height + dash.x + 0.5) / u_texsize.y);
 #endif
 
     v_width2 = vec2(outset, inset);
 
 #ifdef FOG
     v_fog_pos = fog_position(pos);
+#endif
+
+#ifdef INDICATOR_CUTOUT
+    v_z_offset = a_z_offset;
 #endif
 }

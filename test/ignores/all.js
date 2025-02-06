@@ -39,18 +39,6 @@ const todo = [
     "expression-tests/image/two-arguments/available",
     "render-tests/image-fallback-nested/add-image-after",
 
-    // https://mapbox.atlassian.net/browse/GLJS-873
-    "expression-tests/image/options/one-image",
-    "expression-tests/image/options/options-for-both-images",
-    "expression-tests/image/options/options-for-first-image-only",
-    "expression-tests/image/options/options-for-second-image-only",
-    "expression-tests/image/options/options-with-invalid-params/array",
-    "expression-tests/image/options/options-with-invalid-params/empty-parameter-name",
-    "expression-tests/image/options/options-with-invalid-params/integer-parameter-value",
-    "expression-tests/image/options/options-with-invalid-params/parameter-value-with-unknown-color",
-    "expression-tests/image/options/options-with-invalid-params/string",
-    "expression-tests/image/options/options-without-params",
-
     // Known issues with the elevated lines implementation
     // https://github.com/mapbox/mapbox-gl-js-internal/pull/1909
     "render-tests/elevated-line/join-none",
@@ -114,7 +102,9 @@ const todo = [
     "render-tests/elevated-line-pattern/line-join-none",
     "render-tests/elevated-line-pattern/overscaled",
     // line-width projected
-    "render-tests/elevated-line-width/projected"
+    "render-tests/elevated-line-width/projected",
+    // https://mapbox.atlassian.net/browse/MAPSNAT-2636
+    "render-tests/icon-text-fit/stretch-nine-part-content-interpolate-text-size"
 ];
 
 const skip = [
@@ -143,9 +133,6 @@ const skip = [
 
     // Current behavior is arbitrary
     "render-tests/geojson/inline-linestring-fill",
-
-    // Render SDF icon and normal icon in one layer
-    "render-tests/icon-image/icon-sdf-non-sdf-one-layer",
 
     // Mapbox-gl-js does not support tile-mode
     "render-tests/icon-text-fit/text-variable-anchor-tile-map-mode",

@@ -19,6 +19,10 @@ uniform float u_icon_transition;
 uniform mat4 u_color_adj_mat;
 #endif
 
+#ifdef INDICATOR_CUTOUT
+in highp float v_z_offset;
+#endif
+
 in vec2 v_tex_a;
 #ifdef ICON_TRANSITION
 in vec2 v_tex_b;
@@ -105,6 +109,10 @@ void main() {
     #ifdef LIGHTING_3D_MODE
         out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
     #endif
+
+#ifdef INDICATOR_CUTOUT
+    out_color = applyCutout(out_color, v_z_offset);
+#endif
 
     glFragColor = out_color;
 

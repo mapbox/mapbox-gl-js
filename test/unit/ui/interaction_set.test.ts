@@ -5,6 +5,7 @@ import {Evented} from '../../../src/util/evented';
 function feature(json) {
     return {
         ...json,
+        _vectorTileFeature: {},
         clone() { return this; }
     };
 }
@@ -18,9 +19,8 @@ describe('InteractionSet', () => {
 
         // @ts-expect-error
         map.style = {
-            queryRenderedFeaturesForInteractions: () => [
-                feature({id: 1, featureset, layer}),
-                feature({id: 2, featureset, layer})
+            queryRenderedTargets: () => [
+                feature({id: 1, layer, variants: {test: [{featureset}]}}),
             ]
         };
 
@@ -30,7 +30,7 @@ describe('InteractionSet', () => {
 
         interactions.add('test', {
             type: 'click',
-            featureset,
+            target: featureset,
             handler(e) {
                 expect(e.interaction.type).toEqual('click');
                 expect(e.feature.id).toEqual(1);
@@ -51,9 +51,9 @@ describe('InteractionSet', () => {
 
         // @ts-expect-error
         map.style = {
-            queryRenderedFeaturesForInteractions: () => [
-                feature({id: 1, featureset, layer}),
-                feature({id: 2, featureset, layer})
+            queryRenderedTargets: () => [
+                feature({id: 1, layer, variants: {test: [{featureset}]}}),
+                feature({id: 2, layer, variants: {test: [{featureset}]}})
             ]
         };
 
@@ -61,7 +61,7 @@ describe('InteractionSet', () => {
 
         interactions.add('test', {
             type: 'click',
-            featureset,
+            target: featureset,
             handler(e) {
                 if (e.feature.id === 1) return false;
                 expect(e.feature.id).toEqual(2);
@@ -79,7 +79,7 @@ describe('InteractionSet', () => {
 
         // @ts-expect-error
         map.style = {
-            queryRenderedFeaturesForInteractions: () => []
+            queryRenderedTargets: () => []
         };
 
         let clickHandled = false;
@@ -102,13 +102,14 @@ describe('InteractionSet', () => {
         const interactions = new InteractionSet(map);
 
         const featureset = {layerId: 'bar'};
+        const layer = {id: featureset.layerId};
 
         // @ts-expect-error
         map.style = {
-            queryRenderedFeaturesForInteractions: (_, featuresetQueryTargets) => {
-                expect(featuresetQueryTargets[0].filter).toEqual(['==', ['get', 'cool'], true]);
+            queryRenderedTargets: (_, featuresetQueryTargets) => {
+                expect(featuresetQueryTargets[0].filter.filter).toBeTruthy();
                 return [
-                    feature({id: 3, featureset, properties: {cool: true}}),
+                    feature({id: 3, layer, variants: {test: [{featureset, properties: {cool: true}}]}}),
                 ];
             }
         };
@@ -117,7 +118,7 @@ describe('InteractionSet', () => {
 
         interactions.add('test', {
             type: 'click',
-            featureset,
+            target: featureset,
             filter: ['==', ['get', 'cool'], true],
             handler(e) {
                 expect(e.feature.id).toEqual(3);

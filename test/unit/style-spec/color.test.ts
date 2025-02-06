@@ -10,9 +10,9 @@ test('Color.parse', () => {
     expect(Color.parse(undefined)).toEqual(undefined);
 });
 
-test('Color#toString', () => {
+test('Color#toStringPremultipliedAlpha', () => {
     const purple = Color.parse('purple');
-    expect(purple && purple.toString()).toEqual('rgba(128,0,128,1)');
+    expect(purple && purple.toStringPremultipliedAlpha()).toEqual('rgba(128,0,128,1)');
     const translucentGreen = Color.parse('rgba(26, 207, 26, .73)');
-    expect(translucentGreen && translucentGreen.toString()).toEqual('rgba(26,207,26,0.73)');
+    expect(translucentGreen && translucentGreen.toStringPremultipliedAlpha()).toEqual('rgba(26,207,26,0.73)');
 });

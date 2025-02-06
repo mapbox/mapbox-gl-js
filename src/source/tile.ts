@@ -28,7 +28,6 @@ import {transitionTileAABBinECEF, globeNormalizeECEF, tileCoordToECEF, globeToMe
 import {vec3, mat4} from 'gl-matrix';
 
 import type RasterParticleState from '../render/raster_particle_state';
-import type SourceFeatureState from '../source/source_state';
 import type FeatureIndex from '../data/feature_index';
 import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
@@ -52,7 +51,7 @@ import type IndexBuffer from '../gl/index_buffer';
 import type Projection from '../geo/projection/projection';
 import type {TileTransform} from '../geo/projection/tile_transform';
 import type Painter from '../render/painter';
-import type {QueryResult} from '../source/query_features';
+import type {QrfQuery, QueryResult} from '../source/query_features';
 import type {UserManagedTexture, TextureImage} from '../render/texture';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 
@@ -82,6 +81,16 @@ const BOUNDS_FEATURE = (() => {
         }
     };
 })();
+
+/*
+ * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
+ */
+function getPixelPosMatrix(transform: Transform, tileID: OverscaledTileID) {
+    const t = mat4.fromScaling([] as any, [transform.width * 0.5, -transform.height * 0.5, 1]);
+    mat4.translate(t, t, [1, -1, 0]);
+    mat4.multiply(t, t, transform.calculateProjMatrix(tileID.toUnwrapped()));
+    return Float32Array.from(t);
+}
 
 /**
  * A tile object is the combination of a Coordinate, which defines
@@ -391,7 +400,7 @@ class Tile {
 
         if (data.resourceTiming) this.resourceTiming = data.resourceTiming;
 
-        this.buckets = {...this.buckets, ...deserializeBucket(data.buckets, painter.style)};
+        this.buckets = Object.assign({}, this.buckets, deserializeBucket(data.buckets, painter.style));
 
         if (data.featureIndex) {
             this.latestFeatureIndex = data.featureIndex;
@@ -444,21 +453,18 @@ class Tile {
         if (this._lastUpdatedBrightness && brightness && Math.abs(this._lastUpdatedBrightness - brightness) < 0.001) {
             return;
         }
+        this.updateBuckets(painter, this._lastUpdatedBrightness !== brightness);
         this._lastUpdatedBrightness = brightness;
-        this.updateBuckets(painter);
     }
 
     // Queries non-symbol features rendered for this tile.
     // Symbol features are queried globally
     queryRenderedFeatures(
-        layers: Record<string, StyleLayer>,
-        sourceFeatureState: SourceFeatureState,
-        tileResult: TilespaceQueryGeometry,
-        filter: FilterSpecification,
-        layerIds: string[],
+        query: QrfQuery,
+        tilespaceGeometry: TilespaceQueryGeometry,
         availableImages: Array<string>,
         transform: Transform,
-        pixelPosMatrix: Float32Array,
+        sourceCacheTransform: Transform,
         visualizeQueryGeometry: boolean,
     ): QueryResult {
         Debug.run(() => {
@@ -472,23 +478,27 @@ class Tile {
                     boundsViz = this.queryBoundsDebugViz = new TileSpaceDebugBuffer(this.tileSize, Color.blue);
                 }
 
-                geometryViz.addPoints(tileResult.tilespaceGeometry);
-                boundsViz.addPoints(tileResult.bufferedTilespaceGeometry);
+                geometryViz.addPoints(tilespaceGeometry.tilespaceGeometry);
+                boundsViz.addPoints(tilespaceGeometry.bufferedTilespaceGeometry);
             }
         });
 
-        if (!this.latestFeatureIndex || !(this.latestFeatureIndex.rawTileData || this.latestFeatureIndex.is3DTile))
+        if (!this.latestFeatureIndex || !(this.latestFeatureIndex.rawTileData || this.latestFeatureIndex.is3DTile)) {
             return {};
+        }
 
-        return this.latestFeatureIndex.query({
-            tileResult,
-            pixelPosMatrix,
-            transform,
-            filter,
-            layers: layerIds,
-            availableImages,
-            tileTransform: this.tileTransform
-        }, layers, sourceFeatureState);
+        const pixelPosMatrix = getPixelPosMatrix(sourceCacheTransform, this.tileID);
+
+        return this.latestFeatureIndex.query(
+            query,
+            {
+                tilespaceGeometry,
+                pixelPosMatrix,
+                transform,
+                availableImages,
+                tileTransform: this.tileTransform
+            }
+        );
     }
 
     querySourceFeatures(result: Array<Feature>, params?: {
@@ -603,8 +613,9 @@ class Tile {
         this.updateBuckets(painter);
     }
 
-    updateBuckets(painter: Painter) {
+    updateBuckets(painter: Painter, isBrightnessChanged?: boolean) {
         if (!this.latestFeatureIndex) return;
+        if (!painter.style) return;
 
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
         const availableImages = painter.style.listImages();
@@ -618,7 +629,7 @@ class Tile {
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
             const sourceLayer = vtLayers[sourceLayerId];
-            const sourceCache = painter.style.getSourceCache(bucketLayer.source, bucketLayer.scope);
+            const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
 
             let sourceLayerStates: FeatureStates = {};
             if (sourceCache) {
@@ -626,7 +637,12 @@ class Tile {
             }
 
             const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
-            bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, brightness);
+            const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
+            const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
+            const updatesWithoutStateDependentLayers = withStateUpdates && !bucket.stateDependentLayers.length;
+            if (!updatesWithoutStateDependentLayers || isBrightnessChanged) {
+                bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
+            }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {
                     painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);

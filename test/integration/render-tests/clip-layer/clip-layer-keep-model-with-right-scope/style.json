@@ -4,7 +4,6 @@
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "metadata": {
     "test": {
-      "standardDerivatives": true,
       "height": 512,
       "width": 512,
       "allowed": 0.00094

@@ -30,6 +30,7 @@ export type PaintProps = {
     "background-pattern": DataConstantProperty<ResolvedImage | null | undefined>;
     "background-opacity": DataConstantProperty<number>;
     "background-emissive-strength": DataConstantProperty<number>;
+    "background-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -39,4 +40,5 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "background-pattern": new DataConstantProperty(styleSpec["paint_background"]["background-pattern"]),
     "background-opacity": new DataConstantProperty(styleSpec["paint_background"]["background-opacity"]),
     "background-emissive-strength": new DataConstantProperty(styleSpec["paint_background"]["background-emissive-strength"]),
+    "background-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

@@ -6,8 +6,8 @@
     "at-rule-no-unknown": [true, {
       "ignoreAtRules": ["svg-load"]
     }],
-    "function-no-unknown": [true, {
-      "ignoreFunctions": ["svg-load", "svg-inline"]
+    "declaration-property-value-no-unknown": [true, {
+      "ignoreProperties": {"background-image": ["/^svg-load/", "/^svg-inline/"]}
     }],
     "selector-no-vendor-prefix": [true, {
       "ignoreSelectors": [":-webkit-full-screen"]

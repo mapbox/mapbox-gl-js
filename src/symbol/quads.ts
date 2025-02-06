@@ -1,4 +1,5 @@
 import Point from '@mapbox/point-geometry';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
 import {ICON_PADDING} from '../render/image_atlas';
 import {SDF_SCALE} from '../render/glyph_manager';
@@ -60,6 +61,10 @@ export type SymbolQuad = {
 // on one edge in some cases.
 const border = ICON_PADDING;
 
+function reduceRanges(sum: number, range: [number, number]) {
+    return sum + range[1] - range[0];
+}
+
 /**
  * Create the quads used for rendering an icon.
  * @private
@@ -84,7 +89,6 @@ export function getIconQuads(
     const stretchX = image.stretchX || [[0, imageWidth]];
     const stretchY = image.stretchY || [[0, imageHeight]];
 
-    const reduceRanges = (sum: number, range: [number, number]) => sum + range[1] - range[0];
     const stretchWidth = stretchX.reduce(reduceRanges, 0);
     const stretchHeight = stretchY.reduce(reduceRanges, 0);
     const fixedWidth = imageWidth - stretchWidth;
@@ -299,7 +303,7 @@ export function getGlyphQuads(
             let pixelRatio = 1.0;
             let lineOffset = 0.0;
             if (positionedGlyph.imageName) {
-                const image = imageMap[positionedGlyph.imageName];
+                const image = imageMap[ResolvedImage.build(positionedGlyph.imageName).getSerializedPrimary()];
                 if (!image) continue;
                 if (image.sdf) {
                     warnOnce("SDF images are not supported in formatted text and will be ignored.");

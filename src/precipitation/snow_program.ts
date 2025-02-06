@@ -1,5 +1,3 @@
-// @flow
-
 import {
     Uniform4f,
     Uniform3f,

@@ -3,10 +3,13 @@
 #include "_prelude_shadow.fragment.glsl"
 
 uniform highp float u_device_pixel_ratio;
+uniform highp float u_width_scale;
 uniform highp float u_alpha_discard_threshold;
 uniform highp vec2 u_texsize;
 uniform highp float u_tile_units_to_pixels;
 uniform highp vec2 u_trim_offset;
+uniform highp vec2 u_trim_fade_range;
+uniform lowp vec4 u_trim_color;
 
 uniform sampler2D u_image;
 
@@ -16,11 +19,18 @@ in highp float v_linesofar;
 in float v_gamma_scale;
 in float v_width;
 #ifdef RENDER_LINE_TRIM_OFFSET
-in highp vec4 v_uv;
+in highp vec3 v_uv;
+#endif
+#ifdef ELEVATED_ROADS
+in highp float v_road_z_offset;
 #endif
 
 #ifdef LINE_JOIN_NONE
 in vec2 v_pattern_data; // [pos_in_segment, segment_length];
+#endif
+
+#ifdef INDICATOR_CUTOUT
+in highp float v_z_offset;
 #endif
 
 #ifdef RENDER_SHADOWS
@@ -49,7 +59,7 @@ void main() {
 
     vec2 display_size = (pattern_br - pattern_tl) / pixel_ratio;
 
-    float pattern_size = display_size.x / u_tile_units_to_pixels;
+    highp float pattern_size = display_size.x / u_tile_units_to_pixels;
 
     float aspect = display_size.y / v_width;
 
@@ -59,7 +69,7 @@ void main() {
     // Calculate the antialiasing fade factor. This is either when fading in
     // the line in case of an offset line (v_width2.t) or when fading out
     // (v_width2.s)
-    float blur2 = (blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
+    float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
 
     highp float pattern_x = v_linesofar / pattern_size * aspect;
@@ -74,14 +84,9 @@ void main() {
     vec4 color = textureLodCustom(u_image, pos, lod_pos);
 
 #ifdef RENDER_LINE_TRIM_OFFSET
-    // v_uv[2] and v_uv[3] are specifying the original clip range that the vertex is located in.
-    highp float start = v_uv[2];
-    highp float end = v_uv[3];
     highp float trim_start = u_trim_offset[0];
     highp float trim_end = u_trim_offset[1];
-    // v_uv.x is the relative prorgress based on each clip. Calculate the absolute progress based on
-    // the whole line by combining the clip start and end value.
-    highp float line_progress = (start + (v_uv.x) * (end - start));
+    highp float line_progress = v_uv[2];
     // Mark the pixel to be transparent when:
     // 1. trim_offset range is valid
     // 2. line_progress is within trim_offset range
@@ -89,9 +94,10 @@ void main() {
     // Nested conditionals fixes the issue
     // https://github.com/mapbox/mapbox-gl-js/issues/12013
     if (trim_end > trim_start) {
-        if (line_progress <= trim_end && line_progress >= trim_start) {
-            color = vec4(0, 0, 0, 0);
-        }
+        highp float start_transition = max(0.0, min(1.0, (line_progress - trim_start) / max(u_trim_fade_range[0], 1.0e-9)));
+        highp float end_transition = max(0.0, min(1.0, (trim_end - line_progress) / max(u_trim_fade_range[1], 1.0e-9)));
+        highp float transition_factor = min(start_transition, end_transition);
+        color = mix(color, color.a * u_trim_color, transition_factor);
     }
 #endif
 
@@ -101,11 +107,11 @@ void main() {
     // negative). v_pattern_data.y is not modified because we can't access overlap info for other end of the segment.
     // All units are tile units.
     // Distance from segment start point to start of first pattern instance
-    float pattern_len = pattern_size / aspect;
-    float segment_phase = pattern_len - mod(v_linesofar - v_pattern_data.x + pattern_len, pattern_len);
+    highp float pattern_len = pattern_size / aspect;
+    highp float segment_phase = pattern_len - mod(v_linesofar - v_pattern_data.x + pattern_len, pattern_len);
     // Step is used to check if we can fit an extra pattern cycle when considering the segment overlap at the corner
-    float visible_start = segment_phase - step(pattern_len * 0.5, segment_phase) * pattern_len;
-    float visible_end = floor((v_pattern_data.y - segment_phase) / pattern_len) * pattern_len + segment_phase;
+    highp float visible_start = segment_phase - step(pattern_len * 0.5, segment_phase) * pattern_len;
+    highp float visible_end = floor((v_pattern_data.y - segment_phase) / pattern_len) * pattern_len + segment_phase;
     visible_end += step(pattern_len * 0.5, v_pattern_data.y - visible_end) * pattern_len;
 
     if (v_pattern_data.x < visible_start || v_pattern_data.x >= visible_end) {
@@ -117,7 +123,11 @@ void main() {
     color = apply_lighting_with_emission_ground(color, u_emissive_strength);
 #ifdef RENDER_SHADOWS
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+#ifdef ELEVATED_ROADS
+    color.rgb *= mix(v_road_z_offset > 0.0 ? u_ground_shadow_factor : vec3(1.0), vec3(1.0), light);
+#else
     color.rgb *= mix(u_ground_shadow_factor, vec3(1.0), light);
+#endif // ELEVATED_ROADS
 #endif // RENDER_SHADOWS
 #endif
 #ifdef FOG
@@ -132,7 +142,7 @@ void main() {
         }
     }
 #ifdef INDICATOR_CUTOUT
-    color = applyCutout(color);
+    color = applyCutout(color, v_z_offset);
 #endif
 
     glFragColor = color;

@@ -105,6 +105,16 @@
       "type": "fog",
       "doc": "A global effect that fades layers and markers based on their distance to the camera. The fog can be used to approximate the effect of atmosphere on distant objects and enhance the depth perception of the map when used with terrain or 3D features. Note: fog is renamed to atmosphere in the Android and iOS SDKs and planned to be changed in GL-JS v.3.0.0."
     },
+    "snow": {
+      "type": "snow",
+      "doc": "Global precipitation particle-based snow. Having snow present in the style forces constant map repaint mode",
+      "experimental": true
+    },
+    "rain": {
+      "type": "rain",
+      "doc": "Global precipitation particle-based rain effect. Having rain present in the style forces constant map repaint mode.",
+      "experimental": true
+    },
     "camera": {
       "type": "camera",
       "doc": "Global setting to control additional camera intrinsics parameters, e.g. projection type (perspective / orthographic)."
@@ -112,6 +122,11 @@
     "color-theme": {
       "type": "colorTheme",
       "doc": "A global modifier for the colors of the style."
+    },
+    "indoor": {
+      "type": "indoor",
+      "experimental": true,
+      "doc": "Controls the behaviour of indoor features."
     },
     "imports": {
       "type": "array",
@@ -205,6 +220,13 @@
       "experimental": true,
       "type": "featuresets",
       "doc": "Defines sets of features for querying, interaction, and state management on the map, referencing individual layers or subsets of layers within the map's style.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.9.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
       "example": {
         "poi": {
           "selectors": [
@@ -231,10 +253,12 @@
   "featureset": {
     "experimental": true,
     "metadata": {
+      "experimental": true,
       "type": "*",
       "doc": "Arbitrary properties useful to track with the stylesheet, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
     },
     "selectors": {
+      "experimental": true,
       "type": "array",
       "value": "selector",
       "doc": "A collection of categorized selectors."
@@ -243,24 +267,35 @@
   "selector": {
     "experimental": true,
     "layer": {
+      "experimental": true,
       "type": "string",
       "doc": "The ID of a layer that exists in the current style.",
       "required": true
     },
     "properties": {
+      "experimental": true,
       "type": "selectorProperty",
       "required": false,
       "doc": "Properties accessible to the end user through queried feautures. If properties are empty, no feature properties are exposed. If undefined, all original feature properties will be accessible."
     },
     "featureNamespace": {
+      "experimental": true,
       "type": "string",
       "required": false,
       "doc": "An optional field that represents the feature namespace defined by the selector within a featureset to which this feature belongs. If the underlying source is the same for multiple selectors within a featureset, the same featureNamespace should be used across those selectors."
+    },
+    "_uniqueFeatureID": {
+      "experimental": true,
+      "type": "boolean",
+      "private": true,
+      "required": false,
+      "doc": "Internal flag used for standard style, in case multiple features sharing the same featureId, only one feature will be returned for feature query."
     }
   },
   "selectorProperty": {
     "experimental": true,
     "*": {
+      "experimental": true,
       "type": "*",
       "doc": "The value of the property. It can be an expression that generates the returned value from the feature, or a constant value specifying the returned value."
     }
@@ -288,6 +323,11 @@
     "data": {
       "type": "$root",
       "doc": "The inlined style that must correspond to the contents of the specified URL."
+    },
+    "color-theme": {
+      "type": "colorTheme",
+      "optional": true,
+      "doc": "If specified, it overrides the color-theme of the imported style."
     }
   },
   "config": {
@@ -495,6 +535,28 @@
           "ios": "11.0.0"
         }
       }
+    },
+    "shadow-quality": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": false,
+      "doc": "Determines the quality of the shadows on the map. A value of 1 ensures the highest quality and is the default value.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "experimental": true
     },
     "shadow-intensity": {
       "type": "number",
@@ -1542,8 +1604,7 @@
       "expression": {
         "interpolated": false
       },
-      "property-type": "data-constant",
-      "experimental": true
+      "property-type": "data-constant"
     },
     "clip-layer-scope": {
       "type": "array",
@@ -1560,8 +1621,7 @@
       "expression": {
         "interpolated": false
       },
-      "property-type": "data-constant",
-      "experimental": true
+      "property-type": "data-constant"
     }
   },
   "layout_fill": {
@@ -2049,6 +2109,36 @@
         "interpolated": false
       },
       "property-type": "constant"
+    },
+    "line-width-unit": {
+      "type": "enum",
+      "doc": "Selects the unit of line-width. The same unit is automatically used for line-blur and line-offset. Note: This is an experimental property and might be removed in a future release.",
+      "values": {
+        "pixels": {
+          "doc": "Width is rendered in pixels."
+        },
+        "meters": {
+          "doc": "Width is rendered in meters."
+        }
+      },
+      "default": "pixels",
+      "experimental": true,
+      "private": true,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.9.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
     }
   },
   "layout_symbol": {
@@ -2163,7 +2253,7 @@
           "doc": "Sorts symbols by `symbol-sort-key` if set. Otherwise, sorts symbols by their y-position relative to the viewport if `icon-allow-overlap` or `text-allow-overlap` is set to `true` or `icon-ignore-placement` or `text-ignore-placement` is `false`."
         },
         "viewport-y": {
-          "doc": "Sorts symbols by their y-position relative to the viewport if `icon-allow-overlap` or `text-allow-overlap` is set to `true` or `icon-ignore-placement` or `text-ignore-placement` is `false`."
+          "doc": "Sorts symbols by their y-position relative to the viewport if any of the following is set to `true`: `icon-allow-overlap`, `text-allow-overlap`, `icon-ignore-placement`, `text-ignore-placement`."
         },
         "source": {
           "doc": "Sorts symbols by `symbol-sort-key` if set. Otherwise, no sorting is applied; symbols are rendered in the same order as the source data."
@@ -2400,9 +2490,7 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "3.8.0",
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "js": "3.8.0"
         }
       },
       "property-type": "data-constant"
@@ -2914,9 +3002,7 @@
       },
       "sdk-support": {
         "basic functionality": {
-          "js": "3.8.0",
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "js": "3.8.0"
         }
       },
       "property-type": "data-constant"
@@ -4188,7 +4274,7 @@
         }
       },
       "image": {
-        "doc": "Returns a [`ResolvedImage`](/mapbox-gl-js/style-spec/types/#resolvedimage) for use in [`icon-image`](/mapbox-gl-js/style-spec/layers/#layout-symbol-icon-image), `*-pattern` entries, and as a section in the [`'format'`](#types-format) expression. A [`'coalesce'`](#coalesce) expression containing `image` expressions will evaluate to the first listed image that is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `'image'` argument. To implement crossfading between two images within a symbol layer using the [`icon-image-cross-fade`](/mapbox-gl-js/style-spec/layers/#paint-symbol-icon-image-cross-fade) attribute, include a second image as the second argument in the `'image'` expression.",
+        "doc": "Returns a [`ResolvedImage`](/style-spec/reference/types/#resolvedimage) for use in [`icon-image`](/style-spec/reference/layers/#layout-symbol-icon-image), `*-pattern` entries, and as a section in the [`'format'`](#types-format) expression.\n\nA [`'coalesce'`](#coalesce) expression containing `image` expressions will evaluate to the first listed image that is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `'image'` argument.\n\nEvery image name can be followed by an optional [`ImageOptions`](/style-spec/reference/types/#imageoptions) object, which will be used for vector images only.\n\nTo implement crossfading between two images within a symbol layer using the [`icon-image-cross-fade`](/style-spec/reference/layers/#paint-symbol-icon-image-cross-fade) attribute, include a second image as the second argument in the `'image'` expression.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -4250,6 +4336,17 @@
             "js": "0.41.0",
             "android": "6.0.0",
             "ios": "4.0.0"
+          }
+        }
+      },
+      "to-hsla": {
+        "doc": "Returns a four-element array containing the input color's Hue, Saturation, Luminance and alpha components, in that order.",
+        "group": "Color",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.9.0",
+            "android": "11.9.0",
+            "ios": "11.9.0"
           }
         }
       },
@@ -5174,7 +5271,15 @@
     "density": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        0.85
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5187,11 +5292,12 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Snow particles density.",
+      "doc": "Snow particles density. Controls the overall particles number.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5211,11 +5317,12 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Snow particles movement factor.",
+      "doc": "Snow particles movement factor. Controls the overall particles movement speed.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5236,15 +5343,16 @@
       "doc": "Snow particles color.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "opacity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 1.0,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5260,15 +5368,24 @@
       "doc": "Snow particles opacity.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "vignette": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        0.3
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5281,18 +5398,42 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Snow vignette screen-space effect.",
+      "doc": "Snow vignette screen-space effect. Adds snow tint to screen corners",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
-    "centerThinning": {
+    "vignette-color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": "#ffffff",
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow vignette screen-space corners tint color.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
+        }
+      }
+    },
+    "center-thinning": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.4,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5308,8 +5449,9 @@
       "doc": "Thinning factor of snow particles from center. 0 - no thinning. 1 - maximal central area thinning.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5317,7 +5459,7 @@
       "type": "array",
       "default": [
         0.0,
-        90.0
+        50.0
       ],
       "minimum": 0,
       "maximum": 360,
@@ -5334,15 +5476,41 @@
         ],
         "relaxZoomRestriction": true
       },
-      "doc": "Main snow particles direction. Heading & pitch",
+      "doc": "Main snow particles direction. Azimuth and polar angles",
       "example": [
         0,
         45
       ],
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
+        }
+      }
+    },
+    "flake-size": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0.71,
+      "minimum": 0,
+      "maximum": 5,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Snow flake particle size. Correlates with individual particle screen size",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     }
@@ -5351,7 +5519,15 @@
     "density": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        0.5
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5364,11 +5540,12 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Rain particles density.",
+      "doc": "Rain particles density. Controls the overall screen density of the rain.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5388,18 +5565,27 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Rain particles movement factor.",
+      "doc": "Rain particles movement factor. Controls the overall rain particles speed",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "color": {
       "type": "color",
       "property-type": "data-constant",
-      "default": "#ffffff",
+      "default":  [
+        "interpolate",
+        ["linear"],
+        [ "measure-light", "brightness" ],
+        0,
+        "#03113d",
+        0.3,
+        "#a8adbc"
+      ],
       "experimental": true,
       "expression": {
         "interpolated": true,
@@ -5410,18 +5596,27 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "",
+      "doc": "Individual rain particle dorplets color.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "opacity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": [
+        "interpolate",
+        ["linear"],
+        [ "measure-light", "brightness" ],
+        0,
+        0.88,
+        1,
+        0.7
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5437,15 +5632,24 @@
       "doc": "Rain particles opacity.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "vignette": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        1.0
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5458,18 +5662,50 @@
         "relaxZoomRestriction": true
       },
       "transition": true,
-      "doc": "Rain vignette screen-space effect.",
+      "doc": "Screen-space vignette rain tinting effect intensity.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
-    "centerThinning": {
+    "vignette-color": {
+      "type": "color",
+      "property-type": "data-constant",
+      "default": [
+        "interpolate",
+        ["linear"],
+        [ "measure-light", "brightness" ],
+        0,
+        "#001736",
+        0.3,
+        "#464646"
+      ],
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain vignette screen-space corners tint color.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
+        }
+      }
+    },
+    "center-thinning": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.57,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5485,8 +5721,9 @@
       "doc": "Thinning factor of rain particles from center. 0 - no thinning. 1 - maximal central area thinning.",
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5511,15 +5748,75 @@
         ],
         "relaxZoomRestriction": true
       },
-      "doc": "Main rain particles direction. Heading & pitch",
+      "doc": "Main rain particles direction. Azimuth and polar angles.",
       "example": [
         0,
         45
       ],
       "sdk-support": {
         "basic functionality": {
-          "android": "11.8.0",
-          "ios": "11.8.0"
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
+        }
+      }
+    },
+    "droplet-size": {
+      "type": "array",
+      "default": [
+        2.6,
+        18.2
+      ],
+      "minimum": 0,
+      "maximum": 50,
+      "length": 2,
+      "value": "number",
+      "property-type": "data-constant",
+      "transition": true,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "doc": "Rain droplet size. x - normal to direction, y - along direction",
+      "example": [
+        0,
+        45
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
+        }
+      }
+    },
+    "distortion-strength": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0.7,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ],
+        "relaxZoomRestriction": true
+      },
+      "transition": true,
+      "doc": "Rain particles screen-space distortion strength.",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.9.0",
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     }
@@ -5558,6 +5855,28 @@
     "data": {
       "type": "string",
       "doc": "Expects a base64 encoded PNG image which represents a cube strip LUT. The height of the image cannot exceed 32 pixels and the width must be equal to the height squared.",
+      "transition": false,
+      "property-type": "data-constant",
+      "expression": {
+        "interpolated": false
+      }
+    }
+  },
+  "indoor": {
+    "floorplanFeaturesetId": {
+      "type": "string",
+      "doc": "An ID of a featureset to be used to query indoor floorplans.",
+      "experimental": true,
+      "transition": false,
+      "property-type": "data-constant",
+      "expression": {
+        "interpolated": false
+      }
+    },
+    "buildingFeaturesetId": {
+      "type": "string",
+      "doc": "An ID of a featureset to be used to add interactivity for building selection.",
+      "experimental": true,
       "transition": false,
       "property-type": "data-constant",
       "expression": {
@@ -6888,7 +7207,8 @@
           "zoom",
           "feature",
           "feature-state",
-          "measure-light"
+          "measure-light",
+          "line-progress"
         ]
       },
       "property-type": "data-driven"
@@ -8761,9 +9081,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "3.0.0",
-          "android": "11.0.0",
-          "ios": "11.0.0"
+          "js": "3.1.0",
+          "android": "11.1.0",
+          "ios": "11.1.0"
         }
       },
       "expression": {
@@ -9137,7 +9457,7 @@
           "doc": "The background is aligned to the plane of the map."
         },
         "viewport": {
-          "doc": "The background is aligned to the plane of the viewport, covering the whole screen."
+          "doc": "The background is aligned to the plane of the viewport, covering the whole screen. Note: This mode disables the automatic reordering of the layer when terrain or globe projection is used."
         }
       },
       "default": "map",
@@ -9153,6 +9473,7 @@
         "interpolated": false,
         "parameters": []
       },
+      "experimental": true,
       "property-type": "data-constant"
     },
     "background-color": {
@@ -9491,20 +9812,25 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity of the model layer.",
+      "doc": "The opacity of the model layer. Except for zoom, expressions that are data-driven are not supported if using GeoJSON or vector tile as the model layer source.",
       "transition": true,
       "expression": {
         "interpolated": true,
-        "parameters": ["zoom"]
+        "parameters": ["feature", "feature-state", "zoom"]
       },
       "sdk-support": {
-          "basic functionality": {
+        "basic functionality": {
           "js": "3.0.0",
           "android": "11.0.0",
           "ios": "11.0.0"
+        },
+        "data-driven styling": {
+          "js": "3.9.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
         }
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "model-rotation": {
       "type": "array",
@@ -9859,8 +10185,8 @@
   },
   "promoteId": {
     "*": {
-      "type": "string",
-      "doc": "A name of a feature property to use as ID for feature state."
+      "type": "*",
+      "doc": "A feature property name to use as the ID, or an expression to evaluate as the ID for feature state."
     }
   }
 }

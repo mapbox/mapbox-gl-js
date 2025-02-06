@@ -1,0 +1,21 @@
+{
+    "metadata": {
+        "test": {
+            "width": 64,
+            "height": 64,
+            "spriteFormat": "icon_set"
+        }
+    },
+    "version": 8,
+    "sprite": "local://sprites/park",
+    "sources":{},
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-pattern": "park"
+            }
+        }
+    ]
+}

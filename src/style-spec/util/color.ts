@@ -73,7 +73,7 @@ class Color {
      * var translucentGreen = new Color.parse('rgba(26, 207, 26, .73)');
      * translucentGreen.toString(); // = "rgba(26,207,26,0.73)"
      */
-    toString(): string {
+    toStringPremultipliedAlpha(): string {
         const [r, g, b, a] = this.a === 0 ? [0, 0, 0, 0] : [
             this.r * 255 / this.a,
             this.g * 255 / this.a,
@@ -83,9 +83,23 @@ class Color {
         return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
     }
 
+    toString(): string {
+        const [r, g, b, a] = [
+            this.r,
+            this.g,
+            this.b,
+            this.a
+        ];
+        return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${a})`;
+    }
+
     toRenderColor(lut: LUT | null): RenderColor {
         const {r, g, b, a} = this;
         return new RenderColor(lut, r, g, b, a);
+    }
+
+    clone(): Color {
+        return new Color(this.r, this.g, this.b, this.a);
     }
 }
 
@@ -175,6 +189,53 @@ export class RenderColor {
             r * 255 / a,
             g * 255 / a,
             b * 255 / a,
+            a
+        ];
+    }
+
+    /**
+     * Returns an HSLA array of values representing the color, unpremultiplied by A.
+     *
+     * @returns An array of HSLA color values.
+     */
+    toHslaArray(): [number, number, number, number] {
+        if (this.a === 0) {
+            return [0, 0, 0, 0];
+        }
+        const {r, g, b, a} = this;
+
+        const red = Math.min(Math.max(r / a, 0.0), 1.0);
+        const green = Math.min(Math.max(g / a, 0.0), 1.0);
+        const blue = Math.min(Math.max(b / a, 0.0), 1.0);
+
+        const min = Math.min(red, green, blue);
+        const max = Math.max(red, green, blue);
+
+        const l = (min + max) / 2;
+
+        if (min === max) {
+            return [0, 0, l * 100, a];
+        }
+
+        const delta = max - min;
+
+        const s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+
+        let h = 0;
+        if (max === red) {
+            h = (green - blue) / delta + (green < blue ? 6 : 0);
+        } else if (max === green) {
+            h = (blue - red) / delta + 2;
+        } else if (max === blue) {
+            h = (red - green) / delta + 4;
+        }
+
+        h *= 60;
+
+        return [
+            Math.min(Math.max(h, 0), 360),
+            Math.min(Math.max(s * 100, 0), 100),
+            Math.min(Math.max(l * 100, 0), 100),
             a
         ];
     }

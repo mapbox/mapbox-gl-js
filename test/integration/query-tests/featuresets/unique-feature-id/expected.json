@@ -1,0 +1,59 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        0,
+        0
+      ],
+      "type": "Point"
+    },
+    "id": "value",
+    "properties": {
+      "origin_id": 2
+    },
+    "source": "geojson1",
+    "state": {},
+    "target": {
+      "featuresetId": "circle"
+    },
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        0,
+        0
+      ],
+      "type": "Point"
+    },
+    "id": 20,
+    "properties": {
+      "origin_id": 20
+    },
+    "source": "geojson",
+    "state": {},
+    "target": {
+      "featuresetId": "circle"
+    },
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        0,
+        0
+      ],
+      "type": "Point"
+    },
+    "id": 10,
+    "properties": {
+      "origin_id": 10
+    },
+    "source": "geojson",
+    "state": {},
+    "target": {
+      "featuresetId": "circle"
+    },
+    "type": "Feature"
+  }
+]

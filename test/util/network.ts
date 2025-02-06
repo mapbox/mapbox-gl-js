@@ -1,28 +1,32 @@
 // @ts-nocheck
-import {setupWorker} from 'msw/browser';
-
-export async function getNetworkWorker(_, ...handlers) {
-    const worker = setupWorker(...handlers);
-
-    await worker.start({
-        onUnhandledRequest: 'bypass',
-        quiet: true
-    });
-
-    return worker;
-}
+import {vi} from './vitest';
 
 const canvasElement = Object.assign(window.document.createElement('canvas'), {
     width: 1,
     height: 1
 });
 
+export function mockFetch(config: Record<string, (req: Request) => Promise<Response<any>>>) {
+    return vi.spyOn(window, 'fetch').mockImplementation(
+        async (req: Request): Promise<Response<any>> => {
+            const responseKey = Object.keys(config).find(key => new RegExp(key).test(req.url));
+            const response = config[responseKey];
+
+            if (!response) {
+                throw new Error(`No response for ${req.url}, available responses: ${Object.keys(config).join(', ')}`);
+            }
+
+            return await response(req) as any;
+        }
+    );
+}
+
 export function getPNGResponse() {
     return new Promise((resolve, reject) => {
         try {
             canvasElement.toBlob(resolve, 'image/png');
-        } catch (err: any) {
-            reject(err);
+        } catch (err) {
+            reject(err as Error);
         }
     });
 }
@@ -41,5 +45,3 @@ export function getRequestBody(request) {
         }));
     });
 }
-
-export {http, HttpResponse} from 'msw';

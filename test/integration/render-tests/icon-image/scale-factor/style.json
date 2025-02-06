@@ -1,0 +1,106 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 128,
+      "scaleFactor": 4,
+      "spriteFormat": "icon_set"
+    }
+  },
+  "sources": {
+    "geojson-x1": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "fire-station"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                35
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "geojson-x2": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "fire-station"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "geojson-x4": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "fire-station"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                -50
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/standard",
+  "layers": [
+    {
+      "id": "icon-x4",
+      "type": "symbol",
+      "source": "geojson-x4",
+      "layout": {
+        "icon-size-scale-range": [1, 4],
+        "icon-image": ["image", ["get", "class"]]
+      }
+    },
+    {
+      "id": "icon-x2",
+      "type": "symbol",
+      "source": "geojson-x2",
+      "layout": {
+        "icon-size-scale-range": [1, 2],
+        "icon-image": ["image", ["get", "class"]]
+      }
+    },
+    {
+      "id": "icon-x1",
+      "type": "symbol",
+      "source": "geojson-x1",
+      "layout": {
+        "icon-size-scale-range": [1, 1],
+        "icon-image": ["image", ["get", "class"]]
+      }
+    }
+  ]
+}

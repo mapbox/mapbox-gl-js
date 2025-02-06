@@ -1,0 +1,36 @@
+[
+  {
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          13.415004014968872,
+          52.49808639114306
+        ],
+        [
+          13.414907455444336,
+          52.49794269601955
+        ],
+        [
+          13.41582477092743,
+          52.49771082335269
+        ],
+        [
+          13.416152000427246,
+          52.49817456746362
+        ]
+      ]
+    },
+    "type": "Feature",
+    "properties": {
+      "class": "path",
+      "type": "footway"
+    },
+    "id": 289597991,
+    "target": {"featuresetId": "roads", "importId": "basemap"},
+    "state": {
+      "stateA": 1,
+      "stateB": "feature_id as number"
+    }
+  }
+]

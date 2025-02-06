@@ -78,7 +78,17 @@ export default function validateLights(options: Options): Array<ValidationError>
             }
         } else {
             const transitionMatch = key.match(/^(.*)-transition$/);
-            if (transitionMatch && lightSpec[transitionMatch[1]] && lightSpec[transitionMatch[1]].transition) {
+            const useThemeMatch = key.match(/^(.*)-use-theme$/);
+
+            if (useThemeMatch && lightSpec[useThemeMatch[1]]) {
+                errors = errors.concat(validate({
+                    key,
+                    value: light[key],
+                    valueSpec: {type:'string'},
+                    style,
+                    styleSpec
+                }));
+            } else if (transitionMatch && lightSpec[transitionMatch[1]] && lightSpec[transitionMatch[1]].transition) {
                 errors = errors.concat(validate({
                     key,
                     value: light[key],

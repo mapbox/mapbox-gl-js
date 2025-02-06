@@ -6,7 +6,13 @@ import Texture from './texture';
 import assert from 'assert';
 import {renderStyleImage} from '../style/style_image';
 import {warnOnce} from '../util/util';
+import Dispatcher from '../util/dispatcher';
+import {getImageRasterizerWorkerPool} from '../util/worker_pool_factory';
+import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
+import {ImageRasterizer} from './image_rasterizer';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 
+import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import type {StyleImage} from '../style/style_image';
 import type Context from '../gl/context';
 import type {PotpackBox} from 'potpack';
@@ -14,10 +20,14 @@ import type {Callback} from '../types/callback';
 import type {Size} from '../util/image';
 import type {LUT} from '../util/lut';
 
+const IMAGE_RASTERIZER_WORKER_POOL_COUNT = 1;
+
 type Pattern = {
     bin: PotpackBox;
     position: ImagePosition;
 };
+
+export type SpriteFormat = 'auto' | 'raster' | 'icon_set';
 
 /*
     ImageManager does three things:
@@ -68,9 +78,14 @@ class ImageManager extends Evented {
     atlasTexture: {
         [scope: string]: Texture | null | undefined;
     };
+    spriteFormat: SpriteFormat;
     dirty: boolean;
 
-    constructor() {
+    imageRasterizerDispatcher: Dispatcher;
+
+    _imageRasterizer: ImageRasterizer;
+
+    constructor(spriteFormat: SpriteFormat) {
         super();
         this.images = {};
         this.updatedImages = {};
@@ -82,6 +97,26 @@ class ImageManager extends Evented {
         this.atlasImage = {};
         this.atlasTexture = {};
         this.dirty = true;
+
+        this.spriteFormat = spriteFormat;
+        // Disable worker rasterizer if:
+        // - Vector icons are not preferred
+        // - Offscreen canvas is not supported
+        if (spriteFormat !== 'raster' && offscreenCanvasSupported()) {
+            this.imageRasterizerDispatcher = new Dispatcher(
+                getImageRasterizerWorkerPool(),
+                this,
+                'Image Rasterizer Worker',
+                IMAGE_RASTERIZER_WORKER_POOL_COUNT
+            );
+        }
+    }
+
+    get imageRasterizer(): ImageRasterizer {
+        if (!this._imageRasterizer) {
+            this._imageRasterizer = new ImageRasterizer();
+        }
+        return this._imageRasterizer;
     }
 
     createScope(scope: string) {
@@ -166,10 +201,12 @@ class ImageManager extends Evented {
     ): boolean {
         if (!content) return true;
         if (content.length !== 4) return false;
-        if (content[0] < 0 || image.data.width < content[0]) return false;
-        if (content[1] < 0 || image.data.height < content[1]) return false;
-        if (content[2] < 0 || image.data.width < content[2]) return false;
-        if (content[3] < 0 || image.data.height < content[3]) return false;
+        if (!image.usvg) {
+            if (content[0] < 0 || image.data.width < content[0]) return false;
+            if (content[1] < 0 || image.data.height < content[1]) return false;
+            if (content[2] < 0 || image.data.width < content[2]) return false;
+            if (content[3] < 0 || image.data.height < content[3]) return false;
+        }
         if (content[2] < content[0]) return false;
         if (content[3] < content[1]) return false;
         return true;
@@ -183,6 +220,19 @@ class ImageManager extends Evented {
         image.version = oldImage.version + 1;
         this.images[scope][id] = image;
         this.updatedImages[scope][id] = true;
+        this.removeFromImageRasterizerCache(id, scope);
+    }
+
+    removeFromImageRasterizerCache(id: string, scope: string) {
+        if (this.spriteFormat === 'raster') {
+            return;
+        }
+
+        if (offscreenCanvasSupported()) {
+            this.imageRasterizerDispatcher.getActor().send('removeRasterizedImages', {imageIds: [id], scope});
+        } else {
+            this.imageRasterizer.removeImagesFromCacheByIds([id], scope);
+        }
     }
 
     removeImage(id: string, scope: string) {
@@ -190,7 +240,7 @@ class ImageManager extends Evented {
         const image = this.images[scope][id];
         delete this.images[scope][id];
         delete this.patterns[scope][id];
-
+        this.removeFromImageRasterizerCache(id, scope);
         if (image.userImage && image.userImage.onRemove) {
             image.userImage.onRemove();
         }
@@ -223,6 +273,34 @@ class ImageManager extends Evented {
         }
     }
 
+    rasterizeImages({scope, imageTasks}: {scope: string, imageTasks: {[_: string]: ImageIdWithOptions}}, callback: Callback<{[_: string]: RGBAImage}>) {
+        const imageWorkerTasks: {[_: string]: {image: StyleImage, imageIdWithOptions: ImageIdWithOptions}} = {};
+
+        for (const id in imageTasks) {
+            const imageIdWithOptions = imageTasks[id];
+            const image = this.getImage(imageIdWithOptions.id, scope);
+            if (image) {
+                imageWorkerTasks[id] = {image, imageIdWithOptions};
+            }
+        }
+
+        if (!offscreenCanvasSupported()) {
+            this.rasterizeImagesInMainThread({imageTasks: imageWorkerTasks, scope}, callback);
+        } else {
+            this.imageRasterizerDispatcher.getActor().send('rasterizeImages', {imageTasks: imageWorkerTasks, scope}, callback);
+        }
+    }
+
+    rasterizeImagesInMainThread(input: {imageTasks: {[_: string]:  {image: StyleImage, imageIdWithOptions: ImageIdWithOptions}}, scope: string}, callback: (err?: Error, result?: {[_: string]: RGBAImage}) => void) {
+        const {imageTasks, scope} = input;
+        const images: {[key: string]: RGBAImage} = {};
+        for (const id in imageTasks) {
+            const {image, imageIdWithOptions} = imageTasks[id];
+            images[id] = this.imageRasterizer.rasterize(imageIdWithOptions, image, scope, '');
+        }
+        callback(undefined, images);
+    }
+
     getUpdatedImages(scope: string): {
         [_: string]: boolean;
     } {
@@ -242,9 +320,11 @@ class ImageManager extends Evented {
             if (image) {
                 // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
                 response[id] = {
-                    data: image.data.clone(),
+                    // Vector images will be rasterized on the worker thread
+                    data: image.usvg ? null : image.data.clone(),
                     pixelRatio: image.pixelRatio,
                     sdf: image.sdf,
+                    usvg: image.usvg,
                     version: image.version,
                     stretchX: image.stretchX,
                     stretchY: image.stretchY,
@@ -279,6 +359,9 @@ class ImageManager extends Evented {
         }
 
         if (!pattern) {
+            if (image.usvg && !image.data) {
+                image.data = this.imageRasterizer.rasterize(ResolvedImage.from(id).getPrimary(), image, scope, '');
+            }
             const w = image.data.width + PATTERN_PADDING * 2;
             const h = image.data.height + PATTERN_PADDING * 2;
             const bin = {w, h, x: 0, y: 0};

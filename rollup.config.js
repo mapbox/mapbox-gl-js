@@ -48,7 +48,7 @@ export default ({watch}) => {
         onwarn: production ? onwarn : false,
         treeshake: production ? {
             moduleSideEffects: (id, external) => {
-                return !id.endsWith("tracked_parameters.ts") && !id.endsWith("draw_snow.ts") && !id.endsWith("draw_rain.ts");
+                return !id.endsWith("tracked_parameters.ts");
             },
             preset: "recommended"
         } : false,

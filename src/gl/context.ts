@@ -27,6 +27,7 @@ export type ContextOptions = {
     extTextureFilterAnisotropicForceOff?: boolean;
     extTextureFloatLinearForceOff?: boolean;
     extStandardDerivativesForceOff?: boolean;
+    forceManualRenderingForInstanceIDShaders?: boolean;
 };
 
 class Context {
@@ -78,6 +79,8 @@ class Context {
     options: ContextOptions;
     maxPointSize: number;
 
+    forceManualRenderingForInstanceIDShaders: boolean;
+
     constructor(gl: WebGL2RenderingContext, options?: ContextOptions) {
         this.gl = gl;
 
@@ -112,7 +115,7 @@ class Context {
         this.pixelStoreUnpack = new PixelStoreUnpack(this);
         this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
         this.pixelStoreUnpackFlipY = new PixelStoreUnpackFlipY(this);
-        this.options = options ? {...options} : {};
+        this.options = options ? Object.assign({}, options) : {};
 
         if (!this.options.extTextureFilterAnisotropicForceOff) {
             this.extTextureFilterAnisotropic = (
@@ -130,6 +133,9 @@ class Context {
             this.renderer = gl.getParameter(this.extDebugRendererInfo.UNMASKED_RENDERER_WEBGL);
             this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
         }
+
+        // Force manual rendering for instanced draw calls having gl_InstanceID usage in the shader for PowerVR adapters
+        this.forceManualRenderingForInstanceIDShaders = (options && !!options.forceManualRenderingForInstanceIDShaders) || (this.renderer && this.renderer.indexOf("PowerVR") !== -1);
 
         if (!this.options.extTextureFloatLinearForceOff) {
             this.extTextureFloatLinear = gl.getExtension('OES_texture_float_linear');

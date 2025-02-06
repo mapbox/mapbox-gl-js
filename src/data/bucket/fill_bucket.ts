@@ -32,6 +32,7 @@ import type {ProjectionSpecification} from '../../style-spec/types';
 import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
+import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 
 class FillBucket implements Bucket {
     index: number;
@@ -136,11 +137,8 @@ class FillBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness?: number | null) {
-        const withStateUpdates = Object.keys(states).length !== 0;
-        if (withStateUpdates && !this.stateDependentLayers.length) return;
-        const layers = withStateUpdates ? this.stateDependentLayers : this.layers;
-        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
+        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
     }
 
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, _: TileTransform, brightness?: number | null) {

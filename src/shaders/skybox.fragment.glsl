@@ -50,8 +50,6 @@ void main() {
     sky_color = fog_apply_sky_gradient(v_uv.xzy, sky_color);
 #endif
 
-    // Dither [1]
-    sky_color.rgb = dither(sky_color.rgb, gl_FragCoord.xy + u_temporal_offset);
     // Add sun disk
     sky_color += 0.1 * sun_disk(v_uv, u_sun_direction);
 

@@ -50,6 +50,7 @@ import {getProjection} from '../../geo/projection/index';
 import {mat4, vec3} from 'gl-matrix';
 import assert from 'assert';
 import {regionsEquals} from '../../../3d-style/source/replacement_source';
+import {clamp} from '../../util/util';
 
 import type Anchor from '../../symbol/anchor';
 import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
@@ -77,6 +78,7 @@ import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {LUT} from '../../util/lut';
 import type {SpritePositions} from '../../util/image';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
+import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -561,6 +563,8 @@ class SymbolBucket implements Bucket {
         const textFont = layout.get('text-font');
         const textField = layout.get('text-field');
         const iconImage = layout.get('icon-image');
+        const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
+        const iconScaleFactor = clamp(options.scaleFactor || 1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
         const hasText =
 
             (textField.value.kind !== 'constant' ||
@@ -647,7 +651,7 @@ class SymbolBucket implements Bucket {
                 if (resolvedTokens instanceof ResolvedImage) {
                     icon = resolvedTokens;
                 } else {
-                    icon = ResolvedImage.fromString(resolvedTokens);
+                    icon = ResolvedImage.build(resolvedTokens);
                 }
             }
 
@@ -673,14 +677,21 @@ class SymbolBucket implements Bucket {
             this.features.push(symbolFeature);
 
             if (icon) {
-                icons[icon.namePrimary] = true;
+                const layer = this.layers[0];
+                const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
+                const iconSizeFactor = symbolSize.getRasterizedIconSize(this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature);
+                const scaleFactor = iconSizeFactor * iconScaleFactor * this.pixelRatio;
+                const iconPrimary = icon.getPrimary().scaleSelf(scaleFactor);
+                icons[iconPrimary.id] = (icons[iconPrimary.id] || []);
+                icons[iconPrimary.id].push(iconPrimary);
                 if (icon.nameSecondary) {
-                    icons[icon.nameSecondary] = true;
+                    const iconSecondary = icon.getSecondary().scaleSelf(scaleFactor);
+                    icons[iconSecondary.id] = (icons[iconSecondary.id] || []);
+                    icons[iconSecondary.id].push(iconSecondary);
                 }
             }
 
             if (text) {
-
                 const fontStack = textFont.evaluate(evaluationFeature, {}, canonical).join(',');
                 const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
                 this.allowVerticalPlacement = this.writingModes && this.writingModes.indexOf(WritingMode.vertical) >= 0;
@@ -691,8 +702,9 @@ class SymbolBucket implements Bucket {
                         const sectionStack = stacks[sectionFont] = stacks[sectionFont] || {};
                         this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, this.allowVerticalPlacement, doesAllowVerticalWritingMode);
                     } else {
-                        // Add section image to the list of dependencies.
-                        icons[section.image.namePrimary] = true;
+                        const imagePrimary = section.image.getPrimary().scaleSelf(this.pixelRatio);
+                        icons[imagePrimary.id] = (icons[imagePrimary.id] || []);
+                        icons[imagePrimary.id].push(imagePrimary);
                     }
                 }
             }
@@ -712,12 +724,9 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness?: number | null) {
-        const withStateUpdates = Object.keys(states).length !== 0;
-        if (withStateUpdates && !this.stateDependentLayers.length) return;
-        const layers = withStateUpdates ? this.stateDependentLayers : this.layers;
-        this.text.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
-        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
+        this.text.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
+        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
     }
 
     updateZOffset() {

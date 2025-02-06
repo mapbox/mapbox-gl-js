@@ -15,6 +15,10 @@ out highp vec4 v_pos_light_view_1;
 out highp float v_depth;
 #endif
 
+#ifdef INDICATOR_CUTOUT
+out highp float v_z_offset;
+#endif
+
 uniform mat4 u_matrix;
 
 #pragma mapbox: define highp vec4 color
@@ -47,5 +51,8 @@ void main() {
 
 #ifdef FOG
     v_fog_pos = fog_position(a_pos);
+#endif
+#ifdef INDICATOR_CUTOUT
+    v_z_offset = z_offset;
 #endif
 }

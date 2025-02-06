@@ -1,10 +1,12 @@
 import {default as ValidationError, ValidationWarning} from '../error/validation_error';
-import {unbundle} from '../util/unbundle_jsonlint';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import validateObject from './validate_object';
 import validateEnum from './validate_enum';
 import validateExpression from './validate_expression';
 import validateString from './validate_string';
 import getType from '../util/get_type';
+import {createExpression} from '../expression/index';
+import * as isConstant from '../expression/is_constant';
 
 import type {StyleReference} from '../reference/latest';
 import type {ValidationOptions} from './validate';
@@ -125,10 +127,28 @@ function validatePromoteId({
 }: Partial<ValidationOptions>) {
     if (getType(value) === 'string') {
         return validateString({key, value});
+    } else if (Array.isArray(value)) {
+        const errors = [];
+        const unbundledValue = deepUnbundle(value);
+        const expression = createExpression(unbundledValue);
+        if (expression.result === 'error') {
+            expression.value.forEach((err) => {
+                errors.push(new ValidationError(`${key}${err.key}`, null, `${err.message}`));
+            });
+        }
+
+        // @ts-expect-error - TS2339: Property 'expression' does not exist on type 'ParsingError[] | StyleExpression'.
+        const parsed = expression.value.expression;
+        const onlyFeatureDependent = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'heatmap-density', 'line-progress', 'raster-value', 'sky-radial-progress', 'accumulated', 'is-supported-script', 'pitch', 'distance-from-center', 'measure-light', 'raster-particle-speed']);
+        if (!onlyFeatureDependent) {
+            errors.push(new ValidationError(`${key}`, null, 'promoteId expression should be only feature dependent'));
+        }
+
+        return errors;
     } else {
         const errors = [];
         for (const prop in value) {
-            errors.push(...validateString({key: `${key}.${prop}`, value: value[prop]}));
+            errors.push(...validatePromoteId({key: `${key}.${prop}`, value: value[prop]}));
         }
         return errors;
     }

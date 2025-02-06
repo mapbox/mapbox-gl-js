@@ -16,6 +16,8 @@ import {OverscaledTileID} from './tile_id';
 import {PerformanceUtils} from '../util/performance';
 import tileTransform from '../geo/projection/tile_transform';
 import {makeFQID} from "../util/fqid";
+import {type SpritePositions} from '../util/image';
+import {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 
 import type {CanonicalTileID} from './tile_id';
 import type Projection from '../geo/projection/projection';
@@ -25,7 +27,6 @@ import type StyleLayer from '../style/style_layer';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {StyleImage} from '../style/style_image';
 import type {StyleGlyph} from '../style/style_glyph';
-import type {SpritePositions} from '../util/image';
 import type {
     WorkerTileParameters,
     WorkerTileCallback,
@@ -67,6 +68,7 @@ class WorkerTile {
     abort: () => void | null | undefined;
     reloadCallback?: WorkerTileCallback | null | undefined;
     vectorTile: VectorTile;
+    rasterizeTask: {cancel: () => void} | null | undefined;
 
     constructor(params: WorkerTileParameters) {
         this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
@@ -117,7 +119,8 @@ class WorkerTile {
             glyphDependencies: {},
             lineAtlas,
             availableImages,
-            brightness: this.brightness
+            brightness: this.brightness,
+            scaleFactor: this.scaleFactor
         };
 
         const layerFamilies = layerIndex.familiesBySource[this.source];
@@ -283,6 +286,7 @@ class WorkerTile {
                                 this.tileZoom,
                                 this.projection,
                                 this.scaleFactor,
+                                this.pixelRatio,
                                 this.brightness);
                     } else if (bucket.hasPattern &&
                             (bucket instanceof LineBucket ||
@@ -324,11 +328,26 @@ class WorkerTile {
             const icons = Object.keys(options.iconDependencies);
             if (icons.length) {
                 actor.send('getImages', {icons, source: this.source, scope: this.scope, tileID: this.tileID, type: 'icons'}, (err, result) => {
-                    if (!error) {
-                        error = err;
-                        iconMap = result;
+                    if (error) {
+                        return;
+                    }
+
+                    error = err;
+                    const newIconMap = {};
+
+                    const needRasterization = Object.values(result).some((image: StyleImage) => image.usvg);
+
+                    if (needRasterization) {
+                        this.rasterize(actor, newIconMap, result, options.iconDependencies, () => {
+                            iconMap = newIconMap;
+                            maybePrepare();
+                        });
+                    } else {
+                        this.fillImageMap(newIconMap, options.iconDependencies, result);
+                        iconMap = newIconMap;
                         maybePrepare();
                     }
+
                 }, undefined, false, taskMetadata);
             } else {
                 iconMap = {};
@@ -339,8 +358,21 @@ class WorkerTile {
                 actor.send('getImages', {icons: patterns, source: this.source, scope: this.scope, tileID: this.tileID, type: 'patterns'}, (err, result) => {
                     if (!error) {
                         error = err;
-                        patternMap = result;
-                        maybePrepare();
+                        const newPatternMap = {};
+
+                        const needRasterization = Object.values(result).some((image: StyleImage) => image.usvg);
+
+                        if (needRasterization) {
+                            this.rasterize(actor, newPatternMap, result, options.patternDependencies, () => {
+                                patternMap = newPatternMap;
+                                maybePrepare();
+                            });
+                        } else {
+                            this.fillImageMap(newPatternMap, options.patternDependencies, result);
+                            patternMap = newPatternMap;
+                            maybePrepare();
+                        }
+
                     }
                 }, undefined, false, taskMetadata);
             } else {
@@ -352,6 +384,68 @@ class WorkerTile {
 
         maybePrepare();
 
+    }
+
+    fillImageMap(imageMap: {
+        [_: string]: StyleImage;
+    }, imageDependencies: {
+        [_: string]: Array<ImageIdWithOptions>;
+    }, images: {
+        [_: string]: StyleImage;
+    }) {
+        for (const imageName in images) {
+            const requiredImages = imageDependencies[imageName] || [];
+            for (const image of requiredImages) {
+                if (!images[image.id].usvg) {
+                    imageMap[image.serialize()] = images[image.id];
+                }
+            }
+        }
+    }
+
+    getImageTaskQueue(imageMap: {[_: string]: StyleImage}, images: {[_: string]: StyleImage}, imageDependencies: {[_: string]: Array<ImageIdWithOptions>}): {[_: string]: ImageIdWithOptions} {
+        const imageRasterizationTasks: {[_: string]: ImageIdWithOptions} = {};
+        for (const imageName in images) {
+            const requiredImagesWithOptions = imageDependencies[imageName] || [];
+            for (const imageIdWithOptions of requiredImagesWithOptions) {
+                const imageSerialized = imageIdWithOptions.serialize();
+                if (!images[imageIdWithOptions.id].usvg) {
+                    imageMap[imageSerialized] = images[imageIdWithOptions.id];
+                } else if (!imageRasterizationTasks[imageSerialized]) {
+                    imageRasterizationTasks[imageSerialized] = imageIdWithOptions;
+                }
+            }
+        }
+
+        return imageRasterizationTasks;
+    }
+
+    rasterize(actor: Actor, imageMap: {
+        [_: string]: StyleImage;
+    }, images: {
+        [_: string]: StyleImage;
+    }, imageDependencies: {
+        [_: string]: Array<ImageIdWithOptions>;
+    }, callback: () => void) {
+        const imageTasks = this.getImageTaskQueue(imageMap, images, imageDependencies);
+
+        this.rasterizeTask = actor.send('rasterizeImages', {scope: this.scope, imageTasks}, (err, result) => {
+            if (!err) {
+                for (const imageIdWithOptionsSerialized in result) {
+                    const {id} = ImageIdWithOptions.deserializeFromString(imageIdWithOptionsSerialized);
+                    const image = result[imageIdWithOptionsSerialized];
+                    imageMap[imageIdWithOptionsSerialized] = Object.assign({}, images[id], {data: image});
+                }
+            }
+
+            callback();
+        });
+    }
+
+    cancelRasterize() {
+        if (this.rasterizeTask) {
+            this.rasterizeTask.cancel();
+        }
     }
 }
 

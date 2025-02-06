@@ -126,6 +126,16 @@ export const operations: {
     setFog: 'setFog',
 
     /*
+     *  { command: 'setSnow', args: [snowProperties] }
+     */
+    setSnow: 'setSnow',
+
+    /*
+     *  { command: 'setRain', args: [rainProperties] }
+     */
+    setRain: 'setRain',
+
+    /*
      *  { command: 'setCamera', args: [cameraProperties] }
      */
     setCamera: 'setCamera',
@@ -494,6 +504,12 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         }
         if (!isEqual(before.fog, after.fog)) {
             commands.push({command: operations.setFog, args: [after.fog]});
+        }
+        if (!isEqual(before.snow, after.snow)) {
+            commands.push({command: operations.setSnow, args: [after.snow]});
+        }
+        if (!isEqual(before.rain, after.rain)) {
+            commands.push({command: operations.setRain, args: [after.rain]});
         }
         if (!isEqual(before.projection, after.projection)) {
             commands.push({command: operations.setProjection, args: [after.projection]});

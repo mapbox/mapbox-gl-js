@@ -91,11 +91,11 @@ export type AreaLight = {
     points: vec4;
 };
 
-export type Node = {
+export type ModelNode = {
     id: string;
     matrix: mat4;
     meshes: Array<Mesh>;
-    children: Array<Node>;
+    children: Array<ModelNode>;
     footprint: Footprint | null | undefined;
     lights: Array<AreaLight>;
     lightMeshIndex: number;
@@ -244,12 +244,12 @@ export default class Model {
     id: string;
     position: LngLat;
     orientation: [number, number, number];
-    nodes: Array<Node>;
+    nodes: Array<ModelNode>;
     matrix: mat4;
     uploaded: boolean;
     aabb: Aabb;
 
-    constructor(id: string, position: [number, number] | null | undefined, orientation: [number, number, number] | null | undefined, nodes: Array<Node>) {
+    constructor(id: string, position: [number, number] | null | undefined, orientation: [number, number, number] | null | undefined, nodes: Array<ModelNode>) {
         this.id = id;
         this.position = position != null ? new LngLat(position[0], position[1]) : new LngLat(0, 0);
 
@@ -260,7 +260,7 @@ export default class Model {
         this.matrix = [] as unknown as mat4;
     }
 
-    _applyTransformations(node: Node, parentMatrix: mat4) {
+    _applyTransformations(node: ModelNode, parentMatrix: mat4) {
         // update local matrix
         mat4.multiply(node.matrix, parentMatrix, node.matrix);
         // apply local transform to bounding volume
@@ -359,7 +359,7 @@ export function uploadMesh(mesh: Mesh, context: Context, useSingleChannelOcclusi
     }
 }
 
-export function uploadNode(node: Node, context: Context, useSingleChannelOcclusionTexture?: boolean) {
+export function uploadNode(node: ModelNode, context: Context, useSingleChannelOcclusionTexture?: boolean) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             uploadMesh(mesh, context, useSingleChannelOcclusionTexture);
@@ -372,7 +372,7 @@ export function uploadNode(node: Node, context: Context, useSingleChannelOcclusi
     }
 }
 
-export function destroyNodeArrays(node: Node) {
+export function destroyNodeArrays(node: ModelNode) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             mesh.indexArray.destroy();
@@ -410,7 +410,7 @@ export function destroyTextures(material: Material) {
     }
 }
 
-export function destroyBuffers(node: Node) {
+export function destroyBuffers(node: ModelNode) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (!mesh.vertexBuffer) continue;

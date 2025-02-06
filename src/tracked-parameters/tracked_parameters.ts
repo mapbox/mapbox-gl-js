@@ -541,7 +541,7 @@ export class TrackedParameters implements ITrackedParameters {
         })()}`;
 
         // Add button to TweakPane UI
-        currentScope.addBinding(containerObject, name, {...description, label: modifiedLabel});
+        currentScope.addBinding(containerObject, name, Object.assign({}, description, {label: modifiedLabel}));
     }
 
     refreshUI() {
