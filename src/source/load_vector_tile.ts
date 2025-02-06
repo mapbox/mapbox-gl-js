@@ -48,6 +48,8 @@ const filterQueue = (key: string) => {
     requestQueue.delete(key);
 };
 
+const queueSizeLimit = 50;
+
 export class DedupedRequest {
     entries: {
         [key: string]: any;
@@ -115,7 +117,7 @@ export class DedupedRequest {
             advanced = true;
             numRequests--;
             assert(numRequests >= 0);
-            while (requestQueue.size && numRequests < 50) {
+            while (requestQueue.size && numRequests < queueSizeLimit) {
                 const request = requestQueue.values().next().value;
                 const {key, metadata, requestFunc, callback, cancelled} = request;
                 filterQueue(key);
@@ -147,7 +149,7 @@ export class DedupedRequest {
         const inQueue = requestQueue.has(key);
         if ((!entry.cancel && !inQueue) || fromQueue) {
             // Lack of attached cancel handler means this is the first request for this resource
-            if (numRequests >= 50) {
+            if (numRequests >= queueSizeLimit) {
                 const queued = {
                     key,
                     metadata,
