@@ -143,7 +143,7 @@ async function runTest(t) {
             fileInfo = [
                 {
                     path: `${writeFileBasePath}/expected.json`,
-                    data: jsonDiff.replace('+', '').trim()
+                    data: jsonDiff.replace('+ ', '').trim()
                 }
             ];
         } else {
