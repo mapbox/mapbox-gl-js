@@ -40,7 +40,10 @@ void main() {
     out_color *= opacity;
 
 #ifdef INDICATOR_CUTOUT
-    out_color = applyCutout(out_color, v_z_offset);
+    // apply cutout if the fragment is not an underground polygon (no need)
+    if (v_z_offset >= 0.0) {
+        out_color = applyCutout(out_color, v_z_offset);
+    }
 #endif
 
     glFragColor = out_color;
