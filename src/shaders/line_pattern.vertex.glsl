@@ -141,8 +141,7 @@ void main() {
     vec2 projected_extrude_xy = projected_extrude.xy;
 #ifdef ELEVATED_ROADS
     v_road_z_offset = a_z_offset;
-    // Apply slight vertical offset (1cm) for elevated vertices above the ground plane
-    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset + 0.01 * step(0.01, a_z_offset), 1.0) + projected_extrude;
+    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset, 1.0) + projected_extrude;
 #else
 #ifdef ELEVATED
     vec2 offsetTile = offset2 * u_pixels_to_tile_units;
