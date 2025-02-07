@@ -33,6 +33,7 @@ import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
+import type {ElevationFeature} from '../elevation_feature';
 
 class FillBucket implements Bucket {
     index: number;
@@ -129,7 +130,7 @@ class FillBucket implements Bucket {
                 // so are stored during populate until later updated with positions by tile worker in addFeatures
                 this.patternFeatures.push(patternFeature);
             } else {
-                this.addFeature(bucketFeature, geometry, index, canonical, {}, options.availableImages, options.brightness);
+                this.addFeature(bucketFeature, geometry, index, canonical, {}, options.availableImages, options.brightness, options.elevationFeatures);
             }
 
             const feature = features[index].feature;
@@ -143,7 +144,7 @@ class FillBucket implements Bucket {
 
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, _: TileTransform, brightness?: number | null) {
         for (const feature of this.patternFeatures) {
-            this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions, availableImages, brightness);
+            this.addFeature(feature, feature.geometry, feature.index, canonical, imagePositions, availableImages, brightness, options.elevationFeatures);
         }
     }
 
@@ -174,7 +175,7 @@ class FillBucket implements Bucket {
         this.segments2.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string> = [], brightness?: number | null) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string> = [], brightness?: number | null, elevationFeatures?: ElevationFeature[]) {
         for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
             let numVertices = 0;
             for (const ring of polygon) {

@@ -1,9 +1,35 @@
-import {vec3, vec4} from 'gl-matrix';
+import {vec2, vec3, vec4} from 'gl-matrix';
 import assert from 'assert';
 import {register} from './web_worker_transfer';
 
 import type {UnwrappedTileID} from '../source/tile_id';
 import type {mat4} from 'gl-matrix';
+
+class Ray2D {
+    pos: vec2;
+    dir: vec2;
+
+    constructor(pos_: vec2, dir_: vec2) {
+        this.pos = pos_;
+        this.dir = dir_;
+    }
+
+    intersectsPlane(pt: vec2, normal: vec2, out: vec2): boolean {
+        const D = vec2.dot(normal, this.dir);
+
+        // ray is parallel to plane, so it misses
+        if (Math.abs(D) < 1e-6) { return false; }
+
+        const t = (
+            (pt[0] - this.pos[0]) * normal[0] +
+            (pt[1] - this.pos[1]) * normal[1]) / D;
+
+        out[0] = this.pos[0] + this.dir[0] * t;
+        out[1] = this.pos[1] + this.dir[1] * t;
+
+        return true;
+    }
+}
 
 class Ray {
     pos: vec3;
@@ -563,5 +589,6 @@ export {
     Aabb,
     Frustum,
     FrustumCorners,
-    Ray
+    Ray,
+    Ray2D
 };

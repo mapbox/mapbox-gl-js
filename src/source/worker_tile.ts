@@ -18,10 +18,12 @@ import tileTransform from '../geo/projection/tile_transform';
 import {makeFQID} from "../util/fqid";
 import {type SpritePositions} from '../util/image';
 import {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
+import {ElevationFeatures} from '../data/elevation_feature';
+import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../data/elevation_constants';
 
 import type {CanonicalTileID} from './tile_id';
 import type Projection from '../geo/projection/projection';
-import type {Bucket} from '../data/bucket';
+import type {Bucket, PopulateParameters} from '../data/bucket';
 import type Actor from '../util/actor';
 import type StyleLayer from '../style/style_layer';
 import type StyleLayerIndex from '../style/style_layer_index';
@@ -112,7 +114,7 @@ class WorkerTile {
         // we initially reserve space for a 256x256 atlas, but trim it after processing all line features
         const lineAtlas = new LineAtlas(256, 256);
 
-        const options = {
+        const options: PopulateParameters = {
             featureIndex,
             iconDependencies: {},
             patternDependencies: {},
@@ -120,7 +122,8 @@ class WorkerTile {
             lineAtlas,
             availableImages,
             brightness: this.brightness,
-            scaleFactor: this.scaleFactor
+            scaleFactor: this.scaleFactor,
+            elevationFeatures: undefined
         };
 
         const layerFamilies = layerIndex.familiesBySource[this.source];
@@ -162,6 +165,7 @@ class WorkerTile {
 
             const sourceLayerIndex = sourceLayerCoder.encode(sourceLayerId);
             const features = [];
+            let elevationDependency = false;
             for (let index = 0, currentFeatureIndex = 0; index < sourceLayer.length; index++) {
                 const feature = sourceLayer.feature(index);
                 const id = featureIndex.getId(feature, sourceLayerId);
@@ -184,8 +188,16 @@ class WorkerTile {
                     }
                 }
 
+                if (!elevationDependency && feature.properties && feature.properties.hasOwnProperty(PROPERTY_ELEVATION_ID)) {
+                    elevationDependency = true;
+                }
+
                 features.push({feature, id, index: currentFeatureIndex, sourceLayerIndex});
                 currentFeatureIndex++;
+            }
+
+            if (elevationDependency && data.layers.hasOwnProperty(HD_ELEVATION_SOURCE_LAYER)) {
+                options.elevationFeatures = ElevationFeatures.parseFrom(data.layers[HD_ELEVATION_SOURCE_LAYER],  this.canonical);
             }
 
             for (const family of layerFamilies[sourceLayerId]) {
