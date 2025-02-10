@@ -26,10 +26,14 @@ export function farthestPixelDistanceOnPlane(tr: Transform, pixelsPerMeter: numb
     // Due to precision of sources with low maxZoom, content is prone to flickering on zoom above 18.
     // Use larger furthest distance also on pitch before the horizon, especially on higher zoom to limit
     // the performance and depth range resolution impact.
-    // In case of orthographic projection we don't want to extend the far clip plane as the
-    // depth is linear and we would be effectively decreasing precision.
-    if (!tr.isOrthographic && (!tr.elevation || tr.elevation.exaggeration() === 0)) {
-        furthestDistance *= (1.0 + Math.max(tr.zoom - 17, 0));
+    if (!tr.elevation || tr.elevation.exaggeration() === 0) {
+        let factor = Math.max(tr.zoom - 17, 0);
+        // In case of orthographic projection we don't want to extend the far clip plane that much as the
+        // depth is linear and we would be effectively decreasing precision.
+        if (tr.isOrthographic) {
+            factor /= 10.0;
+        }
+        furthestDistance *= (1.0 + factor);
     }
     return Math.min(furthestDistance * 1.01, horizonDistance);
 }
