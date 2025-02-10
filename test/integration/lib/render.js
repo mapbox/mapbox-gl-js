@@ -345,7 +345,10 @@ async function runTest(t) {
 
         const {actualImageData, w, h} = await getActualImage(style, options);
 
-        if (process.env.UPDATE) {
+        const { minDiff, minDiffImage, minExpectedCanvas, minImageSrc } = calculateDiff(actualImageData, expectedImages, { w, h }, options['diff-calculation-threshold']);
+        const pass = minDiff <= options.allowed;
+
+        if (!pass && !t._todo && process.env.UPDATE) {
             browserWriteFile.postMessage([{
                 path: `${writeFileBasePath}/expected.png`,
                 data: getActualImageDataURL(actualImageData, map, {w, h}, options).split(',')[1]
@@ -353,8 +356,7 @@ async function runTest(t) {
 
             return;
         }
-        const {minDiff, minDiffImage, minExpectedCanvas, minImageSrc} = calculateDiff(actualImageData, expectedImages, {w, h}, options['diff-calculation-threshold']);
-        const pass = minDiff <= options.allowed;
+
         const testMetaData = {
             name: currentTestName,
             minDiff: Math.round(100000 * minDiff) / 100000,
