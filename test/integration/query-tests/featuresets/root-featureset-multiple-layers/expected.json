@@ -11,7 +11,8 @@
       "b-constant-value": "constant-b"
     },
     "target": {"featuresetId": "featureset"},
-    "namespace": "b"
+    "namespace": "b",
+     "source": "geojson1"
   },
   {
     "type": "Feature",
@@ -25,6 +26,7 @@
       "a-constant-value": "constant-a"
     },
     "target": {"featuresetId": "featureset"},
-    "namespace": "a"
+    "namespace": "a",
+    "source": "geojson"
   }
 ]

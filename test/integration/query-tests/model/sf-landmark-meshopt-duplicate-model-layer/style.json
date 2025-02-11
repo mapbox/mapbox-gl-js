@@ -1,0 +1,136 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["wait"],
+        ["wait"],
+        ["wait"],
+        [
+          "setFeatureState",
+          {
+            "source": "file-system-tiles",
+            "id": "44106213"
+          },
+          {
+            "hover": true
+          }
+        ],
+        ["wait"],
+        ["wait"]
+      ],
+      "queryGeometry": [
+        32,
+        35
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    }
+  ],
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "file-system-tiles": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx/{x}-{y}-{z}.glb"
+      ]
+    }
+  },
+  "pitch": 49,
+  "zoom": 16.9,
+  "bearing": -150,
+  "center": [
+    -122.393631,
+    37.794477
+  ],
+  "layers": [
+    {
+      "minzoom": 0.0,
+      "maxzoom": 22.0,
+      "type": "model",
+      "source": "file-system-tiles",
+      "paint": {
+        "model-color-mix-intensity": 1,
+        "model-emissive-strength": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "door",
+          1.7,
+          "logo",
+          0.0,
+          "window",
+          0.456,
+          0.0
+        ],
+        "model-scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "model-color": "rgba(238, 78, 139, .75)",
+        "model-opacity": 0.5
+      },
+      "id": "landmarks"
+    },
+    {
+      "minzoom": 14.0,
+      "type": "model",
+      "source": "file-system-tiles",
+      "paint": {
+        "model-color-mix-intensity": 1,
+        "model-emissive-strength": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "door",
+          1.7,
+          "logo",
+          0.0,
+          "window",
+          0.456,
+          0.0
+        ],
+        "model-scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "model-color": "rgb(91, 255, 142)",
+        "model-opacity": 0.5
+      },
+      "id": "landmarks2"
+    }
+  ]
+}

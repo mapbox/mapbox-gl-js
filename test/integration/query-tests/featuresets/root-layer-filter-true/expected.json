@@ -9,6 +9,7 @@
       "key": "value"
     },
     "target": {"layerId": "circle"},
-    "state": {}
+    "state": {},
+    "source": "geojson"
   }
 ]

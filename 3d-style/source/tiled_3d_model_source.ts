@@ -4,6 +4,7 @@ import loadTileJSON from '../../src/source/load_tilejson';
 import TileBounds from '../../src/source/tile_bounds';
 import {extend} from '../../src/util/util';
 import {postTurnstileEvent} from '../../src/util/mapbox';
+import {makeFQID} from '../../src/util/fqid';
 
 // Import Tiled3dModelBucket as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
@@ -49,7 +50,6 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     map: Map;
 
     onRemove: undefined;
-    reload: undefined;
     abortTile: undefined;
     unloadTile: undefined;
     prepare: undefined;
@@ -80,6 +80,18 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     onAdd(map: Map) {
         this.map = map;
         this.load();
+    }
+
+    reload() {
+        this.cancelTileJSONRequest();
+        const fqid = makeFQID(this.id, this.scope);
+        this.load(() => this.map.style.clearSource(fqid));
+    }
+
+    cancelTileJSONRequest() {
+        if (!this._tileJSONRequest) return;
+        this._tileJSONRequest.cancel();
+        this._tileJSONRequest = null;
     }
 
     load(callback?: Callback<undefined>) {

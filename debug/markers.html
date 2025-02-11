@@ -56,7 +56,7 @@ const spinningMarkers = [];
         var lng = w + (e - w) * ((i + .5) / 4);
         var lat = s + (n - s) * ((j + .5) / 3);
 
-        var popup = new mapboxgl.Popup().setHTML(`Pitch Alignment: ${pitchAlignment}<br>Rotation Alignment: ${rotationAlignment}`);
+        var popup = new mapboxgl.Popup().setHTML(`Pitch Alignment: ${pitchAlignment}<br aria-hidden="true">Rotation Alignment: ${rotationAlignment}`);
 
         var r = Math.round(Math.random() * 255);
         var g = Math.round(Math.random() * 255);

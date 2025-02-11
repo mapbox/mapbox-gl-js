@@ -1,0 +1,131 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "queryGeometry": [
+        32,
+        32
+      ],
+      "queryOptions": {
+        "target": {
+          "featuresetId": "circle"
+        }
+      }
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            },
+            "properties": {
+              "key": "value"
+            },
+            "id": 10
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            },
+            "properties": {
+              "key": "value2"
+            },
+            "id": 20
+          }
+        ]
+      }
+    },
+    "geojson1": {
+      "type": "geojson",
+      "promoteId": [
+        "get",
+        "key"
+      ],
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            },
+            "properties": {
+              "key": "value"
+            },
+            "id": 1
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            },
+            "properties": {
+              "key": "value"
+            },
+            "id": 2
+          }
+        ]
+      }
+    }
+  },
+  "featuresets": {
+    "circle": {
+      "selectors": [
+        {
+          "layer": "a",
+          "properties": {
+            "origin_id": [
+              "id"
+            ]
+          }
+        },
+        {
+          "layer": "b",
+          "properties": {
+            "origin_id": [
+              "id"
+            ]
+          },
+          "_uniqueFeatureID": true
+        }
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "a",
+      "type": "circle",
+      "source": "geojson"
+    },
+    {
+      "id": "b",
+      "type": "circle",
+      "source": "geojson1"
+    }
+  ]
+}

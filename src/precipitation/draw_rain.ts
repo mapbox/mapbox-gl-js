@@ -12,7 +12,7 @@ import {mulberry32} from '../style-spec/util/random.js';
 import {rainLayout} from "./rain_attributes.js";
 import Texture from '../render/texture.js';
 import {PrecipitationRevealParams} from './precipitation_reveal_params.js';
-import {createTpBindings, defaultVignetteParams} from './vignette';
+import {createTpBindings} from './vignette';
 import {PrecipitationBase, boxWrap, generateUniformDistributedPointsInsideCube, lerpClamp} from './common';
 import {Debug} from '../util/debug';
 import {type VignetteParams} from './vignette';
@@ -56,23 +56,23 @@ export class Rain extends PrecipitationBase {
 
         this._params = {
             overrideStyleParameters: false,
-            intensity: 1.0,
+            intensity: 0.5,
             timeFactor: 1.0,
-            velocityConeAperture: 5.0,
-            velocity: 100.0,
-            boxSize: 1200,
+            velocityConeAperture: 0.0,
+            velocity: 300.0,
+            boxSize: 2500,
             dropletSizeX: 1.0,
             dropletSizeYScale: 10.0,
-            distortionStrength: 50.0,
+            distortionStrength: 70.0,
             screenThinning: {
-                intensity: 0.0,
-                start: 0.56,
-                range: 0.37,
-                fadePower: 0,
+                intensity: 0.57,
+                start: 0.46,
+                range: 1.17,
+                fadePower: 0.17,
                 affectedRatio: 1.0,
                 particleOffset: -0.2
             },
-            color: {r: 0.57, g: 0.57, b: 0.57, a: 0.19},
+            color: {r: 0.66, g: 0.68, b: 0.74, a: 0.7},
             direction: {x: -50, y: -35},
             shapeDirPower: 2.0,
             shapeNormalPower: 1.0
@@ -82,7 +82,14 @@ export class Rain extends PrecipitationBase {
 
         const scope = ["Precipitation", "Rain"];
         this._revealParams = new PrecipitationRevealParams(painter.tp, scope);
-        this._vignetteParams = defaultVignetteParams([0.4, 0.4, 0.4, 0.3]);
+
+        this._vignetteParams = {
+            strength: 1.0,
+            start: 0.7,
+            range: 1.0,
+            fadePower: 0.4,
+            color: {r: 0.27, g: 0.27, b: 0.27, a: 1}
+        };
 
         this.particlesCount = 16000;
 
@@ -269,7 +276,7 @@ export class Rain extends PrecipitationBase {
                 mode: distortionOnly ? 0 : 1
             });
 
-            const count = Math.round(revealFactor * params.intensity * this.particlesCount);
+            const count = Math.round(params.intensity * this.particlesCount);
             const particlesSegments = SegmentVector.simpleSegment(0, 0, count * 4, count * 2);
 
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,

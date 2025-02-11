@@ -118,11 +118,11 @@ export function postProcessIcon(icon: Icon): Icon {
         }
     }
 
-    if (metadata.stretch_x) {
+    if (metadata.stretch_x && metadata.stretch_x.length) {
         buildStretchedAreas(metadata, "x");
     }
 
-    if (metadata.stretch_y) {
+    if (metadata.stretch_y && metadata.stretch_y.length) {
         buildStretchedAreas(metadata, "y");
     }
 
@@ -166,8 +166,8 @@ export function readIconMetadata(pbf: Pbf, end?: number): IconMetadata {
 }
 
 function readIconMetadataField(tag: number, obj: IconMetadata, pbf: Pbf) {
-    if (tag === 1) pbf.readPackedVarint(obj.stretch_x);
-    else if (tag === 2) pbf.readPackedVarint(obj.stretch_y);
+    if (tag === 1) obj.stretch_x = pbf.readPackedVarint();
+    else if (tag === 2) obj.stretch_y = pbf.readPackedVarint();
     else if (tag === 3) obj.content_area = readContentArea(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 4) obj.variables.push(readVariable(pbf, pbf.readVarint() + pbf.pos));
 }

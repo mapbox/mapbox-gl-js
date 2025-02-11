@@ -115,7 +115,7 @@ class Context {
         this.pixelStoreUnpack = new PixelStoreUnpack(this);
         this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
         this.pixelStoreUnpackFlipY = new PixelStoreUnpackFlipY(this);
-        this.options = options ? {...options} : {};
+        this.options = options ? Object.assign({}, options) : {};
 
         if (!this.options.extTextureFilterAnisotropicForceOff) {
             this.extTextureFilterAnisotropic = (

@@ -6,11 +6,12 @@
     },
     "type": "Feature",
     "properties": {
-      "a-property-value": "value",
-      "a-constant-value": "constant-a"
+      "a-constant-value": "constant-a",
+      "a-property-value": "value"
     },
     "target": {"featuresetId": "circle"},
     "namespace": "a",
-    "state": {}
+    "state": {},
+    "source": "geojson"
   }
 ]

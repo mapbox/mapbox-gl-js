@@ -455,8 +455,7 @@ export default class Popup extends Evented<PopupEvents> {
             const button = this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', content);
             button.type = 'button';
             button.setAttribute('aria-label', 'Close popup');
-            button.setAttribute('aria-hidden', 'true');
-            button.innerHTML = '&#215;';
+            button.innerHTML = '<span aria-hidden="true">&#215;</span>';
             button.addEventListener('click', this._onClose);
         }
         this._update();

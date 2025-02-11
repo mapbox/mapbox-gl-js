@@ -25,6 +25,7 @@ import {tileToMeter} from '../../geo/mercator_coordinate';
 // Import LineAtlas as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../../render/line_atlas';
+import {number as interpolate} from '../../style-spec/util/interpolate';
 
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
@@ -202,8 +203,16 @@ class LineBucket implements Bucket {
         const lineSortKey = this.layers[0].layout.get('line-sort-key');
 
         this.tileToMeter = tileToMeter(canonical);
-        this.hasZOffset = !this.layers[0].isDraped();
+
+        const zOffset = this.layers[0].layout.get('line-z-offset');
+        const zOffsetZero = zOffset.isConstant() && !zOffset.constantOr(0);
         const elevationReference = this.layers[0].layout.get('line-elevation-reference');
+        const seaOrGroundReference = elevationReference === 'sea' || elevationReference === 'ground';
+        // The bucket has z-offset if elevationReference is 'sea' or 'ground'
+        // or when elevationReference is 'none' and z-offset property is non-zero.
+        // We need to explicitly compare elevationReference agains 'none', because the property
+        // can also have hd-road specific values which are unrelated to normal z-offset.
+        this.hasZOffset = seaOrGroundReference || (!zOffsetZero && elevationReference === 'none');
         if (this.hasZOffset && elevationReference === 'none') {
             warnOnce(`line-elevation-reference: ground is used for the layer ${this.layerIds[0]} because non-zero line-z-offset value was found.`);
         }
@@ -923,7 +932,8 @@ class LineBucket implements Bucket {
 
         // Constructs a second vertex buffer with higher precision line progress
         if (this.lineClips) {
-            this.layoutVertexArray2.emplaceBack(this.scaledDistance, this.lineClipsArray.length, this.lineClips.start, this.lineClips.end);
+            const lineProgress = interpolate(this.lineClips.start, this.lineClips.end, this.scaledDistance);
+            this.layoutVertexArray2.emplaceBack(this.scaledDistance, this.lineClipsArray.length, lineProgress);
         }
 
         const e = segment.vertexLength++;
@@ -939,6 +949,7 @@ class LineBucket implements Bucket {
         if (lineProgressFeatures != null) {
             this.zOffsetVertexArray.emplaceBack(
                 lineProgressFeatures.zOffset,
+                lineProgressFeatures.variableWidth,
                 lineProgressFeatures.variableWidth
             );
         }

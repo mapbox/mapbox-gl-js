@@ -220,6 +220,13 @@
       "experimental": true,
       "type": "featuresets",
       "doc": "Defines sets of features for querying, interaction, and state management on the map, referencing individual layers or subsets of layers within the map's style.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.9.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
       "example": {
         "poi": {
           "selectors": [
@@ -246,10 +253,12 @@
   "featureset": {
     "experimental": true,
     "metadata": {
+      "experimental": true,
       "type": "*",
       "doc": "Arbitrary properties useful to track with the stylesheet, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
     },
     "selectors": {
+      "experimental": true,
       "type": "array",
       "value": "selector",
       "doc": "A collection of categorized selectors."
@@ -258,24 +267,35 @@
   "selector": {
     "experimental": true,
     "layer": {
+      "experimental": true,
       "type": "string",
       "doc": "The ID of a layer that exists in the current style.",
       "required": true
     },
     "properties": {
+      "experimental": true,
       "type": "selectorProperty",
       "required": false,
       "doc": "Properties accessible to the end user through queried feautures. If properties are empty, no feature properties are exposed. If undefined, all original feature properties will be accessible."
     },
     "featureNamespace": {
+      "experimental": true,
       "type": "string",
       "required": false,
       "doc": "An optional field that represents the feature namespace defined by the selector within a featureset to which this feature belongs. If the underlying source is the same for multiple selectors within a featureset, the same featureNamespace should be used across those selectors."
+    },
+    "_uniqueFeatureID": {
+      "experimental": true,
+      "type": "boolean",
+      "private": true,
+      "required": false,
+      "doc": "Internal flag used for standard style, in case multiple features sharing the same featureId, only one feature will be returned for feature query."
     }
   },
   "selectorProperty": {
     "experimental": true,
     "*": {
+      "experimental": true,
       "type": "*",
       "doc": "The value of the property. It can be an expression that generates the returned value from the feature, or a constant value specifying the returned value."
     }
@@ -1584,8 +1604,7 @@
       "expression": {
         "interpolated": false
       },
-      "property-type": "data-constant",
-      "experimental": true
+      "property-type": "data-constant"
     },
     "clip-layer-scope": {
       "type": "array",
@@ -1602,8 +1621,7 @@
       "expression": {
         "interpolated": false
       },
-      "property-type": "data-constant",
-      "experimental": true
+      "property-type": "data-constant"
     }
   },
   "layout_fill": {
@@ -4256,7 +4274,7 @@
         }
       },
       "image": {
-        "doc": "Returns a [`ResolvedImage`](/mapbox-gl-js/style-spec/types/#resolvedimage) for use in [`icon-image`](/mapbox-gl-js/style-spec/layers/#layout-symbol-icon-image), `*-pattern` entries, and as a section in the [`'format'`](#types-format) expression. A [`'coalesce'`](#coalesce) expression containing `image` expressions will evaluate to the first listed image that is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `'image'` argument. To implement crossfading between two images within a symbol layer using the [`icon-image-cross-fade`](/mapbox-gl-js/style-spec/layers/#paint-symbol-icon-image-cross-fade) attribute, include a second image as the second argument in the `'image'` expression.",
+        "doc": "Returns a [`ResolvedImage`](/style-spec/reference/types/#resolvedimage) for use in [`icon-image`](/style-spec/reference/layers/#layout-symbol-icon-image), `*-pattern` entries, and as a section in the [`'format'`](#types-format) expression.\n\nA [`'coalesce'`](#coalesce) expression containing `image` expressions will evaluate to the first listed image that is currently in the style. This validation process is synchronous and requires the image to have been added to the style before requesting it in the `'image'` argument.\n\nEvery image name can be followed by an optional [`ImageOptions`](/style-spec/reference/types/#imageoptions) object, which will be used for vector images only.\n\nTo implement crossfading between two images within a symbol layer using the [`icon-image-cross-fade`](/style-spec/reference/layers/#paint-symbol-icon-image-cross-fade) attribute, include a second image as the second argument in the `'image'` expression.",
         "group": "Types",
         "sdk-support": {
           "basic functionality": {
@@ -5253,7 +5271,15 @@
     "density": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        0.85
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5270,7 +5296,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5294,7 +5321,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5316,14 +5344,15 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "opacity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.9,
+      "default": 1.0,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5340,14 +5369,23 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "vignette": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.3,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        0.3
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5364,7 +5402,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5386,14 +5425,15 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "center-thinning": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.4,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5410,7 +5450,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5418,7 +5459,7 @@
       "type": "array",
       "default": [
         0.0,
-        90.0
+        50.0
       ],
       "minimum": 0,
       "maximum": 360,
@@ -5443,14 +5484,15 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "flake-size": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.71,
       "minimum": 0,
       "maximum": 5,
       "experimental": true,
@@ -5467,7 +5509,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     }
@@ -5476,7 +5519,15 @@
     "density": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        0.5
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5493,7 +5544,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5517,14 +5569,23 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "color": {
       "type": "color",
       "property-type": "data-constant",
-      "default": "#919191",
+      "default":  [
+        "interpolate",
+        ["linear"],
+        [ "measure-light", "brightness" ],
+        0,
+        "#03113d",
+        0.3,
+        "#a8adbc"
+      ],
       "experimental": true,
       "expression": {
         "interpolated": true,
@@ -5539,14 +5600,23 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "opacity": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.19,
+      "default": [
+        "interpolate",
+        ["linear"],
+        [ "measure-light", "brightness" ],
+        0,
+        0.88,
+        1,
+        0.7
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5563,14 +5633,23 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "vignette": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.3,
+      "default": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        11,
+        0.0,
+        13,
+        1.0
+      ],
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5587,14 +5666,23 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "vignette-color": {
       "type": "color",
       "property-type": "data-constant",
-      "default": "#ffffff",
+      "default": [
+        "interpolate",
+        ["linear"],
+        [ "measure-light", "brightness" ],
+        0,
+        "#001736",
+        0.3,
+        "#464646"
+      ],
       "experimental": true,
       "expression": {
         "interpolated": true,
@@ -5609,14 +5697,15 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "center-thinning": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 1,
+      "default": 0.57,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5633,7 +5722,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5666,18 +5756,19 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "droplet-size": {
       "type": "array",
       "default": [
-        1.0,
-        10.0
+        2.6,
+        18.2
       ],
       "minimum": 0,
-      "maximum": 20,
+      "maximum": 50,
       "length": 2,
       "value": "number",
       "property-type": "data-constant",
@@ -5699,14 +5790,15 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
     "distortion-strength": {
       "type": "number",
       "property-type": "data-constant",
-      "default": 0.5,
+      "default": 0.7,
       "minimum": 0,
       "maximum": 1,
       "experimental": true,
@@ -5723,7 +5815,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     }
@@ -8988,9 +9081,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "3.0.0",
-          "android": "11.0.0",
-          "ios": "11.0.0"
+          "js": "3.1.0",
+          "android": "11.1.0",
+          "ios": "11.1.0"
         }
       },
       "expression": {
@@ -10092,8 +10185,8 @@
   },
   "promoteId": {
     "*": {
-      "type": "string",
-      "doc": "A name of a feature property to use as ID for feature state."
+      "type": "*",
+      "doc": "A feature property name to use as the ID, or an expression to evaluate as the ID for feature state."
     }
   }
 }

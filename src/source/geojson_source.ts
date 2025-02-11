@@ -3,6 +3,7 @@ import {extend} from '../util/util';
 import EXTENT from '../style-spec/data/extent';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
+import {makeFQID} from '../util/fqid';
 
 import type {ISource, SourceEvents} from './source';
 import type {Map as MapboxMap} from '../ui/map';
@@ -94,7 +95,6 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     _pendingLoad: Cancelable | null | undefined;
     _partialReload: boolean;
 
-    reload: undefined;
     hasTile: undefined;
     prepare: undefined;
     afterUpdate: undefined;
@@ -427,6 +427,12 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
 
     loaded(): boolean {
         return this._loaded;
+    }
+
+    reload() {
+        const fqid = makeFQID(this.id, this.scope);
+        this.map.style.clearSource(fqid);
+        this._updateWorkerData();
     }
 
     loadTile(tile: Tile, callback: Callback<undefined>) {

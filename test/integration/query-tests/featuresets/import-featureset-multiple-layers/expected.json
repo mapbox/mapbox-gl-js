@@ -7,20 +7,6 @@
       "coordinates": [0, 0]
     },
     "properties": {
-      "b-property-value": "value",
-      "b-constant-value": "constant-b"
-    },
-    "target": {"featuresetId": "featureset", "importId": "basemap"},
-    "namespace": "b"
-  },
-  {
-    "type": "Feature",
-    "state": {},
-    "geometry": {
-      "type": "Point",
-      "coordinates": [0, 0]
-    },
-    "properties": {
       "a-property-value": "value",
       "a-constant-value": "constant-a"
     },

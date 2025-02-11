@@ -26,14 +26,6 @@
                   "a-property-value": ["get", "key"],
                   "a-constant-value": "constant-a"
                 }
-              },
-              {
-                "layer": "b",
-                "featureNamespace": "b",
-                "properties": {
-                  "b-property-value": ["get", "key"],
-                  "b-constant-value": "constant-b"
-                }
               }
             ]
           }
@@ -56,11 +48,6 @@
         "layers": [
           {
             "id": "a",
-            "type": "circle",
-            "source": "geojson"
-          },
-          {
-            "id": "b",
             "type": "circle",
             "source": "geojson"
           }

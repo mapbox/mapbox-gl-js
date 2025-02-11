@@ -7,7 +7,7 @@ import DictionaryCoder from '../util/dictionary_coder';
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import Feature from '../util/vectortile_to_geojson';
-import {arraysIntersect, mapObject, extend} from '../util/util';
+import {arraysIntersect, mapObject, extend, warnOnce} from '../util/util';
 import {register} from '../util/web_worker_transfer';
 import {polygonIntersectsBox} from '../util/intersection_tests';
 import {PossiblyEvaluated} from '../style/properties';
@@ -15,6 +15,8 @@ import {FeatureIndexArray} from './array_types';
 import {DEMSampler} from '../terrain/elevation';
 import Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket';
 import {loadMatchingModelFeature} from '../../3d-style/style/style_layer/model_style_layer';
+import {createExpression} from '../style-spec/expression/index';
+import EvaluationContext from '../style-spec/expression/evaluation_context';
 
 import type {OverscaledTileID} from '../source/tile_id';
 import type Point from '@mapbox/point-geometry';
@@ -27,7 +29,7 @@ import type {FeatureIndex as FeatureIndexStruct} from './array_types';
 import type {TileTransform} from '../geo/projection/tile_transform';
 import type {VectorTileLayer, VectorTileFeature} from '@mapbox/vector-tile';
 import type {GridIndex} from '../types/grid-index';
-import type {FeatureState} from '../style-spec/expression/index';
+import type {FeatureState, StyleExpression} from '../style-spec/expression/index';
 import type {FeatureVariant} from '../util/vectortile_to_geojson';
 
 type QueryParameters = {
@@ -55,6 +57,7 @@ class FeatureIndex {
     grid: GridIndex;
     featureIndexArray: FeatureIndexArray;
     promoteId?: PromoteIdSpecification;
+    promoteIdExpression?: StyleExpression;
 
     rawTileData: ArrayBuffer;
     bucketLayerIDs: Array<Array<string>>;
@@ -238,11 +241,13 @@ class FeatureIndex {
             geojsonFeature.layer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
             geojsonFeature.layer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
 
-            // Iterave over all targets to check if the feature should be included and add feature variants if necessary
+            // Iterate over all targets to check if the feature should be included and add feature variants if necessary
             let shouldInclude = false;
             for (const target of targets) {
+                this.updateFeatureProperties(geojsonFeature, target);
                 const {filter} = target;
                 if (filter) {
+                    feature.properties = geojsonFeature.properties;
                     if (filter.needGeometry) {
                         const evaluationFeature = toEvaluationFeature(feature, true);
                         if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
@@ -319,11 +324,13 @@ class FeatureIndex {
 
         geojsonFeature.layer = extend({}, serializedLayer);
 
-        // Iterave over all targets to check if the feature should be included and add feature variants if necessary
+        // Iterate over all targets to check if the feature should be included and add feature variants if necessary
         let shouldInclude = false;
         for (const target of targets) {
+            this.updateFeatureProperties(geojsonFeature, target);
             const {filter} = target;
             if (filter) {
+                feature.properties = geojsonFeature.properties;
                 if (filter.needGeometry) {
                     if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature, this.tileID.canonical)) {
                         continue;
@@ -347,19 +354,7 @@ class FeatureIndex {
         }
     }
 
-    /**
-     * Create a feature variant for a query target and add it to the original feature.
-     *
-     * @param {Feature} feature The original feature.
-     * @param {QrfTarget} target The target to derive the feature for.
-     * @returns {Feature} The derived feature.
-     */
-    addFeatureVariant(feature: Feature, target: QrfTarget, availableImages?: Array<string>) {
-        const variant: FeatureVariant = {
-            target: target.target,
-            namespace: target.namespace,
-        };
-
+    updateFeatureProperties(feature: Feature, target: QrfTarget, availableImages?: Array<string>) {
         if (target.properties) {
             const transformedProperties = {};
             for (const name in target.properties) {
@@ -371,11 +366,28 @@ class FeatureIndex {
                     feature.tile,
                     availableImages
                 );
-
                 if (value != null) transformedProperties[name] = value;
             }
+            feature.properties = transformedProperties;
+        }
+    }
 
-            variant.properties = transformedProperties;
+    /**
+     * Create a feature variant for a query target and add it to the original feature.
+     *
+     * @param {Feature} feature The original feature.
+     * @param {QrfTarget} target The target to derive the feature for.
+     * @returns {Feature} The derived feature.
+     */
+    addFeatureVariant(feature: Feature, target: QrfTarget, availableImages?: Array<string>) {
+        const variant: FeatureVariant = {
+            target: target.target,
+            namespace: target.namespace,
+            uniqueFeatureID: target.uniqueFeatureID,
+        };
+
+        if (target.properties) {
+            variant.properties = feature.properties;
         }
 
         feature.variants = feature.variants || {};
@@ -442,9 +454,29 @@ class FeatureIndex {
     getId(feature: VectorTileFeature, sourceLayerId: string): string | number {
         let id: string | number = feature.id;
         if (this.promoteId) {
-            const propName = typeof this.promoteId === 'string' ? this.promoteId : this.promoteId[sourceLayerId];
-            if (propName != null)
-                id = feature.properties[propName] as string | number;
+            const propName = !Array.isArray(this.promoteId) && typeof this.promoteId === 'object' ? this.promoteId[sourceLayerId] : this.promoteId;
+            if (propName != null) {
+                if (Array.isArray(propName)) {
+                    if (!this.promoteIdExpression) {
+                        const expression = createExpression(propName);
+                        if (expression.result === 'success') {
+                            this.promoteIdExpression = expression.value;
+                        } else {
+                            const error = expression.value.map(err => `${err.key}: ${err.message}`).join(', ');
+                            warnOnce(`Failed to create expression for promoteId: ${error}`);
+                            return undefined;
+                        }
+                    }
+                    // _evaluator is explicitly omitted from serialization here https://github.com/mapbox/mapbox-gl-js-internal/blob/internal/src/util/web_worker_transfer.ts#L112
+                    // and promoteIdExpression is first created in worker thread and will later be used in main thread, so a reinitialize will be needed.
+                    if (!this.promoteIdExpression._evaluator) {
+                        this.promoteIdExpression._evaluator = new EvaluationContext();
+                    }
+                    id = this.promoteIdExpression.evaluate({zoom: 0}, feature) as string | number;
+                } else {
+                    id = feature.properties[propName] as string | number;
+                }
+            }
             if (typeof id === 'boolean') id = Number(id);
         }
         return id;

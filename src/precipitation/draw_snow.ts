@@ -10,7 +10,7 @@ import {snowUniformValues} from './snow_program';
 import {mulberry32} from '../style-spec/util/random';
 import {snowLayout} from "./snow_attributes";
 import {PrecipitationRevealParams} from './precipitation_reveal_params';
-import {createTpBindings, defaultVignetteParams} from './vignette';
+import {createTpBindings} from './vignette';
 import {type VignetteParams} from './vignette';
 import {boxWrap, generateUniformDistributedPointsInsideCube, lerpClamp, PrecipitationBase} from './common';
 import {Debug} from '../util/debug';
@@ -52,32 +52,38 @@ export class Snow extends PrecipitationBase {
 
         this._params = {
             overrideStyleParameters: false,
-            intensity: 1.0,
+            intensity: 0.85,
             timeFactor: 0.75,
-            velocityConeAperture: 60.0,
-            velocity: 60.0,
-            horizontalOscillationRadius: 4.2,
+            velocityConeAperture: 70.0,
+            velocity: 40.0,
+            horizontalOscillationRadius: 4.0,
             horizontalOscillationRate: 1.5,
-            boxSize: 2400,
-            billboardSize: 2.79,
-            shapeFadeStart: 0.54,
+            boxSize: 2000,
+            billboardSize: 2.0,
+            shapeFadeStart: 0.27,
             shapeFadePower: 0.21,
             screenThinning: {
-                intensity: 0.0,
-                start: 0.56,
-                range: 0.37,
-                fadePower: 0,
+                intensity: 0.4,
+                start: 0.15,
+                range: 1.4,
+                fadePower: 0.24,
                 affectedRatio: 1.0,
                 particleOffset: -0.2
             },
-            color: {r: 1.0, g: 1, b: 1, a: 0.82},
+            color: {r: 1.0, g: 1, b: 1, a: 1.0},
             direction: {x: -50, y: -35},
         };
 
         const tp = painter.tp;
         const scope = ["Precipitation", "Snow"];
         this._revealParams = new PrecipitationRevealParams(painter.tp, scope);
-        this._vignetteParams = defaultVignetteParams([1, 0, 0, 0.3]);
+        this._vignetteParams = {
+            strength: 0.3,
+            start: 0.78,
+            range: 0.46,
+            fadePower: 0.2,
+            color: {r: 1, g: 1, b: 1, a: 1}
+        };
         this.particlesCount = 16000;
 
         Debug.run(() => {
@@ -237,7 +243,7 @@ export class Snow extends PrecipitationBase {
             }
             );
 
-            const count = Math.round(revealFactor * dp.intensity * this.particlesCount);
+            const count = Math.round(dp.intensity * this.particlesCount);
             const particlesSegments = SegmentVector.simpleSegment(0, 0, count * 4, count * 2);
 
             if (this.particlesVx && this.particlesIdx) {

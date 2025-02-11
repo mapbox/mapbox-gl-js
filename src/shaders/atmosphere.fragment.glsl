@@ -95,13 +95,6 @@ void main() {
 
     vec3 c = c2;
 
-    // Do not apply dithering for mobile
-    // Performance impact is quite noticable whereas the visual difference is not that high
-#ifndef NATIVE
-    // Dither
-    c = dither(c, gl_FragCoord.xy + u_temporal_offset);
-#endif
-
     // Blending with background space color
     glFragColor = vec4(c * t, t);
 #endif

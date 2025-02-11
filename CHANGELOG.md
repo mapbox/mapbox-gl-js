@@ -1,20 +1,54 @@
-## 3.9.0-beta.1
-
-### Breaking changes ⚠️
-
-- Rename `featureset` property to `target` in `addInteraction` and `queryRenderedFetures` options.
+## 3.10.0-beta.1
 
 ### Features and improvements ✨
 
-- Add _experimental_ features for interactive indoor maps.
+- Add support for data-driven `*-use-theme` properties.
+- Improve rendering of complex SVG clip paths for vector icons.
+
+### Bug fixes 🐞
+- Fix issue where the close popup button was hidden from screen readers.
+- Fix `queryRenderedFeatures` not working on duplicated model layers.
+- Fix rendering of elevated and non-elevated lines on the same layer.
+- Fix a blank map issue after WebGL context loss.
+
+## 3.9.4
+- Fix vector icons rendering with stretch areas on high DPI devices.
+
+## 3.9.3
+- Fix issues when updating feature state on symbol layers.
+- Fix canvas source not rendering correctly after a canvas resize.
+
+## 3.9.2
+- Fix display of user-rendered images.
+- Fix a broken build issue in specific bundling configurations using Vite or ESBuild.
+- Fix console error issue that sometimes occur during map initialization.
+
+## 3.9.1
+
+- Fix an error when using background patterns on styles with vector icons enabled.
+- Fix `queryRenderedFeatures` not working on styles with custom layers.
+- Fix small rendering artifacts on line corners when using patterns with `line-join: none`.
+- When using `queryRenderedFeatures` and `querySourceFeatures` with `featureset`, fix `filter` option to apply to `featureset` selectors rather than original properties, and add `featureNamespace` validation.
+- Fix `queryRenderedFeatures` missing `source`, `sourceLayer` and `layer` properties in resulting features where they should be present.
+
+## 3.9.0
+
+### Breaking changes ⚠️
+
+- Rename `featureset` property to `target` in `addInteraction` and `queryRenderedFeatures` options.
+
+### Features and improvements ✨
+
 - Add _experimental_ vector icons support.
 - Add _experimental_ precipitation support through `snow` and `rain` style properties.
+- Add _experimental_ features for interactive indoor maps.
 - Add `to-hsla` expression.
 - Add `*-use-theme` property to override the color theme for specific layers.
 - Add support for `color-theme` overrides in imports.
 - Add per-feature `mouseenter`, `mouseover`, `mouseleave`, and `mouseout` events for `addInteraction`.
 - Enable mixing `featuresets` and `layers` in the `Map#queryRenderedFeatures`.
 - Improve landmark rendering performance.
+- The `clip` layer is now stable and no longer marked _experimental_.
 
 ### Bug fixes 🐞
 
@@ -23,6 +57,8 @@
 - Fix double shadowing on lines at ground level.
 - Fix shadow acne from 3D structures close to the ground.
 - Fix update of state-dependent features during brightness changes.
+- Fix an edge case with fill extrusions around tile borders not being updated correctly on terrain load.
+- Fix a race condition where using `line-z-offset` would sometimes break layer rendering order.
 
 ## 3.8.0
 

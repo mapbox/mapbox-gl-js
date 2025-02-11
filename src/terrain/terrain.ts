@@ -1178,6 +1178,9 @@ export class Terrain extends Elevation {
     }
 
     _setupDrapedRenderBatches() {
+        // It's possible that the draping status of a layer has changed, which requires reordering of the layers
+        this._style.updateDrapeFirstLayers();
+
         const layerIds = this._style.order;
         const layerCount = layerIds.length;
         if (layerCount === 0) {

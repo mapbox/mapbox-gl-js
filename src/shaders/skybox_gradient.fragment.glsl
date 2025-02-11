@@ -21,9 +21,6 @@ void main() {
 
     color *= u_opacity;
 
-    // Dither
-    color.rgb = dither(color.rgb, gl_FragCoord.xy + u_temporal_offset);
-
     glFragColor = color;
 
 #ifdef OVERDRAW_INSPECTOR

@@ -39,7 +39,7 @@ import {
     getType as getSourceType,
     setType as setSourceType,
 } from '../source/source';
-import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures} from '../source/query_features';
+import {queryRenderedFeatures, queryRenderedSymbols, querySourceFeatures, shouldSkipFeatureVariant} from '../source/query_features';
 import SourceCache from '../source/source_cache';
 import BuildingIndex from '../source/building_index';
 import styleSpec from '../style-spec/reference/latest';
@@ -176,7 +176,7 @@ const ignoredDiffOperations = pick(diffOperations, [
 /**
  * Layer types that has no features and are not queryable with QRF API.
  */
-const featurelessLayerTypes = new Set(['background', 'sky', 'slot']);
+const featurelessLayerTypes = new Set(['background', 'sky', 'slot', 'custom']);
 
 const empty = emptyStyle();
 
@@ -247,6 +247,7 @@ type FeaturesetSelector = {
     layerId: string;
     namespace?: string;
     properties?: Record<string, StyleExpression>;
+    uniqueFeatureID: boolean;
 };
 
 const MAX_IMPORT_DEPTH = 5;
@@ -2118,11 +2119,28 @@ class Style extends Evented<MapEvents> {
     setFeaturesetSelectors(featuresets?: FeaturesetsSpecification) {
         if (!featuresets) return;
 
+        const sourceInfoMap: { [sourceInfo: string]: string } = {};
+        // Helper to create consistent keys
+        const createKey = (sourceId: string, sourcelayerId: string = '') => `${sourceId}::${sourcelayerId}`;
+
         this.featuresetSelectors = {};
         for (const featuresetId in featuresets) {
             const featuresetSelectors: FeaturesetSelector[] = this.featuresetSelectors[featuresetId] = [];
             for (const selector of featuresets[featuresetId].selectors) {
-
+                if (selector.featureNamespace) {
+                    const layer = this.getOwnLayer(selector.layer);
+                    if (!layer) {
+                        warnOnce(`Layer is undefined for selector: ${selector.layer}`);
+                        continue;
+                    }
+                    const sourceKey = createKey(layer.source, layer.sourceLayer);
+                    // Based on spec, "If the underlying source is the same for multiple selectors within a featureset, the same featureNamespace should be used across those selectors."
+                    if (sourceKey in sourceInfoMap && sourceInfoMap[sourceKey] !== selector.featureNamespace)  {
+                        warnOnce(`"featureNamespace ${selector.featureNamespace} of featureset ${featuresetId}'s selector is not associated to the same source, skip this selector`);
+                        continue;
+                    }
+                    sourceInfoMap[sourceKey] = selector.featureNamespace;
+                }
                 let properties;
                 if (selector.properties) {
                     for (const name in selector.properties) {
@@ -2134,7 +2152,7 @@ class Style extends Evented<MapEvents> {
                     }
                 }
 
-                featuresetSelectors.push({layerId: selector.layer, namespace: selector.featureNamespace, properties});
+                featuresetSelectors.push({layerId: selector.layer, namespace: selector.featureNamespace, properties, uniqueFeatureID: selector._uniqueFeatureID});
             }
         }
     }
@@ -2216,12 +2234,11 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        this.options.set(fqid, {
-            ...expressions,
+        this.options.set(fqid, Object.assign({}, expressions, {
             value: expression,
             default: defaultExpression,
             minValue, maxValue, stepValue, type, values
-        });
+        }));
 
         this.updateConfigDependencies(key);
     }
@@ -2987,6 +3004,7 @@ class Style extends Evented<MapEvents> {
         });
 
         const features: Feature[] = [];
+
         for (let l = order.length - 1; l >= 0; l--) {
             const layerId = order[l];
 
@@ -3079,7 +3097,7 @@ class Style extends Evented<MapEvents> {
         const targets: QrfTarget[] = [];
 
         if (params && params.target) {
-            targets.push({...params, targetId, filter});
+            targets.push(Object.assign({}, params, {targetId, filter}));
         } else {
             // Query all root-level featuresets
             const featuresetDescriptors = this.getFeaturesetDescriptors();
@@ -3099,8 +3117,12 @@ class Style extends Evented<MapEvents> {
         const features = this.queryRenderedTargets(queryGeometry, targets, transform);
 
         const targetFeatures = [];
+        const uniqueFeatureSet = new Set<string>();
         for (const feature of features) {
             for (const variant of feature.variants[targetId]) {
+                if (shouldSkipFeatureVariant(variant, feature, uniqueFeatureSet)) {
+                    continue;
+                }
                 targetFeatures.push(new TargetFeature(feature, variant));
             }
         }
@@ -3119,15 +3141,16 @@ class Style extends Evented<MapEvents> {
             if (styleLayer.is3D()) querySourceCache.has3DLayers = true;
 
             if (!selector) {
+                target.uniqueFeatureID = false;
                 querySourceCache.layers[styleLayer.fqid].targets.push(target);
                 return;
             }
 
-            querySourceCache.layers[styleLayer.fqid].targets.push({
-                ...target,
+            querySourceCache.layers[styleLayer.fqid].targets.push(Object.assign({}, target, {
                 namespace: selector.namespace,
-                properties: selector.properties
-            });
+                properties: selector.properties,
+                uniqueFeatureID: selector.uniqueFeatureID
+            }));
         };
 
         for (const target of targets) {
@@ -3702,6 +3725,13 @@ class Style extends Evented<MapEvents> {
             if (source.reload)
                 source.reload();
         }
+    }
+
+    reloadModels() {
+        this.modelManager.reloadModels('');
+        this.forEachFragmentStyle((style) => {
+            style.modelManager.reloadModels(style.scope);
+        });
     }
 
     updateSources(transform: Transform) {

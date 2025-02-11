@@ -2,11 +2,11 @@ import assert from 'assert';
 import {Event} from '../util/evented';
 import {TargetFeature} from '../util/vectortile_to_geojson';
 import featureFilter from '../style-spec/feature_filter/index';
+import {shouldSkipFeatureVariant, type QrfTarget} from '../source/query_features';
 
 import type Point from '@mapbox/point-geometry';
 import type LngLat from '../geo/lng_lat';
 import type Feature from '../util/vectortile_to_geojson';
-import type {QrfTarget} from '../source/query_features';
 import type {FeatureFilter} from '../style-spec/feature_filter/index';
 import type {Map as MapboxMap} from './map';
 import type {FilterSpecification} from '../style-spec/types';
@@ -14,31 +14,34 @@ import type {TargetDescriptor} from '../util/vectortile_to_geojson';
 import type {MapEvents, MapInteractionEventType, MapMouseEvent, MapMouseEventType} from './events';
 
 /**
- * Configuration object for adding an interaction to a map in `Map#addInteraction()`.
- * Interactions allow you to handle user events like clicks and hovers, either globally
- * or for specific featuresets.
+ * `Interaction` is a configuration object used with {@link Map#addInteraction} to handle user events, such as clicks and hovers.
+ * Interactions can be applied globally or to specific targets, such as layers or featuresets.
  */
 export type Interaction = {
     /**
-     * A type of interaction.
+     * A type of interaction. For a full list of available events, see [Interaction `Map` events](/mapbox-gl-js/api/map/#events-interaction).
      */
     type: MapInteractionEventType;
+
     /**
-     * A featureset to add interaction to.
+     * A query target to add interaction to. This could be a [style layer ID](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-id) or a {@link FeaturesetDescriptor}.
      */
     target?: TargetDescriptor;
+
     /**
-     * A feature namespace to distinguish between features in the same sources but different featuresets.
+     * A feature namespace to distinguish between features in the same sources but different featureset selectors.
      */
     namespace?: string;
+
     /**
-     * A filter allows to specify which features from the featureset should handle the interaction.
-     * This parameter only applies when the featureset is specified.
+     * A filter allows to specify which features from the query target should handle the interaction.
+     * This parameter only applies when the `target` is specified.
      */
     filter?: FilterSpecification;
+
     /**
      * A function that will be called when the interaction is triggered.
-     * @param event - The event object.
+     * @param {InteractionEvent} event The event object.
      * @returns
      */
     handler: (event: InteractionEvent) => boolean | void;
@@ -56,18 +59,39 @@ type DelegatedHandlers = {
     mouseout: (InteractionEvent) => boolean | void;
 };
 
+/**
+ * `InteractionEvent` is an event object that is passed to the interaction handler.
+ */
 export class InteractionEvent extends Event<MapEvents, MapInteractionEventType> {
     override type: MapInteractionEventType;
     override target: MapboxMap;
     originalEvent: MouseEvent;
     point: Point;
     lngLat: LngLat;
+
+    /**
+     * Prevents the event propagation to the next interaction in the stack.
+     */
     preventDefault: () => void;
 
+    /**
+     * The ID of the associated {@link Interaction}.
+     */
     id: string;
+
+    /**
+     * The {@link Interaction} configuration object.
+     */
     interaction: Interaction;
+
+    /**
+     * The {@link TargetFeature} associated with the interaction event triggered during the interaction handler execution.
+     */
     feature?: TargetFeature;
 
+    /**
+     * @private
+     */
     constructor(e: MapMouseEvent, id: string, interaction: Interaction, feature?: TargetFeature) {
         const {point, lngLat, originalEvent, target} = e;
         super(e.type, {point, lngLat, originalEvent, target} as MapEvents[MapInteractionEventType]);
@@ -180,6 +204,7 @@ export class InteractionSet {
         features = features || this.queryTargets(event.point, reversedInteractions);
 
         let eventHandled = false;
+        const uniqueFeatureSet = new Set<string>();
         for (const feature of features) {
             for (const [id, interaction] of reversedInteractions) {
                 // Skip interactions that don't have a featureset, they will be handled later.
@@ -190,6 +215,9 @@ export class InteractionSet {
                 if (!variants) continue;
 
                 for (const variant of variants) {
+                    if (shouldSkipFeatureVariant(variant, feature, uniqueFeatureSet, id)) {
+                        continue;
+                    }
                     const targetFeature = new TargetFeature(feature, variant);
                     const stop = interaction.handler(new InteractionEvent(event, id, interaction, targetFeature));
 

@@ -393,6 +393,7 @@ const defaultOptions: Omit<MapOptions, 'container'> = {
  * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings such as control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language;
  * see [`src/ui/default_locale.js`](https://github.com/mapbox/mapbox-gl-js/blob/main/src/ui/default_locale.js) for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
  * @param {boolean} [options.testMode=false] Silences errors and warnings generated due to an invalid accessToken, useful when using the library to write unit tests.
+ * @param {'raster' | 'icon_set' | 'auto'} [options.spriteFormat='auto'] The format of the image sprite to use. If set to `'auto'`, vector iconset will be used for all mapbox-hosted sprites and raster sprite for all custom URLs.
  * @param {ProjectionSpecification} [options.projection='mercator'] The [projection](https://docs.mapbox.com/mapbox-gl-js/style-spec/projection/) the map should be rendered in.
  * Supported projections are:
  * * [Albers](https://en.wikipedia.org/wiki/Albers_projection) equal-area conic projection as `albers`
@@ -653,7 +654,7 @@ export class Map extends Camera {
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
         if (options.contextCreateOptions) {
-            this._contextCreateOptions = {...options.contextCreateOptions};
+            this._contextCreateOptions = Object.assign({}, options.contextCreateOptions);
         } else {
             this._contextCreateOptions = {};
         }
@@ -1927,7 +1928,9 @@ export class Map extends Camera {
      * Only values within the existing viewport are supported.
      * @param {Object} [options] Options object.
      * @param {Array<string>} [options.layers] An array of [style layer IDs](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-id) for the query to inspect.
-     * Only features within these layers will be returned. If this parameter is undefined, all layers will be checked.
+     * Only features within these layers will be returned. If `target` and `layers` are both undefined, the query will inspect all layers and featuresets in the root style, as well as all featuresets in the root style imports.
+     * @param {TargetDescriptor} [options.target] A query target to inspect. This could be a [style layer ID](https://docs.mapbox.com/mapbox-gl-js/style-spec/#layer-id) or a {@link FeaturesetDescriptor}.
+     * Only features within layers referenced by the query target will be returned. If `target` and `layers` are both undefined, the query will inspect all layers and featuresets in the root style, as well as all featuresets in the root style imports.
      * @param {Array} [options.filter] A [filter](https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#filter)
      * to limit query results.
      * @param {boolean} [options.validate=true] Whether to check if the [options.filter] conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
@@ -1938,8 +1941,12 @@ export class Map extends Camera {
      * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
      * string and numeric property values are supported. `null`, `Array`, and `Object` values are not supported.
      *
-     * Each feature includes top-level `layer`, `source`, and `sourceLayer` properties. The `layer` property is an object
-     * representing the style layer to  which the feature belongs. Layout and paint properties in this object contain values
+     * For featuresets in the style imports, each feature includes top-level `target` and an optional `namespace` property as defined in {@link TargetFeature}.
+     * The `target` property represents the query target associated with the feature, while the optional `namespace` property
+     * is included to prevent feature ID collisions when layers in the query target reference multiple sources.
+     *
+     * For layers and featuresets in the root style, each feature includes top-level `layer`, `source`, and `sourceLayer` properties. The `layer` property is an object
+     * representing the style layer to which the feature belongs. Layout and paint properties in this object contain values
      * which are fully evaluated for the given zoom level and feature.
      *
      * Only features that are currently rendered are included. Some features will **not** be included, like:
@@ -1967,14 +1974,14 @@ export class Map extends Camera {
      * // Find all features at a point
      * const features = map.queryRenderedFeatures(
      *   [20, 35],
-     *   {layers: ['my-layer-name']}
+     *   {target: {layerId: 'my-layer-name'}}
      * );
      *
      * @example
      * // Find all features within a static bounding box
      * const features = map.queryRenderedFeatures(
      *   [[10, 20], [30, 50]],
-     *   {layers: ['my-layer-name']}
+     *   {target: {layerId: 'my-layer-name'}}
      * );
      *
      * @example
@@ -1984,11 +1991,18 @@ export class Map extends Camera {
      * const features = map.queryRenderedFeatures([
      *     [point.x - width / 2, point.y - height / 2],
      *     [point.x + width / 2, point.y + height / 2]
-     * ], {layers: ['my-layer-name']});
+     * ], {target: {layerId: 'my-layer-name'}});
      *
      * @example
      * // Query all rendered features from a single layer
+     * const features = map.queryRenderedFeatures({target: {layerId: 'my-layer-name'}});
+     *
+     * // ...or
      * const features = map.queryRenderedFeatures({layers: ['my-layer-name']});
+     *
+     * // Query all rendered features from a `poi` featureset in the `basemap` style import
+     * const features = map.queryRenderedFeatures({target: {featuresetId: 'poi', importId: 'basemap'}});
+     *
      * @see [Example: Get features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/queryrenderedfeatures/)
      * @see [Example: Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      * @see [Example: Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
@@ -2139,16 +2153,37 @@ export class Map extends Camera {
      * @param {Object} interaction The interaction object with the following properties.
      * @param {string} interaction.type The type of gesture to handle (e.g. 'click').
      * @param {Object} [interaction.filter] Filter expression to narrow down the interaction to a subset of features under the pointer.
-     * @param {TargetDescriptor} [interaction.featureset] The featureset descriptor to narrow down features to.
-     * Either `{layerId: string}` to reference features in the root style layer, or `{featuresetId: string, importId?: string}` to reference features in an imported style.
+     * @param {TargetDescriptor} [interaction.target] The interaction target, which can be either a reference to a layer or a reference to a featureset in a style import.
+     * Use `{layerId: string}` to reference features in the root style layer, or `{featuresetId: string, importId?: string}` to reference features in an imported style.
      * @param {Function} interaction.handler A handler function that will be invoked on the gesture and receive a `{feature, interaction}` object as a parameter.
      * @returns {Map} Returns itself to allow for method chaining.
      *
      * @example
      * map.addInteraction('poi-click', {
      *   type: 'click',
+     *   target: {featuresetId: 'poi', importId: 'basemap'},
      *   handler(e) {
      *     console.log(e.feature);
+     *   }
+     * });
+     *
+     * @example
+     * map.addInteraction('building-mouseenter', {
+     *   type: 'mouseenter',
+     *   target: {featuresetId: 'buildings', importId: 'basemap'},
+     *   handler: (e) => {
+     *     map.setFeatureState(e.feature, {highlight: true});
+     *   }
+     * });
+     *
+     * @example
+     * map.addInteraction('building-mouseleave', {
+     *   type: 'mouseleave',
+     *   target: {featuresetId: 'buildings', importId: 'basemap'},
+     *   handler: (e) => {
+     *     map.setFeatureState(e.feature, {highlight: true});
+     *     // Propagate the event so that the handler is called for each feature.
+     *     return false;
      *   }
      * });
      */
@@ -4128,7 +4163,10 @@ export class Map extends Camera {
 
     _contextRestored(event: any) {
         this._setupPainter();
-        this.resize();
+        this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
+        this._updateTerrain();
+        this.style.reloadModels();
+        this.style.clearSources();
         this._update();
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
