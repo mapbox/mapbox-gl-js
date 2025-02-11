@@ -27,6 +27,18 @@ export const operationHandlers = {
 
         waitForRender(map, () => map.loaded(), doneCb);
     },
+    forceContextRestart(map, params, doneCb) {
+        const canvas = map.getCanvas();
+        const ext = map.painter.context.gl.getExtension('WEBGL_lose_context');
+        canvas.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+            setTimeout(() => {
+                ext.restoreContext();
+                doneCb();
+            });
+        });
+        ext.loseContext();
+    },
     waitFrameReady(map, params, doneCb) {
         let timeIterationInterval = 0;
         if (params.length) {
@@ -51,6 +63,14 @@ export const operationHandlers = {
         setTimeout(doneCb, params[0]);
     },
     addImage(map, params, doneCb) {
+        if (params[1].endsWith('.js')) {
+            import(params[1].replace('./', '../')).then(({image}) => {
+                map.addImage(params[0], image, params[2] || {});
+                doneCb();
+            });
+            return;
+        }
+
         const image = new Image();
         image.onload = () => {
             map.addImage(params[0], image, params[2] || {});
@@ -248,6 +268,8 @@ function updateCanvas(imagePath) {
         const image = new Image();
         image.src = imagePath.replace('./', '');
         image.onload = () => {
+            canvas.width = image.width;
+            canvas.height = image.height;
             resolve(ctx.drawImage(image, 0, 0, image.width, image.height));
         };
 

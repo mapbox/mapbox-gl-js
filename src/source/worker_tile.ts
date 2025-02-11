@@ -434,10 +434,7 @@ class WorkerTile {
                 for (const imageIdWithOptionsSerialized in result) {
                     const {id} = ImageIdWithOptions.deserializeFromString(imageIdWithOptionsSerialized);
                     const image = result[imageIdWithOptionsSerialized];
-                    imageMap[imageIdWithOptionsSerialized] = {
-                        ...images[id],
-                        data: image
-                    };
+                    imageMap[imageIdWithOptionsSerialized] = Object.assign({}, images[id], {data: image});
                 }
             }
 

@@ -7,7 +7,7 @@
             name="viewport"
             content="width=device-width, initial-scale=1.0, user-scalable=no"
         />
-        <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+        <link rel='stylesheet' href='../dist/mapbox-gl.css' />
         <style>
             body {
                 margin: 0;
@@ -25,8 +25,8 @@
         <div id="map"></div>
         <div id="config"></div>
 
-        <script src="../dist/mapbox-gl-dev.js"></script>
-        <script src="../debug/access_token_generated.js"></script>
+        <script src='../dist/mapbox-gl-dev.js'></script>
+        <script src='../debug/access_token_generated.js'></script>
         <script type="module">
             import { Pane } from "https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js";
 
@@ -53,21 +53,24 @@
                 const params = {
                     lightPreset: "night",
                     precipitationType: "snow",
+                    precipitationParametersSource: "fromStyleSpecDefaults",
                 };
 
+                let precipitation;
+
                 const precipitationParams = {
-                    revealStart: 7,
-                    revealRange: 1,
+                    revealStart: 11,
+                    revealRange: 2,
                     snow: {
-                        density: 1,
-                        intensity: 0.36,
-                        centerThinning: 0,
+                        density: 0.85,
+                        intensity: 1.0,
+                        centerThinning: 0.4,
                         color: { r: 1, g: 1, b: 1 },
                         directionAzimuth: 0,
                         directionPolar: 50,
-                        opacity: 0.9,
-                        flakeSize: 1,
-                        vignetteIntensity: 0.23,
+                        opacity: 1.0,
+                        flakeSize: 0.71,
+                        vignetteIntensity: 0.3,
                         vignetteColor: { r: 1, g: 1, b: 1 },
                     },
                     rain: {
@@ -87,6 +90,12 @@
                 };
 
                 const onPrecipitationChange = () => {
+                    if (params.precipitationParametersSource === "fromStyleSpecDefaults") {
+                        precipitation.disabled = true;
+                    } else {
+                        precipitation.disabled = false;
+                    }
+
                     map.setSnow(null);
                     map.setRain(null);
 
@@ -104,6 +113,10 @@
                     };
 
                     if (params.precipitationType === "snow") {
+                        if (params.precipitationParametersSource === "fromStyleSpecDefaults") {
+                            map.setSnow({});
+                            return;
+                        }
                         const sp = precipitationParams.snow;
                         sp.density;
                         map.setSnow({
@@ -124,6 +137,11 @@
                             })`,
                         });
                     } else {
+                        if (params.precipitationParametersSource === "fromStyleSpecDefaults") {
+                            map.setRain({});
+                            return;
+                        }
+
                         const rp = precipitationParams.rain;
 
                         map.setRain({
@@ -167,13 +185,22 @@
                     onPrecipitationChange();
                 });
 
+                pane.addBinding(params, "precipitationParametersSource", {
+                    options: {
+                        fromUI: "fromUI",
+                        fromStyleSpecDefaults: "fromStyleSpecDefaults",
+                    },
+                }).on("change", (ev) => {
+                    onPrecipitationChange();
+                });
+
                 map.setConfigProperty(
                     "basemap",
                     "lightPreset",
                     params.lightPreset
                 );
 
-                const precipitation = pane
+                precipitation = pane
                     .addFolder({
                         title: "Precipitation",
                         expanded: true,
@@ -181,6 +208,8 @@
                     .on("change", (ev) => {
                         onPrecipitationChange();
                     });
+
+                precipitation.disabled = true;
 
                 precipitation.addBinding(precipitationParams, "revealStart", {
                     min: 0,

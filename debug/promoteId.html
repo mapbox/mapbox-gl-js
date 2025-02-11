@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        .tooltip {
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 14px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div class="tooltip" id="tooltip">This is a tooltip!</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script src='/debug/dynamic.js'></script>
+<script>
+
+var newStyle = window.dynamic;
+newStyle.sources.composite.promoteId = {
+    "building": ["coalesce", ["get", "building_id"], ["id"]]
+};
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    devtools: true,
+    zoom: 17.0,
+    center: [24.938473, 60.172208],
+    hash: true,
+    style: newStyle
+});
+
+map.set
+const tooltip = document.getElementById('tooltip');
+
+let hoveredFeature;
+window.addEventListener('mousemove', function(e) {
+    e.point = new mapboxgl.Point(e.clientX, e.clientY);
+    const features = map.queryRenderedFeatures(e.point, {target: {featuresetId: 'buildings', importId: "basemap"}});
+    const totalFeatures = features.length;
+    const feature = features[0];
+    if (feature) {
+        map.setFeatureState(feature, {'select': true});
+        if (hoveredFeature && feature.id !== hoveredFeature.id) map.removeFeatureState(hoveredFeature);
+        hoveredFeature = feature;
+        tooltip.innerHTML = `Total queried features: ${totalFeatures}. origin_id: ${feature.properties['origin_id']}, height: ${feature.properties['height']}`;
+    } else if (hoveredFeature) {
+        map.removeFeatureState(hoveredFeature);
+        hoveredFeature = null;
+        tooltip.innerHTML = '';
+    }
+
+    tooltip.style.left = `${e.pageX + 10}px`;
+    tooltip.style.top = `${e.pageY + 10}px`;
+});
+
+map.addInteraction('buildingclick', {
+    type: 'click',
+    featureset: {featuresetId: 'buildings', importId: ''},
+    handler: (e) => console.log(e.feature ? e.feature.id : null)
+});
+
+
+</script>
+</body>
+</html>

@@ -400,7 +400,7 @@ class Tile {
 
         if (data.resourceTiming) this.resourceTiming = data.resourceTiming;
 
-        this.buckets = {...this.buckets, ...deserializeBucket(data.buckets, painter.style)};
+        this.buckets = Object.assign({}, this.buckets, deserializeBucket(data.buckets, painter.style));
 
         if (data.featureIndex) {
             this.latestFeatureIndex = data.featureIndex;
@@ -615,6 +615,7 @@ class Tile {
 
     updateBuckets(painter: Painter, isBrightnessChanged?: boolean) {
         if (!this.latestFeatureIndex) return;
+        if (!painter.style) return;
 
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
         const availableImages = painter.style.listImages();
@@ -628,7 +629,7 @@ class Tile {
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
             const sourceLayer = vtLayers[sourceLayerId];
-            const sourceCache = painter.style.getSourceCache(bucketLayer.source, bucketLayer.scope);
+            const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
 
             let sourceLayerStates: FeatureStates = {};
             if (sourceCache) {
@@ -638,7 +639,8 @@ class Tile {
             const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
             const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
             const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
-            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged) {
+            const updatesWithoutStateDependentLayers = withStateUpdates && !bucket.stateDependentLayers.length;
+            if (!updatesWithoutStateDependentLayers || isBrightnessChanged) {
                 bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
             }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {

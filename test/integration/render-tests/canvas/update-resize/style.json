@@ -1,0 +1,68 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "width": 512,
+        "height": 512,
+        "addFakeCanvas": {
+            "id": "fake-canvas",
+            "image": "./image/1.png"
+        },
+        "operations": [
+            ["wait"],
+            ["updateFakeCanvas", "canvas", "./image/0-half-size.png", "./image/0-half-size.png"]
+        ]
+      }
+    },
+    "center": [
+      -122,
+      37
+    ],
+    "zoom": 2,
+    "projection": {
+        "name": "globe"
+    },
+    "sources": {
+      "canvas": {
+        "type": "canvas",
+        "animate": false,
+        "coordinates": [
+          [
+            -112,
+            27
+          ],
+          [
+            -132,
+            27
+          ],
+          [
+            -132,
+            47
+          ],
+          [
+            -112,
+            47
+          ]
+        ],
+        "canvas": "fake-canvas"
+      }
+    },
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "#ff00ff"
+            }
+        },
+        {
+            "id": "canvas",
+            "type": "raster",
+            "source": "canvas",
+            "paint": {
+                "raster-fade-duration": 0
+            }
+        }
+    ]
+  }
+  

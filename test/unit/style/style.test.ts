@@ -1781,6 +1781,25 @@ describe('Style#query*Features', () => {
         style.querySourceFeatures('foo', {filter: "invalidFilter", validate: false}, transform);
         expect(errors).toEqual(0);
     });
+
+    test('queryRenderedFeatures does not break on custom layers', () => {
+        style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": []
+        });
+        style.on('style.load', () => {
+            style.addLayer({
+                "id": "custom",
+                "type": "custom",
+                render() {}
+            });
+            expect(() => {
+                style.queryRenderedFeatures([0, 0], {}, transform);
+            }).not.toThrowError();
+        });
+    });
 });
 
 describe('Style#addSourceType', () => {

@@ -10,7 +10,6 @@ import {vignetteLayout} from "./vignette_attributes";
 import type Painter from '../render/painter';
 import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';
-import type {vec4} from 'gl-matrix';
 
 export type VignetteParams={
     strength: number,
@@ -19,16 +18,6 @@ export type VignetteParams={
     fadePower: number,
     color: { r: number, g: number, b: number, a: number },
 };
-
-export function defaultVignetteParams(defaultColor: vec4) : VignetteParams {
-    return {
-        strength: 0.3,
-        start: 0.26,
-        range: 1.0,
-        fadePower: 0.5,
-        color: {r: defaultColor[0], g: defaultColor[1], b: defaultColor[2], a: defaultColor[3]},
-    };
-}
 
 export function createTpBindings(params: VignetteParams, painter: Painter, scope: string[]) {
     const tp = painter.tp;

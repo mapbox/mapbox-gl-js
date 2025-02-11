@@ -587,6 +587,13 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
     if ((!demTile || !demTile.dem) && !reconcileReplacementState) {
         return;     // defer update until an elevation tile is available.
     }
+    // invalidate border computation if DEM tile has updated since last border update
+    if (terrain && demTile && demTile.dem) {
+        if (bucket.selfDEMTileTimestamp !== demTile.dem._timestamp) {
+            bucket.borderDoneWithNeighborZ = [-1, -1, -1, -1];
+            bucket.selfDEMTileTimestamp = demTile.dem._timestamp;
+        }
+    }
 
     const reconcileReplacement = (centroid1: PartData, centroid2: PartData) => {
         const hiddenFlag = (centroid1.flags | centroid2.flags) & HIDDEN_BY_REPLACEMENT;
@@ -680,18 +687,27 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         if (!nBucket || !(nBucket instanceof FillExtrusionBucket)) {
             continue;
         }
+
+        // Look up the neighbor DEM tile
+        const neighborDEMTile = terrain ? terrain.findDEMTileFor(nid) : null;
+        if ((!neighborDEMTile || !neighborDEMTile.dem) && !reconcileReplacementState) {
+            continue;
+        }
+
+        // invalidate border computation if neighbour DEM tile has updated since last border update
+        if (terrain && neighborDEMTile && neighborDEMTile.dem) {
+            if (bucket.borderDEMTileTimestamp[i] !== neighborDEMTile.dem._timestamp) {
+                bucket.borderDoneWithNeighborZ[i] = -1;
+                bucket.borderDEMTileTimestamp[i] = neighborDEMTile.dem._timestamp;
+            }
+        }
+
         if (bucket.borderDoneWithNeighborZ[i] === nBucket.canonical.z) {
             continue;
         }
 
         if (nBucket.centroidVertexArray.length === 0) {
             nBucket.createCentroidsBuffer();
-        }
-
-        // Look up the neighbor DEM tile
-        const neighborDEMTile = terrain ? terrain.findDEMTileFor(nid) : null;
-        if ((!neighborDEMTile || !neighborDEMTile.dem) && !reconcileReplacementState) {
-            continue;
         }
 
         const j = (i < 2 ? 1 : 5) - i;

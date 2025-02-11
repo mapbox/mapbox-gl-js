@@ -6,6 +6,7 @@
       "width": 64,
       "height": 64,
       "operations": [
+        ["wait"],
         [
           "updateImage",
           "park",
@@ -29,7 +30,7 @@
       }
     }
   },
-  "sprite": "local://sprites/park.pbf",
+  "sprite": "local://sprites/park",
   "layers": [
     {
       "id": "symbol",

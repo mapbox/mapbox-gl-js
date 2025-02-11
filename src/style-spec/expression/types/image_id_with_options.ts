@@ -16,6 +16,10 @@ export class ImageIdWithOptions {
         }
     }
 
+    static deserializeId(serialized: string): string {
+        return JSON.parse(serialized).id;
+    }
+
     static deserializeFromString(serialized: string): ImageIdWithOptions {
         const deserializedObject = JSON.parse(serialized);
         const options: RasterizationOptions = {params: deserializedObject.options.params};

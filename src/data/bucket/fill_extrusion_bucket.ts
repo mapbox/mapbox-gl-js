@@ -670,6 +670,8 @@ class FillExtrusionBucket implements Bucket {
     centroidData: Array<PartData>;
     // borders / borderDoneWithNeighborZ: 0 - left, 1, right, 2 - top, 3 - bottom
     borderDoneWithNeighborZ: Array<number>;
+    selfDEMTileTimestamp: number;
+    borderDEMTileTimestamp: Array<number>;
     needsCentroidUpdate: boolean;
     tileToMeter: number; // cache conversion.
     projection: ProjectionSpecification;
@@ -729,6 +731,8 @@ class FillExtrusionBucket implements Bucket {
         this.featuresOnBorder = [];
         this.borderFeatureIndices = [[], [], [], []];
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
+        this.selfDEMTileTimestamp = Number.MAX_VALUE;
+        this.borderDEMTileTimestamp = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
         this.tileToMeter = tileToMeter(canonical);
 
         this.edgeRadius = this.layers[0].layout.get('fill-extrusion-edge-radius') / this.tileToMeter;

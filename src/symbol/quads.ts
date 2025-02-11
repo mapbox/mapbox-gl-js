@@ -61,6 +61,10 @@ export type SymbolQuad = {
 // on one edge in some cases.
 const border = ICON_PADDING;
 
+function reduceRanges(sum: number, range: [number, number]) {
+    return sum + range[1] - range[0];
+}
+
 /**
  * Create the quads used for rendering an icon.
  * @private
@@ -85,7 +89,6 @@ export function getIconQuads(
     const stretchX = image.stretchX || [[0, imageWidth]];
     const stretchY = image.stretchY || [[0, imageHeight]];
 
-    const reduceRanges = (sum: number, range: [number, number]) => sum + range[1] - range[0];
     const stretchWidth = stretchX.reduce(reduceRanges, 0);
     const stretchHeight = stretchY.reduce(reduceRanges, 0);
     const fixedWidth = imageWidth - stretchWidth;

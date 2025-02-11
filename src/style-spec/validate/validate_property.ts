@@ -5,7 +5,7 @@ import {isFunction} from '../function/index';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import {supportsLightExpression, supportsPropertyExpression, supportsZoomExpression} from '../util/properties';
 import {isGlobalPropertyConstant, isFeatureConstant, isStateConstant} from '../expression/is_constant';
-import {createPropertyExpression} from '../expression/index';
+import {createPropertyExpression, isExpression} from '../expression/index';
 
 import type {ValidationOptions} from './validate';
 
@@ -28,6 +28,30 @@ export default function validateProperty(options: PropertyValidationOptions, pro
 
     const useThemeMatch = propertyKey.match(/^(.*)-use-theme$/);
     if (propertyType === 'paint' && useThemeMatch && layerSpec[useThemeMatch[1]]) {
+        if (isExpression(value)) {
+            const errors = [];
+            return errors.concat(validate({
+                key: options.key,
+                value,
+                valueSpec: {
+                    "type": "string",
+                    "expression": {
+                        "interpolated": false,
+                        "parameters": [
+                            "zoom",
+                            "feature"
+                        ]
+                    },
+                    "property-type": "data-driven"
+                },
+                style,
+                styleSpec,
+                // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'expressionContext' does not exist in type 'ValidationOptions'.
+                expressionContext: 'property',
+                propertyType,
+                propertyKey
+            }));
+        }
         return validate({
             key,
             value,

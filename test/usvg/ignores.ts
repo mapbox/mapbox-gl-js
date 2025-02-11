@@ -92,14 +92,6 @@ export const ignores = [
     "paint-servers_radialGradient_spreadMethod=reflect",
     "paint-servers_radialGradient_spreadMethod=repeat",
 
-    // complex clip hierarchies and mixed clip rules not yet implemented
-    "masking_clipPath_mixed-clip-rule",
-    "masking_clipPath_overlapped-shapes-with-evenodd",
-    "masking_clipPath_clip-path-on-child",
-    "masking_clipPath_clip-path-on-child-with-transform",
-    "masking_clipPath_clip-path-on-children",
-    "masking_clipPath_recursive-on-child",
-
     // Can't pass gradient transform to Canvas https://github.com/mapbox/mapbox-gl-js-internal/pull/1960#discussion_r1824278822
     "paint-servers_radialGradient_gradientUnits=objectBoundingBox-with-percent",
 

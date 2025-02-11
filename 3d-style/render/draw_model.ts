@@ -34,7 +34,6 @@ import type {DynamicDefinesType} from '../../src/render/program/program_uniforms
 import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type {CutoffParams} from '../../src/render/cutoff';
 import type {LUT} from "../../src/util/lut";
-import type EvaluationParameters from '../../src/style/evaluation_parameters';
 
 export default drawModels;
 
@@ -145,8 +144,6 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
     if (!material.defined) {
         definesValues.push('DIFFUSE_SHADED');
     }
-
-    definesValues.push('USE_STANDARD_DERIVATIVES');
 
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) {
@@ -576,7 +573,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
     const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
 
-    const evaluationParameters = {...layer.layout.get("model-id").parameters} as EvaluationParameters;
+    const evaluationParameters = Object.assign({}, layer.layout.get("model-id").parameters);
 
     const layerIndex = painter.style.order.indexOf(layer.fqid);
 

@@ -45,6 +45,19 @@
           "key": "value"
         }
       }
+    },
+    "geojson1": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        },
+        "properties": {
+          "key": "value"
+        }
+      }
     }
   },
   "layers": [
@@ -56,7 +69,7 @@
     {
       "id": "b",
       "type": "circle",
-      "source": "geojson"
+      "source": "geojson1"
     }
   ]
 }

@@ -5,7 +5,7 @@ import type SourceCache from './source_cache';
 import type StyleLayer from '../style/style_layer';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
-import type {default as Feature, TargetDescriptor} from '../util/vectortile_to_geojson';
+import type {default as Feature, TargetDescriptor, FeatureVariant} from '../util/vectortile_to_geojson';
 import type {FeatureFilter} from '../style-spec/feature_filter/index';
 import type {RetainedQueryData} from '../symbol/placement';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
@@ -36,6 +36,7 @@ export type QrfTarget = {
     namespace?: string;
     properties?: Record<string, StyleExpression>;
     filter?: FeatureFilter;
+    uniqueFeatureID?: boolean;
 };
 
 export type QueryResult = {
@@ -50,6 +51,30 @@ export type RenderedFeatureLayers = Array<{
     wrappedTileID: number;
     queryResults: QueryResult;
 }>;
+
+function generateTargetKey(target: TargetDescriptor): string {
+    if ("layerId" in target) {
+        // Handle the case where target is { layerId: string }
+        return `layer:${target.layerId}`;
+    } else {
+        // Handle the case where target is FeaturesetDescriptor
+        const {featuresetId, importId} = target;
+        return `featureset:${featuresetId}${importId ? `:import:${importId}` : ""}`;
+    }
+}
+
+export function shouldSkipFeatureVariant(variant: FeatureVariant, feature: Feature, uniqueFeatureSet: Set<string>, targetId: string = ''): boolean {
+    if (variant.uniqueFeatureID) {
+        const key = `${targetId}:${feature.id || ''}:${feature.layer.id}:${generateTargetKey(variant.target)}`;
+        // skip the feature that hap same featureID in the same interarction with uniqueFeatureID turned on
+        if (uniqueFeatureSet.has(key)) {
+            return true;
+        }
+        // Add the key to the map
+        uniqueFeatureSet.add(key);
+    }
+    return false;
+}
 
 export function queryRenderedFeatures(
     queryGeometry: QueryGeometry,

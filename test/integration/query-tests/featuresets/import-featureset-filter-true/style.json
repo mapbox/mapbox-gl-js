@@ -7,7 +7,7 @@
       "queryGeometry": [32, 32],
       "queryOptions": {
         "target": {"featuresetId": "circle", "importId": "basemap"},
-        "filter": ["==", "key", "value"]
+        "filter": ["==", "a-property-value", "value"]
       }
     }
   },
