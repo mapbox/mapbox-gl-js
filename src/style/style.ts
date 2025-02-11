@@ -301,7 +301,7 @@ class Style extends Evented<MapEvents> {
     _mergedSymbolSourceCaches: Record<string, SourceCache>;
     _clipLayerPresent: boolean;
 
-    featuresetSelectors: Record<string, Array<FeaturesetSelector>>;
+    _featuresetSelectors: Record<string, Array<FeaturesetSelector>>;
 
     _request: Cancelable | null | undefined;
     _spriteRequest: Cancelable | null | undefined;
@@ -2111,8 +2111,7 @@ class Style extends Evented<MapEvents> {
             return fragment.style.getFragmentStyle(name);
         } else {
             const fragment = this.fragments.find(({id}) => id === fragmentId);
-            if (!fragment) throw new Error(`Style import '${fragmentId}' not found`);
-            return fragment.style;
+            return fragment ? fragment.style : undefined;
         }
     }
 
@@ -2123,9 +2122,9 @@ class Style extends Evented<MapEvents> {
         // Helper to create consistent keys
         const createKey = (sourceId: string, sourcelayerId: string = '') => `${sourceId}::${sourcelayerId}`;
 
-        this.featuresetSelectors = {};
+        this._featuresetSelectors = {};
         for (const featuresetId in featuresets) {
-            const featuresetSelectors: FeaturesetSelector[] = this.featuresetSelectors[featuresetId] = [];
+            const featuresetSelectors: FeaturesetSelector[] = this._featuresetSelectors[featuresetId] = [];
             for (const selector of featuresets[featuresetId].selectors) {
                 if (selector.featureNamespace) {
                     const layer = this.getOwnLayer(selector.layer);
@@ -3157,7 +3156,9 @@ class Style extends Evented<MapEvents> {
             if ('featuresetId' in target.target) {
                 const {featuresetId, importId} = target.target;
                 const style = this.getFragmentStyle(importId);
-                const selectors = style.featuresetSelectors[featuresetId];
+                if (!style || !style._featuresetSelectors) continue;
+
+                const selectors = style._featuresetSelectors[featuresetId];
                 if (!selectors) {
                     this.fire(new ErrorEvent(new Error(`The featureset '${featuresetId}' does not exist in the map's style and cannot be queried for features.`)));
                     continue;
