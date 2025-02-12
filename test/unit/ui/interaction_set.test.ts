@@ -20,9 +20,11 @@ describe('InteractionSet', () => {
         // @ts-expect-error
         map.style = {
             queryRenderedTargets: () => [
-                feature({id: 1, layer, variants: {test: [{featureset}]}}),
+                feature({id: 1, layer, variants: {test: [{target: featureset}]}}),
             ]
         };
+        // @ts-expect-error
+        map.getFeatureState = () => ({});
 
         const interactions = new InteractionSet(map);
 
@@ -52,10 +54,12 @@ describe('InteractionSet', () => {
         // @ts-expect-error
         map.style = {
             queryRenderedTargets: () => [
-                feature({id: 1, layer, variants: {test: [{featureset}]}}),
-                feature({id: 2, layer, variants: {test: [{featureset}]}})
+                feature({id: 1, layer, variants: {test: [{target: featureset}]}}),
+                feature({id: 2, layer, variants: {test: [{target: featureset}]}})
             ]
         };
+        // @ts-expect-error
+        map.getFeatureState = () => ({});
 
         let clickHandled = false;
 
@@ -109,10 +113,12 @@ describe('InteractionSet', () => {
             queryRenderedTargets: (_, featuresetQueryTargets) => {
                 expect(featuresetQueryTargets[0].filter.filter).toBeTruthy();
                 return [
-                    feature({id: 3, layer, variants: {test: [{featureset, properties: {cool: true}}]}}),
+                    feature({id: 3, layer, variants: {test: [{target: featureset, properties: {cool: true}}]}}),
                 ];
             }
         };
+        // @ts-expect-error
+        map.getFeatureState = () => ({});
 
         let clickHandled = false;
 

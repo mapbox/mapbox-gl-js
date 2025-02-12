@@ -63,10 +63,14 @@ function generateTargetKey(target: TargetDescriptor): string {
     }
 }
 
+export function getFeatureTargetKey(variant: FeatureVariant, feature: Feature, targetId: string = ''): string {
+    return `${targetId}:${feature.id || ''}:${feature.layer.id}:${generateTargetKey(variant.target)}`;
+}
+
 export function shouldSkipFeatureVariant(variant: FeatureVariant, feature: Feature, uniqueFeatureSet: Set<string>, targetId: string = ''): boolean {
     if (variant.uniqueFeatureID) {
-        const key = `${targetId}:${feature.id || ''}:${feature.layer.id}:${generateTargetKey(variant.target)}`;
-        // skip the feature that hap same featureID in the same interarction with uniqueFeatureID turned on
+        const key = getFeatureTargetKey(variant, feature, targetId);
+        // skip the feature that has the same featureID in the same interaction with uniqueFeatureID turned on
         if (uniqueFeatureSet.has(key)) {
             return true;
         }
