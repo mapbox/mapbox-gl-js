@@ -21,6 +21,11 @@ type Rect = {
     h: number;
 };
 
+type ImagePositionScale = {
+    x: number;
+    y: number;
+}
+
 export class ImagePosition implements SpritePosition {
     paddedRect: Rect;
     pixelRatio: number;
@@ -30,6 +35,21 @@ export class ImagePosition implements SpritePosition {
     content: [number, number, number, number] | null | undefined;
     padding: number;
     sdf: boolean;
+    scale: ImagePositionScale;
+
+    static getImagePositionScale(imageIdWithOptions: ImageIdWithOptions | undefined, usvg: boolean, pixelRatio: number): ImagePositionScale {
+        if (usvg && imageIdWithOptions && imageIdWithOptions.options && imageIdWithOptions.options.transform) {
+            return {
+                x: imageIdWithOptions.options.transform.a,
+                y: imageIdWithOptions.options.transform.d
+            };
+        } else {
+            return {
+                x: pixelRatio,
+                y: pixelRatio
+            };
+        }
+    }
 
     constructor(paddedRect: Rect, {
         pixelRatio,
@@ -37,7 +57,9 @@ export class ImagePosition implements SpritePosition {
         stretchX,
         stretchY,
         content,
-    }: StyleImage, padding: number, sdf: boolean) {
+        sdf,
+        usvg,
+    }: StyleImage, padding: number, imageIdWithOptions?: ImageIdWithOptions) {
         this.paddedRect = paddedRect;
         this.pixelRatio = pixelRatio;
         this.stretchX = stretchX;
@@ -46,6 +68,7 @@ export class ImagePosition implements SpritePosition {
         this.version = version;
         this.padding = padding;
         this.sdf = sdf;
+        this.scale = ImagePosition.getImagePositionScale(imageIdWithOptions, usvg, pixelRatio);
     }
 
     get tl(): [number, number] {
@@ -64,8 +87,8 @@ export class ImagePosition implements SpritePosition {
 
     get displaySize(): [number, number] {
         return [
-            (this.paddedRect.w - this.padding * 2) / this.pixelRatio,
-            (this.paddedRect.h - this.padding * 2) / this.pixelRatio
+            (this.paddedRect.w - this.padding * 2) / this.scale.x,
+            (this.paddedRect.h - this.padding * 2) / this.scale.y
         ];
     }
 }
@@ -154,10 +177,11 @@ export default class ImageAtlas {
                 h: src.data.height + 2 * padding,
             };
             bins.push(bin);
-            positions[id] = new ImagePosition(bin, src, padding, src.sdf);
+            const imageIdWithOptions = ImageIdWithOptions.deserializeFromString(id);
+            positions[id] = new ImagePosition(bin, src, padding, imageIdWithOptions);
 
             if (src.hasRenderCallback) {
-                this.haveRenderCallbacks.push(ImageIdWithOptions.deserializeId(id));
+                this.haveRenderCallbacks.push(imageIdWithOptions.id);
             }
         }
     }

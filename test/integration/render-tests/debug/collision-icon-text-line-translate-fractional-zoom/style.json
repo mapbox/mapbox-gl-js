@@ -3,6 +3,7 @@
   "metadata": {
     "test": {
       "collisionDebug": true,
+      "spriteFormat": "icon_set",
       "height": 256,
       "width" : 256
     }
@@ -31,7 +32,7 @@
     }
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
-  "sprite": "local://sprites/sprite",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
@@ -45,7 +46,7 @@
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "icon-image": "fav-airport-18",
+        "icon-image": "information",
         "icon-size": [
           "interpolate",
           ["linear"],
@@ -53,7 +54,7 @@
           12,
           1,
           13,
-          2
+          3
         ],
         "text-field": "abc",
         "text-size": [

@@ -142,6 +142,10 @@ describe('shapeIcon', () => {
         paddedRect: Object.freeze({x: 0, y: 0, w: 22, h: 22}),
         pixelRatio: 1,
         version: 1,
+        scale: {
+            x: 1,
+            y: 1
+        },
         padding: ICON_PADDING
     });
 
