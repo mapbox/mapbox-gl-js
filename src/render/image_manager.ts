@@ -365,7 +365,7 @@ class ImageManager extends Evented {
             const w = image.data.width + PATTERN_PADDING * 2;
             const h = image.data.height + PATTERN_PADDING * 2;
             const bin = {w, h, x: 0, y: 0};
-            const position = new ImagePosition(bin, image, PATTERN_PADDING);
+            const position = new ImagePosition(bin, image, PATTERN_PADDING, false);
             this.patterns[scope][id] = {bin, position};
         } else {
             pattern.position.version = image.version;

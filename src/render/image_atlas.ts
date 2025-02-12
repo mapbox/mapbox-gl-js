@@ -29,6 +29,7 @@ export class ImagePosition implements SpritePosition {
     stretchX: Array<[number, number]> | null | undefined;
     content: [number, number, number, number] | null | undefined;
     padding: number;
+    sdf: boolean;
 
     constructor(paddedRect: Rect, {
         pixelRatio,
@@ -36,7 +37,7 @@ export class ImagePosition implements SpritePosition {
         stretchX,
         stretchY,
         content,
-    }: StyleImage, padding: number) {
+    }: StyleImage, padding: number, sdf: boolean) {
         this.paddedRect = paddedRect;
         this.pixelRatio = pixelRatio;
         this.stretchX = stretchX;
@@ -44,6 +45,7 @@ export class ImagePosition implements SpritePosition {
         this.content = content;
         this.version = version;
         this.padding = padding;
+        this.sdf = sdf;
     }
 
     get tl(): [number, number] {
@@ -78,6 +80,7 @@ export default class ImageAtlas {
     };
     haveRenderCallbacks: Array<string>;
     uploaded: boolean | null | undefined;
+    lut: LUT | null;
 
     constructor(icons: {
         [_: string]: StyleImage;
@@ -130,6 +133,7 @@ export default class ImageAtlas {
             RGBAImage.copy(src.data, image, {x: w - padding, y: 0}, {x: x - padding, y: y + h}, {width: padding, height: padding}, lut); // BR
         }
 
+        this.lut = lut;
         this.image = image;
         this.iconPositions = iconPositions;
         this.patternPositions = patternPositions;
@@ -150,7 +154,7 @@ export default class ImageAtlas {
                 h: src.data.height + 2 * padding,
             };
             bins.push(bin);
-            positions[id] = new ImagePosition(bin, src, padding);
+            positions[id] = new ImagePosition(bin, src, padding, src.sdf);
 
             if (src.hasRenderCallback) {
                 this.haveRenderCallbacks.push(ImageIdWithOptions.deserializeId(id));
@@ -184,7 +188,15 @@ export default class ImageAtlas {
 
         position.version = image.version;
         const [x, y] = position.tl;
-        texture.update(image.data, {position: {x, y}});
+        const overrideRGBWithWhite = position.sdf;
+        if (this.lut || overrideRGBWithWhite) {
+            const size = {width: image.data.width, height: image.data.height};
+            const imageToUpload = new RGBAImage(size);
+            RGBAImage.copy(image.data, imageToUpload, {x: 0, y: 0}, {x: 0, y: 0}, size, this.lut, overrideRGBWithWhite);
+            texture.update(imageToUpload, {position: {x, y}});
+        } else {
+            texture.update(image.data, {position: {x, y}});
+        }
     }
 
 }
