@@ -5,6 +5,28 @@
             "height": 300,
             "width": 200,
             "operations": [
+                [
+                    "addImage",
+                    "marker",
+                    "./image/marker.png",
+                    {
+                      "pixelRatio": 1.0
+                    }
+                ],
+                [
+                    "addLayer",
+                    {
+                        "id": "symbol",
+                        "type": "symbol",
+                        "source": "geojson",
+                        "layout": {
+                            "icon-image": "marker",
+                            "symbol-placement": "line",
+                            "symbol-spacing": 12.0
+                        }
+                    }
+                ],
+                ["wait"],
                 ["setProjection", "globe"],
                 ["wait"],
                 ["setZoom", 3.2],
@@ -39,25 +61,12 @@
             }
         }
     },
-    "sprite": "local://sprites/emerald",
     "layers": [
         {
             "id": "background",
             "type": "background",
             "paint": {
                 "background-color": "gray"
-            }
-        },
-        {
-            "id": "symbol",
-            "type": "symbol",
-            "source": "geojson",
-            "layout": {
-                "icon-image": "interstate_3",
-                "icon-allow-overlap": true,
-                "symbol-placement": "line",
-                "symbol-spacing": 12.0,
-                "icon-size": 0.6
             }
         }
     ]
