@@ -38,6 +38,7 @@ import type {ElevationFeature} from '../elevation_feature';
 class FillBucket implements Bucket {
     index: number;
     zoom: number;
+    pixelRatio: number;
     overscaling: number;
     layers: Array<FillStyleLayer>;
     layerIds: Array<string>;
@@ -63,6 +64,7 @@ class FillBucket implements Bucket {
 
     constructor(options: BucketParameters<FillStyleLayer>) {
         this.zoom = options.zoom;
+        this.pixelRatio = options.pixelRatio;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.fqid);
@@ -84,7 +86,7 @@ class FillBucket implements Bucket {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
-        this.hasPattern = hasPattern('fill', this.layers, options);
+        this.hasPattern = hasPattern('fill', this.layers, this.pixelRatio, options);
         const fillSortKey = this.layers[0].layout.get('fill-sort-key');
         const bucketFeatures = [];
 
@@ -125,7 +127,7 @@ class FillBucket implements Bucket {
             const {geometry, index, sourceLayerIndex} = bucketFeature;
 
             if (this.hasPattern) {
-                const patternFeature = addPatternDependencies('fill', this.layers, bucketFeature, this.zoom, options);
+                const patternFeature = addPatternDependencies('fill', this.layers, bucketFeature, this.zoom, this.pixelRatio, options);
                 // pattern features are added only once the pattern is loaded into the image atlas
                 // so are stored during populate until later updated with positions by tile worker in addFeatures
                 this.patternFeatures.push(patternFeature);

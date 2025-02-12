@@ -124,6 +124,7 @@ class LineBucket implements Bucket {
     index: number;
     zoom: number;
     overscaling: number;
+    pixelRatio: number;
     layers: Array<LineStyleLayer>;
     layerIds: Array<string>;
     gradients: {
@@ -165,6 +166,7 @@ class LineBucket implements Bucket {
         this.zoom = options.zoom;
         this.evaluationGlobals.zoom = this.zoom;
         this.overscaling = options.overscaling;
+        this.pixelRatio = options.pixelRatio;
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.fqid);
         this.index = options.index;
@@ -199,7 +201,7 @@ class LineBucket implements Bucket {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
-        this.hasPattern = hasPattern('line', this.layers, options);
+        this.hasPattern = hasPattern('line', this.layers, this.pixelRatio, options);
         const lineSortKey = this.layers[0].layout.get('line-sort-key');
 
         this.tileToMeter = tileToMeter(canonical);
@@ -265,7 +267,7 @@ class LineBucket implements Bucket {
             }
 
             if (this.hasPattern) {
-                const patternBucketFeature = addPatternDependencies('line', this.layers, bucketFeature, this.zoom, options);
+                const patternBucketFeature = addPatternDependencies('line', this.layers, bucketFeature, this.zoom, this.pixelRatio, options);
                 // pattern features are added only once the pattern is loaded into the image atlas
                 // so are stored during populate until later updated with positions by tile worker in addFeatures
                 this.patternFeatures.push(patternBucketFeature);

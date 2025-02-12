@@ -13,7 +13,8 @@ type PatternStyleLayers = Array<LineStyleLayer> | Array<FillStyleLayer> | Array<
 
 function addPattern(
     pattern: string | ResolvedImage,
-    patterns: Record<string, Array<ImageIdWithOptions>>
+    patterns: Record<string, Array<ImageIdWithOptions>>,
+    pixelRatio: number = 1
 ): string | null {
     if (!pattern) {
         return null;
@@ -25,12 +26,12 @@ function addPattern(
         patterns[patternId] = [];
     }
 
-    const patternPrimary = (ResolvedImage.from(pattern)).getPrimary();
+    const patternPrimary = ResolvedImage.from(patternId).getPrimary().scaleSelf(pixelRatio);
     patterns[patternId].push(patternPrimary);
     return patternPrimary.serialize();
 }
 
-export function hasPattern(type: string, layers: PatternStyleLayers, options: PopulateParameters): boolean {
+export function hasPattern(type: string, layers: PatternStyleLayers, pixelRatio: number, options: PopulateParameters): boolean {
     const patterns = options.patternDependencies;
     let hasPattern = false;
 
@@ -44,7 +45,7 @@ export function hasPattern(type: string, layers: PatternStyleLayers, options: Po
 
         const constantPattern = patternProperty.constantOr(null);
 
-        if (addPattern(constantPattern, patterns)) {
+        if (addPattern(constantPattern, patterns, pixelRatio)) {
             hasPattern = true;
         }
     }
@@ -57,6 +58,7 @@ export function addPatternDependencies(
     layers: PatternStyleLayers,
     patternFeature: BucketFeature,
     zoom: number,
+    pixelRatio: number,
     options: PopulateParameters,
 ): BucketFeature {
     const patterns = options.patternDependencies;
@@ -69,7 +71,7 @@ export function addPatternDependencies(
             let pattern = patternPropertyValue.evaluate({zoom}, patternFeature, {}, options.availableImages);
             pattern = pattern && pattern.name ? pattern.name : pattern;
 
-            const patternSerialized: string | null = addPattern(pattern, patterns);
+            const patternSerialized: string | null = addPattern(pattern, patterns, pixelRatio);
 
             // save for layout
             if (patternSerialized) {

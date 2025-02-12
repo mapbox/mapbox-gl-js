@@ -637,6 +637,7 @@ class FillExtrusionBucket implements Bucket {
     layerIds: Array<string>;
     stateDependentLayers: Array<FillExtrusionStyleLayer>;
     stateDependentLayerIds: Array<string>;
+    pixelRatio: number;
 
     layoutVertexArray: FillExtrusionLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -693,6 +694,7 @@ class FillExtrusionBucket implements Bucket {
         this.canonical = options.canonical;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
+        this.pixelRatio = options.pixelRatio;
         this.layerIds = this.layers.map(layer => layer.fqid);
         this.index = options.index;
         this.hasPattern = false;
@@ -727,7 +729,7 @@ class FillExtrusionBucket implements Bucket {
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         this.features = [];
-        this.hasPattern = hasPattern('fill-extrusion', this.layers, options);
+        this.hasPattern = hasPattern('fill-extrusion', this.layers, this.pixelRatio, options);
         this.featuresOnBorder = [];
         this.borderFeatureIndices = [[], [], [], []];
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
@@ -756,7 +758,7 @@ class FillExtrusionBucket implements Bucket {
             const vertexArrayOffset = this.layoutVertexArray.length;
             const featureIsPolygon = vectorTileFeatureTypes[bucketFeature.type] === 'Polygon';
             if (this.hasPattern) {
-                this.features.push(addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, options));
+                this.features.push(addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, this.pixelRatio, options));
             } else {
                 if (this.wallMode) {
                     for (const polygon of bucketFeature.geometry) {

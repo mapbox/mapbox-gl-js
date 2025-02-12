@@ -4,7 +4,8 @@
     "test": {
       "width": 64,
       "height": 64,
-      "pixelRatio": 2
+      "pixelRatio": 2,
+      "spriteFormat": "icon_set"
     }
   },
   "sources": {
@@ -39,7 +40,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "fill",
@@ -47,7 +48,7 @@
       "source": "geojson",
       "paint": {
         "fill-antialias": false,
-        "fill-pattern": "generic_icon"
+        "fill-pattern": "information"
       }
     }
   ]
