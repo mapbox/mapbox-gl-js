@@ -5,7 +5,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 
 export type EvaluationFeature = {
     readonly type: 0 | 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
-    readonly id?: any;
+    readonly id?: number | string | undefined;
     properties: {
         [_: string]: any;
     };
