@@ -1733,6 +1733,31 @@
       },
       "property-type": "data-driven"
     },
+    "circle-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of circle-elevation. Some modes might require precomputed elevation data in the tileset.",
+      "values": {
+        "none": {
+          "doc": "Elevated rendering is disabled."
+        },
+        "hd-road-markup": {
+          "doc": "Elevated rendering is enabled. Use this mode to describe additive and stackable features that should exist only on top of road polygons."
+        }
+      },
+      "default": "none",
+      "experimental": true,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant"
+    },
     "visibility": {
       "type": "enum",
       "values": {

@@ -18,11 +18,13 @@ import type {StylePropertySpecification} from '../../style-spec/style-spec';
 
 export type LayoutProps = {
     "circle-sort-key": DataDrivenProperty<number>;
+    "circle-elevation-reference": DataConstantProperty<"none" | "hd-road-markup">;
     "visibility": DataConstantProperty<"visible" | "none">;
 };
 let layout: Properties<LayoutProps>;
 export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "circle-sort-key": new DataDrivenProperty(styleSpec["layout_circle"]["circle-sort-key"]),
+    "circle-elevation-reference": new DataConstantProperty(styleSpec["layout_circle"]["circle-elevation-reference"]),
     "visibility": new DataConstantProperty(styleSpec["layout_circle"]["visibility"]),
 }));
 

@@ -752,6 +752,10 @@ export type CircleLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "circle-sort-key"?: DataDrivenPropertyValueSpecification<number>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "circle-elevation-reference"?: "none" | "hd-road-markup" | ExpressionSpecification,
         "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {
