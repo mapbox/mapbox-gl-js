@@ -1,4 +1,4 @@
-## 3.10.0-beta.1
+## 3.10.0
 
 ### Features and improvements ✨
 
@@ -6,10 +6,21 @@
 - Improve rendering of complex SVG clip paths for vector icons.
 
 ### Bug fixes 🐞
+- Fix some mouse gestures for Firefox 136 and later on Mac OS.
 - Fix issue where the close popup button was hidden from screen readers.
+- Fix updating of schema config values of imported styles.
+- Fix line placement symbol disappearing issue during transition from globe.
 - Fix `queryRenderedFeatures` not working on duplicated model layers.
+- Fix in-place update for SDF image.
+- Fix LUT not being applied to in-place updated image.
+- Fix various issues with using `mouseenter` and `mouseleave` with Interactions API.
+- Fix error with interactible map elements during interaction with a map that wasn't fully loaded.
 - Fix rendering of elevated and non-elevated lines on the same layer.
+- Fix pixel ratio handling for patterns with vector icons.
+- Fix positioning of vector icons with modified `icon-size`.
 - Fix a blank map issue after WebGL context loss.
+- Fix loss of precision for close to camera models.
+- Fix transparent models not being culled when terrain is enabled.
 
 ## 3.9.4
 - Fix vector icons rendering with stretch areas on high DPI devices.
