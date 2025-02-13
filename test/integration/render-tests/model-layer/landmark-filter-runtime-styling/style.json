@@ -1,0 +1,81 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "standardDerivatives": true,
+      "height": 512,
+      "width": 512,
+      "allowed": 0.0015,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setFilter",
+          "landmark",
+          [
+            "!",
+            [
+              "in",
+              [
+                "id"
+              ],
+              [
+                "literal",
+                [
+                  "24222973"
+                ]
+              ]
+            ]
+          ]
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "landmark": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx-meshopt/{x}-{y}-{z}.glb"
+      ]
+    }
+  },
+  "zoom": 15.0,
+  "center": [
+      -122.40498,
+      37.79276
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#aaaaaa"
+      }
+    },
+    {
+      "id": "landmark",
+      "type": "model",
+      "source": "landmark",
+      "filter": [
+        "!",
+        [
+          "in",
+          [
+            "id"
+          ],
+          [
+            "literal",
+            [
+              "14543549"
+            ]
+          ]
+        ]
+      ]
+    }
+  ]
+}

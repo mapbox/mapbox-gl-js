@@ -745,6 +745,7 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
         const tile = source.getTile(coord);
         const bucket = tile.getBucket(layer) as Tiled3dModelBucket | null | undefined;
         if (!bucket) continue;
+        bucket.setFilter(layer.filter);
         // Conflation
         if (painter.conflationActive) bucket.updateReplacement(coord, painter.replacementSource);
         // evaluate scale
@@ -832,6 +833,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             }
 
             const sortedNodes: Array<SortedNode> = [];
+            bucket.setFilter(layer.filter);
             for (const nodeInfo of bucket.getNodesInfo()) {
                 if (nodeInfo.hiddenByReplacement) continue;
                 if (!nodeInfo.node.meshes) continue;
