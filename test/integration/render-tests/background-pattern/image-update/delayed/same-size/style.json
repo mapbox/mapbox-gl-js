@@ -15,8 +15,7 @@
           "updateImage",
           "marker",
           "./image/marker_18x18.png"
-        ],
-        ["wait"]
+        ]
       ]
     }
   },

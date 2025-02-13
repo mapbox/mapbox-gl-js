@@ -104,7 +104,9 @@ const todo = [
     // line-width projected
     "render-tests/elevated-line-width/projected",
     // https://mapbox.atlassian.net/browse/MAPSNAT-2636
-    "render-tests/icon-text-fit/stretch-nine-part-content-interpolate-text-size"
+    "render-tests/icon-text-fit/stretch-nine-part-content-interpolate-text-size",
+    // https://mapbox.atlassian.net/browse/GLJS-1189
+    "render-tests/background-pattern/image-update/delayed/same-size-before-color-theme-change"
 ];
 
 const skip = [
@@ -274,7 +276,9 @@ const skip = [
     "render-tests/lines-elevated-line-joins-linear-elevation",
 
     // Support image updates with different size
-    "render-tests/background-pattern/image-update/delayed/different-size"
+    "render-tests/background-pattern/image-update/delayed/different-size",
+    "render-tests/background-pattern/image-update/delayed/different-size-before-color-theme-change",
+    "render-tests/background-pattern/image-update/delayed/different-size-with-color-theme"
 ];
 
 export default {todo, skip};
