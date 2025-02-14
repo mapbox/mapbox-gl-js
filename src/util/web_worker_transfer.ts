@@ -202,6 +202,15 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         return properties;
     }
 
+    if (input instanceof DOMMatrix) {
+        const properties: SerializedObject = {'$name': 'DOMMatrix'};
+        const matrixProperties = ['is2D', 'm11', 'm12', 'm13', 'm14', 'm21', 'm22', 'm23', 'm24', 'm31', 'm32', 'm33', 'm34', 'm41', 'm42', 'm43', 'm44', 'a', 'b', 'c', 'd', 'e', 'f'];
+        for (const property of matrixProperties) {
+            properties[property] = input[property];
+        }
+        return properties;
+    }
+
     if (typeof input === 'object') {
         const klass = input.constructor as Klass;
         const name = klass._classRegistryKey;
@@ -293,6 +302,18 @@ export function deserialize(input: Serialized): unknown {
                 set.add(deserialize(value));
             }
             return set;
+        }
+
+        if (name === 'DOMMatrix') {
+            let values;
+            if (input['is2D']) { values = [input['a'], input['b'], input['c'], input['d'], input['e'], input['f']]; } else {
+                values = [input['m11'], input['m12'], input['m13'], input['m14'],
+                    input['m21'], input['m22'], input['m23'], input['m24'],
+                    input['m31'], input['m32'], input['m33'], input['m34'],
+                    input['m41'], input['m42'], input['m43'], input['m44']];
+            }
+            const matrix = new DOMMatrix(values);
+            return matrix;
         }
 
         const {klass} = registry[name];

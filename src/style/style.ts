@@ -1355,6 +1355,9 @@ class Style extends Evented<MapEvents> {
         if (!this.imageManager.isLoaded())
             return false;
 
+        if (this.imageManager.hasPatternsInFlight())
+            return false;
+
         if (!this.modelManager.isLoaded())
             return false;
 

@@ -27,6 +27,10 @@ type Pattern = {
     position: ImagePosition;
 };
 
+type ImageWorkerTask = { image: StyleImage, imageIdWithOptions: ImageIdWithOptions };
+type ImageWorkerTasks = Record<string, ImageWorkerTask>;
+type ImageDictionary = { [_: string]: RGBAImage }
+
 export type SpriteFormat = 'auto' | 'raster' | 'icon_set';
 
 /*
@@ -72,6 +76,7 @@ class ImageManager extends Evented {
             [id: string]: Pattern;
         };
     };
+    patternsInFlight: Set<string>;
     atlasImage: {
         [scope: string]: RGBAImage;
     };
@@ -94,6 +99,7 @@ class ImageManager extends Evented {
         this.requestors = [];
 
         this.patterns = {};
+        this.patternsInFlight = new Set();
         this.atlasImage = {};
         this.atlasTexture = {};
         this.dirty = true;
@@ -273,7 +279,7 @@ class ImageManager extends Evented {
         }
     }
 
-    rasterizeImages({scope, imageTasks}: {scope: string, imageTasks: {[_: string]: ImageIdWithOptions}}, callback: Callback<{[_: string]: RGBAImage}>) {
+    rasterizeImages({scope, imageTasks}: {scope: string, imageTasks: {[_: string]: ImageIdWithOptions}}, callback: Callback<ImageDictionary>) {
         const imageWorkerTasks: {[_: string]: {image: StyleImage, imageIdWithOptions: ImageIdWithOptions}} = {};
 
         for (const id in imageTasks) {
@@ -283,15 +289,18 @@ class ImageManager extends Evented {
                 imageWorkerTasks[id] = {image, imageIdWithOptions};
             }
         }
+        this.rasterizeImagesInWorkerOrMainThread(scope, imageWorkerTasks, callback);
+    }
 
+    rasterizeImagesInWorkerOrMainThread(scope: string, imageTasks: ImageWorkerTasks, callback?: Callback<ImageDictionary> | null) {
         if (!offscreenCanvasSupported()) {
-            this.rasterizeImagesInMainThread({imageTasks: imageWorkerTasks, scope}, callback);
+            this.rasterizeImagesInMainThread({imageTasks, scope}, callback);
         } else {
-            this.imageRasterizerDispatcher.getActor().send('rasterizeImages', {imageTasks: imageWorkerTasks, scope}, callback);
+            this.imageRasterizerDispatcher.getActor().send('rasterizeImages', {imageTasks, scope}, callback);
         }
     }
 
-    rasterizeImagesInMainThread(input: {imageTasks: {[_: string]:  {image: StyleImage, imageIdWithOptions: ImageIdWithOptions}}, scope: string}, callback: (err?: Error, result?: {[_: string]: RGBAImage}) => void) {
+    rasterizeImagesInMainThread(input: { imageTasks: ImageWorkerTasks, scope: string }, callback: Callback<ImageDictionary>) {
         const {imageTasks, scope} = input;
         const images: {[key: string]: RGBAImage} = {};
         for (const id in imageTasks) {
@@ -360,13 +369,15 @@ class ImageManager extends Evented {
 
         if (!pattern) {
             if (image.usvg && !image.data) {
-                image.data = this.imageRasterizer.rasterize(ResolvedImage.from(id).getPrimary(), image, scope, '');
+                if (this.patternsInFlight.has(id)) return null;
+                this.patternsInFlight.add(this.getPatternInFlightId(scope, id));
+                const imageIdWithOptions = ResolvedImage.from(id).getPrimary();
+                const imageTasks = {[id]: {image, imageIdWithOptions}};
+                this.rasterizeImagesInWorkerOrMainThread(scope, imageTasks, (_, result) => this.storePatternImage(id, scope, image, lut, result));
+                return null;
+            } else {
+                this.storePattern(scope, id, image, lut);
             }
-            const w = image.data.width + PATTERN_PADDING * 2;
-            const h = image.data.height + PATTERN_PADDING * 2;
-            const bin = {w, h, x: 0, y: 0};
-            const position = new ImagePosition(bin, image, PATTERN_PADDING);
-            this.patterns[scope][id] = {bin, position};
         } else {
             pattern.position.version = image.version;
         }
@@ -374,6 +385,27 @@ class ImageManager extends Evented {
         this._updatePatternAtlas(scope, lut);
 
         return this.patterns[scope][id].position;
+    }
+
+    getPatternInFlightId(scope: string, id: string) {
+        return `${scope}${id}`;
+    }
+
+    storePatternImage(id: string, scope: string, image: StyleImage, lut: LUT, result?: ImageDictionary | null) {
+        const imageData = result[id];
+        if (!imageData) return;
+        image.data = imageData;
+        this.storePattern(scope, id, image, lut);
+        this._updatePatternAtlas(scope, lut);
+        this.patternsInFlight.delete(this.getPatternInFlightId(scope, id));
+    }
+
+    storePattern(scope: string, id: string, image: StyleImage, lut: LUT) {
+        const w = image.data.width + PATTERN_PADDING * 2;
+        const h = image.data.height + PATTERN_PADDING * 2;
+        const bin = {w, h, x: 0, y: 0};
+        const position = new ImagePosition(bin, image, PATTERN_PADDING);
+        this.patterns[scope][id] = {bin, position};
     }
 
     bind(context: Context, scope: string) {
@@ -389,6 +421,10 @@ class ImageManager extends Evented {
         }
 
         atlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+    }
+
+    hasPatternsInFlight() {
+        return this.patternsInFlight.size !== 0;
     }
 
     _updatePatternAtlas(scope: string, lut: LUT | null) {

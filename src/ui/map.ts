@@ -4415,6 +4415,12 @@ export class Map extends Camera {
             this._styleDirty = true;
         }
 
+        // Background patterns are rasterized in a worker thread, while
+        // it's still in progress we need to keep rendering
+        if (this.style && this.style.imageManager.hasPatternsInFlight()) {
+            this._styleDirty = true;
+        }
+
         if (this.style && !this._placementDirty) {
             // Since no fade operations are in progress, we can release
             // all tiles held for fading. If we didn't do this, the tiles
