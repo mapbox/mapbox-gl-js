@@ -20,7 +20,7 @@ import type {vec2, vec4} from 'gl-matrix';
 import type {Class} from '../../src/types/class';
 import type {Footprint} from '../util/conflation';
 import type {TextureImage} from '../../src/render/texture';
-import type {Mesh, ModelNode, Material, ModelTexture, Sampler, AreaLight, PbrMetallicRoughness} from '../data/model';
+import type {Mesh, ModelNode, Material, MaterialDescription, ModelTexture, Sampler, AreaLight, PbrMetallicRoughness} from '../data/model';
 
 function convertTextures(gltf: any, images: Array<TextureImage>): Array<ModelTexture> {
     const textures: ModelTexture[] = [];
@@ -44,7 +44,7 @@ function convertTextures(gltf: any, images: Array<TextureImage>): Array<ModelTex
     return textures;
 }
 
-function convertMaterial(materialDesc: any, textures: Array<ModelTexture>): Material {
+function convertMaterial(materialDesc: MaterialDescription, textures: Array<ModelTexture>): Material {
     const {
         emissiveFactor = [0, 0, 0],
         alphaMode = 'OPAQUE',

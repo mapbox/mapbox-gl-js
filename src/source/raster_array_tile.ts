@@ -29,7 +29,7 @@ export type MRTLayer = {
     version: number;
     name: string;
     units: string;
-    tilesize: number;
+    tileSize: number;
     buffer: number;
     pixelFormat: 'uint8' | 'uint16' | 'uint32';
     dataIndex: Partial<Record<string | number, any>>;
@@ -143,8 +143,7 @@ class RasterArrayTile extends Tile {
         fetchLength: number | null | undefined = FIRST_TRY_HEADER_LENGTH,
         callback: ResponseCallback<ArrayBuffer | null | undefined>,
     ): Cancelable {
-        // @ts-expect-error - TS2739 - Type 'MapboxRasterTile' is missing the following properties from type 'MRT': x, y, z, _cacheSize, layers
-        const mrt = this._mrt = new MapboxRasterTile(MRT_DECODED_BAND_CACHE_SIZE);
+        const mrt = this._mrt = new MapboxRasterTile(MRT_DECODED_BAND_CACHE_SIZE) as unknown as MRT;
 
         const headerRequestParams = Object.assign({}, this.requestParams, {headers: {Range: `bytes=0-${fetchLength - 1}`}});
 

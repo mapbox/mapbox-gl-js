@@ -33,15 +33,13 @@ export default class FormatExpression implements Expression {
         this.sections = sections;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | void {
         if (args.length < 2) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`Expected at least one argument.`);
         }
 
         const firstArg = args[1];
-        if (!Array.isArray(firstArg) && typeof firstArg === 'object')  {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
+        if (!Array.isArray(firstArg) && typeof firstArg === 'object') {
             return context.error(`First argument must be an image or text section.`);
         }
 
@@ -81,7 +79,6 @@ export default class FormatExpression implements Expression {
 
                 const kind = content.type.kind;
                 if (kind !== 'string' && kind !== 'value' && kind !== 'null' && kind !== 'resolvedImage')
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                     return context.error(`Formatted text type must be 'string', 'value', 'image' or 'null'.`);
 
                 nextTokenMayBeObject = true;
@@ -133,11 +130,10 @@ export default class FormatExpression implements Expression {
     }
 
     serialize(): SerializedExpression {
-        const serialized = ["format"];
+        const serialized: SerializedExpression[] = ["format"];
         for (const section of this.sections) {
-            // @ts-expect-error - TS2345 - Argument of type 'SerializedExpression' is not assignable to parameter of type 'string'.
             serialized.push(section.content.serialize());
-            const options: Record<string, any> = {};
+            const options = {} as SerializedExpression;
             if (section.scale) {
                 options['font-scale'] = section.scale.serialize();
             }
@@ -147,7 +143,6 @@ export default class FormatExpression implements Expression {
             if (section.textColor) {
                 options['text-color'] = section.textColor.serialize();
             }
-            // @ts-expect-error - TS2345 - Argument of type 'Record<string, any>' is not assignable to parameter of type 'string'.
             serialized.push(options);
         }
         return serialized;

@@ -53,6 +53,7 @@ import type {UniformValues} from '../render/uniform_binding';
 import type Transform from '../geo/transform';
 import type {CanonicalTileID} from '../source/tile_id';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
+import type {SourceSpecification} from '../style-spec/types';
 
 const GRID_DIM = 128;
 
@@ -66,9 +67,8 @@ type RenderBatch = {
 
 class MockSourceCache extends SourceCache {
     constructor(map: Map) {
-        const sourceSpec = {type: 'raster-dem', maxzoom: map.transform.maxZoom};
+        const sourceSpec: SourceSpecification = {type: 'raster-dem', maxzoom: map.transform.maxZoom};
         const sourceDispatcher = new Dispatcher(getWorkerPool(), null);
-        // @ts-expect-error - TS2345 - Argument of type '{ type: string; maxzoom: number; }' is not assignable to parameter of type 'SourceSpecification'.
         const source = createSource('mock-dem', sourceSpec, sourceDispatcher, map.style);
 
         super('mock-dem', source, false);
@@ -301,8 +301,7 @@ export class Terrain extends Elevation {
         this._drapedRenderBatches = [];
         this._sourceTilesOverlap = {};
         this.proxySourceCache = new ProxySourceCache(style.map);
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
-        this.orthoMatrix = mat4.create();
+        this.orthoMatrix = mat4.create() as Float32Array;
         const epsilon = this.painter.transform.projection.name === 'globe' ?  .015 : 0; // Experimentally the smallest value to avoid rendering artifacts (https://github.com/mapbox/mapbox-gl-js/issues/11975)
         mat4.ortho(this.orthoMatrix, epsilon, EXTENT, 0, EXTENT, 0, 1);
         const gl = context.gl;
@@ -1393,7 +1392,6 @@ export class Terrain extends Elevation {
 
         for (const tileID of proxiedCoords) {
             const id = painter._tileClippingMaskIDs[tileID.key] = --ref;
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled,
                 // Tests will always pass, and ref value will be written to stencil buffer.
                 new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
@@ -1413,28 +1411,25 @@ export class Terrain extends Elevation {
             return null;
         }
 
-        const far = [screenPoint.x, screenPoint.y, 1, 1];
-        vec4.transformMat4(far as [number, number, number, number], far as [number, number, number, number], transform.pixelMatrixInverse);
-        vec4.scale(far as [number, number, number, number], far as [number, number, number, number], 1.0 / far[3]);
+        const far: [number, number, number, number] = [screenPoint.x, screenPoint.y, 1, 1];
+        vec4.transformMat4(far, far, transform.pixelMatrixInverse);
+        vec4.scale(far, far, 1.0 / far[3]);
         // x & y in pixel coordinates, z is altitude in meters
         far[0] /= transform.worldSize;
         far[1] /= transform.worldSize;
         const camera = transform._camera.position;
         const mercatorZScale = mercatorZfromAltitude(1, transform.center.lat);
-        const p = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
-        const dir = vec3.subtract([] as any, far.slice(0, 3) as vec3, p as vec3);
+        const p: [number, number, number, number] = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
+        const dir = vec3.subtract([] as any, far.slice(0, 3) as vec3, p as unknown as vec3);
         vec3.normalize(dir, dir);
 
         const exaggeration = this._exaggeration;
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
-        const distanceAlongRay = this.raycast(p, dir, exaggeration);
+        const distanceAlongRay = this.raycast(p as unknown as vec3, dir, exaggeration);
 
         if (distanceAlongRay === null || !distanceAlongRay) return null;
-        // @ts-expect-error - TS2345 - Argument of type '[number, number, number, number]' is not assignable to parameter of type 'vec3'.
-        vec3.scaleAndAdd(p as [number, number, number, number], p as [number, number, number, number], dir, distanceAlongRay);
+        vec3.scaleAndAdd(p as unknown as vec3, p as unknown as vec3, dir, distanceAlongRay);
         p[3] = p[2];
         p[2] *= mercatorZScale;
-        // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec4'.
         return p;
     }
 
@@ -1561,9 +1556,8 @@ export class Terrain extends Elevation {
         }
         if (tile.tileID.key !== proxyTileID.key) {
             const scale = proxyTileID.canonical.z - tile.tileID.canonical.z;
-            // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
-            matrix = mat4.create();
-            let size, xOffset, yOffset;
+            matrix = mat4.create() as Float32Array;
+            let size: number, xOffset: number, yOffset: number;
             const wrap = (tile.tileID.wrap - proxyTileID.wrap) << proxyTileID.overscaledZ;
             if (scale > 0) {
                 size = EXTENT >> scale;

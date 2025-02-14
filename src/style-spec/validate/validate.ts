@@ -70,6 +70,9 @@ export type ValidationOptions = {
     valueSpec?: any;
     style: Partial<StyleSpecification>;
     styleSpec: StyleReference;
+    object?: any;
+    objectKey?: string;
+    objectElementValidators?: Record<string, (...args: any[]) => Array<ValidationError>>;
 };
 
 export default function validate(options: ValidationOptions, arrayAsExpression: boolean = false): Array<ValidationError> {

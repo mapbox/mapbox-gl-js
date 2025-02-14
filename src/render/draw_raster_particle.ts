@@ -262,7 +262,6 @@ function renderBackground(painter: Painter, layer: RasterParticleStyleLayer, til
         context.clear({color: Color.transparent});
         if (!renderBackground) continue;
         particleState.backgroundColorTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         program.draw(
             painter,
             gl.TRIANGLES,
@@ -350,7 +349,6 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
                 targetTileData.scale,
                 targetTileData.offset
             );
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(
                 painter,
                 gl.POINTS,
@@ -405,7 +403,6 @@ function updateParticles(painter: Painter, layer: RasterParticleStyleLayer, tile
         particleFramebuffer.colorAttachment.set(state.particleTexture1.texture);
         context.clear({color: Color.transparent});
         const updateProgram = painter.getOrCreateProgram('rasterParticleUpdate', {defines: data.defines});
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         updateProgram.draw(
             painter,
             gl.TRIANGLES,
@@ -527,7 +524,6 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
                 assert(buffer);
                 assert(indexBuffer);
                 assert(segments);
-                // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
                 program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, painter.renderElevatedRasterBackface ? CullFaceMode.frontCCW : CullFaceMode.backCCW, uniformValues, layer.id, buffer, indexBuffer, segments);
             }
         } else {
@@ -535,7 +531,6 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
             const stencilMode = stencilModes[coord.overscaledZ];
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
                 uniformValues, layer.id, tileBoundsBuffer,
                 tileBoundsIndexBuffer, tileBoundsSegments);
@@ -569,9 +564,7 @@ export function prepare(layer: RasterParticleStyleLayer, sourceCache: SourceCach
     // @ts-expect-error - TS2322 - Type 'Tile[]' is not assignable to type 'RasterArrayTile[]'.
     const tiles: Array<RasterArrayTile> = sourceCache.getIds().map(id => sourceCache.getTileByID(id));
     for (const tile of tiles) {
-        // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
         if (tile.updateNeeded(sourceLayer, band)) {
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
             source.prepareTile(tile, sourceLayer, band);
         }
     }

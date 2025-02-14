@@ -34,6 +34,7 @@ import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import type {Source} from '../source/source';
 import type {UserManagedTexture} from './texture';
 import type {DynamicDefinesType} from '../render/program/program_uniforms';
+import type VertexBuffer from '../gl/vertex_buffer';
 
 export default drawRaster;
 
@@ -157,7 +158,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             const fade = rasterFade(tile, parentTile, sourceCache, painter.transform, rasterFadeDuration);
             if (painter.terrain) painter.terrain.prepareDrawTile();
 
-            let parentScaleBy, parentTL;
+            let parentScaleBy: number, parentTL: [number, number];
 
             context.activeTexture.set(gl.TEXTURE0);
             texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
@@ -177,8 +178,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
             // Enable trilinear filtering on tiles only beyond 20 degrees pitch,
             // to prevent it from compromising image crispness on flat or low tilted maps.
-            // @ts-expect-error - TS2339 - Property 'useMipmap' does not exist on type 'Texture | UserManagedTexture'.
-            if (texture.useMipmap && context.extTextureFilterAnisotropic && painter.transform.pitch > 20) {
+            if ('useMipmap' in texture && context.extTextureFilterAnisotropic && painter.transform.pitch > 20) {
                 gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
             }
 
@@ -251,7 +251,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 const elevatedGlobeVertexBuffer = source.elevatedGlobeVertexBuffer;
                 const elevatedGlobeIndexBuffer = source.elevatedGlobeIndexBuffer;
                 if (renderingToTexture || !isGlobeProjection) {
-                    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
                     if (source.boundsBuffer && source.boundsSegments) program.draw(
                         painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                         uniformValues, layer.id, source.boundsBuffer,
@@ -261,7 +260,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                         source.elevatedGlobeSegments :
                         source.getSegmentsForLongitude(tr.center.lng);
                     if (segments) {
-                        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
                         program.draw(
                             painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, cullFaceMode,
                             uniformValues, layer.id, elevatedGlobeVertexBuffer,
@@ -276,13 +274,11 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                     assert(buffer);
                     assert(indexBuffer);
                     assert(segments);
-                    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
                     program.draw(painter, gl.TRIANGLES, depthMode, elevatedStencilMode || stencilMode, painter.colorModeForRenderPass(), cullFaceMode, uniformValues, layer.id, buffer, indexBuffer, segments);
                 }
             } else {
                 const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
-                // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
                 program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                     uniformValues, layer.id, tileBoundsBuffer,
                     tileBoundsIndexBuffer, tileBoundsSegments);
@@ -323,12 +319,12 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
     const sharedBuffers = painter.globeSharedBuffers;
     if (!sharedBuffers) return;
 
-    let tile;
+    let tile: Tile;
     if (coord) {
         tile = sourceCache.getTile(coord);
     }
-    let texture;
-    let globeMatrix;
+    let texture: Texture | UserManagedTexture;
+    let globeMatrix: mat4;
     if (source instanceof ImageSource) {
         texture = source.texture;
         globeMatrix = globePoleMatrixForTile(0, 0, painter.transform);
@@ -363,7 +359,7 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
 
     // Enable trilinear filtering on tiles only beyond 20 degrees pitch,
     // to prevent it from compromising image crispness on flat or low tilted maps.
-    if (texture.useMipmap && context.extTextureFilterAnisotropic && painter.transform.pitch > 20) {
+    if ('useMipmap' in texture && context.extTextureFilterAnisotropic && painter.transform.pitch > 20) {
         gl.texParameterf(gl.TEXTURE_2D, context.extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT, context.extTextureFilterAnisotropicMax);
     }
 
@@ -374,7 +370,7 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
         segment
     ] = coord ? sharedBuffers.getPoleBuffers(coord.canonical.z, false) : sharedBuffers.getPoleBuffers(0, true);
     const elevation = layer.paint.get('raster-elevation');
-    let vertexBuffer;
+    let vertexBuffer: VertexBuffer;
     if (isNorth) {
         vertexBuffer = northPoleBuffer;
         painter.renderDefaultNorthPole = elevation !== 0.0;
@@ -384,11 +380,10 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
     }
     const rasterColorMix = adjustColorMix(rasterConfig.mix);
 
-    const uniformValues = rasterPoleUniformValues(projMatrix, normalizeMatrix, globeMatrix, globeToMercatorTransition(painter.transform.zoom), fade, layer, [0, 0], elevation, RASTER_COLOR_TEXTURE_UNIT, rasterColorMix, rasterConfig.offset, rasterConfig.range, emissiveStrength);
+    const uniformValues = rasterPoleUniformValues(projMatrix, normalizeMatrix, globeMatrix as Float32Array, globeToMercatorTransition(painter.transform.zoom), fade, layer, [0, 0], elevation, RASTER_COLOR_TEXTURE_UNIT, rasterColorMix, rasterConfig.offset, rasterConfig.range, emissiveStrength);
     const program = painter.getOrCreateProgram('raster', {defines});
 
     painter.uploadCommonUniforms(context, program, null);
-    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
     program.draw(
         painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
         uniformValues, layer.id, vertexBuffer,
@@ -414,22 +409,19 @@ export function prepare(layer: RasterStyleLayer, sourceCache: SourceCache, _: Pa
     const sourceLayer = layer.sourceLayer || (source.rasterLayerIds && source.rasterLayerIds[0]);
     if (!sourceLayer) return;
 
-    const band = layer.paint.get('raster-array-band') || source.getInitialBand(sourceLayer);
+    const band: string | number = layer.paint.get('raster-array-band') || source.getInitialBand(sourceLayer);
     if (band == null) return;
 
-    // @ts-expect-error - TS2322 - Type 'Tile[]' is not assignable to type 'RasterArrayTile[]'.
-    const tiles: Array<RasterArrayTile> = sourceCache.getIds().map(id => sourceCache.getTileByID(id));
+    const tiles = sourceCache.getIds().map(id => sourceCache.getTileByID(id) as RasterArrayTile);
     for (const tile of tiles) {
-        // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
         if (tile.updateNeeded(sourceLayer, band)) {
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
             source.prepareTile(tile, sourceLayer, band);
         }
     }
 }
 
 export type TextureDescriptor = {
-    texture: Texture | null | undefined | UserManagedTexture    ;
+    texture: Texture | null | undefined | UserManagedTexture;
     mix: [number, number, number, number];
     offset: number;
     buffer: number;

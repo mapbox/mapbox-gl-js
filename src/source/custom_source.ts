@@ -10,6 +10,7 @@ import type Dispatcher from '../util/dispatcher';
 import type {Callback} from '../types/callback';
 import type {OverscaledTileID} from './tile_id';
 import type {ISource, SourceEvents} from './source';
+import type {AJAXError} from '../util/ajax';
 
 type DataType = 'raster';
 
@@ -291,9 +292,9 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
         tile.request = Promise
             .resolve(this._implementation.loadTile({x, y, z}, {signal}))
             .then(tileLoaded.bind(this))
-            .catch(error => {
+            .catch((error?: Error | DOMException | AJAXError) => {
                 // silence AbortError
-                if (error.code === 20) return;
+                if (error.name === 'AbortError') return;
                 tile.state = 'errored';
                 callback(error);
             });

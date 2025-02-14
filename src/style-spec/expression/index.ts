@@ -339,19 +339,16 @@ export interface CompositeExpression {
 export type StylePropertyExpression = ConstantExpression | SourceExpression | CameraExpression | CompositeExpression;
 
 export function createPropertyExpression(
-    expression: unknown,
+    expression: any,
     propertySpec: StylePropertySpecification,
     scope?: string | null,
     options?: ConfigOptions | null,
 ): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, scope, options);
-    // @ts-expect-error - TS2339 - Property 'result' does not exist on type 'unknown'.
     if (expression.result === 'error') {
-        // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type 'Result<StylePropertyExpression, ParsingError[]>'.
         return expression;
     }
 
-    // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
     const parsed = expression.value.expression;
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
@@ -386,18 +383,14 @@ export function createPropertyExpression(
 
     if (!zoomCurve) {
         return success((isFeatureConstant && isLineProgressConstant) ?
-        // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
             (new ZoomConstantExpression('constant', expression.value, isLightConstant, isLineProgressConstant) as ConstantExpression) :
-        // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
             (new ZoomConstantExpression('source', expression.value, isLightConstant, isLineProgressConstant) as SourceExpression));
     }
 
     const interpolationType = zoomCurve instanceof Interpolate ? zoomCurve.interpolation : undefined;
 
     return success((isFeatureConstant && isLineProgressConstant) ?
-    // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
         (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CameraExpression) :
-    // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
         (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CompositeExpression));
 }
 

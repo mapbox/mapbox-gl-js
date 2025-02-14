@@ -3,8 +3,10 @@ import getType from '../util/get_type';
 import validateSpec from './validate';
 
 import type {ValidationOptions} from './validate';
+import type {LayerSpecification} from '../types';
 
 type Options = ValidationOptions & {
+    layer?: LayerSpecification;
     objectElementValidators?: any;
 };
 

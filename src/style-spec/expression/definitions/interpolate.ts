@@ -13,27 +13,27 @@ import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 import type {Type} from '../types';
 
-export type InterpolationType = {
-    name: 'linear';
-} | {
-    name: 'exponential';
-    base: number;
-} | {
-    name: 'cubic-bezier';
-    controlPoints: [number, number, number, number];
-};
+export type InterpolationType =
+    | {name: 'linear'}
+    | {name: 'exponential'; base: number}
+    | {name: 'cubic-bezier'; controlPoints: [number, number, number, number]};
+
+export type InterpolationOperator =
+    | 'interpolate'
+    | 'interpolate-hcl'
+    | 'interpolate-lab';
 
 class Interpolate implements Expression {
     type: Type;
 
-    operator: 'interpolate' | 'interpolate-hcl' | 'interpolate-lab';
+    operator: InterpolationOperator;
     interpolation: InterpolationType;
     input: Expression;
     dynamicStops: Expression | null;
     labels: Array<number>;
     outputs: Array<Expression>;
 
-    constructor(type: Type, operator: 'interpolate' | 'interpolate-hcl' | 'interpolate-lab', interpolation: InterpolationType, input: Expression, dynamicStops: Expression | null, stops: Stops) {
+    constructor(type: Type, operator: InterpolationOperator, interpolation: InterpolationType, input: Expression, dynamicStops: Expression | null, stops: Stops) {
         this.type = type;
         this.operator = operator;
         this.interpolation = interpolation;
@@ -67,11 +67,10 @@ class Interpolate implements Expression {
         return t;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Interpolate | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Interpolate | null | void {
         let [operator, interpolation, input, ...rest] = args;
 
         if (!Array.isArray(interpolation) || interpolation.length === 0) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
             return context.error(`Expected an interpolation type expression.`, 1);
         }
 
@@ -80,7 +79,6 @@ class Interpolate implements Expression {
         } else if (interpolation[0] === 'exponential') {
             const base = interpolation[1];
             if (typeof base !== 'number')
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
                 return context.error(`Exponential interpolation requires a numeric base.`, 1, 1);
             interpolation = {
                 name: 'exponential',
@@ -92,7 +90,6 @@ class Interpolate implements Expression {
                 controlPoints.length !== 4 ||
                 controlPoints.some(t => typeof t !== 'number' || t < 0 || t > 1)
             ) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
                 return context.error('Cubic bezier interpolation requires four numeric arguments with values between 0 and 1.', 1);
             }
 
@@ -101,17 +98,14 @@ class Interpolate implements Expression {
                 controlPoints: (controlPoints as any)
             };
         } else {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
             return context.error(`Unknown interpolation type ${String(interpolation[0])}`, 1, 0);
         }
 
         if (args.length - 1 < 3) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
             return context.error(`Expected at least 3 arguments, but found only ${args.length - 1}.`);
         }
 
         if (args.length - 1 > 3 && (args.length - 1) % 2 !== 0) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
             return context.error(`Expected an even number of arguments.`);
         }
 
@@ -132,8 +126,7 @@ class Interpolate implements Expression {
             const dynamicStops = context.parse(rest[0], 3, ValueType);
             if (!dynamicStops) return null;
 
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'InterpolationType'.
-            return new Interpolate(outputType, (operator as any), interpolation, input, dynamicStops, stops);
+            return new Interpolate(outputType, operator as InterpolationOperator, interpolation as InterpolationType, input as Expression, dynamicStops, stops);
         }
 
         for (let i = 0; i < rest.length; i += 2) {
@@ -144,12 +137,10 @@ class Interpolate implements Expression {
             const valueKey = i + 4;
 
             if (typeof label !== 'number') {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
                 return context.error('Input/output pairs for "interpolate" expressions must be defined using literal numeric values (not computed expressions) for the input values.', labelKey);
             }
 
             if (stops.length && stops[stops.length - 1][0] >= label) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
                 return context.error('Input/output pairs for "interpolate" expressions must be arranged with input values in strictly ascending order.', labelKey);
             }
 
@@ -167,12 +158,10 @@ class Interpolate implements Expression {
                 typeof outputType.N === 'number'
             )
         ) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Interpolate'.
             return context.error(`Type ${toString(outputType)} is not interpolatable.`);
         }
 
-        // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'InterpolationType'.
-        return new Interpolate(outputType, (operator as any), interpolation, input, null, stops);
+        return new Interpolate(outputType, operator as InterpolationOperator, interpolation as InterpolationType, input as Expression, null, stops);
     }
 
     evaluate(ctx: EvaluationContext): Color {
@@ -246,18 +235,17 @@ class Interpolate implements Expression {
     }
 
     serialize(): SerializedExpression {
-        let interpolation;
+        let interpolation: [InterpolationType['name'], ...number[]];
         if (this.interpolation.name === 'linear') {
-            interpolation = ["linear"];
+            interpolation = ['linear'];
         } else if (this.interpolation.name === 'exponential') {
             if  (this.interpolation.base === 1) {
-                interpolation = ["linear"];
+                interpolation = ['linear'];
             } else {
-                interpolation = ["exponential", this.interpolation.base];
+                interpolation = ['exponential', this.interpolation.base];
             }
         } else {
-            // @ts-expect-error - TS2769 - No overload matches this call.
-            interpolation = ["cubic-bezier" ].concat(this.interpolation.controlPoints);
+            interpolation = ['cubic-bezier', ...this.interpolation.controlPoints];
         }
 
         const serialized = [this.operator, interpolation, this.input.serialize()];

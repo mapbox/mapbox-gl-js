@@ -526,7 +526,6 @@ class Painter {
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
         // this function in favor of context.clear({ stencil: 0x0 })
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         this.getOrCreateProgram('clippingMask').draw(this, gl.TRIANGLES,
             DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
             clippingMaskUniformValues(this.identityMat),
@@ -582,7 +581,6 @@ class Painter {
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
 
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(this, gl.TRIANGLES, DepthMode.disabled,
             // Tests will always pass, and ref value will be written to stencil buffer.
             new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),

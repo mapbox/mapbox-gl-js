@@ -77,7 +77,7 @@ export class Vignette {
 
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
                     ColorMode.alphaBlended, CullFaceMode.disabled, uniforms, "vignette",
-                    this.vignetteVx, this.vignetteIdx, vignetteSegments, {});
+                    this.vignetteVx, this.vignetteIdx, vignetteSegments);
         }
     }
 }

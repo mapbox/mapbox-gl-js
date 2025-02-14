@@ -95,7 +95,6 @@ import type {ColorThemeSpecification,
     FeaturesetsSpecification,
 } from '../style-spec/types';
 import type {Callback} from '../types/callback';
-import type {StyleGlyph} from './style_glyph';
 import type {StyleImage} from './style_image';
 import type Transform from '../geo/transform';
 import type {Map as MapboxMap} from '../ui/map';
@@ -118,6 +117,7 @@ import type {GeoJSONFeature, FeaturesetDescriptor, TargetDescriptor, default as 
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
 import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
+import type {GlyphRange} from '../render/glyph_manager';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -4167,20 +4167,11 @@ class Style extends Evented<MapEvents> {
         this.imageManager.rasterizeImages(params, callback);
     }
 
-    getGlyphs(mapId: string, params: {
-        stacks: {
-            [_: string]: Array<number>;
-        };
-        scope: string;
-    }, callback: Callback<{
-        [_: string]: {
-            glyphs: {
-                [_: number]: StyleGlyph | null | undefined;
-            };
-            ascender?: number;
-            descender?: number;
-        };
-    }>) {
+    getGlyphs(
+        mapId: string,
+        params: {stacks: {[_: string]: Array<number>}; scope: string},
+        callback: Callback<{[_: string]: GlyphRange}>
+    ) {
         this.glyphManager.getGlyphs(params.stacks, params.scope, callback);
     }
 

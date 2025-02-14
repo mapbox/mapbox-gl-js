@@ -88,10 +88,9 @@ class EvaluationContext {
         return 0;
     }
 
-    parseColor(input: string): Color | null | undefined {
+    parseColor(input: string): Color | undefined {
         let cached = this._parseColorCache[input];
         if (!cached) {
-            // @ts-expect-error - TS2322 - Type 'void | Color' is not assignable to type 'Color'. | TS2322 - Type 'void | Color' is not assignable to type 'Color'.
             cached = this._parseColorCache[input] = Color.parse(input);
         }
         return cached;

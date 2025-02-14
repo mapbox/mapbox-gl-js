@@ -43,9 +43,8 @@ export default class ImageExpression implements Expression {
         this.inputSecondaryParams = inputSecondaryParams;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | void {
         if (args.length < 2) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`Expected two or more arguments.`);
         }
 

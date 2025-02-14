@@ -178,26 +178,21 @@ class SymbolStyleLayer extends StyleLayer {
     }
 
     _setPaintOverrides() {
-        for (const overridable of getProperties().paint.overridableProperties) {
+        for (const overridable of getProperties().paint.overridableProperties as Array<keyof PaintProps>) {
             if (!SymbolStyleLayer.hasPaintOverride(this.layout, overridable)) {
                 continue;
             }
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'keyof PaintProps'.
-            const overriden = this.paint.get(overridable);
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'PossiblyEvaluatedPropertyValue<unknown>'.
+            const overriden = this.paint.get(overridable) as unknown as PossiblyEvaluatedPropertyValue<PaintProps>;
             const override = new FormatSectionOverride(overriden);
-            // @ts-expect-error - TS2339 - Property 'property' does not exist on type 'unknown'.
             const styleExpression = new StyleExpression(override, overriden.property.specification, this.scope, this.options);
             let expression = null;
             // eslint-disable-next-line no-warning-comments
             // TODO: check why were the `isLightConstant` values omitted from the construction of these expressions
-            // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'. | TS2339 - Property 'value' does not exist on type 'unknown'.
             if (overriden.value.kind === 'constant' || overriden.value.kind === 'source') {
                 expression = (new ZoomConstantExpression('source', styleExpression) as SourceExpression);
             } else {
                 expression = (new ZoomDependentExpression('composite',
                                                           styleExpression,
-                                                          // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
                                                           overriden.value.zoomStops,
                                                           // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
                                                           overriden.value._interpolationType) as CompositeExpression);
@@ -205,7 +200,6 @@ class SymbolStyleLayer extends StyleLayer {
             // @ts-expect-error - TS2339 - Property 'property' does not exist on type 'unknown'.
             this.paint._values[overridable] = new PossiblyEvaluatedPropertyValue(overriden.property,
                                                                                  expression,
-                                                                                 // @ts-expect-error - TS2339 - Property 'parameters' does not exist on type 'unknown'.
                                                                                  overriden.parameters);
         }
     }

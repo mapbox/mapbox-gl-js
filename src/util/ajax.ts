@@ -73,7 +73,7 @@ export type RequestParameters = {
 };
 
 export type ResponseCallback<T> = (
-    error?: Error | null,
+    error?: Error | DOMException | AJAXError | null,
     data?: T | null,
     cacheControl?: string | null,
     expires?: string | null,

@@ -36,9 +36,8 @@ class Coercion implements Expression {
         this.args = args;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | void {
         if (args.length < 2)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`Expected at least one argument.`);
 
         const name: string = (args[0] as any);
@@ -53,7 +52,6 @@ class Coercion implements Expression {
                 if (context.expectedType.kind === 'array') {
                     type = array(context.expectedType.itemType, arrayLength);
                 } else {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                     return context.error(`Expected ${context.expectedType.kind} but found array.`);
                 }
             } else if (arrayLength > 0 && isValue(args[1][0])) {
@@ -70,7 +68,6 @@ class Coercion implements Expression {
                 } else {
                     const memberType = getType(member);
                     if (memberType !== type.itemType.kind) {
-                        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                         return context.error(`Expected ${type.itemType.kind} but found ${memberType}.`);
                     }
                     parsedMember = context.registry['literal'].parse(['literal', member === undefined ? null : member], context);
@@ -82,7 +79,6 @@ class Coercion implements Expression {
             assert(types[name], name);
 
             if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                 return context.error(`Expected one argument.`);
 
             type = types[name];

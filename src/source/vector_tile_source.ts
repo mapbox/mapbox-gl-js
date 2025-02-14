@@ -21,6 +21,7 @@ import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-s
 import type Actor from '../util/actor';
 import type {LoadVectorTileResult} from './load_vector_tile';
 import type {RequestedTileParameters, WorkerTileResult} from './worker_source';
+import type {AJAXError} from '../util/ajax';
 
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
@@ -317,13 +318,12 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
-        function done(err?: Error | null, data?: WorkerTileResult | null) {
+        function done(err?: AJAXError | null, data?: WorkerTileResult | null) {
             delete tile.request;
 
             if (tile.aborted)
                 return callback(null);
 
-            // @ts-expect-error - TS2339 - Property 'status' does not exist on type 'Error'.
             if (err && err.status !== 404) {
                 return callback(err);
             }

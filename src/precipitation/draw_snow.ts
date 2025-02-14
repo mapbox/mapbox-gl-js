@@ -249,7 +249,7 @@ export class Snow extends PrecipitationBase {
             if (this.particlesVx && this.particlesIdx) {
                 program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
                 ColorMode.alphaBlended, CullFaceMode.disabled, uniforms, "snow_particles",
-                this.particlesVx, this.particlesIdx, particlesSegments, {});
+                this.particlesVx, this.particlesIdx, particlesSegments);
             }
         };
 

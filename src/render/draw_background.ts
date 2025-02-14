@@ -73,7 +73,6 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
             backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(ignoreLut ? null : layer.lut));
 
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, painter.viewportBuffer,
             painter.quadTriangleIndexBuffer, painter.viewportSegments);
@@ -99,7 +98,6 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, tileBoundsBuffer,
                 tileBoundsIndexBuffer, tileBoundsSegments);

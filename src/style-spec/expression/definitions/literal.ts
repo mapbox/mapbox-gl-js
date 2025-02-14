@@ -58,8 +58,7 @@ class Literal implements Expression {
             // Constant-folding can generate Literal expressions that you
             // couldn't actually generate with a "literal" expression,
             // so we have to implement an equivalent serialization here
-            // @ts-expect-error - TS2769 - No overload matches this call.
-            return ["rgba"].concat(this.value.toRenderColor(null).toArray());
+            return ["rgba" as SerializedExpression].concat(this.value.toRenderColor(null).toArray());
         } else if (this.value instanceof Formatted) {
             // Same as Color
             return this.value.serialize();

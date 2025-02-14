@@ -258,7 +258,7 @@ function updateLineLabels(bucket: SymbolBucket,
     const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform.zoom);
     const isGlobe = tr.projection.name === 'globe';
 
-    const clippingBuffer = [256 / painter.width * 2 + 1, 256 / painter.height * 2 + 1];
+    const clippingBuffer: [number, number] = [256 / painter.width * 2 + 1, 256 / painter.height * 2 + 1];
 
     const dynamicLayoutVertexArray = isText ?
         bucket.text.dynamicLayoutVertexArray :
@@ -278,7 +278,7 @@ function updateLineLabels(bucket: SymbolBucket,
     const aspectRatio = painter.transform.width / painter.transform.height;
 
     let useVertical: boolean | null | undefined = false;
-    let prevWritingMode;
+    let prevWritingMode: number;
 
     for (let s = 0; s < placedSymbols.length; s++) {
         const symbol = placedSymbols.get(s);
@@ -315,7 +315,6 @@ function updateLineLabels(bucket: SymbolBucket,
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number, number, number]'.
         if (!isVisible(anchorPos, clippingBuffer)) {
             hideGlyphs(numGlyphs, dynamicLayoutVertexArray);
             continue;
@@ -528,8 +527,7 @@ function placeGlyphsAlongLine(
             // point on the segment.
             const b = (projectedVertex[3] > 0) ?
                 projectedVertex :
-                // @ts-expect-error - TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'vec3'.
-                projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix, undefined, projection, tileID.canonical);
+                projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a  as unknown as vec3, 1, posMatrix, undefined, projection, tileID.canonical);
 
             const orientationChange = requiresOrientationChange(writingMode, flipState, (b[0] - a[0]) * aspectRatio, b[1] - a[1]);
             symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
@@ -573,13 +571,10 @@ function projectTruncatedLineSegment(
     // plane of the camera.
     const unitVertex = previousTilePoint.sub(currentTilePoint)._unit()._add(previousTilePoint);
     const projectedUnit = elevatePointAndProject(unitVertex, tileID, projectionMatrix, projection, getElevation);
-    // @ts-expect-error - TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'vec3'.
-    vec3.sub(projectedUnit, previousProjectedPoint, projectedUnit);
-    // @ts-expect-error - TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'vec3'.
-    vec3.normalize(projectedUnit, projectedUnit);
+    vec3.sub(projectedUnit as unknown as vec3, previousProjectedPoint, projectedUnit as unknown as vec3);
+    vec3.normalize(projectedUnit as unknown as vec3, projectedUnit as unknown as vec3);
 
-    // @ts-expect-error - TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'vec3'.
-    return vec3.scaleAndAdd(projectedUnit, previousProjectedPoint, projectedUnit, minimumLength);
+    return vec3.scaleAndAdd(projectedUnit as unknown as vec3, previousProjectedPoint, projectedUnit as unknown as vec3, minimumLength) as [number, number, number];
 }
 
 function placeGlyphAlongLine(
@@ -654,8 +649,7 @@ function placeGlyphAlongLine(
         if (!current) {
             const projection = elevatePointAndProject(currentVertex, tileID.canonical, labelPlaneMatrix, reprojection, getElevation);
             if (projection[3] > 0) {
-                // @ts-expect-error - TS2322 - Type 'vec4' is not assignable to type 'vec3'. | TS2322 - Type 'vec4' is not assignable to type 'vec3'.
-                current = projectionCache[currentIndex] = projection;
+                current = projectionCache[currentIndex] = projection as unknown as [number, number, number];
             } else {
                 // The vertex is behind the plane of the camera, so we can't project it
                 // Instead, we'll create a vertex along the line that's far enough to include the glyph

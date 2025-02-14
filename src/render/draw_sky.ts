@@ -77,7 +77,6 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
 
     painter.uploadCommonUniforms(context, program);
 
-    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
     program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
         uniformValues, 'skyboxGradient', layer.skyboxGeometry.vertexBuffer,
@@ -98,7 +97,6 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
 
     painter.uploadCommonUniforms(context, program);
 
-    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
     program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
         uniformValues, 'skybox', layer.skyboxGeometry.vertexBuffer,
@@ -123,7 +121,6 @@ function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<any>
     const glFace = gl.TEXTURE_CUBE_MAP_POSITIVE_X + i;
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, glFace, layer.skyboxTexture, 0);
 
-    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
     program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.frontCW,
         uniformValues, 'skyboxCapture', layer.skyboxGeometry.vertexBuffer,
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);

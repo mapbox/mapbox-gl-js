@@ -34,6 +34,8 @@ export type ModelTexture = {
     gfxTexture?: Texture;
     uploaded: boolean;
     offsetScale?: [number, number, number, number];
+    index?: number;
+    extensions?: Record<string, {offset: [number, number], scale: [number, number]}>;
 };
 
 export type PbrMetallicRoughness = {
@@ -42,6 +44,18 @@ export type PbrMetallicRoughness = {
     roughnessFactor: number;
     baseColorTexture: ModelTexture | null | undefined;
     metallicRoughnessTexture: ModelTexture | null | undefined;
+};
+
+export type MaterialDescription = {
+    emissiveFactor: [number, number, number];
+    alphaMode: string;
+    alphaCutoff: number;
+    normalTexture: ModelTexture;
+    occlusionTexture: ModelTexture;
+    emissiveTexture: ModelTexture;
+    doubleSided: boolean;
+    pbrMetallicRoughness: PbrMetallicRoughness;
+    defined?: boolean;
 };
 
 export type Material = {

@@ -192,7 +192,6 @@ function drawTileQueryGeometry(painter: Painter, sourceCache: SourceCache, coord
         const indexBuffer = queryViz.indexBuffer;
         const segments = queryViz.segments;
         if (vertexBuffer != null && indexBuffer != null && segments != null) {
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(painter, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 debugUniformValues(posMatrix, queryViz.color), id,
                 vertexBuffer, indexBuffer, segments);
@@ -205,7 +204,6 @@ function drawTileQueryGeometry(painter: Painter, sourceCache: SourceCache, coord
         const indexBuffer = boundsViz.indexBuffer;
         const segments = boundsViz.segments;
         if (vertexBuffer != null && indexBuffer != null && segments != null) {
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(painter, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
                 debugUniformValues(posMatrix, boundsViz.color), id,
                 vertexBuffer, indexBuffer, segments);

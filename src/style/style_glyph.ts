@@ -14,3 +14,7 @@ export type StyleGlyph = {
     bitmap: AlphaImage;
     metrics: GlyphMetrics;
 };
+
+export type StyleGlyphs = {
+    [id: number]: StyleGlyph | null
+};

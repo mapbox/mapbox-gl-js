@@ -404,7 +404,7 @@ export class ShadowRenderer {
 
             program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.multiply, CullFaceMode.disabled,
                 uniformValues, "ground_shadow", painter.tileExtentBuffer, painter.quadTriangleIndexBuffer,
-                painter.tileExtentSegments, {}, painter.transform.zoom,
+                painter.tileExtentSegments, null, painter.transform.zoom,
                 null, null);
         }
     }

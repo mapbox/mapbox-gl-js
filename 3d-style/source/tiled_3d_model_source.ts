@@ -20,6 +20,7 @@ import type {OverscaledTileID} from '../../src/source/tile_id';
 import type {ISource, SourceEvents} from '../../src/source/source';
 import type {ModelSourceSpecification} from '../../src/style-spec/types';
 import type {RequestedTileParameters, WorkerTileResult} from '../../src/source/worker_source';
+import type {AJAXError} from '../../src/util/ajax';
 
 class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     type: 'batched-model';
@@ -179,10 +180,9 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
-        function done(err?: Error | null, data?: WorkerTileResult | null) {
+        function done(err?: AJAXError | null, data?: WorkerTileResult | null) {
             if (tile.aborted) return callback(null);
 
-            // @ts-expect-error - TS2339 - Property 'status' does not exist on type 'Error'.
             if (err && err.status !== 404) {
                 return callback(err);
             }

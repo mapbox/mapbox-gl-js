@@ -70,7 +70,6 @@ function renderHillshade(painter: Painter, coord: OverscaledTileID, tile: Tile, 
 
     const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
-    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
     program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
         uniformValues, layer.id, tileBoundsBuffer,
         tileBoundsIndexBuffer, tileBoundsSegments);
@@ -129,7 +128,6 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
     const definesValues: DynamicDefinesType[] = [];
     if (painter.linearFloatFilteringSupported()) definesValues.push('TERRAIN_DEM_FLOAT_FORMAT');
 
-    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
     painter.getOrCreateProgram('hillshadePrepare', {defines: definesValues}).draw(painter, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.disabled,
         hillshadeUniformPrepareValues(tile.tileID, dem),

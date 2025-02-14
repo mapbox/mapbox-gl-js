@@ -281,7 +281,7 @@ export class Rain extends PrecipitationBase {
 
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
                 ColorMode.alphaBlended, CullFaceMode.disabled, uniforms, "rain_particles",
-                this.particlesVx, this.particlesIdx, particlesSegments, {});
+                this.particlesVx, this.particlesIdx, particlesSegments);
         };
 
         // Distortion only

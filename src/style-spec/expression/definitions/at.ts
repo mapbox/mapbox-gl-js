@@ -18,9 +18,8 @@ class At implements Expression {
         this.input = input;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): At | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): At | null | void {
         if (args.length !== 3)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'At'.
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
 
         const index = context.parse(args[1], 1, NumberType);
