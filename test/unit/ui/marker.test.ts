@@ -1550,6 +1550,16 @@ describe('Snap To Pixel', () => {
             }, 100);
         });
     });
+    test("Immediately Snap To Pixel After setLngLat if unchanged", async () => {
+        marker.setLngLat(marker.getLngLat());
+        const pos = marker._pos;
+        await new Promise(resolve => {
+            setTimeout(() => {
+                expect(marker._pos).toStrictEqual(pos.round());
+                resolve();
+            }, 100);
+        });
+    });
     test("Immediately Snap To Pixel on moveend", () => {
         map.fire(new Event("moveend"));
         expect(marker._pos).toStrictEqual(marker._pos.round());
