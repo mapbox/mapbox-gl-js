@@ -4706,7 +4706,7 @@
         }
       },
       "sin": {
-        "doc": "Returns the sine of the input.",
+        "doc": "Returns the sine of the input, interpreted as radians.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -4717,7 +4717,7 @@
         }
       },
       "cos": {
-        "doc": "Returns the cosine of the input.",
+        "doc": "Returns the cosine of the input, interpreted as radians.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -4728,7 +4728,7 @@
         }
       },
       "tan": {
-        "doc": "Returns the tangent of the input.",
+        "doc": "Returns the tangent of the input, interpreted as radians.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -4739,7 +4739,7 @@
         }
       },
       "asin": {
-        "doc": "Returns the arcsine of the input.",
+        "doc": "Returns the arcsine of the input, in radians between −π/2 and π/2.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -4750,7 +4750,7 @@
         }
       },
       "acos": {
-        "doc": "Returns the arccosine of the input.",
+        "doc": "Returns the arccosine of the input, in radians between −π/2 and π/2.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -4761,7 +4761,7 @@
         }
       },
       "atan": {
-        "doc": "Returns the arctangent of the input.",
+        "doc": "Returns the arctangent of the input, in radians between −π/2 and π/2.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
