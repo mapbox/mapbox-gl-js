@@ -83,7 +83,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "pitch": 75,
   "zoom": 18,
   "layers": [
@@ -92,13 +92,16 @@
       "type": "fill-extrusion",
       "source": "geojson",
       "paint": {
-        "fill-extrusion-pattern": "generic_icon",
+        "fill-extrusion-pattern": "information",
         "fill-extrusion-height": 10
       }
     }
   ],
   "fog": {
-    "range": [-0.5, 0.5],
+    "range": [
+      -0.5,
+      0.5
+    ],
     "color": "white"
   }
 }

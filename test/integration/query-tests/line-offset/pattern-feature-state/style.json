@@ -23,7 +23,7 @@
             ]
         }
     },
-    "sprite": "local://sprites/emerald",
+    "sprite": "local://sprites/standard",
     "sources": {
         "mapbox": {
             "type": "geojson",
@@ -52,7 +52,7 @@
             "source": "mapbox",
             "paint": {
                 "line-width": 12,
-                "line-pattern": "cemetery_icon",
+                "line-pattern": "cemetery",
                 "line-offset": ["case",
                         ["boolean", ["feature-state", "big"], false],
                         ["number", -5],

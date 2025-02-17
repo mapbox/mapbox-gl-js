@@ -55,7 +55,7 @@
       "lineMetrics": true
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "line",
@@ -63,7 +63,7 @@
       "source": "geojson",
       "paint": {
         "line-width": 20,
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-trim-offset": [0.5, 0.7]
       },
       "layout": {

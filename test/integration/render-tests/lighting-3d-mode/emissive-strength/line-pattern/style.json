@@ -38,7 +38,7 @@
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
@@ -54,7 +54,7 @@
       "source-layer": "road",
       "paint": {
         "line-width": 6,
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-emissive-strength": 1
       }
     }

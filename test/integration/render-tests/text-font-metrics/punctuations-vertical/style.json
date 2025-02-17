@@ -27,7 +27,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -51,7 +51,7 @@
         ],
         "text-field": [
           "format",
-          ["image", "interstate_1"],
+          ["image", "us-interstate-4"],
           "(重)",
           "(ル)",
           {
@@ -59,7 +59,7 @@
               "literal", ["ArialAscenderDescender"]
             ]
           },
-          ["image", "government_icon"]
+          ["image", "school"]
         ],
         "text-writing-mode": ["vertical"],
         "symbol-placement": "point"

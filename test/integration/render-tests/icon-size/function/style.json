@@ -19,14 +19,14 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "symbol",
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "icon-image": "generic_icon",
+        "icon-image": "information",
         "icon-size": {
           "stops": [
             [

@@ -8,7 +8,7 @@
       "operations": [
         [
           "setZoom",
-          15.0
+          15
         ],
         [
           "setCenter",
@@ -70,13 +70,13 @@
     }
   },
   "sources": {},
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
       "type": "background",
       "paint": {
-        "background-pattern": "cemetery_icon",
+        "background-pattern": "cemetery",
         "background-emissive-strength": 0.9
       }
     }

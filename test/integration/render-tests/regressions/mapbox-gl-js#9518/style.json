@@ -8,7 +8,7 @@
   },
   "zoom": 3,
   "sources": {},
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
@@ -19,7 +19,7 @@
           ["zoom"],
           "",
           5,
-          "cemetery_icon"
+          "cemetery"
         ]
       }
     }

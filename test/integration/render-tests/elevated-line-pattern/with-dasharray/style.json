@@ -56,7 +56,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "a",
@@ -68,7 +68,7 @@
       "paint": {
         "line-width": 2,
         "line-dasharray": [2, 4],
-        "line-pattern": "generic_icon"
+        "line-pattern": "information"
       }
     },
     {
@@ -81,7 +81,7 @@
       "paint": {
         "line-width": 4,
         "line-dasharray": [2, 4],
-        "line-pattern": "generic_icon"
+        "line-pattern": "information"
       }
     },
     {
@@ -94,7 +94,7 @@
       "paint": {
         "line-width": 8,
         "line-dasharray": [2, 4],
-        "line-pattern": "generic_icon"
+        "line-pattern": "information"
       }
     }
   ]

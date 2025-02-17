@@ -11,7 +11,7 @@
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "sources": {
     "satellite": {
       "type": "raster",
@@ -36,7 +36,7 @@
       "type": "background",
       "paint": {
         "background-pitch-alignment": "viewport",
-        "background-pattern": "cemetery_icon"
+        "background-pattern": "cemetery"
       }
     }
   ]

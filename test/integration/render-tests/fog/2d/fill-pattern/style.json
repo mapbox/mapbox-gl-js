@@ -40,7 +40,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "fill",
@@ -48,12 +48,15 @@
       "source": "geojson",
       "paint": {
         "fill-antialias": false,
-        "fill-pattern": "generic_icon"
+        "fill-pattern": "information"
       }
     }
   ],
   "fog": {
-    "range": [-0.5, 0.5],
+    "range": [
+      -0.5,
+      0.5
+    ],
     "color": "black"
   }
 }

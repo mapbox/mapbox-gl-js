@@ -7,7 +7,7 @@
       "allowed": 0.0006
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "lights": [
     {
       "type": "ambient",
@@ -60,7 +60,7 @@
       "source": "mapbox",
       "source-layer": "building",
       "paint": {
-        "fill-extrusion-pattern": "sand_noise",
+        "fill-extrusion-pattern": "pedestrian-polygon",
         "fill-extrusion-height": [
           "get",
           "height"

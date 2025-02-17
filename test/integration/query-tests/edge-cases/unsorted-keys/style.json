@@ -24,7 +24,7 @@
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -33,7 +33,7 @@
       "source": "mapbox",
       "source-layer": "place_label",
       "layout": {
-        "icon-image": "interstate_3",
+        "icon-image": "us-interstate-4",
         "text-field": "{name_en}",
         "text-font": [
           "Open Sans Semibold",

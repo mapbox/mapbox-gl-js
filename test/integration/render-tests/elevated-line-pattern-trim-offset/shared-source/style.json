@@ -55,7 +55,7 @@
       "lineMetrics": true
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "line0",
@@ -94,7 +94,7 @@
       },
       "paint": {
         "line-width": 13,
-        "line-pattern": "generic_metro",
+        "line-pattern": "car",
         "line-trim-offset": [0.0, 0.4]
       }
     },
@@ -107,7 +107,7 @@
       },
       "paint": {
         "line-width": 13,
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-trim-offset": [0.4, 1.0]
       }
     }

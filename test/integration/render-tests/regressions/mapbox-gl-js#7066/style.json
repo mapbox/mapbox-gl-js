@@ -4,7 +4,7 @@
     "test": {
       "pixelRatio": 10,
       "width": 24,
-      "height": 24 
+      "height": 24
     }
   },
   "sources": {
@@ -25,7 +25,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "symbol",
@@ -33,7 +33,7 @@
       "source": "geojson",
       "layout": {
         "icon-size": ["get", "size"],
-        "icon-image": "generic_icon"
+        "icon-image": "information"
       }
     }
   ]

@@ -33,7 +33,7 @@
       "lineMetrics": true
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
@@ -51,7 +51,7 @@
       },
       "paint": {
         "line-color": "#000",
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-width": 25
       }
     }

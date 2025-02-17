@@ -14,7 +14,6 @@
   "projection": {
     "name": "globe"
   },
-  "sprite": "local://sprites/emerald",
   "layers": [
     {
       "id": "background",

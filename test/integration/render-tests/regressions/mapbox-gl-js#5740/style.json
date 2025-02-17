@@ -5,7 +5,7 @@
       "fadeDuration": 1000,
       "width": 64,
       "height": 64,
-      "allowed": 0.0008,
+      "allowed": 0.00245,
       "description": "Tests that fill-pattern cross-fading completes, by checking the rendering after the fade duration has elapsed.",
       "operations": [
         [
@@ -58,7 +58,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "fill",
@@ -66,7 +66,7 @@
       "source": "geojson",
       "paint": {
         "fill-antialias": false,
-        "fill-pattern": "generic_icon"
+        "fill-pattern": "globe_blue"
       }
     }
   ]

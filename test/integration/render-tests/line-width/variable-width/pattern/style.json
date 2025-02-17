@@ -14,7 +14,7 @@
   "terrain": {
     "source": "rgbterrain"
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "lights": [
     {
       "type": "ambient",
@@ -170,7 +170,7 @@
       },
       "paint": {
         "line-width": ["+", 14.0, ["*", ["line-progress"], 10.0]],
-        "line-pattern": "dot"
+        "line-pattern": "border-dot-13"
       }
     }
   ]

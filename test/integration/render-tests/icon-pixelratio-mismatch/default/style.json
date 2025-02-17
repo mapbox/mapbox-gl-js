@@ -20,7 +20,7 @@
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
@@ -43,7 +43,7 @@
         "symbol-placement": "point",
         "icon-allow-overlap": true,
         "icon-ignore-placement": true,
-        "icon-image": "generic_icon"
+        "icon-image": "information"
       },
       "paint": {
         "icon-opacity": 1

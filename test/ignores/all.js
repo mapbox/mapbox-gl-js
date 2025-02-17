@@ -5,9 +5,6 @@ const todo = [
     // To be ported: https://mapbox.atlassian.net/browse/GLJS-892
     "query-tests/symbol/above-horizon",
 
-    // https://github.com/mapbox/mapbox-gl-js/issues/7207
-    "render-tests/fill-pattern/update-feature-state",
-
     // https://github.com/mapbox/mapbox-gl-js/issues/5649,
     "render-tests/map-mode/static",
 

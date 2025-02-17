@@ -1,13 +1,13 @@
 [
   {
     "geometry": {
-      "type": "Point",
       "coordinates": [
         -84.26383852958679,
         39.268954879518304
-      ]
+      ],
+      "type": "Point"
     },
-    "type": "Feature",
+    "id": 1540753080,
     "properties": {
       "ldir": "E",
       "localrank": 1,
@@ -20,9 +20,9 @@
       "name_zh": "洛弗兰德",
       "type": "town"
     },
-    "id": 1540753080,
     "source": "mapbox",
     "sourceLayer": "place_label",
-    "state": {}
+    "state": {},
+    "type": "Feature"
   }
 ]

@@ -114,14 +114,14 @@
 
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [{
       "id": "fill",
       "type": "fill",
       "source": "geojson",
       "paint": {
         "fill-antialias": false,
-        "fill-pattern": ["case", ["==", ["get", "class"], "grass"], "zoo_icon", "hospital_icon"]
+        "fill-pattern": ["case", ["==", ["get", "class"], "grass"], "zoo", "hospital"]
       }
     }
   ]

@@ -83,7 +83,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "pitch": 60,
   "zoom": 19,
   "layers": [
@@ -96,11 +96,11 @@
           "stops": [
             [
               18,
-              "generic_icon"
+              "information"
             ],
             [
               19,
-              "generic_metro"
+              "car"
             ]
           ],
           "type": "interval"

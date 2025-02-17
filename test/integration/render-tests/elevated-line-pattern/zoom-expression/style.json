@@ -7,7 +7,7 @@
     }
   },
   "zoom": 2,
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "sources": {
     "a": {
       "type": "geojson",
@@ -94,9 +94,9 @@
         "line-width": 10,
         "line-pattern": [
           "step", ["zoom"],
-          "generic_icon",
+          "information",
           2,
-          "generic_metro"
+          "car"
         ]
       }
     }

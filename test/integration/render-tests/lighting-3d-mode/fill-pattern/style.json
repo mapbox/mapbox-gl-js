@@ -12,7 +12,7 @@
       "id": "test_ambient",
       "properties": {
         "color": "rgba(50, 255, 0, 1)",
-        "intensity": 1.0
+        "intensity": 1
       }
     },
     {
@@ -55,7 +55,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "fill",
@@ -63,7 +63,7 @@
       "source": "geojson",
       "paint": {
         "fill-antialias": false,
-        "fill-pattern": "generic_icon"
+        "fill-pattern": "information"
       }
     }
   ]

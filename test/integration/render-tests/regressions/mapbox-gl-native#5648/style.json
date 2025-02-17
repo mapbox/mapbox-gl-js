@@ -19,7 +19,6 @@
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
   "layers": [
     {
       "id": "background",
