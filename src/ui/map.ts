@@ -2210,6 +2210,32 @@ export class Map extends Camera {
         return this;
     }
 
+    /**
+     * Gets the state of `cooperativeGestures`.
+     *
+     * @returns {boolean} Returns the `cooperativeGestures` boolean.
+     * @example
+     * const cooperativeGesturesEnabled = map.getCooperativeGestures();
+     */
+    getCooperativeGestures(): boolean {
+        return this._cooperativeGestures;
+    }
+
+    /**
+     * Sets the state of `cooperativeGestures`.
+     *
+     * @param {boolean} enabled If `true`, scroll zoom will require pressing the ctrl or ⌘ key while scrolling to zoom map, and touch pan will require using two fingers while panning to move the map.
+     * Touch pitch will require three fingers to activate if enabled.
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * map.setCooperativeGestures(true);
+     */
+    setCooperativeGestures(enabled: boolean) {
+        this._cooperativeGestures = enabled;
+        return this;
+    }
+
     /** @section {Working with styles} */
 
     /**
