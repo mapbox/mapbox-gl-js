@@ -7465,7 +7465,6 @@
       "length": 2,
       "default": [0.0, 0.0],
       "minimum": [0.0, 0.0],
-      "maximum": [1.0, 1.0],
       "transition": false,
       "requires": [
         "line-trim-offset",
@@ -7489,6 +7488,36 @@
           "android": "11.6.0",
           "ios": "11.6.0"
         }
+      },
+      "property-type": "data-constant"
+    },
+    "line-trim-fade-range-unit": {
+      "type": "enum",
+      "doc": "Selects the unit of line-trim-fade-range.",
+      "values": {
+        "meters": {
+          "doc": "The fade range is calculated in meters."
+        },
+        "normalized": {
+          "doc": "The fade range is calculated relative to the whole length of the line."
+        }
+      },
+      "default": "normalized",
+      "experimental": true,
+      "private": true,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.11.0",
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
       },
       "property-type": "data-constant"
     },

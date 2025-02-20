@@ -56,6 +56,7 @@ export type PaintProps = {
     "line-gradient": ColorRampProperty;
     "line-trim-offset": DataConstantProperty<[number, number]>;
     "line-trim-fade-range": DataConstantProperty<[number, number]>;
+    "line-trim-fade-range-unit": DataConstantProperty<"meters" | "normalized">;
     "line-trim-color": DataConstantProperty<Color>;
     "line-emissive-strength": DataConstantProperty<number>;
     "line-border-width": DataDrivenProperty<number>;
@@ -82,6 +83,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "line-gradient": new ColorRampProperty(styleSpec["paint_line"]["line-gradient"]),
     "line-trim-offset": new DataConstantProperty(styleSpec["paint_line"]["line-trim-offset"]),
     "line-trim-fade-range": new DataConstantProperty(styleSpec["paint_line"]["line-trim-fade-range"]),
+    "line-trim-fade-range-unit": new DataConstantProperty(styleSpec["paint_line"]["line-trim-fade-range-unit"]),
     "line-trim-color": new DataConstantProperty(styleSpec["paint_line"]["line-trim-color"]),
     "line-emissive-strength": new DataConstantProperty(styleSpec["paint_line"]["line-emissive-strength"]),
     "line-border-width": new DataDrivenProperty(styleSpec["paint_line"]["line-border-width"]),
