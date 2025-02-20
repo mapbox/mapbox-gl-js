@@ -123,7 +123,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         definesValues.push("VARIABLE_LINE_WIDTH");
     }
 
-    const renderTiles = (coords: OverscaledTileID[], defines: DynamicDefinesType[], depthMode: DepthMode, stencilMode3D: StencilMode, elevated: boolean) => {
+    const renderTiles = (coords: OverscaledTileID[], defines: DynamicDefinesType[], depthMode: DepthMode, stencilMode3D: StencilMode, elevated: boolean, firstPass: boolean) => {
         for (const coord of coords) {
             const tile = sourceCache.getTile(coord);
             if (image && !tile.patternsLoaded()) continue;
@@ -267,8 +267,12 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                 uniformValues['u_alpha_discard_threshold'] = 0.0;
                 renderLine(new StencilMode(stencilFunc, stencilId, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP));
             } else {
-                if (useStencilMaskRenderPass && elevated) {
-                    uniformValues['u_alpha_discard_threshold'] = 0.001; // to avoid stenciling pattern quads, only the content.
+                // Same logic as in the non-elevated case,
+                // but we need to draw all tiles in batches to support 3D stencil mode.
+                if (useStencilMaskRenderPass && elevated && firstPass) {
+                    uniformValues['u_alpha_discard_threshold'] = 0.8;
+                } else {
+                    uniformValues['u_alpha_discard_threshold'] = 0.0;
                 }
                 renderLine(elevated ? stencilMode3D : painter.stencilModeForClipping(coord));
             }
@@ -283,7 +287,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if (!terrainEnabledImmediateMode) {
                 const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
                 const stencilMode3D = StencilMode.disabled;
-                renderTiles(coords, definesValues, depthMode, stencilMode3D, false);
+                renderTiles(coords, definesValues, depthMode, stencilMode3D, false, true);
             } else {
                 // Skip rendering of non-elevated lines in immediate mode when terrain is enabled.
                 // This happens only when the line layer has both elevated and non-elevated buckets
@@ -306,7 +310,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         const stencilMode3D = useStencilMaskRenderPass ? painter.stencilModeFor3D() : StencilMode.disabled;
         const depthMode = new DepthMode(painter.depthOcclusion ? gl.GREATER : gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
         painter.forceTerrainMode = true;
-        renderTiles(coords, definesValues, depthMode, stencilMode3D, true);
+        renderTiles(coords, definesValues, depthMode, stencilMode3D, true, true);
+        if (useStencilMaskRenderPass) {
+            renderTiles(coords, definesValues, depthMode, stencilMode3D, true, false);
+        }
         // It is important that this precedes resetStencilClippingMasks as in gl-js we don't clear stencil for terrain.
         painter.forceTerrainMode = false;
     }
