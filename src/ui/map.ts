@@ -4358,7 +4358,9 @@ export class Map extends Camera {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style.updateSources(this.transform);
             // Update positions of markers and popups on enabling/disabling terrain
-            this._forceMarkerAndPopupUpdate();
+            if (!this.isMoving()) {
+                this._forceMarkerAndPopupUpdate();
+            }
         } else {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
