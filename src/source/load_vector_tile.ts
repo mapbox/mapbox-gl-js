@@ -1,10 +1,12 @@
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import {getArrayBuffer} from '../util/ajax';
+import assert from "assert";
 
 import type {Callback} from '../types/callback';
 import type {RequestedTileParameters} from './worker_source';
 import type Scheduler from '../util/scheduler';
+import type {Cancelable} from '../types/cancelable';
 
 export type LoadVectorTileResult = {
     rawData: ArrayBuffer;
@@ -23,7 +25,31 @@ export type LoadVectorTileResult = {
 export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | undefined>;
 
 export type AbortVectorData = () => void;
-export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => AbortVectorData | undefined;
+export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback, deduped: DedupedRequest) => AbortVectorData | undefined;
+export type DedupedRequestInput = {key : string,
+    metadata: any,
+    requestFunc: any,
+    callback: LoadVectorDataCallback,
+    fromQueue?: boolean
+};
+export type VectorTileQueueEntry = DedupedRequestInput & {
+    cancelled: boolean,
+    cancel: () => void
+};
+
+let requestQueue: Map<string, VectorTileQueueEntry>, numRequests: number;
+export const resetRequestQueue = () => {
+    requestQueue = new Map();
+    numRequests = 0;
+};
+resetRequestQueue();
+
+const filterQueue = (key: string) => {
+    requestQueue.delete(key);
+};
+
+const queueSizeLimit = 50;
+
 export class DedupedRequest {
     entries: {
         [key: string]: any;
@@ -35,62 +61,153 @@ export class DedupedRequest {
         this.scheduler = scheduler;
     }
 
-    request(key: string, metadata: any, request: any, callback: LoadVectorDataCallback): () => void {
-        const entry = this.entries[key] = this.entries[key] || {callbacks: []};
+    addToSchedulerOrCallDirectly({
+        callback,
+        metadata,
+        err,
+        result,
+    }: {
+        callback: LoadVectorDataCallback;
+        metadata: any;
+        err: Error | null | undefined;
+        result: any;
+    }) {
+        if (this.scheduler) {
+            this.scheduler.add(() => {
+                callback(err, result);
+            }, metadata);
+        } else {
+            callback(err, result);
+        }
+    }
+
+    getEntry = (key: string) => {
+        return (
+            this.entries[key] || {
+                // use a set to avoid duplicate callbacks being added when calling from queue
+                callbacks: new Set(),
+            }
+        );
+    };
+
+    request({key, metadata, requestFunc, callback, fromQueue}: DedupedRequestInput): Cancelable {
+        const entry = (this.entries[key] = this.getEntry(key));
+
+        const removeCallbackFromEntry = ({key, requestCallback}) => {
+            const entry = this.getEntry(key);
+            if (entry.result) {
+                return;
+            }
+            entry.callbacks.delete(requestCallback);
+            if (entry.callbacks.size) {
+                return;
+            }
+            if (entry.cancel) {
+                entry.cancel();
+            }
+            filterQueue(key);
+            delete this.entries[key];
+        };
+
+        let advanced = false;
+        const advanceRequestQueue = () => {
+            if (advanced) {
+                return;
+            }
+            advanced = true;
+            numRequests--;
+            assert(numRequests >= 0);
+            while (requestQueue.size && numRequests < queueSizeLimit) {
+                const request = requestQueue.values().next().value;
+                const {key, metadata, requestFunc, callback, cancelled} = request;
+                filterQueue(key);
+                if (!cancelled) {
+                    request.cancel = this.request({
+                        key,
+                        metadata,
+                        requestFunc,
+                        callback,
+                        fromQueue: true
+                    }).cancel;
+                }
+            }
+        };
 
         if (entry.result) {
             const [err, result] = entry.result;
-            if (this.scheduler) {
-                this.scheduler.add(() => {
-                    callback(err, result);
-                }, metadata);
-            } else {
-                callback(err, result);
-            }
-            return () => {};
-        }
-
-        entry.callbacks.push(callback);
-
-        if (!entry.cancel) {
-            entry.cancel = request((err, result) => {
-                entry.result = [err, result];
-                for (const cb of entry.callbacks) {
-                    if (this.scheduler) {
-                        this.scheduler.add(() => {
-                            cb(err, result);
-                        }, metadata);
-                    } else {
-                        cb(err, result);
-                    }
-                }
-                setTimeout(() => delete this.entries[key], 1000 * 3);
+            this.addToSchedulerOrCallDirectly({
+                callback,
+                metadata,
+                err,
+                result,
             });
+            return {cancel: () => {}};
         }
 
-        return () => {
-            if (entry.result) return;
-            entry.callbacks = entry.callbacks.filter(cb => cb !== callback);
-            if (!entry.callbacks.length) {
-                entry.cancel();
-                delete this.entries[key];
+        entry.callbacks.add(callback);
+
+        const inQueue = requestQueue.has(key);
+        if ((!entry.cancel && !inQueue) || fromQueue) {
+            // Lack of attached cancel handler means this is the first request for this resource
+            if (numRequests >= queueSizeLimit) {
+                const queued = {
+                    key,
+                    metadata,
+                    requestFunc,
+                    callback,
+                    cancelled: false,
+                    cancel() {},
+                };
+                const cancelFunc = () => {
+                    queued.cancelled = true;
+                    removeCallbackFromEntry({
+                        key,
+                        requestCallback: callback,
+                    });
+                };
+                queued.cancel = cancelFunc;
+                requestQueue.set(key, queued);
+                return queued;
             }
+            numRequests++;
+
+            const actualRequestCancel = requestFunc((err, result) => {
+                entry.result = [err, result];
+
+                for (const cb of entry.callbacks) {
+                    this.addToSchedulerOrCallDirectly({
+                        callback: cb,
+                        metadata,
+                        err,
+                        result,
+                    });
+                }
+
+                filterQueue(key);
+                advanceRequestQueue();
+
+                setTimeout(() => {
+                    delete this.entries[key];
+                }, 1000 * 3);
+            });
+            entry.cancel = actualRequestCancel;
+        }
+
+        return {
+            cancel() {
+                removeCallbackFromEntry({
+                    key,
+                    requestCallback: callback,
+                });
+            },
         };
     }
 }
 
-/**
- * @private
- */
-export function loadVectorTile(
-    params: RequestedTileParameters,
-    callback: LoadVectorDataCallback,
-    skipParse?: boolean,
-): () => void {
-    const key = JSON.stringify(params.request);
+const makeArrayBufferHandler = ({requestParams, skipParse}) => {
 
     const makeRequest = (callback: LoadVectorDataCallback) => {
-        const request = getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
+        const request = getArrayBuffer(requestParams, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
             if (err) {
                 callback(err);
             } else if (data) {
@@ -108,11 +225,37 @@ export function loadVectorTile(
         };
     };
 
+    return makeRequest;
+};
+
+/**
+ * @private
+ */
+export function loadVectorTile(
+    params: RequestedTileParameters,
+    callback: LoadVectorDataCallback,
+    deduped: DedupedRequest,
+    skipParse?: boolean,
+    providedArrayBufferHandlerMaker?: any
+): () => void {
+    const key = JSON.stringify(params.request);
+
+    const arrayBufferCallbackMaker = providedArrayBufferHandlerMaker || makeArrayBufferHandler;
+    const makeRequest = arrayBufferCallbackMaker({requestParams: params.request, skipParse});
+
     if (params.data) {
         // if we already got the result earlier (on the main thread), return it directly
-        (this.deduped as DedupedRequest).entries[key] = {result: [null, params.data]};
+        deduped.entries[key] = {result: [null, params.data]};
     }
 
     const callbackMetadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
-    return (this.deduped as DedupedRequest).request(key, callbackMetadata, makeRequest, callback);
+    const dedupedAndQueuedRequest = deduped.request({
+        key,
+        metadata: callbackMetadata,
+        requestFunc: makeRequest,
+        callback,
+        fromQueue: false
+    });
+
+    return dedupedAndQueuedRequest.cancel;
 }
