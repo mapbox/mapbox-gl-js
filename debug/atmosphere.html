@@ -166,6 +166,17 @@ function updatePreset(value) {
 
 updatePreset('preset1');
 
+function getFogParams() {
+    return {
+        "range": [guiParams.start, guiParams.end],
+        "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
+        "horizon-blend": guiParams.horizonBlend,
+        "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + guiParams.skyAlpha + ')',
+        "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + guiParams.spaceAlpha + ')',
+        "star-intensity": guiParams.starIntensity
+    }
+}
+
 window.onload = function() {
     var gui = new dat.GUI({autoPlace: false}); // eslint-disable-line
     document.getElementById('gui').appendChild(gui.domElement);
@@ -186,14 +197,7 @@ window.onload = function() {
     var fog = gui.addFolder('Atmosphere');
     var enable = fog.add(guiParams, 'enable');
     enable.onFinishChange((value) => {
-        map.setFog(value ? {
-            "range": [guiParams.start, guiParams.end],
-            "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
-            "horizon-blend": guiParams.horizonBlend,
-            "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + guiParams.skyAlpha + ')',
-            "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + guiParams.spaceAlpha + ')',
-            "star-intensity": guiParams.starIntensity
-        } : null);
+        map.setFog(value ? getFogParams() : null);
     });
 
     var horizonBlend = fog.add(guiParams, 'horizonBlend', 0.0, 1.0).listen();
@@ -205,6 +209,7 @@ window.onload = function() {
     var starIntensity = fog.add(guiParams, 'starIntensity', 0.0, 1.0).listen();
     starIntensity.onChange((value) => {
         map.setFog({
+            ...getFogParams(),
             "star-intensity": value,
         });
     });
@@ -212,6 +217,7 @@ window.onload = function() {
     var colorAlpha = fog.add(guiParams, 'colorAlpha', 0.0, 1.0).listen();
     colorAlpha.onChange((value) => {
         map.setFog({
+            ...getFogParams(),
             "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + value + ')'
         });
     });
@@ -219,6 +225,7 @@ window.onload = function() {
     var color = fog.addColor(guiParams, 'color').listen();
     color.onChange((value) => {
         map.setFog({
+            ...getFogParams(),
             "color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.colorAlpha + ')'
         });
     });
@@ -226,12 +233,14 @@ window.onload = function() {
     var skyAlpha = fog.add(guiParams, 'skyAlpha', 0.0, 1.0).listen();
     skyAlpha.onChange((value) => {
         map.setFog({
+            ...getFogParams(),
             "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + value + ')'
         });
     });
     var highColor = fog.addColor(guiParams, 'highColor').listen();
     highColor.onChange((value) => {
         map.setFog({
+            ...getFogParams(),
             "high-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.skyAlpha + ')'
         });
     });
@@ -239,26 +248,21 @@ window.onload = function() {
     var spaceAlpha = fog.add(guiParams, 'spaceAlpha', 0.0, 1.0).listen();
     spaceAlpha.onChange((value) => {
         map.setFog({
+            ...getFogParams(),
             "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + value + ')'
         });
     });
     var spaceColor = fog.addColor(guiParams, 'spaceColor').listen();
     spaceColor.onChange((value) => {
         map.setFog({
+            ...getFogParams(),
             "space-color": 'rgba(' + value[0] + ', ' + value[1] + ', ' + value[2] + ', ' + guiParams.spaceAlpha + ')'
         });
     });
 };
 
 map.on('style.load', function() {
-    map.setFog({
-        "range": [guiParams.start, guiParams.end],
-        "color": 'rgba(' + guiParams.color[0] + ', ' + guiParams.color[1] + ', ' + guiParams.color[2] + ', ' + guiParams.colorAlpha + ')',
-        "horizon-blend": guiParams.horizonBlend,
-        "high-color": 'rgba(' + guiParams.highColor[0] + ', ' + guiParams.highColor[1] + ', ' + guiParams.highColor[2] + ', ' + guiParams.skyAlpha + ')',
-        "space-color": 'rgba(' + guiParams.spaceColor[0] + ', ' + guiParams.spaceColor[1] + ', ' + guiParams.spaceColor[2] + ', ' + guiParams.spaceAlpha + ')',
-        "star-intensity": guiParams.starIntensity
-    });
+    map.setFog(getFogParams());
 
     map.addSource('mapbox-dem', {
         'type': 'raster-dem',
