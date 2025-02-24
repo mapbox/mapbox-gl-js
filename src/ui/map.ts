@@ -100,6 +100,7 @@ import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_
 import type {Callback} from '../types/callback';
 import type {Interaction} from './interactions';
 import type {SpriteFormat} from '../render/image_manager';
+import type {PitchRotateKey} from './handler_manager';
 
 export type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
 /* eslint-disable no-use-before-define */
@@ -209,6 +210,7 @@ export type MapOptions = {
     tessellationStep?: number;
     scaleFactor?: number;
     spriteFormat?: SpriteFormat;
+    pitchRotateKey?: PitchRotateKey;
 };
 
 const defaultMinZoom = -2;
@@ -218,7 +220,7 @@ const defaultMaxZoom = 22;
 const defaultMinPitch = 0;
 const defaultMaxPitch = 85;
 
-const defaultOptions: Omit<MapOptions, 'container'> = {
+const defaultOptions = {
     center: [0, 0],
     zoom: 0,
     bearing: 0,
@@ -269,7 +271,7 @@ const defaultOptions: Omit<MapOptions, 'container'> = {
     precompilePrograms: true,
     scaleFactor: 1.0,
     spriteFormat: 'auto',
-};
+} satisfies Omit<MapOptions, 'container'>;
 
 /**
  * The `Map` object represents the map on your page. It exposes methods
@@ -350,6 +352,7 @@ const defaultOptions: Omit<MapOptions, 'container'> = {
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
  * @param {boolean | Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
  * @param {boolean | Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler}.
+ * @param {'Control' | 'Alt' | 'Shift' | 'Meta'} [options.pitchRotateKey='Control'] Allows overriding the keyboard modifier key used for pitch/rotate interactions from `Control` to another modifier key.
  * @param {boolean} [options.cooperativeGestures] If `true`, scroll zoom will require pressing the ctrl or ⌘ key while scrolling to zoom map, and touch pan will require using two fingers while panning to move the map. Touch pitch will require three fingers to activate if enabled.
  * @param {boolean} [options.trackResize=true] If `true`, the map will automatically resize when the browser window resizes.
  * @param {boolean} [options.performanceMetricsCollection=true] If `true`, mapbox-gl will collect and send performance metrics.
@@ -739,8 +742,7 @@ export class Map extends Camera {
         window.addEventListener(this._fullscreenchangeEvent, this._onWindowResize, false);
         window.addEventListener('visibilitychange', this._onVisibilityChange, false);
 
-        // @ts-expect-error - TS2345 - Argument of type 'MapOptions' is not assignable to parameter of type '{ interactive: boolean; pitchWithRotate: boolean; clickTolerance: number; bearingSnap: number; }'.
-        this.handlers = new HandlerManager(this, options);
+        this.handlers = new HandlerManager(this, options as MapOptions & typeof defaultOptions);
 
         this._localFontFamily = options.localFontFamily;
         this._localIdeographFontFamily = options.localIdeographFontFamily;
