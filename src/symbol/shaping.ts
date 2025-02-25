@@ -29,7 +29,7 @@ export {shapeText, shapeIcon, fitIconToText, getAnchorAlignment, WritingMode, SH
 // The position of a glyph relative to the text's anchor point.
 export type PositionedGlyph = {
     glyph: number;
-    imageName: string | null;
+    image: ImageIdWithOptions | null;
     x: number;
     y: number;
     vertical: boolean;
@@ -123,14 +123,14 @@ class TaggedString {
         this.imageSectionID = null;
     }
 
-    static fromFeature(text: Formatted, defaultFontStack: string): TaggedString {
+    static fromFeature(text: Formatted, defaultFontStack: string, pixelRatio: number): TaggedString {
         const result = new TaggedString();
         for (let i = 0; i < text.sections.length; i++) {
             const section = text.sections[i];
             if (!section.image) {
                 result.addTextSection(section, defaultFontStack);
             } else {
-                result.addImageSection(section);
+                result.addImageSection(section, pixelRatio);
             }
         }
         return result;
@@ -202,8 +202,8 @@ class TaggedString {
         }
     }
 
-    addImageSection(section: FormattedSection) {
-        const image = section.image && section.image.namePrimary ? section.image.getPrimary() : null;
+    addImageSection(section: FormattedSection, pixelRatio: number) {
+        const image = section.image && section.image.namePrimary ? section.image.getPrimary().scaleSelf(pixelRatio) : null;
         if (!image) {
             warnOnce(`Can't add FormattedSection with an empty image.`);
             return;
@@ -272,8 +272,9 @@ function shapeText(
     allowVerticalPlacement: boolean,
     layoutTextSize: number,
     layoutTextSizeThisZoom: number,
+    pixelRatio: number = 1
 ): Shaping | false {
-    const logicalInput = TaggedString.fromFeature(text, defaultFontStack);
+    const logicalInput = TaggedString.fromFeature(text, defaultFontStack, pixelRatio);
 
     if (writingMode === WritingMode.vertical) {
         logicalInput.verticalizePunctuation(allowVerticalPlacement);
@@ -680,7 +681,7 @@ function shapeLines(shaping: Shaping,
             let sectionScale = section.scale;
             let metrics = null;
             let rect = null;
-            let imageName = null;
+            let image = null;
             let verticalAdvance = ONE_EM;
             let glyphOffset = 0;
 
@@ -733,7 +734,7 @@ function shapeLines(shaping: Shaping,
             } else {
                 const imagePosition = imagePositions[section.image.serialize()];
                 if (!imagePosition) continue;
-                imageName = section.image.id;
+                image = section.image;
                 shaping.iconsInText = shaping.iconsInText || true;
                 rect = imagePosition.paddedRect;
                 const size = imagePosition.displaySize;
@@ -770,11 +771,11 @@ function shapeLines(shaping: Shaping,
             }
 
             if (!vertical) {
-                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
+                positionedGlyphs.push({glyph: codePoint, image, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
                 x += metrics.advance * sectionScale + spacing;
             } else {
                 shaping.verticalizable = true;
-                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
+                positionedGlyphs.push({glyph: codePoint, image, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
                 x += verticalAdvance * sectionScale + spacing;
             }
         }

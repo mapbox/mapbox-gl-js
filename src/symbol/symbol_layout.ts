@@ -288,7 +288,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                     // scripts would need to be supported, this should take into account other justifications.
                     shapedTextOrientations.vertical = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor,
                         // @ts-expect-error - TS2345 - Argument of type 'number' is not assignable to parameter of type '2 | 1'.
-                                                                textJustify, spacingIfAllowed, textOffset, WritingMode.vertical, true, layoutTextSize, layoutTextSizeThisZoom);
+                                                                textJustify, spacingIfAllowed, textOffset, WritingMode.vertical, true, layoutTextSize, layoutTextSizeThisZoom, pixelRatio);
                 }
             };
 
@@ -312,7 +312,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                         // the offsets for the anchor in the placement step.
                         const shaping = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, 'center',
                             // @ts-expect-error - TS2345 - Argument of type 'number' is not assignable to parameter of type '2 | 1'.
-                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+                                                  justification, spacingIfAllowed, textOffset, WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom, pixelRatio);
                         if (shaping) {
                             shapedTextOrientations.horizontal[justification] = shaping;
                             singleLine = shaping.positionedLines.length === 1;
@@ -330,7 +330,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                 if (isPointPlacement || ((layout.get("text-writing-mode").indexOf('horizontal') >= 0) || !allowsVerticalWritingMode(unformattedText))) {
                     const shaping = shapeText(text, glyphMap, glyphPositions, imagePositions, fontstack, maxWidth, lineHeight, textAnchor, textJustify, spacingIfAllowed,
                         // @ts-expect-error - TS2345 - Argument of type 'number' is not assignable to parameter of type '2 | 1'.
-                                            textOffset, WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
+                                            textOffset, WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom, pixelRatio);
                     if (shaping) shapedTextOrientations.horizontal[textJustify] = shaping;
                 }
 

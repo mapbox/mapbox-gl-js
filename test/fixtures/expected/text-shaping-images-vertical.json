@@ -4,7 +4,7 @@
       "positionedGlyphs": [
         {
           "glyph": 19977,
-          "imageName": null,
+          "image": null,
           "x": -33,
           "y": -18.5,
           "vertical": true,
@@ -27,7 +27,20 @@
         },
         {
           "glyph": 57344,
-          "imageName": "square",
+          "image": {
+            "id": "square",
+            "options": {
+              "params": {},
+              "transform": {
+                "a": 1,
+                "b": 0,
+                "c": 0,
+                "d": 1,
+                "e": 0,
+                "f": 0
+              }
+            }
+          },
           "x": -9,
           "y": -15.5,
           "vertical": true,
@@ -52,7 +65,20 @@
         },
         {
           "glyph": 57345,
-          "imageName": "wide",
+          "image": {
+            "id": "wide",
+            "options": {
+              "params": {},
+              "transform": {
+                "a": 1,
+                "b": 0,
+                "c": 0,
+                "d": 1,
+                "e": 0,
+                "f": 0
+              }
+            }
+          },
           "x": 12,
           "y": -15.5,
           "vertical": true,
@@ -82,7 +108,20 @@
       "positionedGlyphs": [
         {
           "glyph": 57346,
-          "imageName": "tall",
+          "image": {
+            "id": "tall",
+            "options": {
+              "params": {},
+              "transform": {
+                "a": 1,
+                "b": 0,
+                "c": 0,
+                "d": 1,
+                "e": 0,
+                "f": 0
+              }
+            }
+          },
           "x": -43.5,
           "y": -15.5,
           "vertical": true,
@@ -107,7 +146,20 @@
         },
         {
           "glyph": 57347,
-          "imageName": "square",
+          "image": {
+            "id": "square",
+            "options": {
+              "params": {},
+              "transform": {
+                "a": 1,
+                "b": 0,
+                "c": 0,
+                "d": 1,
+                "e": 0,
+                "f": 0
+              }
+            }
+          },
           "x": 1.5,
           "y": 8.5,
           "vertical": true,
@@ -132,7 +184,7 @@
         },
         {
           "glyph": 19977,
-          "imageName": null,
+          "image": null,
           "x": 22.5,
           "y": 5.5,
           "vertical": true,
