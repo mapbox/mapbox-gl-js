@@ -1,5 +1,5 @@
 import assert from 'assert';
-import {clone, extend, endsWith, easeCubicInOut, sphericalDirectionToCartesian, sphericalPositionToCartesian} from '../util/util';
+import {clone, extend, easeCubicInOut, sphericalDirectionToCartesian, sphericalPositionToCartesian} from '../util/util';
 import * as interpolate from '../style-spec/util/interpolate';
 import {number as interpolateValue} from '../style-spec/util/interpolate';
 import {normalizePropertyExpression} from '../style-spec/expression/index';
@@ -210,7 +210,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         if (properties) {
             for (const name in properties) {
                 const value = properties[name];
-                if (endsWith(name, '-transition')) {
+                if (name.endsWith('-transition')) {
                     const propName = name.slice(0, -'-transition'.length) as keyof Props;
                     if (specProperties[propName]) {
                         this.setTransition(propName, value as TransitionSpecification);
