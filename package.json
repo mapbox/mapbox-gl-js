@@ -77,7 +77,7 @@
     "esbuild": "^0.25.0",
     "eslint": "^8.57.1",
     "eslint-config-mourner": "^3.0.0",
-    "eslint-import-resolver-typescript": "^3.8.1",
+    "eslint-import-resolver-typescript": "^3.8.3",
     "eslint-plugin-html": "^8.1.2",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsdoc": "^50.6.3",
