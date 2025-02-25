@@ -142,8 +142,7 @@ class Actor {
             if (callback) {
                 // If we get a response, but don't have a callback, the request was canceled.
                 if (task.error) {
-                    // @ts-ignore
-                    callback(deserialize(task.error));
+                    callback(deserialize(task.error) as Error);
                 } else {
                     callback(null, deserialize(task.data));
                 }

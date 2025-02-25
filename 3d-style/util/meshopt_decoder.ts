@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 
 // This file is part of meshoptimizer library and is distributed under the terms of MIT License.

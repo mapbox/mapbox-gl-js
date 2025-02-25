@@ -1,5 +1,5 @@
-// @ts-nocheck
 /* eslint-disable */
+// @ts-nocheck
 
 import {LRUCache} from '../../util/lru';
 

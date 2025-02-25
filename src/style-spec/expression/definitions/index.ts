@@ -98,8 +98,7 @@ function rgba(ctx: EvaluationContext, [r, g, b, a]: Expression[]) {
     const alpha = a ? a.evaluate(ctx) : 1;
     const error = validateRGBA(r, g, b, alpha);
     if (error) throw new RuntimeError(error);
-    // @ts-expect-error
-    return new Color(r / 255 * alpha, g / 255 * alpha, b / 255 * alpha, alpha);
+    return new Color(r as unknown as number / 255 * alpha, g as unknown as number / 255 * alpha, b as unknown as number / 255 * alpha, alpha);
 }
 
 function hsla(ctx: EvaluationContext, [h, s, l, a]: Expression[]) {

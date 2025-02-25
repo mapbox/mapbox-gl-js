@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// Disable TypeScript annotations here because it doesn't support importing GLSL files
 // @ts-nocheck
-// Disable Flow annotations here because Flow doesn't support importing GLSL files
 
 import preludeCommon from './_prelude.glsl';
 import preludeFrag from './_prelude.fragment.glsl';

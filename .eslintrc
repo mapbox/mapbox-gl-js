@@ -38,7 +38,6 @@
         // temporarily disabled for easier migration to TypeScript
         "no-loss-of-precision": "off",
         "@typescript-eslint/no-this-alias": "off",
-        "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/unbound-method": "off",
         "@typescript-eslint/no-unsafe-call": "off",
         "@typescript-eslint/no-explicit-any": "off",

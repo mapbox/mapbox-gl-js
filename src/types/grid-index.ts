@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 export interface GridIndex {
     new(extent: number, n: number, padding: number): this;
