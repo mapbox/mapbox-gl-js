@@ -37,39 +37,46 @@
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    devtools: true,
     zoom: 12.5,
     center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/streets-v9',
+    style: 'mapbox://styles/mapbox/streets-v12',
     hash: true
 });
 
+const features = [];
 const spinningMarkers = [];
 ['auto', 'map', 'viewport', 'horizon'].forEach((rotationAlignment, i) => {
     ['auto', 'map', 'viewport'].forEach((pitchAlignment, j) => {
-        var bounds = map.getBounds();
-        var s = bounds.getSouth();
-        var n = bounds.getNorth();
-        var w = bounds.getWest();
-        var e = bounds.getEast();
+        const bounds = map.getBounds();
+        const s = bounds.getSouth();
+        const n = bounds.getNorth();
+        const w = bounds.getWest();
+        const e = bounds.getEast();
 
-        var lng = w + (e - w) * ((i + .5) / 4);
-        var lat = s + (n - s) * ((j + .5) / 3);
+        const lng = w + (e - w) * ((i + .5) / 4);
+        const lat = s + (n - s) * ((j + .5) / 3);
+        const altitude = (i * 2000 + j*2000) * (e - w);
 
-        var popup = new mapboxgl.Popup().setHTML(`Pitch Alignment: ${pitchAlignment}<br aria-hidden="true">Rotation Alignment: ${rotationAlignment}`);
+        const popup = new mapboxgl.Popup().setHTML(`
+            Pitch Alignment: ${pitchAlignment}<br aria-hidden="true">
+            Rotation Alignment: ${rotationAlignment}<br aria-hidden="true">
+            Altitude: ${altitude.toFixed(0)} meters
+        `);
 
-        var r = Math.round(Math.random() * 255);
-        var g = Math.round(Math.random() * 255);
-        var b = Math.round(Math.random() * 255);
+        const r = Math.round(Math.random() * 255);
+        const g = Math.round(Math.random() * 255);
+        const b = Math.round(Math.random() * 255);
+        const color = `rgb(${r}, ${g}, ${b})`;
 
-        var sc = Math.random() * 2.5 + 0.5;
+        const sc = Math.random() * 2.5 + 0.5;
 
-        var marker = new mapboxgl.Marker({
-            color: `rgb(${r}, ${g}, ${b})`,
+        const marker = new mapboxgl.Marker({
+            color,
             scale: sc,
             draggable: true,
             rotationAlignment,
-            pitchAlignment
+            pitchAlignment,
+            altitude
         })
             .setLngLat([lng, lat])
             .setPopup(popup)
@@ -78,8 +85,54 @@ const spinningMarkers = [];
         marker.togglePopup();
 
         spinningMarkers.push(marker);
+
+        const lngOffset = (e - w)/100;
+        const latOffset = (n - s)/100;
+
+        features.push({
+            type: 'Feature',
+            geometry: {
+                type: 'Polygon',
+                coordinates: [
+                    [
+                        [lng-lngOffset,lat+latOffset],
+                        [lng+lngOffset,lat+latOffset],
+                        [lng+lngOffset,lat-latOffset],
+                        [lng-lngOffset,lat-latOffset],
+                        [lng-lngOffset,lat+latOffset],
+                    ]
+                ]
+            },
+            properties: {altitude, color}
+        });
     });
 });
+
+map.on('style.load',() => {
+    map.setBearing(50);
+    map.setPitch(70);
+
+    map.addSource('fill-extrusions', {
+        type: 'geojson',
+        data: {
+            type: 'FeatureCollection',
+            features: features
+        }
+    });
+
+    map.addLayer({
+        id: 'fill-extrusions',
+        type: 'fill-extrusion',
+        source: 'fill-extrusions',
+        paint: {
+            'fill-extrusion-opacity': 0.6,
+            'fill-extrusion-color': ['get', 'color'],
+            'fill-extrusion-height': ['get', 'altitude'],
+            'fill-extrusion-base': 0,
+            'fill-extrusion-base-alignment': 'terrain'
+        }
+    });
+})
 
 let animate = false;
 document.getElementById('animate').addEventListener('click', () => {
