@@ -285,24 +285,6 @@ export function asyncAll<Item, Result>(
 }
 
 /*
- * Polyfill for Object.values. Not fully spec compliant, but we don't
- * need it to be.
- *
- * @private
- */
-export function values<T>(
-    obj: {
-        [key: string]: T;
-    },
-): Array<T> {
-    const result = [];
-    for (const k in obj) {
-        result.push(obj[k]);
-    }
-    return result;
-}
-
-/*
  * Compute the difference between the keys in one object and the keys
  * in another object.
  *

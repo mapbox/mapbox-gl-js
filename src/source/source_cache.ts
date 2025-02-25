@@ -4,7 +4,7 @@ import Tile from './tile';
 import RasterArrayTile from './raster_array_tile';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import TileCache from './tile_cache';
-import {asyncAll, keysDifference, values, clamp} from '../util/util';
+import {asyncAll, keysDifference, clamp} from '../util/util';
 import browser from '../util/browser';
 import {OverscaledTileID} from './tile_id';
 import SourceFeatureState from './source_state';
@@ -192,7 +192,7 @@ class SourceCache extends Evented {
      * @private
      */
     getIds(): Array<number> {
-        return values((this._tiles)).map((tile: Tile) => tile.tileID).sort(compareTileId).map(id => id.key);
+        return Object.values(this._tiles).map((tile: Tile) => tile.tileID).sort(compareTileId).map(id => id.key);
     }
 
     getRenderableIds(symbolLayer?: boolean, includeShadowCasters?: boolean): Array<number> {

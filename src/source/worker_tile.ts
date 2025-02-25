@@ -6,7 +6,7 @@ import SymbolBucket from '../data/bucket/symbol_bucket';
 import LineBucket from '../data/bucket/line_bucket';
 import FillBucket from '../data/bucket/fill_bucket';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
-import {warnOnce, mapObject, values} from '../util/util';
+import {warnOnce, mapObject} from '../util/util';
 import assert from 'assert';
 import LineAtlas from '../render/line_atlas';
 import ImageAtlas from '../render/image_atlas';
@@ -265,7 +265,7 @@ class WorkerTile {
                 const m = PerformanceUtils.beginMeasure('parseTile2');
                 this.status = 'done';
                 callback(null, {
-                    buckets: values(buckets).filter(b => !b.isEmpty()),
+                    buckets: Object.values(buckets).filter(b => !b.isEmpty()),
                     featureIndex,
                     collisionBoxArray: null,
                     glyphAtlasImage: null,
@@ -311,7 +311,7 @@ class WorkerTile {
                 }
                 this.status = 'done';
                 callback(null, {
-                    buckets: values(buckets).filter(b => !b.isEmpty()),
+                    buckets: Object.values(buckets).filter(b => !b.isEmpty()),
                     featureIndex,
                     collisionBoxArray: this.collisionBoxArray,
                     glyphAtlasImage: glyphAtlas.image,
