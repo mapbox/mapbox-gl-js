@@ -764,7 +764,7 @@ class Style extends Evented<MapEvents> {
                 this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
             }
 
-            this.glyphManager.setURL(json.glyphs, this.scope);
+            this.setGlyphsUrl(json.glyphs);
 
             const layers: Array<LayerSpecification> = deref(this.stylesheet.layers);
             this._order = layers.map((layer) => layer.id);
@@ -4129,6 +4129,15 @@ class Style extends Evented<MapEvents> {
             const layer = this.getLayer(id);
             if (layer) layer.updateTransitions(parameters);
         }
+    }
+
+    getGlyphsUrl(): string | undefined {
+        return this.stylesheet.glyphs;
+    }
+
+    setGlyphsUrl(url: string) {
+        this.stylesheet.glyphs = url;
+        this.glyphManager.setURL(url, this.scope);
     }
 
     // Callbacks from web workers

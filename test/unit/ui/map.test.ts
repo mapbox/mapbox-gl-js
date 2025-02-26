@@ -1298,6 +1298,16 @@ describe('Map', () => {
             expect(map.isPointOnSurface([100, 85])).toEqual(false);
         });
     });
+
+    test('#getGlyphsUrl/setGlyphsUrl', async () => {
+        const map = createMap();
+
+        await waitFor(map, 'style.load');
+        expect(map.getGlyphsUrl()).toEqual(undefined);
+
+        map.setGlyphsUrl('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+        expect(map.getGlyphsUrl()).toEqual('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+    });
 });
 
 test('Disallow usage of FQID separator in the public APIs', async () => {

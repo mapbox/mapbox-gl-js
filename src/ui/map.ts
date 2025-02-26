@@ -3494,6 +3494,30 @@ export class Map extends Camera {
     /** @section {Style properties} */
 
     /**
+     * Returns the glyphs URL of the current style.
+     *
+     * @returns {string} Returns a glyph URL template.
+     * @example
+     * map.getGlyphsUrl();
+     */
+    getGlyphsUrl(): string | undefined {
+        return this.style.getGlyphsUrl();
+    }
+
+    /**
+     * Sets a URL template for loading signed-distance-field glyph sets in PBF format. The URL must include `{fontstack}` and `{range}` tokens.
+     *
+     * @param {string} url A URL template for loading SDF glyph sets in PBF format.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setGlyphsUrl('mapbox://fonts/mapbox/{fontstack}/{range}.pbf');
+     */
+    setGlyphsUrl(url: string): this {
+        this.style.setGlyphsUrl(url);
+        return this._update(true);
+    }
+
+    /**
      * Returns the imported style schema.
      *
      * @param {string} importId The name of the imported style (e.g. `basemap`).

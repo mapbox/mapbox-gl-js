@@ -73,7 +73,7 @@ class GlyphManager {
     static loadGlyphRange: typeof loadGlyphRange;
     static TinySDF: Class<TinySDF>;
 
-    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily?: string | null) {
+    constructor(requestManager: RequestManager, localGlyphMode: number, localFontFamily?: string) {
         this.requestManager = requestManager;
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
