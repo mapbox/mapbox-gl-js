@@ -105,17 +105,10 @@ const lineUniformValues = (
     widthScale: number,
     floorWidthScale: number,
     trimOffset: [number, number],
-    totalFeatureLength: number
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
     const pixelsToTileUnits = transform.calculatePixelsToTileUnitsMatrix(tile);
     const ignoreLut = layer.paint.get('line-trim-color-use-theme').constantOr("default") === 'none';
-    let trimFadeRange = layer.paint.get('line-trim-fade-range');
-    if (layer.paint.get('line-trim-fade-range-unit') === "meters" && totalFeatureLength > 0) {
-        trimFadeRange = [trimFadeRange[0] / totalFeatureLength, trimFadeRange[1] / totalFeatureLength];
-    } else {
-        trimFadeRange = [Math.min(trimFadeRange[0], 1.0), Math.min(trimFadeRange[1], 1.0)];
-    }
 
     // Increase zbias factor for low pitch values based on the zoom level. Lower zoom level increases the zbias factor.
     // The values were found experimentally, to make an elevated line look good over a terrain with high elevation differences.
@@ -137,7 +130,7 @@ const lineUniformValues = (
         'u_tile_units_to_pixels': calculateTileRatio(tile, painter.transform),
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset,
-        'u_trim_fade_range': trimFadeRange,
+        'u_trim_fade_range': layer.paint.get('line-trim-fade-range'),
         'u_trim_color': layer.paint.get('line-trim-color').toRenderColor(ignoreLut ? null : layer.lut).toArray01(),
         'u_emissive_strength': layer.paint.get('line-emissive-strength'),
         'u_zbias_factor': zbiasFactor,
@@ -154,18 +147,10 @@ const linePatternUniformValues = (
     widthScale: number,
     floorWidthScale: number,
     trimOffset: [number, number],
-    totalFeatureLength: number
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
     const zbiasFactor = transform.pitch < 15.0 ? lerp(0.07, 0.7, clamp((14.0 - transform.zoom) / (14.0 - 9.0), 0.0, 1.0)) : 0.07;
     const ignoreLut = layer.paint.get('line-trim-color-use-theme').constantOr("default") === 'none';
-
-    let trimFadeRange = layer.paint.get('line-trim-fade-range');
-    if (layer.paint.get('line-trim-fade-range-unit') === "meters" && totalFeatureLength > 0) {
-        trimFadeRange = [trimFadeRange[0] / totalFeatureLength, trimFadeRange[1] / totalFeatureLength];
-    } else {
-        trimFadeRange = [Math.min(trimFadeRange[0], 1.0), Math.min(trimFadeRange[1], 1.0)];
-    }
 
     // Increase zbias factor for low pitch values based on the zoom level. Lower zoom level increases the zbias factor.
     // The values were found experimentally, to make an elevated line look good over a terrain with high elevation differences.
@@ -185,7 +170,7 @@ const linePatternUniformValues = (
         ],
         'u_alpha_discard_threshold': 0.0,
         'u_trim_offset': trimOffset,
-        'u_trim_fade_range': trimFadeRange,
+        'u_trim_fade_range': layer.paint.get('line-trim-fade-range'),
         'u_trim_color': layer.paint.get('line-trim-color').toRenderColor(ignoreLut ? null : layer.lut).toArray01(),
         'u_emissive_strength': layer.paint.get('line-emissive-strength'),
         'u_zbias_factor': zbiasFactor,

@@ -588,10 +588,6 @@ export type LineLayerSpecification = {
          * @experimental This property is experimental and subject to change in future versions.
          */
         "line-trim-fade-range"?: PropertyValueSpecification<[number, number]>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
-        "line-trim-fade-range-unit"?: PropertyValueSpecification<"meters" | "normalized">,
         "line-trim-color"?: PropertyValueSpecification<ColorSpecification>,
         "line-trim-color-transition"?: TransitionSpecification,
         "line-trim-color-use-theme"?: PropertyValueSpecification<string>,
