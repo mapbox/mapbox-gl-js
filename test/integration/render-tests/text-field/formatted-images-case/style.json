@@ -3,8 +3,7 @@
   "metadata": {
     "test": {
       "height": 64,
-      "width": 64,
-      "allowed": 0.055
+      "width": 64
     }
   },
   "center": [ 0, 0 ],
@@ -36,7 +35,7 @@
     }
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
-  "sprite": "local://sprites/standard@2x",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "text",

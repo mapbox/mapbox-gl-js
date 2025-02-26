@@ -4,7 +4,6 @@
     "test": {
       "height": 300,
       "width": 512,
-      "allowed": 0.0021,
       "operations": [
       ]
     }

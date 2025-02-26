@@ -2,10 +2,9 @@
   "version": 8,
   "metadata": {
     "test": {
-      "spriteFormat": "icon_set",
+      "pixelRatio": 2,
       "width": 64,
-      "height": 64,
-      "allowed": 0.006
+      "height": 64
     }
   },
   "sources": {

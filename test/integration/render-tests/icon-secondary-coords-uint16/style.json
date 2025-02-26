@@ -2,8 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "allowed": 0.0014
+      "height": 256
     }
   },
   "center": [

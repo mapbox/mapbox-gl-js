@@ -11,6 +11,7 @@ import {getImageRasterizerWorkerPool} from '../util/worker_pool_factory';
 import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
 import {ImageRasterizer} from './image_rasterizer';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
+import browser from '../util/browser';
 
 import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import type {StyleImage} from '../style/style_image';
@@ -371,7 +372,7 @@ class ImageManager extends Evented {
             if (image.usvg && !image.data) {
                 if (this.patternsInFlight.has(id)) return null;
                 this.patternsInFlight.add(this.getPatternInFlightId(scope, id));
-                const imageIdWithOptions = ResolvedImage.from(id).getPrimary();
+                const imageIdWithOptions = ResolvedImage.from(id).getPrimary().scaleSelf(browser.devicePixelRatio);
                 const imageTasks = {[id]: {image, imageIdWithOptions}};
                 this.rasterizeImagesInWorkerOrMainThread(scope, imageTasks, (_, result) => this.storePatternImage(id, scope, image, lut, result));
                 return null;

@@ -58,9 +58,21 @@ let fixtureWatcher;
 const rollupWatchers = {};
 
 function getQueryParams() {
+    let spriteFormat = "raster";
+
     const params = process.argv.slice(2).filter((value, index, self) => { return self.indexOf(value) === index; }) || [];
     const filterIndex = params.findIndex((elem) => { return String(elem).startsWith("tests="); });
-    const queryParams = {};
+    const spriteFormatIndex = params.findIndex((elem) => { return String(elem).startsWith("sprite-format="); });
+
+    if (spriteFormatIndex !== -1) {
+        spriteFormat = String(params[spriteFormatIndex]).split('=')[1];
+    }
+
+
+    const queryParams = {
+        spriteFormat
+    };
+
     if (filterIndex !== -1) {
         const split = String(params.splice(filterIndex, 1)).split('=');
         if (split.length === 2) {

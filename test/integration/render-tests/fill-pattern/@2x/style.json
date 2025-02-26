@@ -4,8 +4,7 @@
     "test": {
       "width": 64,
       "height": 64,
-      "pixelRatio": 2,
-      "spriteFormat": "icon_set"
+      "pixelRatio": 2
     }
   },
   "sources": {

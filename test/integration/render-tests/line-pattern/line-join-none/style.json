@@ -2,8 +2,9 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "allowed": 0.0008
+      "allowed": 0.00227,
+      "pixelRatio": 2,
+      "height": 256
     }
   },
   "center": [

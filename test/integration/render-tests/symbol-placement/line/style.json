@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "pixelRatio": 2,
       "height": 256
     }
   },

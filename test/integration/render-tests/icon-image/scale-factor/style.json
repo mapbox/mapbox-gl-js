@@ -4,8 +4,7 @@
     "test": {
       "height": 256,
       "width": 128,
-      "scaleFactor": 4,
-      "spriteFormat": "icon_set"
+      "scaleFactor": 4
     }
   },
   "sources": {

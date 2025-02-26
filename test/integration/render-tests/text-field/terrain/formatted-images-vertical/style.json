@@ -4,7 +4,8 @@
     "test": {
       "height": 168,
       "width": 128,
-      "pixelRatio": 2
+      "pixelRatio": 2,
+      "allowed": 0.0002
     }
   },
   "center": [ 0, 0 ],

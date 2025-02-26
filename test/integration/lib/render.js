@@ -34,6 +34,7 @@ container.style.bottom = '10px';
 container.style.right = '10px';
 container.style.background = 'white';
 document.body.appendChild(container);
+const {searchParams: queryParams} = new URL(document.location.href);
 
 // Container used to store all fake canvases added via addFakeCanvas operation
 // All children of this node are cleared at the end of every test run
@@ -135,6 +136,7 @@ function parseOptions(currentFixture, style) {
         height: 512,
         pixelRatio: 1,
         allowed: 0.00015,
+        spriteFormat: 'icon_set',
         'diff-calculation-threshold': 0.1285,
         ...((style.metadata && style.metadata.test) || {})
     };
@@ -192,7 +194,7 @@ async function renderMap(style, options) {
         attributionControl: false,
         preserveDrawingBuffer: true,
         axonometric: options.axonometric || false,
-        spriteFormat: options.spriteFormat ?? 'auto',
+        spriteFormat: options.spriteFormat,
         skew: options.skew || [0, 0],
         scaleFactor: options.scaleFactor || 1,
         fadeDuration: options.fadeDuration || 0,
@@ -339,8 +341,34 @@ async function runTest(t) {
         const style = parseStyle(currentFixture);
         const options = parseOptions(currentFixture, style);
 
-        if (options.spriteFormat === 'icon_set' && style.sprite && !style.sprite.endsWith('.pbf')) {
-            style.sprite += '.pbf';
+        if (queryParams.has('spriteFormat') && !options.spriteFormat) {
+            options.spriteFormat = queryParams.get('spriteFormat');
+        }
+
+
+        if (options.spriteFormat === 'icon_set') {
+            if (style.sprite && !style.sprite.endsWith('.pbf')) {
+                style.sprite += '.pbf';
+            }
+
+            if (options.operations && options.operations.length) {
+                options.operations.forEach(op => {
+                    if (op[0] === 'setStyle') {
+                        if (op[1].sprite && !op[1].sprite.endsWith('.pbf')) {
+                            op[1].sprite += '.pbf';
+                        }
+                    }
+                });
+            }
+
+            if (currentFixture.style.imports && currentFixture.style.imports.length) {
+                currentFixture.style.imports.forEach(imp => {
+                    if (!imp.data) return;
+                    if (imp.data.sprite && !imp.data.sprite.endsWith('.pbf')) {
+                        imp.data.sprite += '.pbf';
+                    }
+                });
+            }
         }
 
         const {actualImageData, w, h} = await getActualImage(style, options);

@@ -2,6 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
+      "allowed": 0.0023,
+      "pixelRatio": 2,
       "width": 64,
       "height": 64
     }

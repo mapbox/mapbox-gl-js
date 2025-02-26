@@ -2,9 +2,9 @@
   "version": 8,
   "metadata": {
     "test": {
+      "pixelRatio": 2,
       "height": 128,
-      "width": 128,
-      "allowed": 0.00044
+      "width": 128
     }
   },
   "center": [ 0, 0 ],
@@ -27,7 +27,7 @@
     }
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
-  "sprite": "local://sprites/standard@2x",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "text",

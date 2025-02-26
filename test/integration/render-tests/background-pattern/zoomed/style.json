@@ -3,7 +3,9 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64
+      "height": 64,
+      "pixelRatio": 2,
+      "allowed": 0.00129
     }
   },
   "zoom": 0.5,

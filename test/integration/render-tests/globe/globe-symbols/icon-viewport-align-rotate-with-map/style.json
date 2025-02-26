@@ -2,9 +2,10 @@
   "version": 8,
   "metadata": {
     "test": {
+      "pixelRatio": 2,
       "height": 512,
       "width": 512,
-      "allowed": 0.0002,
+      "allowed": 0.00017,
       "operations": [
         ["setProjection", "globe"],
         ["wait"]

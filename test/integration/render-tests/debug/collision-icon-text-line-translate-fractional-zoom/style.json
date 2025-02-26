@@ -3,7 +3,6 @@
   "metadata": {
     "test": {
       "collisionDebug": true,
-      "spriteFormat": "icon_set",
       "height": 256,
       "width" : 256
     }

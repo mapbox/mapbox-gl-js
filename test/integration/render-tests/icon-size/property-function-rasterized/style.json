@@ -3,8 +3,7 @@
   "metadata": {
     "test": {
       "width": 192,
-      "height": 128,
-      "spriteFormat": "icon_set"
+      "height": 128
     }
   },
   "sources": {
