@@ -4700,8 +4700,6 @@ export class Map extends Camera {
 
         postStyleLoadEvent(this._requestManager._customAccessToken, {
             map: this,
-            // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'skuToken' does not exist in type 'StyleLoadEventInput'.
-            skuToken: this._requestManager._skuToken,
             style: this.style.globalId,
             importedStyles: this.style.getImportGlobalIds()
         });

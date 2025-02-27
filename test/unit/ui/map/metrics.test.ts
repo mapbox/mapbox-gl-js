@@ -122,7 +122,10 @@ describe('Map', () => {
                         created: expect.any(String),
                         mapInstanceId: expect.any(String),
                         eventId: 0,
-                        style: new URL('/style.json', location.href).toString()
+                        style: new URL('/style.json', location.href).toString(),
+                        skuId: undefined,
+                        skuToken: undefined,
+                        userId: undefined
                     }))
                 });
 
