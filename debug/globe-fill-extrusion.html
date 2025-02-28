@@ -262,7 +262,7 @@ document.getElementById('buildings-fauxao-slider').oninput = function() {
 
 document.getElementById('buildings-ao-radius-slider').oninput = function() {
     map.setPaintProperty("country-boundaries", 'fill-extrusion-ambient-occlusion-radius', this.valueAsNumber);
-    document.getElementById('ao_radius').innerHTML = this.value;
+    document.getElementById('ao_radius').textContent = this.value;
 };
 
 document.getElementById('buildings-opacity-slider').oninput = function() {
