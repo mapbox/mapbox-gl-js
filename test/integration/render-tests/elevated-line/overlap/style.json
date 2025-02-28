@@ -9,7 +9,6 @@
   },
   "zoom": 18.1,
   "center": [-77.0406537, 38.8770786],
-  "sprite": "local://sprites/emerald",
   "lights": [
     {
       "type": "ambient",

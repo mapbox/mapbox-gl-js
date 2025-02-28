@@ -30,7 +30,6 @@
       0
     ]
   },
-  "sprite": "local://sprites/emerald",
   "lights": [
     {
       "type": "ambient",
