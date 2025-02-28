@@ -1,0 +1,16 @@
+{
+    "version": 8,
+    "iconsets": {
+        "landmarks": {
+            "type": "source",
+            "source": "mapbox-landmarks"
+        }
+    },
+    "sources": {
+        "mapbox-landmarks": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v8"
+        }
+    },
+    "layers": []
+}

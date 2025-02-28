@@ -140,6 +140,17 @@
         }
       }
     },
+    "iconsets": {
+      "experimental": true,
+      "type": "iconsets",
+      "doc": "A collection of icon sets",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      }
+    },
     "schema": {
       "type": "schema",
       "doc": "Definition of the schema for configuration options.",
@@ -727,6 +738,51 @@
           "ios": "11.0.0"
         }
       }
+    }
+  },
+  "iconsets": {
+    "*": {
+      "type": "iconset",
+      "doc": "Specification of an icon set. For sprite icon set, a URL must be provided. For `raster-array` source icon set, a source name must be provided."
+    }
+  },
+  "iconset": [
+    "iconset_sprite",
+    "iconset_source"
+  ],
+  "iconset_sprite": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "sprite": {
+          "doc": "A sprite icon set."
+        }
+      },
+      "doc": "The type of the icon set."
+    },
+    "url": {
+      "required": true,
+      "type": "string",
+      "doc": "A base URL for retrieving the icon set and metadata. The extension `.pbf` will be automatically appended. The URL must be absolute, containing the [scheme, authority and path components](https://en.wikipedia.org/wiki/URL#Syntax).",
+      "example": "mapbox://sprites/mapbox/bright"
+    }
+  },
+  "iconset_source": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "source": {
+          "doc": "A source icon set."
+        }
+      },
+      "doc": "The type of the icon set."
+    },
+    "source": {
+      "required": true,
+      "type": "string",
+      "doc": "Name of a source of `raster-array` type to be used for the icon set."
     }
   },
   "sources": {

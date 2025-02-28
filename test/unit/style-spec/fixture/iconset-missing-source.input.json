@@ -1,0 +1,11 @@
+{
+    "version": 8,
+    "iconsets": {
+        "landmarks": {
+            "type": "source",
+            "source": "mapbox-landmarks"
+        }
+    },
+    "sources": {},
+    "layers": []
+}

@@ -23,6 +23,7 @@ import validateString from './validate_string';
 import validateFormatted from './validate_formatted';
 import validateImage from './validate_image';
 import validateProjection from './validate_projection';
+import validateIconset from './validate_iconset';
 import getType from '../util/get_type';
 
 import type {StyleReference} from '../reference/latest';
@@ -52,7 +53,8 @@ const VALIDATORS = {
     'formatted': validateFormatted,
     'resolvedImage': validateImage,
     'projection': validateProjection,
-    'import': validateImport
+    'import': validateImport,
+    'iconset': validateIconset,
 };
 
 // Main recursive validation function. Tracks:

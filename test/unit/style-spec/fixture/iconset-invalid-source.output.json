@@ -1,0 +1,6 @@
+[
+  {
+    "message": "iconsets.landmarks: iconset cannot be used with a source of type vector, it only be used with a \"raster-array\" source type",
+    "line": 6
+  }
+]

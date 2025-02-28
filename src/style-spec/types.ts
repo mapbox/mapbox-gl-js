@@ -103,6 +103,10 @@ export type StyleSpecification = {
      */
     "indoor"?: IndoorSpecification,
     "imports"?: Array<ImportSpecification>,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
+    "iconsets"?: IconsetsSpecification,
     "schema"?: SchemaSpecification,
     "sources": SourcesSpecification,
     "sprite"?: string,
@@ -123,6 +127,10 @@ export type SourcesSpecification = {
 
 export type ModelsSpecification = {
     [_: string]: ModelSpecification
+}
+
+export type IconsetsSpecification = {
+    [_: string]: IconsetSpecification
 }
 
 export type LightSpecification = {
@@ -423,6 +431,16 @@ export type SourceSpecification =
     | VideoSourceSpecification
     | ImageSourceSpecification
     | ModelSourceSpecification
+
+export type IconsetSpecification =
+    | {
+        "type": "sprite",
+        "url": string
+    }
+    | {
+        "type": "source",
+        "source": string
+    }
 
 export type ModelSpecification = string;
 

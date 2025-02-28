@@ -111,7 +111,7 @@ ${Object.keys(properties)
                     return [property, propertyUseTheme].join(',\n');
                 }
             }
-            
+
             if (properties[k].transition) {
                 const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification`;
                 return [property, propertyTransition].join(',\n');
@@ -320,6 +320,8 @@ ${tsObjectDeclaration('SourcesSpecification', spec.sources)}
 
 ${tsObjectDeclaration('ModelsSpecification', spec.models)}
 
+${tsObjectDeclaration('IconsetsSpecification', spec.iconsets)}
+
 ${tsObjectDeclaration('LightSpecification', spec.light)}
 
 ${tsObjectDeclaration('TerrainSpecification', spec.terrain)}
@@ -365,6 +367,9 @@ ${spec.source.map(key => {
 
 export type SourceSpecification =
 ${spec.source.map(key => `    | ${tsSourceSpecificationTypeName(key)}`).join('\n')}
+
+export type IconsetSpecification =
+${spec.iconset.map(key => `    | ${tsObject(spec[key], '    ')}`).join('\n')}
 
 export type ModelSpecification = ${tsType(spec.model)};
 
