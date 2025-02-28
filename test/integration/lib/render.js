@@ -136,7 +136,6 @@ function parseOptions(currentFixture, style) {
         height: 512,
         pixelRatio: 1,
         allowed: 0.00015,
-        spriteFormat: 'icon_set',
         'diff-calculation-threshold': 0.1285,
         ...((style.metadata && style.metadata.test) || {})
     };
@@ -343,6 +342,8 @@ async function runTest(t) {
 
         if (queryParams.has('spriteFormat') && !options.spriteFormat) {
             options.spriteFormat = queryParams.get('spriteFormat');
+        } else {
+            options.spriteFormat = options.spriteFormat ?? 'icon_set';
         }
 
 

@@ -58,7 +58,7 @@ let fixtureWatcher;
 const rollupWatchers = {};
 
 function getQueryParams() {
-    let spriteFormat = "raster";
+    let spriteFormat = "icon_set";
 
     const params = process.argv.slice(2).filter((value, index, self) => { return self.indexOf(value) === index; }) || [];
     const filterIndex = params.findIndex((elem) => { return String(elem).startsWith("tests="); });
