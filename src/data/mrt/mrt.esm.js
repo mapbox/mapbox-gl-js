@@ -914,7 +914,7 @@ class RasterLayer {
 
   /**
    * Get the byte range of a data slice, for performing a HTTP Range fetch
-   * @param {number[]} bandList - list of slices to be covered
+   * @param {Array<number | string>} bandList - list of slices to be covered
    * @return {TDataRange} range of data
    */
   getDataRange(bandList) {
@@ -951,7 +951,7 @@ class RasterLayer {
 
   /**
    * Check if the specified band is valid
-   * @param {number} band - sequence band
+   * @param {number | string} band - sequence band
    * @return {boolean} - true if band exists in layer
    */
   hasBand(band) {
@@ -963,7 +963,7 @@ class RasterLayer {
 
   /**
    * Check if the layer has data for a given sequence band
-   * @param {number} band - sequence band
+   * @param {number | string} band - sequence band
    * @return {boolean} true if data is already available
    */
   hasDataForBand(band) {
@@ -975,7 +975,7 @@ class RasterLayer {
 
   /**
    * Get a typed array view of data
-   * @param {number} band - sequence band
+   * @param {number | string} band - sequence band
    * @return {TBandViewRGBA} view of raster layer
    */
   getBandView(band) {
