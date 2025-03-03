@@ -1,0 +1,88 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 300
+    }
+  },
+  "zoom": 0,
+  "center": [-50, 0],
+  "sources": {
+    "mapbox": {
+      "type": "geojson",
+      "data": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {
+                "name": "〘〙〜゠ー"
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [
+                    -32.453124999999964,
+                    85
+                  ],
+                  [
+                    -32.453124999999964,
+                    10
+                  ]
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "name": "〘〙〜゠ー"
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [
+                    -150,
+                    -58
+                  ],
+                  [
+                    -10,
+                    -58
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "lines-symbol",
+      "type": "symbol",
+      "source": "mapbox",
+      "layout": {
+        "text-field": "{name}",
+        "symbol-placement": "line-center",
+        "text-size": 30,
+        "text-allow-overlap": true,
+        "text-font": [ "NotoCJK" ]
+      }
+    }, {
+      "id": "lines",
+      "type": "line",
+      "source": "mapbox",
+      "paint": {
+          "line-opacity": 0.25
+      }
+    }
+  ]
+}

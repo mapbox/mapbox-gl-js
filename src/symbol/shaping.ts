@@ -2,7 +2,8 @@ import assert from 'assert';
 import {
     charHasUprightVerticalOrientation,
     charAllowsIdeographicBreaking,
-    charInComplexShapingScript
+    charInComplexShapingScript,
+    needsRotationInVerticalMode
 } from '../util/script_detection';
 import verticalizePunctuation from '../util/verticalize_punctuation';
 import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin';
@@ -21,7 +22,12 @@ const WritingMode = {
     horizontal: 1,
     vertical: 2,
     horizontalOnly: 3
-};
+} as const;
+
+/**
+ * Represents the writing mode orientation.
+ */
+export type Orientation = typeof WritingMode[keyof typeof WritingMode];
 
 const SHAPING_DEFAULT_OFFSET = -17;
 export {shapeText, shapeIcon, fitIconToText, getAnchorAlignment, WritingMode, SHAPING_DEFAULT_OFFSET};
@@ -53,7 +59,7 @@ export type Shaping = {
     bottom: number;
     left: number;
     right: number;
-    writingMode: 1 | 2;
+    writingMode: Orientation;
     text: string;
     iconsInText: boolean;
     verticalizable: boolean;
@@ -268,7 +274,7 @@ function shapeText(
     textJustify: TextJustify,
     spacing: number,
     translate: [number, number],
-    writingMode: 1 | 2,
+    writingMode: Orientation,
     allowVerticalPlacement: boolean,
     layoutTextSize: number,
     layoutTextSizeThisZoom: number,
@@ -624,7 +630,7 @@ function shapeLines(shaping: Shaping,
                     lineHeight: number,
                     textAnchor: SymbolAnchor,
                     textJustify: TextJustify,
-                    writingMode: 1 | 2,
+                    writingMode: Orientation,
                     spacing: number,
                     allowVerticalPlacement: boolean,
                     layoutTextSizeThisZoom: number) {
@@ -684,6 +690,17 @@ function shapeLines(shaping: Shaping,
             let image = null;
             let verticalAdvance = ONE_EM;
             let glyphOffset = 0;
+
+            // In vertical writing mode, glyphs are rotated 90 degrees counterclockwise when preparing the glyph quads.
+            //
+            // For glyphs with a `Tr` vertical orientation that need to be rotated 90 degrees clockwise
+            // (following regional convention), we achieve this by forcing their writing mode to be horizontal.
+            // However, they are still inserted into the vertical shaping process,
+            // which ultimately results in the same effect as rotating them 90 degrees clockwise during glyph quad
+            // preparation.
+            if (writingMode === WritingMode.vertical && needsRotationInVerticalMode(codePoint)) {
+                writingMode = WritingMode.horizontal;
+            }
 
             const vertical = !(writingMode === WritingMode.horizontal ||
                 // Don't verticalize glyphs that have no upright orientation if vertical placement is disabled.

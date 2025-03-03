@@ -26,6 +26,7 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type {TextAnchor} from './symbol_layout';
 import type {FogState} from '../style/fog_helpers';
 import type {PlacedCollisionBox} from './collision_index';
+import type {Orientation} from './shaping';
 
 // PlacedCollisionBox with all fields optional
 type PartialPlacedCollisionBox = Partial<PlacedCollisionBox>;
@@ -223,7 +224,7 @@ export class Placement {
     placements: Partial<Record<CrossTileID, JointPlacement>>;
     opacities: Partial<Record<CrossTileID, JointOpacityState>>;
     variableOffsets: Partial<Record<CrossTileID, VariableOffset>>;
-    placedOrientations: Partial<Record<CrossTileID, number>>;
+    placedOrientations: Partial<Record<CrossTileID, Orientation>>;
     commitTime: number;
     prevZoomAdjustment: number;
     lastPlacementChangeTime: number;
@@ -385,7 +386,7 @@ export class Placement {
         symbolInstance: SymbolInstance,
         boxIndex: number,
         bucket: SymbolBucket,
-        orientation: number,
+        orientation: Orientation,
         iconBox: SingleCollisionBox | null | undefined,
         textSize: any,
         iconSize: any,
@@ -583,7 +584,7 @@ export class Placement {
             if (textBox) {
                 updateBoxData(textBox);
                 const updatePreviousOrientationIfNotPlaced = (isPlaced: boolean) => {
-                    let previousOrientation = WritingMode.horizontal;
+                    let previousOrientation: Orientation = WritingMode.horizontal;
                     if (bucket.allowVerticalPlacement && !isPlaced && this.prevPlacement) {
                         const prevPlacedOrientation = this.prevPlacement.placedOrientations[crossTileID];
                         if (prevPlacedOrientation) {
@@ -612,7 +613,7 @@ export class Placement {
                 };
 
                 if (!layout.get('text-variable-anchor')) {
-                    const placeBox = (collisionTextBox: SingleCollisionBox, orientation: number) => {
+                    const placeBox = (collisionTextBox: SingleCollisionBox, orientation: Orientation) => {
                         const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, boxIndex, scaleFactor);
                         const placedFeature = this.collisionIndex.placeCollisionBox(bucket, textScale, collisionTextBox,
                             new Point(0, 0), textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
@@ -658,7 +659,7 @@ export class Placement {
                         }
                     }
 
-                    const placeBoxForVariableAnchors = (collisionTextBox: SingleCollisionBox, collisionIconBox: SingleCollisionBox | null | undefined, orientation: number) => {
+                    const placeBoxForVariableAnchors = (collisionTextBox: SingleCollisionBox, collisionIconBox: SingleCollisionBox | null | undefined, orientation: Orientation) => {
                         const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, boxIndex);
                         const width = (collisionTextBox.x2 - collisionTextBox.x1) * textScale + 2.0 * collisionTextBox.padding;
                         const height = (collisionTextBox.y2 - collisionTextBox.y1) * textScale + 2.0 * collisionTextBox.padding;
