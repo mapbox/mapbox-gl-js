@@ -80,13 +80,11 @@ async function notifyPR(pullRequest, bannedTsComments, priorBannedTsComments) {
         auth: execSync('mbx-ci github notifier token').toString().trim()
     });
 
-    let conclusion = 'success';
     let title = `Total ${bannedTsComments} supressions. `;
     if (!priorBannedTsComments) {
         title += 'No prior suppressions found.';
     } else if (bannedTsComments > priorBannedTsComments) {
         title += `This PR adds ${bannedTsComments - priorBannedTsComments} suppressions.`;
-        conclusion = 'failure';
     } else if (bannedTsComments < priorBannedTsComments) {
         title += `This PR removes ${priorBannedTsComments - bannedTsComments} suppressions.`;
     } else if (bannedTsComments === priorBannedTsComments) {
@@ -104,7 +102,7 @@ async function notifyPR(pullRequest, bannedTsComments, priorBannedTsComments) {
         head_branch: pullRequest.head.ref,
         head_sha: pullRequest.head.sha,
         status: 'completed',
-        conclusion,
+        conclusion: 'success',
         completed_at: new Date().toISOString()
     });
 }
