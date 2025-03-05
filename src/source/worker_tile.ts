@@ -197,8 +197,8 @@ class WorkerTile {
                 currentFeatureIndex++;
             }
 
-            if (elevationDependency && data.layers.hasOwnProperty(HD_ELEVATION_SOURCE_LAYER)) {
-                options.elevationFeatures = ElevationFeatures.parseFrom(data.layers[HD_ELEVATION_SOURCE_LAYER],  this.canonical);
+            if (elevationDependency && !options.elevationFeatures && data.layers.hasOwnProperty(HD_ELEVATION_SOURCE_LAYER)) {
+                options.elevationFeatures = ElevationFeatures.parseFrom(data.layers[HD_ELEVATION_SOURCE_LAYER], this.canonical);
             }
 
             for (const family of layerFamilies[sourceLayerId]) {

@@ -1101,7 +1101,7 @@ class Style extends Evented<MapEvents> {
                     mergedLayers[fqid] = layer;
 
                     // Typed layer bookkeeping
-                    if (layer.is3D()) this._has3DLayers = true;
+                    if (layer.is3D(!!this.terrain)) this._has3DLayers = true;
                     if (layer.type === 'circle') this._hasCircleLayers = true;
                     if (layer.type === 'symbol') this._hasSymbolLayers = true;
                     if (layer.type === 'clip') this._clipLayerPresent = true;
@@ -1117,13 +1117,13 @@ class Style extends Evented<MapEvents> {
             const l2 = mergedLayers[layerName2];
 
             if ((l1 as SymbolStyleLayer).hasInitialOcclusionOpacityProperties) {
-                if (l2.is3D()) {
+                if (l2.is3D(!!this.terrain)) {
                     return 1;
                 }
                 return 0;
             }
 
-            if (l1.is3D()) {
+            if (l1.is3D(!!this.terrain)) {
                 if ((l2 as SymbolStyleLayer).hasInitialOcclusionOpacityProperties) {
                     return -1;
                 }
@@ -2980,7 +2980,7 @@ class Style extends Evented<MapEvents> {
         //      This means that that the line_layer feature is above the extrusion_layer_b feature despite
         //      it being in an earlier layer.
 
-        const isLayer3D = (layerId: string) => this._mergedLayers[layerId].is3D();
+        const isLayer3D = (layerId: string) => this._mergedLayers[layerId].is3D(!!this.terrain);
 
         const order = this.order;
 
@@ -3050,7 +3050,7 @@ class Style extends Evented<MapEvents> {
             assert(sourceCache, 'queryable layers must have a source');
 
             const querySourceCache = queries[sourceCache.id] = queries[sourceCache.id] || {sourceCache, layers: {}, has3DLayers: false};
-            if (styleLayer.is3D()) querySourceCache.has3DLayers = true;
+            if (styleLayer.is3D(!!this.terrain)) querySourceCache.has3DLayers = true;
             querySourceCache.layers[styleLayer.fqid] = querySourceCache.layers[styleLayer.fqid] || {styleLayer, targets: []};
             querySourceCache.layers[styleLayer.fqid].targets.push({filter});
         };
@@ -3140,7 +3140,7 @@ class Style extends Evented<MapEvents> {
 
             const querySourceCache = queries[sourceCache.id] = queries[sourceCache.id] || {sourceCache, layers: {}, has3DLayers: false};
             querySourceCache.layers[styleLayer.fqid] = querySourceCache.layers[styleLayer.fqid] || {styleLayer, targets: []};
-            if (styleLayer.is3D()) querySourceCache.has3DLayers = true;
+            if (styleLayer.is3D(!!this.terrain)) querySourceCache.has3DLayers = true;
 
             if (!selector) {
                 target.uniqueFeatureID = false;
@@ -4235,7 +4235,7 @@ class Style extends Evented<MapEvents> {
         if (!this._clipLayerPresent && layer.type !== 'fill-extrusion') return false;
         const isFillExtrusion = layer.type === 'fill-extrusion' && layer.sourceLayer === 'building';
 
-        if (layer.is3D()) {
+        if (layer.is3D(!!this.terrain)) {
             if (isFillExtrusion || (!!source && source.type === 'batched-model')) return true;
             if (layer.type === 'model') {
                 return true;

@@ -1,5 +1,5 @@
-import {FillLayoutArray} from '../array_types';
-import {members as layoutAttributes} from './fill_attributes';
+import {FillExtLayoutArray, FillLayoutArray} from '../array_types';
+import {fillLayoutAttributesExt, fillLayoutAttributes} from './fill_attributes';
 import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';
 import {LineIndexArray, TriangleIndexArray} from '../index_array_type';
@@ -12,6 +12,8 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
+import {ElevationFeatureSampler, type ElevationFeature, type Range} from '../elevation_feature';
+import {MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ID} from '../elevation_constants';
 
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
 import type {
@@ -33,7 +35,92 @@ import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
-import type {ElevationFeature} from '../elevation_feature';
+
+class FillBufferData {
+    layoutVertexArray: FillLayoutArray;
+    layoutVertexBuffer: VertexBuffer | undefined;
+
+    elevatedLayoutVertexArray: FillExtLayoutArray | undefined;
+    elevatedLayoutVertexBuffer: VertexBuffer | undefined;
+
+    indexArray: TriangleIndexArray;
+    indexBuffer: IndexBuffer | undefined;
+
+    lineIndexArray: LineIndexArray;
+    lineIndexBuffer: IndexBuffer | undefined;
+
+    triangleSegments: SegmentVector;
+    lineSegments: SegmentVector;
+
+    programConfigurations: ProgramConfigurationSet<FillStyleLayer>;
+    uploaded: boolean;
+
+    heightRange: Range | undefined;
+
+    constructor(options: BucketParameters<FillStyleLayer>, elevated: boolean) {
+        this.layoutVertexArray = new FillLayoutArray();
+        this.indexArray = new TriangleIndexArray();
+        this.lineIndexArray = new LineIndexArray();
+        this.triangleSegments = new SegmentVector();
+        this.lineSegments = new SegmentVector();
+        this.programConfigurations = new ProgramConfigurationSet(options.layers, {zoom: options.zoom, lut: options.lut});
+        this.uploaded = false;
+
+        if (elevated) {
+            this.elevatedLayoutVertexArray = new FillExtLayoutArray();
+        }
+    }
+
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
+        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
+    }
+
+    isEmpty(): boolean {
+        return this.layoutVertexArray.length === 0;
+    }
+
+    needsUpload(): boolean {
+        return this.programConfigurations.needsUpload;
+    }
+
+    upload(context: Context) {
+        if (!this.uploaded) {
+            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, fillLayoutAttributes.members);
+            this.indexBuffer = context.createIndexBuffer(this.indexArray);
+            this.lineIndexBuffer = context.createIndexBuffer(this.lineIndexArray);
+
+            if (this.elevatedLayoutVertexArray && this.elevatedLayoutVertexArray.length > 0) {
+                assert(this.layoutVertexArray.length === this.elevatedLayoutVertexArray.length);
+                this.elevatedLayoutVertexBuffer = context.createVertexBuffer(this.elevatedLayoutVertexArray, fillLayoutAttributesExt.members);
+            }
+        }
+        this.programConfigurations.upload(context);
+        this.uploaded = true;
+    }
+
+    destroy() {
+        if (!this.layoutVertexBuffer) return;
+        if (this.elevatedLayoutVertexBuffer) {
+            this.elevatedLayoutVertexBuffer.destroy();
+        }
+        this.layoutVertexBuffer.destroy();
+        this.indexBuffer.destroy();
+        this.lineIndexBuffer.destroy();
+        this.programConfigurations.destroy();
+        this.triangleSegments.destroy();
+        this.lineSegments.destroy();
+    }
+
+    populatePaintArrays(feature: BucketFeature, index: number, imagePositions: SpritePositions, availableImages: Array<string>, canonical: CanonicalTileID, brightness?: number | null) {
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
+    }
+}
+
+interface ElevationParams {
+    elevation: ElevationFeature;
+    elevationSampler: ElevationFeatureSampler;
+    bias: number
+}
 
 class FillBucket implements Bucket {
     index: number;
@@ -46,21 +133,15 @@ class FillBucket implements Bucket {
     stateDependentLayerIds: Array<string>;
     patternFeatures: Array<BucketFeature>;
 
-    layoutVertexArray: FillLayoutArray;
-    layoutVertexBuffer: VertexBuffer;
-
-    indexArray: TriangleIndexArray;
-    indexBuffer: IndexBuffer;
-
-    indexArray2: LineIndexArray;
-    indexBuffer2: IndexBuffer;
+    bufferData: FillBufferData;
+    elevationBufferData: FillBufferData;
 
     hasPattern: boolean;
-    programConfigurations: ProgramConfigurationSet<FillStyleLayer>;
-    segments: SegmentVector;
-    segments2: SegmentVector;
+
     uploaded: boolean;
     projection: ProjectionSpecification;
+
+    elevationMode: 'none' | 'hd-road-base' | 'hd-road-markup';
 
     constructor(options: BucketParameters<FillStyleLayer>) {
         this.zoom = options.zoom;
@@ -72,14 +153,13 @@ class FillBucket implements Bucket {
         this.hasPattern = false;
         this.patternFeatures = [];
 
-        this.layoutVertexArray = new FillLayoutArray();
-        this.indexArray = new TriangleIndexArray();
-        this.indexArray2 = new LineIndexArray();
-        this.programConfigurations = new ProgramConfigurationSet(options.layers, {zoom: options.zoom, lut: options.lut});
-        this.segments = new SegmentVector();
-        this.segments2 = new SegmentVector();
+        this.bufferData = new FillBufferData(options, false);
+        this.elevationBufferData = new FillBufferData(options, true);
+
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.projection = options.projection;
+
+        this.elevationMode = this.layers[0].layout.get('fill-elevation-reference');
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
@@ -141,7 +221,8 @@ class FillBucket implements Bucket {
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
-        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
+        this.bufferData.update(states, vtLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
+        this.elevationBufferData.update(states, vtLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
     }
 
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, _: TileTransform, brightness?: number | null) {
@@ -151,40 +232,115 @@ class FillBucket implements Bucket {
     }
 
     isEmpty(): boolean {
-        return this.layoutVertexArray.length === 0;
+        return this.bufferData.isEmpty() && this.elevationBufferData.isEmpty();
     }
 
     uploadPending(): boolean {
-        return !this.uploaded || this.programConfigurations.needsUpload;
+        return !this.uploaded || this.bufferData.needsUpload() || this.elevationBufferData.needsUpload();
     }
+
     upload(context: Context) {
-        if (!this.uploaded) {
-            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, layoutAttributes);
-            this.indexBuffer = context.createIndexBuffer(this.indexArray);
-            this.indexBuffer2 = context.createIndexBuffer(this.indexArray2);
-        }
-        this.programConfigurations.upload(context);
-        this.uploaded = true;
+        this.bufferData.upload(context);
+        this.elevationBufferData.upload(context);
     }
 
     destroy() {
-        if (!this.layoutVertexBuffer) return;
-        this.layoutVertexBuffer.destroy();
-        this.indexBuffer.destroy();
-        this.indexBuffer2.destroy();
-        this.programConfigurations.destroy();
-        this.segments.destroy();
-        this.segments2.destroy();
+        this.bufferData.destroy();
+        this.elevationBufferData.destroy();
     }
 
     addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string> = [], brightness?: number | null, elevationFeatures?: ElevationFeature[]) {
-        for (const polygon of classifyRings(geometry, EARCUT_MAX_RINGS)) {
+        const polygons = classifyRings(geometry, EARCUT_MAX_RINGS);
+
+        if (this.elevationMode !== 'none') {
+            this.addElevatedRoadFeature(feature, polygons, canonical, elevationFeatures);
+        } else {
+            this.addGeometry(polygons, this.bufferData);
+        }
+        this.bufferData.populatePaintArrays(feature, index, imagePositions, availableImages, canonical, brightness);
+        this.elevationBufferData.populatePaintArrays(feature, index, imagePositions, availableImages, canonical, brightness);
+    }
+
+    private addElevatedRoadFeature(feature: BucketFeature, polygons: Point[][][], canonical: CanonicalTileID, elevationFeatures?: ElevationFeature[]) {
+        interface ElevatedGeometry {
+            polygons: Point[][][];
+            elevationFeature: ElevationFeature;
+            elevationTileID: CanonicalTileID;
+        }
+
+        const elevatedGeometry = new Array<ElevatedGeometry>();
+
+        // Layers using vector sources should always use the precomputed elevation.
+        // In case of geojson sources the elevation snapshot will be used instead
+        const tiledElevation = this.getElevationFeature(feature, elevationFeatures);
+        if (tiledElevation) {
+            elevatedGeometry.push({polygons, elevationFeature: tiledElevation, elevationTileID: canonical});
+        } else {
+            // No elevation data available at all
+            this.addGeometry(polygons, this.bufferData);
+            return;
+        }
+
+        for (const elevated of elevatedGeometry) {
+            if (elevated.elevationFeature) {
+                const elevationSampler = new ElevationFeatureSampler(canonical, elevated.elevationTileID);
+
+                if (this.elevationMode === 'hd-road-base') {
+                    this.addElevatedGeometry(elevated.polygons, elevationSampler, elevated.elevationFeature, 0.0);
+                } else {
+                    // Apply slight height bias to "markup" polygons to remove z-fighting
+                    this.addElevatedGeometry(elevated.polygons, elevationSampler, elevated.elevationFeature, MARKUP_ELEVATION_BIAS);
+                }
+            }
+        }
+    }
+
+    private addElevatedGeometry(polygons: Point[][][], elevationSampler: ElevationFeatureSampler, elevation: ElevationFeature, bias: number) {
+        const elevationParams = <ElevationParams>{elevation, elevationSampler, bias};
+        const [min, max] = this.addGeometry(polygons, this.elevationBufferData, elevationParams);
+
+        if (this.elevationBufferData.heightRange == null) {
+            this.elevationBufferData.heightRange = <Range>{min, max};
+        } else {
+            this.elevationBufferData.heightRange.min = Math.min(this.elevationBufferData.heightRange.min, min);
+            this.elevationBufferData.heightRange.max = Math.max(this.elevationBufferData.heightRange.max, max);
+        }
+    }
+
+    private addGeometry(polygons: Point[][][], bufferData: FillBufferData, elevationParams?: ElevationParams): [number, number] {
+        let min = Number.POSITIVE_INFINITY;
+        let max = Number.NEGATIVE_INFINITY;
+
+        let constantHeight: number = null;
+        if (elevationParams) {
+            constantHeight = elevationParams.elevationSampler.constantElevation(elevationParams.elevation, elevationParams.bias);
+            if (constantHeight != null) {
+                min = constantHeight;
+                max = constantHeight;
+            }
+        }
+
+        const addElevatedVertex = (point: Point) => {
+            if (elevationParams == null) return;
+
+            // Sample elevation feature to find interpolated heights for each added vertex.
+            if (constantHeight != null) {
+                bufferData.elevatedLayoutVertexArray.emplaceBack(constantHeight);
+            } else {
+                const height = elevationParams.elevationSampler.pointElevation(point, elevationParams.elevation, elevationParams.bias);
+                bufferData.elevatedLayoutVertexArray.emplaceBack(height);
+                min = Math.min(min, height);
+                max = Math.max(max, height);
+            }
+        };
+
+        for (const polygon of polygons) {
             let numVertices = 0;
             for (const ring of polygon) {
                 numVertices += ring.length;
             }
 
-            const triangleSegment = this.segments.prepareSegment(numVertices, this.layoutVertexArray, this.indexArray);
+            const triangleSegment = bufferData.triangleSegments.prepareSegment(numVertices, bufferData.layoutVertexArray, bufferData.indexArray);
             const triangleIndex = triangleSegment.vertexLength;
 
             const flattened = [];
@@ -199,17 +355,19 @@ class FillBucket implements Bucket {
                     holeIndices.push(flattened.length / 2);
                 }
 
-                const lineSegment = this.segments2.prepareSegment(ring.length, this.layoutVertexArray, this.indexArray2);
+                const lineSegment = bufferData.lineSegments.prepareSegment(ring.length, bufferData.layoutVertexArray, bufferData.lineIndexArray);
                 const lineIndex = lineSegment.vertexLength;
 
-                this.layoutVertexArray.emplaceBack(ring[0].x, ring[0].y);
-                this.indexArray2.emplaceBack(lineIndex + ring.length - 1, lineIndex);
+                addElevatedVertex(ring[0]);
+                bufferData.layoutVertexArray.emplaceBack(ring[0].x, ring[0].y);
+                bufferData.lineIndexArray.emplaceBack(lineIndex + ring.length - 1, lineIndex);
                 flattened.push(ring[0].x);
                 flattened.push(ring[0].y);
 
                 for (let i = 1; i < ring.length; i++) {
-                    this.layoutVertexArray.emplaceBack(ring[i].x, ring[i].y);
-                    this.indexArray2.emplaceBack(lineIndex + i - 1, lineIndex + i);
+                    addElevatedVertex(ring[i]);
+                    bufferData.layoutVertexArray.emplaceBack(ring[i].x, ring[i].y);
+                    bufferData.lineIndexArray.emplaceBack(lineIndex + i - 1, lineIndex + i);
                     flattened.push(ring[i].x);
                     flattened.push(ring[i].y);
                 }
@@ -222,7 +380,7 @@ class FillBucket implements Bucket {
             assert(indices.length % 3 === 0);
 
             for (let i = 0; i < indices.length; i += 3) {
-                this.indexArray.emplaceBack(
+                bufferData.indexArray.emplaceBack(
                     triangleIndex + indices[i],
                     triangleIndex + indices[i + 1],
                     triangleIndex + indices[i + 2]);
@@ -231,10 +389,21 @@ class FillBucket implements Bucket {
             triangleSegment.vertexLength += numVertices;
             triangleSegment.primitiveLength += indices.length / 3;
         }
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
+
+        return [min, max];
+    }
+
+    private getElevationFeature(feature: BucketFeature, elevationFeatures?: ElevationFeature[]): ElevationFeature | undefined {
+        if (!elevationFeatures) return undefined;
+
+        const value = +feature.properties[PROPERTY_ELEVATION_ID];
+        if (value == null) return undefined;
+
+        return elevationFeatures.find(f => f.id === value);
     }
 }
 
 register(FillBucket, 'FillBucket', {omit: ['layers', 'patternFeatures']});
+register(FillBufferData, 'FillBufferData');
 
 export default FillBucket;

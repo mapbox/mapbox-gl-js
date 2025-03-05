@@ -138,7 +138,7 @@ class StyleLayer extends Evented {
     onRemove(_map: MapboxMap): void {}
 
     isDraped(_sourceCache?: SourceCache): boolean {
-        return !this.is3D() && drapedLayers.has(this.type);
+        return !this.is3D(true) && drapedLayers.has(this.type);
     }
 
     getLayoutProperty<T extends keyof LayoutSpecification>(name: T): LayoutSpecification[T] | undefined {
@@ -284,7 +284,10 @@ class StyleLayer extends Evented {
         });
     }
 
-    is3D(): boolean {
+    // Determines if the layer is 3D based on whether terrain is enabled.
+    // If 'terrainEnabled' parameter is not provided, then the function
+    // should return true if the layer is potentially 3D.
+    is3D(terrainEnabled?: boolean): boolean {
         return false;
     }
 

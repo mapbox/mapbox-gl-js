@@ -47,6 +47,8 @@ export type FillOutlinePatternUniformsType = {
     ['u_tile_units_to_pixels']: Uniform1f;
 };
 
+export type FillDefinesType = 'ELEVATED_ROADS';
+
 const fillUniforms = (context: Context): FillUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_emissive_strength': new Uniform1f(context)

@@ -50,7 +50,7 @@ class ModelStyleLayer extends StyleLayer {
         return ['model'];
     }
 
-    override is3D(): boolean {
+    override is3D(terrainEnabled?: boolean): boolean {
         return true;
     }
 

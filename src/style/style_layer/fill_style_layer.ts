@@ -95,8 +95,11 @@ class FillStyleLayer extends StyleLayer {
         return true;
     }
 
-    override is3D(): boolean {
-        return this.paint.get('fill-z-offset').constantOr(1.0) !== 0.0;
+    override is3D(terrainEnabled?: boolean): boolean {
+        if (this.paint.get('fill-z-offset').constantOr(1.0) !== 0.0) return true;
+
+        const potentially3D = this.layout && this.layout.get('fill-elevation-reference') !== 'none';
+        return terrainEnabled != null ? (potentially3D && !terrainEnabled) : potentially3D;
     }
 }
 

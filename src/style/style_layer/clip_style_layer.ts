@@ -34,7 +34,7 @@ class ClipStyleLayer extends StyleLayer {
         return true;
     }
 
-    override is3D(): boolean {
+    override is3D(terrainEnabled?: boolean): boolean {
         return true;
     }
 }

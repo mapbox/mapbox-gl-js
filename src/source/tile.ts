@@ -644,7 +644,7 @@ class Tile {
                 bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
             }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
-                if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {
+                if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.uploadPending()) {
                     painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);
                 }
             }

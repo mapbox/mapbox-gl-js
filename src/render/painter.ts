@@ -605,6 +605,7 @@ class Painter {
     stencilModeForClipping(tileID: OverscaledTileID): Readonly<StencilMode> {
         if (this.terrain) return this.terrain.stencilModeForRTTOverlap(tileID);
         const gl = this.context.gl;
+        assert(this._tileClippingMaskIDs[tileID.key] != null);
         return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
@@ -949,7 +950,7 @@ class Painter {
                     this.minCutoffZoom = Math.max(layer.minzoom, this.minCutoffZoom);
                 }
             }
-            if (layer.is3D()) {
+            if (layer.is3D(drapingEnabled)) {
                 if (this.opaquePassCutoff === Infinity) {
                     this.opaquePassCutoff = i;
                 }
@@ -1128,7 +1129,7 @@ class Painter {
                 const layer = orderedLayers[this.currentLayer];
                 const sourceCache = style.getLayerSourceCache(layer);
                 if (layer.isSky()) continue;
-                const coords = sourceCache ? (layer.is3D() ? coordsSortedByDistance : coordsDescending)[sourceCache.id] : undefined;
+                const coords = sourceCache ? (layer.is3D(drapingEnabled) ? coordsSortedByDistance : coordsDescending)[sourceCache.id] : undefined;
                 this._renderTileClippingMasks(layer, sourceCache, coords);
                 this.renderLayer(this, sourceCache, layer, coords);
             }
@@ -1167,7 +1168,7 @@ class Painter {
 
             if (sourceCache) {
                 const coordsSet = layer.type === 'symbol' ? coordsDescendingSymbol :
-                    (layer.is3D() ? coordsSortedByDistance : coordsDescending);
+                    (layer.is3D(drapingEnabled) ? coordsSortedByDistance : coordsDescending);
 
                 coords = coordsSet[sourceCache.id];
             }
@@ -1208,7 +1209,7 @@ class Painter {
                 continue;
             }
 
-            if (layer.is3D()) {
+            if (layer.is3D(drapingEnabled)) {
                 last3DLayerIdx = i;
             }
         }
@@ -1256,7 +1257,7 @@ class Painter {
                 this.blitDepth();
             }
 
-            if (!layer.is3D() && !this.terrain) {
+            if (!layer.is3D(drapingEnabled) && !this.terrain) {
                 this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
             }
             this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
@@ -1290,7 +1291,7 @@ class Painter {
                     const layer = orderedLayers[this.currentLayer];
                     const sourceCache = style.getLayerSourceCache(layer);
                     const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
-                    if (!layer.is3D() && !this.terrain) {
+                    if (!layer.is3D(drapingEnabled) && !this.terrain) {
                         this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
                     }
                     this.renderLayer(this, sourceCache, layer, coords);
@@ -1792,7 +1793,7 @@ class Painter {
      * custom layer buildings.
      */
     isSourceForClippingOrConflation(layer: StyleLayer, source?: Source | null): boolean {
-        if (!layer.is3D()) {
+        if (!layer.is3D(!!(this.terrain && this.terrain.enabled))) {
             return false;
         }
 

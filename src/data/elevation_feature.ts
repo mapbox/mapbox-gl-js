@@ -4,8 +4,9 @@ import assert from 'assert';
 import {ElevationFeatureParser, type Bounds} from "./elevation_feature_parser.js";
 import {tileToMeter} from "../geo/mercator_coordinate.js";
 import {Ray2D} from "../util/primitives.js";
-import {clamp} from "../util/util.js";
+import {clamp, smoothstep} from "../util/util.js";
 import {MARKUP_ELEVATION_BIAS} from "./elevation_constants.js";
+import EXTENT from "../style-spec/data/extent.js";
 
 import type {VectorTileLayer} from "@mapbox/vector-tile";
 import type {CanonicalTileID} from "../source/tile_id.js";
@@ -352,6 +353,49 @@ export abstract class ElevationFeatures {
         ));
 
         return elevationFeatures;
+    }
+}
+
+export class ElevationFeatureSampler {
+    zScale: number;
+    xOffset: number;
+    yOffset: number;
+
+    constructor(sampleTileId: CanonicalTileID, elevationTileId: CanonicalTileID) {
+        this.zScale = 1.0;
+        this.xOffset = 0.0;
+        this.yOffset = 0.0;
+
+        if (sampleTileId.equals(elevationTileId)) return;
+
+        this.zScale = Math.pow(2.0, elevationTileId.z - sampleTileId.z);
+        this.xOffset = (sampleTileId.x * this.zScale - elevationTileId.x) * EXTENT;
+        this.yOffset = (sampleTileId.y * this.zScale - elevationTileId.y) * EXTENT;
+    }
+
+    constantElevation(elevation: ElevationFeature, bias: number): number | undefined {
+        if (elevation.constantHeight == null) return undefined;
+
+        return this.computeBiasedHeight(elevation.constantHeight, bias);
+    }
+
+    pointElevation(point: Point, elevation: ElevationFeature, bias: number): number {
+        const constantHeight = this.constantElevation(elevation, bias);
+        if (constantHeight != null) {
+            return constantHeight;
+        }
+
+        point.x = point.x * this.zScale + this.xOffset;
+        point.y = point.y * this.zScale + this.yOffset;
+
+        return this.computeBiasedHeight(elevation.pointElevation(point), bias);
+    }
+
+    private computeBiasedHeight(height: number, bias: number): number {
+        if (bias <= 0.0) return height;
+
+        const stepHeight = height >= 0.0 ? height : Math.abs(0.5 * height);
+        return height + bias * smoothstep(0.0, bias, stepHeight);
     }
 }
 

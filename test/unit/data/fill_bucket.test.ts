@@ -72,14 +72,14 @@ test('FillBucket segmentation', () => {
     // first segment to include the first feature and the first polygon
     // of the second feature, and the second segment to include the
     // second polygon of the second feature.
-    expect(bucket.layoutVertexArray.length).toEqual(266);
-    expect(bucket.segments.get()[0]).toEqual({
+    expect(bucket.bufferData.layoutVertexArray.length).toEqual(266);
+    expect(bucket.bufferData.triangleSegments.get()[0]).toEqual({
         vertexOffset: 0,
         vertexLength: 138,
         primitiveOffset: 0,
         primitiveLength: 134
     });
-    expect(bucket.segments.get()[1]).toEqual({
+    expect(bucket.bufferData.triangleSegments.get()[1]).toEqual({
         vertexOffset: 138,
         vertexLength: 128,
         primitiveOffset: 134,
