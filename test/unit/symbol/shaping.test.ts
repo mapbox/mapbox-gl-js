@@ -86,10 +86,10 @@ describe('shaping', () => {
 
         // Null shaping.
         shaped = shaping.shapeText(Formatted.fromString(''), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(false).toEqual(shaped);
+        expect(undefined).toEqual(shaped);
 
         shaped = shaping.shapeText(Formatted.fromString(String.fromCharCode(0)), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(false).toEqual(shaped);
+        expect(undefined).toEqual(shaped);
     });
 
     test('mapbox-gl-js#3254', () => {

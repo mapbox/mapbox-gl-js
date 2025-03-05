@@ -252,21 +252,19 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
     return lines;
 }
 
+export type GlyphInfo = {
+    glyphs: {
+        [_: number]: StyleGlyph | null | undefined;
+    };
+    ascender?: number;
+    descender?: number;
+};
+
 function shapeText(
     text: Formatted,
-    glyphMap: {
-        [_: string]: {
-            glyphs: {
-                [_: number]: StyleGlyph | null | undefined;
-            };
-            ascender?: number;
-            descender?: number;
-        };
-    },
+    glyphMap: Record<string, GlyphInfo>,
     glyphPositions: GlyphPositions,
-    imagePositions: {
-        [_: string]: ImagePosition;
-    },
+    imagePositions: Record<string, ImagePosition>,
     defaultFontStack: string,
     maxWidth: number,
     lineHeight: number,
@@ -279,7 +277,7 @@ function shapeText(
     layoutTextSize: number,
     layoutTextSizeThisZoom: number,
     pixelRatio: number = 1
-): Shaping | false {
+): Shaping {
     const logicalInput = TaggedString.fromFeature(text, defaultFontStack, pixelRatio);
 
     if (writingMode === WritingMode.vertical) {
@@ -332,7 +330,7 @@ function shapeText(
     };
 
     shapeLines(shaping, glyphMap, glyphPositions, imagePositions, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement, layoutTextSizeThisZoom);
-    if (isEmpty(positionedLines)) return false;
+    if (isEmpty(positionedLines)) return undefined;
 
     return shaping;
 }
@@ -376,18 +374,8 @@ const breakable: {
 function getGlyphAdvance(
     codePoint: number,
     section: SectionOptions,
-    glyphMap: {
-        [_: string]: {
-            glyphs: {
-                [_: number]: StyleGlyph | null | undefined;
-            };
-            ascender?: number;
-            descender?: number;
-        };
-    },
-    imagePositions: {
-        [_: string]: ImagePosition;
-    },
+    glyphMap: Record<string, GlyphInfo>,
+    imagePositions: Record<string, ImagePosition>,
     spacing: number,
     layoutTextSize: number,
 ): number {
@@ -523,18 +511,8 @@ function determineLineBreaks(
     logicalInput: TaggedString,
     spacing: number,
     maxWidth: number,
-    glyphMap: {
-        [_: string]: {
-            glyphs: {
-                [_: number]: StyleGlyph | null | undefined;
-            };
-            ascender?: number;
-            descender?: number;
-        };
-    },
-    imagePositions: {
-        [_: string]: ImagePosition;
-    },
+    glyphMap: Record<string, GlyphInfo>,
+    imagePositions: Record<string, ImagePosition>,
     layoutTextSize: number,
 ): Array<number> {
     if (!logicalInput)

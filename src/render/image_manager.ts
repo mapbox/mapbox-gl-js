@@ -341,6 +341,13 @@ class ImageManager extends Evented {
                     content: image.content,
                     hasRenderCallback: Boolean(image.userImage && image.userImage.render)
                 };
+
+                if (image.usvg) {
+                    // Since vector images don't have any data, we add the width and height from the source svg
+                    // so that we can compute the scale factor later if needed
+                    Object.assign(response[id], {width: image.icon.usvg_tree.width});
+                    Object.assign(response[id], {height: image.icon.usvg_tree.height});
+                }
             } else {
                 warnOnce(`Image "${id}" could not be loaded. Please make sure you have added the image with map.addImage() or a "sprite" property in your style. You can provide missing images by listening for the "styleimagemissing" map event.`);
             }

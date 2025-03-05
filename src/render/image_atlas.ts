@@ -93,6 +93,24 @@ export class ImagePosition implements SpritePosition {
     }
 }
 
+function getImageBin(image: StyleImage, padding: number, scale: [number, number] = [1, 1]) {
+    // If it's a vector image, we set it's size as the natural one scaled
+    const imageWidth = image.data ? image.data.width : image.width * scale[0];
+    const imageHeight = image.data ? image.data.height : image.height * scale[1];
+    return {
+        x: 0,
+        y: 0,
+        w: imageWidth + 2 * padding,
+        h: imageHeight + 2 * padding,
+    };
+}
+
+export function getImagePosition(id: string, src: StyleImage, padding: number) {
+    const imageIdWithOptions = ImageIdWithOptions.deserializeFromString(id);
+    const bin = getImageBin(src, padding, [imageIdWithOptions.options.transform.a, imageIdWithOptions.options.transform.d]);
+    return {bin, imagePosition: new ImagePosition(bin, src, padding, imageIdWithOptions), imageIdWithOptions};
+}
+
 export default class ImageAtlas {
     image: RGBAImage;
     iconPositions: {
@@ -170,15 +188,9 @@ export default class ImageAtlas {
     bins: Array<Rect>) {
         for (const id in images) {
             const src = images[id];
-            const bin = {
-                x: 0,
-                y: 0,
-                w: src.data.width + 2 * padding,
-                h: src.data.height + 2 * padding,
-            };
+            const {bin, imagePosition, imageIdWithOptions} = getImagePosition(id, src, padding);
+            positions[id] = imagePosition;
             bins.push(bin);
-            const imageIdWithOptions = ImageIdWithOptions.deserializeFromString(id);
-            positions[id] = new ImagePosition(bin, src, padding, imageIdWithOptions);
 
             if (src.hasRenderCallback) {
                 this.haveRenderCallbacks.push(imageIdWithOptions.id);

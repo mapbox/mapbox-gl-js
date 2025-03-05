@@ -1,5 +1,5 @@
 import FeatureIndex from '../data/feature_index';
-import {performSymbolLayout} from '../symbol/symbol_layout';
+import {performSymbolLayout, postRasterizationSymbolLayout, type SymbolBucketData} from '../symbol/symbol_layout';
 import {CollisionBoxArray} from '../data/array_types';
 import DictionaryCoder from '../util/dictionary_coder';
 import SymbolBucket from '../data/bucket/symbol_bucket';
@@ -9,18 +9,18 @@ import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
 import {warnOnce, mapObject} from '../util/util';
 import assert from 'assert';
 import LineAtlas from '../render/line_atlas';
-import ImageAtlas from '../render/image_atlas';
+import ImageAtlas, {getImagePosition, ICON_PADDING} from '../render/image_atlas';
 import GlyphAtlas from '../render/glyph_atlas';
 import EvaluationParameters from '../style/evaluation_parameters';
 import {OverscaledTileID} from './tile_id';
-import {PerformanceUtils} from '../util/performance';
+import {PerformanceUtils, type PerformanceMark} from '../util/performance';
 import tileTransform from '../geo/projection/tile_transform';
 import {makeFQID} from "../util/fqid";
 import {type SpritePositions} from '../util/image';
-import {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import {ElevationFeatures} from '../data/elevation_feature';
 import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../data/elevation_constants';
 
+import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import type {CanonicalTileID} from './tile_id';
 import type Projection from '../geo/projection/projection';
 import type {Bucket, PopulateParameters} from '../data/bucket';
@@ -38,6 +38,7 @@ import type {TileTransform} from '../geo/projection/tile_transform';
 import type {VectorTile} from '@mapbox/vector-tile';
 import type {LUT} from "../util/lut";
 
+type RasterizationStatus = { iconsPending: boolean, patternsPending: boolean};
 class WorkerTile {
     tileID: OverscaledTileID;
     uid: number;
@@ -249,12 +250,10 @@ class WorkerTile {
                 descender?: number;
             };
         };
-        let iconMap: {
-            [_: string]: StyleImage;
-        };
-        let patternMap: {
-            [_: string]: StyleImage;
-        };
+        let iconMap: Record<string, StyleImage>;
+        let patternMap: Record<string, StyleImage>;
+        let iconRasterizationTasks: Record<string, ImageIdWithOptions>;
+        let patternRasterizationTasks: Record<string, ImageIdWithOptions>;
         const taskMetadata = {type: 'maybePrepare', isSymbolTile: this.isSymbolTile, zoom: this.zoom};
 
         const maybePrepare = () => {
@@ -281,46 +280,73 @@ class WorkerTile {
             } else if (glyphMap && iconMap && patternMap) {
                 const m = PerformanceUtils.beginMeasure('parseTile2');
                 const glyphAtlas = new GlyphAtlas(glyphMap);
-                const imageAtlas = new ImageAtlas(iconMap, patternMap, this.lut);
 
+                const iconPositions = {};
+                for (const id in iconMap) {
+                    const icon = iconMap[id];
+                    const {imagePosition} = getImagePosition(id, icon, ICON_PADDING);
+                    iconPositions[id] = imagePosition;
+                }
+
+                const symbolLayoutData = {};
                 for (const key in buckets) {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
                         recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages);
+                        symbolLayoutData[key] =
                         performSymbolLayout(bucket,
                                 glyphMap,
                                 glyphAtlas.positions,
                                 iconMap,
-                                imageAtlas.iconPositions,
-                                this.showCollisionBoxes,
-                                availableImages,
+                                iconPositions,
                                 this.tileID.canonical,
                                 this.tileZoom,
-                                this.projection,
                                 this.scaleFactor,
-                                this.pixelRatio,
-                                this.brightness);
-                    } else if (bucket.hasPattern &&
-                            (bucket instanceof LineBucket ||
-                             bucket instanceof FillBucket ||
-                             bucket instanceof FillExtrusionBucket)) {
-                        recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages);
-                        const imagePositions: SpritePositions = imageAtlas.patternPositions;
-                        bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform, this.brightness);
+                                this.pixelRatio);
                     }
                 }
-                this.status = 'done';
-                callback(null, {
-                    buckets: Object.values(buckets).filter(b => !b.isEmpty()),
-                    featureIndex,
-                    collisionBoxArray: this.collisionBoxArray,
-                    glyphAtlasImage: glyphAtlas.image,
-                    lineAtlas,
-                    imageAtlas,
-                    brightness: options.brightness
+
+                const rasterizationStatus: RasterizationStatus = {iconsPending: true, patternsPending: true};
+                this.rasterizeIfNeeded(actor, iconMap, iconRasterizationTasks, () => {
+                    rasterizationStatus.iconsPending = false;
+                    postRasterizationLayout(symbolLayoutData, glyphAtlas, rasterizationStatus, m);
                 });
-                PerformanceUtils.endMeasure(m);
+                this.rasterizeIfNeeded(actor, patternMap, patternRasterizationTasks, () => {
+                    rasterizationStatus.patternsPending = false;
+                    postRasterizationLayout(symbolLayoutData, glyphAtlas, rasterizationStatus, m);
+                });
+
             }
+        };
+
+        const postRasterizationLayout = (symbolLayoutData: Record<string, SymbolBucketData>, glyphAtlas: GlyphAtlas, rasterizationStatus: RasterizationStatus, m: PerformanceMark) => {
+            if (rasterizationStatus.iconsPending || rasterizationStatus.patternsPending) return;
+            const imageAtlas = new ImageAtlas(iconMap, patternMap, this.lut);
+            for (const key in buckets) {
+                const bucket = buckets[key];
+                if (key in symbolLayoutData) {
+                    postRasterizationSymbolLayout(bucket as SymbolBucket, symbolLayoutData[key], this.showCollisionBoxes, availableImages, this.tileID.canonical, this.tileZoom, this.projection, this.brightness, iconMap, imageAtlas);
+                } else if (bucket.hasPattern &&
+                    (bucket instanceof LineBucket ||
+                        bucket instanceof FillBucket ||
+                        bucket instanceof FillExtrusionBucket)) {
+                    recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages);
+                    const imagePositions: SpritePositions = imageAtlas.patternPositions;
+                    bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform, this.brightness);
+                }
+            }
+
+            this.status = 'done';
+            callback(null, {
+                buckets: Object.values(buckets).filter(b => !b.isEmpty()),
+                featureIndex,
+                collisionBoxArray: this.collisionBoxArray,
+                glyphAtlasImage: glyphAtlas.image,
+                lineAtlas,
+                imageAtlas,
+                brightness: options.brightness
+            });
+            PerformanceUtils.endMeasure(m);
         };
 
         if (!this.extraShadowCaster) {
@@ -345,50 +371,30 @@ class WorkerTile {
                     }
 
                     error = err;
-                    const newIconMap = {};
-
-                    const needRasterization = Object.values(result).some((image: StyleImage) => image.usvg);
-
-                    if (needRasterization) {
-                        this.rasterize(actor, newIconMap, result, options.iconDependencies, () => {
-                            iconMap = newIconMap;
-                            maybePrepare();
-                        });
-                    } else {
-                        this.fillImageMap(newIconMap, options.iconDependencies, result);
-                        iconMap = newIconMap;
-                        maybePrepare();
-                    }
-
+                    iconMap = {};
+                    iconRasterizationTasks = this.updateImageMapAndGetImageTaskQueue(iconMap, result, options.iconDependencies);
+                    maybePrepare();
                 }, undefined, false, taskMetadata);
             } else {
                 iconMap = {};
+                iconRasterizationTasks = {};
             }
 
             const patterns = Object.keys(options.patternDependencies);
             if (patterns.length) {
                 actor.send('getImages', {icons: patterns, source: this.source, scope: this.scope, tileID: this.tileID, type: 'patterns'}, (err, result) => {
-                    if (!error) {
-                        error = err;
-                        const newPatternMap = {};
-
-                        const needRasterization = Object.values(result).some((image: StyleImage) => image.usvg);
-
-                        if (needRasterization) {
-                            this.rasterize(actor, newPatternMap, result, options.patternDependencies, () => {
-                                patternMap = newPatternMap;
-                                maybePrepare();
-                            });
-                        } else {
-                            this.fillImageMap(newPatternMap, options.patternDependencies, result);
-                            patternMap = newPatternMap;
-                            maybePrepare();
-                        }
-
+                    if (error) {
+                        return;
                     }
+
+                    error = err;
+                    patternMap = {};
+                    patternRasterizationTasks = this.updateImageMapAndGetImageTaskQueue(patternMap, result, options.patternDependencies);
+                    maybePrepare();
                 }, undefined, false, taskMetadata);
             } else {
                 patternMap = {};
+                patternRasterizationTasks = {};
             }
         }
 
@@ -398,25 +404,19 @@ class WorkerTile {
 
     }
 
-    fillImageMap(imageMap: {
-        [_: string]: StyleImage;
-    }, imageDependencies: {
-        [_: string]: Array<ImageIdWithOptions>;
-    }, images: {
-        [_: string]: StyleImage;
-    }) {
-        for (const imageName in images) {
-            const requiredImages = imageDependencies[imageName] || [];
-            for (const image of requiredImages) {
-                if (!images[image.id].usvg) {
-                    imageMap[image.serialize()] = images[image.id];
-                }
-            }
+    rasterizeIfNeeded(actor: Actor, outputMap: Record<string, StyleImage> | undefined, tasks: Record<string, ImageIdWithOptions>, callback: () => void) {
+        const needRasterization = Object.values(outputMap).some((image: StyleImage) => image.usvg);
+        if (needRasterization) {
+            this.rasterize(actor, outputMap, tasks, () => {
+                callback();
+            });
+        } else  {
+            callback();
         }
     }
 
-    getImageTaskQueue(imageMap: {[_: string]: StyleImage}, images: {[_: string]: StyleImage}, imageDependencies: {[_: string]: Array<ImageIdWithOptions>}): {[_: string]: ImageIdWithOptions} {
-        const imageRasterizationTasks: {[_: string]: ImageIdWithOptions} = {};
+    updateImageMapAndGetImageTaskQueue(imageMap: Record<string, StyleImage>, images: Record<string, StyleImage>, imageDependencies: Record<string, Array<ImageIdWithOptions>>): Record<string, ImageIdWithOptions> {
+        const imageRasterizationTasks: Record<string, ImageIdWithOptions> = {};
         for (const imageName in images) {
             const requiredImagesWithOptions = imageDependencies[imageName] || [];
             for (const imageIdWithOptions of requiredImagesWithOptions) {
@@ -425,6 +425,7 @@ class WorkerTile {
                     imageMap[imageSerialized] = images[imageIdWithOptions.id];
                 } else if (!imageRasterizationTasks[imageSerialized]) {
                     imageRasterizationTasks[imageSerialized] = imageIdWithOptions;
+                    imageMap[imageSerialized] = Object.assign({}, images[imageIdWithOptions.id]);
                 }
             }
         }
@@ -432,21 +433,12 @@ class WorkerTile {
         return imageRasterizationTasks;
     }
 
-    rasterize(actor: Actor, imageMap: {
-        [_: string]: StyleImage;
-    }, images: {
-        [_: string]: StyleImage;
-    }, imageDependencies: {
-        [_: string]: Array<ImageIdWithOptions>;
-    }, callback: () => void) {
-        const imageTasks = this.getImageTaskQueue(imageMap, images, imageDependencies);
-
+    rasterize(actor: Actor, imageMap: Record<string, StyleImage>, imageTasks: Record<string, ImageIdWithOptions>, callback: () => void) {
         this.rasterizeTask = actor.send('rasterizeImages', {scope: this.scope, imageTasks}, (err, result) => {
             if (!err) {
                 for (const imageIdWithOptionsSerialized in result) {
-                    const {id} = ImageIdWithOptions.deserializeFromString(imageIdWithOptionsSerialized);
                     const image = result[imageIdWithOptionsSerialized];
-                    imageMap[imageIdWithOptionsSerialized] = Object.assign({}, images[id], {data: image});
+                    imageMap[imageIdWithOptionsSerialized] = Object.assign(imageMap[imageIdWithOptionsSerialized], {data: image});
                 }
             }
 

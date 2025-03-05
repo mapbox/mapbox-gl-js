@@ -38,7 +38,7 @@ import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
 import {getSizeData} from '../../symbol/symbol_size';
-import {MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
+import {getScaledImageIdWithOptions, MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
@@ -679,13 +679,10 @@ class SymbolBucket implements Bucket {
             if (icon) {
                 const layer = this.layers[0];
                 const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
-                const iconSizeFactor = symbolSize.getRasterizedIconSize(this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature);
-                const scaleFactor = iconSizeFactor * iconScaleFactor * this.pixelRatio;
-                const iconPrimary = icon.getPrimary().scaleSelf(scaleFactor);
+                const {iconPrimary, iconSecondary} = getScaledImageIdWithOptions(icon, this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor);
                 icons[iconPrimary.id] = (icons[iconPrimary.id] || []);
                 icons[iconPrimary.id].push(iconPrimary);
-                if (icon.nameSecondary) {
-                    const iconSecondary = icon.getSecondary().scaleSelf(scaleFactor);
+                if (iconSecondary) {
                     icons[iconSecondary.id] = (icons[iconSecondary.id] || []);
                     icons[iconSecondary.id].push(iconSecondary);
                 }

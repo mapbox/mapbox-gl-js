@@ -14,6 +14,8 @@ export type StyleImageMetadata = {
     pixelRatio: number;
     sdf: boolean;
     usvg: boolean;
+    width?: number;
+    height?: number;
     stretchX?: Array<[number, number]>;
     stretchY?: Array<[number, number]>;
     content?: [number, number, number, number];
