@@ -394,18 +394,8 @@ function getGlyphAdvance(
 function determineAverageLineWidth(logicalInput: TaggedString,
                                    spacing: number,
                                    maxWidth: number,
-                                   glyphMap: {
-                                       [_: string]: {
-                                           glyphs: {
-                                               [_: number]: StyleGlyph | null | undefined;
-                                           };
-                                           ascender?: number;
-                                           descender?: number;
-                                       };
-                                   },
-                                   imagePositions: {
-                                       [_: string]: ImagePosition;
-                                   },
+                                   glyphMap: Record<string, GlyphInfo>,
+                                   imagePositions: Record<string, ImagePosition>,
                                    layoutTextSize: number) {
     let totalWidth = 0;
 
@@ -591,19 +581,9 @@ function getAnchorAlignment(anchor: SymbolAnchor): AnchorAlignment {
 }
 
 function shapeLines(shaping: Shaping,
-                    glyphMap: {
-                        [_: string]: {
-                            glyphs: {
-                                [_: number]: StyleGlyph | null | undefined;
-                            };
-                            ascender?: number;
-                            descender?: number;
-                        };
-                    },
+                    glyphMap: Record<string, GlyphInfo>,
                     glyphPositions: GlyphPositions,
-                    imagePositions: {
-                        [_: string]: ImagePosition;
-                    },
+                    imagePositions: Record<string, ImagePosition>,
                     lines: Array<TaggedString>,
                     lineHeight: number,
                     textAnchor: SymbolAnchor,

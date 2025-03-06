@@ -21,8 +21,8 @@ import type {
     WorkerTileCallback,
     WorkerDEMTileCallback,
     TileParameters,
-    WorkerRasterArrayTileParameters,
-    WorkerRasterArrayTileCallback,
+    WorkerRasterArrayDecodingParameters,
+    WorkerRasterArrayDecodingCallback,
     WorkerSourceConstructor,
     WorkerImageRaserizeCallback
 } from './worker_source';
@@ -239,7 +239,7 @@ export default class MapWorker {
         this.getDEMWorkerSource(mapId, params.source, params.scope).loadTile(params, callback);
     }
 
-    decodeRasterArray(mapId: string, params: WorkerRasterArrayTileParameters, callback: WorkerRasterArrayTileCallback) {
+    decodeRasterArray(mapId: string, params: WorkerRasterArrayDecodingParameters, callback: WorkerRasterArrayDecodingCallback) {
         this.getRasterArrayWorkerSource().decodeRasterArray(params, callback);
     }
 

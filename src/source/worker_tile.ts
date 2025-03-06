@@ -28,7 +28,7 @@ import type Actor from '../util/actor';
 import type StyleLayer from '../style/style_layer';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {StyleImage} from '../style/style_image';
-import type {StyleGlyph} from '../style/style_glyph';
+import type {GlyphInfo} from '../symbol/shaping';
 import type {
     WorkerTileParameters,
     WorkerTileCallback,
@@ -241,15 +241,7 @@ class WorkerTile {
         lineAtlas.trim();
 
         let error: Error | null | undefined;
-        let glyphMap: {
-            [_: string]: {
-                glyphs: {
-                    [_: number]: StyleGlyph | null | undefined;
-                };
-                ascender?: number;
-                descender?: number;
-            };
-        };
+        let glyphMap: Record<string, GlyphInfo>;
         let iconMap: Record<string, StyleImage>;
         let patternMap: Record<string, StyleImage>;
         let iconRasterizationTasks: Record<string, ImageIdWithOptions>;

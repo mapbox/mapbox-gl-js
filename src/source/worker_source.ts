@@ -10,15 +10,14 @@ import type {Bucket} from '../data/bucket';
 import type FeatureIndex from '../data/feature_index';
 import type {CollisionBoxArray} from '../data/array_types';
 import type DEMData from '../data/dem_data';
-import type {StyleGlyph} from '../style/style_glyph';
+import type {GlyphInfo} from '../symbol/shaping';
 import type {StyleImage} from '../style/style_image';
 import type {PromoteIdSpecification} from '../style-spec/types';
 import type Projection from '../geo/projection/projection';
 import type {LUT} from '../util/lut';
 import type {Callback} from '../types/callback';
 import type {SourceType} from './source';
-
-type TDecodingResult = any;
+import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
 
 export type TileParameters = {
     source: string;
@@ -68,11 +67,6 @@ export type WorkerDEMTileParameters = TileParameters & {
     convertToFloat: boolean;
 };
 
-export type WorkerRasterArrayTileParameters = {
-    buffer: ArrayBuffer;
-    task: any;
-};
-
 export type WorkerTileResult = {
     buckets: Array<Bucket>;
     imageAtlas: ImageAtlas;
@@ -84,24 +78,19 @@ export type WorkerTileResult = {
     resourceTiming?: Array<PerformanceResourceTiming>;
     brightness: number;
     // Only used for benchmarking:
-    glyphMap?: {
-        [_: string]: {
-            glyphs: {
-                [_: number]: StyleGlyph | undefined;
-            };
-            ascender?: number;
-            descender?: number;
-        };
-    };
-    iconMap?: {
-        [_: string]: StyleImage;
-    };
+    glyphMap?: Record<string, GlyphInfo>;
+    iconMap?: Record<string, StyleImage>;
     glyphPositions?: GlyphPositions;
+};
+
+export type WorkerRasterArrayDecodingParameters = {
+    buffer: ArrayBuffer;
+    task: TProcessingBatch;
 };
 
 export type WorkerTileCallback = (error?: Error, result?: WorkerTileResult) => void;
 export type WorkerDEMTileCallback = (err?: Error, result?: DEMData) => void;
-export type WorkerRasterArrayTileCallback = (err?: Error, result?: TDecodingResult) => void;
+export type WorkerRasterArrayDecodingCallback = (err?: Error, result?: TDecodingResult[]) => void;
 export type WorkerImageRaserizeCallback = (err?: Error, result?: {[_: string]: RGBAImage}) => void;
 
 /**

@@ -1,19 +1,16 @@
 import '../data/mrt_data';
-import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 import Pbf from 'pbf';
-
-MapboxRasterTile.setPbf(Pbf);
+import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 
 import type Actor from '../util/actor';
-import type {WorkerRasterArrayTileParameters, WorkerRasterArrayTileCallback} from './worker_source';
+import type {WorkerRasterArrayDecodingParameters, WorkerRasterArrayDecodingCallback} from './worker_source';
+
+MapboxRasterTile.setPbf(Pbf);
 
 class RasterArrayTileWorkerSource {
     actor: Actor;
 
-    decodeRasterArray({
-        task,
-        buffer,
-    }: WorkerRasterArrayTileParameters, callback: WorkerRasterArrayTileCallback) {
+    decodeRasterArray({task, buffer}: WorkerRasterArrayDecodingParameters, callback: WorkerRasterArrayDecodingCallback) {
         MapboxRasterTile.performDecoding(buffer, task)
             .then(result => {
                 callback(null, result);
