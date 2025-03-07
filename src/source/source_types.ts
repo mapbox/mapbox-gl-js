@@ -10,6 +10,8 @@ import type ModelSource from '../../3d-style/source/model_source';
 import type Tiled3DModelSource from '../../3d-style/source/tiled_3d_model_source';
 import type CustomSource from '../source/custom_source';
 
+export type { CustomSourceInterface } from "../source/custom_source";
+
 export type Source =
   | VectorTileSource
   | RasterTileSource
