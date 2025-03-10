@@ -513,7 +513,11 @@ export type FillLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "fill-elevation-reference"?: "none" | "hd-road-base" | "hd-road-markup" | ExpressionSpecification
+        "fill-elevation-reference"?: "none" | "hd-road-base" | "hd-road-markup" | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "fill-construct-bridge-guard-rail"?: DataDrivenPropertyValueSpecification<boolean>
     },
     "paint"?: {
         "fill-antialias"?: PropertyValueSpecification<boolean>,
@@ -532,7 +536,13 @@ export type FillLayerSpecification = {
         "fill-emissive-strength"?: PropertyValueSpecification<number>,
         "fill-emissive-strength-transition"?: TransitionSpecification,
         "fill-z-offset"?: DataDrivenPropertyValueSpecification<number>,
-        "fill-z-offset-transition"?: TransitionSpecification
+        "fill-z-offset-transition"?: TransitionSpecification,
+        "fill-bridge-guard-rail-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "fill-bridge-guard-rail-color-transition"?: TransitionSpecification,
+        "fill-bridge-guard-rail-color-use-theme"?: PropertyValueSpecification<string>,
+        "fill-tunnel-structure-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "fill-tunnel-structure-color-transition"?: TransitionSpecification,
+        "fill-tunnel-structure-color-use-theme"?: PropertyValueSpecification<string>
     }
 }
 

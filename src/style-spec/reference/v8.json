@@ -1762,6 +1762,32 @@
         "interpolated": false
       },
       "property-type": "data-constant"
+    },
+    "fill-construct-bridge-guard-rail": {
+      "type": "boolean",
+      "doc": "Determines whether bridge guard rails are added for elevated roads.",
+      "default": "true",
+      "transition": false,
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+            "android": "11.11.0",
+            "ios": "11.11.0"
+        },
+        "data-driven styling": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
     }
   },
   "layout_circle": {
@@ -6461,6 +6487,60 @@
         "interpolated": true,
         "parameters": [
           "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "fill-bridge-guard-rail-color": {
+      "type": "color",
+      "default": "rgba(241, 236, 225, 255)",
+      "doc": "The color of bridge guard rail.",
+      "experimental": true,
+      "private": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        },
+        "data-driven styling": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "fill-tunnel-structure-color": {
+      "type": "color",
+      "default": "rgba(241, 236, 225, 255)",
+      "doc": "The color of tunnel structures (tunnel entrance and tunnel walls).",
+      "transition": true,
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        },
+        "data-driven styling": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light",
           "feature"
         ]
       },
