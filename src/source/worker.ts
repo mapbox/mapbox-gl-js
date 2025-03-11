@@ -17,8 +17,6 @@ import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_w
 import type {
     WorkerSource,
     WorkerSourceTileRequest,
-    WorkerSourceDEMTileRequest,
-    WorkerSourceDEMTileCallback,
     WorkerSourceRasterArrayDecodingParameters,
     WorkerSourceRasterArrayDecodingCallback,
     WorkerSourceConstructor,
@@ -39,6 +37,7 @@ import type {WorkerPerformanceMetrics} from '../util/performance';
 type WorkerSourceType =
     | 'vector'
     | 'geojson'
+    | 'raster-dem'
     | 'batched-model';
 
 /**
@@ -61,7 +60,6 @@ export default class MapWorker {
     availableImages: WorkerScopeRegistry<Array<string>>;
     workerSourceTypes: Record<WorkerSourceType, WorkerSourceConstructor>;
     workerSources: WorkerSourceRegistry;
-    demWorkerSources: WorkerScopeRegistry<{[sourceId: string]: RasterDEMTileWorkerSource}>;
     rasterArrayWorkerSource: RasterArrayTileWorkerSource | null | undefined;
     projections: Record<string, Projection>;
     defaultProjection: Projection;
@@ -85,14 +83,14 @@ export default class MapWorker {
         this.defaultProjection = getProjection({name: 'mercator'});
 
         this.workerSourceTypes = {
-            vector: VectorTileWorkerSource,
-            geojson: GeoJSONWorkerSource,
+            'vector': VectorTileWorkerSource,
+            'geojson': GeoJSONWorkerSource,
+            'raster-dem': RasterDEMTileWorkerSource,
             'batched-model': Tiled3dModelWorkerSource
         };
 
         // [mapId][scope][sourceType][sourceName] => worker source instance
         this.workerSources = {};
-        this.demWorkerSources = {};
 
         this.self.registerWorkerSource = (name: string, WorkerSource: WorkerSourceConstructor) => {
             if (this.workerSourceTypes[name]) {
@@ -116,7 +114,6 @@ export default class MapWorker {
         delete this.layerIndexes[mapId];
         delete this.availableImages[mapId];
         delete this.workerSources[mapId];
-        delete this.demWorkerSources[mapId];
         delete this.rasterArrayWorkerSource;
         callback();
     }
@@ -206,10 +203,6 @@ export default class MapWorker {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source, params.scope).loadTile(params, callback);
-    }
-
-    loadDEMTile(mapId: string, params: WorkerSourceDEMTileRequest, callback: WorkerSourceDEMTileCallback) {
-        this.getDEMWorkerSource(mapId, params.source, params.scope).loadTile(params, callback);
     }
 
     decodeRasterArray(mapId: string, params: WorkerSourceRasterArrayDecodingParameters, callback: WorkerSourceRasterArrayDecodingCallback) {
@@ -371,20 +364,6 @@ export default class MapWorker {
         const {imageIds, scope} = input;
         this.imageRasterizer.removeImagesFromCacheByIds(imageIds, scope, mapId);
         callback();
-    }
-
-    getDEMWorkerSource(mapId: string, source: string, scope: string): RasterDEMTileWorkerSource {
-        if (!this.demWorkerSources[mapId])
-            this.demWorkerSources[mapId] = {};
-
-        if (!this.demWorkerSources[mapId][scope])
-            this.demWorkerSources[mapId][scope] = {};
-
-        if (!this.demWorkerSources[mapId][scope][source]) {
-            this.demWorkerSources[mapId][scope][source] = new RasterDEMTileWorkerSource();
-        }
-
-        return this.demWorkerSources[mapId][scope][source];
     }
 
     getRasterArrayWorkerSource(): RasterArrayTileWorkerSource {

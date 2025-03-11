@@ -112,16 +112,9 @@ export type WorkerSourceVectorTileResult = {
 };
 
 export type WorkerSourceDEMTileRequest = WorkerSourceTileRequest & {
-    coord: {
-        z: number;
-        x: number;
-        y: number;
-        w: number;
-    };
     rawImageData: ImageData | ImageBitmap;
     encoding: DEMSourceEncoding;
     padding: number;
-    convertToFloat: boolean;
 };
 
 export type WorkerSourceRasterArrayDecodingParameters = {
@@ -153,7 +146,7 @@ export type WorkerSourceImageRaserizeCallback = Callback<{[_: string]: RGBAImage
  * @param brightness
  */
 export interface WorkerSource {
-    availableImages: Array<string>;
+    availableImages?: Array<string>;
 
     /**
      * Loads a tile from the given params and parse it into buckets ready to send
