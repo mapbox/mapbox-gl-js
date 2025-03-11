@@ -13,10 +13,10 @@ import type Actor from '../../src/util/actor';
 import type StyleLayerIndex from '../../src/style/style_layer_index';
 import type {
     WorkerSource,
-    WorkerTileParameters,
-    WorkerTileCallback,
-    TileParameters,
-    WorkerTileResult
+    WorkerSourceTileRequest,
+    WorkerSourceTiled3dModelRequest,
+    WorkerSourceVectorTileCallback,
+    WorkerSourceVectorTileResult
 } from '../../src/source/worker_source';
 import type {LoadVectorData} from '../../src/source/load_vector_tile';
 import type Projection from '../../src/geo/projection/projection';
@@ -34,10 +34,10 @@ class Tiled3dWorkerTile {
     overscaling: number;
     projection: Projection;
     status: 'parsing' | 'done';
-    reloadCallback: WorkerTileCallback | null | undefined;
+    reloadCallback: WorkerSourceVectorTileCallback | null | undefined;
     brightness: number | null | undefined;
 
-    constructor(params: WorkerTileParameters, brightness?: number | null) {
+    constructor(params: WorkerSourceTiled3dModelRequest, brightness?: number | null) {
         this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
         this.tileZoom = params.tileZoom;
         this.uid = params.uid;
@@ -54,8 +54,8 @@ class Tiled3dWorkerTile {
     parse(
         data: ArrayBuffer,
         layerIndex: StyleLayerIndex,
-        params: WorkerTileParameters,
-        callback: WorkerTileCallback,
+        params: WorkerSourceTiled3dModelRequest,
+        callback: WorkerSourceVectorTileCallback,
     ): Promise<void> {
         this.status = 'parsing';
         const tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
@@ -108,13 +108,10 @@ class Tiled3dModelWorkerSource implements WorkerSource {
     actor: Actor;
     layerIndex: StyleLayerIndex;
     availableImages: Array<string>;
-    loading: {
-        [_: number]: Tiled3dWorkerTile;
-    };
-    loaded: {
-        [_: number]: Tiled3dWorkerTile;
-    };
+    loading: Record<number, Tiled3dWorkerTile>;
+    loaded: Record<number, Tiled3dWorkerTile>;
     brightness?: number;
+
     constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadVectorData?: LoadVectorData, brightness?: number) {
         this.actor = actor;
         this.layerIndex = layerIndex;
@@ -124,7 +121,11 @@ class Tiled3dModelWorkerSource implements WorkerSource {
         this.loaded = {};
     }
 
-    loadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
+    /**
+     * Implements {@link WorkerSource#loadTile}.
+     * @private
+     */
+    loadTile(params: WorkerSourceTiled3dModelRequest, callback: WorkerSourceVectorTileCallback) {
         const uid = params.uid;
         const workerTile = this.loading[uid] = new Tiled3dWorkerTile(params, this.brightness);
         getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null) => {
@@ -143,7 +144,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
                 return callback();
             }
 
-            const workerTileCallback = (err?: Error | null, result?: WorkerTileResult | null) => {
+            const WorkerSourceVectorTileCallback = (err?: Error | null, result?: WorkerSourceVectorTileResult | null) => {
                 workerTile.status = 'done';
                 this.loaded = this.loaded || {};
                 this.loaded[uid] = workerTile;
@@ -152,16 +153,16 @@ class Tiled3dModelWorkerSource implements WorkerSource {
                 else callback(null, result);
             };
 
-            workerTile.parse(data, this.layerIndex, params, workerTileCallback);
+            workerTile.parse(data, this.layerIndex, params, WorkerSourceVectorTileCallback);
         });
     }
 
     /**
-     * Re-parses a tile that has already been loaded.  Yields the same data as
-     * {@link WorkerSource#loadTile}.
+     * Implements {@link WorkerSource#reloadTile}.
+     * Re-parses a tile that has already been loaded. Yields the same data as {@link WorkerSource#loadTile}.
+     * @private
      */
-    // eslint-disable-next-line no-unused-vars
-    reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
+    reloadTile(params: WorkerSourceTiled3dModelRequest, callback: WorkerSourceVectorTileCallback) {
         const loaded = this.loaded;
         const uid = params.uid;
         if (loaded && loaded[uid]) {
@@ -169,7 +170,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
             workerTile.projection = params.projection;
             workerTile.brightness = params.brightness;
 
-            const done = (err?: Error | null, data?: WorkerTileResult | null) => {
+            const done = (err?: Error | null, data?: WorkerSourceVectorTileResult | null) => {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;
@@ -188,10 +189,11 @@ class Tiled3dModelWorkerSource implements WorkerSource {
     }
 
     /**
+     * Implements {@link WorkerSource#abortTile}.
      * Aborts loading a tile that is in progress.
+     * @private
      */
-    // eslint-disable-next-line no-unused-vars
-    abortTile(params: TileParameters, callback: WorkerTileCallback) {
+    abortTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
         const uid = params.uid;
         const tile = this.loading[uid];
         if (tile) {
@@ -201,10 +203,11 @@ class Tiled3dModelWorkerSource implements WorkerSource {
     }
 
     /**
+     * Implements {@link WorkerSource#removeTile}.
      * Removes this tile from any local caches.
+     * @private
      */
-    // eslint-disable-next-line no-unused-vars
-    removeTile(params: TileParameters, callback: WorkerTileCallback) {
+    removeTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
         const loaded = this.loaded,
             uid = params.uid;
         if (loaded && loaded[uid]) {

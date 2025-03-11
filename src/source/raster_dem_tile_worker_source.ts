@@ -1,14 +1,14 @@
 import DEMData from '../data/dem_data';
 
 import type Actor from '../util/actor';
-import type {WorkerDEMTileParameters, WorkerDEMTileCallback} from './worker_source';
+import type {WorkerSourceDEMTileRequest, WorkerSourceDEMTileCallback} from './worker_source';
 
 class RasterDEMTileWorkerSource {
     actor: Actor;
     offscreenCanvas: OffscreenCanvas;
     offscreenCanvasContext: CanvasRenderingContext2D;
 
-    loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
+    loadTile(params: WorkerSourceDEMTileRequest, callback: WorkerSourceDEMTileCallback) {
         const {uid, encoding, rawImageData, padding} = params;
         // Main thread will transfer ImageBitmap if offscreen decode with OffscreenCanvas is supported, else it will transfer an already decoded image.
         // Flow struggles to refine ImageBitmap type

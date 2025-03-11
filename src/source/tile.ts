@@ -31,7 +31,7 @@ import type RasterParticleState from '../render/raster_particle_state';
 import type FeatureIndex from '../data/feature_index';
 import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
-import type {WorkerTileResult} from './worker_source';
+import type {WorkerSourceVectorTileResult} from './worker_source';
 import type Actor from '../util/actor';
 import type DEMData from '../data/dem_data';
 import type {AlphaImage, SpritePositions} from '../util/image';
@@ -236,7 +236,7 @@ class Tile {
      * @returns {undefined}
      * @private
      */
-    loadVectorData(data: WorkerTileResult | null | undefined, painter: Painter, justReloaded?: boolean | null) {
+    loadVectorData(data: WorkerSourceVectorTileResult | null | undefined, painter: Painter, justReloaded?: boolean | null) {
         this.unloadVectorData();
 
         this.state = 'loaded';
@@ -393,7 +393,7 @@ class Tile {
         this.state = 'unloaded';
     }
 
-    loadModelData(data: WorkerTileResult | null | undefined, painter: Painter, justReloaded?: boolean | null) {
+    loadModelData(data: WorkerSourceVectorTileResult | null | undefined, painter: Painter, justReloaded?: boolean | null) {
         if (!data) {
             return;
         }

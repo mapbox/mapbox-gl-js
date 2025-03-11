@@ -14,7 +14,7 @@ import type {Callback} from '../types/callback';
 import type {GeoJSONWorkerOptions} from './geojson_worker_source';
 import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 import type {Cancelable} from '../types/cancelable';
-import type {RequestedTileParameters} from './worker_source';
+import type {WorkerSourceVectorTileRequest} from './worker_source';
 
 /**
  * A source containing GeoJSON.
@@ -442,7 +442,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         const lut = lutForScope ? {image: lutForScope.image.clone()} : null;
         const partial = this._partialReload;
 
-        const params: RequestedTileParameters = {
+        const params: WorkerSourceVectorTileRequest = {
             type: this.type,
             uid: tile.uid,
             tileID: tile.tileID,

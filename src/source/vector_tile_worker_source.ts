@@ -9,10 +9,10 @@ import {loadVectorTile, DedupedRequest} from './load_vector_tile';
 
 import type {
     WorkerSource,
-    WorkerTileResult,
-    WorkerTileParameters,
-    WorkerTileCallback,
-    TileParameters
+    WorkerSourceTileRequest,
+    WorkerSourceVectorTileRequest,
+    WorkerSourceVectorTileResult,
+    WorkerSourceVectorTileCallback,
 } from './worker_source';
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
@@ -67,7 +67,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * a `params.url` property) for fetching and producing a VectorTile object.
      * @private
      */
-    loadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
+    loadTile(params: WorkerSourceVectorTileRequest, callback: WorkerSourceVectorTileCallback) {
         const uid = params.uid;
 
         const requestParam = params && params.request;
@@ -96,7 +96,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             // because we stub the vector tile interface around JSON data instead of parsing it directly
             workerTile.vectorTile = response.vectorTile || new VectorTile(new Protobuf(rawTileData));
             const parseTile = () => {
-                const workerTileCallback = (err?: Error | null, result?: WorkerTileResult | null) => {
+                const WorkerSourceVectorTileCallback = (err?: Error | null, result?: WorkerSourceVectorTileResult | null) => {
                     if (err || !result) return callback(err);
 
                     const resourceTiming: Record<string, any> = {};
@@ -111,7 +111,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                     }
                     callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
                 };
-                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, workerTileCallback);
+                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, WorkerSourceVectorTileCallback);
             };
 
             if (this.isSpriteLoaded) {
@@ -137,7 +137,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * Implements {@link WorkerSource#reloadTile}.
      * @private
      */
-    reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
+    reloadTile(params: WorkerSourceVectorTileRequest, callback: WorkerSourceVectorTileCallback) {
         const loaded = this.loaded,
             uid = params.uid;
 
@@ -150,7 +150,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             workerTile.tileTransform = tileTransform(params.tileID.canonical, params.projection);
             workerTile.extraShadowCaster = params.extraShadowCaster;
             workerTile.lut = params.lut;
-            const done = (err?: Error | null, data?: WorkerTileResult | null) => {
+            const done = (err?: Error | null, data?: WorkerSourceVectorTileResult | null) => {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;
@@ -176,12 +176,9 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
     /**
      * Implements {@link WorkerSource#abortTile}.
-     *
-     * @param params
-     * @param params.uid The UID for this tile.
      * @private
      */
-    abortTile(params: TileParameters, callback: WorkerTileCallback) {
+    abortTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
         const uid = params.uid;
         const tile = this.loading[uid];
         if (tile) {
@@ -193,12 +190,9 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
     /**
      * Implements {@link WorkerSource#removeTile}.
-     *
-     * @param params
-     * @param params.uid The UID for this tile.
      * @private
      */
-    removeTile(params: TileParameters, callback: WorkerTileCallback) {
+    removeTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
         const loaded = this.loaded,
             uid = params.uid;
         if (loaded && loaded[uid]) {

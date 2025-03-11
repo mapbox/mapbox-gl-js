@@ -30,8 +30,8 @@ import type StyleLayerIndex from '../style/style_layer_index';
 import type {StyleImage} from '../style/style_image';
 import type {GlyphInfo} from '../symbol/shaping';
 import type {
-    WorkerTileParameters,
-    WorkerTileCallback,
+    WorkerSourceVectorTileRequest,
+    WorkerSourceVectorTileCallback,
 } from '../source/worker_source';
 import type {PromoteIdSpecification} from '../style-spec/types';
 import type {TileTransform} from '../geo/projection/tile_transform';
@@ -69,11 +69,11 @@ class WorkerTile {
     collisionBoxArray: CollisionBoxArray;
 
     abort: () => void | null | undefined;
-    reloadCallback?: WorkerTileCallback | null | undefined;
+    reloadCallback?: WorkerSourceVectorTileCallback | null | undefined;
     vectorTile: VectorTile;
     rasterizeTask: {cancel: () => void} | null | undefined;
 
-    constructor(params: WorkerTileParameters) {
+    constructor(params: WorkerSourceVectorTileRequest) {
         this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
         this.tileZoom = params.tileZoom;
         this.uid = params.uid;
@@ -99,7 +99,7 @@ class WorkerTile {
         this.scaleFactor = params.scaleFactor;
     }
 
-    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerTileCallback) {
+    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerSourceVectorTileCallback) {
         const m = PerformanceUtils.beginMeasure('parseTile1');
         this.status = 'parsing';
         this.data = data;

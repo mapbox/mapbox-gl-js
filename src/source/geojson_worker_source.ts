@@ -10,9 +10,8 @@ import VectorTileWorkerSource from './vector_tile_worker_source';
 import {createExpression} from '../style-spec/expression/index';
 
 import type {
-    RequestedTileParameters,
-    WorkerTileParameters,
-    WorkerTileCallback,
+    WorkerSourceVectorTileRequest,
+    WorkerSourceVectorTileCallback,
 } from '../source/worker_source';
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
@@ -48,7 +47,7 @@ export interface GeoJSONIndex {
     getLeaves?: (clusterId: number, limit: number, offset: number) => Array<GeoJSON.Feature>;
 }
 
-function loadGeoJSONTile(params: RequestedTileParameters, callback: LoadVectorDataCallback): undefined {
+function loadGeoJSONTile(params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback): undefined {
     const canonical = params.tileID.canonical;
 
     if (!this._geoJSONIndex) {
@@ -120,8 +119,6 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * they are coalesced into a single request using the latest data.
      * See {@link GeoJSONWorkerSource#coalesce}
      *
-     * @param params
-     * @param callback
      * @private
      */
     loadData(params: LoadGeoJSONParameters, callback: Callback<{
@@ -197,11 +194,9 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     * If the tile is loaded, uses the implementation in VectorTileWorkerSource.
     * Otherwise, such as after a setData() call, we load the tile fresh.
     *
-    * @param params
-    * @param params.uid The UID for this tile.
     * @private
     */
-    override reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void {
+    override reloadTile(params: WorkerSourceVectorTileRequest, callback: WorkerSourceVectorTileCallback): void {
         const loaded = this.loaded,
             uid = params.uid;
 
