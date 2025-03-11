@@ -1,3 +1,4 @@
+import browser from '../../src/util/browser';
 import {Evented, ErrorEvent, Event} from '../../src/util/evented';
 import {ResourceType} from '../../src/util/ajax';
 import loadTileJSON from '../../src/source/load_tilejson';
@@ -154,8 +155,8 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             showCollisionBoxes: this.map.showCollisionBoxes,
             isSymbolTile: tile.isSymbolTile,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
-            pixelRatio: null,
-            promoteId: null,
+            pixelRatio: browser.devicePixelRatio,
+            promoteId: this.promoteId,
         };
 
         if (!tile.actor || tile.state === 'expired') {
