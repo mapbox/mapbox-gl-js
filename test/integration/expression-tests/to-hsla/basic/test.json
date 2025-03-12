@@ -4,7 +4,8 @@
     [{}, {"properties": {"x": "red"}}],
     [{}, {"properties": {"x": "rgba(0, 255, 0, 1)"}}],
     [{}, {"properties": {"x": [0, 255, 0, 1]}}],
-    [{}, {"properties": {"x": [0, 0, 255]}}]
+    [{}, {"properties": {"x": [0, 0, 255]}}],
+    [{}, {"properties": {"x": [255, 255, 255, 1]}}]
   ],
   "expected": {
     "compiled": {
@@ -13,7 +14,7 @@
       "isZoomConstant": true,
       "type": "array<number, 4>"
     },
-    "outputs": [[0,100,50,1], [120,100,50,1], [120,100,50,1], [240,100,50,1]],
+    "outputs": [[0,100,50,1], [120,100,50,1], [120,100,50,1], [240,100,50,1], [0, 0, 100, 1]],
     "serialized": ["to-hsla", ["to-color", ["get", "x"]]]
   }
 }
