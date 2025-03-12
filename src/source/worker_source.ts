@@ -1,6 +1,6 @@
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
-import type {RequestParameters} from '../util/ajax';
+import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {AlphaImage, RGBAImage} from '../util/image';
 import type {GlyphPositions} from '../render/glyph_atlas';
 import type ImageAtlas from '../render/image_atlas';
@@ -18,16 +18,23 @@ import type Projection from '../geo/projection/projection';
 import type {LUT} from '../util/lut';
 import type {Callback} from '../types/callback';
 import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
+import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
+
+/**
+ * The parameters passed to the {@link MapWorker#getWorkerSource}.
+ */
+export type WorkerSourceRequest = {
+    type: string; // The source type must be a string, because we can register new source types dynamically.
+    source: string;
+    scope: string;
+};
 
 /**
  * The parameters passed to the {@link WorkerSource#loadTile},
  * {@link WorkerSource#reloadTile}, {@link WorkerSource#abortTile}, and
  * {@link WorkerSource#removeTile}.
  */
-export type WorkerSourceTileRequest = {
-    type: string; // The source type must be a string, because we can register new source types dynamically.
-    source: string;
-    scope: string;
+export type WorkerSourceTileRequest = WorkerSourceRequest & {
     uid: number;
     tileID: OverscaledTileID;
     request?: RequestParameters;
@@ -109,21 +116,33 @@ export type WorkerSourceVectorTileResult = {
     glyphMap?: Record<string, GlyphInfo>;
     iconMap?: Record<string, StyleImage>;
     glyphPositions?: GlyphPositions;
+    cacheControl?: string;
+    expires?: string;
 };
 
 export type WorkerSourceDEMTileRequest = WorkerSourceTileRequest & {
+    type: 'raster-dem';
     rawImageData: ImageData | ImageBitmap;
     encoding: DEMSourceEncoding;
     padding: number;
 };
 
-export type WorkerSourceRasterArrayDecodingParameters = {
+export type WorkerSourceRasterArrayTileRequest = WorkerSourceTileRequest & {
+    type: 'raster-array';
+    partial?: boolean;
+    fetchLength?: number;
+    sourceLayer?: string;
+    band?: string | number;
+};
+
+export type WorkerSourceRasterArrayDecodingParameters = WorkerSourceTileRequest & {
     buffer: ArrayBuffer;
     task: TProcessingBatch;
 };
 
 export type WorkerSourceVectorTileCallback = Callback<WorkerSourceVectorTileResult>;
 export type WorkerSourceDEMTileCallback = Callback<DEMData>;
+export type WorkerSourceRasterArrayTileCallback = ResponseCallback<MapboxRasterTile>;
 export type WorkerSourceRasterArrayDecodingCallback = Callback<TDecodingResult[]>;
 export type WorkerSourceImageRaserizeCallback = Callback<{[_: string]: RGBAImage}>;
 

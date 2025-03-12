@@ -38,6 +38,7 @@ type WorkerSourceType =
     | 'vector'
     | 'geojson'
     | 'raster-dem'
+    | 'raster-array'
     | 'batched-model';
 
 /**
@@ -60,7 +61,6 @@ export default class MapWorker {
     availableImages: WorkerScopeRegistry<Array<string>>;
     workerSourceTypes: Record<WorkerSourceType, WorkerSourceConstructor>;
     workerSources: WorkerSourceRegistry;
-    rasterArrayWorkerSource: RasterArrayTileWorkerSource | null | undefined;
     projections: Record<string, Projection>;
     defaultProjection: Projection;
     isSpriteLoaded: WorkerScopeRegistry<boolean>;
@@ -86,6 +86,7 @@ export default class MapWorker {
             'vector': VectorTileWorkerSource,
             'geojson': GeoJSONWorkerSource,
             'raster-dem': RasterDEMTileWorkerSource,
+            'raster-array': RasterArrayTileWorkerSource,
             'batched-model': Tiled3dModelWorkerSource
         };
 
@@ -114,7 +115,6 @@ export default class MapWorker {
         delete this.layerIndexes[mapId];
         delete this.availableImages[mapId];
         delete this.workerSources[mapId];
-        delete this.rasterArrayWorkerSource;
         callback();
     }
 
@@ -206,7 +206,7 @@ export default class MapWorker {
     }
 
     decodeRasterArray(mapId: string, params: WorkerSourceRasterArrayDecodingParameters, callback: WorkerSourceRasterArrayDecodingCallback) {
-        this.getRasterArrayWorkerSource().decodeRasterArray(params, callback);
+        (this.getWorkerSource(mapId, params.type, params.source, params.scope) as RasterArrayTileWorkerSource).decodeRasterArray(params, callback);
     }
 
     reloadTile(mapId: string, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
@@ -364,14 +364,6 @@ export default class MapWorker {
         const {imageIds, scope} = input;
         this.imageRasterizer.removeImagesFromCacheByIds(imageIds, scope, mapId);
         callback();
-    }
-
-    getRasterArrayWorkerSource(): RasterArrayTileWorkerSource {
-        if (!this.rasterArrayWorkerSource) {
-            this.rasterArrayWorkerSource = new RasterArrayTileWorkerSource();
-        }
-
-        return this.rasterArrayWorkerSource;
     }
 
     enforceCacheSizeLimit(mapId: string, limit: number) {

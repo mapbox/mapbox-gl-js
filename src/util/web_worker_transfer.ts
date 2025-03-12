@@ -215,7 +215,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         const klass = input.constructor as Klass;
         const name = klass._classRegistryKey;
         if (!name) {
-            throw new Error(`Can't serialize object of unregistered class "${name}".`);
+            throw new Error(`Can't serialize object of unregistered class "${klass.name}".`);
         }
         assert(registry[name]);
 

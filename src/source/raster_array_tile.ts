@@ -13,6 +13,7 @@ import type {TextureImage} from '../render/texture';
 import type {OverscaledTileID} from './tile_id';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {MapboxRasterLayer} from '../data/mrt/mrt.esm.js';
+import type {WorkerSourceRasterArrayDecodingParameters} from './worker_source';
 
 MapboxRasterTile.setPbf(Pbf);
 
@@ -40,6 +41,9 @@ class RasterArrayTile extends Tile {
 
     fbo: Framebuffer | null | undefined;
     textureDescriptor: TextureDescriptor | null | undefined;
+
+    source?: string;
+    scope?: string;
 
     _mrt: MapboxRasterTile | null | undefined;
     _isHeaderLoaded: boolean;
@@ -177,7 +181,16 @@ class RasterArrayTile extends Tile {
         const onDataLoaded = (err?: Error | null, buffer?: ArrayBuffer | null) => {
             if (err) return callback(err);
 
-            const params = {buffer, task};
+            const params: WorkerSourceRasterArrayDecodingParameters = {
+                type: 'raster-array',
+                source: this.source,
+                scope: this.scope,
+                tileID: this.tileID,
+                uid: this.uid,
+                buffer,
+                task
+            };
+
             const workerJob = actor.send('decodeRasterArray', params, onDataDecoded, undefined, true);
 
             this._workQueue.push(() => {

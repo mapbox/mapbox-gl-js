@@ -65,6 +65,11 @@ export type TileState = // Tile data is in the process of loading.
 'errored' | 'expired';/* Tile data was previously loaded, but has expired per its
  * HTTP headers and is in the process of refreshing. */
 
+export type ExpiryData = {
+    cacheControl?: string;
+    expires?: string;
+};
+
 // a tile bounds outline used for getting reprojected tile geometry in non-mercator projections
 const BOUNDS_FEATURE = (() => {
     return {
@@ -545,7 +550,7 @@ class Tile {
         return !!this.imageAtlas && !!Object.keys(this.imageAtlas.patternPositions).length;
     }
 
-    setExpiryData(data: any) {
+    setExpiryData(data: ExpiryData) {
         const prior = this.expirationTime;
 
         if (data.cacheControl) {

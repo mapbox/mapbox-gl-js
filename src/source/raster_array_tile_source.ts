@@ -16,8 +16,10 @@ import type RasterArrayTile from './raster_array_tile';
 import type {Callback} from '../types/callback';
 import type {TextureDescriptor} from './raster_array_tile';
 import type {ISource} from './source';
-import type {RasterArraySourceSpecification} from '../style-spec/types';
 import type {AJAXError} from '../util/ajax';
+import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
+import type {RasterArraySourceSpecification} from '../style-spec/types';
+import type {WorkerSourceRasterArrayTileRequest} from './worker_source';
 
 /**
  * A data source containing raster-array tiles created with [Mapbox Tiling Service](https://docs.mapbox.com/mapbox-tiling-service/guides/).
@@ -37,10 +39,18 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
     override type: 'raster-array';
     override map: Map;
 
+    /**
+     * When `true`, the source will only load the tile header
+     * and use range requests to load and parse the tile data.
+     * Otherwise, the entire tile will be loaded and parsed in the Worker.
+     */
+    partial: boolean;
+
     constructor(id: string, options: RasterArraySourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-array';
         this.maxzoom = 22;
+        this.partial = true;
         this._options = extend({type: 'raster-array'}, options);
     }
 
@@ -58,12 +68,32 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
 
     override loadTile(tile: RasterArrayTile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
-        const requestParams = this.map._requestManager.transformRequest(url, ResourceType.Tile);
+        const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
 
-        tile.requestParams = requestParams;
+        const params: WorkerSourceRasterArrayTileRequest = {
+            request,
+            uid: tile.uid,
+            tileID: tile.tileID,
+            type: this.type,
+            source: this.id,
+            scope: this.scope,
+            partial: this.partial
+        };
+
+        tile.source = this.id;
+        tile.scope = this.scope;
+        tile.requestParams = request;
         if (!tile.actor) tile.actor = this.dispatcher.getActor();
 
-        tile.request = tile.fetchHeader(undefined, (error?: Error | DOMException | AJAXError | null, dataBuffer?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
+        if (this.partial) {
+            // Load only the tile header in the main thread
+            tile.request = tile.fetchHeader(undefined, done.bind(this));
+        } else {
+            // Load and parse the entire tile in Worker
+            tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
+        }
+
+        function done(error?: AJAXError | null, data?: MapboxRasterTile, cacheControl?: string, expires?: string) {
             delete tile.request;
 
             if (tile.aborted) {
@@ -73,17 +103,35 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
 
             if (error) {
                 // silence AbortError
-                if (error.name === 'AbortError')
-                    return;
+                if (error.name === 'AbortError') return;
                 tile.state = 'errored';
                 return callback(error);
             }
 
-            if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
+            if (this.map._refreshExpiredTiles && data) {
+                tile.setExpiryData({cacheControl, expires});
+            }
 
-            tile.state = 'empty';
+            if (this.partial) {
+                tile.state = 'empty';
+            } else {
+                tile._isHeaderLoaded = true;
+                tile._mrt = data;
+            }
+
             callback(null);
-        });
+        }
+    }
+
+    override abortTile(tile: RasterArrayTile) {
+        if (tile.request) {
+            tile.request.cancel();
+            delete tile.request;
+        }
+
+        if (tile.actor) {
+            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
+        }
     }
 
     override unloadTile(tile: RasterArrayTile, _?: Callback<undefined> | null) {
@@ -97,7 +145,6 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
             this.map.painter.saveTileTexture(texture);
         } else {
             tile.destroy();
-
             tile.flushQueues();
             tile._isHeaderLoaded = false;
 
@@ -139,6 +186,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
             }
 
             if (data) {
+                tile._isHeaderLoaded = true;
                 tile.setTexture(data, this.map.painter);
                 tile.state = 'loaded';
                 this.triggerRepaint(tile);
@@ -170,9 +218,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         tile: RasterArrayTile,
         layer: RasterStyleLayer | RasterParticleStyleLayer,
         fallbackToPrevious: boolean,
-    ): TextureDescriptor & {
-        texture: Texture | null | undefined;
-    } | void {
+    ): TextureDescriptor & {texture: Texture | null | undefined;} | void {
         if (!tile) return;
 
         const sourceLayer = layer.sourceLayer || (this.rasterLayerIds && this.rasterLayerIds[0]);
