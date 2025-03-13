@@ -194,6 +194,31 @@ describe('transform', () => {
     }
     );
 
+    test('Setting _allowWorldUnderZoom does not constrain', () => {
+        const transform = new Transform();
+        transform._allowWorldUnderZoom = true;
+        transform.zoom = 6;
+        transform.resize(500, 500);
+        transform.center = new LngLat(100, 30);
+        transform.setMaxBounds(new LngLatBounds([0, 0], [50, 20]));
+
+        expect(transform.center.lng > 50).toBeTruthy();
+        expect(transform.center.lat > 20).toBeTruthy();
+    }
+    );
+
+    test('Not setting _allowWorldUnderZoom does constrain', () => {
+        const transform = new Transform();
+        transform.zoom = 6;
+        transform.resize(500, 500);
+        transform.center = new LngLat(100, 30);
+        transform.setMaxBounds(new LngLatBounds([0, 0], [50, 20]));
+
+        expect(transform.center.lng > 50).toBeFalsy();
+        expect(transform.center.lat > 20).toBeFalsy();
+    }
+    );
+
     describe('_minZoomForBounds respects maxBounds', () => {
         test('it returns 0 when lngRange is undefined', () => {
             const transform = new Transform();

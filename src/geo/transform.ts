@@ -219,6 +219,8 @@ class Transform {
 
     _orthographicProjectionAtLowPitch: boolean;
 
+    _allowWorldUnderZoom: boolean;
+
     constructor(minZoom?: number | null, maxZoom?: number | null, minPitch?: number | null, maxPitch?: number | null, renderWorldCopies?: boolean, projection?: ProjectionSpecification | null, bounds?: LngLatBounds | null) {
         this.tileSize = 512; // constant
 
@@ -262,10 +264,12 @@ class Transform {
         this._horizonShift = 0.1;
 
         this._orthographicProjectionAtLowPitch = false;
+
+        this._allowWorldUnderZoom = false;
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.getProjection());
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.getProjection(), this.maxBounds);
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone._centerAltitudeValidForExaggeration = this._centerAltitudeValidForExaggeration;
@@ -290,6 +294,7 @@ class Transform {
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
         clone.frustumCorners = this.frustumCorners;
+        clone._allowWorldUnderZoom = this._allowWorldUnderZoom;
         return clone;
     }
 
@@ -2189,10 +2194,10 @@ class Transform {
             }
         }
 
-        if (x2 !== x || y2 !== y) { // pan the map to fit the range
+        if ((x2 !== x || y2 !== y) && !this._allowWorldUnderZoom) { // pan the map to fit the range
             this.center = this.unproject(new Point(x2, y2));
         }
-        if (s) { // scale the map to fit the range
+        if (s && !this._allowWorldUnderZoom) { // scale the map to fit the range
             this.zoom += this.scaleZoom(s);
         }
 
