@@ -1,4 +1,4 @@
- import EXTENT from '../../../src/style-spec/data/extent';
+import EXTENT from '../../../src/style-spec/data/extent';
 import {register} from '../../../src/util/web_worker_transfer';
 import loadGeometry from '../../../src/data/load_geometry';
 import toEvaluationFeature from '../../../src/data/evaluation_feature';
