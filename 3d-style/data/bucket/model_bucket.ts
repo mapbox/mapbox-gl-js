@@ -1,4 +1,4 @@
-import EXTENT from '../../../src/style-spec/data/extent';
+ import EXTENT from '../../../src/style-spec/data/extent';
 import {register} from '../../../src/util/web_worker_transfer';
 import loadGeometry from '../../../src/data/load_geometry';
 import toEvaluationFeature from '../../../src/data/evaluation_feature';
@@ -445,6 +445,7 @@ class ModelBucket implements Bucket {
     ): string {
         const layer = this.layers[0];
         const modelIdProperty = layer.layout.get('model-id');
+        const modelAllowDensityReductionProperty = layer.layout.get('model-allow-density-reduction');
         assert(modelIdProperty);
 
         const modelId = modelIdProperty.evaluate(evaluationFeature, {}, this.canonical);
@@ -479,7 +480,7 @@ class ModelBucket implements Bucket {
                     continue; // Clip on tile borders to prevent duplicates
                 }
                 // reduce density
-                if (this.lookupDim !== 0) {
+                if (this.lookupDim !== 0 || modelAllowDensityReductionProperty) {
                     const tileToLookup = (this.lookupDim - 1.0) / EXTENT;
                     const lookupIndex = this.lookupDim * ((point.y * tileToLookup) | 0) + (point.x * tileToLookup) | 0;
                     if (this.lookup) {
