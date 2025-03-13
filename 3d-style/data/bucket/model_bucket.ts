@@ -373,7 +373,7 @@ class ModelBucket implements Bucket {
                     continue; // Clip on tile borders to prevent duplicates
                 }
                 if (modelAllowDensityReductionProperty) {
-                     // reduce density
+                    // reduce density
                     const tileToLookup = (this.lookupDim - 1.0) / EXTENT;
                     const lookupIndex = this.lookupDim * ((point.y * tileToLookup) | 0) + (point.x * tileToLookup) | 0;
                     if (this.lookup) {
