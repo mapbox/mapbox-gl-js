@@ -75,7 +75,7 @@
       },
       "paint": {
         "line-width":[
-          "at", 
+          "at-interpolated", 
           ["*", [ "line-progress" ], ["-", ["length", ["get", "widths"]], 1]], 
           ["get", "widths"]
         ],

@@ -19,6 +19,7 @@ import Literal from './literal';
 import Assertion from './assertion';
 import Coercion from './coercion';
 import At from './at';
+import AtInterpolated from './at_interpolated';
 import In from './in';
 import IndexOf from './index_of';
 import Match from './match';
@@ -60,6 +61,7 @@ const expressions: ExpressionRegistry = {
     '<=': LessThanOrEqual,
     'array': Assertion,
     'at': At,
+    'at-interpolated': AtInterpolated,
     'boolean': Assertion,
     'case': Case,
     'coalesce': Coalesce,

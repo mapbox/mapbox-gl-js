@@ -7,7 +7,7 @@ import type EvaluationContext from '../evaluation_context';
 import type {Type, ArrayType} from '../types';
 import type {Value} from '../values';
 
-class At implements Expression {
+class AtInterpolated implements Expression {
     type: Type;
     index: Expression;
     input: Expression;
@@ -18,7 +18,7 @@ class At implements Expression {
         this.input = input;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): At | null | void {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): AtInterpolated | null | void {
         if (args.length !== 3)
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
 
@@ -28,7 +28,7 @@ class At implements Expression {
         if (!index || !input) return null;
 
         const t: ArrayType = (input.type as any);
-        return new At(t.itemType, index, input);
+        return new AtInterpolated(t.itemType, index, input);
     }
 
     evaluate(ctx: EvaluationContext): Value {
@@ -39,15 +39,28 @@ class At implements Expression {
             throw new RuntimeError(`Array index out of bounds: ${index} < 0.`);
         }
 
-        if (index >= array.length) {
+        if (index > array.length - 1) {
             throw new RuntimeError(`Array index out of bounds: ${index} > ${array.length - 1}.`);
         }
 
-        if (index !== Math.floor(index)) {
-            throw new RuntimeError(`Array index must be an integer, but found ${index} instead. Use at-interpolated to retrieve interpolated result with a fractional index.`);
+        if (index === Math.floor(index)) {
+            return array[index];
         }
 
-        return array[index];
+        // Interpolation logic for non-integer indices
+        const lowerIndex = Math.floor(index);
+        const upperIndex = Math.ceil(index);
+
+        const lowerValue = array[lowerIndex];
+        const upperValue = array[upperIndex];
+
+        if (typeof lowerValue !== 'number' || typeof upperValue !== 'number') {
+            throw new RuntimeError(`Cannot interpolate between non-number values at index ${index}.`);
+        }
+
+        // Linear interpolation
+        const fraction = index - lowerIndex;
+        return lowerValue * (1 - fraction) + upperValue * fraction;
     }
 
     eachChild(fn: (_: Expression) => void) {
@@ -60,8 +73,8 @@ class At implements Expression {
     }
 
     serialize(): SerializedExpression {
-        return ["at", this.index.serialize(), this.input.serialize()];
+        return ["at-interpolated", this.index.serialize(), this.input.serialize()];
     }
 }
 
-export default At;
+export default AtInterpolated;
