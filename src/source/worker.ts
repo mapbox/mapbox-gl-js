@@ -13,13 +13,14 @@ import {Event} from '../util/evented';
 import {getProjection} from '../geo/projection/index';
 import {ImageRasterizer} from '../render/image_rasterizer';
 
-import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import type {
     WorkerSource,
     WorkerSourceTileRequest,
     WorkerSourceRasterArrayDecodingParameters,
     WorkerSourceRasterArrayDecodingCallback,
     WorkerSourceConstructor,
+    WorkerSourceImageRaserizeParameters,
+    WorkerSourceRemoveRasterizedImagesParameters,
     WorkerSourceImageRaserizeCallback
 } from './worker_source';
 import type {Callback} from '../types/callback';
@@ -27,8 +28,7 @@ import type {LayerSpecification, ProjectionSpecification} from '../style-spec/ty
 import type {ConfigOptions} from '../style/properties';
 import type {RtlTextPlugin, PluginState} from './rtl_text_plugin';
 import type Projection from '../geo/projection/projection';
-import type {RGBAImage} from '../util/image';
-import type {StyleImage} from '../style/style_image';
+import type {ImageDictionary} from '../render/image_manager';
 import type {WorkerPerformanceMetrics} from '../util/performance';
 
 /**
@@ -350,18 +350,18 @@ export default class MapWorker {
         return workerSources[mapId][scope][type][source];
     }
 
-    rasterizeImages(mapId: string, input: {imageTasks: {[_: string]:  {image: StyleImage, imageIdWithOptions: ImageIdWithOptions}}, scope: string}, callback: WorkerSourceImageRaserizeCallback) {
-        const {imageTasks, scope} = input;
-        const images: {[key: string]: RGBAImage} = {};
-        for (const id in imageTasks) {
-            const {image, imageIdWithOptions} = imageTasks[id];
+    rasterizeImages(mapId: string, params: WorkerSourceImageRaserizeParameters, callback: WorkerSourceImageRaserizeCallback) {
+        const {tasks, scope} = params;
+        const images: ImageDictionary = {};
+        for (const id in tasks) {
+            const {image, imageIdWithOptions} = tasks[id];
             images[id] = this.imageRasterizer.rasterize(imageIdWithOptions, image, scope, mapId);
         }
         callback(undefined, images);
     }
 
-    removeRasterizedImages(mapId: string, input: {imageIds: Array<string>, scope: string}, callback: Callback<void>) {
-        const {imageIds, scope} = input;
+    removeRasterizedImages(mapId: string, params: WorkerSourceRemoveRasterizedImagesParameters, callback: Callback<void>) {
+        const {imageIds, scope} = params;
         this.imageRasterizer.removeImagesFromCacheByIds(imageIds, scope, mapId);
         callback();
     }

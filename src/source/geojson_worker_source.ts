@@ -37,7 +37,13 @@ export type LoadGeoJSONParameters = GeoJSONWorkerOptions & {
     append?: boolean;
 };
 
-export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<any>) => void;
+export type ResourceTiming = Record<string, Array<PerformanceResourceTiming>>;
+
+export type LoadGeoJSONResult = {
+    resourceTiming?: ResourceTiming;
+};
+
+export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<LoadGeoJSONResult>) => void;
 
 export interface GeoJSONIndex {
     getTile: (z: number, x: number, y: number) => any;
@@ -121,11 +127,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      *
      * @private
      */
-    loadData(params: LoadGeoJSONParameters, callback: Callback<{
-        resourceTiming?: {
-            [_: string]: Array<PerformanceResourceTiming>;
-        };
-    }>) {
+    loadData(params: LoadGeoJSONParameters, callback: ResponseCallback<LoadGeoJSONResult>): void {
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;
 
@@ -173,7 +175,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                     return callback(err);
                 }
 
-                const result: Record<string, any> = {};
+                const result: LoadGeoJSONResult = {};
                 if (perf) {
                     const resourceTimingData = getPerformanceMeasurement(requestParam);
                     // it's necessary to eval the result of getEntriesByName() here via parse/stringify

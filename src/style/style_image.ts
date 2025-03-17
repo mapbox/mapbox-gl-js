@@ -23,6 +23,8 @@ export type StyleImageMetadata = {
 
 export type StyleImage = StyleImageData & StyleImageMetadata;
 
+export type StyleImageMap = Record<string, StyleImage>;
+
 export type StyleImageInterface = {
     width: number;
     height: number;

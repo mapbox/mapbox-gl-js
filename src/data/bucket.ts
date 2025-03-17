@@ -35,11 +35,14 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     tessellationStep: number | null | undefined;
 };
 
+export type ImageDependencies = Record<string, Array<ImageIdWithOptions>>;
+export type GlyphDependencies = Record<string, Record<number, boolean>>;
+
 export type PopulateParameters = {
     featureIndex: FeatureIndex;
-    iconDependencies: Record<string, Array<ImageIdWithOptions>>;
-    patternDependencies: Record<string, Array<ImageIdWithOptions>>;
-    glyphDependencies: Record<any, any>;
+    iconDependencies: ImageDependencies;
+    patternDependencies: ImageDependencies;
+    glyphDependencies: GlyphDependencies;
     availableImages: Array<string>;
     lineAtlas: LineAtlas;
     brightness: number | null | undefined;
@@ -61,9 +64,7 @@ export type BucketFeature = {
     properties: any;
     type: 0 | 1 | 2 | 3;
     id?: any;
-    readonly patterns: {
-        [_: string]: string;
-    };
+    readonly patterns: Record<string, string>;
     sortKey?: number;
 };
 

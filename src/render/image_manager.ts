@@ -14,7 +14,7 @@ import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import browser from '../util/browser';
 
 import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
-import type {StyleImage} from '../style/style_image';
+import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type Context from '../gl/context';
 import type {PotpackBox} from 'potpack';
 import type {Callback} from '../types/callback';
@@ -28,9 +28,23 @@ type Pattern = {
     position: ImagePosition;
 };
 
-type ImageWorkerTask = { image: StyleImage, imageIdWithOptions: ImageIdWithOptions };
-type ImageWorkerTasks = Record<string, ImageWorkerTask>;
-type ImageDictionary = { [_: string]: RGBAImage }
+export type PatternMap = Record<string, Pattern>;
+
+export type ImageRasterizationWorkerTask = {
+    image: StyleImage,
+    imageIdWithOptions: ImageIdWithOptions
+};
+
+export type ImageRasterizationWorkerTasks = Record<string, ImageRasterizationWorkerTask>;
+
+export type ImageRasterizationTasks = Record<string, ImageIdWithOptions>;
+
+export type RasterizeImagesParameters = {
+    scope: string;
+    tasks: ImageRasterizationTasks;
+};
+
+export type ImageDictionary = Record<string, RGBAImage>;
 
 export type SpriteFormat = 'auto' | 'raster' | 'icon_set';
 
@@ -47,9 +61,7 @@ export type SpriteFormat = 'auto' | 'raster' | 'icon_set';
 */
 class ImageManager extends Evented {
     images: {
-        [scope: string]: {
-            [id: string]: StyleImage;
-        };
+        [scope: string]: StyleImageMap;
     };
     updatedImages: {
         [scope: string]: {
@@ -67,9 +79,7 @@ class ImageManager extends Evented {
     requestors: Array<{
         ids: Array<string>;
         scope: string;
-        callback: Callback<{
-            [id: string]: StyleImage;
-        }>;
+        callback: Callback<StyleImageMap>;
     }>;
 
     patterns: {
@@ -257,9 +267,7 @@ class ImageManager extends Evented {
         return Object.keys(this.images[scope]);
     }
 
-    getImages(ids: Array<string>, scope: string, callback: Callback<{
-        [_: string]: StyleImage;
-    }>) {
+    getImages(ids: Array<string>, scope: string, callback: Callback<StyleImageMap>) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
         // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
@@ -280,47 +288,41 @@ class ImageManager extends Evented {
         }
     }
 
-    rasterizeImages({scope, imageTasks}: {scope: string, imageTasks: {[_: string]: ImageIdWithOptions}}, callback: Callback<ImageDictionary>) {
-        const imageWorkerTasks: {[_: string]: {image: StyleImage, imageIdWithOptions: ImageIdWithOptions}} = {};
+    rasterizeImages({scope, tasks}: RasterizeImagesParameters, callback: Callback<ImageDictionary>) {
+        const imageWorkerTasks: ImageRasterizationWorkerTasks = {};
 
-        for (const id in imageTasks) {
-            const imageIdWithOptions = imageTasks[id];
+        for (const id in tasks) {
+            const imageIdWithOptions = tasks[id];
             const image = this.getImage(imageIdWithOptions.id, scope);
             if (image) {
                 imageWorkerTasks[id] = {image, imageIdWithOptions};
             }
         }
-        this.rasterizeImagesInWorkerOrMainThread(scope, imageWorkerTasks, callback);
+
+        this._rasterizeImages(scope, imageWorkerTasks, callback);
     }
 
-    rasterizeImagesInWorkerOrMainThread(scope: string, imageTasks: ImageWorkerTasks, callback?: Callback<ImageDictionary> | null) {
-        if (!offscreenCanvasSupported()) {
-            this.rasterizeImagesInMainThread({imageTasks, scope}, callback);
+    _rasterizeImages(scope: string, tasks: ImageRasterizationWorkerTasks, callback?: Callback<ImageDictionary>) {
+        if (offscreenCanvasSupported()) {
+            // Use the worker thread to rasterize images
+            this.imageRasterizerDispatcher.getActor().send('rasterizeImages', {tasks, scope}, callback);
         } else {
-            this.imageRasterizerDispatcher.getActor().send('rasterizeImages', {imageTasks, scope}, callback);
+            // Fallback to main thread rasterization
+            const images: ImageDictionary = {};
+            for (const id in tasks) {
+                const {image, imageIdWithOptions} = tasks[id];
+                images[id] = this.imageRasterizer.rasterize(imageIdWithOptions, image, scope, '');
+            }
+            callback(undefined, images);
         }
     }
 
-    rasterizeImagesInMainThread(input: { imageTasks: ImageWorkerTasks, scope: string }, callback: Callback<ImageDictionary>) {
-        const {imageTasks, scope} = input;
-        const images: {[key: string]: RGBAImage} = {};
-        for (const id in imageTasks) {
-            const {image, imageIdWithOptions} = imageTasks[id];
-            images[id] = this.imageRasterizer.rasterize(imageIdWithOptions, image, scope, '');
-        }
-        callback(undefined, images);
+    getUpdatedImages(scope: string): Record<string, boolean> {
+        return this.updatedImages[scope] || {};
     }
 
-    getUpdatedImages(scope: string): {
-        [_: string]: boolean;
-    } {
-        return this.updatedImages[scope];
-    }
-
-    _notify(ids: Array<string>, scope: string, callback: Callback<{
-        [_: string]: StyleImage;
-    }>) {
-        const response: Record<string, any> = {};
+    _notify(ids: Array<string>, scope: string, callback: Callback<StyleImageMap>) {
+        const response: StyleImageMap = {};
 
         for (const id of ids) {
             if (!this.images[scope][id]) {
@@ -380,8 +382,8 @@ class ImageManager extends Evented {
                 if (this.patternsInFlight.has(id)) return null;
                 this.patternsInFlight.add(this.getPatternInFlightId(scope, id));
                 const imageIdWithOptions = ResolvedImage.from(id).getPrimary().scaleSelf(browser.devicePixelRatio);
-                const imageTasks = {[id]: {image, imageIdWithOptions}};
-                this.rasterizeImagesInWorkerOrMainThread(scope, imageTasks, (_, result) => this.storePatternImage(id, scope, image, lut, result));
+                const tasks: ImageRasterizationWorkerTasks = {[id]: {image, imageIdWithOptions}};
+                this._rasterizeImages(scope, tasks, (_, result) => this.storePatternImage(id, scope, image, lut, result));
                 return null;
             } else {
                 this.storePattern(scope, id, image, lut);

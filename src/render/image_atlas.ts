@@ -4,7 +4,7 @@ import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
 import {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 
-import type {StyleImage} from '../style/style_image';
+import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type ImageManager from './image_manager';
 import type Texture from './texture';
 import type {SpritePosition} from '../util/image';
@@ -25,6 +25,8 @@ type ImagePositionScale = {
     x: number;
     y: number;
 }
+
+export type ImagePositionMap = Record<string, ImagePosition>;
 
 export class ImagePosition implements SpritePosition {
     paddedRect: Rect;
@@ -51,16 +53,18 @@ export class ImagePosition implements SpritePosition {
         }
     }
 
-    constructor(paddedRect: Rect, {
-        pixelRatio,
-        version,
-        stretchX,
-        stretchY,
-        content,
-        sdf,
-        usvg,
-    }: StyleImage, padding: number, imageIdWithOptions?: ImageIdWithOptions) {
+    constructor(paddedRect: Rect, image: StyleImage, padding: number, imageIdWithOptions?: ImageIdWithOptions) {
         this.paddedRect = paddedRect;
+        const {
+            pixelRatio,
+            version,
+            stretchX,
+            stretchY,
+            content,
+            sdf,
+            usvg,
+        } = image;
+
         this.pixelRatio = pixelRatio;
         this.stretchX = stretchX;
         this.stretchY = stretchY;
@@ -113,22 +117,15 @@ export function getImagePosition(id: string, src: StyleImage, padding: number) {
 
 export default class ImageAtlas {
     image: RGBAImage;
-    iconPositions: {
-        [_: string]: ImagePosition;
-    };
-    patternPositions: {
-        [_: string]: ImagePosition;
-    };
+    iconPositions: ImagePositionMap;
+    patternPositions: ImagePositionMap;
     haveRenderCallbacks: Array<string>;
     uploaded: boolean | null | undefined;
     lut: LUT | null;
 
-    constructor(icons: {
-        [_: string]: StyleImage;
-    }, patterns: {
-        [_: string]: StyleImage;
-    }, lut: LUT | null) {
-        const iconPositions: Record<string, any> = {}, patternPositions: Record<string, any> = {};
+    constructor(icons: StyleImageMap, patterns: StyleImageMap, lut: LUT | null) {
+        const iconPositions: ImagePositionMap = {};
+        const patternPositions: ImagePositionMap = {};
         this.haveRenderCallbacks = [];
 
         const bins = [];
@@ -180,12 +177,7 @@ export default class ImageAtlas {
         this.patternPositions = patternPositions;
     }
 
-    addImages(images: {
-        [_: string]: StyleImage;
-    }, positions: {
-        [_: string]: ImagePosition;
-    }, padding: number,
-    bins: Array<Rect>) {
+    addImages(images: StyleImageMap, positions: ImagePositionMap, padding: number, bins: Array<Rect>) {
         for (const id in images) {
             const src = images[id];
             const {bin, imagePosition, imageIdWithOptions} = getImagePosition(id, src, padding);

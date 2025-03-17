@@ -11,8 +11,9 @@ import ONE_EM from './one_em';
 import {warnOnce} from '../util/util';
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
 
-import type {StyleGlyph, GlyphMetrics} from '../style/style_glyph';
-import type {ImagePosition} from '../render/image_atlas';
+import type {GlyphMap} from '../render/glyph_manager';
+import type {GlyphMetrics} from '../style/style_glyph';
+import type {ImagePosition, ImagePositionMap} from '../render/image_atlas';
 import type {GlyphRect, GlyphPositions} from '../render/glyph_atlas';
 import type {FormattedSection} from '../style-spec/expression/types/formatted';
 import type Formatted from '../style-spec/expression/types/formatted';
@@ -252,19 +253,11 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
     return lines;
 }
 
-export type GlyphInfo = {
-    glyphs: {
-        [_: number]: StyleGlyph | null | undefined;
-    };
-    ascender?: number;
-    descender?: number;
-};
-
 function shapeText(
     text: Formatted,
-    glyphMap: Record<string, GlyphInfo>,
+    glyphMap: GlyphMap,
     glyphPositions: GlyphPositions,
-    imagePositions: Record<string, ImagePosition>,
+    imagePositions: ImagePositionMap,
     defaultFontStack: string,
     maxWidth: number,
     lineHeight: number,
@@ -374,8 +367,8 @@ const breakable: {
 function getGlyphAdvance(
     codePoint: number,
     section: SectionOptions,
-    glyphMap: Record<string, GlyphInfo>,
-    imagePositions: Record<string, ImagePosition>,
+    glyphMap: GlyphMap,
+    imagePositions: ImagePositionMap,
     spacing: number,
     layoutTextSize: number,
 ): number {
@@ -394,8 +387,8 @@ function getGlyphAdvance(
 function determineAverageLineWidth(logicalInput: TaggedString,
                                    spacing: number,
                                    maxWidth: number,
-                                   glyphMap: Record<string, GlyphInfo>,
-                                   imagePositions: Record<string, ImagePosition>,
+                                   glyphMap: GlyphMap,
+                                   imagePositions: ImagePositionMap,
                                    layoutTextSize: number) {
     let totalWidth = 0;
 
@@ -501,8 +494,8 @@ function determineLineBreaks(
     logicalInput: TaggedString,
     spacing: number,
     maxWidth: number,
-    glyphMap: Record<string, GlyphInfo>,
-    imagePositions: Record<string, ImagePosition>,
+    glyphMap: GlyphMap,
+    imagePositions: ImagePositionMap,
     layoutTextSize: number,
 ): Array<number> {
     if (!logicalInput)
@@ -581,9 +574,9 @@ function getAnchorAlignment(anchor: SymbolAnchor): AnchorAlignment {
 }
 
 function shapeLines(shaping: Shaping,
-                    glyphMap: Record<string, GlyphInfo>,
+                    glyphMap: GlyphMap,
                     glyphPositions: GlyphPositions,
-                    imagePositions: Record<string, ImagePosition>,
+                    imagePositions: ImagePositionMap,
                     lines: Array<TaggedString>,
                     lineHeight: number,
                     textAnchor: SymbolAnchor,

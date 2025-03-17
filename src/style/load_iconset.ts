@@ -5,7 +5,7 @@ import browser from '../util/browser';
 
 import type {Callback} from "../types/callback";
 import type {RequestManager} from "../util/mapbox";
-import type {StyleImage} from "./style_image";
+import type {StyleImage, StyleImageMap} from "./style_image";
 
 function getContentArea(icon: Icon): [number, number, number, number] | undefined {
     if (!icon.metadata || !icon.metadata.content_area) {
@@ -37,9 +37,7 @@ function getStretchArea(stretchArea: [number, number][] | undefined): [number, n
 export function loadIconset(
     loadURL: string,
     requestManager: RequestManager,
-    callback: Callback<{
-        [_: string]: StyleImage;
-    }>
+    callback: Callback<StyleImageMap>
 ) {
     return getArrayBuffer(requestManager.transformRequest(requestManager.normalizeIconsetURL(loadURL), ResourceType.Iconset), (err, data) => {
         if (err) {

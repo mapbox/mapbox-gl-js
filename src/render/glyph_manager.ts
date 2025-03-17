@@ -37,9 +37,12 @@ export const SDF_SCALE = 2;
 // Only these four font weights are supported
 type FontWeight = '200' | '400' | '500' | '900';
 
+type FontStack = string;
+export type FontStacks = Record<FontStack, number[]>;
+
 type FontGlyph = {
     id: number;
-    stack: string;
+    stack: FontStack;
     glyph?: StyleGlyph;
 };
 
@@ -53,6 +56,8 @@ type Entry = {
     descender?: number;
 };
 
+export type GlyphMap = Record<FontStack, GlyphRange>;
+
 export const LocalGlyphMode = {
     none: 0,
     ideographs: 1,
@@ -61,7 +66,7 @@ export const LocalGlyphMode = {
 
 class GlyphManager {
     requestManager: RequestManager;
-    localFontFamily: string | null | undefined;
+    localFontFamily?: string;
     localGlyphMode: number;
     entries: Record<string, Entry>;
     // Multiple fontstacks may share the same local glyphs, so keep an index
@@ -91,8 +96,8 @@ class GlyphManager {
         this.urls[scope] = url;
     }
 
-    getGlyphs(glyphs: {[stack: string]: Array<number>}, scope: string, callback: Callback<{[stack: string]: GlyphRange}>) {
-        const all: Array<{id: number, stack: string}> = [];
+    getGlyphs(glyphs: FontStacks, scope: string, callback: Callback<GlyphMap>) {
+        const all: Array<{id: number, stack: FontStack}> = [];
 
         // Fallback to the default glyphs URL if none is specified
         const url = this.urls[scope] || config.GLYPHS_URL;
@@ -173,7 +178,7 @@ class GlyphManager {
             if (err) {
                 callback(err);
             } else if (glyphs) {
-                const result: {[stack: string]: GlyphRange} = {};
+                const result: GlyphMap = {};
 
                 for (const {stack, id, glyph} of glyphs) {
                     // Clone the glyph so that our own copy of its ArrayBuffer doesn't get transferred.
@@ -214,7 +219,7 @@ class GlyphManager {
         }
     }
 
-    _tinySDF(entry: Entry, stack: string, id: number): StyleGlyph | null | undefined {
+    _tinySDF(entry: Entry, stack: FontStack, id: number): StyleGlyph | null | undefined {
         const fontFamily = this.localFontFamily;
         if (!fontFamily || !this._doesCharSupportLocalGlyph(id)) return;
 

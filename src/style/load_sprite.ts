@@ -2,7 +2,7 @@ import {getJSON, getImage, ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 import {RGBAImage} from '../util/image';
 
-import type {StyleImage} from './style_image';
+import type {StyleImageMap} from './style_image';
 import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
@@ -10,9 +10,7 @@ import type {Cancelable} from '../types/cancelable';
 export default function(
     baseURL: string,
     requestManager: RequestManager,
-    callback: Callback<{
-        [_: string]: StyleImage;
-    }>,
+    callback: Callback<StyleImageMap>,
 ): Cancelable {
     let json: any, image, error;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';

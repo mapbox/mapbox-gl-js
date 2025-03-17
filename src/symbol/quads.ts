@@ -10,7 +10,7 @@ import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression/index';
-import type {StyleImage} from '../style/style_image';
+import type {StyleImageMap} from '../style/style_image';
 
 export type TextureCoordinate = {
     x: number;
@@ -270,9 +270,7 @@ export function getGlyphQuads(
     layer: SymbolStyleLayer,
     alongLine: boolean,
     feature: Feature,
-    imageMap: {
-        [_: string]: StyleImage;
-    },
+    imageMap: StyleImageMap,
     allowVerticalPlacement: boolean,
 ): Array<SymbolQuad> {
     const quads = [];

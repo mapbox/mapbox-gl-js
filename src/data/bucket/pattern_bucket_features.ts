@@ -5,17 +5,13 @@ import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion
 import type LineStyleLayer from '../../style/style_layer/line_style_layer';
 import type {
     BucketFeature,
+    ImageDependencies,
     PopulateParameters
 } from '../bucket';
-import type {ImageIdWithOptions} from '../../style-spec/expression/types/image_id_with_options';
 
 type PatternStyleLayers = Array<LineStyleLayer> | Array<FillStyleLayer> | Array<FillExtrusionStyleLayer>;
 
-function addPattern(
-    pattern: string | ResolvedImage,
-    patterns: Record<string, Array<ImageIdWithOptions>>,
-    pixelRatio: number = 1
-): string | null {
+function addPattern(pattern: string | ResolvedImage, patterns: ImageDependencies, pixelRatio: number = 1): string | null {
     if (!pattern) {
         return null;
     }

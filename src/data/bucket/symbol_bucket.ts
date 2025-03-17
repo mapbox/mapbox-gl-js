@@ -52,6 +52,7 @@ import assert from 'assert';
 import {regionsEquals} from '../../../3d-style/source/replacement_source';
 import {clamp} from '../../util/util';
 
+import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type Anchor from '../../symbol/anchor';
 import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
@@ -77,7 +78,6 @@ import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {LUT} from '../../util/lut';
 import type {SpritePositions} from '../../util/image';
-import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 
 export type SingleCollisionBox = {
@@ -520,9 +520,7 @@ class SymbolBucket implements Bucket {
         this.symbolInstances = new SymbolInstanceArray();
     }
 
-    calculateGlyphDependencies(text: string, stack: {
-        [_: number]: boolean;
-    }, textAlongLine: boolean, allowVerticalPlacement: boolean, doesAllowVerticalWritingMode: boolean) {
+    calculateGlyphDependencies(text: string, stack: Record<number, boolean>, textAlongLine: boolean, allowVerticalPlacement: boolean, doesAllowVerticalWritingMode: boolean) {
         for (const char of text) {
             const codePoint = char.codePointAt(0);
             if (codePoint === undefined) break;
@@ -696,7 +694,7 @@ class SymbolBucket implements Bucket {
                     if (!section.image) {
                         const doesAllowVerticalWritingMode = allowsVerticalWritingMode(text.toString());
                         const sectionFont = section.fontStack || fontStack;
-                        const sectionStack = stacks[sectionFont] = stacks[sectionFont] || {};
+                        const sectionStack: Record<number, boolean> = stacks[sectionFont] = stacks[sectionFont] || {};
                         this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, this.allowVerticalPlacement, doesAllowVerticalWritingMode);
                     } else {
                         const imagePrimary = section.image.getPrimary().scaleSelf(this.pixelRatio);

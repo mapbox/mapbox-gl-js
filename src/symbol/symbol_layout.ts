@@ -22,11 +22,12 @@ import type {SymbolFeature} from '../data/bucket/symbol_bucket';
 import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type {CanonicalTileID} from '../source/tile_id';
-import type {Shaping, PositionedIcon, TextJustify, GlyphInfo} from './shaping';
+import type {Shaping, PositionedIcon, TextJustify} from './shaping';
+import type {GlyphMap} from '../render/glyph_manager';
 import type {CollisionBoxArray} from '../data/array_types';
-import type {StyleImage} from '../style/style_image';
+import type {StyleImageMap} from '../style/style_image';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-import type {ImagePosition} from '../render/image_atlas';
+import type {ImagePositionMap} from '../render/image_atlas';
 import type {GlyphPositions} from '../render/glyph_atlas';
 import type {PossiblyEvaluated, PossiblyEvaluatedPropertyValue, PropertyValue} from '../style/properties';
 import type Projection from '../geo/projection/projection';
@@ -184,10 +185,10 @@ export type SymbolBucketData = {
 }
 
 export function performSymbolLayout(bucket: SymbolBucket,
-                             glyphMap: Record<string, GlyphInfo>,
+                             glyphMap: GlyphMap,
                              glyphPositions: GlyphPositions,
-                             imageMap: Record<string, StyleImage>,
-                             imagePositions: Record<string, ImagePosition>,
+                             imageMap: StyleImageMap,
+                             imagePositions: ImagePositionMap,
                              canonical: CanonicalTileID,
                              tileZoom: number,
                              scaleFactor: number = 1,
@@ -417,7 +418,7 @@ export function getScaledImageIdWithOptions(icon: ResolvedImage, iconSizeData: s
 }
 
 export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: SymbolBucketData, showCollisionBoxes: boolean,
-    availableImages: Array<string>, canonical: CanonicalTileID, tileZoom: number, projection: Projection, brightness: number | null, imageMap: Record<string, StyleImage>, imageAtlas: ImageAtlas) {
+    availableImages: Array<string>, canonical: CanonicalTileID, tileZoom: number, projection: Projection, brightness: number | null, imageMap: StyleImageMap, imageAtlas: ImageAtlas) {
 
     const {featureData, hasAnySecondaryIcon, sizes, textAlongLine, symbolPlacement} = bucketData;
 
@@ -443,7 +444,7 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
     }
 }
 
-function reconcileImagePosition(shapedIcon: PositionedIcon, atlasIconPositions: Record<string, ImagePosition>, iconPrimary: ImageIdWithOptions, iconSecondary: ImageIdWithOptions) {
+function reconcileImagePosition(shapedIcon: PositionedIcon, atlasIconPositions: ImagePositionMap, iconPrimary: ImageIdWithOptions, iconSecondary: ImageIdWithOptions) {
 
     if (!shapedIcon) return;
 
@@ -457,7 +458,7 @@ function reconcileImagePosition(shapedIcon: PositionedIcon, atlasIconPositions: 
     }
 }
 
-function reconcileTextImagePositions(shapedTextOrientations: any, atlasIconPositions: Record<string, ImagePosition>) {
+function reconcileTextImagePositions(shapedTextOrientations: any, atlasIconPositions: ImagePositionMap) {
     // Image position in shapedIcon needs to be updated since after rasterization, positions in the atlas might have
     // changed
 
@@ -468,7 +469,7 @@ function reconcileTextImagePositions(shapedTextOrientations: any, atlasIconPosit
     reconcileTextOrientationImagePositions(shapedTextOrientations.vertical, atlasIconPositions);
 }
 
-function reconcileTextOrientationImagePositions(shapedText: Shaping | null, atlasIconPositions: Record<string, ImagePosition>) {
+function reconcileTextOrientationImagePositions(shapedText: Shaping | null, atlasIconPositions: ImagePositionMap) {
 
     if (!shapedText) return;
 
@@ -542,9 +543,7 @@ function addFeature(bucket: SymbolBucket,
                     shapedTextOrientations: any,
                     shapedIcon: PositionedIcon | undefined,
                     verticallyShapedIcon: PositionedIcon | undefined,
-                    imageMap: {
-                        [_: string]: StyleImage;
-                    },
+                    imageMap: StyleImageMap,
                     sizes: Sizes,
                     layoutTextSize: number,
                     layoutIconSize: number,
@@ -684,9 +683,7 @@ function addTextVertices(bucket: SymbolBucket,
                          } | null | undefined,
                          tileAnchor: Anchor,
                          shapedText: Shaping,
-                         imageMap: {
-                             [_: string]: StyleImage;
-                         },
+                         imageMap: StyleImageMap,
                          layer: SymbolStyleLayer,
                          textAlongLine: boolean,
                          feature: SymbolFeature,
@@ -852,7 +849,7 @@ function addSymbol(bucket: SymbolBucket,
                    line: Array<Point>,
                    shapedTextOrientations: any,
                    shapedIcon: PositionedIcon | undefined,
-                   imageMap: Record<string, StyleImage>,
+                   imageMap: StyleImageMap,
                    verticallyShapedIcon: PositionedIcon | undefined,
                    layer: SymbolStyleLayer,
                    collisionBoxArray: CollisionBoxArray,

@@ -1,7 +1,7 @@
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
-import type {AlphaImage, RGBAImage} from '../util/image';
+import type {AlphaImage} from '../util/image';
 import type {GlyphPositions} from '../render/glyph_atlas';
 import type ImageAtlas from '../render/image_atlas';
 import type LineAtlas from '../render/line_atlas';
@@ -11,14 +11,15 @@ import type FeatureIndex from '../data/feature_index';
 import type {CollisionBoxArray} from '../data/array_types';
 import type DEMData from '../data/dem_data';
 import type {DEMSourceEncoding} from '../data/dem_data';
-import type {GlyphInfo} from '../symbol/shaping';
-import type {StyleImage} from '../style/style_image';
+import type {GlyphMap} from '../render/glyph_manager';
+import type {StyleImageMap} from '../style/style_image';
 import type {PromoteIdSpecification} from '../style-spec/types';
 import type Projection from '../geo/projection/projection';
 import type {LUT} from '../util/lut';
 import type {Callback} from '../types/callback';
 import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
+import type {ImageDictionary, ImageRasterizationWorkerTasks} from '../render/image_manager';
 
 /**
  * The parameters passed to the {@link MapWorker#getWorkerSource}.
@@ -113,8 +114,8 @@ export type WorkerSourceVectorTileResult = {
     resourceTiming?: Array<PerformanceResourceTiming>;
     brightness: number;
     // Only used for benchmarking:
-    glyphMap?: Record<string, GlyphInfo>;
-    iconMap?: Record<string, StyleImage>;
+    glyphMap?: GlyphMap;
+    iconMap?: StyleImageMap;
     glyphPositions?: GlyphPositions;
     cacheControl?: string;
     expires?: string;
@@ -140,11 +141,21 @@ export type WorkerSourceRasterArrayDecodingParameters = WorkerSourceTileRequest 
     task: TProcessingBatch;
 };
 
+export type WorkerSourceImageRaserizeParameters = {
+    scope: string;
+    tasks: ImageRasterizationWorkerTasks;
+};
+
+export type WorkerSourceRemoveRasterizedImagesParameters = {
+    scope: string;
+    imageIds: Array<string>;
+};
+
 export type WorkerSourceVectorTileCallback = Callback<WorkerSourceVectorTileResult>;
 export type WorkerSourceDEMTileCallback = Callback<DEMData>;
 export type WorkerSourceRasterArrayTileCallback = ResponseCallback<MapboxRasterTile>;
 export type WorkerSourceRasterArrayDecodingCallback = Callback<TDecodingResult[]>;
-export type WorkerSourceImageRaserizeCallback = Callback<{[_: string]: RGBAImage}>;
+export type WorkerSourceImageRaserizeCallback = Callback<ImageDictionary>;
 
 /**
  * May be implemented by custom source types to provide code that can be run on

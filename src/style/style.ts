@@ -95,7 +95,7 @@ import type {ColorThemeSpecification,
     FeaturesetsSpecification,
 } from '../style-spec/types';
 import type {Callback} from '../types/callback';
-import type {StyleImage} from './style_image';
+import type {StyleImage, StyleImageMap} from './style_image';
 import type Transform from '../geo/transform';
 import type {Map as MapboxMap} from '../ui/map';
 import type {MapEvents} from '../ui/events';
@@ -116,8 +116,8 @@ import type {QrfQuery, QrfTarget, QueryResult} from '../source/query_features';
 import type {GeoJSONFeature, FeaturesetDescriptor, TargetDescriptor, default as Feature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
-import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
-import type {GlyphRange} from '../render/glyph_manager';
+import type {FontStacks, GlyphMap} from '../render/glyph_manager';
+import type {RasterizeImagesParameters, ImageDictionary} from '../render/image_manager';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -131,6 +131,20 @@ export type QueryRenderedFeaturesetParams = {
     filter?: FilterSpecification;
     validate?: boolean;
     layers?: never;
+};
+
+export type GetImagesParameters = {
+    icons: Array<string>;
+    source: string;
+    scope: string;
+    tileID: OverscaledTileID;
+    type: string;
+};
+
+export type GetGlyphsParameters = {
+    scope: string;
+    stacks: FontStacks;
+    uid?: number;
 };
 
 // We're skipping validation errors with the `source.canvas` identifier in order
@@ -4142,15 +4156,7 @@ class Style extends Evented<MapEvents> {
 
     // Callbacks from web workers
 
-    getImages(mapId: string, params: {
-        icons: Array<string>;
-        source: string;
-        scope: string;
-        tileID: OverscaledTileID;
-        type: string;
-    }, callback: Callback<{
-        [_: string]: StyleImage;
-    }>) {
+    getImages(mapId: string, params: GetImagesParameters, callback: Callback<StyleImageMap>) {
         this.imageManager.getImages(params.icons, params.scope, callback);
 
         // Apply queued image changes before setting the tile's dependencies so that the tile
@@ -4172,19 +4178,15 @@ class Style extends Evented<MapEvents> {
         setDependencies(this._symbolSourceCaches[params.source]);
     }
 
-    rasterizeImages(mapId: string, params: {scope: string, imageTasks: {[_: string]: ImageIdWithOptions}}, callback: Callback<{[_: string]: RGBAImage}>) {
+    rasterizeImages(mapId: string, params: RasterizeImagesParameters, callback: Callback<ImageDictionary>) {
         this.imageManager.rasterizeImages(params, callback);
     }
 
-    getGlyphs(
-        mapId: string,
-        params: {stacks: {[_: string]: Array<number>}; scope: string},
-        callback: Callback<{[_: string]: GlyphRange}>
-    ) {
+    getGlyphs(mapId: string, params: GetGlyphsParameters, callback: Callback<GlyphMap>) {
         this.glyphManager.getGlyphs(params.stacks, params.scope, callback);
     }
 
-    getResource(mapId: string, params: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+    getResource(mapId: string, params: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
         return makeRequest(params, callback);
     }
 
