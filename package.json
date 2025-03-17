@@ -95,7 +95,7 @@
     "pixelmatch": "^6.0.0",
     "playwright": "^1.51.0",
     "postcss": "^8.5.3",
-    "postcss-cli": "^11.0.0",
+    "postcss-cli": "^11.0.1",
     "postcss-inline-svg": "^6.0.0",
     "pretty-bytes": "^6.0.0",
     "qrcode-terminal": "^0.12.0",
