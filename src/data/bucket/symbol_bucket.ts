@@ -38,7 +38,7 @@ import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
 import {getSizeData} from '../../symbol/symbol_size';
-import {getScaledImageIdWithOptions, MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
+import {getScaledImageVariant, MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
@@ -677,12 +677,14 @@ class SymbolBucket implements Bucket {
             if (icon) {
                 const layer = this.layers[0];
                 const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
-                const {iconPrimary, iconSecondary} = getScaledImageIdWithOptions(icon, this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor);
-                icons[iconPrimary.id] = (icons[iconPrimary.id] || []);
-                icons[iconPrimary.id].push(iconPrimary);
+                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor);
+                const iconPrimaryId = iconPrimary.serializeId();
+                icons[iconPrimaryId] = icons[iconPrimaryId] || [];
+                icons[iconPrimaryId].push(iconPrimary);
                 if (iconSecondary) {
-                    icons[iconSecondary.id] = (icons[iconSecondary.id] || []);
-                    icons[iconSecondary.id].push(iconSecondary);
+                    const iconSecondaryId = iconSecondary.serializeId();
+                    icons[iconSecondaryId] = icons[iconSecondaryId] || [];
+                    icons[iconSecondaryId].push(iconSecondary);
                 }
             }
 
@@ -698,8 +700,9 @@ class SymbolBucket implements Bucket {
                         this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, this.allowVerticalPlacement, doesAllowVerticalWritingMode);
                     } else {
                         const imagePrimary = section.image.getPrimary().scaleSelf(this.pixelRatio);
-                        icons[imagePrimary.id] = (icons[imagePrimary.id] || []);
-                        icons[imagePrimary.id].push(imagePrimary);
+                        const imagePrimaryId = imagePrimary.serializeId();
+                        icons[imagePrimaryId] = icons[imagePrimaryId] || [];
+                        icons[imagePrimaryId].push(imagePrimary);
                     }
                 }
             }

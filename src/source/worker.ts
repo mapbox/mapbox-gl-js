@@ -354,8 +354,8 @@ export default class MapWorker {
         const {tasks, scope} = params;
         const images: ImageDictionary = {};
         for (const id in tasks) {
-            const {image, imageIdWithOptions} = tasks[id];
-            images[id] = this.imageRasterizer.rasterize(imageIdWithOptions, image, scope, mapId);
+            const {image, imageVariant} = tasks[id];
+            images[id] = this.imageRasterizer.rasterize(imageVariant, image, scope, mapId);
         }
         callback(undefined, images);
     }

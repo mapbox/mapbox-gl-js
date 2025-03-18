@@ -17,7 +17,7 @@ import type {ImagePosition, ImagePositionMap} from '../render/image_atlas';
 import type {GlyphRect, GlyphPositions} from '../render/glyph_atlas';
 import type {FormattedSection} from '../style-spec/expression/types/formatted';
 import type Formatted from '../style-spec/expression/types/formatted';
-import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
+import type {ResolvedImageVariant} from '../style-spec/expression/types/resolved_image_variant';
 
 const WritingMode = {
     horizontal: 1,
@@ -36,7 +36,7 @@ export {shapeText, shapeIcon, fitIconToText, getAnchorAlignment, WritingMode, SH
 // The position of a glyph relative to the text's anchor point.
 export type PositionedGlyph = {
     glyph: number;
-    image: ImageIdWithOptions | null;
+    image: ResolvedImageVariant | null;
     x: number;
     y: number;
     vertical: boolean;
@@ -94,7 +94,7 @@ class SectionOptions {
     scale: number;
     fontStack: string;
     // Image options
-    image: ImageIdWithOptions | null;
+    image: ResolvedImageVariant | null;
 
     constructor() {
         this.scale = 1.0;
@@ -109,7 +109,7 @@ class SectionOptions {
         return textOptions;
     }
 
-    static forImage(image: ImageIdWithOptions | null): SectionOptions {
+    static forImage(image: ResolvedImageVariant | null): SectionOptions {
         const imageOptions = new SectionOptions();
         imageOptions.image = image;
         return imageOptions;

@@ -2,11 +2,11 @@ import {PaintOrder, PathCommand, LineCap, LineJoin, PathRule, MaskType} from './
 import Color from '../../style-spec/util/color';
 import offscreenCanvasSupported from '../../util/offscreen_canvas_supported';
 
-import type {RasterizationOptions} from '../../style-spec/expression/types/resolved_image';
+import type {RasterizationOptions} from '../../style-spec/expression/types/resolved_image_variant';
 import type {UsvgTree, Icon, Group, Node, Path, Transform, ClipPath, Mask, LinearGradient, RadialGradient, Variable} from './usvg_pb_decoder';
 
 class ColorReplacements {
-    static calculate(params: RasterizationOptions['params'], variables: Variable[]): Map<string, Color> {
+    static calculate(params: RasterizationOptions['params'] = {}, variables: Variable[] = []): Map<string, Color> {
         const replacements = new Map<string, Color>();
         const variablesMap = new Map<string, Color>();
 

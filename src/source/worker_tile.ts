@@ -415,14 +415,15 @@ class WorkerTile {
     updateImageMapAndGetImageTaskQueue(imageMap: StyleImageMap, images: StyleImageMap, imageDependencies: ImageDependencies): ImageRasterizationTasks {
         const imageRasterizationTasks: ImageRasterizationTasks = {};
         for (const imageName in images) {
-            const requiredImagesWithOptions = imageDependencies[imageName] || [];
-            for (const imageIdWithOptions of requiredImagesWithOptions) {
-                const imageSerialized = imageIdWithOptions.serialize();
-                if (!images[imageIdWithOptions.id].usvg) {
-                    imageMap[imageSerialized] = images[imageIdWithOptions.id];
+            const requiredImageVariants = imageDependencies[imageName] || [];
+            for (const imageVariant of requiredImageVariants) {
+                const imageSerialized = imageVariant.serialize();
+                const imageVariantId = imageVariant.serializeId();
+                if (!images[imageVariantId].usvg) {
+                    imageMap[imageSerialized] = images[imageVariantId];
                 } else if (!imageRasterizationTasks[imageSerialized]) {
-                    imageRasterizationTasks[imageSerialized] = imageIdWithOptions;
-                    imageMap[imageSerialized] = Object.assign({}, images[imageIdWithOptions.id]);
+                    imageRasterizationTasks[imageSerialized] = imageVariant;
+                    imageMap[imageSerialized] = Object.assign({}, images[imageVariantId]);
                 }
             }
         }
@@ -434,9 +435,9 @@ class WorkerTile {
         const params: RasterizeImagesParameters = {scope: this.scope, tasks};
         this.rasterizeTask = actor.send('rasterizeImages', params, (err: Error, result: ImageDictionary) => {
             if (!err) {
-                for (const imageIdWithOptionsSerialized in result) {
-                    const image = result[imageIdWithOptionsSerialized];
-                    imageMap[imageIdWithOptionsSerialized] = Object.assign(imageMap[imageIdWithOptionsSerialized], {data: image});
+                for (const imageVariantSerialized in result) {
+                    const image = result[imageVariantSerialized];
+                    imageMap[imageVariantSerialized] = Object.assign(imageMap[imageVariantSerialized], {data: image});
                 }
             }
 

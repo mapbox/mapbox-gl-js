@@ -19,7 +19,7 @@ import murmur3 from 'murmurhash-js';
 import * as symbolSize from '../symbol/symbol_size';
 
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
-import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
+import type {ResolvedImageVariant} from '../style-spec/expression/types/resolved_image_variant';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type {CanonicalTileID} from '../source/tile_id';
 import type {Shaping, PositionedIcon, TextJustify} from './shaping';
@@ -166,8 +166,8 @@ export type SymbolFeatureData = {
     shapedTextOrientations: ShapedTextOrientations,
     shapedText: Shaping,
     shapedIcon: PositionedIcon,
-    iconPrimary: ImageIdWithOptions,
-    iconSecondary: ImageIdWithOptions,
+    iconPrimary: ResolvedImageVariant,
+    iconSecondary: ResolvedImageVariant,
     verticallyShapedIcon: PositionedIcon,
     layoutTextSize: number,
     layoutIconSize: number,
@@ -354,7 +354,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         let iconAnchor;
         let iconTextFit;
         if (feature.icon && feature.icon.namePrimary) {
-            const icons = getScaledImageIdWithOptions(feature.icon, bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature, pixelRatio, sizes.iconScaleFactor);
+            const icons = getScaledImageVariant(feature.icon, bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature, pixelRatio, sizes.iconScaleFactor);
             iconPrimary = icons.iconPrimary;
             iconSecondary = icons.iconSecondary;
             const primaryImageSerialized = iconPrimary.serialize();
@@ -404,16 +404,16 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
 }
 
-function scaleImageIdWithOptions(image: ImageIdWithOptions | null, iconSizeData: symbolSize.SizeData, iconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, tileID: CanonicalTileID, zoom: number, feature: SymbolFeature, pixelRatio: number, iconScaleFactor: number) {
+function scaleImageVariant(image: ResolvedImageVariant | null, iconSizeData: symbolSize.SizeData, iconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, tileID: CanonicalTileID, zoom: number, feature: SymbolFeature, pixelRatio: number, iconScaleFactor: number) {
     if (!image) return undefined;
     const iconSizeFactor = symbolSize.getRasterizedIconSize(iconSizeData, iconSize, tileID, zoom, feature);
     const scaleFactor = iconSizeFactor * iconScaleFactor * pixelRatio;
     return image.scaleSelf(scaleFactor);
 }
 
-export function getScaledImageIdWithOptions(icon: ResolvedImage, iconSizeData: symbolSize.SizeData, iconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, tileID: CanonicalTileID, zoom: number, feature: SymbolFeature, pixelRatio: number, iconScaleFactor: number) {
-    const iconPrimary = scaleImageIdWithOptions(icon.getPrimary(), iconSizeData, iconSize, tileID, zoom, feature, pixelRatio, iconScaleFactor);
-    const iconSecondary = scaleImageIdWithOptions(icon.getSecondary(), iconSizeData, iconSize, tileID, zoom, feature, pixelRatio, iconScaleFactor);
+export function getScaledImageVariant(icon: ResolvedImage, iconSizeData: symbolSize.SizeData, iconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, tileID: CanonicalTileID, zoom: number, feature: SymbolFeature, pixelRatio: number, iconScaleFactor: number) {
+    const iconPrimary = scaleImageVariant(icon.getPrimary(), iconSizeData, iconSize, tileID, zoom, feature, pixelRatio, iconScaleFactor);
+    const iconSecondary = scaleImageVariant(icon.getSecondary(), iconSizeData, iconSize, tileID, zoom, feature, pixelRatio, iconScaleFactor);
     return {iconPrimary, iconSecondary};
 }
 
@@ -444,8 +444,7 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
     }
 }
 
-function reconcileImagePosition(shapedIcon: PositionedIcon, atlasIconPositions: ImagePositionMap, iconPrimary: ImageIdWithOptions, iconSecondary: ImageIdWithOptions) {
-
+function reconcileImagePosition(shapedIcon: PositionedIcon, atlasIconPositions: ImagePositionMap, iconPrimary: ResolvedImageVariant, iconSecondary: ResolvedImageVariant) {
     if (!shapedIcon) return;
 
     const primaryId = iconPrimary.serialize();

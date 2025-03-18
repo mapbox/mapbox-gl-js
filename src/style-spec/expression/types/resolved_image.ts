@@ -1,39 +1,36 @@
-import {ImageIdWithOptions} from "./image_id_with_options";
+import {ResolvedImageVariant} from './resolved_image_variant';
 
-import type Color from "../../util/color";
-
-export type RasterizationOptions = {
-    params: Record<string, Color>;
-    transform?: DOMMatrix;
-}
-
-export type ResolvedImageOptions = {
-    namePrimary: string;
-    optionsPrimary: RasterizationOptions | null | undefined;
-    nameSecondary: string | null | undefined;
-    optionsSecondary: RasterizationOptions | null | undefined;
-    available: boolean;
-};
+import type {RasterizationOptions} from './resolved_image_variant';
 
 export default class ResolvedImage {
     namePrimary: string;
-    optionsPrimary: RasterizationOptions | null | undefined;
-    nameSecondary: string | null | undefined;
-    optionsSecondary: RasterizationOptions | null | undefined;
+    optionsPrimary?: RasterizationOptions;
+    nameSecondary?: string;
+    optionsSecondary: RasterizationOptions;
     available: boolean;
 
-    constructor(options: ResolvedImageOptions) {
-        this.namePrimary = options.namePrimary;
-        if (options.nameSecondary) {
-            this.nameSecondary = options.nameSecondary;
+    constructor(
+        namePrimary: string,
+        optionsPrimary?: RasterizationOptions,
+        nameSecondary?: string,
+        optionsSecondary?: RasterizationOptions,
+        available: boolean = false,
+    ) {
+        this.namePrimary = namePrimary;
+
+        if (optionsPrimary) {
+            this.optionsPrimary = optionsPrimary;
         }
-        if (options.optionsPrimary) {
-            this.optionsPrimary = options.optionsPrimary;
+
+        if (nameSecondary) {
+            this.nameSecondary = nameSecondary;
         }
-        if (options.optionsSecondary) {
-            this.optionsSecondary = options.optionsSecondary;
+
+        if (optionsSecondary) {
+            this.optionsSecondary = optionsSecondary;
         }
-        this.available = options.available;
+
+        this.available = available;
     }
 
     toString(): string {
@@ -44,24 +41,30 @@ export default class ResolvedImage {
         return this.namePrimary;
     }
 
-    getPrimary(): ImageIdWithOptions {
-        return new ImageIdWithOptions(this.namePrimary, {
-            params: this.optionsPrimary ? (this.optionsPrimary.params || {}) : {},
-        });
+    getPrimary(): ResolvedImageVariant {
+        const rasterizationOptions = {
+            params: this.optionsPrimary && this.optionsPrimary.params,
+            transform: this.optionsPrimary && this.optionsPrimary.transform
+        };
+
+        return new ResolvedImageVariant(this.namePrimary, rasterizationOptions);
     }
 
     getSerializedPrimary(): string {
         return this.getPrimary().serialize();
     }
 
-    getSecondary(): ImageIdWithOptions | null {
-        if (this.nameSecondary) {
-            return new ImageIdWithOptions(this.nameSecondary, {
-                params: this.optionsSecondary ? (this.optionsSecondary.params || {}) : {},
-            });
+    getSecondary(): ResolvedImageVariant | null {
+        if (!this.nameSecondary) {
+            return null;
         }
 
-        return null;
+        const rasterizationOptions = {
+            params: this.optionsSecondary && this.optionsSecondary.params,
+            transform: this.optionsSecondary && this.optionsSecondary.transform
+        };
+
+        return new ResolvedImageVariant(this.nameSecondary, rasterizationOptions);
     }
 
     static from(image: string | ResolvedImage): ResolvedImage {
@@ -70,11 +73,11 @@ export default class ResolvedImage {
 
     static build(
         namePrimary: string,
-        nameSecondary?: string | null,
-        optionsPrimary?: RasterizationOptions | null,
-        optionsSecondary?: RasterizationOptions | null
+        nameSecondary?: string,
+        optionsPrimary?: RasterizationOptions,
+        optionsSecondary?: RasterizationOptions
     ): ResolvedImage | null {
         if (!namePrimary) return null; // treat empty values as no image
-        return new ResolvedImage({namePrimary, nameSecondary, optionsPrimary, optionsSecondary, available: false});
+        return new ResolvedImage(namePrimary, optionsPrimary, nameSecondary, optionsSecondary);
     }
 }

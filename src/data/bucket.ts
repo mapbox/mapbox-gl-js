@@ -17,7 +17,7 @@ import type {ProjectionSpecification} from '../style-spec/types';
 import type {VectorTileFeature, VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../3d-style/util/conflation';
 import type {LUT} from "../util/lut";
-import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
+import type {ResolvedImageVariant} from '../style-spec/expression/types/resolved_image_variant';
 import type {ElevationFeature} from './elevation_feature';
 
 export type BucketParameters<Layer extends TypedStyleLayer> = {
@@ -35,7 +35,7 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     tessellationStep: number | null | undefined;
 };
 
-export type ImageDependencies = Record<string, Array<ImageIdWithOptions>>;
+export type ImageDependencies = Record<string, Array<ResolvedImageVariant>>;
 export type GlyphDependencies = Record<string, Record<number, boolean>>;
 
 export type PopulateParameters = {

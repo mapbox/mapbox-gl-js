@@ -16,7 +16,7 @@ function addPattern(pattern: string | ResolvedImage, patterns: ImageDependencies
         return null;
     }
 
-    const patternId = typeof pattern === 'string' ? pattern : pattern.getPrimary().id;
+    const patternId = typeof pattern === 'string' ? pattern : pattern.getPrimary().serializeId();
 
     if (!patterns[patternId]) {
         patterns[patternId] = [];

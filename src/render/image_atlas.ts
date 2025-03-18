@@ -2,7 +2,7 @@ import assert from 'assert';
 import {RGBAImage} from '../util/image';
 import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
-import {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
+import {ResolvedImageVariant} from '../style-spec/expression/types/resolved_image_variant';
 
 import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type ImageManager from './image_manager';
@@ -39,11 +39,12 @@ export class ImagePosition implements SpritePosition {
     sdf: boolean;
     scale: ImagePositionScale;
 
-    static getImagePositionScale(imageIdWithOptions: ImageIdWithOptions | undefined, usvg: boolean, pixelRatio: number): ImagePositionScale {
-        if (usvg && imageIdWithOptions && imageIdWithOptions.options && imageIdWithOptions.options.transform) {
+    static getImagePositionScale(imageVariant: ResolvedImageVariant | undefined, usvg: boolean, pixelRatio: number): ImagePositionScale {
+        if (usvg && imageVariant && imageVariant.options && imageVariant.options.transform) {
+            const transform = imageVariant.options.transform;
             return {
-                x: imageIdWithOptions.options.transform.a,
-                y: imageIdWithOptions.options.transform.d
+                x: transform.a,
+                y: transform.d
             };
         } else {
             return {
@@ -53,7 +54,7 @@ export class ImagePosition implements SpritePosition {
         }
     }
 
-    constructor(paddedRect: Rect, image: StyleImage, padding: number, imageIdWithOptions?: ImageIdWithOptions) {
+    constructor(paddedRect: Rect, image: StyleImage, padding: number, imageVariant?: ResolvedImageVariant) {
         this.paddedRect = paddedRect;
         const {
             pixelRatio,
@@ -72,7 +73,7 @@ export class ImagePosition implements SpritePosition {
         this.version = version;
         this.padding = padding;
         this.sdf = sdf;
-        this.scale = ImagePosition.getImagePositionScale(imageIdWithOptions, usvg, pixelRatio);
+        this.scale = ImagePosition.getImagePositionScale(imageVariant, usvg, pixelRatio);
     }
 
     get tl(): [number, number] {
@@ -110,9 +111,9 @@ function getImageBin(image: StyleImage, padding: number, scale: [number, number]
 }
 
 export function getImagePosition(id: string, src: StyleImage, padding: number) {
-    const imageIdWithOptions = ImageIdWithOptions.deserializeFromString(id);
-    const bin = getImageBin(src, padding, [imageIdWithOptions.options.transform.a, imageIdWithOptions.options.transform.d]);
-    return {bin, imagePosition: new ImagePosition(bin, src, padding, imageIdWithOptions), imageIdWithOptions};
+    const imageVariant = ResolvedImageVariant.parse(id);
+    const bin = getImageBin(src, padding, [imageVariant.options.transform.a, imageVariant.options.transform.d]);
+    return {bin, imagePosition: new ImagePosition(bin, src, padding, imageVariant), imageVariant};
 }
 
 export default class ImageAtlas {
@@ -180,12 +181,12 @@ export default class ImageAtlas {
     addImages(images: StyleImageMap, positions: ImagePositionMap, padding: number, bins: Array<Rect>) {
         for (const id in images) {
             const src = images[id];
-            const {bin, imagePosition, imageIdWithOptions} = getImagePosition(id, src, padding);
+            const {bin, imagePosition, imageVariant} = getImagePosition(id, src, padding);
             positions[id] = imagePosition;
             bins.push(bin);
 
             if (src.hasRenderCallback) {
-                this.haveRenderCallbacks.push(imageIdWithOptions.id);
+                this.haveRenderCallbacks.push(imageVariant.serializeId());
             }
         }
     }
@@ -196,13 +197,13 @@ export default class ImageAtlas {
 
         for (const name in imageManager.getUpdatedImages(scope)) {
             for (const id of Object.keys(this.iconPositions)) {
-                if (ImageIdWithOptions.deserializeId(id) === name) {
+                if (ResolvedImageVariant.parseId(id) === name) {
                     this.patchUpdatedImage(this.iconPositions[id], imageManager.getImage(name, scope), texture);
                 }
             }
 
             for (const id of Object.keys(this.patternPositions)) {
-                if (ImageIdWithOptions.deserializeId(id) === name) {
+                if (ResolvedImageVariant.parseId(id) === name) {
                     this.patchUpdatedImage(this.patternPositions[id], imageManager.getImage(name, scope), texture);
                 }
             }

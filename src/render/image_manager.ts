@@ -13,7 +13,7 @@ import {ImageRasterizer} from './image_rasterizer';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import browser from '../util/browser';
 
-import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
+import type {ResolvedImageVariant} from '../style-spec/expression/types/resolved_image_variant';
 import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type Context from '../gl/context';
 import type {PotpackBox} from 'potpack';
@@ -32,12 +32,12 @@ export type PatternMap = Record<string, Pattern>;
 
 export type ImageRasterizationWorkerTask = {
     image: StyleImage,
-    imageIdWithOptions: ImageIdWithOptions
+    imageVariant: ResolvedImageVariant
 };
 
 export type ImageRasterizationWorkerTasks = Record<string, ImageRasterizationWorkerTask>;
 
-export type ImageRasterizationTasks = Record<string, ImageIdWithOptions>;
+export type ImageRasterizationTasks = Record<string, ResolvedImageVariant>;
 
 export type RasterizeImagesParameters = {
     scope: string;
@@ -292,10 +292,11 @@ class ImageManager extends Evented {
         const imageWorkerTasks: ImageRasterizationWorkerTasks = {};
 
         for (const id in tasks) {
-            const imageIdWithOptions = tasks[id];
-            const image = this.getImage(imageIdWithOptions.id, scope);
+            const imageVariant = tasks[id];
+            const imageVariantId = imageVariant.serializeId();
+            const image = this.getImage(imageVariantId, scope);
             if (image) {
-                imageWorkerTasks[id] = {image, imageIdWithOptions};
+                imageWorkerTasks[id] = {image, imageVariant};
             }
         }
 
@@ -310,8 +311,8 @@ class ImageManager extends Evented {
             // Fallback to main thread rasterization
             const images: ImageDictionary = {};
             for (const id in tasks) {
-                const {image, imageIdWithOptions} = tasks[id];
-                images[id] = this.imageRasterizer.rasterize(imageIdWithOptions, image, scope, '');
+                const {image, imageVariant} = tasks[id];
+                images[id] = this.imageRasterizer.rasterize(imageVariant, image, scope, '');
             }
             callback(undefined, images);
         }
@@ -381,8 +382,8 @@ class ImageManager extends Evented {
             if (image.usvg && !image.data) {
                 if (this.patternsInFlight.has(id)) return null;
                 this.patternsInFlight.add(this.getPatternInFlightId(scope, id));
-                const imageIdWithOptions = ResolvedImage.from(id).getPrimary().scaleSelf(browser.devicePixelRatio);
-                const tasks: ImageRasterizationWorkerTasks = {[id]: {image, imageIdWithOptions}};
+                const imageVariant = ResolvedImage.from(id).getPrimary().scaleSelf(browser.devicePixelRatio);
+                const tasks: ImageRasterizationWorkerTasks = {[id]: {image, imageVariant}};
                 this._rasterizeImages(scope, tasks, (_, result) => this.storePatternImage(id, scope, image, lut, result));
                 return null;
             } else {
