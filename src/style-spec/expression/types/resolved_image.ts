@@ -1,6 +1,6 @@
-import {ResolvedImageVariant} from './resolved_image_variant';
+import {ImageVariant} from './image_variant';
 
-import type {RasterizationOptions} from './resolved_image_variant';
+import type {RasterizationOptions} from './image_variant';
 
 export default class ResolvedImage {
     namePrimary: string;
@@ -17,54 +17,40 @@ export default class ResolvedImage {
         available: boolean = false,
     ) {
         this.namePrimary = namePrimary;
-
-        if (optionsPrimary) {
-            this.optionsPrimary = optionsPrimary;
-        }
-
-        if (nameSecondary) {
-            this.nameSecondary = nameSecondary;
-        }
-
-        if (optionsSecondary) {
-            this.optionsSecondary = optionsSecondary;
-        }
-
+        this.optionsPrimary = optionsPrimary;
+        this.nameSecondary = nameSecondary;
+        this.optionsSecondary = optionsSecondary;
         this.available = available;
     }
 
     toString(): string {
         if (this.namePrimary && this.nameSecondary) {
-            return `[${this.namePrimary},${this.nameSecondary}]`;
+            const primaryId = this.getPrimary().serializeId();
+            const secondaryId = this.getSecondary().serializeId();
+            return `[${primaryId},${secondaryId}]`;
         }
 
-        return this.namePrimary;
+        return this.getPrimary().serializeId();
     }
 
-    getPrimary(): ResolvedImageVariant {
-        const rasterizationOptions = {
-            params: this.optionsPrimary && this.optionsPrimary.params,
-            transform: this.optionsPrimary && this.optionsPrimary.transform
-        };
-
-        return new ResolvedImageVariant(this.namePrimary, rasterizationOptions);
+    hasPrimary(): boolean {
+        return !!this.namePrimary;
     }
 
-    getSerializedPrimary(): string {
-        return this.getPrimary().serialize();
+    getPrimary(): ImageVariant {
+        return new ImageVariant(this.namePrimary, this.optionsPrimary);
     }
 
-    getSecondary(): ResolvedImageVariant | null {
+    hasSecondary(): boolean {
+        return !!this.nameSecondary;
+    }
+
+    getSecondary(): ImageVariant | null {
         if (!this.nameSecondary) {
             return null;
         }
 
-        const rasterizationOptions = {
-            params: this.optionsSecondary && this.optionsSecondary.params,
-            transform: this.optionsSecondary && this.optionsSecondary.transform
-        };
-
-        return new ResolvedImageVariant(this.nameSecondary, rasterizationOptions);
+        return new ImageVariant(this.nameSecondary, this.optionsSecondary);
     }
 
     static from(image: string | ResolvedImage): ResolvedImage {

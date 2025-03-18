@@ -1,7 +1,7 @@
 import {expect, describe, test, vi} from '../../util/vitest';
 import {ImageRasterizer} from '../../../src/render/image_rasterizer';
 import {Color} from '../../../src/style-spec/style-spec';
-import {ResolvedImageVariant} from '../../../src/style-spec/expression/types/resolved_image_variant';
+import {ImageVariant} from '../../../src/style-spec/expression/types/image_variant';
 
 import type {Icon} from '../../../src/data/usvg/usvg_pb_decoder';
 import type {StyleImage} from '../../../src/style/style_image';
@@ -59,11 +59,11 @@ describe('ImageRasterizer', () => {
     };
 
     test('expects returns rasterized image', () => {
-        expect(new ImageRasterizer().rasterize(new ResolvedImageVariant('square'), image, '', '1').data.length).toEqual(1600);
+        expect(new ImageRasterizer().rasterize(new ImageVariant('square'), image, '', '1').data.length).toEqual(1600);
     });
 
     test('expects returns rasterized image from cache', () => {
-        const imageVariant = new ResolvedImageVariant('square');
+        const imageVariant = new ImageVariant('square');
         const imageRasterizer = new ImageRasterizer();
         const rasterizer = vi.fn();
 

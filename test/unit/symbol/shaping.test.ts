@@ -25,9 +25,9 @@ describe('shaping', () => {
     }
 
     const images = {
-        [ResolvedImage.build('square').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-        [ResolvedImage.build('tall').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-        [ResolvedImage.build('wide').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        [ResolvedImage.build('square').getPrimary().serialize()]: new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        [ResolvedImage.build('tall').getPrimary().serialize()]: new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING),
+        [ResolvedImage.build('wide').getPrimary().serialize()]: new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
     };
 
     const sectionForImage = (name) => {

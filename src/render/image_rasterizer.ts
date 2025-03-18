@@ -5,7 +5,7 @@ import {makeFQID} from '../util/fqid';
 
 import type {Icon} from '../data/usvg/usvg_pb_decoder';
 import type {StyleImage} from '../style/style_image';
-import type {ResolvedImageVariant, RasterizationOptions} from '../style-spec/expression/types/resolved_image_variant';
+import type {ImageVariant, RasterizationOptions} from '../style-spec/expression/types/image_variant';
 
 const MAX_CACHE_SIZE = 150;
 
@@ -22,7 +22,7 @@ export class ImageRasterizer {
         return new RGBAImage(imageData, imageData.data);
     }
 
-    getFromCache(imageVariant: ResolvedImageVariant, scope: string, mapId): RGBAImage | undefined {
+    getFromCache(imageVariant: ImageVariant, scope: string, mapId): RGBAImage | undefined {
         if (!this.cacheMap.has(mapId)) {
             this.cacheMap.set(mapId, new LRUCache(MAX_CACHE_SIZE));
         }
@@ -30,7 +30,7 @@ export class ImageRasterizer {
         return this.cacheMap.get(mapId).get(makeFQID(imageVariant.serialize(), scope));
     }
 
-    setInCache(imageVariant: ResolvedImageVariant, image: RGBAImage, scope: string, mapId: string): void {
+    setInCache(imageVariant: ImageVariant, image: RGBAImage, scope: string, mapId: string): void {
         if (!this.cacheDependenciesMap.has(mapId)) {
             this.cacheDependenciesMap.set(mapId, new Map());
         }
@@ -70,7 +70,7 @@ export class ImageRasterizer {
         }
     }
 
-    rasterize(imageVariant: ResolvedImageVariant, image: StyleImage, scope: string, mapId: string, rasterize: (icon: Icon, options: RasterizationOptions) => ImageData = renderIcon): RGBAImage {
+    rasterize(imageVariant: ImageVariant, image: StyleImage, scope: string, mapId: string, rasterize: (icon: Icon, options: RasterizationOptions) => ImageData = renderIcon): RGBAImage {
         const cachedImage = this.getFromCache(imageVariant, scope, mapId);
         if (cachedImage) {
             return cachedImage.clone();

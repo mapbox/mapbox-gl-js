@@ -2,7 +2,7 @@ import {PaintOrder, PathCommand, LineCap, LineJoin, PathRule, MaskType} from './
 import Color from '../../style-spec/util/color';
 import offscreenCanvasSupported from '../../util/offscreen_canvas_supported';
 
-import type {RasterizationOptions} from '../../style-spec/expression/types/resolved_image_variant';
+import type {RasterizationOptions} from '../../style-spec/expression/types/image_variant';
 import type {UsvgTree, Icon, Group, Node, Path, Transform, ClipPath, Mask, LinearGradient, RadialGradient, Variable} from './usvg_pb_decoder';
 
 class ColorReplacements {

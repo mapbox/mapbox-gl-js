@@ -19,7 +19,7 @@ import murmur3 from 'murmurhash-js';
 import * as symbolSize from '../symbol/symbol_size';
 
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
-import type {ResolvedImageVariant} from '../style-spec/expression/types/resolved_image_variant';
+import type {ImageVariant} from '../style-spec/expression/types/image_variant';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type {CanonicalTileID} from '../source/tile_id';
 import type {Shaping, PositionedIcon, TextJustify} from './shaping';
@@ -166,8 +166,8 @@ export type SymbolFeatureData = {
     shapedTextOrientations: ShapedTextOrientations,
     shapedText: Shaping,
     shapedIcon: PositionedIcon,
-    iconPrimary: ResolvedImageVariant,
-    iconSecondary: ResolvedImageVariant,
+    iconPrimary: ImageVariant,
+    iconSecondary: ImageVariant,
     verticallyShapedIcon: PositionedIcon,
     layoutTextSize: number,
     layoutIconSize: number,
@@ -353,7 +353,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         let iconOffset: [number, number];
         let iconAnchor;
         let iconTextFit;
-        if (feature.icon && feature.icon.namePrimary) {
+        if (feature.icon && feature.icon.hasPrimary()) {
             const icons = getScaledImageVariant(feature.icon, bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature, pixelRatio, sizes.iconScaleFactor);
             iconPrimary = icons.iconPrimary;
             iconSecondary = icons.iconSecondary;
@@ -384,7 +384,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
             }
         }
 
-        hasAnySecondaryIcon = hasAnySecondaryIcon || !!(feature.icon && feature.icon.nameSecondary);
+        hasAnySecondaryIcon = hasAnySecondaryIcon || !!(feature.icon && feature.icon.hasSecondary());
 
         const shapedText = getDefaultHorizontalShaping(shapedTextOrientations.horizontal) || shapedTextOrientations.vertical;
         if (!bucket.iconsInText) {
@@ -404,7 +404,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
 }
 
-function scaleImageVariant(image: ResolvedImageVariant | null, iconSizeData: symbolSize.SizeData, iconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, tileID: CanonicalTileID, zoom: number, feature: SymbolFeature, pixelRatio: number, iconScaleFactor: number) {
+function scaleImageVariant(image: ImageVariant | null, iconSizeData: symbolSize.SizeData, iconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>, tileID: CanonicalTileID, zoom: number, feature: SymbolFeature, pixelRatio: number, iconScaleFactor: number) {
     if (!image) return undefined;
     const iconSizeFactor = symbolSize.getRasterizedIconSize(iconSizeData, iconSize, tileID, zoom, feature);
     const scaleFactor = iconSizeFactor * iconScaleFactor * pixelRatio;
@@ -444,7 +444,7 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
     }
 }
 
-function reconcileImagePosition(shapedIcon: PositionedIcon, atlasIconPositions: ImagePositionMap, iconPrimary: ResolvedImageVariant, iconSecondary: ResolvedImageVariant) {
+function reconcileImagePosition(shapedIcon: PositionedIcon, atlasIconPositions: ImagePositionMap, iconPrimary: ImageVariant, iconSecondary: ImageVariant) {
     if (!shapedIcon) return;
 
     const primaryId = iconPrimary.serialize();

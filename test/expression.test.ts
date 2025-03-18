@@ -13,6 +13,9 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const projection = getProjection({name: 'mercator'});
 
+// @ts-expect-error - DOMMatrix is not defined in Node.js
+global.DOMMatrix = class {};
+
 function getPoint(coord, canonical) {
     const tileTr = tileTransform(canonical, projection);
     const p = getTilePoint(tileTr, MercatorCoordinate.fromLngLat({lng: coord[0], lat: coord[1]}, 0));
@@ -177,5 +180,6 @@ run('js', {ignores, tests}, (fixture) => {
         result.recompiled.type = result.compiled.type;
     }
 
-    return result;
+    // Narrow down result to JSON
+    return JSON.parse(JSON.stringify(result));
 });

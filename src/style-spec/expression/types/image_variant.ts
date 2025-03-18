@@ -1,6 +1,6 @@
 import type Color from '../../util/color';
 
-export type ResolvedImageVariantId = string;
+export type ImageVariantId = string;
 
 export type RasterizationOptions = {
     params?: Record<string, Color>;
@@ -8,19 +8,19 @@ export type RasterizationOptions = {
 }
 
 /**
- * `ResolvedImageVariant` is a component of {@link ResolvedImage}
+ * `ImageVariant` is a component of {@link ResolvedImage}
  * that represents either the primary or secondary image
  * along with its rendering configuration.
  *
  * @private
  */
-export class ResolvedImageVariant {
-    id: ResolvedImageVariantId;
+export class ImageVariant {
+    _id: ImageVariantId;
     options: RasterizationOptions;
 
-    constructor(id: ResolvedImageVariantId, options: RasterizationOptions = {}) {
-        this.id = id;
-        this.options = options;
+    constructor(id: ImageVariantId, options: RasterizationOptions = {}) {
+        this._id = id;
+        this.options = Object.assign({}, options);
 
         if (!options.transform) {
             this.options.transform = new DOMMatrix([1, 0, 0, 1, 0, 0]);
@@ -31,35 +31,29 @@ export class ResolvedImageVariant {
     }
 
     serializeId(): string {
-        return this.id;
+        return this._id;
     }
 
-    static parseId(str: string): ResolvedImageVariantId | null {
+    static parseId(str: string): ImageVariantId | null {
         const obj = JSON.parse(str) || {};
         return obj.id || null;
     }
 
-    static parse(str: string): ResolvedImageVariant | null {
-        const {id, options} = JSON.parse(str) || {};
+    static parse(str: string): ImageVariant | null {
+        const {id, params, transform} = JSON.parse(str) || {};
         if (!id) return null;
 
-        const {a, b, c, d, e, f} = options.transform || {};
-
-        return new ResolvedImageVariant(
-            id,
-            {params: options.params, transform: new DOMMatrix([a, b, c, d, e, f])}
-        );
+        const {a, b, c, d, e, f} = transform || {};
+        return new ImageVariant(id, {params, transform: new DOMMatrix([a, b, c, d, e, f])});
     }
 
     serialize(): string {
         const {a, b, c, d, e, f} = this.options.transform;
 
         const serialized = {
-            id: this.id,
-            options: {
-                params: this.options.params,
-                transform: {a, b, c, d, e, f},
-            }
+            id: this._id,
+            params: this.options.params,
+            transform: {a, b, c, d, e, f},
         };
 
         return JSON.stringify(serialized);

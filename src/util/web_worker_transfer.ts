@@ -5,7 +5,7 @@ import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomCon
 import CompoundExpression from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions/index';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
-import {ResolvedImageVariant} from '../style-spec/expression/types/resolved_image_variant';
+import {ImageVariant} from '../style-spec/expression/types/image_variant';
 import {AJAXError} from './ajax';
 import Formatted, {FormattedSection} from '../style-spec/expression/types/formatted';
 
@@ -110,7 +110,7 @@ register(AJAXError, 'AJAXError');
 register(ResolvedImage, 'ResolvedImage');
 register(StylePropertyFunction, 'StylePropertyFunction');
 register(StyleExpression, 'StyleExpression', {omit: ['_evaluator']});
-register(ResolvedImageVariant, 'ResolvedImageVariant');
+register(ImageVariant, 'ImageVariant');
 
 register(ZoomDependentExpression, 'ZoomDependentExpression');
 register(ZoomConstantExpression, 'ZoomConstantExpression');

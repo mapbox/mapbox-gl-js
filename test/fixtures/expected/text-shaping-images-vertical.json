@@ -28,7 +28,7 @@
         {
           "glyph": 57344,
           "image": {
-            "id": "square",
+            "_id": "square",
             "options": {
               "transform": {
                 "a": 1,
@@ -83,7 +83,7 @@
         {
           "glyph": 57345,
           "image": {
-            "id": "wide",
+            "_id": "wide",
             "options": {
               "transform": {
                 "a": 1,
@@ -143,7 +143,7 @@
         {
           "glyph": 57346,
           "image": {
-            "id": "tall",
+            "_id": "tall",
             "options": {
               "transform": {
                 "a": 1,
@@ -198,7 +198,7 @@
         {
           "glyph": 57347,
           "image": {
-            "id": "square",
+            "_id": "square",
             "options": {
               "transform": {
                 "a": 1,

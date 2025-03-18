@@ -168,11 +168,14 @@ export default class ImageExpression implements Expression {
             this.inputPrimaryParams ? this.evaluateParams(ctx, this.inputPrimaryParams) : undefined,
             this.inputSecondaryParams ? this.evaluateParams(ctx, this.inputSecondaryParams) : undefined
         );
+
         if (value && ctx.availableImages) {
-            value.available = ctx.availableImages.indexOf(value.namePrimary) > -1;
-            // If there's a secondary variant, only mark it available if both are present
-            if (value.nameSecondary && value.available && ctx.availableImages) {
-                value.available = ctx.availableImages.indexOf(value.nameSecondary) > -1;
+            const primaryId = value.getPrimary().serializeId();
+            value.available = ctx.availableImages.indexOf(primaryId) > -1;
+            if (value.available) {
+                // If there's a secondary variant, only mark it available if both are present
+                const secondaryId = value.getSecondary() ? value.getSecondary().serializeId() : null;
+                if (secondaryId) value.available = ctx.availableImages.indexOf(secondaryId) > -1;
             }
         }
 

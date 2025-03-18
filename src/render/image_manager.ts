@@ -13,7 +13,7 @@ import {ImageRasterizer} from './image_rasterizer';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import browser from '../util/browser';
 
-import type {ResolvedImageVariant} from '../style-spec/expression/types/resolved_image_variant';
+import type {ImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type Context from '../gl/context';
 import type {PotpackBox} from 'potpack';
@@ -32,12 +32,12 @@ export type PatternMap = Record<string, Pattern>;
 
 export type ImageRasterizationWorkerTask = {
     image: StyleImage,
-    imageVariant: ResolvedImageVariant
+    imageVariant: ImageVariant
 };
 
 export type ImageRasterizationWorkerTasks = Record<string, ImageRasterizationWorkerTask>;
 
-export type ImageRasterizationTasks = Record<string, ResolvedImageVariant>;
+export type ImageRasterizationTasks = Record<string, ImageVariant>;
 
 export type RasterizeImagesParameters = {
     scope: string;

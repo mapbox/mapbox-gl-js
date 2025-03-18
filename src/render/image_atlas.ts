@@ -2,7 +2,7 @@ import assert from 'assert';
 import {RGBAImage} from '../util/image';
 import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
-import {ResolvedImageVariant} from '../style-spec/expression/types/resolved_image_variant';
+import {ImageVariant} from '../style-spec/expression/types/image_variant';
 
 import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type ImageManager from './image_manager';
@@ -39,7 +39,7 @@ export class ImagePosition implements SpritePosition {
     sdf: boolean;
     scale: ImagePositionScale;
 
-    static getImagePositionScale(imageVariant: ResolvedImageVariant | undefined, usvg: boolean, pixelRatio: number): ImagePositionScale {
+    static getImagePositionScale(imageVariant: ImageVariant | undefined, usvg: boolean, pixelRatio: number): ImagePositionScale {
         if (usvg && imageVariant && imageVariant.options && imageVariant.options.transform) {
             const transform = imageVariant.options.transform;
             return {
@@ -54,7 +54,7 @@ export class ImagePosition implements SpritePosition {
         }
     }
 
-    constructor(paddedRect: Rect, image: StyleImage, padding: number, imageVariant?: ResolvedImageVariant) {
+    constructor(paddedRect: Rect, image: StyleImage, padding: number, imageVariant?: ImageVariant) {
         this.paddedRect = paddedRect;
         const {
             pixelRatio,
@@ -111,7 +111,7 @@ function getImageBin(image: StyleImage, padding: number, scale: [number, number]
 }
 
 export function getImagePosition(id: string, src: StyleImage, padding: number) {
-    const imageVariant = ResolvedImageVariant.parse(id);
+    const imageVariant = ImageVariant.parse(id);
     const bin = getImageBin(src, padding, [imageVariant.options.transform.a, imageVariant.options.transform.d]);
     return {bin, imagePosition: new ImagePosition(bin, src, padding, imageVariant), imageVariant};
 }
@@ -197,13 +197,13 @@ export default class ImageAtlas {
 
         for (const name in imageManager.getUpdatedImages(scope)) {
             for (const id of Object.keys(this.iconPositions)) {
-                if (ResolvedImageVariant.parseId(id) === name) {
+                if (ImageVariant.parseId(id) === name) {
                     this.patchUpdatedImage(this.iconPositions[id], imageManager.getImage(name, scope), texture);
                 }
             }
 
             for (const id of Object.keys(this.patternPositions)) {
-                if (ResolvedImageVariant.parseId(id) === name) {
+                if (ImageVariant.parseId(id) === name) {
                     this.patchUpdatedImage(this.patternPositions[id], imageManager.getImage(name, scope), texture);
                 }
             }

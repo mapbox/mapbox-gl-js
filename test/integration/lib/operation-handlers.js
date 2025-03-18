@@ -63,8 +63,9 @@ export const operationHandlers = {
         setTimeout(doneCb, params[0]);
     },
     addImage(map, params, doneCb) {
+        params[1] = params[1].replace('./', '/test/integration/');
         if (params[1].endsWith('.js')) {
-            import(params[1].replace('./', '../')).then(({image}) => {
+            import(params[1]).then(({image}) => {
                 map.addImage(params[0], image, params[2] || {});
                 doneCb();
             });
@@ -77,7 +78,7 @@ export const operationHandlers = {
             doneCb();
         };
 
-        image.src = params[1].replace('./', '');
+        image.src = params[1];
         image.onerror = () => {
             throw new Error(`addImage opertation failed with src ${image.src}`);
         };
@@ -185,6 +186,7 @@ export const operationHandlers = {
         doneCb();
     },
     updateImage(map, params, doneCb) {
+        params[1] = params[1].replace('./', '/test/integration/');
         map.loadImage(params[1], (error, image) => {
             if (error) throw error;
 
