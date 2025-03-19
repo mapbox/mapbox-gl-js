@@ -4101,7 +4101,7 @@
         }
       },
       "config": {
-        "doc": "Retrieves the configuration value for the given option.",
+        "doc": "Retrieves the configuration value for the given option. Returns null if the requested option is missing.",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
