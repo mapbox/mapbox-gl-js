@@ -186,9 +186,9 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
     }
 
     if (input instanceof Map) {
-        const properties: SerializedObject = {'$name': 'Map'};
+        const properties = {'$name': 'Map', entries: []} satisfies SerializedObject;
         for (const [key, value] of input.entries()) {
-            properties[key] = serialize(value);
+            properties.entries.push(serialize(key), serialize(value));
         }
         return properties;
     }
@@ -283,12 +283,10 @@ export function deserialize(input: Serialized): unknown {
         const name = input.$name || 'Object';
 
         if (name === 'Map') {
+            const entries = input.entries as Array<[Serialized, Serialized]> || [];
             const map = new Map();
-            for (const key of Object.keys(input)) {
-                if (key === '$name')
-                    continue;
-                const value = input[key];
-                map.set(key, deserialize(value));
+            for (let i = 0; i < entries.length; i += 2) {
+                map.set(deserialize(entries[i]), deserialize(entries[i + 1]));
             }
             return map;
         }
