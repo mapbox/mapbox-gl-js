@@ -17,7 +17,7 @@ import ONE_EM from './one_em';
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
 import * as symbolSize from '../symbol/symbol_size';
-import {PROPERTY_ELEVATION_ID} from '../data/elevation_constants';
+import {PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constants';
 
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
 import type {ImageVariant} from '../style-spec/expression/types/image_variant';

@@ -79,8 +79,8 @@ import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {LUT} from '../../util/lut';
 import type {SpritePositions} from '../../util/image';
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
-import type {ElevationType} from '../elevation_constants';
-import type {ElevationFeature} from '../elevation_feature';
+import type {ElevationType} from '../../../3d-style/elevation/elevation_constants';
+import type {ElevationFeature} from '../../../3d-style/elevation/elevation_feature';
 
 export type SingleCollisionBox = {
     x1: number;
