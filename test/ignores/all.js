@@ -103,7 +103,9 @@ const todo = [
     // https://mapbox.atlassian.net/browse/MAPSNAT-2636
     "render-tests/icon-text-fit/stretch-nine-part-content-interpolate-text-size",
     // https://mapbox.atlassian.net/browse/GLJS-1189
-    "render-tests/background-pattern/image-update/delayed/same-size-before-color-theme-change"
+    "render-tests/background-pattern/image-update/delayed/same-size-before-color-theme-change",
+    // https://mapbox.atlassian.net/browse/GLJS-1184
+    "render-tests/raster-array/semi-transparent-icon"
 ];
 
 const skip = [
