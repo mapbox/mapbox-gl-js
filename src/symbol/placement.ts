@@ -468,7 +468,6 @@ export class Placement {
         const iconAllowOverlap = layout.get('icon-allow-overlap');
         const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
-        const zOffset = layout.get('symbol-z-elevate');
         const symbolZOffset = paint.get('symbol-z-offset');
         const elevationFromSea = layout.get('symbol-elevation-reference') === 'sea';
         const [textSizeScaleRangeMin, textSizeScaleRangeMax] = layout.get('text-size-scale-range');
@@ -861,11 +860,14 @@ export class Placement {
             seenCrossTileIDs.add(crossTileID);
         };
 
-        if (zOffset && this.buildingIndex) {
+        if (bucket.elevationType === 'offset' && this.buildingIndex) {
             const tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
             this.buildingIndex.updateZOffset(bucket, tileID);
-            bucket.updateZOffset();
         }
+        if (bucket.elevationType === 'road') {
+            bucket.updateRoadElevation();
+        }
+        bucket.updateZOffset();
 
         if (bucket.sortFeaturesByY) {
             assert(bucketPart.symbolInstanceStart === 0);
@@ -1004,11 +1006,13 @@ export class Placement {
             if (symbolBucket && tile.latestFeatureIndex && styleLayer.fqid === symbolBucket.layerIds[0]) {
                 // @ts-expect-error - TS2345 - Argument of type 'Set<unknown>' is not assignable to parameter of type 'Set<number>'.
                 this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile, tile.collisionBoxArray, layerIndex, replacementSource, tile.tileID, styleLayer.scope);
-                const layout = symbolBucket.layers[0].layout;
-                if (layout.get('symbol-z-elevate') && this.buildingIndex) {
+                if (symbolBucket.elevationType === 'offset' && this.buildingIndex) {
                     this.buildingIndex.updateZOffset(symbolBucket, tile.tileID);
-                    symbolBucket.updateZOffset();
                 }
+                if (symbolBucket.elevationType === 'road') {
+                    symbolBucket.updateRoadElevation();
+                }
+                symbolBucket.updateZOffset();
             }
         }
     }

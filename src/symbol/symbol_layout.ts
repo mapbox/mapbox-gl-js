@@ -17,6 +17,7 @@ import ONE_EM from './one_em';
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
 import * as symbolSize from '../symbol/symbol_size';
+import {PROPERTY_ELEVATION_ID} from '../data/elevation_constants';
 
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
 import type {ImageVariant} from '../style-spec/expression/types/image_variant';
@@ -587,6 +588,9 @@ function addFeature(bucket: SymbolBucket,
         bucket.hasAnyIconTextFit = true;
     }
 
+    const elevationFeatureId = feature.properties ? +feature.properties[PROPERTY_ELEVATION_ID] : null;
+    const elevationFeatureIndex = elevationFeatureId ? bucket.elevationFeatureIdToIndex.get(elevationFeatureId) : 0xffff;
+
     const addSymbolAtAnchor = (line: Array<Point>, anchor: Anchor, canonicalId: CanonicalTileID) => {
         if (anchor.x < 0 || anchor.x >= EXTENT || anchor.y < 0 || anchor.y >= EXTENT) {
             // Symbol layers are drawn across tile boundaries, We filter out symbols
@@ -607,11 +611,13 @@ function addFeature(bucket: SymbolBucket,
             };
         }
 
-        addSymbol(bucket, anchor, globe, line, shapedTextOrientations, shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
+        addSymbol(bucket, anchor, globe, line, shapedTextOrientations,
+            shapedIcon, imageMap, verticallyShapedIcon, bucket.layers[0],
             bucket.collisionBoxArray, feature.index, feature.sourceLayerIndex,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
-            feature, sizes, isSDFIcon, availableImages, canonical, brightness, hasAnySecondaryIcon, iconTextFit);
+            feature, sizes, isSDFIcon, availableImages, canonical,
+            brightness, hasAnySecondaryIcon, iconTextFit, elevationFeatureIndex);
     };
 
     if (symbolPlacement === 'line') {
@@ -869,7 +875,8 @@ function addSymbol(bucket: SymbolBucket,
                    canonical: CanonicalTileID,
                    brightness: number | null | undefined,
                    hasAnySecondaryIcon: boolean,
-                   iconTextFit: "none" | "width" | "height" | "both") {
+                   iconTextFit: "none" | "width" | "height" | "both",
+                   elevationFeatureIndex: number) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
     let textBoxIndex, iconBoxIndex, verticalTextBoxIndex, verticalIconBoxIndex;
     let textCircle, verticalTextCircle, verticalIconCircle;
@@ -1085,6 +1092,7 @@ function addSymbol(bucket: SymbolBucket,
         collisionCircleDiameter,
         0,
         hasIconTextFit ? 1 : 0,
+        elevationFeatureIndex,
     );
 }
 
