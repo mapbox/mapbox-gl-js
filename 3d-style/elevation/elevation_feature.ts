@@ -1,15 +1,15 @@
 import {vec2, vec3} from "gl-matrix";
-import {register} from "../util/web_worker_transfer.js";
+import {register} from '../../src/util/web_worker_transfer';
 import assert from 'assert';
-import {ElevationFeatureParser, type Bounds} from "./elevation_feature_parser.js";
-import {tileToMeter} from "../geo/mercator_coordinate.js";
-import {Ray2D} from "../util/primitives.js";
-import {clamp, smoothstep} from "../util/util.js";
-import {MARKUP_ELEVATION_BIAS} from "./elevation_constants.js";
-import EXTENT from "../style-spec/data/extent.js";
+import {ElevationFeatureParser, type Bounds} from "./elevation_feature_parser";
+import {tileToMeter} from "../../src/geo/mercator_coordinate";
+import {Ray2D} from "../../src/util/primitives";
+import {clamp, smoothstep} from "../../src/util/util";
+import {MARKUP_ELEVATION_BIAS} from "./elevation_constants";
+import EXTENT from "../../src/style-spec/data/extent";
 
 import type {VectorTileLayer} from "@mapbox/vector-tile";
-import type {CanonicalTileID} from "../source/tile_id.js";
+import type {CanonicalTileID} from "../../src/source/tile_id";
 import type Point from "@mapbox/point-geometry";
 
 export interface Vertex {
@@ -37,6 +37,9 @@ export interface Range {
     min: number;
     max: number;
 }
+
+// Hard-coded depth after which roads are rendered as tunnels
+const TUNNEL_THRESHOLD_METERS = 5.0;
 
 // ElevationFeature describes a three dimensional linestring that acts as a "skeleton"
 // for guiding elevation other features such as lines an polygons attached to it. Its
@@ -109,6 +112,7 @@ export class ElevationFeature {
         this.tessellate(metersToTile);
     }
 
+    // Sample point at the provided location
     pointElevation(point: Point): number {
         if (this.constantHeight != null) {
             return this.constantHeight;
@@ -126,6 +130,18 @@ export class ElevationFeature {
 
         const lerp = (x: number, y: number, t: number) => { return (1 - t) * x + t * y; };
         return lerp(this.vertices[aIdx].height, this.vertices[bIdx].height, t);
+    }
+
+    // Safe area describes original tile boundaries of the elevation curve scaled to the current zoom level.
+    // This is useful in cases where e.g. a continuous bridge that's been initially split into adjacent tiles,
+    // and hence into two different elevation features, is cojoined into one on a lower zoom level tile.
+    getSafeArea() {
+        return this.safeArea;
+    }
+
+    // Returns true whether this elevation feature describes a tunnel
+    isTunnel() {
+        return this.heightRange.max <= -TUNNEL_THRESHOLD_METERS;
     }
 
     private getClosestEdge(point: Point): [number, number] | undefined {

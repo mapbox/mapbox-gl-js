@@ -1257,7 +1257,7 @@ class Painter {
                 this.blitDepth();
             }
 
-            if (!layer.is3D(drapingEnabled) && !this.terrain) {
+            if (!this.terrain) {
                 this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
             }
             this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
@@ -1291,7 +1291,7 @@ class Painter {
                     const layer = orderedLayers[this.currentLayer];
                     const sourceCache = style.getLayerSourceCache(layer);
                     const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
-                    if (!layer.is3D(drapingEnabled) && !this.terrain) {
+                    if (!this.terrain) {
                         this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
                     }
                     this.renderLayer(this, sourceCache, layer, coords);

@@ -30,10 +30,6 @@ class ClipStyleLayer extends StyleLayer {
         return new ClipBucket(parameters);
     }
 
-    override isTileClipped(): boolean {
-        return true;
-    }
-
     override is3D(terrainEnabled?: boolean): boolean {
         return true;
     }

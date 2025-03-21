@@ -59,6 +59,7 @@ const debugWireframe3DLayerProgramNames = [
     "rainParticle",
     "snowParticle",
     "fillExtrusion",  "fillExtrusionGroundEffect",
+    "elevatedStructures",
     "model",
     "symbol"];
 

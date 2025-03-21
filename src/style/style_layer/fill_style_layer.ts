@@ -92,7 +92,7 @@ class FillStyleLayer extends StyleLayer {
     }
 
     override isTileClipped(): boolean {
-        return true;
+        return this.paint.get('fill-z-offset').constantOr(1.0) === 0.0;
     }
 
     override is3D(terrainEnabled?: boolean): boolean {

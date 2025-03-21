@@ -134,7 +134,7 @@ createStructArrayType('pos_globe_ext', posAttributesGlobeExt);
 createStructArrayType('raster_bounds', boundsAttributes);
 
 import {circleAttributes, circleGlobeAttributesExt} from '../src/data/bucket/circle_attributes';
-import {fillLayoutAttributes, fillLayoutAttributesExt} from '../src/data/bucket/fill_attributes';
+import {fillLayoutAttributes, fillLayoutAttributesExt, intersectionsAttributes, intersectionNormalAttributes as intersectionsNormalAttributes} from '../src/data/bucket/fill_attributes';
 import {lineLayoutAttributes, lineZOffsetAttributes} from '../src/data/bucket/line_attributes';
 import lineAttributesExt from '../src/data/bucket/line_attributes_ext';
 import lineAttributesPattern from '../src/data/bucket/line_attributes_pattern';
@@ -149,6 +149,8 @@ const layoutAttributes = {
     circle: circleAttributes,
     fill: fillLayoutAttributes,
     fillExt: fillLayoutAttributesExt,
+    fillIntersections: intersectionsAttributes,
+    fillIntersectionsNormal: intersectionsNormalAttributes,
     'fill-extrusion': fillExtrusionAttributes,
     'fill-extrusion-ground': fillExtrusionGroundAttributes,
     heatmap: circleAttributes,

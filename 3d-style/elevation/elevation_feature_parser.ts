@@ -1,7 +1,7 @@
 import assert from "assert";
 import {VectorTileFeature, type VectorTileLayer} from "@mapbox/vector-tile";
 import Point from "@mapbox/point-geometry";
-import {warnOnce} from "../util/util";
+import {warnOnce} from "../../src/util/util";
 import {vec2} from "gl-matrix";
 import {PROPERTY_ELEVATION_ID} from "./elevation_constants";
 

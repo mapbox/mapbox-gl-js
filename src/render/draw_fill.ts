@@ -6,10 +6,12 @@ import {
     fillUniformValues,
     fillPatternUniformValues,
     fillOutlineUniformValues,
-    fillOutlinePatternUniformValues
+    fillOutlinePatternUniformValues,
+    elevatedStructuresUniformValues
 } from './program/fill_program';
 import StencilMode from '../gl/stencil_mode';
 import browser from '../util/browser';
+import assert from 'assert';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -19,7 +21,7 @@ import type ColorMode from '../gl/color_mode';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {DynamicDefinesType} from './program/program_uniforms';
 import type VertexBuffer from '../gl/vertex_buffer';
-import type {ElevationType} from '../data/elevation_constants';
+import type {ElevationType} from '../../3d-style/elevation/elevation_constants';
 
 export default drawFill;
 
@@ -76,9 +78,58 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
     drawFillTiles(drawFillParams, false);
 
     if (elevationType === 'road') {
+        const roadElevationActive = !terrainEnabled && painter.renderPass === 'translucent';
+
         // Draw elevated polygons
         drawFillTiles(drawFillParams, true, StencilMode.disabled);
+
+        if (roadElevationActive) {
+            drawElevatedStructures(drawFillParams);
+        }
     }
+}
+
+function drawElevatedStructures(params: DrawFillParams) {
+    const {painter, sourceCache, layer, coords, colorMode} = params;
+    const gl = painter.context.gl;
+
+    const programName = 'elevatedStructures';
+    const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
+
+    for (const coord of coords) {
+        const tile = sourceCache.getTile(coord);
+        const bucket = tile.getBucket(layer) as FillBucket;
+        if (!bucket) continue;
+
+        const elevatedStructures = bucket.elevatedStructures;
+        if (!elevatedStructures || !elevatedStructures.renderableSegments ||
+            elevatedStructures.renderableSegments.segments[0].primitiveLength === 0) {
+            continue;
+        }
+
+        assert(elevatedStructures.vertexBuffer && elevatedStructures.vertexBufferNormal && elevatedStructures.indexBuffer);
+
+        painter.prepareDrawTile();
+
+        const programConfiguration = bucket.bufferData.programConfigurations.get(layer.id);
+        const affectedByFog = painter.isTileAffectedByFog(coord);
+
+        const dynamicDefines: DynamicDefinesType[] = ['NORMAL_OFFSET'];
+        const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
+
+        const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
+            layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
+
+        const uniformValues = elevatedStructuresUniformValues(tileMatrix);
+
+        painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
+
+        program.draw(painter, gl.TRIANGLES, depthMode,
+            StencilMode.disabled, colorMode, CullFaceMode.backCCW, uniformValues,
+            layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.renderableSegments,
+            layer.paint, painter.transform.zoom, programConfiguration, [elevatedStructures.vertexBufferNormal]);
+    }
+
 }
 
 function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stencilModeOverride?: StencilMode) {
@@ -114,7 +165,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
             const bucket: FillBucket | null | undefined = (tile.getBucket(layer) as any);
             if (!bucket) continue;
 
-            const bufferData = renderElevatedRoads ? bucket.elevationBufferData : bucket.bufferData;
+            const bufferData = elevatedGeometry ? bucket.elevationBufferData : bucket.bufferData;
             if (bufferData.isEmpty()) continue;
 
             painter.prepareDrawTile();

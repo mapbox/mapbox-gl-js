@@ -17,8 +17,9 @@ import {PerformanceUtils, type PerformanceMark} from '../util/performance';
 import tileTransform from '../geo/projection/tile_transform';
 import {makeFQID} from "../util/fqid";
 import {type SpritePositions} from '../util/image';
-import {ElevationFeatures} from '../data/elevation_feature';
-import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../data/elevation_constants';
+import {ElevationFeatures} from '../../3d-style/elevation/elevation_feature';
+import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constants';
+import {ElevationPortalGraph} from '../../3d-style/elevation/elevation_graph';
 
 import type {VectorTile} from '@mapbox/vector-tile';
 import type {CanonicalTileID} from './tile_id';
@@ -392,6 +393,32 @@ class WorkerTile {
             } else {
                 patternMap = {};
                 patternRasterizationTasks = {};
+            }
+        }
+
+        if (options.elevationFeatures && options.elevationFeatures.length > 0) {
+            // Multiple layers might contribute to the elevation of this tile. For this reason we need to combine
+            // unevaluated portals from available buckets into single graph that describes polygon connectivity of the whole
+            // tile
+            const unevaluatedPortals = [];
+
+            for (const bucket of Object.values(buckets)) {
+                if (bucket instanceof FillBucket) {
+                    const graph = bucket.getUnevaluatedPortalGraph();
+                    if (graph) {
+                        unevaluatedPortals.push(graph);
+                    }
+                }
+            }
+
+            const evaluatedPortals = ElevationPortalGraph.evaluate(unevaluatedPortals);
+
+            // Pass evaluated portals back to buckets and construct a separate acceleration structure
+            // for elevation queries.
+            for (const bucket of Object.values(buckets)) {
+                if (bucket instanceof FillBucket) {
+                    bucket.setEvaluatedPortalGraph(evaluatedPortals);
+                }
             }
         }
 

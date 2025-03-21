@@ -211,6 +211,10 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         return properties;
     }
 
+    if (typeof input === 'bigint') {
+        return {$name: 'BigInt', value: input.toString()};
+    }
+
     if (typeof input === 'object') {
         const klass = input.constructor as Klass;
         const name = klass._classRegistryKey;
@@ -312,6 +316,10 @@ export function deserialize(input: Serialized): unknown {
             }
             const matrix = new DOMMatrix(values);
             return matrix;
+        }
+
+        if (name === 'BigInt') {
+            return BigInt(input.value as string);
         }
 
         const {klass} = registry[name];

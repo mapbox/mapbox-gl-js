@@ -186,7 +186,7 @@ class LineStyleLayer extends StyleLayer {
     }
 
     override isTileClipped(): boolean {
-        return true;
+        return this.hasNonElevatedBuckets;
     }
 
     override isDraped(_?: SourceCache | null): boolean {

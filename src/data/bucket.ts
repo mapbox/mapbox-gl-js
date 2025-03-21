@@ -18,7 +18,7 @@ import type {VectorTileFeature, VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../3d-style/util/conflation';
 import type {LUT} from "../util/lut";
 import type {ImageVariant} from '../style-spec/expression/types/image_variant';
-import type {ElevationFeature} from './elevation_feature';
+import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature';
 
 export type BucketParameters<Layer extends TypedStyleLayer> = {
     index: number;

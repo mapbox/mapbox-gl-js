@@ -139,6 +139,76 @@ register(StructArrayLayout1f4, 'StructArrayLayout1f4');
 
 /**
  * Implementation of the StructArray layout:
+ * [0]: Int16[2]
+ * [4]: Float32[1]
+ *
+ * @private
+ */
+class StructArrayLayout2i1f8 extends StructArray implements IStructArrayLayout {
+    override uint8: Uint8Array;
+    override int16: Int16Array;
+    override float32: Float32Array;
+
+    override _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.int16 = new Int16Array(this.arrayBuffer);
+        this.float32 = new Float32Array(this.arrayBuffer);
+    }
+
+    override emplaceBack(v0: number, v1: number, v2: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2);
+    }
+
+    override emplace(i: number, v0: number, v1: number, v2: number): number {
+        const o2 = i * 4;
+        const o4 = i * 2;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.float32[o4 + 1] = v2;
+        return i;
+    }
+}
+
+StructArrayLayout2i1f8.prototype.bytesPerElement = 8;
+register(StructArrayLayout2i1f8, 'StructArrayLayout2i1f8');
+
+/**
+ * Implementation of the StructArray layout:
+ * [0]: Int16[3]
+ *
+ * @private
+ */
+class StructArrayLayout3i8 extends StructArray implements IStructArrayLayout {
+    override uint8: Uint8Array;
+    override int16: Int16Array;
+
+    override _refreshViews() {
+        this.uint8 = new Uint8Array(this.arrayBuffer);
+        this.int16 = new Int16Array(this.arrayBuffer);
+    }
+
+    override emplaceBack(v0: number, v1: number, v2: number): number {
+        const i = this.length;
+        this.resize(i + 1);
+        return this.emplace(i, v0, v1, v2);
+    }
+
+    override emplace(i: number, v0: number, v1: number, v2: number): number {
+        const o2 = i * 4;
+        this.int16[o2 + 0] = v0;
+        this.int16[o2 + 1] = v1;
+        this.int16[o2 + 2] = v2;
+        return i;
+    }
+}
+
+StructArrayLayout3i8.prototype.bytesPerElement = 8;
+register(StructArrayLayout3i8, 'StructArrayLayout3i8');
+
+/**
+ * Implementation of the StructArray layout:
  * [0]: Int16[5]
  *
  * @private
@@ -1535,6 +1605,8 @@ export {
     StructArrayLayout3i6,
     StructArrayLayout4i8,
     StructArrayLayout1f4,
+    StructArrayLayout2i1f8,
+    StructArrayLayout3i8,
     StructArrayLayout5i10,
     StructArrayLayout2i4ub1f12,
     StructArrayLayout3f12,
@@ -1570,6 +1642,8 @@ export {
     StructArrayLayout2i4 as CircleLayoutArray,
     StructArrayLayout2i4 as FillLayoutArray,
     StructArrayLayout1f4 as FillExtLayoutArray,
+    StructArrayLayout2i1f8 as FillIntersectionsLayoutArray,
+    StructArrayLayout3i8 as FillIntersectionsNormalLayoutArray,
     StructArrayLayout4i8 as FillExtrusionLayoutArray,
     StructArrayLayout5i10 as FillExtrusionGroundLayoutArray,
     StructArrayLayout2i4 as HeatmapLayoutArray,

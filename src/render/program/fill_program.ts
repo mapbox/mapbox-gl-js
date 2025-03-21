@@ -47,6 +47,10 @@ export type FillOutlinePatternUniformsType = {
     ['u_tile_units_to_pixels']: Uniform1f;
 };
 
+export type ElevatedStructuresUniformsType = {
+    ['u_matrix']: UniformMatrix4f;
+};
+
 export type FillDefinesType = 'ELEVATED_ROADS';
 
 const fillUniforms = (context: Context): FillUniformsType => ({
@@ -79,6 +83,10 @@ const fillOutlinePatternUniforms = (context: Context): FillOutlinePatternUniform
     'u_pixel_coord_upper': new Uniform2f(context),
     'u_pixel_coord_lower': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context)
+});
+
+const elevatedStructuresUniforms = (context: Context): ElevatedStructuresUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context)
 });
 
 const fillUniformValues = (matrix: mat4, emissiveStrength: number): UniformValues<FillUniformsType> => ({
@@ -119,13 +127,19 @@ const fillOutlinePatternUniformValues = (
     }
 );
 
+const elevatedStructuresUniformValues = (matrix: mat4): UniformValues<ElevatedStructuresUniformsType> => ({
+    'u_matrix': matrix as Float32Array
+});
+
 export {
     fillUniforms,
     fillPatternUniforms,
     fillOutlineUniforms,
     fillOutlinePatternUniforms,
+    elevatedStructuresUniforms,
     fillUniformValues,
     fillPatternUniformValues,
     fillOutlineUniformValues,
-    fillOutlinePatternUniformValues
+    fillOutlinePatternUniformValues,
+    elevatedStructuresUniformValues
 };
