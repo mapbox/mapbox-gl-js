@@ -21,6 +21,7 @@
   },
   "iconsets": {
     "landmarks": {
+      "type": "source",
       "source": "landmarks"
     }
   },
