@@ -214,6 +214,9 @@ const skip = [
     // fill-extrusion-rounded-roof not implemented in -js
     "render-tests/lighting-3d-mode/fill-extrusion/rounded-flat-roof",
 
+    // https://mapbox.atlassian.net/browse/MAPS3D-1742
+    "render-tests/model-layer/landmark-conflation-multiple-model-layers",
+
     // alpha textures not supported in -js
     "render-tests/model-layer/model-opacity-cutout-texture",
     // GLTF interleaved arrays not supported in -js
