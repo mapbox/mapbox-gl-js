@@ -71,14 +71,17 @@ type ImageRequestor = {
     to refactor this.
 */
 class ImageManager extends Evented {
-    images: {
+    _images: {
         [scope: string]: StyleImages;
+    };
+    _iconsets: {
+        [scope: string]: Record<string, StyleImages>;
     };
     updatedImages: {
         [scope: string]: Set<ImageId>;
     };
     callbackDispatchedThisFrame: {
-        [scope: string]: Set<ImageId>;
+        [scope: string]: Set<StringifiedImageId>;
     };
     loaded: {
         [scope: string]: boolean;
@@ -106,7 +109,8 @@ class ImageManager extends Evented {
 
     constructor(spriteFormat: SpriteFormat) {
         super();
-        this.images = {};
+        this._images = {};
+        this._iconsets = {};
         this.updatedImages = {};
         this.callbackDispatchedThisFrame = {};
         this.loaded = {};
@@ -140,12 +144,17 @@ class ImageManager extends Evented {
     }
 
     createScope(scope: string) {
-        this.images[scope] = {};
+        this._images[scope] = {};
+        this._iconsets[scope] = {};
         this.loaded[scope] = false;
         this.updatedImages[scope] = new Set();
         this.patterns[scope] = {};
         this.callbackDispatchedThisFrame[scope] = new Set();
         this.atlasImage[scope] = new RGBAImage({width: 1, height: 1});
+    }
+
+    createIconset(scope: string, iconsetId: string) {
+        this._iconsets[scope][iconsetId] = {};
     }
 
     isLoaded(): boolean {
@@ -175,13 +184,15 @@ class ImageManager extends Evented {
     }
 
     getImage(id: ImageId, scope: string): StyleImage | null | undefined {
-        return this.images[scope][id.name];
+        const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
+        return images[id.name];
     }
 
     addImage(id: ImageId, scope: string, image: StyleImage) {
-        assert(!this.images[scope][id.name]);
+        const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
+        assert(!images[id.name]);
         if (this._validate(id, image)) {
-            this.images[scope][id.name] = image;
+            images[id.name] = image;
         }
     }
 
@@ -233,12 +244,13 @@ class ImageManager extends Evented {
     }
 
     updateImage(id: ImageId, scope: string, image: StyleImage) {
-        const oldImage = this.images[scope][id.name];
+        const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
+        const oldImage = images[id.name];
         assert(oldImage);
         assert(oldImage.data.width === image.data.width);
         assert(oldImage.data.height === image.data.height);
         image.version = oldImage.version + 1;
-        this.images[scope][id.name] = image;
+        images[id.name] = image;
         this.updatedImages[scope].add(id);
         this.removeFromImageRasterizerCache(id, scope);
     }
@@ -257,9 +269,10 @@ class ImageManager extends Evented {
     }
 
     removeImage(id: ImageId, scope: string) {
-        assert(this.images[scope][id.name]);
-        const image = this.images[scope][id.name];
-        delete this.images[scope][id.name];
+        const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
+        assert(images[id.name]);
+        const image = images[id.name];
+        delete images[id.name];
         delete this.patterns[scope][id.name];
         this.removeFromImageRasterizerCache(id, scope);
         if (image.userImage && image.userImage.onRemove) {
@@ -268,7 +281,18 @@ class ImageManager extends Evented {
     }
 
     listImages(scope: string): ImageId[] {
-        return Object.keys(this.images[scope]).map(name => new ImageId(name));
+        const result = [];
+        for (const name of Object.keys(this._images[scope])) {
+            result.push(new ImageId(name));
+        }
+
+        for (const iconsetId in this._iconsets[scope]) {
+            for (const name of Object.keys(this._iconsets[scope][iconsetId])) {
+                result.push(new ImageId({name, iconsetId}));
+            }
+        }
+
+        return result;
     }
 
     getImages(ids: ImageId[], scope: string, callback: Callback<StyleImageMap<StringifiedImageId>>) {
@@ -280,7 +304,8 @@ class ImageManager extends Evented {
         const isLoaded = !!this.loaded[scope];
         if (!isLoaded) {
             for (const id of ids) {
-                if (!this.images[scope][id.name]) {
+                const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
+                if (!images[id.name]) {
                     hasAllDependencies = false;
                 }
             }
@@ -327,10 +352,17 @@ class ImageManager extends Evented {
         const response: StyleImageMap<StringifiedImageId> = new Map();
 
         for (const id of ids) {
-            if (!this.images[scope][id.name]) {
-                this.fire(new Event('styleimagemissing', {id}));
+            if (id.iconsetId) {
+                this._iconsets[scope][id.iconsetId] = this._iconsets[scope][id.iconsetId] || {};
             }
-            const image = this.images[scope][id.name];
+
+            const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
+            if (!images[id.name]) {
+                // eslint-disable-next-line
+                // TODO: `styleimagemissing` event should also include `iconsetId`
+                this.fire(new Event('styleimagemissing', {id: id.name}));
+            }
+            const image = images[id.name];
             if (image) {
                 // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
                 const styleImage = {
@@ -372,6 +404,8 @@ class ImageManager extends Evented {
     }
 
     getPattern(id: ImageId, scope: string, lut: LUT | null): ImagePosition | null | undefined {
+        // eslint-disable-next-line
+        // TODO: add iconsets support
         const pattern = this.patterns[scope][id.name];
 
         const image = this.getImage(id, scope);
@@ -465,7 +499,7 @@ class ImageManager extends Evented {
             let padding = position.padding;
             const x = bin.x + padding;
             const y = bin.y + padding;
-            const src = this.images[scope][name].data;
+            const src = this._images[scope][name].data;
             const w = src.width;
             const h = src.height;
 
@@ -485,30 +519,30 @@ class ImageManager extends Evented {
             RGBAImage.copy(src, dst, {x: 0, y: h - padding}, {x: x + w, y: y - padding}, {width: padding, height: padding}, lut); // TR
             RGBAImage.copy(src, dst, {x: 0, y: 0}, {x: x + w, y: y + h}, {width: padding, height: padding}, lut); // BL
             RGBAImage.copy(src, dst, {x: w - padding, y: 0}, {x: x - padding, y: y + h}, {width: padding, height: padding}, lut); // BR
-
         }
 
         this.dirty = true;
     }
 
     beginFrame() {
-        for (const scope in this.images) {
+        for (const scope in this._images) {
             this.callbackDispatchedThisFrame[scope] = new Set();
         }
     }
 
     dispatchRenderCallbacks(ids: ImageId[], scope: string) {
-        for (const imageId of ids) {
+        for (const id of ids) {
             // the callback for the image was already dispatched for a different frame
-            if (this.callbackDispatchedThisFrame[scope].has(imageId)) continue;
-            this.callbackDispatchedThisFrame[scope].add(imageId);
+            if (this.callbackDispatchedThisFrame[scope].has(id.toString())) continue;
+            this.callbackDispatchedThisFrame[scope].add(id.toString());
 
-            const image = this.images[scope][imageId.name];
+            const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
+            const image = images[id.name];
             assert(image);
 
             const updated = renderStyleImage(image);
             if (updated) {
-                this.updateImage(imageId, scope, image);
+                this.updateImage(id, scope, image);
             }
         }
     }

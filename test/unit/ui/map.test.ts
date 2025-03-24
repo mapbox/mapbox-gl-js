@@ -12,6 +12,7 @@ import {ErrorEvent} from '../../../src/util/evented';
 import simulate, {constructTouch} from '../../util/simulate_interaction';
 import {fixedNum} from '../../util/fixed';
 import {makeFQID} from '../../../src/util/fqid';
+import {ImageId} from '../../../src/style-spec/expression/types/image_id';
 
 // Mock implementation of elevation
 const createElevation = (func, exaggeration) => {
@@ -1070,9 +1071,9 @@ describe('Map', () => {
     test('map fires `styleimagemissing` for missing icons', async () => {
         const map = createMap();
 
-        const id = "missing-image";
+        const id = ImageId.from('missing-image');
 
-        let called: any;
+        let called: string;
 
         await new Promise(resolve => {
             map.on("styleimagemissing", e => {
@@ -1082,7 +1083,7 @@ describe('Map', () => {
             });
             expect(map.hasImage(id)).toBeFalsy();
             map.style.imageManager.getImages([id], '', () => {
-                expect(called).toEqual(id);
+                expect(called).toEqual(id.name);
                 expect(map.hasImage(id)).toBeTruthy();
             });
         });

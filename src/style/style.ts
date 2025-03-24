@@ -67,13 +67,15 @@ import featureFilter from '../style-spec/feature_filter/index';
 import {TargetFeature} from '../util/vectortile_to_geojson';
 import {loadIconset} from './load_iconset';
 import {ImageId} from '../style-spec/expression/types/image_id';
+import {Iconset} from './iconset';
 
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import type Painter from '../render/painter';
 import type StyleLayer from './style_layer';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-import type {ColorThemeSpecification,
+import type {
+    ColorThemeSpecification,
     LayerSpecification,
     LayoutSpecification,
     PaintSpecification,
@@ -94,6 +96,7 @@ import type {ColorThemeSpecification,
     SchemaSpecification,
     CameraSpecification,
     FeaturesetsSpecification,
+    IconsetSpecification
 } from '../style-spec/types';
 import type {Callback} from '../types/callback';
 import type {StyleImage, StyleImageMap} from './style_image';
@@ -137,10 +140,10 @@ export type QueryRenderedFeaturesetParams = {
 
 export type GetImagesParameters = {
     images: ImageId[];
-    source: string;
     scope: string;
+    source: string;
     tileID: OverscaledTileID;
-    type: string;
+    type: 'icons' | 'patterns';
 };
 
 export type SetImagesParameters = {
@@ -778,6 +781,12 @@ class Style extends Evented<MapEvents> {
                 this.addSource(id, json.sources[id], {validate: false, isInitialLoad: true});
             }
 
+            if (json.iconsets) {
+                for (const id in json.iconsets) {
+                    this.addIconset(id, json.iconsets[id]);
+                }
+            }
+
             if (json.sprite) {
                 this._loadIconset(json.sprite);
             } else {
@@ -1305,6 +1314,29 @@ class Style extends Evented<MapEvents> {
         });
     }
 
+    addIconset(iconsetId: string, iconset: IconsetSpecification) {
+        if (iconset.type === 'sprite') {
+            this._loadSprite(iconset.url);
+            return;
+        }
+
+        const source = this.getOwnSource(iconset.source);
+        if (!source) {
+            this.fire(new ErrorEvent(new Error(`Source "${iconset.source}" as specified by iconset "${iconsetId}" does not exist and cannot be used as an iconset source`)));
+            return;
+        }
+
+        if (source.type !== 'raster-array') {
+            this.fire(new ErrorEvent(new Error(`Source "${iconset.source}" as specified by iconset "${iconsetId}" is not a "raster-array" source and cannot be used as an iconset source`)));
+            return;
+        }
+
+        this.imageManager.createIconset(this.scope, iconsetId);
+
+        const sourceIconset = new Iconset(iconsetId, this);
+        source.addIconset(iconsetId, sourceIconset);
+    }
+
     _loadIconset(url: string) {
         // If the sprite is not a mapbox URL, we load
         // raster sprite if icon_set is not specified explicitly.
@@ -1639,7 +1671,7 @@ class Style extends Evented<MapEvents> {
             this._changes.reset();
         }
 
-        const sourcesUsedBefore: Record<string, any> = {};
+        const sourcesUsedBefore: Record<string, boolean> = {};
 
         for (const sourceId in this._mergedSourceCaches) {
             const sourceCache = this._mergedSourceCaches[sourceId];
@@ -1670,6 +1702,19 @@ class Style extends Evented<MapEvents> {
                 }
             }
         }
+
+        // eslint-disable-next-line
+        // TODO: use only the iconsets that are actually used by the layers
+        for (const sourceId in this._mergedSourceCaches) {
+            const sourceCache = this._mergedSourceCaches[sourceId];
+            if (!sourceCache) continue;
+
+            const source = sourceCache._source;
+            if (source.type !== 'raster-array') continue;
+            // @ts-expect-error - iconsets is missing in ISource
+            if (source.iconsets) sourceCache.used = true;
+        }
+
         if (this._shouldPrecompile) {
             this._precompileDone = true;
         }
@@ -1797,7 +1842,7 @@ class Style extends Evented<MapEvents> {
     }
 
     addImage(id: ImageId, image: StyleImage): this {
-        if (this.getImage(id)) {
+        if (this.getImage(id) && !id.iconsetId) {
             return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
         }
         this.imageManager.addImage(id, this.scope, image);
@@ -2931,6 +2976,7 @@ class Style extends Evented<MapEvents> {
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
             fragment: this.stylesheet.fragment,
+            iconsets: this.stylesheet.iconsets,
             imports: this._serializeImports(),
             schema: this.stylesheet.schema,
             camera: this.stylesheet.camera,

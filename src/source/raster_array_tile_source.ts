@@ -1,6 +1,7 @@
 import Texture from '../render/texture';
 import RasterTileSource from './raster_tile_source';
 import {extend} from '../util/util';
+import {RGBAImage} from '../util/image';
 import {ResourceType} from '../util/ajax';
 import {ErrorEvent} from '../util/evented';
 import RasterStyleLayer from '../style/style_layer/raster_style_layer';
@@ -9,15 +10,16 @@ import RasterParticleStyleLayer from '../style/style_layer/raster_particle_style
 // it's registered as a serializable class on the main thread
 import '../data/mrt_data';
 
-import type {Evented} from '../util/evented';
-import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type RasterArrayTile from './raster_array_tile';
+import type {Map} from '../ui/map';
+import type {Evented} from '../util/evented';
+import type {Iconset} from '../style/iconset';
 import type {Callback} from '../types/callback';
-import type {TextureDescriptor} from './raster_array_tile';
 import type {ISource} from './source';
 import type {AJAXError} from '../util/ajax';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
+import type {TextureDescriptor} from './raster_array_tile';
 import type {RasterArraySourceSpecification} from '../style-spec/types';
 import type {WorkerSourceRasterArrayTileRequest} from './worker_source';
 
@@ -39,6 +41,8 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
     override type: 'raster-array';
     override map: Map;
 
+    iconsets: Record<string, Iconset>;
+
     /**
      * When `true`, the source will only load the tile header
      * and use range requests to load and parse the tile data.
@@ -50,7 +54,8 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-array';
         this.maxzoom = 22;
-        this.partial = true;
+        this.partial = false;
+        this.iconsets = {};
         this._options = extend({type: 'raster-array'}, options);
     }
 
@@ -117,6 +122,26 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
             } else {
                 tile._isHeaderLoaded = true;
                 tile._mrt = data;
+
+                // Populate iconsets with images
+                for (const iconsetId in this.iconsets) {
+                    const iconset = this.iconsets[iconsetId];
+                    const images = [];
+
+                    for (const layerId in tile._mrt.layers) {
+                        const layer = tile.getLayer(layerId);
+                        if (!layer) continue;
+
+                        for (const bandId of layer.getBandList()) {
+                            const {bytes, tileSize, buffer} = layer.getBandView(bandId);
+                            const size = tileSize + 2 * buffer;
+                            const img = {data: new RGBAImage({width: size, height: size}, bytes), pixelRatio: 1, sdf: false, usvg: false};
+                            images.push({layerId, bandId, img});
+                        }
+                    }
+
+                    iconset.addImages(images);
+                }
             }
 
             callback(null);
@@ -242,6 +267,10 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         if (tile.updateNeeded(sourceLayer, band) && !fallbackToPrevious) return;
 
         return Object.assign({}, tile.textureDescriptor, {texture: tile.texture});
+    }
+
+    addIconset(iconsetId: string, iconset: Iconset) {
+        this.iconsets[iconsetId] = iconset;
     }
 }
 
