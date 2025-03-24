@@ -20,10 +20,9 @@ import * as symbolSize from '../symbol/symbol_size';
 import {PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constants';
 
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
-import type {ImageVariant} from '../style-spec/expression/types/image_variant';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type {CanonicalTileID} from '../source/tile_id';
-import type {Shaping, PositionedIcon, TextJustify} from './shaping';
+import type {Shaping, PositionedIcon, TextJustify, SymbolAnchor} from './shaping';
 import type {GlyphMap} from '../render/glyph_manager';
 import type {CollisionBoxArray} from '../data/array_types';
 import type {StyleImageMap} from '../style/style_image';
@@ -36,6 +35,8 @@ import type {vec3} from 'gl-matrix';
 import type {LayoutProps} from '../style/style_layer/symbol_style_layer_properties';
 import type ImageAtlas from '../render/image_atlas';
 import type ResolvedImage from '../style-spec/expression/types/resolved_image';
+import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {ImageVariant, StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 
 // The symbol layout process needs `text-size` evaluated at up to five different zoom levels, and
 // `icon-size` at up to three:
@@ -188,7 +189,7 @@ export type SymbolBucketData = {
 export function performSymbolLayout(bucket: SymbolBucket,
                              glyphMap: GlyphMap,
                              glyphPositions: GlyphPositions,
-                             imageMap: StyleImageMap,
+                             imageMap: StyleImageMap<StringifiedImageVariant>,
                              imagePositions: ImagePositionMap,
                              canonical: CanonicalTileID,
                              tileZoom: number,
@@ -347,26 +348,26 @@ export function performSymbolLayout(bucket: SymbolBucket,
             }
         }
 
-        let shapedIcon;
+        let shapedIcon: PositionedIcon;
         let isSDFIcon = false;
-        let iconPrimary;
-        let iconSecondary;
+        let iconPrimary: ImageVariant;
+        let iconSecondary: ImageVariant;
         let iconOffset: [number, number];
-        let iconAnchor;
+        let iconAnchor: SymbolAnchor;
         let iconTextFit;
         if (feature.icon && feature.icon.hasPrimary()) {
             const icons = getScaledImageVariant(feature.icon, bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature, pixelRatio, sizes.iconScaleFactor);
             iconPrimary = icons.iconPrimary;
             iconSecondary = icons.iconSecondary;
-            const primaryImageSerialized = iconPrimary.serialize();
-            const image = imageMap[primaryImageSerialized];
+            const primaryImageSerialized = iconPrimary.toString();
+            const image = imageMap.get(primaryImageSerialized);
             if (image) {
                 iconOffset = layout.get('icon-offset').evaluate(feature, {}, canonical);
                 iconAnchor = layout.get('icon-anchor').evaluate(feature, {}, canonical);
                 iconTextFit = layout.get('icon-text-fit').evaluate(feature, {}, canonical);
                 shapedIcon = shapeIcon(
-                    imagePositions[primaryImageSerialized],
-                    iconSecondary ? imagePositions[iconSecondary.serialize()] : undefined,
+                    imagePositions.get(primaryImageSerialized),
+                    iconSecondary ? imagePositions.get(iconSecondary.toString()) : undefined,
                     iconOffset,
                     iconAnchor
                 );
@@ -419,7 +420,7 @@ export function getScaledImageVariant(icon: ResolvedImage, iconSizeData: symbolS
 }
 
 export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: SymbolBucketData, showCollisionBoxes: boolean,
-    availableImages: Array<string>, canonical: CanonicalTileID, tileZoom: number, projection: Projection, brightness: number | null, imageMap: StyleImageMap, imageAtlas: ImageAtlas) {
+    availableImages: ImageId[], canonical: CanonicalTileID, tileZoom: number, projection: Projection, brightness: number | null, imageMap: StyleImageMap<StringifiedImageVariant>, imageAtlas: ImageAtlas) {
 
     const {featureData, hasAnySecondaryIcon, sizes, textAlongLine, symbolPlacement} = bucketData;
 
@@ -448,12 +449,10 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
 function reconcileImagePosition(shapedIcon: PositionedIcon, atlasIconPositions: ImagePositionMap, iconPrimary: ImageVariant, iconSecondary: ImageVariant) {
     if (!shapedIcon) return;
 
-    const primaryId = iconPrimary.serialize();
-    const primaryImagePosition = atlasIconPositions[primaryId];
+    const primaryImagePosition = atlasIconPositions.get(iconPrimary.toString());
     shapedIcon.imagePrimary = primaryImagePosition;
     if (iconSecondary) {
-        const secondaryId = iconSecondary.serialize();
-        const secondaryImagePosition = atlasIconPositions[secondaryId];
+        const secondaryImagePosition = atlasIconPositions.get(iconSecondary.toString());
         shapedIcon.imageSecondary = secondaryImagePosition;
     }
 }
@@ -470,14 +469,13 @@ function reconcileTextImagePositions(shapedTextOrientations: any, atlasIconPosit
 }
 
 function reconcileTextOrientationImagePositions(shapedText: Shaping | null, atlasIconPositions: ImagePositionMap) {
-
     if (!shapedText) return;
 
     for (const line of shapedText.positionedLines) {
         for (const glyph of line.positionedGlyphs) {
             if (glyph.image !== null) {
-                const imageId = glyph.image.serialize();
-                glyph.rect = atlasIconPositions[imageId].paddedRect;
+                const imageId = glyph.image.toString();
+                glyph.rect = atlasIconPositions.get(imageId).paddedRect;
             }
         }
     }
@@ -543,13 +541,13 @@ function addFeature(bucket: SymbolBucket,
                     shapedTextOrientations: any,
                     shapedIcon: PositionedIcon | undefined,
                     verticallyShapedIcon: PositionedIcon | undefined,
-                    imageMap: StyleImageMap,
+                    imageMap: StyleImageMap<StringifiedImageVariant>,
                     sizes: Sizes,
                     layoutTextSize: number,
                     layoutIconSize: number,
                     textOffset: [number, number],
                     isSDFIcon: boolean,
-                    availableImages: Array<string>,
+                    availableImages: ImageId[],
                     canonical: CanonicalTileID,
                     projection: Projection,
                     brightness: number | null | undefined,
@@ -688,7 +686,7 @@ function addTextVertices(bucket: SymbolBucket,
                          } | null | undefined,
                          tileAnchor: Anchor,
                          shapedText: Shaping,
-                         imageMap: StyleImageMap,
+                         imageMap: StyleImageMap<StringifiedImageVariant>,
                          layer: SymbolStyleLayer,
                          textAlongLine: boolean,
                          feature: SymbolFeature,
@@ -704,7 +702,7 @@ function addTextVertices(bucket: SymbolBucket,
                          },
                          placedIconIndex: number,
                          sizes: Sizes,
-                         availableImages: Array<string>,
+                         availableImages: ImageId[],
                          canonical: CanonicalTileID,
                          brightness?: number | null) {
     const glyphQuads = getGlyphQuads(tileAnchor, shapedText, textOffset,
@@ -854,7 +852,7 @@ function addSymbol(bucket: SymbolBucket,
                    line: Array<Point>,
                    shapedTextOrientations: any,
                    shapedIcon: PositionedIcon | undefined,
-                   imageMap: StyleImageMap,
+                   imageMap: StyleImageMap<StringifiedImageVariant>,
                    verticallyShapedIcon: PositionedIcon | undefined,
                    layer: SymbolStyleLayer,
                    collisionBoxArray: CollisionBoxArray,
@@ -871,7 +869,7 @@ function addSymbol(bucket: SymbolBucket,
                    feature: SymbolFeature,
                    sizes: Sizes,
                    isSDFIcon: boolean,
-                   availableImages: Array<string>,
+                   availableImages: ImageId[],
                    canonical: CanonicalTileID,
                    brightness: number | null | undefined,
                    hasAnySecondaryIcon: boolean,

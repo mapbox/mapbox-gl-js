@@ -10,16 +10,21 @@ import Dispatcher from '../util/dispatcher';
 import {getImageRasterizerWorkerPool} from '../util/worker_pool_factory';
 import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
 import {ImageRasterizer} from './image_rasterizer';
-import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import browser from '../util/browser';
+import {makeFQID} from '../util/fqid';
+import {ImageId} from '../style-spec/expression/types/image_id';
+import {ImageVariant} from '../style-spec/expression/types/image_variant';
 
-import type {ImageVariant} from '../style-spec/expression/types/image_variant';
-import type {StyleImage, StyleImageMap} from '../style/style_image';
+import type {StyleImage, StyleImages, StyleImageMap} from '../style/style_image';
 import type Context from '../gl/context';
 import type {PotpackBox} from 'potpack';
 import type {Callback} from '../types/callback';
 import type {Size} from '../util/image';
 import type {LUT} from '../util/lut';
+import type {FQID} from '../util/fqid';
+import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
+import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
+import type {WorkerSourceRemoveRasterizedImagesParameters} from '../source/worker_source';
 
 const IMAGE_RASTERIZER_WORKER_POOL_COUNT = 1;
 
@@ -35,18 +40,24 @@ export type ImageRasterizationWorkerTask = {
     imageVariant: ImageVariant
 };
 
-export type ImageRasterizationWorkerTasks = Record<string, ImageRasterizationWorkerTask>;
+export type ImageRasterizationWorkerTasks = Map<StringifiedImageVariant, ImageRasterizationWorkerTask>;
 
-export type ImageRasterizationTasks = Record<string, ImageVariant>;
+export type ImageRasterizationTasks = Map<StringifiedImageVariant, ImageVariant>;
 
 export type RasterizeImagesParameters = {
     scope: string;
     tasks: ImageRasterizationTasks;
 };
 
-export type ImageDictionary = Record<string, RGBAImage>;
+export type RasterizedImageMap = Map<StringifiedImageVariant, RGBAImage>;
 
 export type SpriteFormat = 'auto' | 'raster' | 'icon_set';
+
+type ImageRequestor = {
+    ids: ImageId[];
+    scope: string;
+    callback: Callback<StyleImageMap<StringifiedImageId>>;
+};
 
 /*
     ImageManager does three things:
@@ -61,33 +72,25 @@ export type SpriteFormat = 'auto' | 'raster' | 'icon_set';
 */
 class ImageManager extends Evented {
     images: {
-        [scope: string]: StyleImageMap;
+        [scope: string]: StyleImages;
     };
     updatedImages: {
-        [scope: string]: {
-            [id: string]: boolean;
-        };
+        [scope: string]: Set<ImageId>;
     };
     callbackDispatchedThisFrame: {
-        [scope: string]: {
-            [id: string]: boolean;
-        };
+        [scope: string]: Set<ImageId>;
     };
     loaded: {
         [scope: string]: boolean;
     };
-    requestors: Array<{
-        ids: Array<string>;
-        scope: string;
-        callback: Callback<StyleImageMap>;
-    }>;
+    requestors: ImageRequestor[];
 
     patterns: {
         [scope: string]: {
             [id: string]: Pattern;
         };
     };
-    patternsInFlight: Set<string>;
+    patternsInFlight: Set<FQID<StringifiedImageId>>;
     atlasImage: {
         [scope: string]: RGBAImage;
     };
@@ -139,9 +142,9 @@ class ImageManager extends Evented {
     createScope(scope: string) {
         this.images[scope] = {};
         this.loaded[scope] = false;
-        this.updatedImages[scope] = {};
+        this.updatedImages[scope] = new Set();
         this.patterns[scope] = {};
-        this.callbackDispatchedThisFrame[scope] = {};
+        this.callbackDispatchedThisFrame[scope] = new Set();
         this.atlasImage[scope] = new RGBAImage({width: 1, height: 1});
     }
 
@@ -167,33 +170,33 @@ class ImageManager extends Evented {
         }
     }
 
-    hasImage(id: string, scope: string): boolean {
+    hasImage(id: ImageId, scope: string): boolean {
         return !!this.getImage(id, scope);
     }
 
-    getImage(id: string, scope: string): StyleImage | null | undefined {
-        return this.images[scope][id];
+    getImage(id: ImageId, scope: string): StyleImage | null | undefined {
+        return this.images[scope][id.name];
     }
 
-    addImage(id: string, scope: string, image: StyleImage) {
-        assert(!this.images[scope][id]);
+    addImage(id: ImageId, scope: string, image: StyleImage) {
+        assert(!this.images[scope][id.name]);
         if (this._validate(id, image)) {
-            this.images[scope][id] = image;
+            this.images[scope][id.name] = image;
         }
     }
 
-    _validate(id: string, image: StyleImage): boolean {
+    _validate(id: ImageId, image: StyleImage): boolean {
         let valid = true;
         if (!this._validateStretch(image.stretchX, image.data && image.data.width)) {
-            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchX" value`)));
+            this.fire(new ErrorEvent(new Error(`Image "${id.name}" has invalid "stretchX" value`)));
             valid = false;
         }
         if (!this._validateStretch(image.stretchY, image.data && image.data.height)) {
-            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchY" value`)));
+            this.fire(new ErrorEvent(new Error(`Image "${id.name}" has invalid "stretchY" value`)));
             valid = false;
         }
         if (!this._validateContent(image.content, image)) {
-            this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "content" value`)));
+            this.fire(new ErrorEvent(new Error(`Image "${id.name}" has invalid "content" value`)));
             valid = false;
         }
         return valid;
@@ -229,45 +232,46 @@ class ImageManager extends Evented {
         return true;
     }
 
-    updateImage(id: string, scope: string, image: StyleImage) {
-        const oldImage = this.images[scope][id];
+    updateImage(id: ImageId, scope: string, image: StyleImage) {
+        const oldImage = this.images[scope][id.name];
         assert(oldImage);
         assert(oldImage.data.width === image.data.width);
         assert(oldImage.data.height === image.data.height);
         image.version = oldImage.version + 1;
-        this.images[scope][id] = image;
-        this.updatedImages[scope][id] = true;
+        this.images[scope][id.name] = image;
+        this.updatedImages[scope].add(id);
         this.removeFromImageRasterizerCache(id, scope);
     }
 
-    removeFromImageRasterizerCache(id: string, scope: string) {
+    removeFromImageRasterizerCache(id: ImageId, scope: string) {
         if (this.spriteFormat === 'raster') {
             return;
         }
 
         if (offscreenCanvasSupported()) {
-            this.imageRasterizerDispatcher.getActor().send('removeRasterizedImages', {imageIds: [id], scope});
+            const params: WorkerSourceRemoveRasterizedImagesParameters = {imageIds: [id], scope};
+            this.imageRasterizerDispatcher.getActor().send('removeRasterizedImages', params);
         } else {
             this.imageRasterizer.removeImagesFromCacheByIds([id], scope);
         }
     }
 
-    removeImage(id: string, scope: string) {
-        assert(this.images[scope][id]);
-        const image = this.images[scope][id];
-        delete this.images[scope][id];
-        delete this.patterns[scope][id];
+    removeImage(id: ImageId, scope: string) {
+        assert(this.images[scope][id.name]);
+        const image = this.images[scope][id.name];
+        delete this.images[scope][id.name];
+        delete this.patterns[scope][id.name];
         this.removeFromImageRasterizerCache(id, scope);
         if (image.userImage && image.userImage.onRemove) {
             image.userImage.onRemove();
         }
     }
 
-    listImages(scope: string): Array<string> {
-        return Object.keys(this.images[scope]);
+    listImages(scope: string): ImageId[] {
+        return Object.keys(this.images[scope]).map(name => new ImageId(name));
     }
 
-    getImages(ids: Array<string>, scope: string, callback: Callback<StyleImageMap>) {
+    getImages(ids: ImageId[], scope: string, callback: Callback<StyleImageMap<StringifiedImageId>>) {
         // If the sprite has been loaded, or if all the icon dependencies are already present
         // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
@@ -276,7 +280,7 @@ class ImageManager extends Evented {
         const isLoaded = !!this.loaded[scope];
         if (!isLoaded) {
             for (const id of ids) {
-                if (!this.images[scope][id]) {
+                if (!this.images[scope][id.name]) {
                     hasAllDependencies = false;
                 }
             }
@@ -288,51 +292,48 @@ class ImageManager extends Evented {
         }
     }
 
-    rasterizeImages({scope, tasks}: RasterizeImagesParameters, callback: Callback<ImageDictionary>) {
-        const imageWorkerTasks: ImageRasterizationWorkerTasks = {};
+    rasterizeImages({scope, tasks}: RasterizeImagesParameters, callback: Callback<RasterizedImageMap>) {
+        const imageWorkerTasks: ImageRasterizationWorkerTasks = new Map();
 
-        for (const id in tasks) {
-            const imageVariant = tasks[id];
-            const imageVariantId = imageVariant.serializeId();
-            const image = this.getImage(imageVariantId, scope);
+        for (const [id, imageVariant] of tasks.entries()) {
+            const image = this.getImage(imageVariant.id, scope);
             if (image) {
-                imageWorkerTasks[id] = {image, imageVariant};
+                imageWorkerTasks.set(id, {image, imageVariant});
             }
         }
 
         this._rasterizeImages(scope, imageWorkerTasks, callback);
     }
 
-    _rasterizeImages(scope: string, tasks: ImageRasterizationWorkerTasks, callback?: Callback<ImageDictionary>) {
+    _rasterizeImages(scope: string, tasks: ImageRasterizationWorkerTasks, callback?: Callback<RasterizedImageMap>) {
         if (offscreenCanvasSupported()) {
             // Use the worker thread to rasterize images
             this.imageRasterizerDispatcher.getActor().send('rasterizeImages', {tasks, scope}, callback);
         } else {
             // Fallback to main thread rasterization
-            const images: ImageDictionary = {};
-            for (const id in tasks) {
-                const {image, imageVariant} = tasks[id];
-                images[id] = this.imageRasterizer.rasterize(imageVariant, image, scope, '');
+            const rasterizedImages: RasterizedImageMap = new Map();
+            for (const [id, {image, imageVariant}] of tasks.entries()) {
+                rasterizedImages.set(id, this.imageRasterizer.rasterize(imageVariant, image, scope, ''));
             }
-            callback(undefined, images);
+            callback(undefined, rasterizedImages);
         }
     }
 
-    getUpdatedImages(scope: string): Record<string, boolean> {
-        return this.updatedImages[scope] || {};
+    getUpdatedImages(scope: string): Set<ImageId> {
+        return this.updatedImages[scope] || new Set();
     }
 
-    _notify(ids: Array<string>, scope: string, callback: Callback<StyleImageMap>) {
-        const response: StyleImageMap = {};
+    _notify(ids: ImageId[], scope: string, callback: Callback<StyleImageMap<StringifiedImageId>>) {
+        const response: StyleImageMap<StringifiedImageId> = new Map();
 
         for (const id of ids) {
-            if (!this.images[scope][id]) {
+            if (!this.images[scope][id.name]) {
                 this.fire(new Event('styleimagemissing', {id}));
             }
-            const image = this.images[scope][id];
+            const image = this.images[scope][id.name];
             if (image) {
                 // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
-                response[id] = {
+                const styleImage = {
                     // Vector images will be rasterized on the worker thread
                     data: image.usvg ? null : image.data.clone(),
                     pixelRatio: image.pixelRatio,
@@ -348,11 +349,15 @@ class ImageManager extends Evented {
                 if (image.usvg) {
                     // Since vector images don't have any data, we add the width and height from the source svg
                     // so that we can compute the scale factor later if needed
-                    Object.assign(response[id], {width: image.icon.usvg_tree.width});
-                    Object.assign(response[id], {height: image.icon.usvg_tree.height});
+                    Object.assign(styleImage, {
+                        width: image.icon.usvg_tree.width,
+                        height: image.icon.usvg_tree.height
+                    });
                 }
+
+                response.set(ImageId.toString(id), styleImage);
             } else {
-                warnOnce(`Image "${id}" could not be loaded. Please make sure you have added the image with map.addImage() or a "sprite" property in your style. You can provide missing images by listening for the "styleimagemissing" map event.`);
+                warnOnce(`Image "${id.name}" could not be loaded. Please make sure you have added the image with map.addImage() or a "sprite" property in your style. You can provide missing images by listening for the "styleimagemissing" map event.`);
             }
         }
 
@@ -366,57 +371,67 @@ class ImageManager extends Evented {
         return {width, height};
     }
 
-    getPattern(id: string, scope: string, lut: LUT | null): ImagePosition | null | undefined {
-        const pattern = this.patterns[scope][id];
+    getPattern(id: ImageId, scope: string, lut: LUT | null): ImagePosition | null | undefined {
+        const pattern = this.patterns[scope][id.name];
 
         const image = this.getImage(id, scope);
         if (!image) {
             return null;
         }
 
-        if (pattern && pattern.position.version === image.version) {
-            return pattern.position;
-        }
-
-        if (!pattern) {
-            if (image.usvg && !image.data) {
-                if (this.patternsInFlight.has(id)) return null;
-                this.patternsInFlight.add(this.getPatternInFlightId(scope, id));
-                const imageVariant = ResolvedImage.from(id).getPrimary().scaleSelf(browser.devicePixelRatio);
-                const tasks: ImageRasterizationWorkerTasks = {[id]: {image, imageVariant}};
-                this._rasterizeImages(scope, tasks, (_, result) => this.storePatternImage(id, scope, image, lut, result));
-                return null;
+        if (pattern) {
+            if (pattern.position.version === image.version) {
+                return pattern.position;
             } else {
-                this.storePattern(scope, id, image, lut);
+                pattern.position.version = image.version;
             }
         } else {
-            pattern.position.version = image.version;
+            if (image.usvg && !image.data) {
+                const patternInFlightId = this.getPatternInFlightId(id.toString(), scope);
+                if (this.patternsInFlight.has(patternInFlightId)) {
+                    return null;
+                }
+
+                this.patternsInFlight.add(patternInFlightId);
+                const imageVariant = new ImageVariant(id).scaleSelf(browser.devicePixelRatio);
+                const tasks: ImageRasterizationWorkerTasks = new Map([[imageVariant.toString(), {image, imageVariant}]]);
+                this._rasterizeImages(scope, tasks, (_, rasterizedImages) => this.storePatternImage(imageVariant, scope, image, lut, rasterizedImages));
+                return null;
+            } else {
+                this.storePattern(id, scope, image);
+            }
         }
 
         this._updatePatternAtlas(scope, lut);
 
-        return this.patterns[scope][id].position;
+        return this.patterns[scope][id.name].position;
     }
 
-    getPatternInFlightId(scope: string, id: string) {
-        return `${scope}${id}`;
+    getPatternInFlightId(id: StringifiedImageId, scope: string): FQID<StringifiedImageId> {
+        return makeFQID(id, scope);
     }
 
-    storePatternImage(id: string, scope: string, image: StyleImage, lut: LUT, result?: ImageDictionary | null) {
-        const imageData = result[id];
+    hasPatternsInFlight() {
+        return this.patternsInFlight.size !== 0;
+    }
+
+    storePatternImage(imageVariant: ImageVariant, scope: string, image: StyleImage, lut: LUT, rasterizedImages?: RasterizedImageMap | null) {
+        const id = imageVariant.toString();
+        const imageData = rasterizedImages ? rasterizedImages.get(id) : undefined;
         if (!imageData) return;
+
         image.data = imageData;
-        this.storePattern(scope, id, image, lut);
+        this.storePattern(imageVariant.id, scope, image);
         this._updatePatternAtlas(scope, lut);
-        this.patternsInFlight.delete(this.getPatternInFlightId(scope, id));
+        this.patternsInFlight.delete(this.getPatternInFlightId(imageVariant.id.toString(), scope));
     }
 
-    storePattern(scope: string, id: string, image: StyleImage, lut: LUT) {
+    storePattern(id: ImageId, scope: string, image: StyleImage) {
         const w = image.data.width + PATTERN_PADDING * 2;
         const h = image.data.height + PATTERN_PADDING * 2;
         const bin = {w, h, x: 0, y: 0};
         const position = new ImagePosition(bin, image, PATTERN_PADDING);
-        this.patterns[scope][id] = {bin, position};
+        this.patterns[scope][id.name] = {bin, position};
     }
 
     bind(context: Context, scope: string) {
@@ -434,14 +449,10 @@ class ImageManager extends Evented {
         atlasTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 
-    hasPatternsInFlight() {
-        return this.patternsInFlight.size !== 0;
-    }
-
     _updatePatternAtlas(scope: string, lut: LUT | null) {
         const bins = [];
-        for (const id in this.patterns[scope]) {
-            bins.push(this.patterns[scope][id].bin);
+        for (const name in this.patterns[scope]) {
+            bins.push(this.patterns[scope][name].bin);
         }
 
         const {w, h} = potpack(bins);
@@ -449,12 +460,12 @@ class ImageManager extends Evented {
         const dst = this.atlasImage[scope];
         dst.resize({width: w || 1, height: h || 1});
 
-        for (const id in this.patterns[scope]) {
-            const {bin, position} = this.patterns[scope][id];
+        for (const name in this.patterns[scope]) {
+            const {bin, position} = this.patterns[scope][name];
             let padding = position.padding;
             const x = bin.x + padding;
             const y = bin.y + padding;
-            const src = this.images[scope][id].data;
+            const src = this.images[scope][name].data;
             const w = src.width;
             const h = src.height;
 
@@ -482,22 +493,22 @@ class ImageManager extends Evented {
 
     beginFrame() {
         for (const scope in this.images) {
-            this.callbackDispatchedThisFrame[scope] = {};
+            this.callbackDispatchedThisFrame[scope] = new Set();
         }
     }
 
-    dispatchRenderCallbacks(ids: Array<string>, scope: string) {
-        for (const id of ids) {
+    dispatchRenderCallbacks(ids: ImageId[], scope: string) {
+        for (const imageId of ids) {
             // the callback for the image was already dispatched for a different frame
-            if (this.callbackDispatchedThisFrame[scope][id]) continue;
-            this.callbackDispatchedThisFrame[scope][id] = true;
+            if (this.callbackDispatchedThisFrame[scope].has(imageId)) continue;
+            this.callbackDispatchedThisFrame[scope].add(imageId);
 
-            const image = this.images[scope][id];
+            const image = this.images[scope][imageId.name];
             assert(image);
 
             const updated = renderStyleImage(image);
             if (updated) {
-                this.updateImage(id, scope, image);
+                this.updateImage(imageId, scope, image);
             }
         }
     }

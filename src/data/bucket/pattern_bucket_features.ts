@@ -5,26 +5,27 @@ import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion
 import type LineStyleLayer from '../../style/style_layer/line_style_layer';
 import type {
     BucketFeature,
-    ImageDependencies,
-    PopulateParameters
+    PopulateParameters,
+    ImageDependenciesMap
 } from '../bucket';
 
 type PatternStyleLayers = Array<LineStyleLayer> | Array<FillStyleLayer> | Array<FillExtrusionStyleLayer>;
 
-function addPattern(pattern: string | ResolvedImage, patterns: ImageDependencies, pixelRatio: number = 1): string | null {
+function addPattern(pattern: string | ResolvedImage, patterns: ImageDependenciesMap, pixelRatio: number = 1): string | null {
     if (!pattern) {
         return null;
     }
 
-    const patternId = typeof pattern === 'string' ? pattern : pattern.getPrimary().serializeId();
+    const patternPrimary = typeof pattern === 'string' ? ResolvedImage.from(pattern).getPrimary() : pattern.getPrimary();
+    const patternId = patternPrimary.id.toString();
 
-    if (!patterns[patternId]) {
-        patterns[patternId] = [];
+    if (!patterns.has(patternId)) {
+        patterns.set(patternId, []);
     }
 
-    const patternPrimary = ResolvedImage.from(patternId).getPrimary().scaleSelf(pixelRatio);
-    patterns[patternId].push(patternPrimary);
-    return patternPrimary.serialize();
+    patternPrimary.scaleSelf(pixelRatio);
+    patterns.get(patternId).push(patternPrimary);
+    return patternPrimary.toString();
 }
 
 export function hasPattern(type: string, layers: PatternStyleLayers, pixelRatio: number, options: PopulateParameters): boolean {

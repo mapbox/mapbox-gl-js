@@ -66,6 +66,7 @@ import {expandSchemaWithIndoor} from './indoor_manager';
 import featureFilter from '../style-spec/feature_filter/index';
 import {TargetFeature} from '../util/vectortile_to_geojson';
 import {loadIconset} from './load_iconset';
+import {ImageId} from '../style-spec/expression/types/image_id';
 
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
@@ -117,7 +118,8 @@ import type {GeoJSONFeature, FeaturesetDescriptor, TargetDescriptor, default as 
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
 import type {FontStacks, GlyphMap} from '../render/glyph_manager';
-import type {RasterizeImagesParameters, ImageDictionary} from '../render/image_manager';
+import type {RasterizeImagesParameters, RasterizedImageMap} from '../render/image_manager';
+import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -134,11 +136,16 @@ export type QueryRenderedFeaturesetParams = {
 };
 
 export type GetImagesParameters = {
-    icons: Array<string>;
+    images: ImageId[];
     source: string;
     scope: string;
     tileID: OverscaledTileID;
     type: string;
+};
+
+export type SetImagesParameters = {
+    images: ImageId[];
+    scope: string;
 };
 
 export type GetGlyphsParameters = {
@@ -340,7 +347,7 @@ class Style extends Evented<MapEvents> {
     _changes: StyleChanges;
     _optionsChanged: boolean;
     _layerOrderChanged: boolean;
-    _availableImages: Array<string>;
+    _availableImages: ImageId[];
     _markersNeedUpdate: boolean;
     _brightness: number | null | undefined;
     _configDependentLayers: Set<string>;
@@ -1192,8 +1199,9 @@ class Style extends Evented<MapEvents> {
             if (!colorThemeData.startsWith(dataURLPrefix)) {
                 colorThemeData = dataURLPrefix + colorThemeData;
             }
+
             // Reserved image name, which references the LUT in the image manager
-            const styleLutName = 'mapbox-reserved-lut';
+            const styleLutName = ImageId.from('mapbox-reserved-lut');
 
             const lutImage = new Image();
             lutImage.src = colorThemeData;
@@ -1284,16 +1292,14 @@ class Style extends Evented<MapEvents> {
                 this.fire(new ErrorEvent(err));
             } else if (images) {
                 for (const id in images) {
-                    this.imageManager.addImage(id, this.scope, images[id]);
+                    this.imageManager.addImage(ImageId.from(id), this.scope, images[id]);
                 }
             }
 
             this.imageManager.setLoaded(true, this.scope);
             this._availableImages = this.imageManager.listImages(this.scope);
-            this.dispatcher.broadcast('setImages', {
-                scope: this.scope,
-                images: this._availableImages
-            });
+            const params: SetImagesParameters = {scope: this.scope, images: this._availableImages};
+            this.dispatcher.broadcast('setImages', params);
             this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
             this.fire(new Event('data', {dataType: 'style'}));
         });
@@ -1320,16 +1326,14 @@ class Style extends Evented<MapEvents> {
                 }
             } else if (images) {
                 for (const id in images) {
-                    this.imageManager.addImage(id, this.scope, images[id]);
+                    this.imageManager.addImage(ImageId.from(id), this.scope, images[id]);
                 }
             }
 
             this.imageManager.setLoaded(true, this.scope);
             this._availableImages = this.imageManager.listImages(this.scope);
-            this.dispatcher.broadcast('setImages', {
-                scope: this.scope,
-                images: this._availableImages
-            });
+            const params: SetImagesParameters = {scope: this.scope, images: this._availableImages};
+            this.dispatcher.broadcast('setImages', params);
             this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
             this.fire(new Event('data', {dataType: 'style'}));
         });
@@ -1792,7 +1796,7 @@ class Style extends Evented<MapEvents> {
         return true;
     }
 
-    addImage(id: string, image: StyleImage): this {
+    addImage(id: ImageId, image: StyleImage): this {
         if (this.getImage(id)) {
             return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
         }
@@ -1801,18 +1805,18 @@ class Style extends Evented<MapEvents> {
         return this;
     }
 
-    updateImage(id: string, image: StyleImage, performSymbolLayout = false) {
+    updateImage(id: ImageId, image: StyleImage, performSymbolLayout = false) {
         this.imageManager.updateImage(id, this.scope, image);
         if (performSymbolLayout) {
             this._afterImageUpdated(id);
         }
     }
 
-    getImage(id: string): StyleImage | null | undefined {
+    getImage(id: ImageId): StyleImage | null | undefined {
         return this.imageManager.getImage(id, this.scope);
     }
 
-    removeImage(id: string): this {
+    removeImage(id: ImageId): this {
         if (!this.getImage(id)) {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
@@ -1821,17 +1825,15 @@ class Style extends Evented<MapEvents> {
         return this;
     }
 
-    _afterImageUpdated(id: string) {
+    _afterImageUpdated(id: ImageId) {
         this._availableImages = this.imageManager.listImages(this.scope);
         this._changes.updateImage(id);
-        this.dispatcher.broadcast('setImages', {
-            scope: this.scope,
-            images: this._availableImages
-        });
+        const params: SetImagesParameters = {scope: this.scope, images: this._availableImages};
+        this.dispatcher.broadcast('setImages', params);
         this.fire(new Event('data', {dataType: 'style'}));
     }
 
-    listImages(): Array<string> {
+    listImages(): ImageId[] {
         this._checkLoaded();
         return this._availableImages.slice();
     }
@@ -4156,8 +4158,8 @@ class Style extends Evented<MapEvents> {
 
     // Callbacks from web workers
 
-    getImages(mapId: string, params: GetImagesParameters, callback: Callback<StyleImageMap>) {
-        this.imageManager.getImages(params.icons, params.scope, callback);
+    getImages(mapId: string, params: GetImagesParameters, callback: Callback<StyleImageMap<StringifiedImageId>>) {
+        this.imageManager.getImages(params.images, params.scope, callback);
 
         // Apply queued image changes before setting the tile's dependencies so that the tile
         // is not reloaded unecessarily. Without this forced update the reload could happen in cases
@@ -4171,14 +4173,15 @@ class Style extends Evented<MapEvents> {
 
         const setDependencies = (sourceCache: SourceCache) => {
             if (sourceCache) {
-                sourceCache.setDependencies(params.tileID.key, params.type, params.icons);
+                const dependencies = params.images.map(id => ImageId.toString(id));
+                sourceCache.setDependencies(params.tileID.key, params.type, dependencies);
             }
         };
         setDependencies(this._otherSourceCaches[params.source]);
         setDependencies(this._symbolSourceCaches[params.source]);
     }
 
-    rasterizeImages(mapId: string, params: RasterizeImagesParameters, callback: Callback<ImageDictionary>) {
+    rasterizeImages(mapId: string, params: RasterizeImagesParameters, callback: Callback<RasterizedImageMap>) {
         this.imageManager.rasterizeImages(params, callback);
     }
 

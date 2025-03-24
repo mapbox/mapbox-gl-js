@@ -35,6 +35,7 @@ import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../types/tile_id';
 import type {FeatureDistanceData} from '../feature_filter/index';
 import type {ConfigOptions} from '../types/config_options';
+import type {ImageId} from './types/image_id';
 
 export interface Feature {
     readonly type: 0 | 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
@@ -88,7 +89,7 @@ export class StyleExpression {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
         featureTileCoord?: Point,
         featureDistanceData?: FeatureDistanceData,
@@ -110,7 +111,7 @@ export class StyleExpression {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
         featureTileCoord?: Point,
         featureDistanceData?: FeatureDistanceData,
@@ -202,7 +203,7 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
@@ -213,7 +214,7 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ): any {
         return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
@@ -247,7 +248,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
@@ -258,7 +259,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ): any {
         return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
@@ -281,7 +282,7 @@ export type ConstantExpression = {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ) => any;
 };
 
@@ -296,7 +297,7 @@ export type SourceExpression = {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ) => any;
 };
@@ -310,7 +311,7 @@ export type CameraExpression = {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ) => any;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;
     zoomStops: Array<number>;
@@ -328,7 +329,7 @@ export interface CompositeExpression {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ) => any;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;

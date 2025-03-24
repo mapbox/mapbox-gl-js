@@ -22,6 +22,8 @@ import type {
     CompositeExpression
 } from '../style-spec/expression/index';
 import type {ConfigOptions} from '../style-spec/types/config_options';
+import type {ImageId} from '../style-spec/expression/types/image_id';
+
 export type {ConfigOptions};
 
 type TimePoint = number;
@@ -66,7 +68,7 @@ export interface Property<T, R> {
         value: PropertyValue<T, R>,
         parameters: EvaluationParameters,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ) => R;
     interpolate: (a: R, b: R, t: number) => R;
 }
@@ -108,7 +110,7 @@ export class PropertyValue<T, R> {
     possiblyEvaluate(
         parameters: EvaluationParameters,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ): R {
         return this.property.possiblyEvaluate(this, parameters, canonical, availableImages);
     }
@@ -304,7 +306,7 @@ class TransitioningPropertyValue<T, R> {
     possiblyEvaluate(
         parameters: EvaluationParameters,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ): R {
         const now = parameters.now || 0;
         const finalValue = this.value.possiblyEvaluate(parameters, canonical, availableImages);
@@ -366,7 +368,7 @@ export class Transitioning<Props extends {
     possiblyEvaluate(
         parameters: EvaluationParameters,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ): PossiblyEvaluated<Props> {
         const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
         for (const property of Object.keys(this._values)) {
@@ -460,7 +462,7 @@ export class Layout<Props extends {
     possiblyEvaluate(
         parameters: EvaluationParameters,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ): PossiblyEvaluated<Props> {
         const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
         for (const property of Object.keys(this._values)) {
@@ -533,7 +535,7 @@ export class PossiblyEvaluatedPropertyValue<T> {
         feature: Feature,
         featureState: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ): T {
         return this.property.evaluate(this.value, this.parameters, feature, featureState, canonical, availableImages);
     }
@@ -633,7 +635,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         value: PropertyValue<T, PossiblyEvaluatedPropertyValue<T>>,
         parameters: EvaluationParameters,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ): PossiblyEvaluatedPropertyValue<T> {
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters, (null as any), {}, canonical, availableImages)}, parameters);
@@ -677,7 +679,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         feature: Feature,
         featureState: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ): T {
         if (value.kind === 'constant') {
             return value.value;
@@ -705,7 +707,7 @@ export class ColorRampProperty implements Property<Color, boolean> {
         value: PropertyValue<Color, boolean>,
         parameters: EvaluationParameters,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ): boolean {
         return !!value.expression.evaluate(parameters, (null as any), {}, canonical, availableImages);
     }

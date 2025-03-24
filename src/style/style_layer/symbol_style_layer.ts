@@ -40,6 +40,7 @@ import type {Feature, SourceExpression, CompositeExpression} from '../../style-s
 import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {LUT} from "../../util/lut";
+import type {ImageId} from '../../style-spec/expression/types/image_id';
 
 let properties: {
     layout: Properties<LayoutProps>;
@@ -81,7 +82,7 @@ class SymbolStyleLayer extends StyleLayer {
         this.hasInitialOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
     }
 
-    override recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
 
         if (this.layout.get('icon-rotation-alignment') === 'auto') {
@@ -153,7 +154,7 @@ class SymbolStyleLayer extends StyleLayer {
         name: any,
         feature: Feature,
         canonical: CanonicalTileID,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
     ): string {
         const value = this.layout.get(name).evaluate(feature, {}, canonical, availableImages);
         const unevaluated = this._unevaluatedLayout._values[name];

@@ -6,7 +6,7 @@
   ],
   "inputs": [
     [
-      {"availableImages": ["monument-15"]},
+      {"availableImages": [{"name": "monument-15"}]},
       {}
     ]
   ],
@@ -22,14 +22,14 @@
         "sections": [
           {
             "text": "",
-            "image": {"namePrimary": "monument-15", "available": true},
+            "image": {"primaryId": {"name": "monument-15"}, "available": true},
             "scale": null,
             "fontStack": null,
             "textColor": null
           },
           {
             "text": "",
-            "image": {"namePrimary": "beach-11", "available": false},
+            "image": {"primaryId": {"name": "beach-11"}, "available": false},
             "scale": null,
             "fontStack": null,
             "textColor": null

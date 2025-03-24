@@ -81,6 +81,7 @@ import type {SpritePositions} from '../../util/image';
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 import type {ElevationType} from '../../../3d-style/elevation/elevation_constants';
 import type {ElevationFeature} from '../../../3d-style/elevation/elevation_feature';
+import type {ImageId} from '../../style-spec/expression/types/image_id';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -688,13 +689,15 @@ class SymbolBucket implements Bucket {
                 const layer = this.layers[0];
                 const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
                 const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor);
-                const iconPrimaryId = iconPrimary.serializeId();
-                icons[iconPrimaryId] = icons[iconPrimaryId] || [];
-                icons[iconPrimaryId].push(iconPrimary);
+                const iconPrimaryId = iconPrimary.id.toString();
+                const primaryIcons = icons.get(iconPrimaryId) || [];
+                primaryIcons.push(iconPrimary);
+                icons.set(iconPrimaryId, primaryIcons);
                 if (iconSecondary) {
-                    const iconSecondaryId = iconSecondary.serializeId();
-                    icons[iconSecondaryId] = icons[iconSecondaryId] || [];
-                    icons[iconSecondaryId].push(iconSecondary);
+                    const iconSecondaryId = iconSecondary.id.toString();
+                    const secondaryIcons = icons.get(iconSecondaryId) || [];
+                    secondaryIcons.push(iconSecondary);
+                    icons.set(iconSecondaryId, secondaryIcons);
                 }
             }
 
@@ -710,9 +713,10 @@ class SymbolBucket implements Bucket {
                         this.calculateGlyphDependencies(section.text, sectionStack, textAlongLine, this.allowVerticalPlacement, doesAllowVerticalWritingMode);
                     } else {
                         const imagePrimary = section.image.getPrimary().scaleSelf(this.pixelRatio);
-                        const imagePrimaryId = imagePrimary.serializeId();
-                        icons[imagePrimaryId] = icons[imagePrimaryId] || [];
-                        icons[imagePrimaryId].push(imagePrimary);
+                        const imagePrimaryId = imagePrimary.id.toString();
+                        const primaryIcons = icons.get(imagePrimaryId) || [];
+                        primaryIcons.push(imagePrimary);
+                        icons.set(imagePrimaryId, primaryIcons);
                     }
                 }
             }
@@ -751,7 +755,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
         this.text.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
         this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
     }
@@ -925,7 +929,7 @@ class SymbolBucket implements Bucket {
                lineStartIndex: number,
                lineLength: number,
                associatedIconIndex: number,
-               availableImages: Array<string>,
+               availableImages: ImageId[],
                canonical: CanonicalTileID,
                brightness: number | null | undefined,
                hasAnySecondaryIcon: boolean) {

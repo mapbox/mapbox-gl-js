@@ -2,6 +2,7 @@ import assert from 'assert';
 import {RGBAImage} from '../util/image';
 import {register} from '../util/web_worker_transfer';
 import potpack from 'potpack';
+import {ImageId} from '../style-spec/expression/types/image_id';
 import {ImageVariant} from '../style-spec/expression/types/image_variant';
 
 import type {StyleImage, StyleImageMap} from '../style/style_image';
@@ -9,6 +10,7 @@ import type ImageManager from './image_manager';
 import type Texture from './texture';
 import type {SpritePosition} from '../util/image';
 import type {LUT} from "../util/lut";
+import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 
 const ICON_PADDING: number = 1;
 const PATTERN_PADDING: number = 2;
@@ -26,7 +28,7 @@ type ImagePositionScale = {
     y: number;
 }
 
-export type ImagePositionMap = Record<string, ImagePosition>;
+export type ImagePositionMap = Map<StringifiedImageVariant, ImagePosition>;
 
 export class ImagePosition implements SpritePosition {
     paddedRect: Rect;
@@ -110,7 +112,7 @@ function getImageBin(image: StyleImage, padding: number, scale: [number, number]
     };
 }
 
-export function getImagePosition(id: string, src: StyleImage, padding: number) {
+export function getImagePosition(id: StringifiedImageVariant, src: StyleImage, padding: number) {
     const imageVariant = ImageVariant.parse(id);
     const bin = getImageBin(src, padding, [imageVariant.options.transform.a, imageVariant.options.transform.d]);
     return {bin, imagePosition: new ImagePosition(bin, src, padding, imageVariant), imageVariant};
@@ -120,13 +122,13 @@ export default class ImageAtlas {
     image: RGBAImage;
     iconPositions: ImagePositionMap;
     patternPositions: ImagePositionMap;
-    haveRenderCallbacks: Array<string>;
+    haveRenderCallbacks: ImageId[];
     uploaded: boolean | null | undefined;
     lut: LUT | null;
 
-    constructor(icons: StyleImageMap, patterns: StyleImageMap, lut: LUT | null) {
-        const iconPositions: ImagePositionMap = {};
-        const patternPositions: ImagePositionMap = {};
+    constructor(icons: StyleImageMap<StringifiedImageVariant>, patterns: StyleImageMap<StringifiedImageVariant>, lut: LUT | null) {
+        const iconPositions: ImagePositionMap = new Map();
+        const patternPositions: ImagePositionMap = new Map();
         this.haveRenderCallbacks = [];
 
         const bins = [];
@@ -137,19 +139,18 @@ export default class ImageAtlas {
         const {w, h} = potpack(bins);
         const image = new RGBAImage({width: w || 1, height: h || 1});
 
-        for (const id in icons) {
-            const src = icons[id];
-            const bin = iconPositions[id].paddedRect;
+        for (const [id, src] of icons.entries()) {
+            const bin = iconPositions.get(id).paddedRect;
             // For SDF icons, we override the RGB channels with white.
             // This is because we read the red channel in the shader and RGB channels will get alpha-premultiplied on upload.
             const overrideRGB = src.sdf;
             RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + ICON_PADDING, y: bin.y + ICON_PADDING}, src.data, lut, overrideRGB);
         }
 
-        for (const id in patterns) {
-            const src = patterns[id];
-            const bin = patternPositions[id].paddedRect;
-            let padding = patternPositions[id].padding;
+        for (const [id, src] of patterns.entries()) {
+            const patternPosition = patternPositions.get(id);
+            const bin = patternPosition.paddedRect;
+            let padding = patternPosition.padding;
             const x = bin.x + padding,
                 y = bin.y + padding,
                 w = src.data.width,
@@ -178,15 +179,14 @@ export default class ImageAtlas {
         this.patternPositions = patternPositions;
     }
 
-    addImages(images: StyleImageMap, positions: ImagePositionMap, padding: number, bins: Array<Rect>) {
-        for (const id in images) {
-            const src = images[id];
+    addImages(images: StyleImageMap<StringifiedImageVariant>, positions: ImagePositionMap, padding: number, bins: Array<Rect>) {
+        for (const [id, src] of images.entries()) {
             const {bin, imagePosition, imageVariant} = getImagePosition(id, src, padding);
-            positions[id] = imagePosition;
+            positions.set(id, imagePosition);
             bins.push(bin);
 
             if (src.hasRenderCallback) {
-                this.haveRenderCallbacks.push(imageVariant.serializeId());
+                this.haveRenderCallbacks.push(imageVariant.id);
             }
         }
     }
@@ -195,16 +195,20 @@ export default class ImageAtlas {
         this.haveRenderCallbacks = this.haveRenderCallbacks.filter(id => imageManager.hasImage(id, scope));
         imageManager.dispatchRenderCallbacks(this.haveRenderCallbacks, scope);
 
-        for (const name in imageManager.getUpdatedImages(scope)) {
-            for (const id of Object.keys(this.iconPositions)) {
-                if (ImageVariant.parseId(id) === name) {
-                    this.patchUpdatedImage(this.iconPositions[id], imageManager.getImage(name, scope), texture);
+        for (const imageId of imageManager.getUpdatedImages(scope)) {
+            for (const id of this.iconPositions.keys()) {
+                const imageVariant = ImageVariant.parse(id);
+                if (ImageId.isEqual(imageVariant.id, imageId)) {
+                    const image = imageManager.getImage(imageId, scope);
+                    this.patchUpdatedImage(this.iconPositions.get(id), image, texture);
                 }
             }
 
-            for (const id of Object.keys(this.patternPositions)) {
-                if (ImageVariant.parseId(id) === name) {
-                    this.patchUpdatedImage(this.patternPositions[id], imageManager.getImage(name, scope), texture);
+            for (const id of this.patternPositions.keys()) {
+                const imageVariant = ImageVariant.parse(id);
+                if (ImageId.isEqual(imageVariant.id, imageId)) {
+                    const image = imageManager.getImage(imageId, scope);
+                    this.patchUpdatedImage(this.patternPositions.get(id), image, texture);
                 }
             }
         }

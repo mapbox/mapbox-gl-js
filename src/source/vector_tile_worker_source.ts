@@ -18,6 +18,7 @@ import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type Scheduler from '../util/scheduler';
 import type {LoadVectorData} from './load_vector_tile';
+import type {ImageId} from '../style-spec/expression/types/image_id';
 
 /**
  * The {@link WorkerSource} implementation that supports {@link VectorTileSource}.
@@ -31,7 +32,7 @@ import type {LoadVectorData} from './load_vector_tile';
 class VectorTileWorkerSource extends Evented implements WorkerSource {
     actor: Actor;
     layerIndex: StyleLayerIndex;
-    availableImages: Array<string>;
+    availableImages: ImageId[];
     loadVectorData: LoadVectorData;
     loading: Record<number, WorkerTile>;
     loaded: Record<number, WorkerTile>;
@@ -47,7 +48,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * loads the pbf at `params.url`.
      * @private
      */
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadVectorData?: LoadVectorData | null, brightness?: number | null) {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], isSpriteLoaded: boolean, loadVectorData?: LoadVectorData | null, brightness?: number | null) {
         super();
         this.actor = actor;
         this.layerIndex = layerIndex;

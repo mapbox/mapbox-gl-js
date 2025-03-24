@@ -55,7 +55,7 @@ export default class Formatted {
         const serialized: Array<unknown> = ["format"];
         for (const section of this.sections) {
             if (section.image) {
-                const primaryId = section.image.getPrimary().serializeId();
+                const primaryId = section.image.getPrimary().id.toString();
                 serialized.push(['image', primaryId]);
                 continue;
             }

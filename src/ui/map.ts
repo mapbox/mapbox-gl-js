@@ -45,6 +45,7 @@ import defaultLocale from './default_locale';
 import {TrackedParameters} from '../tracked-parameters/tracked_parameters';
 import {TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
 import {InteractionSet} from './interactions';
+import {ImageId} from '../style-spec/expression/types/image_id';
 
 import type Marker from '../ui/marker';
 import type Popup from '../ui/popup';
@@ -2621,24 +2622,16 @@ export class Map extends Camera {
      */
     addImage(
         id: string,
-        image: HTMLImageElement | ImageBitmap | ImageData | StyleImageInterface | {
-            width: number;
-            height: number;
-            data: Uint8Array | Uint8ClampedArray;
-        },
-        {
-            pixelRatio = 1,
-            sdf = false,
-            stretchX,
-            stretchY,
-            content,
-        }: Partial<StyleImageMetadata> = {}) {
+        image: HTMLImageElement | ImageBitmap | ImageData | StyleImageInterface | {width: number; height: number; data: Uint8Array | Uint8ClampedArray},
+        {pixelRatio = 1, sdf = false, stretchX, stretchY, content}: Partial<StyleImageMetadata> = {}
+    ) {
         this._lazyInitEmptyStyle();
         const version = 0;
 
+        const imageId = ImageId.from(id);
         if (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) {
             const {width, height, data} = browser.getImageData(image);
-            this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version, usvg: false});
+            this.style.addImage(imageId, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version, usvg: false});
         } else if (image.width === undefined || image.height === undefined) {
             this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
@@ -2648,7 +2641,7 @@ export class Map extends Camera {
             const userImage = (image as StyleImageInterface);
             const data = userImage.data;
 
-            this.style.addImage(id, {
+            this.style.addImage(imageId, {
                 data: new RGBAImage({width, height}, new Uint8Array(data)),
                 pixelRatio,
                 stretchX,
@@ -2688,15 +2681,14 @@ export class Map extends Camera {
      *     if (map.hasImage('cat')) map.updateImage('cat', image);
      * });
      */
-    updateImage(id: string,
-        image: HTMLImageElement | ImageBitmap | ImageData | {
-            width: number;
-            height: number;
-            data: Uint8Array | Uint8ClampedArray;
-        } | StyleImageInterface) {
+    updateImage(
+        id: string,
+        image: HTMLImageElement | ImageBitmap | ImageData | {width: number; height: number; data: Uint8Array | Uint8ClampedArray} | StyleImageInterface
+    ) {
         this._lazyInitEmptyStyle();
 
-        const existingImage = this.style.getImage(id);
+        const imageId = ImageId.from(id);
+        const existingImage = this.style.getImage(imageId);
         if (!existingImage) {
             this.fire(new ErrorEvent(new Error(
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
@@ -2736,7 +2728,7 @@ export class Map extends Camera {
             existingImage.data.replace(data, copy);
         }
 
-        this.style.updateImage(id, existingImage, performSymbolLayout);
+        this.style.updateImage(imageId, existingImage, performSymbolLayout);
     }
 
     /**
@@ -2760,7 +2752,7 @@ export class Map extends Camera {
 
         if (!this.style) return false;
 
-        return !!this.style.getImage(id);
+        return !!this.style.getImage(ImageId.from(id));
     }
 
     /**
@@ -2776,7 +2768,7 @@ export class Map extends Camera {
      * if (map.hasImage('cat')) map.removeImage('cat');
      */
     removeImage(id: string) {
-        this.style.removeImage(id);
+        this.style.removeImage(ImageId.from(id));
     }
 
     /**
@@ -2813,7 +2805,7 @@ export class Map extends Camera {
     * const allImages = map.listImages();
     */
     listImages(): Array<string> {
-        return this.style.listImages();
+        return this.style.listImages().map((image) => image.name);
     }
 
     /**

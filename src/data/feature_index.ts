@@ -31,13 +31,14 @@ import type {VectorTileLayer, VectorTileFeature} from '@mapbox/vector-tile';
 import type {GridIndex} from '../types/grid-index';
 import type {FeatureState, StyleExpression} from '../style-spec/expression/index';
 import type {FeatureVariant} from '../util/vectortile_to_geojson';
+import type {ImageId} from '../style-spec/expression/types/image_id';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array;
     transform: Transform;
     tilespaceGeometry: TilespaceQueryGeometry;
     tileTransform: TileTransform;
-    availableImages: Array<string>;
+    availableImages: ImageId[];
 };
 
 type FeatureIndices = FeatureIndexStruct | {
@@ -187,7 +188,7 @@ class FeatureIndex {
         result: QueryResult,
         featureIndexData: FeatureIndices,
         query: QrfQuery,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
         intersectionTest?: IntersectionTest
     ): void {
         const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
@@ -354,7 +355,7 @@ class FeatureIndex {
         }
     }
 
-    updateFeatureProperties(feature: Feature, target: QrfTarget, availableImages?: Array<string>) {
+    updateFeatureProperties(feature: Feature, target: QrfTarget, availableImages?: ImageId[]) {
         if (target.properties) {
             const transformedProperties = {};
             for (const name in target.properties) {
@@ -379,7 +380,7 @@ class FeatureIndex {
      * @param {QrfTarget} target The target to derive the feature for.
      * @returns {Feature} The derived feature.
      */
-    addFeatureVariant(feature: Feature, target: QrfTarget, availableImages?: Array<string>) {
+    addFeatureVariant(feature: Feature, target: QrfTarget, availableImages?: ImageId[]) {
         const variant: FeatureVariant = {
             target: target.target,
             namespace: target.namespace,
@@ -411,7 +412,7 @@ class FeatureIndex {
         bucketIndex: number,
         sourceLayerIndex: number,
         query: QrfQuery,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
     ): QueryResult {
         const result: QueryResult = {};
         this.loadVTLayers();
@@ -487,7 +488,7 @@ register(FeatureIndex, 'FeatureIndex', {omit: ['rawTileData', 'sourceLayerCoder'
 
 export default FeatureIndex;
 
-function evaluateProperties(serializedProperties: unknown, styleLayerProperties: unknown, feature: VectorTileFeature, featureState: FeatureState, availableImages: Array<string>) {
+function evaluateProperties(serializedProperties: unknown, styleLayerProperties: unknown, feature: VectorTileFeature, featureState: FeatureState, availableImages: ImageId[]) {
     return mapObject(serializedProperties, (property, key) => {
         const prop = styleLayerProperties instanceof PossiblyEvaluated ? styleLayerProperties.get(key) : null;
         // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'. | TS2339 - Property 'evaluate' does not exist on type 'unknown'.

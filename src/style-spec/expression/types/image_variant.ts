@@ -1,7 +1,21 @@
+import {ImageId} from './image_id';
+
 import type Color from '../../util/color';
+import type {Brand} from '../../types/brand';
+import type {ImageIdSpec} from './image_id';
 
-export type ImageVariantId = string;
+/**
+ * `StringifiedImageVariant` is a stringified version of the `ImageVariant`.
+ *
+ * @private
+ */
+export type StringifiedImageVariant = Brand<string, 'ImageVariant'>;
 
+/**
+ * {@link ImageVariant} rasterization options.
+ *
+ * @private
+ */
 export type RasterizationOptions = {
     params?: Record<string, Color>;
     transform?: DOMMatrix;
@@ -15,11 +29,11 @@ export type RasterizationOptions = {
  * @private
  */
 export class ImageVariant {
-    _id: ImageVariantId;
+    id: ImageId;
     options: RasterizationOptions;
 
-    constructor(id: ImageVariantId, options: RasterizationOptions = {}) {
-        this._id = id;
+    constructor(id: string | ImageIdSpec, options: RasterizationOptions = {}) {
+        this.id = ImageId.from(id);
         this.options = Object.assign({}, options);
 
         if (!options.transform) {
@@ -30,33 +44,32 @@ export class ImageVariant {
         }
     }
 
-    serializeId(): string {
-        return this._id;
-    }
-
-    static parseId(str: string): ImageVariantId | null {
-        const obj = JSON.parse(str) || {};
-        return obj.id || null;
-    }
-
-    static parse(str: string): ImageVariant | null {
-        const {id, params, transform} = JSON.parse(str) || {};
-        if (!id) return null;
-
-        const {a, b, c, d, e, f} = transform || {};
-        return new ImageVariant(id, {params, transform: new DOMMatrix([a, b, c, d, e, f])});
-    }
-
-    serialize(): string {
+    toString(): StringifiedImageVariant {
         const {a, b, c, d, e, f} = this.options.transform;
 
         const serialized = {
-            id: this._id,
+            name: this.id.name,
+            iconsetId: this.id.iconsetId,
             params: this.options.params,
             transform: {a, b, c, d, e, f},
         };
 
-        return JSON.stringify(serialized);
+        return JSON.stringify(serialized) as StringifiedImageVariant;
+    }
+
+    static parse(str: StringifiedImageVariant): ImageVariant | null {
+        let name, iconsetId, params, transform;
+
+        try {
+            ({name, iconsetId, params, transform} = JSON.parse(str) || {});
+        } catch (e) {
+            return null;
+        }
+
+        if (!name) return null;
+
+        const {a, b, c, d, e, f} = transform || {};
+        return new ImageVariant({name, iconsetId}, {params, transform: new DOMMatrix([a, b, c, d, e, f])});
     }
 
     scaleSelf(factor: number): this {

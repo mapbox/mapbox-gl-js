@@ -11,6 +11,7 @@ import type {PositionedIcon, Shaping} from './shaping';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression/index';
 import type {StyleImageMap} from '../style/style_image';
+import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 
 export type TextureCoordinate = {
     x: number;
@@ -270,7 +271,7 @@ export function getGlyphQuads(
     layer: SymbolStyleLayer,
     alongLine: boolean,
     feature: Feature,
-    imageMap: StyleImageMap,
+    imageMap: StyleImageMap<StringifiedImageVariant>,
     allowVerticalPlacement: boolean,
 ): Array<SymbolQuad> {
     const quads = [];
@@ -300,7 +301,7 @@ export function getGlyphQuads(
             let pixelRatio = 1.0;
             let lineOffset = 0.0;
             if (positionedGlyph.image) {
-                const image = imageMap[positionedGlyph.image.serialize()];
+                const image = imageMap.get(positionedGlyph.image.toString());
                 if (!image) continue;
                 if (image.sdf) {
                     warnOnce("SDF images are not supported in formatted text and will be ignored.");

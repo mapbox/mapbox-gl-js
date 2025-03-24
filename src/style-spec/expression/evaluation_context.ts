@@ -1,6 +1,7 @@
 import {Color} from './values';
 
 import type Point from '@mapbox/point-geometry';
+import type {ImageId} from './types/image_id';
 import type {FormattedSection} from './types/formatted';
 import type {GlobalProperties, Feature, FeatureState} from './index';
 import type {CanonicalTileID} from '../types/tile_id';
@@ -14,7 +15,7 @@ class EvaluationContext {
     feature: Feature | null | undefined;
     featureState: FeatureState | null | undefined;
     formattedSection: FormattedSection | null | undefined;
-    availableImages: Array<string> | null | undefined;
+    availableImages: ImageId[] | null | undefined;
     canonical: null | CanonicalTileID;
     featureTileCoord: Point | null | undefined;
     featureDistanceData: FeatureDistanceData | null | undefined;

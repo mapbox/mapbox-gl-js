@@ -19,7 +19,9 @@ import type {LUT} from '../util/lut';
 import type {Callback} from '../types/callback';
 import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
-import type {ImageDictionary, ImageRasterizationWorkerTasks} from '../render/image_manager';
+import type {RasterizedImageMap, ImageRasterizationWorkerTasks} from '../render/image_manager';
+import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 
 /**
  * The parameters passed to the {@link MapWorker#getWorkerSource}.
@@ -115,7 +117,7 @@ export type WorkerSourceVectorTileResult = {
     brightness: number;
     // Only used for benchmarking:
     glyphMap?: GlyphMap;
-    iconMap?: StyleImageMap;
+    iconMap?: StyleImageMap<StringifiedImageVariant>;
     glyphPositions?: GlyphPositions;
     cacheControl?: string;
     expires?: string;
@@ -148,14 +150,14 @@ export type WorkerSourceImageRaserizeParameters = {
 
 export type WorkerSourceRemoveRasterizedImagesParameters = {
     scope: string;
-    imageIds: Array<string>;
+    imageIds: ImageId[];
 };
 
 export type WorkerSourceVectorTileCallback = Callback<WorkerSourceVectorTileResult>;
 export type WorkerSourceDEMTileCallback = Callback<DEMData>;
 export type WorkerSourceRasterArrayTileCallback = ResponseCallback<MapboxRasterTile>;
 export type WorkerSourceRasterArrayDecodingCallback = Callback<TDecodingResult[]>;
-export type WorkerSourceImageRaserizeCallback = Callback<ImageDictionary>;
+export type WorkerSourceImageRaserizeCallback = Callback<RasterizedImageMap>;
 
 /**
  * May be implemented by custom source types to provide code that can be run on
@@ -176,7 +178,7 @@ export type WorkerSourceImageRaserizeCallback = Callback<ImageDictionary>;
  * @param brightness
  */
 export interface WorkerSource {
-    availableImages?: Array<string>;
+    availableImages?: ImageId[];
 
     /**
      * Loads a tile from the given params and parse it into buckets ready to send
@@ -209,7 +211,7 @@ export interface WorkerSourceConstructor {
     new(
         actor?: Actor,
         layerIndex?: StyleLayerIndex,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         isSpriteLoaded?: boolean,
         loadData?: (params: {source: string; scope: string}, callback: Callback<unknown>) => () => void | undefined,
         brightness?: number

@@ -379,7 +379,7 @@ function getGlyphAdvance(
         if (!glyph) return 0;
         return glyph.metrics.advance * section.scale + spacing;
     } else {
-        const imagePosition = imagePositions[section.image.serialize()];
+        const imagePosition = imagePositions.get(section.image.toString());
         if (!imagePosition) return 0;
         return imagePosition.displaySize[0] * section.scale * ONE_EM / layoutTextSize + spacing;
     }
@@ -701,7 +701,7 @@ function shapeLines(shaping: Shaping,
                     glyphOffset = SHAPING_DEFAULT_OFFSET + (lineMaxScale - sectionScale) * ONE_EM;
                 }
             } else {
-                const imagePosition = imagePositions[section.image.serialize()];
+                const imagePosition = imagePositions.get(section.image.toString());
                 if (!imagePosition) continue;
                 image = section.image;
                 shaping.iconsInText = shaping.iconsInText || true;

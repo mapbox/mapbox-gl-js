@@ -8,7 +8,7 @@
       "isZoomConstant": true,
       "type": "resolvedImage"
     },
-    "outputs": [{"namePrimary": "poi_circle", "available": false}],
+    "outputs": [{"primaryId": {"name": "poi_circle"}, "available": false}],
     "serialized": ["image", "poi_circle"]
   }
 }

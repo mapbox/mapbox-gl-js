@@ -54,6 +54,7 @@ import type Painter from '../render/painter';
 import type {QrfQuery, QueryResult} from '../source/query_features';
 import type {UserManagedTexture, TextureImage} from '../render/texture';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
+import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 export type TileState = // Tile data is in the process of loading.
@@ -158,7 +159,7 @@ class Tile {
     symbolFadeHoldUntil: number | null | undefined;
     hasSymbolBuckets: boolean;
     hasRTLText: boolean;
-    dependencies: any;
+    dependencies: Record<string, Record<StringifiedImageId, boolean>>;
     projection: Projection;
 
     queryGeometryDebugViz: TileSpaceDebugBuffer | null | undefined;
@@ -427,7 +428,7 @@ class Tile {
         const gl = context.gl;
         const atlas = this.imageAtlas;
         if (atlas && !atlas.uploaded) {
-            const hasPattern = !!Object.keys(atlas.patternPositions).length;
+            const hasPattern = !!atlas.patternPositions.size;
             this.imageAtlasTexture = new Texture(context, atlas.image, gl.RGBA8, {useMipmap: hasPattern});
             (this.imageAtlas).uploaded = true;
         }
@@ -467,7 +468,7 @@ class Tile {
     queryRenderedFeatures(
         query: QrfQuery,
         tilespaceGeometry: TilespaceQueryGeometry,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
         transform: Transform,
         sourceCacheTransform: Transform,
         visualizeQueryGeometry: boolean,
@@ -547,7 +548,7 @@ class Tile {
     }
 
     patternsLoaded(): boolean {
-        return !!this.imageAtlas && !!Object.keys(this.imageAtlas.patternPositions).length;
+        return !!this.imageAtlas && !!this.imageAtlas.patternPositions.size;
     }
 
     setExpiryData(data: ExpiryData) {
@@ -641,7 +642,7 @@ class Tile {
                 sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
             }
 
-            const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
+            const imagePositions: SpritePositions = this.imageAtlas ? Object.fromEntries(this.imageAtlas.patternPositions) : {};
             const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
             const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
             const updatesWithoutStateDependentLayers = withStateUpdates && !bucket.stateDependentLayers.length;
@@ -688,7 +689,7 @@ class Tile {
         }
     }
 
-    setDependencies(namespace: string, dependencies: Array<string>) {
+    setDependencies(namespace: string, dependencies: StringifiedImageId[]) {
         const index: Record<string, any> = {};
         for (const dep of dependencies) {
             index[dep] = true;
@@ -696,7 +697,7 @@ class Tile {
         this.dependencies[namespace] = index;
     }
 
-    hasDependency(namespaces: Array<string>, keys: Array<string>): boolean {
+    hasDependency(namespaces: Array<string>, keys: StringifiedImageId[]): boolean {
         for (const namespace of namespaces) {
             const dependencies = this.dependencies[namespace];
             if (dependencies) {

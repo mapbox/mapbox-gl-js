@@ -74,7 +74,9 @@
         {
           "glyph": 57344,
           "image": {
-            "_id": "square",
+            "id": {
+              "name": "square"
+            },
             "options": {
               "transform": {
                 "a": 1,
@@ -129,7 +131,9 @@
         {
           "glyph": 57345,
           "image": {
-            "_id": "wide",
+            "id": {
+              "name": "wide"
+            },
             "options": {
               "transform": {
                 "a": 1,
@@ -189,7 +193,9 @@
         {
           "glyph": 57346,
           "image": {
-            "_id": "tall",
+            "id": {
+              "name": "tall"
+            },
             "options": {
               "transform": {
                 "a": 1,
@@ -244,7 +250,9 @@
         {
           "glyph": 57347,
           "image": {
-            "_id": "square",
+            "id": {
+              "name": "square"
+            },
             "options": {
               "transform": {
                 "a": 1,

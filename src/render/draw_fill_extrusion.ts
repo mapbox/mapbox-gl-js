@@ -386,7 +386,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         if (constantPattern && tile.imageAtlas) {
             const atlas = tile.imageAtlas;
             const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(browser.devicePixelRatio);
-            const posTo = atlas.patternPositions[patternImage.serialize()];
+            const posTo = atlas.patternPositions.get(patternImage.toString());
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 

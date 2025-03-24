@@ -19,6 +19,7 @@ import type {TileFootprint} from '../../3d-style/util/conflation';
 import type {LUT} from "../util/lut";
 import type {ImageVariant} from '../style-spec/expression/types/image_variant';
 import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature';
+import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
 
 export type BucketParameters<Layer extends TypedStyleLayer> = {
     index: number;
@@ -35,15 +36,16 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     tessellationStep: number | null | undefined;
 };
 
-export type ImageDependencies = Record<string, Array<ImageVariant>>;
+export type ImageDependenciesMap = Map<StringifiedImageId, Array<ImageVariant>>;
+
 export type GlyphDependencies = Record<string, Record<number, boolean>>;
 
 export type PopulateParameters = {
     featureIndex: FeatureIndex;
-    iconDependencies: ImageDependencies;
-    patternDependencies: ImageDependencies;
+    iconDependencies: ImageDependenciesMap;
+    patternDependencies: ImageDependenciesMap;
     glyphDependencies: GlyphDependencies;
-    availableImages: Array<string>;
+    availableImages: ImageId[];
     lineAtlas: LineAtlas;
     brightness: number | null | undefined;
     scaleFactor: number;
@@ -106,7 +108,7 @@ export interface Bucket {
     update: (
         states: FeatureStates,
         vtLayer: VectorTileLayer,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
         imagePositions: SpritePositions,
         layers: Array<TypedStyleLayer>,
         isBrightnessChanged: boolean,

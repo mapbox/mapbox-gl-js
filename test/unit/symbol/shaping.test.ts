@@ -24,11 +24,11 @@ describe('shaping', () => {
         glyphPositonMap[id] = glyphData[id].rect;
     }
 
-    const images = {
-        [ResolvedImage.build('square').getPrimary().serialize()]: new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-        [ResolvedImage.build('tall').getPrimary().serialize()]: new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-        [ResolvedImage.build('wide').getPrimary().serialize()]: new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-    };
+    const images = new Map([
+        [ResolvedImage.build('square').getPrimary().toString(), new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING)],
+        [ResolvedImage.build('tall').getPrimary().toString(), new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING)],
+        [ResolvedImage.build('wide').getPrimary().toString(), new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING)],
+    ]);
 
     const sectionForImage = (name) => {
         return new FormattedSection('', ResolvedImage.build(name), null, null, null);

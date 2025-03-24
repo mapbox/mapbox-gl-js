@@ -30,6 +30,7 @@ import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
 import type {LUT} from '../util/lut';
+import type {ImageId} from '../style-spec/expression/types/image_id';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -254,7 +255,7 @@ class StyleLayer extends Evented {
         return this._transitioningPaint.hasTransition();
     }
 
-    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         if (this._unevaluatedLayout) {
             (this as any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages);
         }

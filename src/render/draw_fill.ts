@@ -193,8 +193,8 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
             const constantPattern = patternProperty.constantOr(null);
             if (constantPattern && tile.imageAtlas) {
                 const atlas = tile.imageAtlas;
-                const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(browser.devicePixelRatio).serialize();
-                const posTo = atlas.patternPositions[patternImage];
+                const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(browser.devicePixelRatio).toString();
+                const posTo = atlas.patternPositions.get(patternImage);
                 if (posTo) programConfiguration.setConstantPatternPositions(posTo);
             }
 

@@ -139,8 +139,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines, overrideFog: affectedByFog, overrideRtt: elevated ? false : undefined});
 
             if (constantPattern && tile.imageAtlas) {
-                const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(pixelRatio).serialize();
-                const posTo = tile.imageAtlas.patternPositions[patternImage];
+                const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(pixelRatio).toString();
+                const posTo = tile.imageAtlas.patternPositions.get(patternImage);
                 if (posTo) programConfiguration.setConstantPatternPositions(posTo);
             }
 

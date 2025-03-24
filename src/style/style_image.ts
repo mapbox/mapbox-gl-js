@@ -1,5 +1,5 @@
 import type {RGBAImage} from '../util/image';
-import type {Map} from '../ui/map';
+import type {Map as MapboxMap} from '../ui/map';
 import type {Icon} from '../data/usvg/usvg_pb_decoder';
 
 export type StyleImageData = {
@@ -23,14 +23,15 @@ export type StyleImageMetadata = {
 
 export type StyleImage = StyleImageData & StyleImageMetadata;
 
-export type StyleImageMap = Record<string, StyleImage>;
+export type StyleImages = Record<string, StyleImage>;
+export type StyleImageMap<T> = Map<T, StyleImage>;
 
 export type StyleImageInterface = {
     width: number;
     height: number;
     data: Uint8Array | Uint8ClampedArray;
     render?: () => boolean;
-    onAdd?: (map: Map, id: string) => void;
+    onAdd?: (map: MapboxMap, id: string) => void;
     onRemove?: () => void;
 };
 

@@ -1,69 +1,71 @@
+import {ImageId} from './image_id';
 import {ImageVariant} from './image_variant';
 
+import type {ImageIdSpec} from './image_id';
 import type {RasterizationOptions} from './image_variant';
 
 export default class ResolvedImage {
-    namePrimary: string;
-    optionsPrimary?: RasterizationOptions;
-    nameSecondary?: string;
-    optionsSecondary: RasterizationOptions;
+    primaryId: ImageId;
+    primaryOptions?: RasterizationOptions;
+    secondaryId?: ImageId;
+    secondaryOptions?: RasterizationOptions;
     available: boolean;
 
     constructor(
-        namePrimary: string,
-        optionsPrimary?: RasterizationOptions,
-        nameSecondary?: string,
-        optionsSecondary?: RasterizationOptions,
+        primaryId: string | ImageIdSpec,
+        primaryOptions?: RasterizationOptions,
+        secondaryId?: string | ImageIdSpec,
+        secondaryOptions?: RasterizationOptions,
         available: boolean = false,
     ) {
-        this.namePrimary = namePrimary;
-        this.optionsPrimary = optionsPrimary;
-        this.nameSecondary = nameSecondary;
-        this.optionsSecondary = optionsSecondary;
+        this.primaryId = ImageId.from(primaryId);
+        this.primaryOptions = primaryOptions;
+        if (secondaryId) this.secondaryId = ImageId.from(secondaryId);
+        this.secondaryOptions = secondaryOptions;
         this.available = available;
     }
 
     toString(): string {
-        if (this.namePrimary && this.nameSecondary) {
-            const primaryId = this.getPrimary().serializeId();
-            const secondaryId = this.getSecondary().serializeId();
-            return `[${primaryId},${secondaryId}]`;
+        if (this.primaryId && this.secondaryId) {
+            const primaryName = this.primaryId.name;
+            const secondaryName = this.secondaryId.name;
+            return `[${primaryName},${secondaryName}]`;
         }
 
-        return this.getPrimary().serializeId();
+        return this.primaryId.name;
     }
 
     hasPrimary(): boolean {
-        return !!this.namePrimary;
+        return !!this.primaryId;
     }
 
     getPrimary(): ImageVariant {
-        return new ImageVariant(this.namePrimary, this.optionsPrimary);
+        return new ImageVariant(this.primaryId, this.primaryOptions);
     }
 
     hasSecondary(): boolean {
-        return !!this.nameSecondary;
+        return !!this.secondaryId;
     }
 
     getSecondary(): ImageVariant | null {
-        if (!this.nameSecondary) {
+        if (!this.secondaryId) {
             return null;
         }
 
-        return new ImageVariant(this.nameSecondary, this.optionsSecondary);
+        return new ImageVariant(this.secondaryId, this.secondaryOptions);
     }
 
     static from(image: string | ResolvedImage): ResolvedImage {
-        return typeof image === 'string' ? ResolvedImage.build(image) : image;
+        return typeof image === 'string' ? ResolvedImage.build({name: image}) : image;
     }
 
     static build(
-        namePrimary: string,
-        nameSecondary?: string,
-        optionsPrimary?: RasterizationOptions,
-        optionsSecondary?: RasterizationOptions
+        primaryId: string | ImageIdSpec,
+        secondaryId?: string | ImageIdSpec,
+        primaryOptions?: RasterizationOptions,
+        secondaryOptions?: RasterizationOptions
     ): ResolvedImage | null {
-        if (!namePrimary) return null; // treat empty values as no image
-        return new ResolvedImage(namePrimary, optionsPrimary, nameSecondary, optionsSecondary);
+        if (!primaryId || (typeof primaryId === 'object' && !('name' in primaryId))) return null; // treat empty values as no image
+        return new ResolvedImage(primaryId, primaryOptions, secondaryId, secondaryOptions);
     }
 }

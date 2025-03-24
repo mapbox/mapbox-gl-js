@@ -2,7 +2,7 @@
   "expression": ["image", ["get", "icon"]],
   "inputs": [
     [
-      {"availableImages": ["monument-15"]},
+      {"availableImages": [{"name": "monument-15"}]},
       {"properties": {"icon": "monument-15"}}
     ]
   ],
@@ -13,7 +13,7 @@
       "isZoomConstant": true,
       "type": "resolvedImage"
     },
-    "outputs": [{"namePrimary": "monument-15", "available": true}],
+    "outputs": [{"primaryId": {"name": "monument-15"}, "available": true}],
     "serialized": ["image", ["string", ["get", "icon"]]]
   }
 }

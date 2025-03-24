@@ -1,5 +1,6 @@
 import {ColorType, ResolvedImageType, StringType} from '../types';
 import ResolvedImage from '../types/resolved_image';
+import {ImageId} from '../types/image_id';
 
 import type Color from '../../util/color';
 import type {Expression, SerializedExpression} from '../expression';
@@ -170,12 +171,12 @@ export default class ImageExpression implements Expression {
         );
 
         if (value && ctx.availableImages) {
-            const primaryId = value.getPrimary().serializeId();
-            value.available = ctx.availableImages.indexOf(primaryId) > -1;
+            const primaryId = value.getPrimary().id;
+            value.available = ctx.availableImages.some((id) => ImageId.isEqual(id, primaryId));
             if (value.available) {
                 // If there's a secondary variant, only mark it available if both are present
-                const secondaryId = value.getSecondary() ? value.getSecondary().serializeId() : null;
-                if (secondaryId) value.available = ctx.availableImages.indexOf(secondaryId) > -1;
+                const secondaryId = value.getSecondary() ? value.getSecondary().id : null;
+                if (secondaryId) value.available = ctx.availableImages.some((id) => ImageId.isEqual(id, secondaryId));
             }
         }
 

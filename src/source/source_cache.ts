@@ -22,6 +22,7 @@ import type {TileState} from './tile';
 import type {Callback} from '../types/callback';
 import type {FeatureState} from '../style-spec/expression/index';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
+import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 
 /**
  * `SourceCache` is responsible for
@@ -1103,7 +1104,7 @@ class SourceCache extends Evented {
      * be reloaded when their dependencies change.
      * @private
      */
-    setDependencies(tileKey: number, namespace: string, dependencies: Array<string>) {
+    setDependencies(tileKey: number, namespace: string, dependencies: StringifiedImageId[]) {
         const tile = this._tiles[tileKey];
         if (tile) {
             tile.setDependencies(namespace, dependencies);
@@ -1114,7 +1115,7 @@ class SourceCache extends Evented {
      * Reloads all tiles that depend on the given keys.
      * @private
      */
-    reloadTilesForDependencies(namespaces: Array<string>, keys: Array<string>) {
+    reloadTilesForDependencies(namespaces: Array<string>, keys: StringifiedImageId[]) {
         for (const id in this._tiles) {
             const tile = this._tiles[id];
             if (tile.hasDependency(namespaces, keys)) {

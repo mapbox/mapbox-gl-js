@@ -20,11 +20,12 @@ import {type SpritePositions} from '../util/image';
 import {ElevationFeatures} from '../../3d-style/elevation/elevation_feature';
 import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constants';
 import {ElevationPortalGraph} from '../../3d-style/elevation/elevation_graph';
+import {ImageId} from '../style-spec/expression/types/image_id';
 
 import type {VectorTile} from '@mapbox/vector-tile';
 import type {CanonicalTileID} from './tile_id';
 import type Projection from '../geo/projection/projection';
-import type {Bucket, PopulateParameters, ImageDependencies} from '../data/bucket';
+import type {Bucket, PopulateParameters, ImageDependenciesMap} from '../data/bucket';
 import type Actor from '../util/actor';
 import type StyleLayer from '../style/style_layer';
 import type StyleLayerIndex from '../style/style_layer_index';
@@ -39,7 +40,9 @@ import type {LUT} from "../util/lut";
 import type {GlyphMap} from '../render/glyph_manager';
 import type {ImagePositionMap} from '../render/image_atlas';
 import type {GetImagesParameters, GetGlyphsParameters} from '../style/style';
-import type {ImageDictionary, ImageRasterizationTasks, RasterizeImagesParameters} from '../render/image_manager';
+import type {RasterizedImageMap, ImageRasterizationTasks, RasterizeImagesParameters} from '../render/image_manager';
+import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
+import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 
 type RasterizationStatus = { iconsPending: boolean, patternsPending: boolean};
 class WorkerTile {
@@ -102,7 +105,7 @@ class WorkerTile {
         this.scaleFactor = params.scaleFactor;
     }
 
-    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: Array<string>, actor: Actor, callback: WorkerSourceVectorTileCallback) {
+    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: ImageId[], actor: Actor, callback: WorkerSourceVectorTileCallback) {
         const m = PerformanceUtils.beginMeasure('parseTile1');
         this.status = 'parsing';
         this.data = data;
@@ -120,8 +123,8 @@ class WorkerTile {
 
         const options: PopulateParameters = {
             featureIndex,
-            iconDependencies: {},
-            patternDependencies: {},
+            iconDependencies: new Map(),
+            patternDependencies: new Map(),
             glyphDependencies: {},
             lineAtlas,
             availableImages,
@@ -245,8 +248,8 @@ class WorkerTile {
 
         let error: Error | null | undefined;
         let glyphMap: GlyphMap;
-        let iconMap: StyleImageMap;
-        let patternMap: StyleImageMap;
+        let iconMap: StyleImageMap<StringifiedImageVariant>;
+        let patternMap: StyleImageMap<StringifiedImageVariant>;
         let iconRasterizationTasks: ImageRasterizationTasks;
         let patternRasterizationTasks: ImageRasterizationTasks;
         const taskMetadata = {type: 'maybePrepare', isSymbolTile: this.isSymbolTile, zoom: this.zoom} as const;
@@ -276,11 +279,10 @@ class WorkerTile {
                 const m = PerformanceUtils.beginMeasure('parseTile2');
                 const glyphAtlas = new GlyphAtlas(glyphMap);
 
-                const iconPositions: ImagePositionMap = {};
-                for (const id in iconMap) {
-                    const icon = iconMap[id];
+                const iconPositions: ImagePositionMap = new Map();
+                for (const [id, icon] of iconMap.entries()) {
                     const {imagePosition} = getImagePosition(id, icon, ICON_PADDING);
-                    iconPositions[id] = imagePosition;
+                    iconPositions.set(id, imagePosition);
                 }
 
                 const symbolLayoutData: Record<string, SymbolBucketData> = {};
@@ -326,7 +328,7 @@ class WorkerTile {
                         bucket instanceof FillBucket ||
                         bucket instanceof FillExtrusionBucket)) {
                     recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages);
-                    const imagePositions: SpritePositions = imageAtlas.patternPositions;
+                    const imagePositions: SpritePositions = Object.fromEntries(imageAtlas.patternPositions);
                     bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform, this.brightness);
                 }
             }
@@ -359,40 +361,40 @@ class WorkerTile {
                 glyphMap = {};
             }
 
-            const icons = Object.keys(options.iconDependencies);
-            if (icons.length) {
-                const params: GetImagesParameters = {icons, source: this.source, scope: this.scope, tileID: this.tileID, type: 'icons'};
-                actor.send('getImages', params, (err: Error, result: StyleImageMap) => {
+            const images = Array.from(options.iconDependencies.keys()).map((id) => ImageId.parse(id));
+            if (images.length) {
+                const params: GetImagesParameters = {images, source: this.source, scope: this.scope, tileID: this.tileID, type: 'icons'};
+                actor.send('getImages', params, (err: Error, result: StyleImageMap<StringifiedImageId>) => {
                     if (error) {
                         return;
                     }
 
                     error = err;
-                    iconMap = {};
+                    iconMap = new Map();
                     iconRasterizationTasks = this.updateImageMapAndGetImageTaskQueue(iconMap, result, options.iconDependencies);
                     maybePrepare();
                 }, undefined, false, taskMetadata);
             } else {
-                iconMap = {};
-                iconRasterizationTasks = {};
+                iconMap = new Map();
+                iconRasterizationTasks = new Map();
             }
 
-            const patterns = Object.keys(options.patternDependencies);
+            const patterns = Array.from(options.patternDependencies.keys()).map((id) => ImageId.parse(id));
             if (patterns.length) {
-                const params: GetImagesParameters = {icons: patterns, source: this.source, scope: this.scope, tileID: this.tileID, type: 'patterns'};
-                actor.send('getImages', params, (err: Error, result: StyleImageMap) => {
+                const params: GetImagesParameters = {images: patterns, source: this.source, scope: this.scope, tileID: this.tileID, type: 'patterns'};
+                actor.send('getImages', params, (err: Error, result: StyleImageMap<StringifiedImageId>) => {
                     if (error) {
                         return;
                     }
 
                     error = err;
-                    patternMap = {};
+                    patternMap = new Map();
                     patternRasterizationTasks = this.updateImageMapAndGetImageTaskQueue(patternMap, result, options.patternDependencies);
                     maybePrepare();
                 }, undefined, false, taskMetadata);
             } else {
-                patternMap = {};
-                patternRasterizationTasks = {};
+                patternMap = new Map();
+                patternRasterizationTasks = new Map();
             }
         }
 
@@ -428,29 +430,27 @@ class WorkerTile {
 
     }
 
-    rasterizeIfNeeded(actor: Actor, outputMap: StyleImageMap | undefined, tasks: ImageRasterizationTasks, callback: () => void) {
-        const needRasterization = Object.values(outputMap).some((image: StyleImage) => image.usvg);
+    rasterizeIfNeeded(actor: Actor, outputMap: StyleImageMap<StringifiedImageVariant> | undefined, tasks: ImageRasterizationTasks, callback: () => void) {
+        const needRasterization = Array.from(outputMap.values()).some((image: StyleImage) => image.usvg);
         if (needRasterization) {
-            this.rasterize(actor, outputMap, tasks, () => {
-                callback();
-            });
-        } else  {
+            this.rasterize(actor, outputMap, tasks, callback);
+        } else {
             callback();
         }
     }
 
-    updateImageMapAndGetImageTaskQueue(imageMap: StyleImageMap, images: StyleImageMap, imageDependencies: ImageDependencies): ImageRasterizationTasks {
-        const imageRasterizationTasks: ImageRasterizationTasks = {};
-        for (const imageName in images) {
-            const requiredImageVariants = imageDependencies[imageName] || [];
+    updateImageMapAndGetImageTaskQueue(imageMap: StyleImageMap<StringifiedImageVariant>, images: StyleImageMap<StringifiedImageId>, imageDependencies: ImageDependenciesMap): ImageRasterizationTasks {
+        const imageRasterizationTasks: ImageRasterizationTasks = new Map();
+        for (const imageName of images.keys()) {
+            const requiredImageVariants = imageDependencies.get(imageName) || [];
             for (const imageVariant of requiredImageVariants) {
-                const imageSerialized = imageVariant.serialize();
-                const imageVariantId = imageVariant.serializeId();
-                if (!images[imageVariantId].usvg) {
-                    imageMap[imageSerialized] = images[imageVariantId];
-                } else if (!imageRasterizationTasks[imageSerialized]) {
-                    imageRasterizationTasks[imageSerialized] = imageVariant;
-                    imageMap[imageSerialized] = Object.assign({}, images[imageVariantId]);
+                const imageVariantStr = imageVariant.toString();
+                const image = images.get(imageVariant.id.toString());
+                if (!image.usvg) {
+                    imageMap.set(imageVariantStr, image);
+                } else if (!imageRasterizationTasks.has(imageVariantStr)) {
+                    imageRasterizationTasks.set(imageVariantStr, imageVariant);
+                    imageMap.set(imageVariantStr, Object.assign({}, image));
                 }
             }
         }
@@ -458,13 +458,13 @@ class WorkerTile {
         return imageRasterizationTasks;
     }
 
-    rasterize(actor: Actor, imageMap: StyleImageMap, tasks: ImageRasterizationTasks, callback: () => void) {
+    rasterize(actor: Actor, imageMap: StyleImageMap<StringifiedImageVariant>, tasks: ImageRasterizationTasks, callback: () => void) {
         const params: RasterizeImagesParameters = {scope: this.scope, tasks};
-        this.rasterizeTask = actor.send('rasterizeImages', params, (err: Error, result: ImageDictionary) => {
+        this.rasterizeTask = actor.send('rasterizeImages', params, (err: Error, rasterizedImages: RasterizedImageMap) => {
             if (!err) {
-                for (const imageVariantSerialized in result) {
-                    const image = result[imageVariantSerialized];
-                    imageMap[imageVariantSerialized] = Object.assign(imageMap[imageVariantSerialized], {data: image});
+                for (const [id, data] of rasterizedImages.entries()) {
+                    const image = Object.assign(imageMap.get(id), {data});
+                    imageMap.set(id, image);
                 }
             }
 
@@ -479,7 +479,7 @@ class WorkerTile {
     }
 }
 
-function recalculateLayers(layers: ReadonlyArray<StyleLayer>, zoom: number, brightness: number, availableImages: Array<string>) {
+function recalculateLayers(layers: ReadonlyArray<StyleLayer>, zoom: number, brightness: number, availableImages: ImageId[]) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
     const parameters = new EvaluationParameters(zoom, {brightness});
     for (const layer of layers) {

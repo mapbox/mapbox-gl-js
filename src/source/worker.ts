@@ -28,8 +28,10 @@ import type {LayerSpecification, ProjectionSpecification} from '../style-spec/ty
 import type {ConfigOptions} from '../style/properties';
 import type {RtlTextPlugin, PluginState} from './rtl_text_plugin';
 import type Projection from '../geo/projection/projection';
-import type {ImageDictionary} from '../render/image_manager';
+import type {RasterizedImageMap} from '../render/image_manager';
+import type {SetImagesParameters} from '../style/style';
 import type {WorkerPerformanceMetrics} from '../util/performance';
+import type {ImageId} from '../style-spec/expression/types/image_id';
 
 /**
  * Source types that can instantiate a {@link WorkerSource} in {@link MapWorker}.
@@ -58,7 +60,7 @@ export default class MapWorker {
     self: Worker;
     actor: Actor;
     layerIndexes: WorkerScopeRegistry<StyleLayerIndex>;
-    availableImages: WorkerScopeRegistry<Array<string>>;
+    availableImages: WorkerScopeRegistry<ImageId[]>;
     workerSourceTypes: Record<WorkerSourceType, WorkerSourceConstructor>;
     workerSources: WorkerSourceRegistry;
     projections: Record<string, Projection>;
@@ -149,7 +151,7 @@ export default class MapWorker {
         }
     }
 
-    setImages(mapId: string, {scope, images}: {scope: string; images: Array<string>}, callback: Callback<void>) {
+    setImages(mapId: string, {scope, images}: SetImagesParameters, callback: Callback<void>) {
         if (!this.availableImages[mapId]) {
             this.availableImages[mapId] = {};
         }
@@ -285,7 +287,7 @@ export default class MapWorker {
         this.dracoUrl = dracoUrl;
     }
 
-    getAvailableImages(mapId: string, scope: string): Array<string> {
+    getAvailableImages(mapId: string, scope: string): ImageId[] {
         if (!this.availableImages[mapId]) {
             this.availableImages[mapId] = {};
         }
@@ -351,18 +353,16 @@ export default class MapWorker {
     }
 
     rasterizeImages(mapId: string, params: WorkerSourceImageRaserizeParameters, callback: WorkerSourceImageRaserizeCallback) {
-        const {tasks, scope} = params;
-        const images: ImageDictionary = {};
-        for (const id in tasks) {
-            const {image, imageVariant} = tasks[id];
-            images[id] = this.imageRasterizer.rasterize(imageVariant, image, scope, mapId);
+        const rasterizedImages: RasterizedImageMap = new Map();
+        for (const [id, {image, imageVariant}] of params.tasks.entries()) {
+            const rasterizedImage = this.imageRasterizer.rasterize(imageVariant, image, params.scope, mapId);
+            rasterizedImages.set(id, rasterizedImage);
         }
-        callback(undefined, images);
+        callback(undefined, rasterizedImages);
     }
 
     removeRasterizedImages(mapId: string, params: WorkerSourceRemoveRasterizedImagesParameters, callback: Callback<void>) {
-        const {imageIds, scope} = params;
-        this.imageRasterizer.removeImagesFromCacheByIds(imageIds, scope, mapId);
+        this.imageRasterizer.removeImagesFromCacheByIds(params.imageIds, params.scope, mapId);
         callback();
     }
 

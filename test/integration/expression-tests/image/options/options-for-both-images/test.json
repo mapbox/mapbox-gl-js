@@ -22,36 +22,36 @@
       "type": "resolvedImage"
     },
     "outputs": [
-      {"namePrimary": "poi_circle", "nameSecondary": "poi_circle", "available": false},
+      {"primaryId": {"name": "poi_circle"}, "secondaryId": {"name": "poi_circle"}, "available": false},
       {
-        "namePrimary": "poi_circle",
-        "optionsPrimary": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
-        "nameSecondary": "poi_circle",
+        "primaryId": {"name": "poi_circle"},
+        "primaryOptions": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
+        "secondaryId": {"name": "poi_circle"},
         "available": false
       },
       {
-        "namePrimary": "poi_circle",
-        "nameSecondary": "poi_circle",
-        "optionsSecondary": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
+        "primaryId": {"name": "poi_circle"},
+        "secondaryId": {"name": "poi_circle"},
+        "secondaryOptions": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
         "available": false
       },
       {
-        "namePrimary": "poi_circle",
-        "optionsPrimary": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
-        "nameSecondary": "poi_circle",
+        "primaryId": {"name": "poi_circle"},
+        "primaryOptions": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
+        "secondaryId": {"name": "poi_circle"},
         "available": false
       },
       {
-        "namePrimary": "poi_circle",
-        "nameSecondary": "poi_circle",
-        "optionsSecondary": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
+        "primaryId": {"name": "poi_circle"},
+        "secondaryId": {"name": "poi_circle"},
+        "secondaryOptions": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
         "available": false
       },
       {
-        "namePrimary": "poi_circle",
-        "optionsPrimary": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
-        "nameSecondary": "poi_circle",
-        "optionsSecondary": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
+        "primaryId": {"name": "poi_circle"},
+        "primaryOptions": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
+        "secondaryId": {"name": "poi_circle"},
+        "secondaryOptions": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
         "available": false
       }
     ],
