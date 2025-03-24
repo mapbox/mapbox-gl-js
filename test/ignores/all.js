@@ -162,8 +162,10 @@ const skip = [
     "render-tests/text-variable-anchor/pitched",
 
     // Flaky
+    // https://mapbox.atlassian.net/browse/GLJS-1226
     // https://github.com/mapbox/mapbox-gl-js/issues/11234
     "render-tests/video/projected",
+    "render-tests/video/default",
 
     // Non-deterministic
     "query-tests/terrain/draped/lines/slope-occlusion-box-query",
