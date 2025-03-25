@@ -5,7 +5,7 @@ import type {RtlTextPlugin} from '../source/rtl_text_plugin';
 declare global {
     interface Worker {
         registerWorkerSource?: (name: string, WorkerSource: WorkerSourceConstructor) => void;
-        getWorkerSource?: (mapId: string, type: string, source: string, scope: string) => WorkerSource;
+        getWorkerSource?: (mapId: number, type: string, source: string, scope: string) => WorkerSource;
         registerRTLTextPlugin?: (rtlTextPlugin?: RtlTextPlugin) => void;
 
         importScripts: (...urls: string[]) => void;

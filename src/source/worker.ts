@@ -113,7 +113,7 @@ export default class MapWorker {
         };
     }
 
-    clearCaches(mapId: string, unused: unknown, callback: Callback<void>) {
+    clearCaches(mapId: number, unused: unknown, callback: Callback<void>) {
         delete this.layerIndexes[mapId];
         delete this.availableImages[mapId];
         delete this.workerSources[mapId];
@@ -129,7 +129,7 @@ export default class MapWorker {
         this.referrer = referrer;
     }
 
-    spriteLoaded(mapId: string, {scope, isLoaded}: {scope: string; isLoaded: boolean}) {
+    spriteLoaded(mapId: number, {scope, isLoaded}: {scope: string; isLoaded: boolean}) {
         if (!this.isSpriteLoaded[mapId])
             this.isSpriteLoaded[mapId] = {};
 
@@ -151,7 +151,7 @@ export default class MapWorker {
         }
     }
 
-    setImages(mapId: string, {scope, images}: SetImagesParameters, callback: Callback<void>) {
+    setImages(mapId: number, {scope, images}: SetImagesParameters, callback: Callback<void>) {
         if (!this.availableImages[mapId]) {
             this.availableImages[mapId] = {};
         }
@@ -173,16 +173,16 @@ export default class MapWorker {
         callback();
     }
 
-    setProjection(mapId: string, config: ProjectionSpecification) {
+    setProjection(mapId: number, config: ProjectionSpecification) {
         this.projections[mapId] = getProjection(config);
     }
 
-    setBrightness(mapId: string, brightness: number | null | undefined, callback: Callback<void>) {
+    setBrightness(mapId: number, brightness: number | null | undefined, callback: Callback<void>) {
         this.brightness = brightness;
         callback();
     }
 
-    setLayers(mapId: string, params: {
+    setLayers(mapId: number, params: {
         layers: Array<LayerSpecification>;
         scope: string;
         options: ConfigOptions;
@@ -191,7 +191,7 @@ export default class MapWorker {
         callback();
     }
 
-    updateLayers(mapId: string, params: {
+    updateLayers(mapId: number, params: {
         layers: Array<LayerSpecification>;
         scope: string;
         removedIds: Array<string>;
@@ -201,33 +201,33 @@ export default class MapWorker {
         callback();
     }
 
-    loadTile(mapId: string, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
+    loadTile(mapId: number, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source, params.scope).loadTile(params, callback);
     }
 
-    decodeRasterArray(mapId: string, params: WorkerSourceRasterArrayDecodingParameters, callback: WorkerSourceRasterArrayDecodingCallback) {
+    decodeRasterArray(mapId: number, params: WorkerSourceRasterArrayDecodingParameters, callback: WorkerSourceRasterArrayDecodingCallback) {
         (this.getWorkerSource(mapId, params.type, params.source, params.scope) as RasterArrayTileWorkerSource).decodeRasterArray(params, callback);
     }
 
-    reloadTile(mapId: string, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
+    reloadTile(mapId: number, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source, params.scope).reloadTile(params, callback);
     }
 
-    abortTile(mapId: string, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
+    abortTile(mapId: number, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source, params.scope).abortTile(params, callback);
     }
 
-    removeTile(mapId: string, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
+    removeTile(mapId: number, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source, params.scope).removeTile(params, callback);
     }
 
-    removeSource(mapId: string, params: WorkerSourceTileRequest, callback: Callback<void>) {
+    removeSource(mapId: number, params: WorkerSourceTileRequest, callback: Callback<void>) {
         assert(params.type);
         assert(params.scope);
         assert(params.source);
@@ -287,7 +287,7 @@ export default class MapWorker {
         this.dracoUrl = dracoUrl;
     }
 
-    getAvailableImages(mapId: string, scope: string): ImageId[] {
+    getAvailableImages(mapId: number, scope: string): ImageId[] {
         if (!this.availableImages[mapId]) {
             this.availableImages[mapId] = {};
         }
@@ -301,7 +301,7 @@ export default class MapWorker {
         return availableImages;
     }
 
-    getLayerIndex(mapId: string, scope: string): StyleLayerIndex {
+    getLayerIndex(mapId: number, scope: string): StyleLayerIndex {
         if (!this.layerIndexes[mapId]) {
             this.layerIndexes[mapId] = {};
         }
@@ -316,7 +316,7 @@ export default class MapWorker {
         return layerIndex;
     }
 
-    getWorkerSource(mapId: string, type: string, source: string, scope: string): WorkerSource {
+    getWorkerSource(mapId: number, type: string, source: string, scope: string): WorkerSource {
         const workerSources = this.workerSources;
 
         if (!workerSources[mapId])
@@ -352,7 +352,7 @@ export default class MapWorker {
         return workerSources[mapId][scope][type][source];
     }
 
-    rasterizeImages(mapId: string, params: WorkerSourceImageRaserizeParameters, callback: WorkerSourceImageRaserizeCallback) {
+    rasterizeImages(mapId: number, params: WorkerSourceImageRaserizeParameters, callback: WorkerSourceImageRaserizeCallback) {
         const rasterizedImages: RasterizedImageMap = new Map();
         for (const [id, {image, imageVariant}] of params.tasks.entries()) {
             const rasterizedImage = this.imageRasterizer.rasterize(imageVariant, image, params.scope, mapId);
@@ -361,16 +361,16 @@ export default class MapWorker {
         callback(undefined, rasterizedImages);
     }
 
-    removeRasterizedImages(mapId: string, params: WorkerSourceRemoveRasterizedImagesParameters, callback: Callback<void>) {
+    removeRasterizedImages(mapId: number, params: WorkerSourceRemoveRasterizedImagesParameters, callback: Callback<void>) {
         this.imageRasterizer.removeImagesFromCacheByIds(params.imageIds, params.scope, mapId);
         callback();
     }
 
-    enforceCacheSizeLimit(mapId: string, limit: number) {
+    enforceCacheSizeLimit(mapId: number, limit: number) {
         enforceCacheSizeLimit(limit);
     }
 
-    getWorkerPerformanceMetrics(mapId: string, params: any, callback: Callback<WorkerPerformanceMetrics>) {
+    getWorkerPerformanceMetrics(mapId: number, params: any, callback: Callback<WorkerPerformanceMetrics>) {
         callback(undefined, PerformanceUtils.getWorkerPerformanceMetrics());
     }
 }

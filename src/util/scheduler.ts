@@ -115,13 +115,7 @@ class Scheduler {
     }
 }
 
-function getPriority(
-    {
-        type,
-        isSymbolTile,
-        zoom,
-    }: TaskMetadata,
-): number {
+function getPriority({type, isSymbolTile, zoom}: TaskMetadata): number {
     zoom = zoom || 0;
     if (type === 'message') return 0;
     if (type === 'maybePrepare' && !isSymbolTile) return 100 - zoom;

@@ -338,7 +338,7 @@ class ImageManager extends Evented {
             // Fallback to main thread rasterization
             const rasterizedImages: RasterizedImageMap = new Map();
             for (const [id, {image, imageVariant}] of tasks.entries()) {
-                rasterizedImages.set(id, this.imageRasterizer.rasterize(imageVariant, image, scope, ''));
+                rasterizedImages.set(id, this.imageRasterizer.rasterize(imageVariant, image, scope, 0));
             }
             callback(undefined, rasterizedImages);
         }

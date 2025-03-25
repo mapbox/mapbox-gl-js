@@ -2,11 +2,23 @@ import {bindAll, isWorker} from './util';
 import {serialize, deserialize} from './web_worker_transfer';
 import Scheduler from './scheduler';
 
+import type {Serialized} from './web_worker_transfer';
 import type {Transferable} from '../types/transferable';
 import type {Cancelable} from '../types/cancelable';
 import type {Callback} from '../types/callback';
 import type {TaskMetadata} from './scheduler';
 import '../types/worker';
+
+export type Task = {
+    type: string;
+    id?: string;
+    data?: Serialized;
+    error?: Serialized;
+    targetMapId?: number;
+    sourceMapId?: number;
+    hasCallback?: boolean;
+    mustQueue?: boolean;
+};
 
 type ActorCallback = Callback<unknown> & {metadata?: TaskMetadata};
 
@@ -25,12 +37,12 @@ class Actor {
     target: Worker;
     parent: Worker;
     name?: string;
-    mapId?: string | number;
+    mapId?: number;
     callbacks: Record<number, ActorCallback>;
-    cancelCallbacks: Record<number, Cancelable>;
+    cancelCallbacks: Record<string | number, Cancelable>;
     scheduler: Scheduler;
 
-    constructor(target: Worker, parent: Worker, mapId?: string | number) {
+    constructor(target: Worker, parent: Worker, mapId?: number) {
         this.target = target;
         this.parent = parent;
         this.mapId = mapId;
@@ -53,7 +65,7 @@ class Actor {
         type: string,
         data: unknown,
         callback?: ActorCallback,
-        targetMapId?: string | null,
+        targetMapId?: number,
         mustQueue: boolean = false,
         callbackMetadata?: ActorCallback['metadata'],
     ): Cancelable | undefined {
@@ -75,7 +87,7 @@ class Actor {
             mustQueue,
             sourceMapId: this.mapId,
             data: serialize(data, buffers)
-        }, buffers as unknown as Transferable[]);
+        } as Task, buffers as unknown as Transferable[]);
         return {
             cancel: () => {
                 if (callback) {
@@ -87,18 +99,17 @@ class Actor {
                     type: '<cancel>',
                     targetMapId,
                     sourceMapId: this.mapId
-                });
+                } as Task);
             }
         };
     }
 
-    receive(message: any) {
-        const data = message.data,
-            id = data.id;
+    receive(message: MessageEvent<Task>) {
+        const data = message.data;
+        if (!data) return;
 
-        if (!id) {
-            return;
-        }
+        const id = data.id;
+        if (!id) return;
 
         if (data.targetMapId && this.mapId !== data.targetMapId) {
             return;
@@ -121,7 +132,7 @@ class Actor {
                 // in our queue, postMessage preempts this and <cancel> messages can be processed.
                 // We're using a MessageChannel object to get throttle the process() flow to one at a time.
                 const callback = this.callbacks[id];
-                const metadata = (callback && callback.metadata) || {type: "message"};
+                const metadata = (callback && callback.metadata) || {type: 'message'};
                 const cancel = this.scheduler.add(() => this.processTask(id, data), metadata);
                 if (cancel) this.cancelCallbacks[id] = cancel;
             } else {
@@ -132,7 +143,7 @@ class Actor {
         }
     }
 
-    processTask(id: number, task: any) {
+    processTask(id: string, task: Task) {
         // Always delete since we are no longer cancellable
         delete this.cancelCallbacks[id];
         if (task.type === '<response>') {
@@ -150,14 +161,14 @@ class Actor {
             }
         } else {
             const buffers: Set<Transferable> = new Set();
-            const done = task.hasCallback ? (err: Error | null | undefined, data: unknown) => {
+            const done = task.hasCallback ? (err: Error | null | undefined, data?: unknown) => {
                 this.target.postMessage({
                     id,
                     type: '<response>',
                     sourceMapId: this.mapId,
                     error: err ? serialize(err) : null,
                     data: serialize(data, buffers)
-                }, buffers as unknown as Transferable[]);
+                } as Task, buffers as unknown as Transferable[]);
             } : () => {};
 
             const params = deserialize(task.data) as any;
@@ -171,7 +182,6 @@ class Actor {
                 scope[keys[1]](params, done);
             } else {
                 // No function was found.
-                // @ts-expect-error - TS2554 - Expected 2 arguments, but got 1.
                 done(new Error(`Could not find function ${task.type}`));
             }
         }

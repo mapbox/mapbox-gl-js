@@ -12,8 +12,8 @@ const _self = {
 describe('load tile', () => {
     test('calls callback on error', () => {
         const worker = new MapWorker(_self);
-        worker.setProjection('0', {name: 'mercator'});
-        worker.loadTile('0', {
+        worker.setProjection(0, {name: 'mercator'});
+        worker.loadTile(0, {
             type: 'vector',
             source: 'vector',
             scope: 'scope',
@@ -29,8 +29,8 @@ describe('load tile', () => {
 test('isolates different instances\' data', () => {
     const worker = new MapWorker(_self);
 
-    worker.setLayers('0', {layers: [{id: 'one', type: 'background'}], scope: '', options: new Map()}, () => {});
-    worker.setLayers('1', {layers: [{id: 'one', type: 'background'}, {id: 'two', type: 'background'}], scope: '', options: new Map()}, () => {});
+    worker.setLayers(0, {layers: [{id: 'one', type: 'background'}], scope: '', options: new Map()}, () => {});
+    worker.setLayers(1, {layers: [{id: 'one', type: 'background'}, {id: 'two', type: 'background'}], scope: '', options: new Map()}, () => {});
 
     expect(worker.layerIndexes[0]).not.toEqual(worker.layerIndexes[1]);
 });
@@ -40,7 +40,7 @@ test('worker source messages dispatched to the correct map instance', () => {
 
     worker.actor.send = function (type, data, callback, mapId) {
         expect(type).toEqual('main thread task');
-        expect(mapId).toEqual('999');
+        expect(mapId).toEqual(999);
         return {cancel: () => {}};
     };
 
@@ -52,7 +52,7 @@ test('worker source messages dispatched to the correct map instance', () => {
         };
     } as unknown as WorkerSourceConstructor);
 
-    worker.loadTile('999', {
+    worker.loadTile(999, {
         uid: 0,
         type: 'test',
         source: 'source',
@@ -66,8 +66,8 @@ test('worker sources should be scoped', () => {
 
     _self.registerWorkerSource('sourceType', function() {} as unknown as WorkerSourceConstructor);
 
-    const a = worker.getWorkerSource('999', 'sourceType', 'sourceId', 'scope1');
-    const b = worker.getWorkerSource('999', 'sourceType', 'sourceId', 'scope2');
+    const a = worker.getWorkerSource(999, 'sourceType', 'sourceId', 'scope1');
+    const b = worker.getWorkerSource(999, 'sourceType', 'sourceId', 'scope2');
 
     expect(a).not.toBe(b);
 });

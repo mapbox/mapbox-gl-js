@@ -59,7 +59,7 @@ describe('ImageRasterizer', () => {
     };
 
     test('expects returns rasterized image', () => {
-        expect(new ImageRasterizer().rasterize(new ImageVariant('square'), image, '', '1').data.length).toEqual(1600);
+        expect(new ImageRasterizer().rasterize(new ImageVariant('square'), image, '', 1).data.length).toEqual(1600);
     });
 
     test('expects returns rasterized image from cache', () => {
@@ -67,8 +67,8 @@ describe('ImageRasterizer', () => {
         const imageRasterizer = new ImageRasterizer();
         const rasterizer = vi.fn();
 
-        imageRasterizer.rasterize(imageVariant, image, '', '1');
-        imageRasterizer.rasterize(imageVariant, image, '', '1', rasterizer);
+        imageRasterizer.rasterize(imageVariant, image, '', 1);
+        imageRasterizer.rasterize(imageVariant, image, '', 1, rasterizer);
 
         expect(rasterizer).not.toHaveBeenCalled();
     });
