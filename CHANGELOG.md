@@ -1,4 +1,4 @@
-## 3.11.0-beta.1
+## 3.11.0-beta.2
 
 ### Features and improvements ✨
 - Add `at-interpolated` expression as the interpolated counterpart to the `at` expression.
