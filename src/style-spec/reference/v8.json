@@ -146,6 +146,7 @@
       "doc": "A collection of icon sets",
       "sdk-support": {
         "basic functionality": {
+          "js": "3.11.0",
           "android": "11.11.0",
           "ios": "11.11.0"
         }
