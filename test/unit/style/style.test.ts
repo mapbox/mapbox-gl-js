@@ -7,7 +7,7 @@ import {
     waitFor,
     vi,
 } from '../../util/vitest';
-import {getPNGResponse, mockFetch} from '../../util/network';
+import {mockFetch} from '../../util/network';
 import Style from '../../../src/style/style';
 import SourceCache from '../../../src/source/source_cache';
 import StyleLayer from '../../../src/style/style_layer';
@@ -20,7 +20,9 @@ import {
     clearRTLTextPlugin,
     evented as rtlTextPluginEvented
 } from '../../../src/source/rtl_text_plugin';
+import Tile from '../../../src/source/tile';
 import {OverscaledTileID} from '../../../src/source/tile_id';
+import {ImageId} from '../../../src/style-spec/expression/types/image_id';
 import {StubMap} from './utils';
 
 function createStyleJSON(properties) {
@@ -2182,4 +2184,50 @@ describe('Style#setColorTheme', () => {
         await waitFor(style, "colorthemeset");
         expect(style._styleColorTheme.lut).toEqual(null);
     });
+});
+
+test('Style#_updateTilesForChangedImages', async () => {
+    const style = new Style(new StubMap());
+
+    style.loadJSON(createStyleJSON({sources: {geojson: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}}}));
+
+    await waitFor(style, 'style.load');
+    vi.spyOn(style, '_updateTilesForChangedImages');
+
+    const sourceCache = style.getSourceCache('geojson');
+    vi.spyOn(sourceCache, 'setDependencies');
+    vi.spyOn(sourceCache, 'reloadTilesForDependencies');
+
+    const imageId = ImageId.from('missing-image');
+    const imageIdStr = imageId.toString();
+    const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+
+    const tile = new Tile(tileID);
+    sourceCache._tiles[tileID.key] = tile;
+    vi.spyOn(tile, 'setDependencies');
+
+    await new Promise((resolve) => {
+        expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(false);
+
+        style.getImages(0, {images: [imageId], source: 'geojson', scope: '', tileID, type: 'icons'}, (err, result) => {
+            expect(err).toBeFalsy();
+            expect(result.size).toEqual(0);
+            resolve();
+        });
+    });
+
+    expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(1);
+    expect(sourceCache.setDependencies).toHaveBeenCalledTimes(1);
+    expect(sourceCache.setDependencies).toHaveBeenCalledWith(tileID.key, 'icons', [imageIdStr]);
+
+    expect(tile.setDependencies).toHaveBeenCalledTimes(1);
+    expect(tile.setDependencies).toHaveBeenCalledWith('icons', [imageIdStr]);
+    expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(true);
+
+    style.addImage(imageId, {});
+    style.update({});
+
+    expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(2);
+    expect(sourceCache.reloadTilesForDependencies).toHaveBeenCalledTimes(1);
+    expect(sourceCache.reloadTilesForDependencies).toHaveBeenCalledWith(['icons', 'patterns'], [imageIdStr]);
 });

@@ -7,11 +7,12 @@ import Transform from '../../../src/geo/transform';
 import StyleLayer from '../../../src/style/style_layer';
 import VectorTileSource from '../../../src/source/vector_tile_source';
 import GlyphManager from '../../../src/render/glyph_manager';
-import {Event, Evented} from '../../../src/util/evented';
-import {RequestManager} from '../../../src/util/mapbox';
+import {Event} from '../../../src/util/evented';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import {extend} from '../../../src/util/util';
 import {makeFQID} from '../../../src/util/fqid';
+import {ImageId} from '../../../src/style-spec/expression/types/image_id';
+import {StubMap} from './utils';
 
 function createStyleJSON(properties) {
     return extend({
@@ -19,25 +20,6 @@ function createStyleJSON(properties) {
         sources: {},
         layers: []
     }, properties);
-}
-
-class StubMap extends Evented {
-    constructor() {
-        super();
-        this.transform = new Transform();
-        this._requestManager = new RequestManager();
-        this._markers = [];
-        this._triggerCameraUpdate = () => {};
-        this._prioritizeAndUpdateProjection = () => {};
-    }
-
-    setCamera() {}
-
-    _getMapId() {
-        return 1;
-    }
-
-    getWorldview() {}
 }
 
 describe('Style#loadURL', () => {
@@ -3018,6 +3000,54 @@ test('Style#areTilesLoaded', async () => {
 
         style.loadJSON(initialStyle);
     });
+});
+
+test('Style#_updateTilesForChangedImages', async () => {
+    const style = new Style(new StubMap());
+
+    const fragment = createStyleJSON({sources: {geojson: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}}});
+    const rootStyle = createStyleJSON({imports: [{id: 'basemap', url: '', data: fragment}]});
+    style.loadJSON(rootStyle);
+
+    await waitFor(style, 'style.load');
+    vi.spyOn(style, '_updateTilesForChangedImages');
+
+    const sourceCache = style.getSourceCache(makeFQID('geojson', 'basemap'));
+    vi.spyOn(sourceCache, 'setDependencies');
+    vi.spyOn(sourceCache, 'reloadTilesForDependencies');
+
+    const imageId = ImageId.from('missing-image');
+    const imageIdStr = imageId.toString();
+    const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+
+    const tile = new Tile(tileID);
+    sourceCache._tiles[tileID.key] = tile;
+    vi.spyOn(tile, 'setDependencies');
+
+    await new Promise((resolve) => {
+        expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(false);
+
+        style.getImages(0, {images: [imageId], source: 'geojson', scope: 'basemap', tileID, type: 'icons'}, (err, result) => {
+            expect(err).toBeFalsy();
+            expect(result.size).toEqual(0);
+            resolve();
+        });
+    });
+
+    expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(1);
+    expect(sourceCache.setDependencies).toHaveBeenCalledTimes(1);
+    expect(sourceCache.setDependencies).toHaveBeenCalledWith(tileID.key, 'icons', [imageIdStr]);
+
+    expect(tile.setDependencies).toHaveBeenCalledTimes(1);
+    expect(tile.setDependencies).toHaveBeenCalledWith('icons', [imageIdStr]);
+    expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(true);
+
+    style.addImage(imageId, {});
+    style.update({});
+
+    expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(2);
+    expect(sourceCache.reloadTilesForDependencies).toHaveBeenCalledTimes(1);
+    expect(sourceCache.reloadTilesForDependencies).toHaveBeenCalledWith(['icons', 'patterns'], [imageIdStr]);
 });
 
 test('Style#getFeaturesetDescriptors', async () => {

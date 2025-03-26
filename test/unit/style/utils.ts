@@ -18,6 +18,8 @@ export class StubMap extends Evented {
         this._prioritizeAndUpdateProjection = () => {};
     }
 
+    getScaleFactor() {}
+
     setCamera() {}
 
     _getMapId() {

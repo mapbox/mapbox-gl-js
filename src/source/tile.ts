@@ -690,7 +690,7 @@ class Tile {
     }
 
     setDependencies(namespace: string, dependencies: StringifiedImageId[]) {
-        const index: Record<string, any> = {};
+        const index: Record<string, boolean> = {};
         for (const dep of dependencies) {
             index[dep] = true;
         }

@@ -1770,8 +1770,8 @@ class Style extends Evented<MapEvents> {
     _updateTilesForChangedImages() {
         const updatedImages = this._changes.getUpdatedImages();
         if (updatedImages.length) {
-            for (const name in this._sourceCaches) {
-                this._sourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], updatedImages);
+            for (const name in this._mergedSourceCaches) {
+                this._mergedSourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], updatedImages);
             }
             this._changes.resetUpdatedImages();
         }
@@ -4204,7 +4204,7 @@ class Style extends Evented<MapEvents> {
 
     // Callbacks from web workers
 
-    getImages(mapId: string, params: GetImagesParameters, callback: Callback<StyleImageMap<StringifiedImageId>>) {
+    getImages(mapId: number, params: GetImagesParameters, callback: Callback<StyleImageMap<StringifiedImageId>>) {
         this.imageManager.getImages(params.images, params.scope, callback);
 
         // Apply queued image changes before setting the tile's dependencies so that the tile
@@ -4223,8 +4223,10 @@ class Style extends Evented<MapEvents> {
                 sourceCache.setDependencies(params.tileID.key, params.type, dependencies);
             }
         };
-        setDependencies(this._otherSourceCaches[params.source]);
-        setDependencies(this._symbolSourceCaches[params.source]);
+
+        const fqid = makeFQID(params.source, params.scope);
+        setDependencies(this._mergedOtherSourceCaches[fqid]);
+        setDependencies(this._mergedSymbolSourceCaches[fqid]);
     }
 
     rasterizeImages(mapId: string, params: RasterizeImagesParameters, callback: Callback<RasterizedImageMap>) {
