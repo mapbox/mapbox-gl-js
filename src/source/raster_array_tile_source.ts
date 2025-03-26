@@ -135,7 +135,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
                         for (const bandId of layer.getBandList()) {
                             const {bytes, tileSize, buffer} = layer.getBandView(bandId);
                             const size = tileSize + 2 * buffer;
-                            const img = {data: new RGBAImage({width: size, height: size}, bytes), pixelRatio: 1, sdf: false, usvg: false};
+                            const img = {data: new RGBAImage({width: size, height: size}, bytes), pixelRatio: 2, sdf: false, usvg: false};
                             images.push({layerId, bandId, img});
                         }
                     }
