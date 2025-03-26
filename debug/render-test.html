@@ -59,7 +59,7 @@
 
         if (queryParams.has('spriteFormat')) {
             options.spriteFormat = queryParams.get('spriteFormat');
-        } else {
+        } else if (!options.spriteFormat) {
             options.spriteFormat = 'icon_set';
         }
 
