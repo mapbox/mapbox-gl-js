@@ -54,7 +54,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-array';
         this.maxzoom = 22;
-        this.partial = false;
+        this.partial = true;
         this.iconsets = {};
         this._options = extend({type: 'raster-array'}, options);
     }
@@ -271,6 +271,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
 
     addIconset(iconsetId: string, iconset: Iconset) {
         this.iconsets[iconsetId] = iconset;
+        this.partial = false;
     }
 }
 
