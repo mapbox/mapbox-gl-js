@@ -86,6 +86,10 @@ import vignetteFrag from './vignette.fragment.glsl';
 import vignetteVert from './vignette.vertex.glsl';
 import occlusionFrag from './occlusion.fragment.glsl';
 import occlusionVert from './occlusion.vertex.glsl';
+import elevatedStructuresDepthReconstructFrag from '../../3d-style/shaders/elevated_structures_depth_reconstruct.fragment.glsl';
+import elevatedStructuresDepthReconstructVert from '../../3d-style/shaders/elevated_structures_depth_reconstruct.vertex.glsl';
+import elevatedStructuresDepthFrag from '../../3d-style/shaders/elevated_structures_depth.fragment.glsl';
+import elevatedStructuresDepthVert from '../../3d-style/shaders/elevated_structures_depth.vertex.glsl';
 import elevatedStructuresModelFrag from '../../3d-style/shaders/elevated_structures_model.fragment.glsl';
 import elevatedStructuresModelVert from '../../3d-style/shaders/elevated_structures_model.vertex.glsl';
 // 3d-style related shaders
@@ -146,6 +150,8 @@ export default {
     collisionBox: compile(collisionBoxFrag, collisionBoxVert),
     collisionCircle: compile(collisionCircleFrag, collisionCircleVert),
     debug: compile(debugFrag, debugVert),
+    elevatedStructuresDepth: compile(elevatedStructuresDepthFrag, elevatedStructuresDepthVert),
+    elevatedStructuresDepthReconstruct: compile(elevatedStructuresDepthReconstructFrag, elevatedStructuresDepthReconstructVert),
     elevatedStructures: compile(elevatedStructuresModelFrag, elevatedStructuresModelVert),
     fill: compile(fillFrag, fillVert),
     fillOutline: compile(fillOutlineFrag, fillOutlineVert),

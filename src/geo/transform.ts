@@ -4,7 +4,7 @@ import {getProjection} from './projection/index';
 import {tileAABB} from '../geo/projection/tile_transform';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestTileCorner, warnOnce, deepEqual} from '../util/util';
-import {number as interpolate} from '../style-spec/util/interpolate';
+import {easeIn, number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../style-spec/data/extent';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
 import {Frustum, FrustumCorners, Ray} from '../util/primitives';
@@ -58,14 +58,11 @@ type RootTile = {
     zoom: number;
 };
 
-const OrthographicPitchTranstionValue = 15;
-const lerp = (x: number, y: number, t: number) => { return (1 - t) * x + t * y; };
-const easeIn = (x: number) => {
-    return x * x * x * x * x;
-};
+export const OrthographicPitchTranstionValue = 15;
+
 const lerpMatrix = (out: mat4, a: mat4, b: mat4, value: number) => {
     for (let i = 0; i < 16; i++) {
-        out[i] = lerp(a[i], b[i], value);
+        out[i] = interpolate(a[i], b[i], value);
     }
 
     return out;
@@ -2702,7 +2699,7 @@ class Transform {
         // to calculate correct perspective ratio values for symbols
         if (this.isOrthographic) {
             const mixValue = this.pitch >= OrthographicPitchTranstionValue ? 1.0 : this.pitch / OrthographicPitchTranstionValue;
-            distance = lerp(1.0, distance, easeIn(mixValue));
+            distance = interpolate(1.0, distance, easeIn(mixValue));
         }
         return distance;
     }

@@ -3,13 +3,14 @@ import {
     Uniform1i,
     Uniform1f,
     Uniform2f,
-    UniformMatrix4f
+    Uniform3f,
+    UniformMatrix4f,
+    type UniformValues
 } from '../uniform_binding';
 import {extend} from '../../util/util';
 
-import type {mat4} from 'gl-matrix';
+import type {mat4, vec3} from 'gl-matrix';
 import type Painter from '../painter';
-import type {UniformValues} from '../uniform_binding';
 import type Context from '../../gl/context';
 import type Tile from '../../source/tile';
 
@@ -51,7 +52,15 @@ export type ElevatedStructuresUniformsType = {
     ['u_matrix']: UniformMatrix4f;
 };
 
-export type FillDefinesType = 'ELEVATED_ROADS';
+export type ElevatedStructuresDepthReconstructUniformsType = {
+    ['u_matrix']: UniformMatrix4f;
+    ['u_camera_pos']: Uniform3f;
+    ['u_depth_bias']: Uniform1f;
+    ['u_height_scale']: Uniform1f;
+    ['u_reset_depth']: Uniform1f;
+};
+
+export type FillDefinesType = 'ELEVATED_ROADS' | 'DEPTH_RECONSTRUCTION';
 
 const fillUniforms = (context: Context): FillUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -87,6 +96,14 @@ const fillOutlinePatternUniforms = (context: Context): FillOutlinePatternUniform
 
 const elevatedStructuresUniforms = (context: Context): ElevatedStructuresUniformsType => ({
     'u_matrix': new UniformMatrix4f(context)
+});
+
+const elevatedStructuresDepthReconstructUniforms = (context: Context): ElevatedStructuresDepthReconstructUniformsType => ({
+    'u_matrix': new UniformMatrix4f(context),
+    'u_camera_pos': new Uniform3f(context),
+    'u_depth_bias': new Uniform1f(context),
+    'u_height_scale': new Uniform1f(context),
+    'u_reset_depth': new Uniform1f(context)
 });
 
 const fillUniformValues = (matrix: mat4, emissiveStrength: number): UniformValues<FillUniformsType> => ({
@@ -131,15 +148,31 @@ const elevatedStructuresUniformValues = (matrix: mat4): UniformValues<ElevatedSt
     'u_matrix': matrix as Float32Array
 });
 
+const elevatedStructuresDepthReconstructUniformValues = (
+    tileMatrix: mat4,
+    cameraTilePos: vec3,
+    depthBias: number,
+    heightScale: number,
+    resetDepth: number
+): UniformValues<ElevatedStructuresDepthReconstructUniformsType> => ({
+    'u_matrix': tileMatrix as Float32Array,
+    'u_camera_pos': [cameraTilePos[0], cameraTilePos[1], cameraTilePos[2]],
+    'u_depth_bias': depthBias,
+    'u_height_scale': heightScale,
+    'u_reset_depth': resetDepth
+});
+
 export {
     fillUniforms,
     fillPatternUniforms,
     fillOutlineUniforms,
     fillOutlinePatternUniforms,
     elevatedStructuresUniforms,
+    elevatedStructuresDepthReconstructUniforms,
     fillUniformValues,
     fillPatternUniformValues,
     fillOutlineUniformValues,
     fillOutlinePatternUniformValues,
-    elevatedStructuresUniformValues
+    elevatedStructuresUniformValues,
+    elevatedStructuresDepthReconstructUniformValues
 };

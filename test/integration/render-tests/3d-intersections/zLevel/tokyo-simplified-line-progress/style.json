@@ -1,0 +1,696 @@
+{
+  "version": 8,
+  "metadata":
+  {
+    "test":
+    {
+      "mapMode": "static",
+      "operations": [
+        [
+          "wait"
+        ]
+      ],
+      "allowed": 0.0004,
+      "spriteFormat": "raster"
+    }
+  },
+  "center": [
+    139.7624,
+    35.6632
+  ],
+  "zoom": 18.6,
+  "pitch": 30.0,
+  "bearing": 292.82,
+  "sources":
+  {
+    "hd-roads":
+    {
+      "type": "vector",
+      "tileSize": 512,
+      "maxzoom": 18,
+      "tiles": [
+        "local://tiles/3d-intersections/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "route-line":
+    {
+      "type": "geojson",
+      "lineMetrics": true,
+      "data":
+      {
+        "type": "FeatureCollection",
+        "features": [
+        {
+          "type": "Feature",
+          "id": "3dln-hd-lite-route-id",
+          "geometry":
+          {
+            "type": "LineString",
+            "coordinates": [
+              [
+                139.76253496265463,
+                35.663503678209814
+              ],
+              [
+                139.76254206879838,
+                35.66348963899546
+              ],
+              [
+                139.76254206879838,
+                35.66348963899546
+              ],
+              [
+                139.76254718809213,
+                35.6634756596759
+              ],
+              [
+                139.76255052016563,
+                35.66346181311325
+              ],
+              [
+                139.76255052016563,
+                35.66346181311325
+              ],
+              [
+                139.76255240074568,
+                35.663448012407144
+              ],
+              [
+                139.76255326697736,
+                35.66343403543726
+              ],
+              [
+                139.76255359159785,
+                35.66341959690346
+              ],
+              [
+                139.7625537903485,
+                35.66340445623119
+              ],
+              [
+                139.7625537903485,
+                35.66340445623119
+              ],
+              [
+                139.76255411697534,
+                35.663388522196776
+              ],
+              [
+                139.7625545664733,
+                35.66337189185663
+              ],
+              [
+                139.7625548105606,
+                35.66335479266487
+              ],
+              [
+                139.76255419225924,
+                35.66333750674792
+              ],
+              [
+                139.76255419225924,
+                35.66333750674792
+              ],
+              [
+                139.76255019483915,
+                35.6633211000734
+              ],
+              [
+                139.76254328942827,
+                35.6633058828002
+              ],
+              [
+                139.76253393404585,
+                35.66329155045333
+              ],
+              [
+                139.76252303644782,
+                35.6632775913942
+              ],
+              [
+                139.7625120975537,
+                35.663263786248585
+              ],
+              [
+                139.7625120975537,
+                35.663263786248585
+              ],
+              [
+                139.7625013937153,
+                35.66325012199769
+              ],
+              [
+                139.76249105185656,
+                35.66323651384231
+              ],
+              [
+                139.76248114541784,
+                35.663222826090205
+              ],
+              [
+                139.76248114541784,
+                35.663222826090205
+              ],
+              [
+                139.76247173962284,
+                35.66320890435644
+              ],
+              [
+                139.76246290431595,
+                35.663194601299075
+              ],
+              [
+                139.76245471149198,
+                35.663179795540564
+              ],
+              [
+                139.76244722774152,
+                35.66316440711432
+              ],
+              [
+                139.7624405048684,
+                35.66314841011966
+              ],
+              [
+                139.76243456745271,
+                35.663131839793195
+              ],
+              [
+                139.7624296506457,
+                35.6631146653526
+              ],
+              [
+                139.76242504874926,
+                35.663097312059506
+              ],
+              [
+                139.76242037446383,
+                35.66307992613932
+              ],
+              [
+                139.76241524289088,
+                35.663062630190794
+              ],
+              [
+                139.76240934662508,
+                35.6630455215839
+              ],
+              [
+                139.7624025067438,
+                35.66302867095581
+              ],
+              [
+                139.76239468387536,
+                35.663012121136234
+              ],
+              [
+                139.76238594956004,
+                35.66299588756942
+              ],
+              [
+                139.76237643483614,
+                35.662979960602115
+              ],
+              [
+                139.76237643483614,
+                35.662979960602115
+              ],
+              [
+                139.76236628099105,
+                35.66296430935143
+              ],
+              [
+                139.76235561134064,
+                35.66294888698936
+              ],
+              [
+                139.7623445268816,
+                35.66293363765612
+              ],
+              [
+                139.76233311451242,
+                35.66291850480149
+              ],
+              [
+                139.76232145401548,
+                35.66290343939411
+              ],
+              [
+                139.76230961802327,
+                35.6628884054843
+              ],
+              [
+                139.7622976425503,
+                35.66287338197191
+              ],
+              [
+                139.76228562448074,
+                35.66285836151919
+              ]
+            ]
+          },
+          "properties":
+          {
+            "zLevelProgress": [
+            {
+              "zLevel": 0,
+              "progress": 0
+            },
+            {
+              "zLevel": 2,
+              "progress": 0.821924
+            }]
+          }
+        }]
+      }
+    }
+  },
+  "sprite": "local://sprites/3d_intersections",
+  "lights": [
+  {
+    "id": "ambient",
+    "type": "ambient",
+    "properties":
+    {
+      "color": "hsl(0, 0%, 100%)",
+      "intensity": 0.8
+    }
+  },
+  {
+    "id": "directional",
+    "type": "directional",
+    "properties":
+    {
+      "direction": [
+        "literal",
+        [
+          180,
+          20
+        ]
+      ],
+      "color": "hsl(0, 0%, 100%)",
+      "intensity": 0.2
+    }
+  }],
+  "layers": [
+  {
+    "id": "background",
+    "type": "background",
+    "paint":
+    {
+      "background-color": "rgb(234, 243, 240)"
+    }
+  },
+  {
+    "id": "road-base",
+    "type": "fill",
+    "source": "hd-roads",
+    "source-layer": "hd_road_polygon",
+    "filter": [
+      "all",
+      [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "road"
+        ],
+        true,
+        false
+      ]
+    ],
+    "layout":
+    {
+      "fill-elevation-reference": "hd-road-base"
+    },
+    "paint":
+    {
+      "fill-color": [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        16,
+        "hsl(212, 25%, 80%)",
+        18,
+        "hsl(212, 25%, 71%)"
+      ]
+    }
+  },
+  {
+    "id": "road-base-bridge",
+    "type": "fill",
+    "source": "hd-roads",
+    "source-layer": "hd_road_polygon",
+    "filter": [
+      "all",
+      [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "bridge"
+        ],
+        true,
+        false
+      ]
+    ],
+    "layout":
+    {
+      "fill-elevation-reference": "hd-road-base"
+    },
+    "paint":
+    {
+      "fill-color": [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        16,
+        "hsl(212, 25%, 80%)",
+        18,
+        "hsl(212, 25%, 71%)"
+      ]
+    }
+  },
+  {
+    "id": "road-hatched-area",
+    "type": "fill",
+    "source": "hd-roads",
+    "source-layer": "hd_road_polygon",
+    "filter": [
+      "all",
+      [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "hatched_area"
+        ],
+        true,
+        false
+      ]
+    ],
+    "layout":
+    {
+      "fill-elevation-reference": "hd-road-markup"
+    },
+    "paint":
+    {
+      "fill-opacity": [
+        "interpolate",
+        [
+          "linear"
+        ],
+        [
+          "zoom"
+        ],
+        15,
+        0,
+        16,
+        1
+      ],
+      "fill-pattern": [
+        "match",
+        [
+          "get",
+          "color"
+        ],
+        [
+          "yellow"
+        ],
+        "hatched-pattern-yellow",
+        "hatched-pattern"
+      ]
+    }
+  },
+  {
+    "id": "solid-lines",
+    "type": "line",
+    "source": "hd-roads",
+    "source-layer": "hd_road_line",
+    "filter": [
+      "all",
+      [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "lanes"
+        ],
+        true,
+        false
+      ],
+      [
+        "match",
+        [
+          "get",
+          "line_type"
+        ],
+        [
+          "solid",
+          "solid_half_arrow",
+          "half_arrow_solid",
+          "arrow_solid"
+        ],
+        true,
+        false
+      ]
+    ],
+    "layout":
+    {
+      "line-elevation-reference": "hd-road-markup"
+    },
+    "paint":
+    {
+      "line-color": [
+        "match",
+        [
+          "get",
+          "color"
+        ],
+        [
+          "yellow"
+        ],
+        "hsl(54, 100%, 65%)",
+        "hsl(0, 0%, 96%)"
+      ],
+      "line-width": [
+        "interpolate",
+        [
+          "exponential",
+          1.5
+        ],
+        [
+          "zoom"
+        ],
+        15,
+        0,
+        18,
+        1.5,
+        19,
+        3,
+        22,
+        10
+      ]
+    }
+  },
+  {
+    "id": "double-lines",
+    "type": "line",
+    "source": "hd-roads",
+    "source-layer": "hd_road_line",
+    "slot": "",
+    "filter": [
+      "all",
+      [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "lanes"
+        ],
+        true,
+        false
+      ],
+      [
+        "match",
+        [
+          "get",
+          "line_type"
+        ],
+        [
+          "double"
+        ],
+        true,
+        false
+      ]
+    ],
+    "layout":
+    {
+      "line-elevation-reference": "hd-road-markup"
+    },
+    "paint":
+    {
+      "line-color": [
+        "match",
+        [
+          "get",
+          "color"
+        ],
+        [
+          "yellow"
+        ],
+        "hsl(54, 100%, 65%)",
+        "hsl(0, 0%, 96%)"
+      ],
+      "line-width": [
+        "interpolate",
+        [
+          "exponential",
+          1.5
+        ],
+        [
+          "zoom"
+        ],
+        15,
+        0,
+        18,
+        1.5,
+        19,
+        3,
+        22,
+        10
+      ],
+      "line-gap-width": 2
+    }
+  },
+  {
+    "id": "dashed-lines",
+    "type": "line",
+    "source": "hd-roads",
+    "source-layer": "hd_road_line",
+    "filter": [
+      "all",
+      [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "lanes"
+        ],
+        true,
+        false
+      ],
+      [
+        "match",
+        [
+          "get",
+          "line_type"
+        ],
+        [
+          "dashed",
+          "arrow_dashed",
+          "long_dashed",
+          "short_dash",
+          "solid_dashed"
+        ],
+        true,
+        false
+      ]
+    ],
+    "layout":
+    {
+      "line-elevation-reference": "hd-road-markup"
+    },
+    "paint":
+    {
+      "line-color": [
+        "match",
+        [
+          "get",
+          "color"
+        ],
+        [
+          "yellow"
+        ],
+        "hsl(54, 100%, 65%)",
+        "hsl(0, 0%, 96%)"
+      ],
+      "line-width": [
+        "interpolate",
+        [
+          "exponential",
+          1.5
+        ],
+        [
+          "zoom"
+        ],
+        15,
+        0,
+        18,
+        1,
+        19,
+        3,
+        22,
+        6
+      ],
+      "line-dasharray": [
+        "step",
+        [
+          "zoom"
+        ],
+        [
+          "literal",
+          [
+            14,
+            14
+          ]
+        ],
+        20,
+        [
+          "literal",
+          [
+            18,
+            18
+          ]
+        ]
+      ]
+    }
+  },
+  {
+    "id": "polygonized-lane-navigation",
+    "type": "line",
+    "source": "route-line",
+    "paint":
+    {
+      "line-emissive-strength": 0.5,
+      "line-color": "green",
+      "line-width": 15.0,
+      "line-border-width": 5.0,
+      "line-border-color": "blue"
+    },
+    "layout":
+    {
+      "line-elevation-reference": "hd-road-markup"
+    }
+  }]
+}

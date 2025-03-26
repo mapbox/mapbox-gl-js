@@ -25,7 +25,7 @@ import circle from './draw_circle';
 import assert from 'assert';
 import heatmap from './draw_heatmap';
 import line, {prepare as prepareLine} from './draw_line';
-import fill from './draw_fill';
+import fill, {drawDepthPrepass as fillDepthPrepass} from './draw_fill';
 import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
 import raster, {prepare as prepareRaster} from './draw_raster';
@@ -72,6 +72,7 @@ import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type ProgramConfiguration from '../data/program_configuration';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
+export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
 
 export type CanvasCopyInstances = {
     canvasCopies: WebGLTexture[];
@@ -141,6 +142,10 @@ const prepare = {
     model: modelPrepare,
     raster: prepareRaster,
     'raster-particle': prepareRasterParticle
+};
+
+const depthPrepass = {
+    fill: fillDepthPrepass
 };
 
 /**
@@ -1219,6 +1224,8 @@ class Painter {
             layersRequireTerrainDepth = true;
         }
 
+        let depthPrepassRendered = false;
+
         while (this.currentLayer < layerIds.length) {
             const layer = orderedLayers[this.currentLayer];
             const sourceCache = style.getLayerSourceCache(layer);
@@ -1243,6 +1250,28 @@ class Painter {
                 assert(this.context.bindFramebuffer.current === null);
                 assert(this.currentLayer > prevLayer);
                 continue;
+            }
+
+            if (!depthPrepassRendered && layer.is3D(drapingEnabled) && !drapingEnabled) {
+                // Perform a depth pre-pass step just before rendering of the first 3D layer.
+                // This allows some functionalty/features such as 3D intersections to pre-populate
+                // the depth buffer with information that wouldn't otherwise be available
+                const saveCurrentLayer = this.currentLayer;
+                const renderDepthSubpass = (pass: DepthPrePass) => {
+                    for (this.currentLayer = 0; this.currentLayer < orderedLayers.length; this.currentLayer++) {
+                        const depthPassLayer = orderedLayers[this.currentLayer];
+                        if (depthPrepass[depthPassLayer.type]) {
+                            const sourceCache = this.style.getLayerSourceCache(depthPassLayer);
+                            depthPrepass[depthPassLayer.type](this, sourceCache, depthPassLayer, coordsForTranslucentLayer(depthPassLayer, sourceCache), pass);
+                        }
+                    }
+                };
+
+                renderDepthSubpass('initialize');
+                renderDepthSubpass('reset');
+
+                this.currentLayer = saveCurrentLayer;
+                depthPrepassRendered = true;
             }
 
             // Blit depth for symbols and circles which are occluded by terrain only

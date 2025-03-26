@@ -1,0 +1,701 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "mapMode": "static",
+            "operations": [
+                [
+                    "wait"
+                ]
+            ],
+            "allowed": 0.00035,
+            "spriteFormat": "raster"
+        }
+    },
+    "center": [
+        11.5406,
+        48.1763
+    ],
+    "zoom": 16.70,
+    "pitch": 0.0,
+    "bearing": 8.02,
+    "sources": {
+        "hd-roads": {
+            "type": "vector",
+            "tileSize": 512,
+            "maxzoom": 18,
+            "tiles": [
+                "local://tiles/3d-intersections/{z}-{x}-{y}.mvt"
+            ]
+        },
+        "route-line-0": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "coordinates": [
+                                [
+                                    11.53674,
+                                    48.176282
+                                ],
+                                [
+                                    11.536872,
+                                    48.176283
+                                ],
+                                [
+                                    11.538567,
+                                    48.176283
+                                ],
+                                [
+                                    11.541129,
+                                    48.17625
+                                ],
+                                [
+                                    11.541451,
+                                    48.176166
+                                ],
+                                [
+                                    11.541622,
+                                    48.176102
+                                ],
+                                [
+                                    11.541729,
+                                    48.176032
+                                ],
+                                [
+                                    11.541805,
+                                    48.175956
+                                ],
+                                [
+                                    11.541854,
+                                    48.175872
+                                ],
+                                [
+                                    11.541873,
+                                    48.175776
+                                ],
+                                [
+                                    11.541854,
+                                    48.175672
+                                ],
+                                [
+                                    11.541814,
+                                    48.175584
+                                ],
+                                [
+                                    11.541762,
+                                    48.175523
+                                ],
+                                [
+                                    11.541694,
+                                    48.175463
+                                ],
+                                [
+                                    11.541596,
+                                    48.175411
+                                ],
+                                [
+                                    11.541504,
+                                    48.175376
+                                ],
+                                [
+                                    11.541382,
+                                    48.175351
+                                ],
+                                [
+                                    11.541245,
+                                    48.175344
+                                ],
+                                [
+                                    11.541113,
+                                    48.175354
+                                ],
+                                [
+                                    11.540992,
+                                    48.175377
+                                ],
+                                [
+                                    11.540882,
+                                    48.175416
+                                ],
+                                [
+                                    11.540792,
+                                    48.175464
+                                ]
+                            ],
+                            "type": "LineString"
+                        }
+                    }
+                ]
+            }
+        },
+        "route-line-1": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "coordinates": [
+                                [
+                                    11.54072,
+                                    48.175516
+                                ],
+                                [
+                                    11.540661,
+                                    48.17558
+                                ],
+                                [
+                                    11.540617,
+                                    48.175651
+                                ],
+                                [
+                                    11.540596,
+                                    48.175731
+                                ],
+                                [
+                                    11.540576,
+                                    48.175822
+                                ],
+                                [
+                                    11.540535,
+                                    48.176012
+                                ],
+                                [
+                                    11.540569,
+                                    48.176187
+                                ]
+                            ],
+                            "type": "LineString"
+                        }
+                    }
+                ]
+            }
+        },
+        "route-line-2": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "coordinates": [
+                                [
+                                    11.540598,
+                                    48.176404
+                                ],
+                                [
+                                    11.54061,
+                                    48.176594
+                                ],
+                                [
+                                    11.540611,
+                                    48.176836
+                                ],
+                                [
+                                    11.540598,
+                                    48.177073
+                                ],
+                                [
+                                    11.540566,
+                                    48.17738
+                                ],
+                                [
+                                    11.540535,
+                                    48.177584
+                                ],
+                                [
+                                    11.540498,
+                                    48.177763
+                                ],
+                                [
+                                    11.54042,
+                                    48.178097
+                                ],
+                                [
+                                    11.540316,
+                                    48.178456
+                                ],
+                                [
+                                    11.540168,
+                                    48.178976
+                                ],
+                                [
+                                    11.540092,
+                                    48.179283
+                                ],
+                                [
+                                    11.540027,
+                                    48.17963
+                                ],
+                                [
+                                    11.539989,
+                                    48.179902
+                                ],
+                                [
+                                    11.539973,
+                                    48.180139
+                                ]
+                            ],
+                            "type": "LineString"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "sprite": "local://sprites/3d_intersections",
+    "lights": [
+        {
+            "id": "ambient",
+            "type": "ambient",
+            "properties": {
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.8
+            }
+        },
+        {
+            "id": "directional",
+            "type": "directional",
+            "properties": {
+                "direction": [
+                    "literal",
+                    [
+                        180,
+                        20
+                    ]
+                ],
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.2
+            }
+        }
+    ],
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "rgb(234, 243, 240)"
+            }
+        },
+        {
+            "id": "road-base",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "road"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "fill-elevation-reference": "hd-road-base"
+            },
+            "paint": {
+                "fill-color": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    16,
+                    "hsl(212, 25%, 80%)",
+                    18,
+                    "hsl(212, 25%, 71%)"
+                ]
+            }
+        },
+        {
+            "id": "road-base-bridge",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "bridge"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "fill-elevation-reference": "hd-road-base"
+            },
+            "paint": {
+                "fill-color": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    16,
+                    "hsl(212, 25%, 80%)",
+                    18,
+                    "hsl(212, 25%, 71%)"
+                ]
+            }
+        },
+        {
+            "id": "road-hatched-area",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "hatched_area"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "fill-elevation-reference": "hd-road-markup"
+            },
+            "paint": {
+                "fill-opacity": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    15,
+                    0,
+                    16,
+                    1
+                ],
+                "fill-pattern": [
+                    "match",
+                    [
+                        "get",
+                        "color"
+                    ],
+                    [
+                        "yellow"
+                    ],
+                    "hatched-pattern-yellow",
+                    "hatched-pattern"
+                ]
+            }
+        },
+        {
+            "id": "solid-lines",
+            "type": "line",
+            "source": "hd-roads",
+            "source-layer": "hd_road_line",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "lanes"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "line_type"
+                    ],
+                    [
+                        "solid",
+                        "solid_half_arrow",
+                        "half_arrow_solid",
+                        "arrow_solid"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "line-elevation-reference": "hd-road-markup"
+            },
+            "paint": {
+                "line-color": [
+                    "match",
+                    [
+                        "get",
+                        "color"
+                    ],
+                    [
+                        "yellow"
+                    ],
+                    "hsl(54, 100%, 65%)",
+                    "hsl(0, 0%, 96%)"
+                ],
+                "line-width": [
+                    "interpolate",
+                    [
+                        "exponential",
+                        1.5
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    15,
+                    0,
+                    18,
+                    1.5,
+                    19,
+                    3,
+                    22,
+                    10
+                ]
+            }
+        },
+        {
+            "id": "double-lines",
+            "type": "line",
+            "source": "hd-roads",
+            "source-layer": "hd_road_line",
+            "slot": "",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "lanes"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "line_type"
+                    ],
+                    [
+                        "double"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "line-elevation-reference": "hd-road-markup"
+            },
+            "paint": {
+                "line-color": [
+                    "match",
+                    [
+                        "get",
+                        "color"
+                    ],
+                    [
+                        "yellow"
+                    ],
+                    "hsl(54, 100%, 65%)",
+                    "hsl(0, 0%, 96%)"
+                ],
+                "line-width": [
+                    "interpolate",
+                    [
+                        "exponential",
+                        1.5
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    15,
+                    0,
+                    18,
+                    1.5,
+                    19,
+                    3,
+                    22,
+                    10
+                ],
+                "line-gap-width": 2
+            }
+        },
+        {
+            "id": "dashed-lines",
+            "type": "line",
+            "source": "hd-roads",
+            "source-layer": "hd_road_line",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "lanes"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "line_type"
+                    ],
+                    [
+                        "dashed",
+                        "arrow_dashed",
+                        "long_dashed",
+                        "short_dash",
+                        "solid_dashed"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "line-elevation-reference": "hd-road-markup"
+            },
+            "paint": {
+                "line-color": [
+                    "match",
+                    [
+                        "get",
+                        "color"
+                    ],
+                    [
+                        "yellow"
+                    ],
+                    "hsl(54, 100%, 65%)",
+                    "hsl(0, 0%, 96%)"
+                ],
+                "line-width": [
+                    "interpolate",
+                    [
+                        "exponential",
+                        1.5
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    15,
+                    0,
+                    18,
+                    1,
+                    19,
+                    3,
+                    22,
+                    6
+                ],
+                "line-dasharray": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    [
+                        "literal",
+                        [
+                            14,
+                            14
+                        ]
+                    ],
+                    20,
+                    [
+                        "literal",
+                        [
+                            18,
+                            18
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "id": "route-line-square",
+            "type": "line",
+            "source": "route-line-0",
+            "paint": {
+                "line-blur": 1,
+                "line-color": "green",
+                "line-width": 100,
+                "line-border-width": 5,
+                "line-border-color": "blue"
+            },
+            "layout": {
+                "line-elevation-reference": "hd-road-markup",
+                "line-cap": "square"
+            }
+        },
+        {
+            "id": "route-line-butt",
+            "type": "line",
+            "source": "route-line-1",
+            "paint": {
+                "line-blur": 1,
+                "line-color": "purple",
+                "line-width": 100,
+                "line-border-width": 5,
+                "line-border-color": "blue"
+            },
+            "layout": {
+                "line-elevation-reference": "hd-road-markup",
+                "line-cap": "butt"
+            }
+        },
+        {
+            "id": "route-line-round",
+            "type": "line",
+            "source": "route-line-2",
+            "paint": {
+                "line-blur": 1,
+                "line-color": "brown",
+                "line-width": 100,
+                "line-border-width": 5,
+                "line-border-color": "blue"
+            },
+            "layout": {
+                "line-elevation-reference": "hd-road-markup",
+                "line-cap": "round"
+            }
+        }
+    ]
+}
