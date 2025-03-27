@@ -12,7 +12,7 @@ import '../data/mrt_data';
 
 import type Dispatcher from '../util/dispatcher';
 import type RasterArrayTile from './raster_array_tile';
-import type {Map} from '../ui/map';
+import type {Map as MapboxMap} from '../ui/map';
 import type {Evented} from '../util/evented';
 import type {Iconset} from '../style/iconset';
 import type {Callback} from '../types/callback';
@@ -20,6 +20,7 @@ import type {ISource} from './source';
 import type {AJAXError} from '../util/ajax';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 import type {TextureDescriptor} from './raster_array_tile';
+import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type {RasterArraySourceSpecification} from '../style-spec/types';
 import type {WorkerSourceRasterArrayTileRequest} from './worker_source';
 
@@ -39,7 +40,7 @@ import type {WorkerSourceRasterArrayTileRequest} from './worker_source';
  */
 class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource {
     override type: 'raster-array';
-    override map: Map;
+    override map: MapboxMap;
 
     iconsets: Record<string, Iconset>;
 
@@ -90,15 +91,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         tile.requestParams = request;
         if (!tile.actor) tile.actor = this.dispatcher.getActor();
 
-        if (this.partial) {
-            // Load only the tile header in the main thread
-            tile.request = tile.fetchHeader(undefined, done.bind(this));
-        } else {
-            // Load and parse the entire tile in Worker
-            tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
-        }
-
-        function done(error?: AJAXError | null, data?: MapboxRasterTile, cacheControl?: string, expires?: string) {
+        const done = (error?: AJAXError | null, data?: MapboxRasterTile, cacheControl?: string, expires?: string) => {
             delete tile.request;
 
             if (tile.aborted) {
@@ -123,28 +116,45 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
                 tile._isHeaderLoaded = true;
                 tile._mrt = data;
 
-                // Populate iconsets with images
+                // Make a list of all icons in the tile
+                const icons: StyleImageMap<string> = new Map();
+                for (const layerId in tile._mrt.layers) {
+                    const layer = tile.getLayer(layerId);
+                    if (!layer) continue;
+
+                    for (const bandId of layer.getBandList()) {
+                        const {bytes, tileSize, buffer} = layer.getBandView(bandId);
+                        const size = tileSize + 2 * buffer;
+
+                        const styleImage: StyleImage = {
+                            data: new RGBAImage({width: size, height: size}, bytes),
+                            pixelRatio: 2,
+                            sdf: false,
+                            usvg: false,
+                            version: 0
+                        };
+
+                        const name = `${layerId}/${bandId}`;
+                        icons.set(name, styleImage);
+                    }
+                }
+
+                // Populate iconsets with icons
                 for (const iconsetId in this.iconsets) {
                     const iconset = this.iconsets[iconsetId];
-                    const images = [];
-
-                    for (const layerId in tile._mrt.layers) {
-                        const layer = tile.getLayer(layerId);
-                        if (!layer) continue;
-
-                        for (const bandId of layer.getBandList()) {
-                            const {bytes, tileSize, buffer} = layer.getBandView(bandId);
-                            const size = tileSize + 2 * buffer;
-                            const img = {data: new RGBAImage({width: size, height: size}, bytes), pixelRatio: 2, sdf: false, usvg: false};
-                            images.push({layerId, bandId, img});
-                        }
-                    }
-
-                    iconset.addImages(images);
+                    iconset.addIcons(icons);
                 }
             }
 
             callback(null);
+        };
+
+        if (this.partial) {
+            // Load only the tile header in the main thread
+            tile.request = tile.fetchHeader(undefined, done.bind(this));
+        } else {
+            // Load and parse the entire tile in Worker
+            tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
         }
     }
 

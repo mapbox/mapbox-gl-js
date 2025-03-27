@@ -357,40 +357,41 @@ class ImageManager extends Evented {
             }
 
             const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
-            if (!images[id.name]) {
-                // eslint-disable-next-line
-                // TODO: `styleimagemissing` event should also include `iconsetId`
-                this.fire(new Event('styleimagemissing', {id: id.name}));
-            }
             const image = images[id.name];
-            if (image) {
-                // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
-                const styleImage = {
-                    // Vector images will be rasterized on the worker thread
-                    data: image.usvg ? null : image.data.clone(),
-                    pixelRatio: image.pixelRatio,
-                    sdf: image.sdf,
-                    usvg: image.usvg,
-                    version: image.version,
-                    stretchX: image.stretchX,
-                    stretchY: image.stretchY,
-                    content: image.content,
-                    hasRenderCallback: Boolean(image.userImage && image.userImage.render)
-                };
 
-                if (image.usvg) {
-                    // Since vector images don't have any data, we add the width and height from the source svg
-                    // so that we can compute the scale factor later if needed
-                    Object.assign(styleImage, {
-                        width: image.icon.usvg_tree.width,
-                        height: image.icon.usvg_tree.height
-                    });
-                }
+            if (!image) {
+                // Don't fire the `styleimagemissing` event if the image is a part of an iconset
+                if (id.iconsetId) continue;
 
-                response.set(ImageId.toString(id), styleImage);
-            } else {
                 warnOnce(`Image "${id.name}" could not be loaded. Please make sure you have added the image with map.addImage() or a "sprite" property in your style. You can provide missing images by listening for the "styleimagemissing" map event.`);
+                this.fire(new Event('styleimagemissing', {id: id.name}));
+                continue;
             }
+
+            // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
+            const styleImage = {
+                // Vector images will be rasterized on the worker thread
+                data: image.usvg ? null : image.data.clone(),
+                pixelRatio: image.pixelRatio,
+                sdf: image.sdf,
+                usvg: image.usvg,
+                version: image.version,
+                stretchX: image.stretchX,
+                stretchY: image.stretchY,
+                content: image.content,
+                hasRenderCallback: Boolean(image.userImage && image.userImage.render)
+            };
+
+            if (image.usvg) {
+                // Since vector images don't have any data, we add the width and height from the source svg
+                // so that we can compute the scale factor later if needed
+                Object.assign(styleImage, {
+                    width: image.icon.usvg_tree.width,
+                    height: image.icon.usvg_tree.height
+                });
+            }
+
+            response.set(ImageId.toString(id), styleImage);
         }
 
         callback(null, response);

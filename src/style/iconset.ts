@@ -1,7 +1,7 @@
 import {ImageId} from '../style-spec/expression/types/image_id';
 
 import type Style from './style';
-import type {StyleImage} from './style_image';
+import type {StyleImageMap} from './style_image';
 
 export class Iconset {
     id: string;
@@ -15,10 +15,10 @@ export class Iconset {
         this.style = style;
     }
 
-    addImages(images: Array<{layerId: string, bandId: string, img: StyleImage}>) {
-        for (const {layerId, bandId, img} of images) {
-            const imageId = ImageId.from({name: `${layerId}/${bandId}`, iconsetId: this.id});
-            this.style.addImage(imageId, img);
+    addIcons(icons: StyleImageMap<string>) {
+        for (const [name, image] of icons) {
+            const imageId = ImageId.from({name, iconsetId: this.id});
+            this.style.addImage(imageId, image);
         }
     }
 }

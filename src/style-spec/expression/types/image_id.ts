@@ -1,5 +1,7 @@
 import type {Brand} from '../../types/brand';
 
+const separator = '\u001F';
+
 export type ImageIdSpec = {
     name: string;
     iconsetId?: string;
@@ -35,16 +37,12 @@ export class ImageId {
     }
 
     static toString(id: ImageId | ImageIdSpec): StringifiedImageId {
-        return JSON.stringify({name: id.name, iconsetId: id.iconsetId}) as StringifiedImageId;
+        return (id.iconsetId ? `${id.name}${separator}${id.iconsetId}` : id.name) as StringifiedImageId;
     }
 
     static parse(str: StringifiedImageId): ImageId | null {
-        try {
-            const {name, iconsetId} = JSON.parse(str);
-            return new ImageId({name, iconsetId});
-        } catch (e) {
-            return null;
-        }
+        const [name, iconsetId] = str.split(separator);
+        return new ImageId({name, iconsetId});
     }
 
     static isEqual(a: ImageId | ImageIdSpec, b: ImageId | ImageIdSpec): boolean {
@@ -52,7 +50,7 @@ export class ImageId {
     }
 
     toString(): StringifiedImageId {
-        return JSON.stringify({name: this.name, iconsetId: this.iconsetId}) as StringifiedImageId;
+        return ImageId.toString(this);
     }
 
     serialize(): ImageIdSpec {

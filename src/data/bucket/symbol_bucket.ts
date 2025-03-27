@@ -690,14 +690,19 @@ class SymbolBucket implements Bucket {
                 const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
                 const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor);
                 const iconPrimaryId = iconPrimary.id.toString();
-                const primaryIcons = icons.get(iconPrimaryId) || [];
-                primaryIcons.push(iconPrimary);
-                icons.set(iconPrimaryId, primaryIcons);
+                if (icons.has(iconPrimaryId)) {
+                    icons.get(iconPrimaryId).push(iconPrimary);
+                } else {
+                    icons.set(iconPrimaryId, [iconPrimary]);
+                }
+
                 if (iconSecondary) {
                     const iconSecondaryId = iconSecondary.id.toString();
-                    const secondaryIcons = icons.get(iconSecondaryId) || [];
-                    secondaryIcons.push(iconSecondary);
-                    icons.set(iconSecondaryId, secondaryIcons);
+                    if (icons.has(iconSecondaryId)) {
+                        icons.get(iconSecondaryId).push(iconSecondary);
+                    } else {
+                        icons.set(iconSecondaryId, [iconSecondary]);
+                    }
                 }
             }
 
