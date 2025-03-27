@@ -104,8 +104,6 @@ const todo = [
     "render-tests/icon-text-fit/stretch-nine-part-content-interpolate-text-size",
     // https://mapbox.atlassian.net/browse/GLJS-1189
     "render-tests/background-pattern/image-update/delayed/same-size-before-color-theme-change",
-    // https://mapbox.atlassian.net/browse/GLJS-1184
-    "render-tests/raster-array/semi-transparent-icon"
 ];
 
 const skip = [
@@ -333,7 +331,10 @@ const skip = [
     "render-tests/3d-intersections/road-islands",
     "render-tests/3d-intersections/road-markups-clipping-underground",
     // Time out after 30s
-    "render-tests/3d-intersections/max-zoom-mismatch"
+    "render-tests/3d-intersections/max-zoom-mismatch",
+
+    // https://mapbox.atlassian.net/browse/GLJS-1184
+    "render-tests/raster-array/semi-transparent-icon"
 ];
 
 export default {todo, skip};

@@ -1,7 +1,14 @@
 /* eslint-disable import/no-commonjs */
-const fs = require('fs');
-const path = require('path');
-const serveStatic = require('serve-static');
+import fs from 'fs';
+import path from 'path';
+import serveStatic from 'serve-static';
+import {dirname} from 'path';
+import {fileURLToPath} from 'url';
+import {createRequire} from 'module';
+import {localizeSourceURLs} from './localize-urls.js';
+
+const require = createRequire(import.meta.url);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const defaultOptions = {
     index: false,
@@ -19,14 +26,26 @@ const ciOptions = {
     lastModified: false,
 };
 
-function injectMiddlewares(app, config = {ci: false}) {
+export function injectMiddlewares(app, config = {ci: false}) {
     const options = config.ci ? ciOptions : defaultOptions;
 
     app.use('/mvt-fixtures', serveStatic(path.dirname(require.resolve('@mapbox/mvt-fixtures')), options));
     app.use('/mapbox-gl-styles', serveStatic(path.dirname(require.resolve('mapbox-gl-styles')), options));
 
-    ['render-tests', 'image', 'geojson', 'video', 'tiles', 'glyphs', 'tilesets', 'sprites', 'data', 'models'].forEach(dir => {
+    ['render-tests', 'image', 'geojson', 'video', 'tiles', 'glyphs', 'sprites', 'data', 'models'].forEach(dir => {
         app.use(`/${dir}`, serveStatic(path.join(__dirname, '..', dir), options));
+    });
+
+    app.use('/tilesets', async (req, res) => {
+        const filePath = path.join(__dirname, '..', 'tilesets', req.url);
+        const fileContent = await fs.promises.readFile(filePath, 'utf8');
+        const json = JSON.parse(fileContent);
+
+        const port = req.socket.localPort;
+        localizeSourceURLs(json, port);
+
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        res.end(JSON.stringify(json));
     });
 
     app.post('/write-file', (req, res) => {
@@ -50,5 +69,3 @@ function injectMiddlewares(app, config = {ci: false}) {
         });
     });
 }
-
-module.exports = {injectMiddlewares};

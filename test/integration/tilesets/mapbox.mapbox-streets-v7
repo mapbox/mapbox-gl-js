@@ -1,5 +1,5 @@
 {
     "tiles": [
-      "http://localhost:7357/tiles/mapbox.mapbox-streets-v7/{z}-{x}-{y}.mvt"
+      "local://tiles/mapbox.mapbox-streets-v7/{z}-{x}-{y}.mvt"
     ]
 }

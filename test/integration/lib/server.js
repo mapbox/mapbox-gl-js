@@ -1,6 +1,6 @@
 import express from 'express';
 import localizeURLs from './localize-urls.js';
-import {injectMiddlewares} from './middlewares.cjs';
+import {injectMiddlewares} from './middlewares.js';
 
 export default function () {
     let server;

@@ -5,10 +5,9 @@ const rollup = require('rollup');
 const notifier = require('node-notifier');
 const fs = require('fs');
 const os = require('os');
-const {injectMiddlewares} = require('../lib/middlewares.cjs');
 
 // hack to be able to import ES modules inside a CommonJS one
-let generateFixtureJson, getAllFixtureGlobs, buildTape, rollupDevConfig, rollupTestConfig;
+let generateFixtureJson, getAllFixtureGlobs, buildTape, rollupDevConfig, rollupTestConfig, injectMiddlewares;
 async function loadModules() {
     const generateFixture = await import('../lib/generate-fixture-json.js');
     generateFixtureJson = generateFixture.generateFixtureJson;
@@ -17,6 +16,8 @@ async function loadModules() {
     buildTape = (await import('../../../build/test/build-tape.js')).default;
     rollupDevConfig = (await import('../../../rollup.config.js')).default;
     rollupTestConfig = (await import('../rollup.config.test.js')).default;
+    rollupTestConfig = (await import('../rollup.config.test.js')).default;
+    injectMiddlewares = (await import('../lib/middlewares.js')).injectMiddlewares;
 }
 
 const rootFixturePath = 'test/integration/';

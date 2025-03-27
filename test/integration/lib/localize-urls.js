@@ -77,7 +77,7 @@ function localizeMapboxTilesetURL(url, port) {
     return url.replace(/^mapbox:\/\//, `http://localhost:${port}/tilesets/`);
 }
 
-function localizeSourceURLs(source, port) {
+export function localizeSourceURLs(source, port) {
     for (const tile in source.tiles) {
         source.tiles[tile] = localizeMapboxTilesURL(source.tiles[tile], port);
         source.tiles[tile] = localizeURL(source.tiles[tile], port);
