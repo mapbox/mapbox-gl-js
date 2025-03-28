@@ -1758,6 +1758,8 @@ class Style extends Evented<MapEvents> {
             this._markersNeedUpdate = false;
         }
 
+        this.imageManager.clearUpdatedImages(this.scope);
+
         if (changed) {
             this.fire(new Event('data', {dataType: 'style'}));
         }

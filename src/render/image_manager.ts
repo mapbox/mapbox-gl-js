@@ -255,6 +255,10 @@ class ImageManager extends Evented {
         this.removeFromImageRasterizerCache(id, scope);
     }
 
+    clearUpdatedImages(scope: string) {
+        this.updatedImages[scope].clear();
+    }
+
     removeFromImageRasterizerCache(id: ImageId, scope: string) {
         if (this.spriteFormat === 'raster') {
             return;
