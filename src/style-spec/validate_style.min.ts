@@ -13,6 +13,7 @@ import _validatePaintProperty from './validate/validate_paint_property';
 import _validateLayoutProperty from './validate/validate_layout_property';
 import _validateModel from './validate/validate_model';
 
+import type {StyleReference} from './reference/latest';
 import type {StyleSpecification} from './types';
 
 export type ValidationError = {
@@ -20,8 +21,9 @@ export type ValidationError = {
     identifier?: string | null | undefined;
     line?: number | null | undefined;
 };
+
 export type ValidationErrors = ReadonlyArray<ValidationError>;
-export type Validator = (arg1: any) => ValidationErrors;
+export type Validator<T extends (...args: unknown[]) => unknown = (...args: unknown[]) => unknown> = (...args: Parameters<T>) => ValidationErrors;
 
 /**
  * Validate a Mapbox GL style against the style specification. This entrypoint,
@@ -38,24 +40,24 @@ export type Validator = (arg1: any) => ValidationErrors;
  *   var validate = require('mapbox-gl-style-spec/lib/validate_style.min');
  *   var errors = validate(style);
  */
-export function validateStyle(style: StyleSpecification, styleSpec: any = latestStyleSpec): ValidationErrors {
+export function validateStyle(style: StyleSpecification, styleSpec: StyleReference = latestStyleSpec): ValidationErrors {
     const errors = _validateStyle(style, styleSpec);
     return sortErrors(errors);
 }
 
-export const validateSource: Validator = opts => sortErrors(_validateSource(opts));
-export const validateLight: Validator = opts => sortErrors(_validateLight(opts));
-export const validateLights: Validator = opts => sortErrors(_validateLights(opts));
-export const validateTerrain: Validator = opts => sortErrors(_validateTerrain(opts));
-export const validateFog: Validator = opts => sortErrors(_validateFog(opts));
-export const validateSnow: Validator = opts => sortErrors(_validateSnow(opts));
-export const validateRain: Validator = opts => sortErrors(_validateRain(opts));
-export const validateLayer: Validator = opts => sortErrors(_validateLayer(opts));
-export const validateFilter: Validator = opts => sortErrors(_validateFilter(opts));
-export const validatePaintProperty: Validator = opts => sortErrors(_validatePaintProperty(opts));
-export const validateLayoutProperty: Validator = opts => sortErrors(_validateLayoutProperty(opts));
-export const validateModel: Validator = opts => sortErrors(_validateModel(opts));
+export const validateSource: Validator<typeof _validateSource> = opts => sortErrors(_validateSource(opts));
+export const validateLight: Validator<typeof _validateLight> = opts => sortErrors(_validateLight(opts));
+export const validateLights: Validator<typeof _validateLights> = opts => sortErrors(_validateLights(opts));
+export const validateTerrain: Validator<typeof _validateTerrain> = opts => sortErrors(_validateTerrain(opts));
+export const validateFog: Validator<typeof _validateFog> = opts => sortErrors(_validateFog(opts));
+export const validateSnow: Validator<typeof _validateSnow> = opts => sortErrors(_validateSnow(opts));
+export const validateRain: Validator<typeof _validateRain> = opts => sortErrors(_validateRain(opts));
+export const validateLayer: Validator<typeof _validateLayer> = opts => sortErrors(_validateLayer(opts));
+export const validateFilter: Validator<typeof _validateFilter> = opts => sortErrors(_validateFilter(opts));
+export const validatePaintProperty: Validator<typeof _validatePaintProperty> = opts => sortErrors(_validatePaintProperty(opts));
+export const validateLayoutProperty: Validator<typeof _validateLayoutProperty> = opts => sortErrors(_validateLayoutProperty(opts));
+export const validateModel: Validator<typeof _validateModel> = opts => sortErrors(_validateModel(opts));
 
-function sortErrors(errors: ValidationErrors) {
+function sortErrors(errors: ValidationErrors): ValidationErrors {
     return errors.slice().sort((a, b) => a.line && b.line ? a.line - b.line : 0);
 }

@@ -1709,9 +1709,8 @@ class Style extends Evented<MapEvents> {
             const sourceCache = this._mergedSourceCaches[sourceId];
             if (!sourceCache) continue;
 
-            const source = sourceCache._source;
+            const source = sourceCache._source as Source;
             if (source.type !== 'raster-array') continue;
-            // @ts-expect-error - iconsets is missing in ISource
             if (source.iconsets) sourceCache.used = true;
         }
 
@@ -2060,7 +2059,6 @@ class Style extends Evented<MapEvents> {
         const transitionParameters = this._getTransitionParameters();
 
         for (const light of lights) {
-            // @ts-expect-error - TS2554 - Expected 4-5 arguments, but got 3.
             if (this._validate(validateLights, 'lights', light)) {
                 return;
             }
@@ -3706,11 +3704,9 @@ class Style extends Evented<MapEvents> {
     _validate(
         validate: Validator,
         key: string,
-        value: any,
-        props: any,
-        options: {
-            validate?: boolean;
-        } = {},
+        value: unknown,
+        props?: object,
+        options: {validate?: boolean} = {},
     ): boolean {
         if (options && options.validate === false) {
             return false;
@@ -4301,7 +4297,6 @@ class Style extends Evented<MapEvents> {
     }
 
     _clearWorkerCaches() {
-        // @ts-expect-error - TS2554 - Expected 2-3 arguments, but got 1.
         this.dispatcher.broadcast('clearCaches');
     }
 

@@ -46,7 +46,7 @@ class Dispatcher {
      * Broadcast a message to all Workers.
      * @private
      */
-    broadcast(type: string, data: unknown, cb?: Callback<unknown>) {
+    broadcast(type: string, data?: unknown, cb?: Callback<unknown>) {
         assert(this.actors.length);
         cb = cb || function () {};
         asyncAll(this.actors, (actor, done) => {
