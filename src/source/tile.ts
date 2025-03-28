@@ -57,14 +57,14 @@ import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
-export type TileState = // Tile data is in the process of loading.
-'loading' | // Tile data has been loaded. Tile can be rendered.
-'loaded' | // Tile data has been loaded but has no content for rendering.
-'empty' | // Tile data has been loaded and is being updated. Tile can be rendered.
-'reloading' | // Tile data has been deleted.
-'unloaded' | // Tile data was not loaded because of an error.
-'errored' | 'expired';/* Tile data was previously loaded, but has expired per its
- * HTTP headers and is in the process of refreshing. */
+export type TileState =
+    | 'loading'   // Tile data is in the process of loading.
+    | 'loaded'    // Tile data has been loaded. Tile can be rendered.
+    | 'empty'     // Tile data has been loaded but has no content for rendering.
+    | 'reloading' // Tile data has been loaded and is being updated. Tile can be rendered.
+    | 'unloaded'  // Tile data has been deleted.
+    | 'errored'   // Tile data was not loaded because of an error.
+    | 'expired';  // Tile data was previously loaded, but has expired per its HTTP headers and is in the process of refreshing.
 
 export type ExpiryData = {
     cacheControl?: string;
@@ -541,6 +541,10 @@ class Tile {
 
             result.push(geojsonFeature);
         }
+    }
+
+    loaded(): boolean {
+        return this.state === 'loaded' || this.state === 'errored';
     }
 
     hasData(): boolean {

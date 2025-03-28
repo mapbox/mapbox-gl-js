@@ -113,6 +113,9 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
             if (this.partial) {
                 tile.state = 'empty';
             } else {
+                if (!data) return callback(null);
+
+                tile.state = 'loaded';
                 tile._isHeaderLoaded = true;
                 tile._mrt = data;
 

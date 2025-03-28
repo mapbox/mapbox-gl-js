@@ -131,8 +131,7 @@ class SourceCache extends Evented {
         if (!this._source.loaded()) { return false; }
         for (const t in this._tiles) {
             const tile = this._tiles[t];
-            if (tile.state !== 'loaded' && tile.state !== 'errored')
-                return false;
+            if (!tile.loaded()) return false;
         }
         return true;
     }

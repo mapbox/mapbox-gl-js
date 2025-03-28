@@ -131,7 +131,15 @@
         if (options.fadeDuration) map._isInitialLoad = false;
 
         map.repaint = true;
-        await map.once('load');
+
+        const event = await Promise.race([
+            map.once('load'),
+            new Promise((resolve) => setTimeout(resolve, 1000, {type: 'timeout'}))
+        ]);
+
+        if (event.type === 'timeout') {
+            console.error('Map load timed out after 1 second');
+        }
 
         await applyOperations(map, style.metadata.test);
 

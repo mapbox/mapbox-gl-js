@@ -331,10 +331,7 @@ const skip = [
     "render-tests/3d-intersections/road-islands",
     "render-tests/3d-intersections/road-markups-clipping-underground",
     // Time out after 30s
-    "render-tests/3d-intersections/max-zoom-mismatch",
-
-    // https://mapbox.atlassian.net/browse/GLJS-1184
-    "render-tests/raster-array/semi-transparent-icon"
+    "render-tests/3d-intersections/max-zoom-mismatch"
 ];
 
 export default {todo, skip};
