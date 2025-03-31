@@ -51,11 +51,11 @@ class MouseHandler implements Handler {
         this._eventButton = undefined;
     }
 
-    _correctButton(e: MouseEvent, button: number): boolean {  //eslint-disable-line
+    _correctButton(e: MouseEvent, button: number): boolean {
         return false; // implemented by child
     }
 
-    _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {  //eslint-disable-line
+    _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
         return {}; // implemented by child
     }
 

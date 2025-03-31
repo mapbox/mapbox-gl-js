@@ -6,17 +6,25 @@
 import {ESLint} from 'eslint';
 import {Octokit} from '@octokit/rest';
 import {execSync} from 'child_process';
+import tseslint from 'typescript-eslint';
 
 const owner = 'mapbox';
 const repo = 'mapbox-gl-js';
 const branch = process.env['CIRCLE_BRANCH'] || execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
 
 async function getBannedTsComments() {
-    const eslint = new ESLint({
-        baseConfig: {
-            parser: '@typescript-eslint/parser',
-            plugins: ['@typescript-eslint'],
-            extends: ['plugin:@typescript-eslint/recommended'],
+    const config = tseslint.config(
+        {
+            languageOptions: {
+                parser: tseslint.parser,
+                parserOptions: {
+                    ecmaVersion: 'latest',
+                    sourceType: 'module',
+                },
+            },
+            plugins: {
+                '@typescript-eslint': tseslint.plugin,
+            },
             rules: {
                 '@typescript-eslint/ban-ts-comment': ['error', {
                     'ts-expect-error': true,
@@ -25,8 +33,13 @@ async function getBannedTsComments() {
                     'ts-check': 'allow-with-description',
                 }],
             },
-        },
-        useEslintrc: false,
+            files: ['**/*.ts', '**/*.js'],
+        }
+    );
+
+    const eslint = new ESLint({
+        overrideConfigFile: true,
+        overrideConfig: config
     });
 
     const results = await eslint.lintFiles(['src', '3d-style']);

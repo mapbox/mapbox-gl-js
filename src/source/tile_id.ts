@@ -167,6 +167,9 @@ export class OverscaledTileID {
     }
 }
 
+/**
+ * @private
+ */
 export function calculateKey(wrap: number, overscaledZ: number, z: number, x: number, y: number): number {
     // only use 22 bits for x & y so that the key fits into MAX_SAFE_INTEGER
     const dim = 1 << Math.min(z, 22);

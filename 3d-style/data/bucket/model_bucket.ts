@@ -187,7 +187,6 @@ class ModelBucket implements Bucket {
         this.lookup = null;
     }
 
-    // eslint-disable-next-line no-unused-vars
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions) {
         // called when setFeature state API is used
         for (const modelId in this.instancesPerModel) {

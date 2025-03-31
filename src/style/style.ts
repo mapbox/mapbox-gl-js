@@ -69,6 +69,7 @@ import {loadIconset} from './load_iconset';
 import {ImageId} from '../style-spec/expression/types/image_id';
 import {Iconset} from './iconset';
 
+import type {GeoJSON} from 'geojson';
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import type Painter from '../render/painter';
@@ -466,6 +467,7 @@ class Style extends Evented<MapEvents> {
 
         this.dispatcher.broadcast('setReferrer', getReferrer());
 
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         this._rtlTextPluginCallback = Style.registerForPluginStateChange((event) => {
             const state = {

@@ -146,12 +146,12 @@ class TransitionablePropertyValue<T, R> {
     }
 
     transitioned(parameters: TransitionParameters, prior: TransitioningPropertyValue<T, R>): TransitioningPropertyValue<T, R> {
-        return new TransitioningPropertyValue(this.property, this.value, prior, // eslint-disable-line no-use-before-define
+        return new TransitioningPropertyValue(this.property, this.value, prior,
             extend({}, parameters.transition, this.transition), parameters.now);
     }
 
     untransitioned(): TransitioningPropertyValue<T, R> {
-        return new TransitioningPropertyValue(this.property, this.value, null, {}, 0); // eslint-disable-line no-use-before-define
+        return new TransitioningPropertyValue(this.property, this.value, null, {}, 0);
     }
 }
 
@@ -252,7 +252,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
     }
 
     transitioned(parameters: TransitionParameters, prior: Transitioning<Props>): Transitioning<Props> {
-        const result = new Transitioning(this._properties); // eslint-disable-line no-use-before-define
+        const result = new Transitioning(this._properties);
         for (const property of Object.keys(this._values)) {
             result._values[property] = this._values[property].transitioned(parameters, prior._values[property]);
         }
@@ -260,7 +260,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
     }
 
     untransitioned(): Transitioning<Props> {
-        const result = new Transitioning(this._properties); // eslint-disable-line no-use-before-define
+        const result = new Transitioning(this._properties);
         for (const property of Object.keys(this._values)) {
             result._values[property] = this._values[property].untransitioned();
         }
@@ -370,7 +370,7 @@ export class Transitioning<Props extends {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
     ): PossiblyEvaluated<Props> {
-        const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
+        const result = new PossiblyEvaluated(this._properties);
         for (const property of Object.keys(this._values)) {
             result._values[property] = this._values[property].possiblyEvaluate(parameters, canonical, availableImages);
         }
@@ -464,7 +464,7 @@ export class Layout<Props extends {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
     ): PossiblyEvaluated<Props> {
-        const result = new PossiblyEvaluated(this._properties); // eslint-disable-line no-use-before-define
+        const result = new PossiblyEvaluated(this._properties);
         for (const property of Object.keys(this._values)) {
             result._values[property] = this._values[property].possiblyEvaluate(parameters, canonical, availableImages);
         }

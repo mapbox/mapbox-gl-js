@@ -96,13 +96,13 @@ class ScrollZoomHandler implements Handler {
     }
 
     /**
-    * Sets the zoom rate of a mouse wheel.
+     * Sets the zoom rate of a mouse wheel.
      *
-    * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
-    * @example
-    * // Slow down zoom of mouse wheel
-    * map.scrollZoom.setWheelZoomRate(1 / 600);
-    */
+     * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
+     * @example
+     * // Slow down zoom of mouse wheel
+     * map.scrollZoom.setWheelZoomRate(1 / 600);
+     */
     setWheelZoomRate(wheelZoomRate: number) {
         this._wheelZoomRate = wheelZoomRate;
     }

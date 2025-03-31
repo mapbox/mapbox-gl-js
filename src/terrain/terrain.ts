@@ -120,7 +120,7 @@ class ProxySourceCache extends SourceCache {
     }
 
     // Override for transient nature of cover here: don't cache and retain.
-    override update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) { // eslint-disable-line no-unused-vars
+    override update(transform: Transform, tileSize?: number, updateForTerrain?: boolean) {
         if (transform.freezeTileCoverage) { return; }
         this.transform = transform;
         const idealTileIDs = transform.coveringTiles({

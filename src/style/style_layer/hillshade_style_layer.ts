@@ -32,7 +32,6 @@ class HillshadeStyleLayer extends StyleLayer {
         return ['hillshade', 'hillshadePrepare'];
     }
 
-    // eslint-disable-next-line no-unused-vars
     override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         return {
             overrideFog: false

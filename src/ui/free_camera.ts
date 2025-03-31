@@ -28,6 +28,9 @@ function orientationFromPitchBearing(pitch: number, bearing: number): quat {
     return orientation;
 }
 
+/**
+ * @private
+ */
 export function orientationFromFrame(forward: vec3, up: vec3): quat | null | undefined {
     // Find right-vector of the resulting coordinate frame. Up-vector has to be
     // sanitized first in order to remove the roll component from the orientation
@@ -77,7 +80,7 @@ export function orientationFromFrame(forward: vec3, up: vec3): quat | null | und
           right    [1, 0, 0]
         Orientation can be set freely but certain constraints still apply:
          - Orientation must be representable with only pitch and bearing.
-         - Pitch has an upper limit
+         - Pitch has an upper limit.
  * @example
  * const camera = map.getFreeCameraOptions();
  *
@@ -90,7 +93,7 @@ export function orientationFromFrame(forward: vec3, up: vec3): quat | null | und
  * map.setFreeCameraOptions(camera);
  * @see [Example: Animate the camera around a point in 3D terrain](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-point/)
  * @see [Example: Animate the camera along a path](https://docs.mapbox.com/mapbox-gl-js/example/free-camera-path/)
-*/
+ */
 class FreeCameraOptions {
     orientation: quat | null | undefined;
     _position: MercatorCoordinate | null | undefined;
@@ -123,8 +126,7 @@ class FreeCameraOptions {
      * on the map.
      *
      * @param {LngLatLike} location Location of the focus point on the map.
-     * @param {vec3?} up Up vector of the camera is necessary in certain scenarios where bearing can't be deduced
-     *      from the viewing direction.
+     * @param {vec3?} up Up vector of the camera is necessary in certain scenarios where bearing can't be deduced from the viewing direction.
      * @example
      * const camera = map.getFreeCameraOptions();
      *

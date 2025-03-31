@@ -2,6 +2,9 @@ import assert from 'assert';
 import {wrap, degToRad, radToDeg} from '../util/util';
 import {GLOBE_RADIUS} from '../geo/projection/globe_constants';
 
+/**
+ * @private
+ */
 export function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radius: number = GLOBE_RADIUS): [number, number, number] {
     lng = degToRad(lng);
 
@@ -13,6 +16,9 @@ export function csLatLngToECEF(cosLat: number, sinLat: number, lng: number, radi
     return [sx, sy, sz];
 }
 
+/**
+ * @private
+ */
 export function ecefToLatLng([x, y, z]: [number, number, number]): LngLat {
     const radius = Math.hypot(x, y, z);
     const lng = Math.atan2(x, z);
@@ -21,6 +27,9 @@ export function ecefToLatLng([x, y, z]: [number, number, number]): LngLat {
     return new LngLat(radToDeg(lng), radToDeg(lat));
 }
 
+/**
+ * @private
+ */
 export function latLngToECEF(lat: number, lng: number, radius?: number): [number, number, number] {
     assert(lat <= 90 && lat >= -90, 'Lattitude must be between -90 and 90');
     return csLatLngToECEF(Math.cos(degToRad(lat)), Math.sin(degToRad(lat)), lng, radius);
@@ -462,20 +471,20 @@ export class LngLatBounds {
     }
 
     /**
-    * Check if the point is within the bounding box.
-    *
-    * @param {LngLatLike} lnglat Geographic point to check against.
-    * @returns {boolean} True if the point is within the bounding box.
-    * @example
-    * const llb = new mapboxgl.LngLatBounds(
-    *   new mapboxgl.LngLat(-73.9876, 40.7661),
-    *   new mapboxgl.LngLat(-73.9397, 40.8002)
-    * );
-    *
-    * const ll = new mapboxgl.LngLat(-73.9567, 40.7789);
-    *
-    * console.log(llb.contains(ll)); // = true
-    */
+     * Check if the point is within the bounding box.
+     *
+     * @param {LngLatLike} lnglat Geographic point to check against.
+     * @returns {boolean} True if the point is within the bounding box.
+     * @example
+     * const llb = new mapboxgl.LngLatBounds(
+     *   new mapboxgl.LngLat(-73.9876, 40.7661),
+     *   new mapboxgl.LngLat(-73.9397, 40.8002)
+     * );
+     *
+     * const ll = new mapboxgl.LngLat(-73.9567, 40.7789);
+     *
+     * console.log(llb.contains(ll)); // = true
+     */
     contains(lnglat: LngLatLike): boolean {
         const {lng, lat} = LngLat.convert(lnglat);
 
@@ -496,7 +505,7 @@ export class LngLatBounds {
      * Internally, the function calls `LngLat#convert` to convert arrays to `LngLat` values.
      *
      * @param {LngLatBoundsLike} input An array of two coordinates to convert, or a `LngLatBounds` object to return.
-     * @returns {LngLatBounds} A new `LngLatBounds` object, if a conversion occurred, or the original `LngLatBounds` object.
+     * @returns {LngLatBounds | void} A new `LngLatBounds` object, if a conversion occurred, or the original `LngLatBounds` object.
      * @example
      * const arr = [[-73.9876, 40.7661], [-73.9397, 40.8002]];
      * const llb = mapboxgl.LngLatBounds.convert(arr);

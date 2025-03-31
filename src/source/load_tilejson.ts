@@ -60,6 +60,9 @@ function getInlinedTileJSON(data?: TileJSON, language?: string, worldview?: stri
     return null;
 }
 
+/**
+ * @private
+ */
 export default function(
     options: Options,
     requestManager: RequestManager,

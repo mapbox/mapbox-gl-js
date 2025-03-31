@@ -206,7 +206,7 @@ const ALLOWED_SINGLE_TOUCH_TIME = 100;
  * The `TouchPitchHandler` allows the user to pitch the map by dragging up and down with two fingers.
  *
  * @see [Example: Set pitch and bearing](https://docs.mapbox.com/mapbox-gl-js/example/set-perspective/)
-*/
+ */
 export class TouchPitchHandler extends TwoTouchHandler {
 
     _valid: boolean | undefined;

@@ -121,7 +121,9 @@ export class Evented<R extends EventRegistry = EventRegistry> {
     once<T extends keyof R | (string & {})>(type: T, listener: Listener<R, T, this>): this;
     once<T extends keyof R | (string & {})>(type: T, listener?: Listener<R, T, this>): this | Promise<EventOf<R, T, this>> {
         if (!listener) {
-            return new Promise((resolve) => this.once(type, resolve as Listener<R, T, this>));
+            return new Promise((resolve) => {
+                this.once(type, resolve as Listener<R, T, this>);
+            });
         }
 
         this._oneTimeListeners = this._oneTimeListeners || {};

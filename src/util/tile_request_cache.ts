@@ -51,7 +51,7 @@ let responseConstructorSupportsReadableStream;
 function prepareBody(response: Response, callback: (body?: Blob | ReadableStream | null) => void) {
     if (responseConstructorSupportsReadableStream === undefined) {
         try {
-            new Response(new ReadableStream()); // eslint-disable-line no-undef
+            new Response(new ReadableStream());
             responseConstructorSupportsReadableStream = true;
         } catch (e: any) {
             // Edge

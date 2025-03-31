@@ -90,8 +90,6 @@ class StyleLayer extends Evented {
 
         if (layer.type === 'custom') return;
 
-        layer = (layer);
-
         this.metadata = layer.metadata;
         this.minzoom = layer.minzoom;
         this.maxzoom = layer.maxzoom;
@@ -229,13 +227,11 @@ class StyleLayer extends Evented {
         return null;
     }
 
-    // eslint-disable-next-line no-unused-vars
     getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         // No-op; can be overridden by derived classes.
         return null;
     }
 
-    // eslint-disable-next-line no-unused-vars
     _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
         // No-op; can be overridden by derived classes.
         return false;

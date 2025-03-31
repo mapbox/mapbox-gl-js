@@ -3,11 +3,11 @@ import {clamp} from '../util/util';
 import {number} from '../style-spec/util/interpolate';
 
 /**
- * @private
  * An `EdgeInset` object represents screen space padding applied to the edges of the viewport.
  * This shifts the apparent center or the vanishing point of the map. This is useful for adding floating UI elements
  * on top of the map and having the vanishing point shift as UI elements resize.
  *
+ * @private
  * @param {number} [top=0]
  * @param {number} [bottom=0]
  * @param {number} [left=0]

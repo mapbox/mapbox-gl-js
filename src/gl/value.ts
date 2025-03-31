@@ -43,7 +43,7 @@ class BaseValue<T> implements Value<T> {
         return this.current;
     }
 
-    set(value: T) { // eslint-disable-line
+    set(value: T) {
         // overridden in child classes;
     }
 

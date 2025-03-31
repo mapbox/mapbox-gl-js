@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable no-process-exit */
 
 import fs from 'fs';
 import {execSync} from 'child_process';

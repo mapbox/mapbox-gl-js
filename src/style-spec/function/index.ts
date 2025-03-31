@@ -43,7 +43,7 @@ export function createFunction(parameters, propertySpec) {
         }
     }
 
-    if (parameters.colorSpace && parameters.colorSpace !== 'rgb' && !colorSpaces[parameters.colorSpace]) { // eslint-disable-line import/namespace
+    if (parameters.colorSpace && parameters.colorSpace !== 'rgb' && !colorSpaces[parameters.colorSpace]) {
         throw new Error(`Unknown color space: ${parameters.colorSpace}`);
     }
 
@@ -175,10 +175,10 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 
     const outputLower = parameters.stops[index][1];
     const outputUpper = parameters.stops[index + 1][1];
-    let interp = interpolate[propertySpec.type] || identityFunction; // eslint-disable-line import/namespace
+    let interp = interpolate[propertySpec.type] || identityFunction;
 
     if (parameters.colorSpace && parameters.colorSpace !== 'rgb') {
-        const colorspace = colorSpaces[parameters.colorSpace]; // eslint-disable-line import/namespace
+        const colorspace = colorSpaces[parameters.colorSpace];
         interp = (a, b) => colorspace.reverse(colorspace.interpolate(colorspace.forward(a), colorspace.forward(b), t));
     }
 

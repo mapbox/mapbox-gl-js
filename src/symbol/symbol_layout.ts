@@ -758,6 +758,7 @@ function addTextVertices(bucket: SymbolBucket,
 function getDefaultHorizontalShaping(horizontalShaping: Partial<Record<TextJustify, Shaping>>): Shaping | null {
     // We don't care which shaping we get because this is used for collision purposes
     // and all the justifications have the same collision box
+    // eslint-disable-next-line no-unreachable-loop
     for (const justification in horizontalShaping) {
         return horizontalShaping[justification];
     }

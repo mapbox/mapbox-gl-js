@@ -29,7 +29,7 @@ import type {Handler, HandlerResult} from './handler';
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
 /**
- * One of modifier [KeyboardEvent.key](https://developer.mozilla.org/docs/Web/API/KeyboardEvent/key) values
+ * One of modifier [KeyboardEvent.key](https://developer.mozilla.org/docs/Web/API/KeyboardEvent/key) values.
  */
 export type PitchRotateKey = 'Control' | 'Alt' | 'Shift' | 'Meta';
 

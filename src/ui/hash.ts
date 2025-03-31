@@ -123,6 +123,9 @@ export default class Hash {
     }
 }
 
+/**
+ * @private
+ */
 export function getHashString(map: Map, mapFeedback?: boolean): string {
     const center = map.getCenter(),
         zoom = Math.round(map.getZoom() * 100) / 100,

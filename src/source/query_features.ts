@@ -64,10 +64,16 @@ function generateTargetKey(target: TargetDescriptor): string {
     }
 }
 
+/**
+ * @private
+ */
 export function getFeatureTargetKey(variant: FeatureVariant, feature: Feature, targetId: string = ''): string {
     return `${targetId}:${feature.id || ''}:${feature.layer.id}:${generateTargetKey(variant.target)}`;
 }
 
+/**
+ * @private
+ */
 export function shouldSkipFeatureVariant(variant: FeatureVariant, feature: Feature, uniqueFeatureSet: Set<string>, targetId: string = ''): boolean {
     if (variant.uniqueFeatureID) {
         const key = getFeatureTargetKey(variant, feature, targetId);
@@ -81,6 +87,9 @@ export function shouldSkipFeatureVariant(variant: FeatureVariant, feature: Featu
     return false;
 }
 
+/**
+ * @private
+ */
 export function queryRenderedFeatures(
     queryGeometry: QueryGeometry,
     query: QrfQuery & {has3DLayers?: boolean},
@@ -115,6 +124,9 @@ export function queryRenderedFeatures(
     return mergeRenderedFeatureLayers(renderedFeatureLayers);
 }
 
+/**
+ * @private
+ */
 export function queryRenderedSymbols(
     queryGeometry: Array<Point>,
     query: QrfQuery,
@@ -171,6 +183,9 @@ export function queryRenderedSymbols(
     return result;
 }
 
+/**
+ * @private
+ */
 export function querySourceFeatures(sourceCache: SourceCache, params?: {
     sourceLayer?: string;
     filter?: FilterSpecification;

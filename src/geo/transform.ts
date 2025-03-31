@@ -487,6 +487,14 @@ class Transform {
         return this._fov / Math.PI * 180;
     }
 
+    set fov(fov: number) {
+        fov = Math.max(0.01, Math.min(60, fov));
+        if (this._fov === fov) return;
+        this._unmodified = false;
+        this._fov = degToRad(fov);
+        this._calcMatrices();
+    }
+
     get fovX(): number {
         return this._fov;
     }
@@ -494,14 +502,6 @@ class Transform {
     get fovY(): number {
         const focalLength = 1.0 / Math.tan(this.fovX * 0.5);
         return 2 * Math.atan((1.0 / this.aspect) / focalLength);
-    }
-
-    set fov(fov: number) {
-        fov = Math.max(0.01, Math.min(60, fov));
-        if (this._fov === fov) return;
-        this._unmodified = false;
-        this._fov = degToRad(fov);
-        this._calcMatrices();
     }
 
     get averageElevation(): number {
@@ -855,7 +855,7 @@ class Transform {
      * Extends tile coverage to include potential neighboring tiles using either light direction or quadrant visibility information.
      * @param {Array<OverscaledTileID>} coveringTiles tile cover that is extended
      * @param {number} maxZoom maximum zoom level
-     * @param {Vec3} lightDir direction of the light (unit vector), if undefined quadrant visibility information is used
+     * @param {vec3} lightDir direction of the light (unit vector), if undefined quadrant visibility information is used
      * @returns {Array<OverscaledTileID>} a set of extension tiles
      */
     extendTileCover(coveringTiles: Array<OverscaledTileID>, maxZoom: number, lightDir?: vec3): Array<OverscaledTileID> {

@@ -59,11 +59,11 @@ export default class Projection {
         this.range = [3.5, 7];
     }
 
-    project(lng: number, lat: number): ProjectedPoint { // eslint-disable-line
+    project(lng: number, lat: number): ProjectedPoint {
         return {x: 0, y: 0, z: 0}; // overriden in subclasses
     }
 
-    unproject(x: number, y: number): LngLat { // eslint-disable-line
+    unproject(x: number, y: number): LngLat {
         return new LngLat(0, 0); // overriden in subclasses
     }
 
@@ -86,7 +86,7 @@ export default class Projection {
     // `pixelSpaceConversion` is useful for converting between pixel spaces where some logic
     // expects mercator pixels, such as raycasting where the scale is expected to be in
     // mercator pixels.
-    pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number { // eslint-disable-line
+    pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number {
         return 1.0;
     }
 

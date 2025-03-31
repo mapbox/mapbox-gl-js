@@ -30,6 +30,7 @@ import {Aabb} from '../util/primitives';
 import {getZoomAdjustment} from '../geo/projection/adjustments';
 
 import type Transform from '../geo/transform';
+import type BoxZoomHandler from './handler/box_zoom';
 import type {TaskID} from '../util/task_queue';
 import type {Callback} from '../types/callback';
 import type {MapEvents} from './events';
@@ -129,7 +130,7 @@ export type FullCameraOptions = CameraOptions & {
  * @see [Example: Slowly fly to a location](https://docs.mapbox.com/mapbox-gl-js/example/flyto-options/)
  * @see [Example: Customize camera animations](https://docs.mapbox.com/mapbox-gl-js/example/camera-animation/)
  * @see [Example: Navigate the map with game-like controls](https://docs.mapbox.com/mapbox-gl-js/example/game-controls/)
-*/
+ */
 export type AnimationOptions = {
     animate?: boolean;
     curve?: number;
@@ -218,10 +219,7 @@ class Camera extends Evented<MapEvents> {
         //addAssertions(this);
     }
 
-    /** @section {Camera}
-     * @method
-     * @instance
-     * @memberof Map */
+    /** @section Camera */
 
     /**
      * Returns the map's geographical centerpoint.
@@ -815,7 +813,7 @@ class Camera extends Evented<MapEvents> {
         return extendedAABB;
     }
 
-    /** @section {Querying features} */
+    /** @section Querying features */
 
     /**
      * Queries the currently loaded data for elevation at a geographical location. The elevation is returned in `meters` relative to mean sea-level.
@@ -1904,7 +1902,7 @@ function addAssertions(camera: Camera) { //eslint-disable-line
         });
 
         // Canary used to test whether this function is stripped in prod build
-        canary = 'canary debug run'; //eslint-disable-line
+        canary = 'canary debug run';
     });
 }
 

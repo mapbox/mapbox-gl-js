@@ -799,14 +799,14 @@ export default class Marker extends Evented<MarkerEvents> {
         // only fire dragend if it was preceded by at least one drag event
         if (this._state === 'active') {
             /**
-            * Fired when the marker is finished being dragged.
-            *
-            * @event dragend
-            * @memberof Marker
-            * @instance
-            * @type {Object}
-            * @property {Marker} marker The object that was dragged.
-            */
+             * Fired when the marker is finished being dragged.
+             *
+             * @event dragend
+             * @memberof Marker
+             * @instance
+             * @type {Object}
+             * @property {Marker} marker The object that was dragged.
+             */
             this.fire(new Event('dragend'));
         }
 

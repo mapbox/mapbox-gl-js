@@ -28,6 +28,9 @@ export default function(
     return pixelValue * (EXTENT / (tile.tileSize * Math.pow(2, z - tile.tileID.overscaledZ)));
 }
 
+/**
+ * @private
+ */
 export function getPixelsToTileUnitsMatrix(
     tile: {
         tileID: OverscaledTileID;

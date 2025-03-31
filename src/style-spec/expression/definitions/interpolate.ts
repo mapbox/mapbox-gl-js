@@ -179,7 +179,7 @@ class Interpolate implements Expression {
         const outputUpper = outputs[index + 1].evaluate(ctx);
 
         if (this.operator === 'interpolate') {
-            return (interpolate[this.type.kind.toLowerCase()] as any)(outputLower, outputUpper, t); // eslint-disable-line import/namespace
+            return (interpolate[this.type.kind.toLowerCase()] as any)(outputLower, outputUpper, t);
         } else if (this.operator === 'interpolate-hcl') {
             return hcl.reverse(hcl.interpolate(hcl.forward(outputLower), hcl.forward(outputUpper), t));
         } else {

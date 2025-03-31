@@ -345,7 +345,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * the function will return `false` if the performance of Mapbox GL JS would
  * be dramatically worse than expected (for example, a software WebGL renderer
  * would be used).
- * @return {boolean}
+ * @returns {boolean}
  * @example
  * // Show an alert if the browser does not support Mapbox GL
  * if (!mapboxgl.supported()) {
@@ -369,14 +369,14 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  */
 
 /**
-  * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
-  * The status can be `unavailable` (not requested or removed), `loading`, `loaded`, or `error`.
-  * If the status is `loaded` and the plugin is requested again, an error will be thrown.
-  *
-  * @function getRTLTextPluginStatus
-  * @example
-  * const pluginStatus = mapboxgl.getRTLTextPluginStatus();
-  */
+ * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
+ * The status can be `unavailable` (not requested or removed), `loading`, `loaded`, or `error`.
+ * If the status is `loaded` and the plugin is requested again, an error will be thrown.
+ *
+ * @function getRTLTextPluginStatus
+ * @example
+ * const pluginStatus = mapboxgl.getRTLTextPluginStatus();
+ */
 
 export default exported;
 

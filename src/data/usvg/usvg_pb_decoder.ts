@@ -1,6 +1,4 @@
 /* eslint-disable camelcase */
-/* eslint-disable brace-style */
-/* eslint-disable no-sparse-arrays */
 
 import Color from "../../style-spec/util/color";
 

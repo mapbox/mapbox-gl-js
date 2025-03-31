@@ -35,8 +35,7 @@
     "./test/unit/**/*",
     "./test/usvg/**/*",
     "./test/util/**/*",
-    "./vitest.config.*",
-    "./rollup.config.*"
+    "./*.config.*"
   ],
   "exclude": [
     "./dist",

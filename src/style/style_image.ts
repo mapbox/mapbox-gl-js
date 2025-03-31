@@ -122,7 +122,7 @@ export function renderStyleImage(image: StyleImage): boolean {
  * @memberof StyleImageInterface
  * @instance
  * @name render
- * @return {boolean} `true` if this method updated the image. `false` if the image was not changed.
+ * @returns {boolean} `true` if this method updated the image. `false` if the image was not changed.
  */
 
 /**

@@ -161,6 +161,7 @@ class VideoSource extends ImageSource<'video'> {
         }
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Sets the video's coordinates and re-renders the map.
      *

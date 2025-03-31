@@ -23,6 +23,12 @@ export type CanvasSourceSpecification = {
  * @property {Array<Array<number>>} coordinates Four geographical coordinates denoting where to place the corners of the canvas, specified in `[longitude, latitude]` pairs.
  * @property {boolean} [animate=true] Whether the canvas source is animated. If the canvas is static (pixels do not need to be re-read on every frame), `animate` should be set to `false` to improve performance.
  */
+export type CanvasSourceOptions = {
+    type: 'canvas';
+    canvas: string | HTMLCanvasElement;
+    coordinates: Array<[number, number]>;
+    animate?: boolean;
+};
 
 /**
  * A data source containing the contents of an HTML canvas. See {@link CanvasSourceOptions} for detailed documentation of options.
