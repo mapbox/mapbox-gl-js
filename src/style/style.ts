@@ -1294,21 +1294,24 @@ class Style extends Evented<MapEvents> {
         }
     }
 
+    /**
+     * Loads a sprite from the given URL.
+     * @fires Map.event:data Fires `data` with `{dataType: 'style'}` to indicate that sprite loading is complete.
+     */
     _loadSprite(url: string) {
         this._spriteRequest = loadSprite(url, this.map._requestManager, (err, images) => {
             this._spriteRequest = null;
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (images) {
+                const styleImageMap: StyleImageMap<ImageId> = new Map();
                 for (const id in images) {
-                    this.imageManager.addImage(ImageId.from(id), this.scope, images[id]);
+                    styleImageMap.set(ImageId.from(id), images[id]);
                 }
+                this.addImages(styleImageMap);
             }
 
             this.imageManager.setLoaded(true, this.scope);
-            this._availableImages = this.imageManager.listImages(this.scope);
-            const params: SetImagesParameters = {scope: this.scope, images: this._availableImages};
-            this.dispatcher.broadcast('setImages', params);
             this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
             this.fire(new Event('data', {dataType: 'style'}));
         });
@@ -1337,6 +1340,10 @@ class Style extends Evented<MapEvents> {
         source.addIconset(iconsetId, sourceIconset);
     }
 
+    /**
+     * Loads an iconset from the given URL. If the sprite is not a Mapbox URL, it loads a raster sprite.
+     * @fires Map.event:data Fires `data` with `{dataType: 'style'}` to indicate that sprite loading is complete.
+     */
     _loadIconset(url: string) {
         // If the sprite is not a mapbox URL, we load
         // raster sprite if icon_set is not specified explicitly.
@@ -1357,15 +1364,14 @@ class Style extends Evented<MapEvents> {
                     this.fire(new ErrorEvent(err));
                 }
             } else if (images) {
+                const styleImageMap: StyleImageMap<ImageId> = new Map();
                 for (const id in images) {
-                    this.imageManager.addImage(ImageId.from(id), this.scope, images[id]);
+                    styleImageMap.set(ImageId.from(id), images[id]);
                 }
+                this.addImages(styleImageMap);
             }
 
             this.imageManager.setLoaded(true, this.scope);
-            this._availableImages = this.imageManager.listImages(this.scope);
-            const params: SetImagesParameters = {scope: this.scope, images: this._availableImages};
-            this.dispatcher.broadcast('setImages', params);
             this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
             this.fire(new Event('data', {dataType: 'style'}));
         });
@@ -1842,19 +1848,51 @@ class Style extends Evented<MapEvents> {
         return true;
     }
 
+    /**
+     * Broadcast the current set of available images to the Workers.
+     */
+    _updateWorkerImages() {
+        this._availableImages = this.imageManager.listImages(this.scope);
+        const params: SetImagesParameters = {scope: this.scope, images: this._availableImages};
+        this.dispatcher.broadcast('setImages', params);
+    }
+
+    /**
+     * Add a set of images to the style.
+     * @fires Map.event:data Fires `data` with `{dataType: 'style'}` to indicate that the set of available images has changed.
+     * @returns {Style}
+     */
+    addImages(images: StyleImageMap<ImageId>): this {
+        for (const [id, image] of images.entries()) {
+            if (this.getImage(id) && !id.iconsetId) {
+                return this.fire(new ErrorEvent(new Error(`An image with the name "${id.name}" already exists.`)));
+            }
+            this.imageManager.addImage(id, this.scope, image);
+            this._changes.updateImage(id);
+        }
+
+        this._updateWorkerImages();
+        this.fire(new Event('data', {dataType: 'style'}));
+        return this;
+    }
+
     addImage(id: ImageId, image: StyleImage): this {
         if (this.getImage(id) && !id.iconsetId) {
-            return this.fire(new ErrorEvent(new Error('An image with this name already exists.')));
+            return this.fire(new ErrorEvent(new Error(`An image with the name "${id.name}" already exists.`)));
         }
         this.imageManager.addImage(id, this.scope, image);
-        this._afterImageUpdated(id);
+        this._changes.updateImage(id);
+        this._updateWorkerImages();
+        this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
 
     updateImage(id: ImageId, image: StyleImage, performSymbolLayout = false) {
         this.imageManager.updateImage(id, this.scope, image);
         if (performSymbolLayout) {
-            this._afterImageUpdated(id);
+            this._changes.updateImage(id);
+            this._updateWorkerImages();
+            this.fire(new Event('data', {dataType: 'style'}));
         }
     }
 
@@ -1867,16 +1905,10 @@ class Style extends Evented<MapEvents> {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
         this.imageManager.removeImage(id, this.scope);
-        this._afterImageUpdated(id);
-        return this;
-    }
-
-    _afterImageUpdated(id: ImageId) {
-        this._availableImages = this.imageManager.listImages(this.scope);
         this._changes.updateImage(id);
-        const params: SetImagesParameters = {scope: this.scope, images: this._availableImages};
-        this.dispatcher.broadcast('setImages', params);
+        this._updateWorkerImages();
         this.fire(new Event('data', {dataType: 'style'}));
+        return this;
     }
 
     listImages(): ImageId[] {

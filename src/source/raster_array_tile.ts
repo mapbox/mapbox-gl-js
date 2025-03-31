@@ -141,7 +141,7 @@ class RasterArrayTile extends Tile {
                 }
 
                 callback(null, (this.entireBuffer || dataBuffer), cacheControl, expires);
-            } catch (error: any) {
+            } catch (error) {
                 callback(error);
             }
         });

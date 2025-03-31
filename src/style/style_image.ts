@@ -24,6 +24,10 @@ export type StyleImageMetadata = {
 export type StyleImage = StyleImageData & StyleImageMetadata;
 
 export type StyleImages = Record<string, StyleImage>;
+
+/**
+ * A Map of `StyleImages` indexed by some type `T`.
+ */
 export type StyleImageMap<T> = Map<T, StyleImage>;
 
 export type StyleImageInterface = {

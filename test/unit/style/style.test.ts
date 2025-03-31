@@ -2186,6 +2186,147 @@ describe('Style#setColorTheme', () => {
     });
 });
 
+test('Style#addImage', async () => {
+    const style = new Style(new StubMap());
+    style.loadJSON(createStyleJSON());
+    await waitFor(style, 'style.load');
+
+    const errorSpy = vi.fn();
+    style.on('error', errorSpy);
+    vi.spyOn(style, 'fire');
+    vi.spyOn(style.dispatcher, 'broadcast');
+
+    const imageId = ImageId.from('image');
+    style.addImage(imageId, {});
+
+    expect(style._changes.isDirty()).toEqual(true);
+
+    expect(style.dispatcher.broadcast).toHaveBeenCalledTimes(1);
+    expect(style.dispatcher.broadcast).toHaveBeenLastCalledWith(
+        'setImages',
+        {scope: '', images: [imageId]}
+    );
+
+    expect(style.fire).toHaveBeenCalledTimes(1);
+    expect(style.fire).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+            type: 'data',
+            dataType: 'style'
+        })
+    );
+
+    // Adding an image with the same name should fire an error
+    style.addImage(imageId, {});
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+            type: 'error',
+            error: expect.objectContaining({message: 'An image with the name "image" already exists.'})
+        })
+    );
+});
+
+test('Style#addImages', async () => {
+    const style = new Style(new StubMap());
+    style.loadJSON(createStyleJSON());
+    await waitFor(style, 'style.load');
+
+    vi.spyOn(style, 'fire');
+    vi.spyOn(style.dispatcher, 'broadcast');
+
+    const styleImageMap = new Map();
+    const imageId1 = ImageId.from('image1');
+    const imageId2 = ImageId.from('image2');
+    styleImageMap.set(imageId1, {});
+    styleImageMap.set(imageId2, {});
+    style.addImages(styleImageMap);
+
+    expect(style._changes.isDirty()).toEqual(true);
+
+    expect(style.dispatcher.broadcast).toHaveBeenCalledTimes(1);
+    expect(style.dispatcher.broadcast).toHaveBeenLastCalledWith(
+        'setImages',
+        {scope: '', images: [imageId1, imageId2]}
+    );
+
+    expect(style.fire).toHaveBeenCalledTimes(1);
+    expect(style.fire).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+            type: 'data',
+            dataType: 'style'
+        })
+    );
+});
+
+test('Style#updateImage', async () => {
+    const style = new Style(new StubMap());
+    style.loadJSON(createStyleJSON());
+    await waitFor(style, 'style.load');
+
+    const imageId = ImageId.from('image');
+    style.addImage(imageId, {width: 1, height: 1, data: new Uint8Array(4)});
+    style.update({}); // reset style changes
+
+    vi.spyOn(style, 'fire');
+    vi.spyOn(style.dispatcher, 'broadcast');
+
+    // Basic update does not trigger update in Workers
+    style.updateImage(imageId, {width: 1, height: 1, data: new Uint8Array(4)});
+
+    expect(style._changes.isDirty()).toEqual(false);
+    expect(style.dispatcher.broadcast).toHaveBeenCalledTimes(0);
+    expect(style.fire).toHaveBeenCalledTimes(0);
+
+    // Performing symbol layout must trigger update in Workers
+    style.updateImage(imageId, {width: 1, height: 1, data: new Uint8Array(4)}, true);
+
+    expect(style._changes.isDirty()).toEqual(true);
+    expect(style.dispatcher.broadcast).toHaveBeenCalledTimes(1);
+    expect(style.dispatcher.broadcast).toHaveBeenLastCalledWith(
+        'setImages',
+        {scope: '', images: [imageId]}
+    );
+
+    expect(style.fire).toHaveBeenCalledTimes(1);
+    expect(style.fire).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+            type: 'data',
+            dataType: 'style'
+        })
+    );
+});
+
+test('Style#removeImage', async () => {
+    const style = new Style(new StubMap());
+    style.loadJSON(createStyleJSON());
+    await waitFor(style, 'style.load');
+
+    const imageId = ImageId.from('image');
+    style.addImage(imageId, {});
+    style.update({}); // reset style changes
+
+    vi.spyOn(style, 'fire');
+    vi.spyOn(style.dispatcher, 'broadcast');
+
+    style.removeImage(imageId);
+
+    expect(style._changes.isDirty()).toEqual(true);
+    expect(style.dispatcher.broadcast).toHaveBeenCalledTimes(1);
+    expect(style.dispatcher.broadcast).toHaveBeenLastCalledWith(
+        'setImages',
+        {scope: '', images: []}
+    );
+
+    expect(style.fire).toHaveBeenCalledTimes(1);
+    expect(style.fire).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+            type: 'data',
+            dataType: 'style'
+        })
+    );
+});
+
 test('Style#_updateTilesForChangedImages', async () => {
     const style = new Style(new StubMap());
 

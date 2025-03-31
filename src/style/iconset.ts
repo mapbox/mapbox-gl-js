@@ -15,10 +15,13 @@ export class Iconset {
         this.style = style;
     }
 
-    addIcons(icons: StyleImageMap<string>) {
-        for (const [name, image] of icons) {
+    addIcons(images: StyleImageMap<string>) {
+        const icons = new Map();
+        for (const [name, image] of images.entries()) {
             const imageId = ImageId.from({name, iconsetId: this.id});
-            this.style.addImage(imageId, image);
+            icons.set(imageId, image);
         }
+
+        this.style.addImages(icons);
     }
 }
