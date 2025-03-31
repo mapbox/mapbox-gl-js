@@ -18,7 +18,7 @@
     [{}, {"properties": {"alternative_color": "blue"}}],
     [{}, {"properties": {"main_color": "violet", "alternative_color": 42}}],
     [{}, {"properties": {"main_color": 42, "alternative_color": "blue"}}],
-    [{}, {"properties": {"main_color": "violet", "alternative_color": "blue"}}]
+    [{}, {"properties": {"main_color": "rgba(255, 0, 0, 0.5)", "alternative_color": "rgba(0, 255, 255, 0)"}}]
   ],
   "expected": {
     "compiled": {
@@ -55,9 +55,9 @@
       },
       {
         "primaryId": {"name": "poi_circle", "iconsetId": "landmarks"},
-        "primaryOptions": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
+        "primaryOptions": {"params": {"fill_color": {"r":0.5,"g":0,"b":0,"a":0.5}}},
         "secondaryId": {"name": "poi_circle", "iconsetId": "alternative_landmarks"},
-        "secondaryOptions": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
+        "secondaryOptions": {"params": {"fill_color": {"r":0,"g":0,"b":0,"a":0}}},
         "available": false
       }
     ],

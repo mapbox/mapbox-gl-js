@@ -167,17 +167,7 @@ export default class ImageExpression implements Expression {
             for (const key in params) {
                 if (params[key]) {
                     try {
-                        const color = params[key].evaluate(ctx);
-                        const msg = `Ignoring image parameter "${key}" with semi-transparent color ${color.toString()}`;
-
-                        if (color.a !== 1) {
-                            if (!this._imageWarnHistory[msg]) {
-                                console.warn(msg);
-                                this._imageWarnHistory[msg] = true;
-                            }
-                            continue;
-                        }
-                        result[key] = color;
+                        result[key] = params[key].evaluate(ctx);
                     } catch (err) {
                         continue;
                     }

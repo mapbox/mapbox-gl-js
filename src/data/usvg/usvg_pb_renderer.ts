@@ -35,7 +35,7 @@ function getStyleColor(iconColor: Color, opacity: number = 255, colorReplacement
     const serializedColor = iconColor.toStringPremultipliedAlpha();
     const color = colorReplacements.has(serializedColor) ? colorReplacements.get(serializedColor).clone() : iconColor.clone();
 
-    color.a = alpha;
+    color.a *= alpha;
 
     return color.toString();
 }
