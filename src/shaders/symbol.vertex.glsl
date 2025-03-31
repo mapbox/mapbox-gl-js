@@ -186,8 +186,12 @@ void main() {
 
     vec4 projected_pos;
 #ifdef PROJECTION_GLOBE_VIEW
-    vec3 proj_pos = mix_globe_mercator(a_projected_pos.xyz + h, mercator_pos, u_zoom_transition);
-    projected_pos = u_label_plane_matrix * vec4(proj_pos, 1.0);
+#ifdef PROJECTED_POS_ON_VIEWPORT
+    projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xyz + h, 1.0);
+#else
+    vec3 proj_pos = mix_globe_mercator(a_projected_pos.xyz, mercator_pos, u_zoom_transition) + h;
+    projected_pos = u_label_plane_matrix * vec4(proj_pos, 1.0);    
+#endif
 #else
     projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, h.z, 1.0);
 #endif
@@ -214,15 +218,9 @@ void main() {
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = globe_occlusion_fade;
 
-    float projection_transition_fade = 1.0;
-#if defined(PROJECTED_POS_ON_VIEWPORT) && defined(PROJECTION_GLOBE_VIEW)
-    projection_transition_fade = 1.0 - step(EPSILON, u_zoom_transition);
-#endif
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
-    float interpolated_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
-
-    float out_fade_opacity = interpolated_fade_opacity * projection_transition_fade;
+    float out_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
 
 #ifdef DEPTH_OCCLUSION
     float depth_occlusion = occlusionFadeMultiSample(projected_point);

@@ -20,12 +20,14 @@ export type LayoutProps = {
     "fill-sort-key": DataDrivenProperty<number>;
     "visibility": DataConstantProperty<"visible" | "none">;
     "fill-elevation-reference": DataConstantProperty<"none" | "hd-road-base" | "hd-road-markup">;
+    "fill-construct-bridge-guard-rail": DataDrivenProperty<boolean>;
 };
 let layout: Properties<LayoutProps>;
 export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "fill-sort-key": new DataDrivenProperty(styleSpec["layout_fill"]["fill-sort-key"]),
     "visibility": new DataConstantProperty(styleSpec["layout_fill"]["visibility"]),
     "fill-elevation-reference": new DataConstantProperty(styleSpec["layout_fill"]["fill-elevation-reference"]),
+    "fill-construct-bridge-guard-rail": new DataDrivenProperty(styleSpec["layout_fill"]["fill-construct-bridge-guard-rail"]),
 }));
 
 export type PaintProps = {
@@ -38,8 +40,12 @@ export type PaintProps = {
     "fill-pattern": DataDrivenProperty<ResolvedImage | null | undefined>;
     "fill-emissive-strength": DataConstantProperty<number>;
     "fill-z-offset": DataDrivenProperty<number>;
+    "fill-bridge-guard-rail-color": DataDrivenProperty<Color>;
+    "fill-tunnel-structure-color": DataDrivenProperty<Color>;
     "fill-color-use-theme": DataDrivenProperty<string>;
     "fill-outline-color-use-theme": DataDrivenProperty<string>;
+    "fill-bridge-guard-rail-color-use-theme": DataDrivenProperty<string>;
+    "fill-tunnel-structure-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -53,6 +59,10 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-pattern": new DataDrivenProperty(styleSpec["paint_fill"]["fill-pattern"]),
     "fill-emissive-strength": new DataConstantProperty(styleSpec["paint_fill"]["fill-emissive-strength"]),
     "fill-z-offset": new DataDrivenProperty(styleSpec["paint_fill"]["fill-z-offset"]),
+    "fill-bridge-guard-rail-color": new DataDrivenProperty(styleSpec["paint_fill"]["fill-bridge-guard-rail-color"]),
+    "fill-tunnel-structure-color": new DataDrivenProperty(styleSpec["paint_fill"]["fill-tunnel-structure-color"]),
     "fill-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
     "fill-outline-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "fill-bridge-guard-rail-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "fill-tunnel-structure-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

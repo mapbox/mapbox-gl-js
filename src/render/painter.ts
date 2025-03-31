@@ -24,7 +24,7 @@ import symbol from './draw_symbol';
 import circle from './draw_circle';
 import assert from 'assert';
 import heatmap from './draw_heatmap';
-import line from './draw_line';
+import line, {prepare as prepareLine} from './draw_line';
 import fill from './draw_fill';
 import fillExtrusion from './draw_fill_extrusion';
 import hillshade from './draw_hillshade';
@@ -137,6 +137,7 @@ const draw = {
 };
 
 const prepare = {
+    line: prepareLine,
     model: modelPrepare,
     raster: prepareRaster,
     'raster-particle': prepareRasterParticle
@@ -525,7 +526,6 @@ class Painter {
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
         // this function in favor of context.clear({ stencil: 0x0 })
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         this.getOrCreateProgram('clippingMask').draw(this, gl.TRIANGLES,
             DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
             clippingMaskUniformValues(this.identityMat),
@@ -581,7 +581,6 @@ class Painter {
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
 
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(this, gl.TRIANGLES, DepthMode.disabled,
             // Tests will always pass, and ref value will be written to stencil buffer.
             new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
@@ -606,6 +605,7 @@ class Painter {
     stencilModeForClipping(tileID: OverscaledTileID): Readonly<StencilMode> {
         if (this.terrain) return this.terrain.stencilModeForRTTOverlap(tileID);
         const gl = this.context.gl;
+        assert(this._tileClippingMaskIDs[tileID.key] != null);
         return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
@@ -758,15 +758,18 @@ class Painter {
         const layers = this.style._mergedLayers;
 
         const drapingEnabled = !!(this.terrain && this.terrain.enabled);
-        const layerIds = this.style._getOrder(drapingEnabled).filter((id) => {
-            const layer = layers[id];
+        const getLayerIds = () =>
+            this.style._getOrder(drapingEnabled).filter((id) => {
+                const layer = layers[id];
 
-            if (layer.type in this._debugParams.enabledLayers) {
-                return this._debugParams.enabledLayers[layer.type];
-            }
+                if (layer.type in this._debugParams.enabledLayers) {
+                    return this._debugParams.enabledLayers[layer.type];
+                }
 
-            return true;
-        });
+                return true;
+            });
+
+        let layerIds = getLayerIds();
 
         let layersRequireTerrainDepth = false;
         let layersRequireFinalDepth = false;
@@ -787,7 +790,7 @@ class Painter {
             }
         }
 
-        const orderedLayers = layerIds.map(id => layers[id]);
+        let orderedLayers = layerIds.map(id => layers[id]);
         const sourceCaches = this.style._mergedSourceCaches;
 
         this.imageManager = style.imageManager;
@@ -947,7 +950,7 @@ class Painter {
                     this.minCutoffZoom = Math.max(layer.minzoom, this.minCutoffZoom);
                 }
             }
-            if (layer.is3D()) {
+            if (layer.is3D(drapingEnabled)) {
                 if (this.opaquePassCutoff === Infinity) {
                     this.opaquePassCutoff = i;
                 }
@@ -975,6 +978,10 @@ class Painter {
             // All render to texture is done in translucent pass to remove need
             // for depth buffer allocation per tile.
             this.opaquePassCutoff = 0;
+
+            // Calling updateTileBinding() has possibly changed drape first layer order.
+            layerIds = getLayerIds();
+            orderedLayers = layerIds.map(id => layers[id]);
         }
 
         const shadowRenderer = this._shadowRenderer;
@@ -1122,7 +1129,7 @@ class Painter {
                 const layer = orderedLayers[this.currentLayer];
                 const sourceCache = style.getLayerSourceCache(layer);
                 if (layer.isSky()) continue;
-                const coords = sourceCache ? (layer.is3D() ? coordsSortedByDistance : coordsDescending)[sourceCache.id] : undefined;
+                const coords = sourceCache ? (layer.is3D(drapingEnabled) ? coordsSortedByDistance : coordsDescending)[sourceCache.id] : undefined;
                 this._renderTileClippingMasks(layer, sourceCache, coords);
                 this.renderLayer(this, sourceCache, layer, coords);
             }
@@ -1161,7 +1168,7 @@ class Painter {
 
             if (sourceCache) {
                 const coordsSet = layer.type === 'symbol' ? coordsDescendingSymbol :
-                    (layer.is3D() ? coordsSortedByDistance : coordsDescending);
+                    (layer.is3D(drapingEnabled) ? coordsSortedByDistance : coordsDescending);
 
                 coords = coordsSet[sourceCache.id];
             }
@@ -1202,7 +1209,7 @@ class Painter {
                 continue;
             }
 
-            if (layer.is3D()) {
+            if (layer.is3D(drapingEnabled)) {
                 last3DLayerIdx = i;
             }
         }
@@ -1250,7 +1257,7 @@ class Painter {
                 this.blitDepth();
             }
 
-            if (!layer.is3D() && !this.terrain) {
+            if (!this.terrain) {
                 this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
             }
             this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
@@ -1284,7 +1291,7 @@ class Painter {
                     const layer = orderedLayers[this.currentLayer];
                     const sourceCache = style.getLayerSourceCache(layer);
                     const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
-                    if (!layer.is3D() && !this.terrain) {
+                    if (!this.terrain) {
                         this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
                     }
                     this.renderLayer(this, sourceCache, layer, coords);
@@ -1786,7 +1793,7 @@ class Painter {
      * custom layer buildings.
      */
     isSourceForClippingOrConflation(layer: StyleLayer, source?: Source | null): boolean {
-        if (!layer.is3D()) {
+        if (!layer.is3D(!!(this.terrain && this.terrain.enabled))) {
             return false;
         }
 

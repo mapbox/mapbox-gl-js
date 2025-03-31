@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// Disable TypeScript annotations here because it doesn't support importing GLSL files
 // @ts-nocheck
-// Disable Flow annotations here because Flow doesn't support importing GLSL files
 
 import preludeCommon from './_prelude.glsl';
 import preludeFrag from './_prelude.fragment.glsl';
@@ -85,6 +86,8 @@ import vignetteFrag from './vignette.fragment.glsl';
 import vignetteVert from './vignette.vertex.glsl';
 import occlusionFrag from './occlusion.fragment.glsl';
 import occlusionVert from './occlusion.vertex.glsl';
+import elevatedStructuresModelFrag from '../../3d-style/shaders/elevated_structures_model.fragment.glsl';
+import elevatedStructuresModelVert from '../../3d-style/shaders/elevated_structures_model.vertex.glsl';
 // 3d-style related shaders
 import fillExtrusionDepthFrag from '../../3d-style/shaders/fill_extrusion_depth.fragment.glsl';
 import fillExtrusionDepthVert from '../../3d-style/shaders/fill_extrusion_depth.vertex.glsl';
@@ -143,6 +146,7 @@ export default {
     collisionBox: compile(collisionBoxFrag, collisionBoxVert),
     collisionCircle: compile(collisionCircleFrag, collisionCircleVert),
     debug: compile(debugFrag, debugVert),
+    elevatedStructures: compile(elevatedStructuresModelFrag, elevatedStructuresModelVert),
     fill: compile(fillFrag, fillVert),
     fillOutline: compile(fillOutlineFrag, fillOutlineVert),
     fillOutlinePattern: compile(fillOutlinePatternFrag, fillOutlinePatternVert),

@@ -257,7 +257,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
                 const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
 
-                // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
                 const drawPole = (program: Program<any>, vertexBuffer: VertexBuffer) => program.draw(
                     painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     globeRasterUniformValues(tr.expandedFarZProjMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,

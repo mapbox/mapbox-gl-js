@@ -216,7 +216,7 @@ class CustomStyleLayer extends StyleLayer {
         if (implementation.slot) this.slot = implementation.slot;
     }
 
-    override is3D(): boolean {
+    override is3D(terrainEnabled?: boolean): boolean {
         return this.implementation.renderingMode === '3d';
     }
 

@@ -24,7 +24,6 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -55,7 +54,7 @@
       "type": "line",
       "source": "geojson",
       "paint": {
-          "line-opacity": 0.25
+        "line-opacity": 0.25
       }
     }
   ]

@@ -2,7 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.003
+      "pixelRatio": 2,
+      "allowed": 0.00496
     }
   },
   "center": [

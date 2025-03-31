@@ -11,7 +11,6 @@
   "zoom": 10.986549674156256,
   "pitch": 64.9999999999999,
   "bearing": 41.19999999999618,
-  "sprite": "local://sprites/emerald",
   "lights": [
     {
       "type": "ambient",
@@ -102,7 +101,7 @@
         "line-join": "bevel",
         "line-z-offset": [
           "-",
-          ["at", ["*", [ "line-progress" ], 1], ["get", "elevation"]], 
+          ["at-interpolated", ["*", [ "line-progress" ], 1], ["get", "elevation"]],
           300
         ],
         "line-elevation-reference": "sea"
@@ -120,7 +119,7 @@
         "line-join": "miter",
         "line-z-offset": [
           "+",
-          ["at", ["*", [ "line-progress" ], 1], ["get", "elevation"]], 
+          ["at-interpolated", ["*", [ "line-progress" ], 1], ["get", "elevation"]],
           100
         ],
         "line-elevation-reference": "sea"
@@ -138,7 +137,7 @@
         "line-join": "round",
         "line-z-offset": [
           "+",
-          ["at", ["*", [ "line-progress" ], 1], ["get", "elevation"]], 
+          ["at-interpolated", ["*", [ "line-progress" ], 1], ["get", "elevation"]],
           500
         ],
         "line-elevation-reference": "sea"
@@ -156,7 +155,7 @@
         "line-join": "none",
         "line-z-offset": [
           "+",
-          ["at", ["*", [ "line-progress" ], 1], ["get", "elevation"]], 
+          ["at-interpolated", ["*", [ "line-progress" ], 1], ["get", "elevation"]],
           900
         ],
         "line-elevation-reference": "sea"

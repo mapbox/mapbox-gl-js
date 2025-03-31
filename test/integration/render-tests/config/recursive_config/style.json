@@ -1,0 +1,72 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "height": 64,
+            "width": 64
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 0,
+    "sources": {
+        "point": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": 1
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                -10
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": 0
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                10
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "schema": {
+        "color": {
+            "default": [
+                "config",
+                "color"
+            ]
+        }
+    },
+    "layers": [
+        {
+            "id": "roads",
+            "type": "circle",
+            "source": "point",
+            "paint": {
+                "circle-color": [
+                    "config",
+                    "color"
+                ]
+            }
+        }
+    ]
+
+}

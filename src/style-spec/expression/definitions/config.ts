@@ -49,26 +49,23 @@ class Config implements Expression {
         this.scope = scope;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Config | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Config | null | void {
         let type = context.expectedType;
         if (type === null || type === undefined) {
             type = ValueType;
         }
         if (args.length < 2 || args.length > 3) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Config'.
             return context.error(`Invalid number of arguments for 'config' expression.`);
         }
 
         const configKey = context.parse(args[1], 1);
         if (!(configKey instanceof Literal)) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Config'.
             return context.error(`Key name of 'config' expression must be a string literal.`);
         }
 
         if (args.length >= 3) {
             const configScope = context.parse(args[2], 2);
             if (!(configScope instanceof Literal)) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Config'.
                 return context.error(`Scope of 'config' expression must be a string literal.`);
             }
             return new Config(type, valueToString(configKey.value), valueToString(configScope.value));

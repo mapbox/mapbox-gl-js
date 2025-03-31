@@ -2,9 +2,15 @@
   "expression": [
     "image",
     "poi_circle",
-    {"params": {"fill_color": ["get", "main_color"]}},
+    {
+      "params": {"fill_color": ["get", "main_color"]},
+      "iconset": {"id": "landmarks"}
+    },
     "poi_circle",
-    {"params": {"fill_color": ["get", "alternative_color"]}}
+    {
+      "params": {"fill_color": ["get", "alternative_color"]},
+      "iconset": {"id": "alternative_landmarks"}
+    }
   ],
   "inputs": [
     [{}, {}],
@@ -22,45 +28,51 @@
       "type": "resolvedImage"
     },
     "outputs": [
-      {"namePrimary": "poi_circle", "nameSecondary": "poi_circle", "available": false},
+      {"primaryId": {"name": "poi_circle", "iconsetId": "landmarks"}, "secondaryId": {"name": "poi_circle", "iconsetId": "alternative_landmarks"}, "available": false},
       {
-        "namePrimary": "poi_circle",
-        "optionsPrimary": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
-        "nameSecondary": "poi_circle",
+        "primaryId": {"name": "poi_circle", "iconsetId": "landmarks"},
+        "primaryOptions": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
+        "secondaryId": {"name": "poi_circle", "iconsetId": "alternative_landmarks"},
         "available": false
       },
       {
-        "namePrimary": "poi_circle",
-        "nameSecondary": "poi_circle",
-        "optionsSecondary": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
+        "primaryId": {"name": "poi_circle", "iconsetId": "landmarks"},
+        "secondaryId": {"name": "poi_circle", "iconsetId": "alternative_landmarks"},
+        "secondaryOptions": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
         "available": false
       },
       {
-        "namePrimary": "poi_circle",
-        "optionsPrimary": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
-        "nameSecondary": "poi_circle",
+        "primaryId": {"name": "poi_circle", "iconsetId": "landmarks"},
+        "primaryOptions": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
+        "secondaryId": {"name": "poi_circle", "iconsetId": "alternative_landmarks"},
         "available": false
       },
       {
-        "namePrimary": "poi_circle",
-        "nameSecondary": "poi_circle",
-        "optionsSecondary": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
+        "primaryId": {"name": "poi_circle", "iconsetId": "landmarks"},
+        "secondaryId": {"name": "poi_circle", "iconsetId": "alternative_landmarks"},
+        "secondaryOptions": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
         "available": false
       },
       {
-        "namePrimary": "poi_circle",
-        "optionsPrimary": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
-        "nameSecondary": "poi_circle",
-        "optionsSecondary": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
+        "primaryId": {"name": "poi_circle", "iconsetId": "landmarks"},
+        "primaryOptions": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
+        "secondaryId": {"name": "poi_circle", "iconsetId": "alternative_landmarks"},
+        "secondaryOptions": {"params": {"fill_color": {"r":0,"g":0,"b":1,"a":1}}},
         "available": false
       }
     ],
     "serialized": [
       "image",
       "poi_circle",
-      {"params": {"fill_color": ["to-color", ["get", "main_color"]]}},
+      {
+        "iconset": {"id": "landmarks"},
+        "params": {"fill_color": ["to-color", ["get", "main_color"]]}
+      },
       "poi_circle",
-      {"params": {"fill_color": ["to-color", ["get", "alternative_color"]]}}
+      {
+        "iconset": {"id": "alternative_landmarks"},
+        "params": {"fill_color": ["to-color", ["get", "alternative_color"]]}
+      }
     ]
   }
 }

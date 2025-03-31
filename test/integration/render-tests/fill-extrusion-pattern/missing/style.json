@@ -81,7 +81,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "pitch": 60,
   "zoom": 18,
   "layers": [

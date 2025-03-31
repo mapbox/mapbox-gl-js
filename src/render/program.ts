@@ -34,6 +34,7 @@ import type {BinderUniform} from '../data/program_configuration';
 import type Painter from './painter';
 import type {Segment} from "../data/segment";
 import type {DynamicDefinesType} from '../render/program/program_uniforms';
+import type {PossiblyEvaluated} from '../style/properties';
 
 export type DrawMode = WebGL2RenderingContext['POINTS'] | WebGL2RenderingContext['LINES'] | WebGL2RenderingContext['TRIANGLES'] | WebGL2RenderingContext['LINE_STRIP'];
 
@@ -58,6 +59,7 @@ const debugWireframe3DLayerProgramNames = [
     "rainParticle",
     "snowParticle",
     "fillExtrusion",  "fillExtrusionGroundEffect",
+    "elevatedStructures",
     "model",
     "symbol"];
 
@@ -305,7 +307,11 @@ class Program<Us extends UniformBindings> {
         stencilMode: Readonly<StencilMode>,
         colorMode: Readonly<ColorMode>,
         indexBuffer: IndexBuffer, segment: Segment,
-        currentProperties: any, zoom?: number | null, configuration?: ProgramConfiguration | null, instanceCount?: number | null) {
+        currentProperties: PossiblyEvaluated<any>,
+        zoom?: number,
+        configuration?: ProgramConfiguration,
+        instanceCount?: number
+    ) {
 
         const wireframe = painter.options.wireframe;
 
@@ -449,11 +455,12 @@ class Program<Us extends UniformBindings> {
          layoutVertexBuffer: VertexBuffer,
          indexBuffer: IndexBuffer | undefined,
          segments: SegmentVector,
-         currentProperties: any,
-         zoom?: number | null,
-         configuration?: ProgramConfiguration | null,
-         dynamicLayoutBuffers?: Array<VertexBuffer | null | undefined> | null,
-         instanceCount?: number | null) {
+         currentProperties?: PossiblyEvaluated<any>,
+         zoom?: number,
+         configuration?: ProgramConfiguration,
+         dynamicLayoutBuffers?: Array<VertexBuffer | null | undefined>,
+         instanceCount?: number
+    ) {
 
         const context = painter.context;
         const gl = context.gl;
@@ -471,7 +478,7 @@ class Program<Us extends UniformBindings> {
         }
 
         if (configuration) {
-            configuration.setUniforms(this.program, context, this.binderUniforms, currentProperties, {zoom: (zoom as any)});
+            configuration.setUniforms(this.program, context, this.binderUniforms, currentProperties, {zoom});
         }
 
         const primitiveSize = {

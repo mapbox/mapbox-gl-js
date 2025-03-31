@@ -88,7 +88,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "pitch": 60,
   "zoom": 4.5,
   "center": [-4, 2],
@@ -105,7 +105,7 @@
       "type": "fill-extrusion",
       "source": "geojson",
       "paint": {
-        "fill-extrusion-pattern": "generic_icon",
+        "fill-extrusion-pattern": "information",
         "fill-extrusion-height": 100000
       }
     }

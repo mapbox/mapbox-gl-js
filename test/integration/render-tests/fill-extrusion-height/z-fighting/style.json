@@ -98,7 +98,7 @@
   "pitch": 66,
   "zoom": 18,
   "bearing": 80,
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "extrusion",
@@ -116,7 +116,7 @@
       "type": "fill-extrusion",
       "source": "geojson",
       "paint": {
-        "fill-extrusion-pattern": ["case", ["<=", ["get", "height"], 20], "generic_icon", "hospital_icon"],
+        "fill-extrusion-pattern": ["case", ["<=", ["get", "height"], 20], "information", "hospital"],
         "fill-extrusion-translate": [0, -150],
         "fill-extrusion-translate-anchor": "map",
         "fill-extrusion-height": ["get", "height"],

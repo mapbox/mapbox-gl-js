@@ -1,5 +1,4 @@
 import Point from '@mapbox/point-geometry';
-import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
 import {ICON_PADDING} from '../render/image_atlas';
 import {SDF_SCALE} from '../render/glyph_manager';
@@ -11,7 +10,8 @@ import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {Feature} from '../style-spec/expression/index';
-import type {StyleImage} from '../style/style_image';
+import type {StyleImageMap} from '../style/style_image';
+import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 
 export type TextureCoordinate = {
     x: number;
@@ -271,9 +271,7 @@ export function getGlyphQuads(
     layer: SymbolStyleLayer,
     alongLine: boolean,
     feature: Feature,
-    imageMap: {
-        [_: string]: StyleImage;
-    },
+    imageMap: StyleImageMap<StringifiedImageVariant>,
     allowVerticalPlacement: boolean,
 ): Array<SymbolQuad> {
     const quads = [];
@@ -302,8 +300,8 @@ export function getGlyphQuads(
             let isSDF = true;
             let pixelRatio = 1.0;
             let lineOffset = 0.0;
-            if (positionedGlyph.imageName) {
-                const image = imageMap[ResolvedImage.build(positionedGlyph.imageName).getSerializedPrimary()];
+            if (positionedGlyph.image) {
+                const image = imageMap.get(positionedGlyph.image.toString());
                 if (!image) continue;
                 if (image.sdf) {
                     warnOnce("SDF images are not supported in formatted text and will be ignored.");
@@ -324,7 +322,7 @@ export function getGlyphQuads(
             if (allowVerticalPlacement && shaping.verticalizable) {
                 // image's advance for vertical shaping is its height, so that we have to take the difference into
                 // account after image glyph is rotated
-                lineOffset = positionedGlyph.imageName ? halfAdvance - positionedGlyph.metrics.width * positionedGlyph.scale / 2.0 : 0;
+                lineOffset = positionedGlyph.image ? halfAdvance - positionedGlyph.metrics.width * positionedGlyph.scale / 2.0 : 0;
             }
 
             const glyphOffset = alongLine ?
@@ -404,7 +402,7 @@ export function getGlyphQuads(
                 tl.y -= (metrics.left - rectBuffer) * positionedGlyph.scale;
 
                 // Adjust x coordinate according to glyph bitmap's height and the vectical advance
-                const verticalAdvance = positionedGlyph.imageName ? metrics.advance * positionedGlyph.scale :
+                const verticalAdvance = positionedGlyph.image ? metrics.advance * positionedGlyph.scale :
                     ONE_EM * positionedGlyph.scale;
                 // Check wether the glyph is generated from server side or locally
                 const chr = String.fromCodePoint(positionedGlyph.glyph);
@@ -415,7 +413,7 @@ export function getGlyphQuads(
                     const xOffset = verticalAdvance - metrics.height * positionedGlyph.scale;
                     // Place vertical punctuation in right place, pull up 1 pixel's space for open punctuations
                     tl.x += xOffset + (-rectBuffer - 1) * positionedGlyph.scale;
-                } else if (!positionedGlyph.imageName &&
+                } else if (!positionedGlyph.image &&
                            ((metrics.width + rectBuffer * 2) !== rect.w || metrics.height + rectBuffer * 2 !== rect.h)) {
                     // Locally generated glyphs' bitmap do not have exact 'rectBuffer' padded around the glyphs,
                     // but the original tl do have distance of rectBuffer padded to the top of the glyph.

@@ -13,13 +13,13 @@
 in vec2 a_pos_normal;
 in vec4 a_data;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)
-in vec2 a_z_offset_width;
+in vec3 a_z_offset_width;
 #endif
-// Includes in order: a_uv_x, a_split_index, a_clip_start, a_clip_end
+// Includes in order: a_uv_x, a_split_index, a_line_progress
 // to reduce attribute count on older devices.
 // Only line-trim-offset will requires a_packed info.
 #ifdef RENDER_LINE_TRIM_OFFSET
-in highp vec4 a_packed;
+in highp vec3 a_packed;
 #endif
 in highp float a_linesofar;
 
@@ -59,7 +59,7 @@ out highp float v_linesofar;
 out float v_gamma_scale;
 out float v_width;
 #ifdef RENDER_LINE_TRIM_OFFSET
-out highp vec4 v_uv;
+out highp vec3 v_uv;
 #endif
 #ifdef ELEVATED_ROADS
 out highp float v_road_z_offset;
@@ -141,8 +141,7 @@ void main() {
     vec2 projected_extrude_xy = projected_extrude.xy;
 #ifdef ELEVATED_ROADS
     v_road_z_offset = a_z_offset;
-    // Apply slight vertical offset (1cm) for elevated vertices above the ground plane
-    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset + 0.01 * step(0.01, a_z_offset), 1.0) + projected_extrude;
+    gl_Position = u_matrix * vec4(pos + offset2 * u_pixels_to_tile_units, a_z_offset, 1.0) + projected_extrude;
 #else
 #ifdef ELEVATED
     vec2 offsetTile = offset2 * u_pixels_to_tile_units;
@@ -209,10 +208,9 @@ void main() {
 #endif
 
 #ifdef RENDER_LINE_TRIM_OFFSET
-    float a_uv_x = a_packed[0];
-    highp float a_clip_start = a_packed[2];
-    highp float a_clip_end = a_packed[3];
-    v_uv = vec4(a_uv_x, 0.0, a_clip_start, a_clip_end);
+    highp float a_uv_x = a_packed[0];
+    highp float line_progress = a_packed[2];
+    v_uv = vec3(a_uv_x, 0.0, line_progress);
 #endif
 
     v_linesofar = a_linesofar;

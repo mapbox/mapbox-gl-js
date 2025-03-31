@@ -34,7 +34,6 @@ import type {DynamicDefinesType} from '../../src/render/program/program_uniforms
 import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type {CutoffParams} from '../../src/render/cutoff';
 import type {LUT} from "../../src/util/lut";
-import type EvaluationParameters from '../../src/style/evaluation_parameters';
 
 export default drawModels;
 
@@ -145,8 +144,6 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
     if (!material.defined) {
         definesValues.push('DIFFUSE_SHADED');
     }
-
-    definesValues.push('USE_STANDARD_DERIVATIVES');
 
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) {
@@ -292,11 +289,10 @@ function prepareMeshes(transform: Transform, node: ModelNode, modelMatrix: mat4,
             }
 
             const centroidPos = vec3.transformMat4([] as any, mesh.centroid, worldViewProjection);
-            // Filter meshes behind the camera
-            if (centroidPos[2] > 0.0) {
-                const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix};
-                transparentMeshes.push(transparentMesh);
-            }
+            // Filter meshes behind the camera if in perspective mode
+            if (!transform.isOrthographic && centroidPos[2] <= 0.0) continue;
+            const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix};
+            transparentMeshes.push(transparentMesh);
         }
     }
     if (node.children) {
@@ -576,7 +572,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
     const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
 
-    const evaluationParameters = {...layer.layout.get("model-id").parameters} as EvaluationParameters;
+    const evaluationParameters = Object.assign({}, layer.layout.get("model-id").parameters);
 
     const layerIndex = painter.style.order.indexOf(layer.fqid);
 
@@ -749,6 +745,7 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
         const tile = source.getTile(coord);
         const bucket = tile.getBucket(layer) as Tiled3dModelBucket | null | undefined;
         if (!bucket) continue;
+        bucket.setFilter(layer.filter);
         // Conflation
         if (painter.conflationActive) bucket.updateReplacement(coord, painter.replacementSource);
         // evaluate scale
@@ -836,6 +833,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             }
 
             const sortedNodes: Array<SortedNode> = [];
+            bucket.setFilter(layer.filter);
             for (const nodeInfo of bucket.getNodesInfo()) {
                 if (nodeInfo.hiddenByReplacement) continue;
                 if (!nodeInfo.node.meshes) continue;

@@ -27,7 +27,13 @@ export function farthestPixelDistanceOnPlane(tr: Transform, pixelsPerMeter: numb
     // Use larger furthest distance also on pitch before the horizon, especially on higher zoom to limit
     // the performance and depth range resolution impact.
     if (!tr.elevation || tr.elevation.exaggeration() === 0) {
-        furthestDistance *= (1.0 + Math.max(tr.zoom - 17, 0));
+        let factor = Math.max(tr.zoom - 17, 0);
+        // In case of orthographic projection we don't want to extend the far clip plane that much as the
+        // depth is linear and we would be effectively decreasing precision.
+        if (tr.isOrthographic) {
+            factor /= 10.0;
+        }
+        furthestDistance *= (1.0 + factor);
     }
     return Math.min(furthestDistance * 1.01, horizonDistance);
 }

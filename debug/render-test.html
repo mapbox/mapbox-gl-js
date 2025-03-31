@@ -26,16 +26,14 @@
             const response = await fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`);
             const style = await response.json();
 
-            history.replaceState({}, '', `${location.pathname}?test=${test}`);
-            console.log(style);
-
             return style;
         }
 
         const style = await fetchStyle();
 
+        let {width, height} = style.metadata.test;
+
         const {
-            width, height,
             fadeDuration = 0,
             localIdeographFontFamily = false,
             operations,
@@ -43,8 +41,49 @@
             ...options
         } = style.metadata.test;
 
+        if (!width) {
+            width = 512;
+        }
+
+        if (!height) {
+            height = 512;
+        }
+
+        const {searchParams: queryParams} = new URL(location);
+
+        if (queryParams.has('pixelRatio')) {
+            window.devicePixelRatio = parseFloat(queryParams.get('pixelRatio'));
+        } else {
+            window.devicePixelRatio = 1;
+        }
+
+        if (queryParams.has('spriteFormat')) {
+            options.spriteFormat = queryParams.get('spriteFormat');
+        } else {
+            options.spriteFormat = 'icon_set';
+        }
+
         if (options.spriteFormat === 'icon_set' && style.sprite && !style.sprite.endsWith('.pbf')) {
             style.sprite += '.pbf';
+        }
+
+        if (options.spriteFormat === 'icon_set' && style.metadata && style.metadata.test && style.metadata.test.operations) {
+            style.metadata.test.operations.forEach(op => {
+                if (op[0] === 'setStyle') {
+                    if (op[1].sprite && !op[1].sprite.endsWith('.pbf')) {
+                        op[1].sprite += '.pbf';
+                    }
+                }
+            });
+        }
+
+        if (options.spriteFormat === 'icon_set' && style.imports && style.imports.length) {
+            style.imports.forEach(imp => {
+                if (!imp.data) return;
+                if (imp.data.sprite && !imp.data.sprite.endsWith('.pbf')) {
+                    imp.data.sprite += '.pbf';
+                }
+            });
         }
 
         const container = document.getElementById('map');

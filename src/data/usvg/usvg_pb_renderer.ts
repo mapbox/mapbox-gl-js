@@ -2,11 +2,11 @@ import {PaintOrder, PathCommand, LineCap, LineJoin, PathRule, MaskType} from './
 import Color from '../../style-spec/util/color';
 import offscreenCanvasSupported from '../../util/offscreen_canvas_supported';
 
-import type {RasterizationOptions} from '../../style-spec/expression/types/resolved_image';
+import type {RasterizationOptions} from '../../style-spec/expression/types/image_variant';
 import type {UsvgTree, Icon, Group, Node, Path, Transform, ClipPath, Mask, LinearGradient, RadialGradient, Variable} from './usvg_pb_decoder';
 
 class ColorReplacements {
-    static calculate(params: RasterizationOptions['params'], variables: Variable[]): Map<string, Color> {
+    static calculate(params: RasterizationOptions['params'] = {}, variables: Variable[] = []): Map<string, Color> {
         const replacements = new Map<string, Color>();
         const variablesMap = new Map<string, Color>();
 
@@ -126,12 +126,11 @@ function renderGroup(context: Context, transform: DOMMatrix, tree: UsvgTree, gro
     const groupCanvas = getCanvas(context.canvas.width, context.canvas.height);
     const groupContext = groupCanvas.getContext('2d') as Context;
 
+    renderNodes(groupContext, transform, tree, group, colorReplacements);
+
     if (clipPath) {
         applyClipPath(groupContext, transform, tree, clipPath);
     }
-
-    renderNodes(groupContext, transform, tree, group, colorReplacements);
-
     if (mask) {
         applyMask(groupContext, transform, tree, mask, colorReplacements);
     }
@@ -171,16 +170,12 @@ function fillPath(context: Context, tree: UsvgTree, path: Path, path2d: Path2D, 
         context.fillStyle = convertRadialGradient(context, tree.radial_gradients[fill.radial_gradient_idx], alpha, colorReplacements);
     }
 
-    let fillRule: CanvasFillRule;
-    switch (path.rule) {
-    case PathRule.PATH_RULE_NON_ZERO:
-        fillRule = 'nonzero';
-        break;
-    case PathRule.PATH_RULE_EVEN_ODD:
-        fillRule = 'evenodd';
-    }
+    context.fill(path2d, getFillRule(path));
+}
 
-    context.fill(path2d, fillRule);
+function getFillRule(path: Path): CanvasFillRule {
+    return path.rule === PathRule.PATH_RULE_NON_ZERO ? 'nonzero' :
+        path.rule === PathRule.PATH_RULE_EVEN_ODD ? 'evenodd' : undefined;
 }
 
 function strokePath(context: Context, tree: UsvgTree, path: Path, path2d: Path2D, colorReplacements: Map<string, Color>) {
@@ -274,38 +269,41 @@ function convertRadialGradient(context: Context, gradient: RadialGradient, alpha
     return radialGradient;
 }
 
-function applyClipPath(context: Context, transform: DOMMatrix, tree: UsvgTree, clipPath: ClipPath) {
-    const tr = makeTransform(clipPath.transform).preMultiplySelf(transform);
+function renderClipPath(context: Context, transform: DOMMatrix, tree: UsvgTree, clipPath: ClipPath) {
+    const tr = clipPath.transform ? makeTransform(clipPath.transform).preMultiplySelf(transform) : transform;
+    const groupCanvas = getCanvas(context.canvas.width, context.canvas.height);
+    const groupContext = groupCanvas.getContext('2d') as Context;
 
-    const selfClipPath = clipPath.clip_path_idx != null ? tree.clip_paths[clipPath.clip_path_idx] : null;
-    if (selfClipPath) {
-        applyClipPath(context, tr, tree, selfClipPath);
-    }
+    for (const node of clipPath.children) {
+        if (node.group) {
+            renderClipPath(groupContext, tr, tree, node.group);
 
-    const path2d = new Path2D();
-    let fillRule;
-
-    function addNode(node, tr) {
-        if (node.path) {
+        } else if (node.path) {
             const path = node.path;
+            const path2d = new Path2D();
             path2d.addPath(makePath2d(path), tr);
-
-            // Canvas doesn't support mixed fill rules in a single clip path, so we'll use evenodd for whole path if one part has it
-            if (path.rule === PathRule.PATH_RULE_EVEN_ODD) fillRule = 'evenodd';
-
-        } else if (node.group) {
-            const childTr = node.group.transform ? makeTransform(node.group.transform).preMultiplySelf(tr) : tr;
-            for (const child of node.group.children) {
-                addNode(child, childTr);
-            }
+            groupContext.fill(path2d, getFillRule(path));
         }
     }
 
-    for (const node of clipPath.children) {
-        addNode(node, tr);
+    const selfClipPath = clipPath.clip_path_idx != null ? tree.clip_paths[clipPath.clip_path_idx] : null;
+    if (selfClipPath) {
+        applyClipPath(groupContext, tr, tree, selfClipPath);
     }
 
-    context.clip(path2d, fillRule);
+    context.globalCompositeOperation = 'source-over';
+    context.drawImage(groupCanvas, 0, 0);
+}
+
+function applyClipPath(context: Context, transform: DOMMatrix, tree: UsvgTree, clipPath: ClipPath) {
+    const maskCanvas = getCanvas(context.canvas.width, context.canvas.height);
+    const maskContext = maskCanvas.getContext('2d') as Context;
+
+    renderClipPath(maskContext, transform, tree, clipPath);
+
+    // Canvas doesn't support mixed fill rules in a single clip path, so we'll use masking via canvas compositing instead of context.clip
+    context.globalCompositeOperation = 'destination-in';
+    context.drawImage(maskCanvas, 0, 0);
 }
 
 function applyMask(context: Context, transform: DOMMatrix, tree: UsvgTree, mask: Mask, colorReplacements: Map<string, Color>) {
@@ -322,7 +320,6 @@ function applyMask(context: Context, transform: DOMMatrix, tree: UsvgTree, mask:
     const height = context.canvas.height;
 
     const maskCanvas = getCanvas(width, height);
-
     const maskContext = maskCanvas.getContext('2d') as Context;
 
     // clip mask to its defined size

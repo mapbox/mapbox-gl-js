@@ -14,7 +14,6 @@
   "terrain": {
     "source": "rgbterrain"
   },
-  "sprite": "local://sprites/emerald",
   "lights": [
     {
       "type": "ambient",
@@ -127,7 +126,7 @@
             }
           }
         ]
-      }    
+      }
     }
   },
   "layers": [

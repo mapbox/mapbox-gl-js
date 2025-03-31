@@ -2,8 +2,9 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "allowed": 0.0003
+      "allowed": 0.002,
+      "pixelRatio": 2,
+      "height": 256
     }
   },
   "center": [
@@ -18,7 +19,7 @@
       "lineMetrics": true
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
@@ -32,7 +33,7 @@
       "type": "line",
       "source": "geojson",
       "paint": {
-        "line-pattern": "dot",
+        "line-pattern": "border-dot-13",
         "line-width": 14
       },
       "layout": {

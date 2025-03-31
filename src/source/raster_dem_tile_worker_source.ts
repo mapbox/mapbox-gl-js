@@ -1,14 +1,20 @@
 import DEMData from '../data/dem_data';
 
 import type Actor from '../util/actor';
-import type {WorkerDEMTileParameters, WorkerDEMTileCallback} from './worker_source';
+import type {
+    WorkerSource,
+    WorkerSourceTileRequest,
+    WorkerSourceVectorTileCallback,
+    WorkerSourceDEMTileRequest,
+    WorkerSourceDEMTileCallback
+} from './worker_source';
 
-class RasterDEMTileWorkerSource {
+class RasterDEMTileWorkerSource implements WorkerSource {
     actor: Actor;
     offscreenCanvas: OffscreenCanvas;
-    offscreenCanvasContext: CanvasRenderingContext2D;
+    offscreenCanvasContext: OffscreenCanvasRenderingContext2D;
 
-    loadTile(params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
+    loadTile(params: WorkerSourceDEMTileRequest, callback: WorkerSourceDEMTileCallback) {
         const {uid, encoding, rawImageData, padding} = params;
         // Main thread will transfer ImageBitmap if offscreen decode with OffscreenCanvas is supported, else it will transfer an already decoded image.
         // Flow struggles to refine ImageBitmap type
@@ -17,12 +23,26 @@ class RasterDEMTileWorkerSource {
         callback(null, dem);
     }
 
+    reloadTile(params: WorkerSourceDEMTileRequest, callback: WorkerSourceDEMTileCallback) {
+        // No-op in the RasterDEMTileWorkerSource class
+        callback(null, null);
+    }
+
+    abortTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
+        // No-op in the RasterDEMTileWorkerSource class
+        callback();
+    }
+
+    removeTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
+        // No-op in the RasterDEMTileWorkerSource class
+        callback();
+    }
+
     getImageData(imgBitmap: ImageBitmap, padding: number): ImageData {
         // Lazily initialize OffscreenCanvas
         if (!this.offscreenCanvas || !this.offscreenCanvasContext) {
             // Dem tiles are typically 256x256
             this.offscreenCanvas = new OffscreenCanvas(imgBitmap.width, imgBitmap.height);
-            // @ts-expect-error - TS2739 - Type 'OffscreenCanvasRenderingContext2D' is missing the following properties from type 'CanvasRenderingContext2D': getContextAttributes, drawFocusIfNeeded
             this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d', {willReadFrequently: true});
         }
 

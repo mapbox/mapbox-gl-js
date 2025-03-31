@@ -23,6 +23,7 @@ import type {CreateProgramParams} from '../../render/painter';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
 import type SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
+import type {ImageId} from '../../style-spec/expression/types/image_id';
 
 let properties: {
     layout: Properties<LayoutProps>;
@@ -89,6 +90,9 @@ class LineStyleLayer extends StyleLayer {
     gradientVersion: number;
     stepInterpolant: boolean;
 
+    hasElevatedBuckets: boolean;
+    hasNonElevatedBuckets: boolean;
+
     override _transitionablePaint: Transitionable<PaintProps>;
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;
@@ -100,6 +104,8 @@ class LineStyleLayer extends StyleLayer {
             this.layout = new PossiblyEvaluated(properties.layout);
         }
         this.gradientVersion = 0;
+        this.hasElevatedBuckets = false;
+        this.hasNonElevatedBuckets = false;
     }
 
     override _handleSpecialPaintPropertyUpdate(name: string) {
@@ -118,7 +124,7 @@ class LineStyleLayer extends StyleLayer {
         return this._transitionablePaint._values['line-width'].value.expression;
     }
 
-    override recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
         (this.paint._values as any)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
     }
@@ -181,16 +187,11 @@ class LineStyleLayer extends StyleLayer {
     }
 
     override isTileClipped(): boolean {
-        return true;
+        return this.hasNonElevatedBuckets;
     }
 
     override isDraped(_?: SourceCache | null): boolean {
-        const zOffset = this.layout.get('line-z-offset');
-        const zOffsetZero = zOffset.isConstant() && !zOffset.constantOr(0);
-        const elevationReference = this.layout.get('line-elevation-reference');
-        const seaOrGroundReference = elevationReference === 'sea' || elevationReference === 'ground';
-
-        return !seaOrGroundReference && (zOffsetZero || elevationReference !== 'none');
+        return !this.hasElevatedBuckets;
     }
 }
 

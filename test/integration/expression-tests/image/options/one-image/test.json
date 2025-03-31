@@ -13,9 +13,9 @@
       "type": "resolvedImage"
     },
     "outputs": [
-      {"namePrimary": "poi_circle", "available": false},
-      {"namePrimary": "poi_circle", "optionsPrimary": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}}, "available": false},
-      {"namePrimary": "poi_circle", "available": false}
+      {"primaryId": {"name": "poi_circle"}, "available": false},
+      {"primaryId": {"name": "poi_circle"}, "primaryOptions": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}}, "available": false},
+      {"primaryId": {"name": "poi_circle"}, "available": false}
     ],
     "serialized": ["image", "poi_circle", {"params": {"fill_color": ["to-color", ["get", "main_color"]]}}]
   }

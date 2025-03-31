@@ -3,6 +3,7 @@ import {extend} from '../util/util';
 import EXTENT from '../style-spec/data/extent';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
+import {makeFQID} from '../util/fqid';
 
 import type {ISource, SourceEvents} from './source';
 import type {Map as MapboxMap} from '../ui/map';
@@ -10,10 +11,10 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type Actor from '../util/actor';
 import type {Callback} from '../types/callback';
-import type {GeoJSONWorkerOptions} from './geojson_worker_source';
+import type {GeoJSONWorkerOptions, LoadGeoJSONResult} from './geojson_worker_source';
 import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 import type {Cancelable} from '../types/cancelable';
-import type {RequestedTileParameters} from './worker_source';
+import type {WorkerSourceVectorTileRequest, WorkerSourceVectorTileResult} from './worker_source';
 
 /**
  * A source containing GeoJSON.
@@ -94,7 +95,6 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     _pendingLoad: Cancelable | null | undefined;
     _partialReload: boolean;
 
-    reload: undefined;
     hasTile: undefined;
     prepare: undefined;
     afterUpdate: undefined;
@@ -398,7 +398,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         // target {this.type}.loadData rather than literally geojson.loadData,
         // so that other geojson-like source types can easily reuse this
         // implementation
-        this._pendingLoad = this.actor.send(`${this.type}.loadData`, options, (err, result) => {
+        this._pendingLoad = this.actor.send(`${this.type}.loadData`, options, (err, result: LoadGeoJSONResult) => {
             this._loaded = true;
             this._pendingLoad = null;
 
@@ -429,6 +429,12 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         return this._loaded;
     }
 
+    reload() {
+        const fqid = makeFQID(this.id, this.scope);
+        this.map.style.clearSource(fqid);
+        this._updateWorkerData();
+    }
+
     loadTile(tile: Tile, callback: Callback<undefined>) {
         const message = !tile.actor ? 'loadTile' : 'reloadTile';
         tile.actor = this.actor;
@@ -436,7 +442,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         const lut = lutForScope ? {image: lutForScope.image.clone()} : null;
         const partial = this._partialReload;
 
-        const params: RequestedTileParameters = {
+        const params: WorkerSourceVectorTileRequest = {
             type: this.type,
             uid: tile.uid,
             tileID: tile.tileID,
@@ -455,7 +461,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             partial
         };
 
-        tile.request = this.actor.send(message, params, (err, data) => {
+        tile.request = this.actor.send(message, params, (err, data: WorkerSourceVectorTileResult) => {
             if (partial && !data) {
                 // if we did a partial reload and the tile didn't change, do nothing and treat the tile as loaded
                 tile.state = 'loaded';

@@ -3,9 +3,9 @@
   "propertySpec": {"type": "boolean"},
   "inputs": [
     [{}, {}],
-    [{"availableImages": ["first"]}, {}],
-    [{"availableImages": ["second"]}, {}],
-    [{"availableImages": ["first", "second"]}, {}]
+    [{"availableImages": [{"name": "first"}]}, {}],
+    [{"availableImages": [{"name": "second"}]}, {}],
+    [{"availableImages": [{"name": "first"}, {"name": "second"}]}, {}]
   ],
   "expected": {
     "compiled": {

@@ -19,7 +19,8 @@ const defaultOptions = {
     closeOnClick: true,
     focusAfterOpen: true,
     className: '',
-    maxWidth: "240px"
+    maxWidth: '240px',
+    altitude: 0
 };
 
 export type Offset = number | PointLike | Partial<Record<Anchor, PointLike>>;
@@ -33,6 +34,7 @@ export type PopupOptions = {
     offset?: Offset;
     className?: string;
     maxWidth?: string;
+    altitude?: number;
 };
 
 type PopupEvents = {
@@ -76,6 +78,7 @@ const focusQuerySelector = [
  *
  * Negative offsets indicate left and up.
  * @param {string} [options.className] Space-separated CSS class names to add to popup container.
+ * @param {number} [options.altitude=0] Elevation in meters above the map surface. If terrain is enabled, the popup will be elevated relative to the terrain.
  * @param {string} [options.maxWidth='240px'] -
  * A string that sets the CSS property of the popup's maximum width (for example, `'300px'`).
  * To ensure the popup resizes to fit its content, set this property to `'none'`.
@@ -117,10 +120,12 @@ export default class Popup extends Evented<PopupEvents> {
     _anchor: Anchor;
     _classList: Set<string>;
     _marker: Marker | null | undefined;
+    _altitude: number;
 
     constructor(options?: PopupOptions) {
         super();
         this.options = extend(Object.create(defaultOptions), options);
+        this._altitude = this.options.altitude;
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);
         this._classList = new Set(options && options.className ?
             options.className.trim().split(/\s+/) : []);
@@ -300,6 +305,31 @@ export default class Popup extends Evented<PopupEvents> {
     }
 
     /**
+     * Gets the altitude of the popup.
+     *
+     * @returns {number} The altitude of the popup.
+     * @example
+     * const altitude = popup.getAltitude();
+     */
+    getAltitude(): number {
+        return this._altitude;
+    }
+
+    /**
+     * Sets the altitude of the popup.
+     *
+     * @param {number} altitude - The altitude of the popup.
+     * @returns {Popup} Returns itself to allow for method chaining.
+     * @example
+     * popup.setAltitude(10);
+     */
+    setAltitude(altitude: number): this {
+        this._altitude = altitude;
+        this._update();
+        return this;
+    }
+
+    /**
      * Tracks the popup anchor to the cursor position on screens with a pointer device (it will be hidden on touchscreens). Replaces the `setLngLat` behavior.
      * For most use cases, set `closeOnClick` and `closeButton` to `false`.
      *
@@ -455,8 +485,7 @@ export default class Popup extends Evented<PopupEvents> {
             const button = this._closeButton = DOM.create('button', 'mapboxgl-popup-close-button', content);
             button.type = 'button';
             button.setAttribute('aria-label', 'Close popup');
-            button.setAttribute('aria-hidden', 'true');
-            button.innerHTML = '&#215;';
+            button.innerHTML = '<span aria-hidden="true">&#215;</span>';
             button.addEventListener('click', this._onClose);
         }
         this._update();
@@ -622,7 +651,7 @@ export default class Popup extends Evented<PopupEvents> {
         }
 
         if (!this._trackPointer || cursor) {
-            const pos = this._pos = this._trackPointer && cursor instanceof Point ? cursor : map.project(this._lngLat);
+            const pos = this._pos = this._trackPointer && cursor instanceof Point ? cursor : map.project(this._lngLat, this._altitude);
 
             const offsetBottom = normalizeOffset(this.options.offset);
             const anchor = this._anchor = this._getAnchor(offsetBottom.y);

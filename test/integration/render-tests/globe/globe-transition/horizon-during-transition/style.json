@@ -20,7 +20,6 @@
   "pitch": 85.0,
   "sources": {
   },
-  "sprite": "local://sprites/emerald",
   "layers": [
     {
       "id": "sky",

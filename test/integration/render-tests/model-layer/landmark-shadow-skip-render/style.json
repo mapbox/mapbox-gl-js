@@ -2,7 +2,6 @@
   "version": 8,
   "metadata": {
     "test": {
-      "standardDerivatives": true,
       "height": 512,
       "allowed": 0.001,
       "description": "With the same expectation as `landmark-shadow`, this test verifies frustum culling and shadow re-render.", 

@@ -44,7 +44,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return translateDistance(this.paint.get('fill-extrusion-translate'));
     }
 
-    override is3D(): boolean {
+    override is3D(terrainEnabled?: boolean): boolean {
         return true;
     }
 

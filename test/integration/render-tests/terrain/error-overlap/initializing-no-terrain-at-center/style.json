@@ -16,7 +16,7 @@
   "zoom": 14.51,
   "pitch": 60,
   "bearing": -45,
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "terrain": {
     "source": "rgbterrain"
   },
@@ -43,7 +43,7 @@
       "id": "background",
       "type": "background",
       "paint": {
-        "background-pattern": "airport_icon"
+        "background-pattern": "airport"
       }
     },
     {

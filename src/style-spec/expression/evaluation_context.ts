@@ -1,6 +1,7 @@
 import {Color} from './values';
 
 import type Point from '@mapbox/point-geometry';
+import type {ImageId} from './types/image_id';
 import type {FormattedSection} from './types/formatted';
 import type {GlobalProperties, Feature, FeatureState} from './index';
 import type {CanonicalTileID} from '../types/tile_id';
@@ -14,7 +15,7 @@ class EvaluationContext {
     feature: Feature | null | undefined;
     featureState: FeatureState | null | undefined;
     formattedSection: FormattedSection | null | undefined;
-    availableImages: Array<string> | null | undefined;
+    availableImages: ImageId[] | null | undefined;
     canonical: null | CanonicalTileID;
     featureTileCoord: Point | null | undefined;
     featureDistanceData: FeatureDistanceData | null | undefined;
@@ -88,10 +89,9 @@ class EvaluationContext {
         return 0;
     }
 
-    parseColor(input: string): Color | null | undefined {
+    parseColor(input: string): Color | undefined {
         let cached = this._parseColorCache[input];
         if (!cached) {
-            // @ts-expect-error - TS2322 - Type 'void | Color' is not assignable to type 'Color'. | TS2322 - Type 'void | Color' is not assignable to type 'Color'.
             cached = this._parseColorCache[input] = Color.parse(input);
         }
         return cached;

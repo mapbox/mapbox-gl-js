@@ -3,15 +3,15 @@
   "propertySpec": {"type": "resolvedImage"},
   "inputs": [
     [{}, {}],
-    [{"availableImages": ["first"]}, {}],
-    [{"availableImages": ["second"]}, {}],
-    [{"availableImages": ["third"]}, {}],
-    [{"availableImages": ["fourth"]}, {}],
-    [{"availableImages": ["third", "fourth"]}, {}],
-    [{"availableImages": ["first", "third", "fourth"]}, {}],
-    [{"availableImages": ["second", "third", "fourth"]}, {}],
-    [{"availableImages": ["first", "second"]}, {}],
-    [{"availableImages": ["first", "second", "third", "fourth"]}, {}]
+    [{"availableImages": [{"name": "first"}]}, {}],
+    [{"availableImages": [{"name": "second"}]}, {}],
+    [{"availableImages": [{"name": "third"}]}, {}],
+    [{"availableImages": [{"name": "fourth"}]}, {}],
+    [{"availableImages": [{"name": "third"}, {"name": "fourth"}]}, {}],
+    [{"availableImages": [{"name": "first"}, {"name": "third"}, {"name": "fourth"}]}, {}],
+    [{"availableImages": [{"name": "second"}, {"name": "third"}, {"name": "fourth"}]}, {}],
+    [{"availableImages": [{"name": "first"}, {"name": "second"}]}, {}],
+    [{"availableImages": [{"name": "first"}, {"name": "second"}, {"name": "third"}, {"name": "fourth"}]}, {}]
   ],
   "expected": {
     "compiled": {
@@ -21,16 +21,16 @@
       "type": "resolvedImage"
     },
     "outputs": [
-      {"namePrimary": "first", "nameSecondary": "second", "available": false},
-      {"namePrimary": "first", "nameSecondary": "second", "available": false},
-      {"namePrimary": "first", "nameSecondary": "second", "available": false},
-      {"namePrimary": "first", "nameSecondary": "second", "available": false},
-      {"namePrimary": "first", "nameSecondary": "second", "available": false},
-      {"namePrimary": "third", "nameSecondary": "fourth", "available": true},
-      {"namePrimary": "third", "nameSecondary": "fourth", "available": true},
-      {"namePrimary": "third", "nameSecondary": "fourth", "available": true},
-      {"namePrimary": "first", "nameSecondary": "second", "available": true},
-      {"namePrimary": "first", "nameSecondary": "second", "available": true}
+      {"primaryId": {"name": "first"}, "secondaryId": {"name": "second"}, "available": false},
+      {"primaryId": {"name": "first"}, "secondaryId": {"name": "second"}, "available": false},
+      {"primaryId": {"name": "first"}, "secondaryId": {"name": "second"}, "available": false},
+      {"primaryId": {"name": "first"}, "secondaryId": {"name": "second"}, "available": false},
+      {"primaryId": {"name": "first"}, "secondaryId": {"name": "second"}, "available": false},
+      {"primaryId": {"name": "third"}, "secondaryId": {"name": "fourth"}, "available": true},
+      {"primaryId": {"name": "third"}, "secondaryId": {"name": "fourth"}, "available": true},
+      {"primaryId": {"name": "third"}, "secondaryId": {"name": "fourth"}, "available": true},
+      {"primaryId": {"name": "first"}, "secondaryId": {"name": "second"}, "available": true},
+      {"primaryId": {"name": "first"}, "secondaryId": {"name": "second"}, "available": true}
     ],
     "serialized": ["coalesce", ["image", "first", "second"], ["image", "third", "fourth"]]
   }

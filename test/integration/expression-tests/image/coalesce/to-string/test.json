@@ -11,7 +11,7 @@
   ],
   "propertySpec": {"type": "string"},
   "inputs": [
-    [{"availableImages": ["monument-15"]}, {}],
+    [{"availableImages": [{"name": "monument-15"}]}, {}],
     [{"availableImages": []}, {}]
   ],
   "expected": {

@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "pixelRatio": 2,
       "height": 64,
       "width": 64
     }
@@ -19,7 +20,7 @@
             "properties": {
               "color": "red",
               "sort-key": 1,
-              "image": "interstate_2"
+              "image": "us-interstate-2"
             },
             "geometry": {
               "type": "Point",
@@ -34,7 +35,7 @@
             "properties": {
               "color": "green",
               "sort-key": 0,
-              "image": "interstate_2"
+              "image": "us-interstate-2"
             },
             "geometry": {
               "type": "Point",
@@ -48,7 +49,7 @@
             "properties": {
               "color": "red",
               "sort-key": 1,
-              "image": "interstate_2"
+              "image": "us-interstate-2"
             },
             "geometry": {
               "type": "Point",
@@ -63,7 +64,7 @@
             "properties": {
               "color": "green",
               "sort-key": 0,
-              "image": "interstate_2"
+              "image": "us-interstate-2"
             },
             "geometry": {
               "type": "Point",
@@ -77,7 +78,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -87,6 +88,7 @@
       "layout": {
         "symbol-sort-key": ["get", "sort-key"],
         "icon-image": ["get", "image"],
+        "icon-size": 2,
         "icon-allow-overlap": true,
         "icon-ignore-placement": true,
         "text-allow-overlap": true,

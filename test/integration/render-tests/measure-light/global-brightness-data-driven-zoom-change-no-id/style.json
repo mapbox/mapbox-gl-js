@@ -177,7 +177,6 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
   "layers": [
     {
       "id": "fill",

@@ -24,6 +24,7 @@ import type {Footprint, TileFootprint} from '../../../3d-style/util/conflation';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {SpritePositions} from '../../util/image';
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
+import type {ImageId} from '../../style-spec/expression/types/image_id';
 
 class ClipBucket implements Bucket {
     index: number;
@@ -99,13 +100,13 @@ class ClipBucket implements Bucket {
     upload(_context: Context) {
     }
 
-    update(_states: FeatureStates, _vtLayer: VectorTileLayer, _availableImages: Array<string>, _imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
+    update(_states: FeatureStates, _vtLayer: VectorTileLayer, _availableImages: ImageId[], _imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
     }
 
     destroy() {
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, _availableImages: Array<string> = [], _brightness?: number | null) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, _availableImages: ImageId[] = [], _brightness?: number | null) {
         for (const polygon of classifyRings(geometry, 2)) {
             const points: Array<Point> = [];
             const flattened = [];

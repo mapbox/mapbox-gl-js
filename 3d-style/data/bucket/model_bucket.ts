@@ -36,6 +36,7 @@ import type {ProjectionSpecification} from '../../../src/style-spec/types';
 import type {TileTransform} from '../../../src/geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
+import type {ImageId} from '../../../src/style-spec/expression/types/image_id';
 
 class ModelFeature {
     feature: EvaluationFeature;
@@ -187,7 +188,7 @@ class ModelBucket implements Bucket {
     }
 
     // eslint-disable-next-line no-unused-vars
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions) {
         // called when setFeature state API is used
         for (const modelId in this.instancesPerModel) {
             const instances: PerModelAttributes = this.instancesPerModel[modelId];

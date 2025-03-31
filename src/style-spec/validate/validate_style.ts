@@ -21,7 +21,6 @@ export default function validateStyle(
         valueSpec: styleSpec.$root,
         styleSpec,
         style,
-        // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'objectElementValidators' does not exist in type 'ValidationOptions'.
         objectElementValidators: {
             glyphs: validateGlyphsURL,
             '*': () => []

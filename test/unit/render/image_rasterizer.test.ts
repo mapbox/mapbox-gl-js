@@ -1,7 +1,7 @@
 import {expect, describe, test, vi} from '../../util/vitest';
 import {ImageRasterizer} from '../../../src/render/image_rasterizer';
 import {Color} from '../../../src/style-spec/style-spec';
-import {ImageIdWithOptions} from '../../../src/style-spec/expression/types/image_id_with_options';
+import {ImageVariant} from '../../../src/style-spec/expression/types/image_variant';
 
 import type {Icon} from '../../../src/data/usvg/usvg_pb_decoder';
 import type {StyleImage} from '../../../src/style/style_image';
@@ -59,18 +59,17 @@ describe('ImageRasterizer', () => {
     };
 
     test('expects returns rasterized image', () => {
-        expect(new ImageRasterizer().rasterize(new ImageIdWithOptions('square'), image, '', '1').data.length).toEqual(1600);
+        expect(new ImageRasterizer().rasterize(new ImageVariant('square'), image, '', '1').data.length).toEqual(1600);
     });
 
     test('expects returns rasterized image from cache', () => {
-        const imageIdWithOptions = new ImageIdWithOptions('square');
+        const imageVariant = new ImageVariant('square');
         const imageRasterizer = new ImageRasterizer();
         const rasterizer = vi.fn();
 
-        imageRasterizer.rasterize(imageIdWithOptions, image, '', '1');
-        imageRasterizer.rasterize(imageIdWithOptions, image, '', '1', rasterizer);
+        imageRasterizer.rasterize(imageVariant, image, '', '1');
+        imageRasterizer.rasterize(imageVariant, image, '', '1', rasterizer);
 
         expect(rasterizer).not.toHaveBeenCalled();
     });
 });
-

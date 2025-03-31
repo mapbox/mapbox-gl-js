@@ -555,7 +555,7 @@ export function globePoleMatrixForTile(z: number, x: number, tr: Transform): mat
 export function globeUseCustomAntiAliasing(painter: Painter, context: Context, transform: Transform): boolean {
     const transitionT = globeToMercatorTransition(transform.zoom);
     const useContextAA = painter.style.map._antialias;
-    const disabled = context.options.extStandardDerivativesForceOff || (painter.terrain && painter.terrain.exaggeration() > 0.0);
+    const disabled = painter.terrain && painter.terrain.exaggeration() > 0.0;
     return transitionT === 0.0 && !useContextAA && !disabled;
 }
 

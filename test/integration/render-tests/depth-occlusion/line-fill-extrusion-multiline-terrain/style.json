@@ -138,7 +138,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "center": [-113.2935, 35.9529],
   "zoom": 14.3,
   "pitch": 25,
@@ -179,7 +179,7 @@
         "line-z-offset": 0.01
       },
       "paint": {
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-width": 21.0,
         "line-occlusion-opacity": 0.5
       }

@@ -8,7 +8,7 @@ export type FormattedSpecification = string;
 
 export type ResolvedImageSpecification = string;
 
-export type PromoteIdSpecification = {[_: string]: string} | string;
+export type PromoteIdSpecification = {[_: string]: string | ExpressionSpecification} | string | ExpressionSpecification;
 
 export type FilterSpecification =
     | ExpressionSpecification
@@ -103,6 +103,10 @@ export type StyleSpecification = {
      */
     "indoor"?: IndoorSpecification,
     "imports"?: Array<ImportSpecification>,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
+    "iconsets"?: IconsetsSpecification,
     "schema"?: SchemaSpecification,
     "sources": SourcesSpecification,
     "sprite"?: string,
@@ -123,6 +127,10 @@ export type SourcesSpecification = {
 
 export type ModelsSpecification = {
     [_: string]: ModelSpecification
+}
+
+export type IconsetsSpecification = {
+    [_: string]: IconsetSpecification
 }
 
 export type LightSpecification = {
@@ -274,7 +282,13 @@ export type FeaturesetsSpecification = {
  * @experimental This is experimental and subject to change in future versions.
  */
 export type FeaturesetSpecification = {
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     "metadata"?: unknown,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     "selectors"?: Array<SelectorSpecification>
 }
 
@@ -282,15 +296,31 @@ export type FeaturesetSpecification = {
  * @experimental This is experimental and subject to change in future versions.
  */
 export type SelectorSpecification = {
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     "layer": string,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     "properties"?: SelectorPropertySpecification,
-    "featureNamespace"?: string
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
+    "featureNamespace"?: string,
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
+    "_uniqueFeatureID"?: boolean
 }
 
 /**
  * @experimental This is experimental and subject to change in future versions.
  */
 export type SelectorPropertySpecification = {
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     [_: string]: unknown
 }
 
@@ -402,6 +432,16 @@ export type SourceSpecification =
     | ImageSourceSpecification
     | ModelSourceSpecification
 
+export type IconsetSpecification =
+    | {
+        "type": "sprite",
+        "url": string
+    }
+    | {
+        "type": "source",
+        "source": string
+    }
+
 export type ModelSpecification = string;
 
 export type AmbientLightSpecification = {
@@ -473,7 +513,11 @@ export type FillLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "fill-elevation-reference"?: "none" | "hd-road-base" | "hd-road-markup" | ExpressionSpecification
+        "fill-elevation-reference"?: "none" | "hd-road-base" | "hd-road-markup" | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "fill-construct-bridge-guard-rail"?: DataDrivenPropertyValueSpecification<boolean>
     },
     "paint"?: {
         "fill-antialias"?: PropertyValueSpecification<boolean>,
@@ -492,7 +536,13 @@ export type FillLayerSpecification = {
         "fill-emissive-strength"?: PropertyValueSpecification<number>,
         "fill-emissive-strength-transition"?: TransitionSpecification,
         "fill-z-offset"?: DataDrivenPropertyValueSpecification<number>,
-        "fill-z-offset-transition"?: TransitionSpecification
+        "fill-z-offset-transition"?: TransitionSpecification,
+        "fill-bridge-guard-rail-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "fill-bridge-guard-rail-color-transition"?: TransitionSpecification,
+        "fill-bridge-guard-rail-color-use-theme"?: PropertyValueSpecification<string>,
+        "fill-tunnel-structure-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "fill-tunnel-structure-color-transition"?: TransitionSpecification,
+        "fill-tunnel-structure-color-use-theme"?: PropertyValueSpecification<string>
     }
 }
 
@@ -730,6 +780,10 @@ export type CircleLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "circle-sort-key"?: DataDrivenPropertyValueSpecification<number>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "circle-elevation-reference"?: "none" | "hd-road-markup" | ExpressionSpecification,
         "visibility"?: "visible" | "none" | ExpressionSpecification
     },
     "paint"?: {

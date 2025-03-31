@@ -4,8 +4,7 @@
     "test": {
       "allowed": 0.00085,
       "height": 256,
-      "width": 256,
-      "standardDerivatives": true
+      "width": 256
     }
   },
   "lights": [

@@ -1,3 +1,5 @@
+import {register} from './web_worker_transfer';
+
 export class LRUCache<T = object> {
     private capacity: number;
     private cache: Map<string, T>;
@@ -30,3 +32,5 @@ export class LRUCache<T = object> {
         this.cache.delete(key);
     }
 }
+
+register(LRUCache, 'LRUCache');

@@ -4,6 +4,7 @@ import validate from './validate';
 import {unbundle} from '../util/unbundle_jsonlint';
 
 import type {ValidationOptions} from './validate';
+import type {LightsSpecification} from '../types';
 
 type Options = ValidationOptions & {
     arrayIndex: number;
@@ -39,9 +40,9 @@ export default function validateLights(options: Options): Array<ValidationError>
     if (light.type && lights) {
         for (let i = 0; i < options.arrayIndex; i++) {
             const lightType = unbundle(light.type);
-            const otherLight = lights[i];
+            // const otherLight = lights[i];
+            const otherLight = lights[i] as LightsSpecification & { id: { __line__: number } };
             if (unbundle(otherLight.type) === lightType) {
-                // @ts-expect-error - TS2339 - Property '__line__' does not exist on type 'string'.
                 errors.push(new ValidationError(key, light.id, `duplicate light type "${light.type}", previously defined at line ${otherLight.id.__line__}`));
             }
         }

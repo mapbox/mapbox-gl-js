@@ -1,0 +1,24 @@
+{
+    "version": 8,
+    "iconsets": {
+        "shields1": {
+            "url": "mapbox://sprites/mapbox/shields-v1"
+        },
+        "shields2": {
+            "type": "sprite"
+        },
+        "landmarks1": {
+            "source": "mapbox-landmarks"
+        },
+        "landmarks2": {
+            "type": "source"
+        }
+    },
+    "sources": {
+        "mapbox-landmarks": {
+            "type": "raster-array",
+            "url": "mapbox://mapbox.mapbox-streets-v8"
+        }
+    },
+    "layers": []
+}

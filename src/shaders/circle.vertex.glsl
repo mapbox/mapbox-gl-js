@@ -26,6 +26,10 @@ uniform float u_zoom_transition;
 uniform vec3 u_up_dir;
 #endif
 
+#ifdef ELEVATED_ROADS
+in float a_circle_z_offset;
+#endif
+
 out vec3 v_data;
 out float v_visibility;
 
@@ -120,6 +124,10 @@ void main(void) {
     // extract height offset for terrain, this returns 0 if terrain is not active
     float height = circle_elevation(circle_center);
     world_center = vec4(circle_center, height, 1);
+#endif
+
+#ifdef ELEVATED_ROADS
+    world_center.z += a_circle_z_offset + ELEVATION_BIAS;
 #endif
 
     vec4 projected_center = u_matrix * world_center;

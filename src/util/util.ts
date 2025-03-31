@@ -285,24 +285,6 @@ export function asyncAll<Item, Result>(
 }
 
 /*
- * Polyfill for Object.values. Not fully spec compliant, but we don't
- * need it to be.
- *
- * @private
- */
-export function values<T>(
-    obj: {
-        [key: string]: T;
-    },
-): Array<T> {
-    const result = [];
-    for (const k in obj) {
-        result.push(obj[k]);
-    }
-    return result;
-}
-
-/*
  * Compute the difference between the keys in one object and the keys
  * in another object.
  *
@@ -461,15 +443,6 @@ export function bindAll(fns: Array<string>, context: any): void {
         if (!context[fn]) { return; }
         context[fn] = context[fn].bind(context);
     });
-}
-
-/**
- * Determine if a string ends with a particular substring
- *
- * @private
- */
-export function endsWith(string: string, suffix: string): boolean {
-    return string.indexOf(suffix, string.length - suffix.length) !== -1;
 }
 
 /**

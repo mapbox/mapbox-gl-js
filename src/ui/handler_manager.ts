@@ -28,6 +28,19 @@ import type {Handler, HandlerResult} from './handler';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
+/**
+ * One of modifier [KeyboardEvent.key](https://developer.mozilla.org/docs/Web/API/KeyboardEvent/key) values
+ */
+export type PitchRotateKey = 'Control' | 'Alt' | 'Shift' | 'Meta';
+
+export type HandlerManagerOptions = {
+    interactive: boolean;
+    pitchWithRotate: boolean;
+    clickTolerance: number;
+    bearingSnap: number;
+    pitchRotateKey?: PitchRotateKey;
+};
+
 type EventsInProgress = {
     [T in keyof MapEvents]?: MapEvents[T];
 };
@@ -115,12 +128,7 @@ class HandlerManager {
     _dragOrigin: vec3 | null | undefined;
     _originalZoom: number | null | undefined;
 
-    constructor(map: Map, options: {
-        interactive: boolean;
-        pitchWithRotate: boolean;
-        clickTolerance: number;
-        bearingSnap: number;
-    }) {
+    constructor(map: Map, options: HandlerManagerOptions) {
         this._map = map;
         this._el = this._map.getCanvasContainer();
         this._handlers = [];
@@ -194,11 +202,7 @@ class HandlerManager {
         }
     }
 
-    _addDefaultHandlers(options: {
-        interactive: boolean;
-        pitchWithRotate: boolean;
-        clickTolerance: number;
-    }) {
+    _addDefaultHandlers(options: HandlerManagerOptions) {
         const map = this._map;
         const el = map.getCanvasContainer();
         this._add('mapEvent', new MapEventHandler(map, options));

@@ -1,8 +1,9 @@
+import Pbf from 'pbf';
 import Tile from './tile';
 import Texture from '../render/texture';
+import {RGBAImage} from '../util/image';
 import {getArrayBuffer} from '../util/ajax';
 import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
-import Pbf from 'pbf';
 
 import type Painter from '../render/painter';
 import type Framebuffer from '../gl/framebuffer';
@@ -11,6 +12,8 @@ import type {Cancelable} from '../types/cancelable';
 import type {TextureImage} from '../render/texture';
 import type {OverscaledTileID} from './tile_id';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
+import type {MapboxRasterLayer} from '../data/mrt/mrt.esm.js';
+import type {WorkerSourceRasterArrayDecodingParameters} from './worker_source';
 
 MapboxRasterTile.setPbf(Pbf);
 
@@ -23,69 +26,6 @@ export type TextureDescriptor = {
     mix: [number, number, number, number];
     offset: number;
     format?: 'uint8' | 'uint16' | 'uint32';
-};
-
-export type MRTLayer = {
-    version: number;
-    name: string;
-    units: string;
-    tilesize: number;
-    buffer: number;
-    pixelFormat: 'uint8' | 'uint16' | 'uint32';
-    dataIndex: Partial<Record<string | number, any>>;
-    hasBand: (arg1: string | number) => boolean;
-    hasDataForBand: (arg1: string | number) => boolean;
-    getDataRange: (arg1: Array<string | number>) => MRTDataRange;
-    getBandView: (arg1: string | number) => MRTBandView;
-};
-
-export type MRTBandView = {
-    data: any;
-    bytes: any;
-    tileSize: number;
-    buffer: number;
-    offset: number;
-    scale: number;
-};
-
-export type MRTDataRange = {
-    layerName: string;
-    firstByte: number;
-    lastByte: number;
-    firstBlock: number;
-    lastBlock: number;
-};
-
-export type MRTDecodingBatch = {
-    tasks: Array<MRTDecodingTask>;
-    cancel: () => void;
-    complete: (arg1?: Error | null, arg2?: ArrayBuffer | null) => void;
-};
-
-export type MRTDecodingTask = {
-    layerName: string;
-    firstByte: number;
-    lastByte: number;
-    pixelFormat: 'uint8' | 'uint16' | 'uint32';
-    blockIndex: number;
-    blockShape: Array<number>;
-    buffer: number;
-    codec: string;
-    filters: Array<string>;
-};
-
-export type MRT = {
-    x: number;
-    y: number;
-    z: number;
-    _cacheSize: number;
-    layers: {
-        [_: string]: MRTLayer;
-    };
-    getLayer: (arg1: string) => MRTLayer | null | undefined;
-    parseHeader: (arg1: ArrayBuffer) => MRT;
-    getHeaderLength: (arg1: ArrayBuffer) => number;
-    createDecodingTask: (arg1: MRTDataRange) => MRTDecodingBatch;
 };
 
 const FIRST_TRY_HEADER_LENGTH = 16384;
@@ -102,7 +42,10 @@ class RasterArrayTile extends Tile {
     fbo: Framebuffer | null | undefined;
     textureDescriptor: TextureDescriptor | null | undefined;
 
-    _mrt: MRT | null | undefined;
+    source?: string;
+    scope?: string;
+
+    _mrt: MapboxRasterTile | null | undefined;
     _isHeaderLoaded: boolean;
 
     constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter?: Painter | null, isRaster?: boolean) {
@@ -111,6 +54,25 @@ class RasterArrayTile extends Tile {
         this._workQueue = [];
         this._fetchQueue = [];
         this._isHeaderLoaded = false;
+    }
+
+    /**
+     * Returns a map of all layers in the raster array tile.
+     * @returns {Record<string, MapboxRasterLayer>}
+     * @private
+     */
+    getLayers(): MapboxRasterLayer[] {
+        return this._mrt ? Object.values(this._mrt.layers) : [];
+    }
+
+    /**
+     * Returns a layer in the raster array tile.
+     * @param {string} layerId
+     * @returns {MapboxRasterLayer | null | undefined}
+     * @private
+     */
+    getLayer(layerId: string): MapboxRasterLayer | null | undefined {
+        return this._mrt && this._mrt.getLayer(layerId);
     }
 
     override setTexture(img: TextureImage, painter: Painter) {
@@ -143,7 +105,6 @@ class RasterArrayTile extends Tile {
         fetchLength: number | null | undefined = FIRST_TRY_HEADER_LENGTH,
         callback: ResponseCallback<ArrayBuffer | null | undefined>,
     ): Cancelable {
-        // @ts-expect-error - TS2739 - Type 'MapboxRasterTile' is missing the following properties from type 'MRT': x, y, z, _cacheSize, layers
         const mrt = this._mrt = new MapboxRasterTile(MRT_DECODED_BAND_CACHE_SIZE);
 
         const headerRequestParams = Object.assign({}, this.requestParams, {headers: {Range: `bytes=0-${fetchLength - 1}`}});
@@ -172,7 +133,7 @@ class RasterArrayTile extends Tile {
                 // ignored by the server), then cache the buffer and neglect range requests.
                 let lastByte = 0;
                 for (const layer of Object.values(mrt.layers)) {
-                    lastByte = Math.max(lastByte, layer.dataIndex[layer.dataIndex.length - 1].last_byte);
+                    lastByte = Math.max(lastByte, layer.dataIndex[layer.dataIndex.length - 1].lastByte);
                 }
 
                 if (dataBuffer.byteLength >= lastByte) {
@@ -220,7 +181,16 @@ class RasterArrayTile extends Tile {
         const onDataLoaded = (err?: Error | null, buffer?: ArrayBuffer | null) => {
             if (err) return callback(err);
 
-            const params = {buffer, task};
+            const params: WorkerSourceRasterArrayDecodingParameters = {
+                type: 'raster-array',
+                source: this.source,
+                scope: this.scope,
+                tileID: this.tileID,
+                uid: this.uid,
+                buffer,
+                task
+            };
+
             const workerJob = actor.send('decodeRasterArray', params, onDataDecoded, undefined, true);
 
             this._workQueue.push(() => {
@@ -285,7 +255,7 @@ class RasterArrayTile extends Tile {
 
         const {bytes, tileSize, buffer, offset, scale} = mrtLayer.getBandView(band);
         const size = tileSize + 2 * buffer;
-        const img = {data: bytes, width: size, height: size};
+        const img = new RGBAImage({width: size, height: size}, bytes);
 
         const texture = this.texture;
         if (texture && texture instanceof Texture) {

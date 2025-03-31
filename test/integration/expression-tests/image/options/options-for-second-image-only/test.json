@@ -17,11 +17,11 @@
       "type": "resolvedImage"
     },
     "outputs": [
-      {"namePrimary": "poi_circle", "nameSecondary": "alternative_poi_circle", "available": false},
+      {"primaryId": {"name": "poi_circle"}, "secondaryId": {"name": "alternative_poi_circle"}, "available": false},
       {
-        "namePrimary": "poi_circle",
-        "nameSecondary": "alternative_poi_circle",
-        "optionsSecondary": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
+        "primaryId": {"name": "poi_circle"},
+        "secondaryId": {"name": "alternative_poi_circle"},
+        "secondaryOptions": {"params": {"fill_color": {"r":0.9333333333333333,"g":0.5098039215686274,"b":0.9333333333333333,"a":1}}},
         "available": false
       }
     ],

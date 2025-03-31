@@ -1,5 +1,5 @@
-// @ts-nocheck
 /* eslint-disable */
+// @ts-nocheck
 
 import {LRUCache} from '../../util/lru';
 
@@ -123,8 +123,6 @@ function readUint32ValuesTag(tag, values, pbf) {
   }
 }
 
-/** @typedef { import("../types/types").TArrayLike } TArrayLike; */
-
 /**
  * Decode difference-encoded data using a cumulative sum operation along
  * the last two (raster row and column) axes.
@@ -163,8 +161,6 @@ function deltaDecode(data, shape) {
   return data;
 }
 
-/** @typedef { import("../types/types").TArrayLike } TArrayLike; */
-
 /**
  * Perform zigzag decoding.
  *
@@ -195,9 +191,6 @@ function zigzagDecode(data) {
   }
   return data;
 }
-
-/** @typedef { import("../types/types").TArrayLike } TArrayLike; */
-/** @typedef { import("../types/types").TPixelFormat } TPixelFormat; */
 
 /**
  * Perform bitshuffle decoding.
@@ -597,8 +590,6 @@ try {
 
 /* global Response */
 
-/** @typedef { import("./types/types").TCodec } TCodec */
-
 /** @type { { [key: string]: string } } */
 const DS_TYPES = {
   gzip_data: 'gzip'
@@ -649,18 +640,19 @@ class MRTError extends Error {
 
 const VERSION = '2.0.1';
 
-/** @typedef { import("pbf") } Pbf; */
-/** @typedef { import("./types/types").TArrayLike } TArrayLike; */
-/** @typedef { import("./types/types").TDataRange } TDataRange; */
-/** @typedef { import("./types/types").TBlockReference } TBlockReference; */
-/** @typedef { import("./types/types").TRasterLayerConfig } TRasterLayerConfig; */
-/** @typedef { import("./types/types").TBandViewRGBA } TBandViewRGBA; */
-/** @typedef { import("./types/types").TPbfRasterTileData } TPbfRasterTileData */
-/** @typedef { import("./types/types").TProcessingTask } TProcessingTask */
-/** @typedef { import("./types/types").TProcessingBatch } TProcessingBatch */
-/** @typedef { import("./types/types").TDecodingResult } TDecodingResult */
-/** @typedef { import("./types/types").TPbfDataIndexEntry } TPbfDataIndexEntry */
-/** @typedef { import("./types/types").TPixelFormat } TPixelFormat */
+/** @typedef { import("pbf").default } Pbf; */
+/** @typedef { import("./types").TCodec } TCodec */
+/** @typedef { import("./types").TArrayLike } TArrayLike; */
+/** @typedef { import("./types").TDataRange } TDataRange; */
+/** @typedef { import("./types").TBlockReference } TBlockReference; */
+/** @typedef { import("./types").TRasterLayerConfig } TRasterLayerConfig; */
+/** @typedef { import("./types").TBandViewRGBA } TBandViewRGBA; */
+/** @typedef { import("./types").TPbfRasterTileData } TPbfRasterTileData */
+/** @typedef { import("./types").TProcessingTask } TProcessingTask */
+/** @typedef { import("./types").TProcessingBatch } TProcessingBatch */
+/** @typedef { import("./types").TDecodingResult } TDecodingResult */
+/** @typedef { import("./types").TPbfDataIndexEntry } TPbfDataIndexEntry */
+/** @typedef { import("./types").TPixelFormat } TPixelFormat */
 
 const MRT_VERSION = 1;
 
@@ -682,7 +674,7 @@ const PIXEL_FORMAT_TO_CTOR = {
   uint8: Uint8Array
 };
 
-/** @type {any} */
+/** @type {Pbf} */
 let Pbf;
 class MapboxRasterTile {
   /**
@@ -693,7 +685,7 @@ class MapboxRasterTile {
     this.y = NaN;
     this.z = NaN;
 
-    /** @type { { [key: string]: RasterLayer } } */
+    /** @type { { [key: string]: MapboxRasterLayer } } */
     this.layers = {};
     this._cacheSize = cacheSize;
   }
@@ -701,7 +693,7 @@ class MapboxRasterTile {
   /**
    * Get a layer instance by name
    * @param {string} layerName - name of requested layer
-   * @return {RasterLayer} layer instance
+   * @return {MapboxRasterLayer} layer instance
    */
   getLayer(layerName) {
     const layer = this.layers[layerName];
@@ -747,9 +739,7 @@ class MapboxRasterTile {
     this.y = meta.y;
     this.z = meta.z;
     for (const layer of meta.layers) {
-      this.layers[layer.name] = new RasterLayer(layer, {
-        cacheSize: this._cacheSize
-      });
+      this.layers[layer.name] = new MapboxRasterLayer(layer, {cacheSize: this._cacheSize});
     }
     return this;
   }
@@ -797,7 +787,7 @@ class MapboxRasterTile {
     return new MRTDecodingBatch(tasks, onCancel, onComplete);
   }
 }
-class RasterLayer {
+class MapboxRasterLayer {
   /**
    * @param {object} pbf - layer configuration
    * @param {number} pbf.version - major version of MRT specification with which tile was encoded
@@ -914,7 +904,7 @@ class RasterLayer {
 
   /**
    * Get the byte range of a data slice, for performing a HTTP Range fetch
-   * @param {number[]} bandList - list of slices to be covered
+   * @param {Array<number | string>} bandList - list of slices to be covered
    * @return {TDataRange} range of data
    */
   getDataRange(bandList) {
@@ -951,7 +941,7 @@ class RasterLayer {
 
   /**
    * Check if the specified band is valid
-   * @param {number} band - sequence band
+   * @param {number | string} band - sequence band
    * @return {boolean} - true if band exists in layer
    */
   hasBand(band) {
@@ -963,7 +953,7 @@ class RasterLayer {
 
   /**
    * Check if the layer has data for a given sequence band
-   * @param {number} band - sequence band
+   * @param {number | string} band - sequence band
    * @return {boolean} true if data is already available
    */
   hasDataForBand(band) {
@@ -975,7 +965,7 @@ class RasterLayer {
 
   /**
    * Get a typed array view of data
-   * @param {number} band - sequence band
+   * @param {number | string} band - sequence band
    * @return {TBandViewRGBA} view of raster layer
    */
   getBandView(band) {
@@ -1114,4 +1104,4 @@ MapboxRasterTile.performDecoding = function (buf, decodingBatch) {
   }));
 };
 
-export { MRTDecodingBatch, MRTError, MapboxRasterTile, RasterLayer, VERSION, deltaDecode };
+export { MRTDecodingBatch, MRTError, MapboxRasterTile, MapboxRasterLayer, VERSION, deltaDecode };

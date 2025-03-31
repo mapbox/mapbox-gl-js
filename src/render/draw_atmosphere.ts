@@ -192,7 +192,6 @@ class Atmosphere {
             const colorMode = alphaPass ? this.colorModeWriteAlpha : this.colorModeAlphaBlendedWriteRGB;
             const name = alphaPass ? "atmosphere_glow_alpha" : "atmosphere_glow";
             if (buffer) {
-                // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
                 program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
                         colorMode, CullFaceMode.backCW, uniforms, name,
                         buffer.vertexBuffer, buffer.indexBuffer, buffer.segments);
@@ -246,7 +245,6 @@ class Atmosphere {
         painter.uploadCommonUniforms(context, program);
 
         if (this.starsVx && this.starsIdx) {
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
                 this.colorModeAlphaBlendedWriteRGB, CullFaceMode.disabled, uniforms, "atmosphere_stars",
                 this.starsVx, this.starsIdx, this.starsSegments);

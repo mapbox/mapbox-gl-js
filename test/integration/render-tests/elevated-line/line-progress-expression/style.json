@@ -11,7 +11,6 @@
   "zoom": 11.14803107971568,
   "pitch": 70.99999999999977,
   "bearing": 46.799999999998704,
-  "sprite": "local://sprites/emerald",
   "lights": [
     {
       "type": "ambient",

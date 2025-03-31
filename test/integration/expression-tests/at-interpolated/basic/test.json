@@ -1,0 +1,40 @@
+{
+  "expression": [
+    "number",
+    ["at-interpolated", ["number", ["get", "i"]], ["array", ["get", "arr"]]]
+  ],
+  "inputs": [
+    [{}, {"properties": {"i": 0, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 1, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 2, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 1.5, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 0.1, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 2.1, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": -1, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 4, "arr": [9, 8, 7]}}],
+    [{}, {"properties": {"i": 1.5, "arr": ["value1", "value2", "value3"]}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "number"
+    },
+    "outputs": [
+      9,
+      8,
+      7,
+      7.5,
+      8.9,
+      {"error": "Array index out of bounds: 2.1 > 2."},
+      {"error": "Array index out of bounds: -1 < 0."},
+      {"error": "Array index out of bounds: 4 > 2."},
+      {"error": "Cannot interpolate between non-number values at index 1.5."}
+    ],
+    "serialized": [
+      "number",
+      ["at-interpolated", ["number", ["get", "i"]], ["array", ["get", "arr"]]]
+    ]
+  }
+}

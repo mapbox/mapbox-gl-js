@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Mapbox GL JS debug page</title>
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel='stylesheet' href='../dist/mapbox-gl.css' />
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    html,
+    body,
+    #map {
+        height: 100%;
+    }
+</style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script type="module">
+const style = await fetch('https://api.mapbox.com/styles/v1/mapbox/standard?access_token=' + mapboxgl.accessToken).then(res => res.json());
+
+style['sources']['landmarks-poi'] = {
+    type: 'vector',
+    url: 'mapbox://mapbox-geodata.landmarks-poi-icons-02-25'
+};
+
+style['sources']['landmark-icons'] = {
+    type: 'raster-array',
+    tiles: ['https://api.mapbox.com/rasterarrays/v1/mapbox.mapbox-landmark-icons-v1/{z}/{x}/{y}.mrt?jobid=2025-02-24'],
+    minzoom: 10,
+    maxzoom: 10,
+    bounds: [-12.14, 49.77, 3.956, 58.89],
+    raster_layers: [{id: 'landmark-icons'}]
+};
+
+style['iconsets'] = {
+    landmarks: {
+        type: 'source',
+        source: 'landmark-icons'
+    }
+};
+
+style.layers = style.layers.concat([
+    {
+        "id": "landmark-poi-marker-maki-poi-short",
+        "type": "symbol",
+        "source": "landmarks-poi",
+        "source-layer": "landmarks-poi",
+        "minzoom": 8,
+        "maxzoom": 10,
+        "paint": {
+            "text-halo-color": "hsla(0, 91%, 69%, 0.4)",
+            "text-halo-width": 1,
+            "text-color": "hsl(0, 0%, 0%)",
+            "text-opacity": [
+                "step",
+                ["get", "local_rank"],
+                0,
+                0.1,
+                0.3,
+                0.5,
+                0.75,
+                0.75,
+                1
+            ]
+        },
+        "layout": {
+            "visibility": "visible",
+            "text-field": ["to-string", ["get", "short_name_en"]],
+            "symbol-z-elevate": true,
+            "text-font": [
+                "Poppins Medium",
+                "DIN Pro Medium",
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+            ],
+            "icon-image": ["image", ["concat", "landmark-icons", "/", ["get", "icon_name"]], {"iconset": {"id": "landmarks"}}],
+            "icon-color": "hsl(0, 100%, 50%)",
+            "icon-size": 0.5,
+            "symbol-placement": "point",
+            "text-size": 13,
+            "text-anchor": "top",
+            "text-offset": [0, 2],
+            "symbol-sort-key": ["-", 1, ["get", "prominence"]]
+        }
+    },
+    {
+        "id": "landmark-poi-marker-maki-poi-full",
+        "type": "symbol",
+        "source": "landmarks-poi",
+        "source-layer": "landmarks-poi",
+        "minzoom": 10,
+        "paint": {
+            "text-halo-color": "hsla(0, 91%, 69%, 0.4)",
+            "text-halo-width": 1,
+            "text-color": "hsl(0, 0%, 0%)",
+            "text-opacity": [
+                "step",
+                ["get", "local_rank"],
+                0.3,
+                0.3,
+                0.5,
+                0.75,
+                0.75,
+                0.9,
+                1
+            ]
+        },
+        "layout": {
+            "visibility": "visible",
+            "text-field": ["to-string", ["get", "short_name_en"]],
+            "symbol-z-elevate": true,
+            "symbol-sort-key": ["-", 1, ["get", "local_rank"]],
+            "text-font": [
+                "Poppins Medium",
+                "DIN Pro Medium",
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+            ],
+            "icon-image": ["image", ["concat", "landmark-icons", "/", ["get", "icon_name"]], {"iconset": {"id": "landmarks"}}],
+            "icon-size": 0.5,
+            "symbol-placement": "point",
+            "text-size": 13,
+            "text-anchor": "top",
+            "text-offset": [0, 2]
+        }
+    }
+]);
+
+console.log(style);
+
+const map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 11,
+    center: [0, 51.5],
+    hash: true,
+    style
+});
+
+</script>
+</body>
+
+</html>

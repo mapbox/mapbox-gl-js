@@ -72,7 +72,7 @@
       "lineMetrics": true
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "a",
@@ -80,7 +80,7 @@
       "source": "a",
       "paint": {
         "line-width": 2,
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-trim-offset": [0.5, 1.0]
       }
     },
@@ -90,7 +90,7 @@
       "source": "b",
       "paint": {
         "line-width": 4,
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-trim-offset": [0.5, 1.0]
       }
     },
@@ -100,7 +100,7 @@
       "source": "c",
       "paint": {
         "line-width": 8,
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-trim-offset": [0.5, 1.0]
       }
     }

@@ -24,7 +24,7 @@ describe('Popup', () => {
         options = options || {};
         Object.defineProperty(container, 'getBoundingClientRect',
         {value: () => ({height: options.height || containerHeight, width: options.width || containerWidth})});
-        return globalCreateMap({container});
+        return globalCreateMap({container, ...options});
     }
 
     beforeEach(() => {
@@ -961,5 +961,23 @@ describe('Popup', () => {
             .addTo(createMap());
 
         expect(window.document.activeElement).toEqual(dummyFocusedEl);
+    });
+
+    test('Popup can set and update altitude', () => {
+        const map = createMap({zoom: 16, pitch: 45});
+        const popup = new Popup({altitude: 100})
+            .setLngLat([0, 0])
+            .setText('Test')
+            .addTo(map);
+        map._domRenderTaskQueue.run();
+
+        expect(popup.getAltitude()).toEqual(100);
+        expect(popup.getElement().style.transform).toEqual('translate(-50%, -100%) translate(256px, 192px)');
+
+        popup.setAltitude(0);
+        map._domRenderTaskQueue.run();
+
+        expect(popup.getAltitude()).toEqual(0);
+        expect(popup.getElement().style.transform).toEqual('translate(-50%, -100%) translate(256px, 256px)');
     });
 });

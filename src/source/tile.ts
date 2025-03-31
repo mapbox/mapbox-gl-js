@@ -31,7 +31,7 @@ import type RasterParticleState from '../render/raster_particle_state';
 import type FeatureIndex from '../data/feature_index';
 import type {Bucket} from '../data/bucket';
 import type StyleLayer from '../style/style_layer';
-import type {WorkerTileResult} from './worker_source';
+import type {WorkerSourceVectorTileResult} from './worker_source';
 import type Actor from '../util/actor';
 import type DEMData from '../data/dem_data';
 import type {AlphaImage, SpritePositions} from '../util/image';
@@ -54,6 +54,7 @@ import type Painter from '../render/painter';
 import type {QrfQuery, QueryResult} from '../source/query_features';
 import type {UserManagedTexture, TextureImage} from '../render/texture';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
+import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
 
 const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
 export type TileState = // Tile data is in the process of loading.
@@ -64,6 +65,11 @@ export type TileState = // Tile data is in the process of loading.
 'unloaded' | // Tile data was not loaded because of an error.
 'errored' | 'expired';/* Tile data was previously loaded, but has expired per its
  * HTTP headers and is in the process of refreshing. */
+
+export type ExpiryData = {
+    cacheControl?: string;
+    expires?: string;
+};
 
 // a tile bounds outline used for getting reprojected tile geometry in non-mercator projections
 const BOUNDS_FEATURE = (() => {
@@ -153,7 +159,7 @@ class Tile {
     symbolFadeHoldUntil: number | null | undefined;
     hasSymbolBuckets: boolean;
     hasRTLText: boolean;
-    dependencies: any;
+    dependencies: Record<string, Record<StringifiedImageId, boolean>>;
     projection: Projection;
 
     queryGeometryDebugViz: TileSpaceDebugBuffer | null | undefined;
@@ -236,7 +242,7 @@ class Tile {
      * @returns {undefined}
      * @private
      */
-    loadVectorData(data: WorkerTileResult | null | undefined, painter: Painter, justReloaded?: boolean | null) {
+    loadVectorData(data: WorkerSourceVectorTileResult | null | undefined, painter: Painter, justReloaded?: boolean | null) {
         this.unloadVectorData();
 
         this.state = 'loaded';
@@ -393,14 +399,14 @@ class Tile {
         this.state = 'unloaded';
     }
 
-    loadModelData(data: WorkerTileResult | null | undefined, painter: Painter, justReloaded?: boolean | null) {
+    loadModelData(data: WorkerSourceVectorTileResult | null | undefined, painter: Painter, justReloaded?: boolean | null) {
         if (!data) {
             return;
         }
 
         if (data.resourceTiming) this.resourceTiming = data.resourceTiming;
 
-        this.buckets = {...this.buckets, ...deserializeBucket(data.buckets, painter.style)};
+        this.buckets = Object.assign({}, this.buckets, deserializeBucket(data.buckets, painter.style));
 
         if (data.featureIndex) {
             this.latestFeatureIndex = data.featureIndex;
@@ -422,7 +428,7 @@ class Tile {
         const gl = context.gl;
         const atlas = this.imageAtlas;
         if (atlas && !atlas.uploaded) {
-            const hasPattern = !!Object.keys(atlas.patternPositions).length;
+            const hasPattern = !!atlas.patternPositions.size;
             this.imageAtlasTexture = new Texture(context, atlas.image, gl.RGBA8, {useMipmap: hasPattern});
             (this.imageAtlas).uploaded = true;
         }
@@ -462,7 +468,7 @@ class Tile {
     queryRenderedFeatures(
         query: QrfQuery,
         tilespaceGeometry: TilespaceQueryGeometry,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
         transform: Transform,
         sourceCacheTransform: Transform,
         visualizeQueryGeometry: boolean,
@@ -542,10 +548,10 @@ class Tile {
     }
 
     patternsLoaded(): boolean {
-        return !!this.imageAtlas && !!Object.keys(this.imageAtlas.patternPositions).length;
+        return !!this.imageAtlas && !!this.imageAtlas.patternPositions.size;
     }
 
-    setExpiryData(data: any) {
+    setExpiryData(data: ExpiryData) {
         const prior = this.expirationTime;
 
         if (data.cacheControl) {
@@ -615,6 +621,7 @@ class Tile {
 
     updateBuckets(painter: Painter, isBrightnessChanged?: boolean) {
         if (!this.latestFeatureIndex) return;
+        if (!painter.style) return;
 
         const vtLayers = this.latestFeatureIndex.loadVTLayers();
         const availableImages = painter.style.listImages();
@@ -628,21 +635,22 @@ class Tile {
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
             const sourceLayer = vtLayers[sourceLayerId];
-            const sourceCache = painter.style.getSourceCache(bucketLayer.source, bucketLayer.scope);
+            const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
 
             let sourceLayerStates: FeatureStates = {};
             if (sourceCache) {
                 sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
             }
 
-            const imagePositions: SpritePositions = (this.imageAtlas && this.imageAtlas.patternPositions) || {};
+            const imagePositions: SpritePositions = this.imageAtlas ? Object.fromEntries(this.imageAtlas.patternPositions) : {};
             const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
             const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
-            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged) {
+            const updatesWithoutStateDependentLayers = withStateUpdates && !bucket.stateDependentLayers.length;
+            if (!updatesWithoutStateDependentLayers || isBrightnessChanged) {
                 bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
             }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
-                if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.programConfigurations.needsUpload) {
+                if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.uploadPending()) {
                     painter._terrain._clearRenderCacheForTile(sourceCache.id, this.tileID);
                 }
             }
@@ -681,7 +689,7 @@ class Tile {
         }
     }
 
-    setDependencies(namespace: string, dependencies: Array<string>) {
+    setDependencies(namespace: string, dependencies: StringifiedImageId[]) {
         const index: Record<string, any> = {};
         for (const dep of dependencies) {
             index[dep] = true;
@@ -689,7 +697,7 @@ class Tile {
         this.dependencies[namespace] = index;
     }
 
-    hasDependency(namespaces: Array<string>, keys: Array<string>): boolean {
+    hasDependency(namespaces: Array<string>, keys: StringifiedImageId[]): boolean {
         for (const namespace of namespaces) {
             const dependencies = this.dependencies[namespace];
             if (dependencies) {

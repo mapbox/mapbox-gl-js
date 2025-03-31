@@ -67,7 +67,7 @@ float shadow_occlusion_0(highp vec4 pos, highp float bias) {
     vec2 f = fract(pos.xy * u_shadow_map_resolution - vec2(0.5));
 
     lowp vec2 lerpx = mix(stepSamples.wx, stepSamples.zy, f.xx);
-    return mix(lerpx.x, lerpx.y, f.y);
+    return clamp(mix(lerpx.x, lerpx.y, f.y), 0.0, 1.0);
 }
 
 float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, float view_depth, highp float bias) {
@@ -99,7 +99,7 @@ float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, f
     float occlusion1 = shadow_occlusion_1(light_view_pos1, bias);
         
     // If view_depth is within end fade range, fade out
-    return mix(occlusion1, 0.0, smoothstep(u_fade_range.x, u_fade_range.y, view_depth));
+    return clamp(mix(occlusion1, 0.0, smoothstep(u_fade_range.x, u_fade_range.y, view_depth)), 0.0, 1.0);
 #endif  // SHADOWS_SINGLE_CASCADE
 }
 

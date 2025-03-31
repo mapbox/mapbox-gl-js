@@ -30,13 +30,14 @@ import type {
     SourceExpression,
     CompositeExpression
 } from '../style-spec/expression/index';
-import type {PossiblyEvaluated} from '../style/properties';
+import type {PossiblyEvaluated, PossiblyEvaluatedValue} from '../style/properties';
 import type {FeatureStates} from '../source/source_state';
 import type {FormattedSection} from '../style-spec/expression/types/formatted';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {IUniform} from '../render/uniform_binding';
 import type {LUT} from "../util/lut";
 import type {RenderColor} from "../style-spec/util/color";
+import type {ImageId} from '../style-spec/expression/types/image_id';
 
 export type BinderUniform = {
     name: string;
@@ -88,12 +89,13 @@ interface AttributeBinder {
     context: ProgramConfigurationContext;
     checkUseTheme: boolean;
     ignoreLut: boolean;
+    lutExpression: PossiblyEvaluatedValue<string>;
 
     populatePaintArray: (
         length: number,
         feature: Feature,
         imagePositions: SpritePositions,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
         canonical?: CanonicalTileID,
         brightness?: number | null,
         formattedSection?: FormattedSection,
@@ -103,7 +105,7 @@ interface AttributeBinder {
         length: number,
         feature: Feature,
         featureState: FeatureState,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
         imagePositions: SpritePositions,
         brightness: number,
     ) => void;
@@ -116,6 +118,7 @@ interface UniformBinder {
     context: ProgramConfigurationContext;
     checkUseTheme: boolean;
     ignoreLut: boolean;
+    lutExpression: PossiblyEvaluatedValue<string>;
 
     setUniform: (
         program: WebGLProgram,
@@ -133,6 +136,7 @@ class ConstantBinder implements UniformBinder {
     context: ProgramConfigurationContext;
     checkUseTheme: boolean;
     ignoreLut: boolean;
+    lutExpression: PossiblyEvaluatedValue<string>;
 
     constructor(value: unknown, names: Array<string>, type: string, context: ProgramConfigurationContext) {
         this.value = value;
@@ -170,6 +174,7 @@ class PatternConstantBinder implements UniformBinder {
     context: ProgramConfigurationContext;
     checkUseTheme: boolean;
     ignoreLut: boolean;
+    lutExpression: PossiblyEvaluatedValue<string>;
 
     constructor(value: unknown, names: Array<string>) {
         this.uniformNames = names.map(name => `u_${name}`);
@@ -197,18 +202,19 @@ class PatternConstantBinder implements UniformBinder {
 }
 
 class SourceExpressionBinder implements AttributeBinder {
-    expression: SourceExpression;
+    expression: PossiblyEvaluatedValue<any> | SourceExpression;
     type: string;
     maxValue: number;
     context: ProgramConfigurationContext;
     checkUseTheme: boolean;
     ignoreLut: boolean;
+    lutExpression: PossiblyEvaluatedValue<string>;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
     paintVertexBuffer: VertexBuffer | null | undefined;
 
-    constructor(expression: SourceExpression, names: Array<string>, type: string, PaintVertexArray: Class<StructArray>) {
+    constructor(expression: PossiblyEvaluatedValue<any>, names: Array<string>, type: string, PaintVertexArray: Class<StructArray>) {
         this.expression = expression;
         this.type = type;
         this.maxValue = 0;
@@ -221,16 +227,21 @@ class SourceExpressionBinder implements AttributeBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
+    populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
         const start = this.paintVertexArray.length;
         assert(Array.isArray(availableImages));
-        const value = this.expression.evaluate(new EvaluationParameters(0, {brightness}), feature, {}, canonical, availableImages, formattedSection);
+
+        const value = (this.expression.kind === 'composite' || this.expression.kind === 'source') ? this.expression.evaluate(new EvaluationParameters(0, {brightness}), feature, {}, canonical, availableImages, formattedSection) : this.expression.kind === 'constant' && this.expression.value;
+        if (this.lutExpression && (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source')) this.ignoreLut = this.lutExpression.evaluate(new EvaluationParameters(0, {brightness}), feature, {}, canonical, availableImages, formattedSection) === 'none';
+
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, value, this.context);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, spritePositions: SpritePositions, brightness: number) {
-        const value = this.expression.evaluate({zoom: 0, brightness}, feature, featureState, undefined, availableImages);
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], spritePositions: SpritePositions, brightness: number) {
+        const value = (this.expression.kind === 'composite' || this.expression.kind === 'source') ? this.expression.evaluate({zoom: 0, brightness}, feature, featureState, undefined, availableImages) : this.expression.kind === 'constant' && this.expression.value;
+        if (this.lutExpression && (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source'))  this.ignoreLut = this.lutExpression.evaluate({zoom: 0, brightness}, feature, featureState, undefined, availableImages) === 'none';
+
         this._setPaintValue(start, end, value, this.context);
     }
 
@@ -253,7 +264,10 @@ class SourceExpressionBinder implements AttributeBinder {
             if (this.paintVertexBuffer && this.paintVertexBuffer.buffer) {
                 this.paintVertexBuffer.updateData(this.paintVertexArray);
             } else {
-                this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent || !this.expression.isLightConstant);
+                const dynamicDraw = (this.lutExpression && this.lutExpression.kind !== 'constant' && (this.lutExpression.isStateDependent || !this.lutExpression.isLightConstant)) ||
+                                    (this.expression.kind !== 'constant' && (this.expression.isStateDependent || !this.expression.isLightConstant));
+
+                this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, dynamicDraw);
             }
         }
     }
@@ -274,6 +288,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     maxValue: number;
     checkUseTheme: boolean;
     ignoreLut: boolean;
+    lutExpression: PossiblyEvaluatedValue<string>;
 
     paintVertexArray: StructArray;
     paintVertexAttributes: Array<StructArrayMember>;
@@ -295,17 +310,23 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
+    populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
         const min = this.expression.evaluate(new EvaluationParameters(this.context.zoom, {brightness}), feature, {}, canonical, availableImages, formattedSection);
         const max = this.expression.evaluate(new EvaluationParameters(this.context.zoom + 1, {brightness}), feature, {}, canonical, availableImages, formattedSection);
+        if (this.lutExpression && (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source'))
+            this.ignoreLut = this.lutExpression.evaluate(new EvaluationParameters(this.context.zoom, {brightness}), feature, {}, canonical, availableImages, formattedSection)  === 'none';
+
         const start = this.paintVertexArray.length;
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, min, max, this.context);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, spritePositions: SpritePositions, brightness: number) {
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], spritePositions: SpritePositions, brightness: number) {
         const min = this.expression.evaluate({zoom: this.context.zoom, brightness}, feature, featureState, undefined, availableImages);
         const max = this.expression.evaluate({zoom: this.context.zoom + 1, brightness}, feature, featureState, undefined, availableImages);
+        if (this.lutExpression && (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source'))
+            this.ignoreLut = this.lutExpression.evaluate({zoom: this.context.zoom, brightness}, feature, featureState, undefined, availableImages)  === 'none';
+
         this._setPaintValue(start, end, min, max, this.context);
     }
 
@@ -363,6 +384,7 @@ class PatternCompositeBinder implements AttributeBinder {
     context: ProgramConfigurationContext;
     checkUseTheme: boolean;
     ignoreLut: boolean;
+    lutExpression: PossiblyEvaluatedValue<string>;
 
     paintVertexArray: StructArray;
     paintVertexBuffer: VertexBuffer | null | undefined;
@@ -380,13 +402,13 @@ class PatternCompositeBinder implements AttributeBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(length: number, feature: Feature, imagePositions: SpritePositions, _availableImages: Array<string>) {
+    populatePaintArray(length: number, feature: Feature, imagePositions: SpritePositions, _availableImages: ImageId[]) {
         const start = this.paintVertexArray.length;
         this.paintVertexArray.resize(length);
         this._setPaintValues(start, length, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: Array<string>, imagePositions: SpritePositions, _?: number | null) {
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], imagePositions: SpritePositions, _?: number | null) {
         this._setPaintValues(start, end, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
@@ -464,7 +486,8 @@ export default class ProgramConfiguration {
             const type = value.property.specification.type;
             const useIntegerZoom = !!value.property.useIntegerZoom;
             const isPattern = property === 'line-dasharray' || property.endsWith('pattern');
-            const sourceException = property === 'line-dasharray' && (layer.layout as any).get('line-cap').value.kind !== 'constant';
+            const sourceException = (property === 'line-dasharray' && (layer.layout as any).get('line-cap').value.kind !== 'constant') ||
+            (valueUseTheme && valueUseTheme.value.kind !== 'constant');
 
             if (expression.kind === 'constant' && !sourceException) {
                 this.binders[property] = isPattern ?
@@ -477,7 +500,6 @@ export default class ProgramConfiguration {
                 this.binders[property] = isPattern ?
                 // @ts-expect-error - TS2345 - Argument of type 'PossiblyEvaluatedValue<any>' is not assignable to parameter of type 'CompositeExpression'.
                     new PatternCompositeBinder(expression, names, type, StructArrayLayout, layer.id) :
-                // @ts-expect-error - TS2345 - Argument of type 'PossiblyEvaluatedValue<any>' is not assignable to parameter of type 'SourceExpression'.
                     new SourceExpressionBinder(expression, names, type, StructArrayLayout);
 
                 keys.push(`/a_${property}`);
@@ -490,7 +512,8 @@ export default class ProgramConfiguration {
             }
             if (valueUseTheme) {
                 this.binders[property].ignoreLut = valueUseTheme.constantOr('default') === 'none';//will be evaluated again
-
+                const expressionLUT = valueUseTheme.value;
+                this.binders[property].lutExpression = expressionLUT;
                 this.binders[property].checkUseTheme = true;
             }
         }
@@ -503,12 +526,15 @@ export default class ProgramConfiguration {
         return binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ? binder.maxValue : 0;
     }
 
-    populatePaintArrays(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: Array<string>, canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
+    populatePaintArrays(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
         for (const property in this.binders) {
             const binder = this.binders[property];
             binder.context = this.context;
             if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder)
                 (binder as AttributeBinder).populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, brightness, formattedSection);
+            else if (binder.lutExpression) {
+                if (binder instanceof ConstantBinder && binder.lutExpression && (binder.lutExpression.kind === 'composite' || binder.lutExpression.kind === 'source')) binder.ignoreLut = binder.lutExpression.evaluate(new EvaluationParameters(0, {brightness}), feature, {}, canonical, availableImages, formattedSection) === 'none';
+            }
         }
     }
     setConstantPatternPositions(posTo: SpritePosition) {
@@ -525,7 +551,7 @@ export default class ProgramConfiguration {
         featureMapWithoutIds: FeaturePositionMap,
         vtLayer: VectorTileLayer,
         layer: TypedStyleLayer,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
         imagePositions: SpritePositions,
         isBrightnessChanged: boolean,
         brightness: number,
@@ -538,8 +564,9 @@ export default class ProgramConfiguration {
         for (const property in this.binders) {
             const binder = this.binders[property];
             binder.context = this.context;
+            const isExpressionNotConst = (binder as any).expression && (binder as any).expression.kind && (binder as any).expression.kind !== 'constant';
             if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||
-                 binder instanceof PatternCompositeBinder) && ((binder as any).expression.isStateDependent === true || (binder as any).expression.isLightConstant === false)) {
+                 binder instanceof PatternCompositeBinder) && isExpressionNotConst && ((binder as any).expression.isStateDependent === true || (binder as any).expression.isLightConstant === false)) {
                 //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                 // @ts-expect-error - TS2349 - This expression is not callable.
                 const value = layer.paint.get(property);
@@ -696,7 +723,7 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
         this._idlessCounter = 0;
     }
 
-    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: SpritePositions, availableImages: Array<string>, canonical: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
+    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: SpritePositions, availableImages: ImageId[], canonical: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
         for (const key in this.programConfigurations) {
             this.programConfigurations[key].populatePaintArrays(length, feature, imagePositions, availableImages, canonical, brightness, formattedSection);
         }
@@ -712,7 +739,7 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
         this.needsUpload = true;
     }
 
-    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: Array<string>, imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null) {
+    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: ImageId[], imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null) {
         for (const layer of layers) {
             this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, this._featureMapWithoutIds, vtLayer, layer, availableImages, imagePositions, isBrightnessChanged, brightness || 0) || this.needsUpload;
         }

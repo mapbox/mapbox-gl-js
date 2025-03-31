@@ -7,7 +7,8 @@ import browser from '../util/browser';
 
 import type {CanonicalTileID} from '../source/tile_id';
 import type {RGBAImage} from '../util/image';
-import type {DEMSourceEncoding} from '../source/worker_source';
+
+export type DEMSourceEncoding = 'mapbox' | 'terrarium';
 
 // DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
 // data can be populated either from a pngraw image tile or from serliazed data sent back from a worker. When data is initially

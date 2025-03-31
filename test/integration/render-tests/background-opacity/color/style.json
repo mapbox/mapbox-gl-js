@@ -7,7 +7,6 @@
     }
   },
   "sources": {},
-  "sprite": "local://sprites/sprite",
   "layers": [
     {
       "id": "background",

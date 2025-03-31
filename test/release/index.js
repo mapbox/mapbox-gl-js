@@ -132,6 +132,11 @@ const pages = [
         "url": "./custom-source.html"
     },
     {
+        "key": "landmark-icons",
+        "title": "Landmark Icons",
+        "url": "./landmark-icons.html"
+    },
+    {
         "key": "atmosphere",
         "title": "Atmosphere",
         "url": "./atmosphere.html"

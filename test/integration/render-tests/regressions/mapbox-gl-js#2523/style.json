@@ -20,14 +20,14 @@
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "background",
       "type": "background",
       "paint": {
-        "background-pattern": "cemetery_icon"
+        "background-pattern": "cemetery"
       }
     },
     {

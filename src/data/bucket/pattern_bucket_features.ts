@@ -5,32 +5,30 @@ import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion
 import type LineStyleLayer from '../../style/style_layer/line_style_layer';
 import type {
     BucketFeature,
-    PopulateParameters
+    PopulateParameters,
+    ImageDependenciesMap
 } from '../bucket';
-import type {ImageIdWithOptions} from '../../style-spec/expression/types/image_id_with_options';
 
 type PatternStyleLayers = Array<LineStyleLayer> | Array<FillStyleLayer> | Array<FillExtrusionStyleLayer>;
 
-function addPattern(
-    pattern: string | ResolvedImage,
-    patterns: Record<string, Array<ImageIdWithOptions>>
-): string | null {
+function addPattern(pattern: string | ResolvedImage, patterns: ImageDependenciesMap, pixelRatio: number = 1): string | null {
     if (!pattern) {
         return null;
     }
 
-    const patternId = typeof pattern === 'string' ? pattern : pattern.getPrimary().id;
+    const patternPrimary = typeof pattern === 'string' ? ResolvedImage.from(pattern).getPrimary() : pattern.getPrimary();
+    const patternId = patternPrimary.id.toString();
 
-    if (!patterns[patternId]) {
-        patterns[patternId] = [];
+    if (!patterns.has(patternId)) {
+        patterns.set(patternId, []);
     }
 
-    const patternPrimary = (ResolvedImage.from(pattern)).getPrimary();
-    patterns[patternId].push(patternPrimary);
-    return patternPrimary.serialize();
+    patternPrimary.scaleSelf(pixelRatio);
+    patterns.get(patternId).push(patternPrimary);
+    return patternPrimary.toString();
 }
 
-export function hasPattern(type: string, layers: PatternStyleLayers, options: PopulateParameters): boolean {
+export function hasPattern(type: string, layers: PatternStyleLayers, pixelRatio: number, options: PopulateParameters): boolean {
     const patterns = options.patternDependencies;
     let hasPattern = false;
 
@@ -44,7 +42,7 @@ export function hasPattern(type: string, layers: PatternStyleLayers, options: Po
 
         const constantPattern = patternProperty.constantOr(null);
 
-        if (addPattern(constantPattern, patterns)) {
+        if (addPattern(constantPattern, patterns, pixelRatio)) {
             hasPattern = true;
         }
     }
@@ -57,6 +55,7 @@ export function addPatternDependencies(
     layers: PatternStyleLayers,
     patternFeature: BucketFeature,
     zoom: number,
+    pixelRatio: number,
     options: PopulateParameters,
 ): BucketFeature {
     const patterns = options.patternDependencies;
@@ -69,7 +68,7 @@ export function addPatternDependencies(
             let pattern = patternPropertyValue.evaluate({zoom}, patternFeature, {}, options.availableImages);
             pattern = pattern && pattern.name ? pattern.name : pattern;
 
-            const patternSerialized: string | null = addPattern(pattern, patterns);
+            const patternSerialized: string | null = addPattern(pattern, patterns, pixelRatio);
 
             // save for layout
             if (patternSerialized) {

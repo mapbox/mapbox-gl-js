@@ -1,0 +1,18 @@
+[
+  {
+    "message": "iconsets.shields1: \"type\" is required",
+    "line": 4
+  },
+  {
+    "message": "iconsets.shields2: missing required property \"url\"",
+    "line": 7
+  },
+  {
+    "message": "iconsets.landmarks1: \"type\" is required",
+    "line": 10
+  },
+  {
+    "message": "iconsets.landmarks2: missing required property \"source\"",
+    "line": 13
+  }
+]

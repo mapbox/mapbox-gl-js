@@ -40,6 +40,7 @@ import type {Feature, SourceExpression, CompositeExpression} from '../../style-s
 import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {LUT} from "../../util/lut";
+import type {ImageId} from '../../style-spec/expression/types/image_id';
 
 let properties: {
     layout: Properties<LayoutProps>;
@@ -81,7 +82,7 @@ class SymbolStyleLayer extends StyleLayer {
         this.hasInitialOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
     }
 
-    override recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
 
         if (this.layout.get('icon-rotation-alignment') === 'auto') {
@@ -153,7 +154,7 @@ class SymbolStyleLayer extends StyleLayer {
         name: any,
         feature: Feature,
         canonical: CanonicalTileID,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
     ): string {
         const value = this.layout.get(name).evaluate(feature, {}, canonical, availableImages);
         const unevaluated = this._unevaluatedLayout._values[name];
@@ -178,26 +179,21 @@ class SymbolStyleLayer extends StyleLayer {
     }
 
     _setPaintOverrides() {
-        for (const overridable of getProperties().paint.overridableProperties) {
+        for (const overridable of getProperties().paint.overridableProperties as Array<keyof PaintProps>) {
             if (!SymbolStyleLayer.hasPaintOverride(this.layout, overridable)) {
                 continue;
             }
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'keyof PaintProps'.
-            const overriden = this.paint.get(overridable);
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'PossiblyEvaluatedPropertyValue<unknown>'.
+            const overriden = this.paint.get(overridable) as unknown as PossiblyEvaluatedPropertyValue<PaintProps>;
             const override = new FormatSectionOverride(overriden);
-            // @ts-expect-error - TS2339 - Property 'property' does not exist on type 'unknown'.
             const styleExpression = new StyleExpression(override, overriden.property.specification, this.scope, this.options);
             let expression = null;
             // eslint-disable-next-line no-warning-comments
             // TODO: check why were the `isLightConstant` values omitted from the construction of these expressions
-            // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'. | TS2339 - Property 'value' does not exist on type 'unknown'.
             if (overriden.value.kind === 'constant' || overriden.value.kind === 'source') {
                 expression = (new ZoomConstantExpression('source', styleExpression) as SourceExpression);
             } else {
                 expression = (new ZoomDependentExpression('composite',
                                                           styleExpression,
-                                                          // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
                                                           overriden.value.zoomStops,
                                                           // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
                                                           overriden.value._interpolationType) as CompositeExpression);
@@ -205,7 +201,6 @@ class SymbolStyleLayer extends StyleLayer {
             // @ts-expect-error - TS2339 - Property 'property' does not exist on type 'unknown'.
             this.paint._values[overridable] = new PossiblyEvaluatedPropertyValue(overriden.property,
                                                                                  expression,
-                                                                                 // @ts-expect-error - TS2339 - Property 'parameters' does not exist on type 'unknown'.
                                                                                  overriden.parameters);
         }
     }

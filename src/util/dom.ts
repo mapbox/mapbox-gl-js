@@ -72,11 +72,9 @@ export function touchPos(el: HTMLElement, touches: TouchList): Array<Point> {
 
 export function mouseButton(e: MouseEvent): number {
     assert(e.type === 'mousedown' || e.type === 'mouseup');
-    // @ts-expect-error - TS2339 - Property 'InstallTrigger' does not exist on type 'Window & typeof globalThis'.
-    if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
-        window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
+    if (/firefox/i.test(navigator.userAgent) && /macintosh/i.test(navigator.userAgent) && e.button === 2 && e.ctrlKey) {
         // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
-        // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
+        // Firefox on Mac (detected by user agent) determines e.button = 2 when
         // using Control + left click
         return 0;
     }

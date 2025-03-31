@@ -2,6 +2,39 @@
   {
     "geometry": {
       "coordinates": [
+        -122.39314824342728,
+        37.79250507149591
+      ],
+      "type": "Point"
+    },
+    "id": 441062131,
+    "properties": {
+      "localrank": 1,
+      "maki": "marker",
+      "name": "Rincon Center",
+      "name_ar": "Rincon Center",
+      "name_de": "Rincon Center",
+      "name_en": "Rincon Center",
+      "name_es": "Rincon Center",
+      "name_fr": "Rincon Center",
+      "name_ja": "Rincon Center",
+      "name_ko": "Rincon Center",
+      "name_pt": "Rincon Center",
+      "name_ru": "Rincon Center",
+      "name_zh": "Rincon Center",
+      "name_zh-Hans": "Rincon Center",
+      "ref": "",
+      "scalerank": 3,
+      "type": "Yes"
+    },
+    "source": "composite",
+    "sourceLayer": "poi_label",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
         -122.39312142133713,
         37.79248811488655
       ],
@@ -20,7 +53,7 @@
   {
     "geometry": {
       "coordinates": [
-          [
+        [
           [
             -122.39317238330841,
             37.79305827874144

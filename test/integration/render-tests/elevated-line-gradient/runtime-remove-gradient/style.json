@@ -35,7 +35,6 @@
       "lineMetrics": true
     }
   },
-  "sprite": "local://sprites/emerald",
   "layers": [
     {
       "id": "line",

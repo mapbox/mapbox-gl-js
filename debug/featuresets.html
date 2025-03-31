@@ -148,9 +148,6 @@ map.addInteraction('building-mouseleave', {
     target: {featuresetId: 'buildings', importId: 'basemap'},
     handler: (e) => {
         map.setFeatureState(e.feature, {highlight: false});
-
-        // Propagate the event so that the handler is called for each feature.
-        return false;
     }
 });
 

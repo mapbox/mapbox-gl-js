@@ -1,3 +1,57 @@
+## 3.11.0-beta.2
+
+### Features and improvements ✨
+- Add `at-interpolated` expression as the interpolated counterpart to the `at` expression.
+- Add `altitude` marker property to adjust elevation. (h/t [@yangtanyu](https://github.com/yangtanyu)) [#13335](https://github.com/mapbox/mapbox-gl-js/pull/13335).
+- Add `getCooperativeGestures` and `setCooperativeGestures` map methods to control cooperative gestures logic after the map is initialized.
+- Add `getGlyphsUrl` and `setGlyphsUrl` map methods to manage the glyphs endpoint URL.
+- Add `pitchRotateKey` map option to override the modifier key for rotate and pitch handlers.
+- Add filtering support for model layers.
+
+### Bug fixes 🐞
+- Hide labels with unreadable angles.
+- Fix rendering of vector image in text on HiDPI screens.
+- Ensure Katakana and CJK symbols render correctly in vertical writing mode.
+- Fix popup position update on map move. (h/t [@ThugRaven](https://github.com/ThugRaven)) [#13412](https://github.com/mapbox/mapbox-gl-js/pull/13412)
+- Fix rendering of self-intersecting elevated lines.
+- Prevent line pattern from turning black at certain zoom levels when shadows are enabled.
+
+## 3.10.0
+
+### Features and improvements ✨
+
+- Add support for data-driven `*-use-theme` properties.
+- Improve rendering of complex SVG clip paths for vector icons.
+
+### Bug fixes 🐞
+- Fix some mouse gestures for Firefox 136 and later on Mac OS.
+- Fix issue where the close popup button was hidden from screen readers.
+- Fix updating of schema config values of imported styles.
+- Fix line placement symbol disappearing issue during transition from globe.
+- Fix `queryRenderedFeatures` not working on duplicated model layers.
+- Fix in-place update for SDF image.
+- Fix LUT not being applied to in-place updated image.
+- Fix various issues with using `mouseenter` and `mouseleave` with Interactions API.
+- Fix error with interactible map elements during interaction with a map that wasn't fully loaded.
+- Fix rendering of elevated and non-elevated lines on the same layer.
+- Fix pixel ratio handling for patterns with vector icons.
+- Fix positioning of vector icons with modified `icon-size`.
+- Fix a blank map issue after WebGL context loss.
+- Fix loss of precision for close to camera models.
+- Fix transparent models not being culled when terrain is enabled.
+
+## 3.9.4
+- Fix vector icons rendering with stretch areas on high DPI devices.
+
+## 3.9.3
+- Fix issues when updating feature state on symbol layers.
+- Fix canvas source not rendering correctly after a canvas resize.
+
+## 3.9.2
+- Fix display of user-rendered images.
+- Fix a broken build issue in specific bundling configurations using Vite or ESBuild.
+- Fix console error issue that sometimes occur during map initialization.
+
 ## 3.9.1
 
 - Fix an error when using background patterns on styles with vector icons enabled.

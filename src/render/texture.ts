@@ -65,8 +65,8 @@ class Texture {
         const {gl} = context;
         const {x, y} = options && options.position ? options.position : {x: 0, y: 0};
 
-        const width = Math.max(x + srcWidth, this.size ? this.size[0] : 0);
-        const height = Math.max(y + srcHeight, this.size ? this.size[1] : 0);
+        const width = x + srcWidth;
+        const height = y + srcHeight;
 
         if (this.size && (this.size[0] !== width || this.size[1] !== height)) {
             gl.bindTexture(gl.TEXTURE_2D, null);

@@ -5,12 +5,12 @@
       "width": 64,
       "height": 64,
       "operations": [
-        ["setPaintProperty", "line", "line-pattern", "zoo_icon"],
+        ["setPaintProperty", "line", "line-pattern", "zoo"],
         ["wait"]
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "sources": {
     "geojson": {
       "type": "geojson",
@@ -35,7 +35,7 @@
       "type": "line",
       "source": "geojson",
       "paint": {
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-width": 20
       }
     }

@@ -219,6 +219,8 @@ class Transform {
 
     _orthographicProjectionAtLowPitch: boolean;
 
+    _allowWorldUnderZoom: boolean;
+
     constructor(minZoom?: number | null, maxZoom?: number | null, minPitch?: number | null, maxPitch?: number | null, renderWorldCopies?: boolean, projection?: ProjectionSpecification | null, bounds?: LngLatBounds | null) {
         this.tileSize = 512; // constant
 
@@ -262,10 +264,12 @@ class Transform {
         this._horizonShift = 0.1;
 
         this._orthographicProjectionAtLowPitch = false;
+
+        this._allowWorldUnderZoom = false;
     }
 
     clone(): Transform {
-        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.getProjection());
+        const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies, this.getProjection(), this.maxBounds);
         clone._elevation = this._elevation;
         clone._centerAltitude = this._centerAltitude;
         clone._centerAltitudeValidForExaggeration = this._centerAltitudeValidForExaggeration;
@@ -290,6 +294,7 @@ class Transform {
         clone._calcMatrices();
         clone.freezeTileCoverage = this.freezeTileCoverage;
         clone.frustumCorners = this.frustumCorners;
+        clone._allowWorldUnderZoom = this._allowWorldUnderZoom;
         return clone;
     }
 
@@ -1514,11 +1519,12 @@ class Transform {
      * This method is coupled with {@see pointLocation} in 3D mode to model map manipulation
      * using flat plane approach to keep constant elevation above ground.
      * @param {LngLat} lnglat location
+     * @param {number} altitude (optional) altitude above the map plane in meters.
      * @returns {Point} screen point
      * @private
      */
-    locationPoint(lnglat: LngLat): Point {
-        return this.projection.locationPoint(this, lnglat);
+    locationPoint(lnglat: LngLat, altitude?: number): Point {
+        return this.projection.locationPoint(this, lnglat, altitude);
     }
 
     /**
@@ -1526,11 +1532,12 @@ class Transform {
      * In 3D mode (when terrain is enabled) elevation is sampled for the point before
      * projecting it. In 2D mode, behaves the same locationPoint.
      * @param {LngLat} lnglat location
+     * @param {number} altitude (optional) altitude above the map plane in meters.
      * @returns {Point} screen point
      * @private
      */
-    locationPoint3D(lnglat: LngLat): Point {
-        return this.projection.locationPoint(this, lnglat, true);
+    locationPoint3D(lnglat: LngLat, altitude?: number): Point {
+        return this.projection.locationPoint(this, lnglat, altitude, true);
     }
 
     /**
@@ -1548,17 +1555,19 @@ class Transform {
      * In 3D mode (map with terrain) returns location of terrain raycast point.
      * In 2D mode, behaves the same as {@see pointLocation}.
      * @param {Point} p screen point
+     * @param {number} altitude (optional) altitude above the map plane in meters.
      * @returns {LngLat} lnglat location
      * @private
      */
-    pointLocation3D(p: Point): LngLat {
-        return this.coordinateLocation(this.pointCoordinate3D(p));
+    pointLocation3D(p: Point, altitude?: number): LngLat {
+        return this.coordinateLocation(this.pointCoordinate3D(p, altitude));
     }
 
     /**
      * Given a geographical lngLat, return an unrounded
      * coordinate that represents it at this transform's zoom level.
      * @param {LngLat} lngLat
+     * @param {number} altitude (optional) altitude above the map plane in meters.
      * @returns {Coordinate}
      * @private
      */
@@ -1672,14 +1681,15 @@ class Transform {
      * In 3D mode, raycast to terrain. In 2D mode, behaves the same as {@see pointCoordinate}.
      * For p above terrain, don't return point behind camera but clamp p.y at the top of terrain.
      * @param {Point} p top left origin screen point, in pixels.
+     * @param {number} altitude (optional) altitude above the map plane in meters.
      * @private
      */
-    pointCoordinate3D(p: Point): MercatorCoordinate {
-        if (!this.elevation) return this.pointCoordinate(p);
+    pointCoordinate3D(p: Point, altitude?: number): MercatorCoordinate {
+        if (!this.elevation) return this.pointCoordinate(p, altitude);
         let raycast: vec3 | null | undefined = this.projection.pointCoordinate3D(this, p.x, p.y);
         if (raycast) return new MercatorCoordinate(raycast[0], raycast[1], raycast[2]);
         let start = 0, end = this.horizonLineFromTop();
-        if (p.y > end) return this.pointCoordinate(p); // holes between tiles below horizon line or below bottom.
+        if (p.y > end) return this.pointCoordinate(p, altitude); // holes between tiles below horizon line or below bottom.
         const samples = 10;
         const threshold = 0.02 * end;
         const r = p.clone();
@@ -2184,10 +2194,10 @@ class Transform {
             }
         }
 
-        if (x2 !== x || y2 !== y) { // pan the map to fit the range
+        if ((x2 !== x || y2 !== y) && !this._allowWorldUnderZoom) { // pan the map to fit the range
             this.center = this.unproject(new Point(x2, y2));
         }
-        if (s) { // scale the map to fit the range
+        if (s && !this._allowWorldUnderZoom) { // scale the map to fit the range
             this.zoom += this.scaleZoom(s);
         }
 

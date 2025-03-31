@@ -8,6 +8,7 @@ import type {LayoutProps, PaintProps} from './clip_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {LUT} from "../../util/lut";
+import type {ImageId} from '../../style-spec/expression/types/image_id';
 
 class ClipStyleLayer extends StyleLayer {
     override _unevaluatedLayout: Layout<LayoutProps>;
@@ -22,7 +23,7 @@ class ClipStyleLayer extends StyleLayer {
         super(layer, properties, scope, lut, options);
     }
 
-    override recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
     }
 
@@ -30,11 +31,7 @@ class ClipStyleLayer extends StyleLayer {
         return new ClipBucket(parameters);
     }
 
-    override isTileClipped(): boolean {
-        return true;
-    }
-
-    override is3D(): boolean {
+    override is3D(terrainEnabled?: boolean): boolean {
         return true;
     }
 }

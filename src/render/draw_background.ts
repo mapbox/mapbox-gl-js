@@ -8,6 +8,7 @@ import {
 } from './program/background_program';
 import {OverscaledTileID} from '../source/tile_id';
 import {mat4} from 'gl-matrix';
+import {ImageId} from '../style-spec/expression/types/image_id';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -36,7 +37,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         if (image === null) {
             return;
         }
-        patternPosition = painter.imageManager.getPattern(image.toString(), layer.scope, painter.style.getLut(layer.scope));
+        patternPosition = painter.imageManager.getPattern(ImageId.from(image.toString()), layer.scope, painter.style.getLut(layer.scope));
         if (!patternPosition) {
             return;
         }
@@ -73,7 +74,6 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
             backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
             backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(ignoreLut ? null : layer.lut));
 
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, painter.viewportBuffer,
             painter.quadTriangleIndexBuffer, painter.viewportSegments);
@@ -99,7 +99,6 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, tileBoundsBuffer,
                 tileBoundsIndexBuffer, tileBoundsSegments);

@@ -1,9 +1,7 @@
 // @ts-nocheck
-import {describe, test, expect} from '../../util/vitest';
-
-import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util';
-
 import Point from '@mapbox/point-geometry';
+import {describe, test, expect} from '../../util/vitest';
+import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util';
 
 const EPSILON = 1e-8;
 
@@ -206,11 +204,6 @@ describe('util', () => {
             expect(callback instanceof Function).toBeTruthy();
             callback(null, 0);
         }, () => {});
-    });
-
-    test('endsWith', () => {
-        expect(endsWith('mapbox', 'box')).toBeTruthy();
-        expect(endsWith('mapbox', 'map')).toBeFalsy();
     });
 
     test('mapObject', () => {

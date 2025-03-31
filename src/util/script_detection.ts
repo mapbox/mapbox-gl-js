@@ -253,6 +253,50 @@ export function charHasNeutralVerticalOrientation(char: number): boolean {
 }
 
 /**
+ * Returns true if the given Unicode codepoint should be drawn rotated when the line
+ * is oriented vertically. These codepoints have a Neutral Vertical Orientation and
+ * will return true when checked with the `hasNeutralVerticalOrientation` function.
+ *
+ *  This check currently covers only a limited set of Unicode codepoints but can be
+ *  extended in the future if needed. The decision to rotate a character depends on
+ *  regional conventions and the intended usage. Determining whether glyph rotation
+ * is necessary—and selecting the appropriate vertical glyph—requires consideration
+ * of these conventions.
+ *
+ * Based on https://www.unicode.org/Public/vertical/revision-17/VerticalOrientation-17.txt
+ *
+ * Currently, this check only covers CJK Symbols and Punctuation, as well as Katakana.
+ * For characters with a `Tr` (Transformed typographically, with fallback to Rotated) Vertical Orientation, the final
+ * decision follows web rendering conventions.
+ *
+ * In general, characters with `R` (Rotated 90 degrees clockwise compared to the code charts) or `Tr` orientations can
+ * be rotated in vertical writing mode. However, regional conventions also influence whether rotation is appropriate.
+ * For now, only a limited set of characters is covered, but we can extend the range if needed.
+ */
+
+export function needsRotationInVerticalMode(char: number): boolean {
+    // CJK Symbols and Punctuation range
+    // Characters in the range U+3014 - U+301F (`u'〔'` to `u'〟'`) are all classified as `Tr`.
+    // However, only U+3014 - U+3017 (`u'〔'` to `u'〗'`) have dedicated vertical replacements.
+    // The vertical appearance of the remaining glyphs depends on fonts and regional conventions.
+
+    // A proposed update to vertical writing mode is outlined in:
+    // https://www.unicode.org/reports/tr50/tr50-32.html#vertical_alternates
+    // This proposal suggests changes that slightly differ from current web rendering behavior.
+    // Since it is still in draft status, we currently adhere to web rendering results.
+    // To ensure compatibility, only those commonly accepted as rotated in vertical mode are marked as such.
+    if (char === 0x3018 || char === 0x3019 || char === 0x301C) {
+        return true;
+    }
+
+    // Katakana range
+    if (char === 0x30FC || char === 0x30A0) {
+        return true;
+    }
+    return false;
+}
+
+/**
  * Returns true if the given Unicode codepoint identifies a character with
  * rotated orientation.
  *

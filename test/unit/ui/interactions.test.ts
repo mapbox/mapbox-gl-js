@@ -1,4 +1,5 @@
 import {vi, describe, test, afterEach, expect, waitFor, createMap} from '../../util/vitest';
+import {mockFetch} from '../../util/network';
 
 import type {Mock} from 'vitest';
 import type {Map} from '../../../src/ui/map';
@@ -562,5 +563,45 @@ describe('Interaction', () => {
                 state: {hover: false} // state after mouseleave
             });
         });
+    });
+
+    test('Interaction does not throw before style is loaded', () => {
+        mockFetch({
+            '/style.json': () => Promise.resolve(new Response(JSON.stringify(style)))
+        });
+
+        const map = createMap({
+            zoom: 10,
+            center: [0, 0],
+            style: '/style.json'
+        });
+
+        map.addInteraction('layer-click', {
+            type: 'click',
+            target: {layerId: 'circle-1'},
+            handler: vi.fn()
+        });
+
+        map.addInteraction('featureset-click', {
+            type: 'click',
+            target: {featuresetId: 'circle-2-featureset', importId: ''},
+            handler: vi.fn()
+        });
+
+        map.addInteraction('map-click', {
+            type: 'click',
+            handler: vi.fn()
+        });
+
+        map.addInteraction('poi-click', {
+            type: 'click',
+            target: {featuresetId: 'poi', importId: 'nested'},
+            handler: vi.fn()
+        });
+
+        expect(() => {
+            const point = map.project({lng: 0.0, lat: 0.0});
+            dispatchEvent(map, 'click', point);
+        }).not.toThrowError();
     });
 });

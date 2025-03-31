@@ -889,6 +889,25 @@ test('Marker can set and update rotation', () => {
     map.remove();
 });
 
+test('Marker can set and update altitude', () => {
+    const map = createMap({zoom: 16, pitch: 45});
+    const marker = new Marker({altitude: 100})
+        .setLngLat([0, 0])
+        .addTo(map);
+    map._domRenderTaskQueue.run();
+
+    expect(marker.getAltitude()).toEqual(100);
+    expect(marker.getElement().style.transform).toMatch("translate(256px, 192px");
+
+    marker.setAltitude(0);
+    map._domRenderTaskQueue.run();
+
+    expect(marker.getAltitude()).toEqual(0);
+    expect(marker.getElement().style.transform).toMatch("translate(256px, 256px");
+
+    map.remove();
+});
+
 test('Marker transforms rotation with the map', () => {
     const map = createMap();
     const marker = new Marker({rotationAlignment: 'map'})

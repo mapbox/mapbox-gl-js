@@ -7,7 +7,7 @@
     }
   },
   "zoom": 2,
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "sources": {
     "a": {
       "type": "geojson",
@@ -91,12 +91,12 @@
         "line-width": 10,
         "line-pattern": [
           "step", ["zoom"],
-          "generic_icon",
+          "information",
           2,
           ["match", ["string", ["get", "class"]],
-            "street", "generic_icon",
-            "path", "generic_metro",
-            "school_icon"
+            "street", "information",
+            "path", "car",
+            "school"
           ]
         ]
       }

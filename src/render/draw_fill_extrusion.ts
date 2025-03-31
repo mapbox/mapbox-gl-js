@@ -29,6 +29,7 @@ import {Frustum} from '../util/primitives';
 import {mat4} from "gl-matrix";
 import {getCutoffParams} from './cutoff';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
+import browser from '../util/browser';
 
 import type {vec3} from 'gl-matrix';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
@@ -40,7 +41,8 @@ import type Context from '../gl/context';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {
     GroundEffect,
-    PartData} from '../data/bucket/fill_extrusion_bucket';
+    PartData
+} from '../data/bucket/fill_extrusion_bucket';
 
 export default draw;
 
@@ -383,8 +385,8 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         const constantPattern = patternProperty.constantOr(null);
         if (constantPattern && tile.imageAtlas) {
             const atlas = tile.imageAtlas;
-            const patternImage = ResolvedImage.from(constantPattern);
-            const posTo = atlas.patternPositions[patternImage.getSerializedPrimary()];
+            const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(browser.devicePixelRatio);
+            const posTo = atlas.patternPositions.get(patternImage.toString());
             if (posTo) programConfiguration.setConstantPatternPositions(posTo);
         }
 

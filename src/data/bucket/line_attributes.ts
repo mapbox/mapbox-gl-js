@@ -9,7 +9,7 @@ export const lineLayoutAttributes: StructArrayLayout = createLayout([
 ], 4);
 
 export const lineZOffsetAttributes: StructArrayLayout = createLayout([
-    {name: 'a_z_offset_width', components: 2, type: 'Float32'}
+    {name: 'a_z_offset_width', components: 3, type: 'Float32'}
 ], 4);
 
 export const {members, size, alignment} = lineLayoutAttributes;

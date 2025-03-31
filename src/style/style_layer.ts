@@ -1,4 +1,4 @@
-import {endsWith, filterObject} from '../util/util';
+import {filterObject} from '../util/util';
 import {Evented} from '../util/evented';
 import {Layout, Transitionable, PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from './properties';
 import {supportsPropertyExpression} from '../style-spec/util/properties';
@@ -30,6 +30,7 @@ import type {CreateProgramParams} from '../render/painter';
 import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
 import type {LUT} from '../util/lut';
+import type {ImageId} from '../style-spec/expression/types/image_id';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -138,7 +139,7 @@ class StyleLayer extends Evented {
     onRemove(_map: MapboxMap): void {}
 
     isDraped(_sourceCache?: SourceCache): boolean {
-        return !this.is3D() && drapedLayers.has(this.type);
+        return !this.is3D(true) && drapedLayers.has(this.type);
     }
 
     getLayoutProperty<T extends keyof LayoutSpecification>(name: T): LayoutSpecification[T] | undefined {
@@ -179,7 +180,7 @@ class StyleLayer extends Evented {
     }
 
     getPaintProperty<T extends keyof PaintSpecification>(name: T): PaintSpecification[T] | undefined {
-        if (endsWith(name, TRANSITION_SUFFIX)) {
+        if (name.endsWith(TRANSITION_SUFFIX)) {
             return this._transitionablePaint.getTransition(name.slice(0, -TRANSITION_SUFFIX.length)) as PaintSpecification[T];
         } else {
             return this._transitionablePaint.getValue(name) as PaintSpecification[T];
@@ -190,7 +191,7 @@ class StyleLayer extends Evented {
         const paint = this._transitionablePaint;
         const specProps = paint._properties.properties;
 
-        if (endsWith(name, TRANSITION_SUFFIX)) {
+        if (name.endsWith(TRANSITION_SUFFIX)) {
             const propName = name.slice(0, -TRANSITION_SUFFIX.length);
             if (specProps[propName]) { // skip unrecognized properties
                 paint.setTransition(propName, (value as any) || undefined);
@@ -211,7 +212,7 @@ class StyleLayer extends Evented {
 
         const newValue = paint._values[name].value;
         const isDataDriven = newValue.isDataDriven();
-        const isPattern = endsWith(name, 'pattern') || name === 'line-dasharray';
+        const isPattern = name.endsWith('pattern') || name === 'line-dasharray';
 
         // if a pattern value is changed, we need to make sure the new icons get added to each tile's iconAtlas
         // so a call to _updateLayer is necessary, and we return true from this function so it gets called in
@@ -254,7 +255,7 @@ class StyleLayer extends Evented {
         return this._transitioningPaint.hasTransition();
     }
 
-    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         if (this._unevaluatedLayout) {
             (this as any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages);
         }
@@ -284,7 +285,10 @@ class StyleLayer extends Evented {
         });
     }
 
-    is3D(): boolean {
+    // Determines if the layer is 3D based on whether terrain is enabled.
+    // If 'terrainEnabled' parameter is not provided, then the function
+    // should return true if the layer is potentially 3D.
+    is3D(terrainEnabled?: boolean): boolean {
         return false;
     }
 

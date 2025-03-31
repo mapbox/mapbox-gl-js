@@ -10,7 +10,6 @@
   "zoom": 10.285773476374036,
   "pitch": 75.49999999999996,
   "bearing": -145.20000000000152,
-  "sprite": "local://sprites/emerald",
   "lights": [
     {
       "type": "ambient",
@@ -101,7 +100,7 @@
         "line-join": "none",
         "line-z-offset": [
           "+",
-          ["at", ["*", [ "line-progress" ], 1], ["get", "elevation"]], 
+          ["at-interpolated", ["*", [ "line-progress" ], 1], ["get", "elevation"]],
           900
         ],
         "line-cross-slope": 0,

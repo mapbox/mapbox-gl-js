@@ -5,9 +5,10 @@ import Scheduler from './scheduler';
 import type {Transferable} from '../types/transferable';
 import type {Cancelable} from '../types/cancelable';
 import type {Callback} from '../types/callback';
+import type {TaskMetadata} from './scheduler';
 import '../types/worker';
 
-type ActorCallback = Callback<any> & {metadata?: any};
+type ActorCallback = Callback<unknown> & {metadata?: TaskMetadata};
 
 /**
  * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)
@@ -142,8 +143,7 @@ class Actor {
             if (callback) {
                 // If we get a response, but don't have a callback, the request was canceled.
                 if (task.error) {
-                    // @ts-ignore
-                    callback(deserialize(task.error));
+                    callback(deserialize(task.error) as Error);
                 } else {
                     callback(null, deserialize(task.data));
                 }

@@ -14,7 +14,7 @@
     -74.522,
     39.92
   ],
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "zoom": 7,
   "sources": {
     "us-counties": {
@@ -33,7 +33,7 @@
       "source": "us-counties",
       "source-layer": "counties",
       "paint": {
-        "fill-pattern": "cemetery_icon"
+        "fill-pattern": "cemetery"
       },
       "interactive": true
     }

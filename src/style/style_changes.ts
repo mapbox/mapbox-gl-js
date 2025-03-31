@@ -1,4 +1,7 @@
+import {ImageId} from '../style-spec/expression/types/image_id';
+
 import type StyleLayer from './style_layer';
+import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 
 /**
  * Class for tracking style changes by scope, shared between all style instances.
@@ -14,7 +17,7 @@ class StyleChanges {
         };
     };
     _updatedPaintProps: Set<string>;
-    _updatedImages: Set<string>;
+    _updatedImages: Set<StringifiedImageId>;
     _updatedSourceCaches: {
         [_: string]: 'clear' | 'reload';
     };
@@ -149,16 +152,16 @@ class StyleChanges {
         this.setDirty();
     }
 
-    getUpdatedImages(): Array<string> {
+    getUpdatedImages(): StringifiedImageId[] {
         return Array.from(this._updatedImages.values());
     }
 
     /**
      * Mark an image as having changes.
-     * @param {string} id
+     * @param {ImageId} id
      */
-    updateImage(id: string) {
-        this._updatedImages.add(id);
+    updateImage(id: ImageId) {
+        this._updatedImages.add(ImageId.toString(id));
         this.setDirty();
     }
 

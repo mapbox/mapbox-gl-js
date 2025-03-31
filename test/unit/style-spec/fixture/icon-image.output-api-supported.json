@@ -1,0 +1,41 @@
+[
+  {
+    "message": "layers[0].layout.icon-image: Expected two or more arguments.",
+    "line": 36
+  },
+  {
+    "message": "layers[6].layout.icon-image[2]: Image options \"params\" should be an object",
+    "line": 102
+  },
+  {
+    "message": "layers[7].layout.icon-image[2]: Image options \"iconset\" should be an object",
+    "line": 114
+  },
+  {
+    "message": "layers[8].layout.icon-image[2]: Image options \"iconset\" should have an \"id\" property",
+    "line": 126
+  },
+  {
+    "message": "layers[10].layout.icon-image[2]: Expected string but found array.",
+    "line": 150
+  },
+  {
+    "message": "layers[10].layout.icon-image: Secondary image variant is not a string.",
+    "line": 150
+  },
+  {
+    "message": "glyphs: Styles must reference glyphs hosted by Mapbox",
+    "line": 29
+  },
+  {
+    "message": "source.data: Unsupported property \"data\"",
+    "line": 6
+  },
+  {
+    "message": "sources[0].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]",
+    "line": 5
+  },
+  {
+    "message": "sources[0].url: Expected a valid Mapbox tileset url"
+  }
+]

@@ -4,9 +4,9 @@ import {PerformanceUtils} from './performance';
 
 import type {Cancelable} from '../types/cancelable';
 
-type TaskMetadata = {
+export type TaskMetadata = {
     type: 'message' | 'maybePrepare' | 'parseTile';
-    isSymbolTile: boolean | null | undefined;
+    isSymbolTile?: boolean;
     zoom?: number;
 };
 

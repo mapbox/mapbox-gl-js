@@ -3,7 +3,9 @@
   "metadata": {
     "test": {
       "height": 128,
-      "width": 128
+      "width": 128,
+      "pixelRatio": 2,
+      "allowed": 0.00019
     }
   },
   "center": [ 0, 0 ],
@@ -41,7 +43,7 @@
     }
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "multiline",
@@ -49,8 +51,8 @@
       "source": "multiline",
       "layout": {
         "text-max-width": 4,
-        "text-field": ["format", "London", ["image", "london-underground.national-rail"],
-                                 "Berlin", ["image", "s-bahn.u-bahn"]],
+        "text-field": ["format", "London", ["image", "gb-national-rail.london-overground"],
+                                 "Berlin", ["image", "de-s-bahn.de-u-bahn"]],
         "text-font": [
           "Open Sans Semibold",
           "Arial Unicode MS Bold"
@@ -63,8 +65,8 @@
       "source": "multiline_with_scale",
       "layout": {
         "text-max-width": 8,
-        "text-field": ["format", "Paris", ["image", "rer.transilien"],
-                                 "USA", ["image", "interstate_1"]],
+        "text-field": ["format", "Paris", ["image", "paris-rer.paris-transilien"],
+                                 "USA", ["image", "us-interstate-4"]],
         "text-font": [
           "Open Sans Semibold",
           "Arial Unicode MS Bold"

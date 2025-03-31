@@ -35,6 +35,7 @@ import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../types/tile_id';
 import type {FeatureDistanceData} from '../feature_filter/index';
 import type {ConfigOptions} from '../types/config_options';
+import type {ImageId} from './types/image_id';
 
 export interface Feature {
     readonly type: 0 | 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
@@ -88,7 +89,7 @@ export class StyleExpression {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
         featureTileCoord?: Point,
         featureDistanceData?: FeatureDistanceData,
@@ -110,7 +111,7 @@ export class StyleExpression {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
         featureTileCoord?: Point,
         featureDistanceData?: FeatureDistanceData,
@@ -202,7 +203,7 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
@@ -213,7 +214,7 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ): any {
         return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
@@ -247,7 +248,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
@@ -258,7 +259,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ): any {
         return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
@@ -281,7 +282,7 @@ export type ConstantExpression = {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ) => any;
 };
 
@@ -296,7 +297,7 @@ export type SourceExpression = {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ) => any;
 };
@@ -310,7 +311,7 @@ export type CameraExpression = {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
     ) => any;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;
     zoomStops: Array<number>;
@@ -328,7 +329,7 @@ export interface CompositeExpression {
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
-        availableImages?: Array<string>,
+        availableImages?: ImageId[],
         formattedSection?: FormattedSection,
     ) => any;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;
@@ -339,19 +340,16 @@ export interface CompositeExpression {
 export type StylePropertyExpression = ConstantExpression | SourceExpression | CameraExpression | CompositeExpression;
 
 export function createPropertyExpression(
-    expression: unknown,
+    expression: any,
     propertySpec: StylePropertySpecification,
     scope?: string | null,
     options?: ConfigOptions | null,
 ): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, scope, options);
-    // @ts-expect-error - TS2339 - Property 'result' does not exist on type 'unknown'.
     if (expression.result === 'error') {
-        // @ts-expect-error - TS2322 - Type 'unknown' is not assignable to type 'Result<StylePropertyExpression, ParsingError[]>'.
         return expression;
     }
 
-    // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
     const parsed = expression.value.expression;
 
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
@@ -386,18 +384,14 @@ export function createPropertyExpression(
 
     if (!zoomCurve) {
         return success((isFeatureConstant && isLineProgressConstant) ?
-        // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
             (new ZoomConstantExpression('constant', expression.value, isLightConstant, isLineProgressConstant) as ConstantExpression) :
-        // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
             (new ZoomConstantExpression('source', expression.value, isLightConstant, isLineProgressConstant) as SourceExpression));
     }
 
     const interpolationType = zoomCurve instanceof Interpolate ? zoomCurve.interpolation : undefined;
 
     return success((isFeatureConstant && isLineProgressConstant) ?
-    // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
         (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CameraExpression) :
-    // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
         (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CompositeExpression));
 }
 

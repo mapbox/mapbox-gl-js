@@ -17,7 +17,9 @@ import type {ProjectionSpecification} from '../style-spec/types';
 import type {VectorTileFeature, VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../3d-style/util/conflation';
 import type {LUT} from "../util/lut";
-import type {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
+import type {ImageVariant} from '../style-spec/expression/types/image_variant';
+import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature';
+import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
 
 export type BucketParameters<Layer extends TypedStyleLayer> = {
     index: number;
@@ -34,15 +36,20 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     tessellationStep: number | null | undefined;
 };
 
+export type ImageDependenciesMap = Map<StringifiedImageId, Array<ImageVariant>>;
+
+export type GlyphDependencies = Record<string, Record<number, boolean>>;
+
 export type PopulateParameters = {
     featureIndex: FeatureIndex;
-    iconDependencies: Record<string, Array<ImageIdWithOptions>>;
-    patternDependencies: Record<string, Array<ImageIdWithOptions>>;
-    glyphDependencies: Record<any, any>;
-    availableImages: Array<string>;
+    iconDependencies: ImageDependenciesMap;
+    patternDependencies: ImageDependenciesMap;
+    glyphDependencies: GlyphDependencies;
+    availableImages: ImageId[];
     lineAtlas: LineAtlas;
     brightness: number | null | undefined;
     scaleFactor: number;
+    elevationFeatures: ElevationFeature[] | undefined;
 };
 
 export type IndexedFeature = {
@@ -59,9 +66,7 @@ export type BucketFeature = {
     properties: any;
     type: 0 | 1 | 2 | 3;
     id?: any;
-    readonly patterns: {
-        [_: string]: string;
-    };
+    readonly patterns: Record<string, string>;
     sortKey?: number;
 };
 
@@ -103,7 +108,7 @@ export interface Bucket {
     update: (
         states: FeatureStates,
         vtLayer: VectorTileLayer,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
         imagePositions: SpritePositions,
         layers: Array<TypedStyleLayer>,
         isBrightnessChanged: boolean,

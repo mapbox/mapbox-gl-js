@@ -12,7 +12,10 @@
   "zoom": 17,
   "pitch": 70,
   "fog": {
-    "range": [-0.5, 0.5],
+    "range": [
+      -0.5,
+      0.5
+    ],
     "color": "white"
   },
   "sources": {
@@ -24,7 +27,7 @@
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
@@ -40,7 +43,7 @@
       "source-layer": "road",
       "paint": {
         "line-width": 20,
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-opacity": 0.5
       }
     }

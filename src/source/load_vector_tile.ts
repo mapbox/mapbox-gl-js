@@ -3,7 +3,7 @@ import Protobuf from 'pbf';
 import {getArrayBuffer} from '../util/ajax';
 
 import type {Callback} from '../types/callback';
-import type {RequestedTileParameters} from './worker_source';
+import type {WorkerSourceVectorTileRequest} from './worker_source';
 import type Scheduler from '../util/scheduler';
 
 export type LoadVectorTileResult = {
@@ -23,7 +23,7 @@ export type LoadVectorTileResult = {
 export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | undefined>;
 
 export type AbortVectorData = () => void;
-export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => AbortVectorData | undefined;
+export type LoadVectorData = (params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback) => AbortVectorData | undefined;
 export class DedupedRequest {
     entries: {
         [key: string]: any;
@@ -83,7 +83,7 @@ export class DedupedRequest {
  * @private
  */
 export function loadVectorTile(
-    params: RequestedTileParameters,
+    params: WorkerSourceVectorTileRequest,
     callback: LoadVectorDataCallback,
     skipParse?: boolean,
 ): () => void {

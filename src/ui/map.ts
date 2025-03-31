@@ -45,6 +45,7 @@ import defaultLocale from './default_locale';
 import {TrackedParameters} from '../tracked-parameters/tracked_parameters';
 import {TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
 import {InteractionSet} from './interactions';
+import {ImageId} from '../style-spec/expression/types/image_id';
 
 import type Marker from '../ui/marker';
 import type Popup from '../ui/popup';
@@ -100,6 +101,7 @@ import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_
 import type {Callback} from '../types/callback';
 import type {Interaction} from './interactions';
 import type {SpriteFormat} from '../render/image_manager';
+import type {PitchRotateKey} from './handler_manager';
 
 export type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
 /* eslint-disable no-use-before-define */
@@ -209,6 +211,7 @@ export type MapOptions = {
     tessellationStep?: number;
     scaleFactor?: number;
     spriteFormat?: SpriteFormat;
+    pitchRotateKey?: PitchRotateKey;
 };
 
 const defaultMinZoom = -2;
@@ -218,7 +221,7 @@ const defaultMaxZoom = 22;
 const defaultMinPitch = 0;
 const defaultMaxPitch = 85;
 
-const defaultOptions: Omit<MapOptions, 'container'> = {
+const defaultOptions = {
     center: [0, 0],
     zoom: 0,
     bearing: 0,
@@ -269,7 +272,7 @@ const defaultOptions: Omit<MapOptions, 'container'> = {
     precompilePrograms: true,
     scaleFactor: 1.0,
     spriteFormat: 'auto',
-};
+} satisfies Omit<MapOptions, 'container'>;
 
 /**
  * The `Map` object represents the map on your page. It exposes methods
@@ -350,6 +353,7 @@ const defaultOptions: Omit<MapOptions, 'container'> = {
  * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
  * @param {boolean | Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TouchZoomRotateHandler#enable}.
  * @param {boolean | Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TouchPitchHandler}.
+ * @param {'Control' | 'Alt' | 'Shift' | 'Meta'} [options.pitchRotateKey='Control'] Allows overriding the keyboard modifier key used for pitch/rotate interactions from `Control` to another modifier key.
  * @param {boolean} [options.cooperativeGestures] If `true`, scroll zoom will require pressing the ctrl or ⌘ key while scrolling to zoom map, and touch pan will require using two fingers while panning to move the map. Touch pitch will require three fingers to activate if enabled.
  * @param {boolean} [options.trackResize=true] If `true`, the map will automatically resize when the browser window resizes.
  * @param {boolean} [options.performanceMetricsCollection=true] If `true`, mapbox-gl will collect and send performance metrics.
@@ -601,7 +605,7 @@ export class Map extends Camera {
             warnOnce('Antialiasing is disabled for this WebGL context to avoid browser bug: https://github.com/mapbox/mapbox-gl-js/issues/11609');
         }
 
-        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies);
+        const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, null, null);
         // @ts-expect-error - TS2345 - Argument of type 'MapOptions' is not assignable to parameter of type '{ bearingSnap: number; respectPrefersReducedMotion?: boolean; }'.
         super(transform, options);
 
@@ -654,7 +658,7 @@ export class Map extends Camera {
         this._requestManager = new RequestManager(options.transformRequest, options.accessToken, options.testMode);
         this._silenceAuthErrors = !!options.testMode;
         if (options.contextCreateOptions) {
-            this._contextCreateOptions = {...options.contextCreateOptions};
+            this._contextCreateOptions = Object.assign({}, options.contextCreateOptions);
         } else {
             this._contextCreateOptions = {};
         }
@@ -739,8 +743,7 @@ export class Map extends Camera {
         window.addEventListener(this._fullscreenchangeEvent, this._onWindowResize, false);
         window.addEventListener('visibilitychange', this._onVisibilityChange, false);
 
-        // @ts-expect-error - TS2345 - Argument of type 'MapOptions' is not assignable to parameter of type '{ interactive: boolean; pitchWithRotate: boolean; clickTolerance: number; bearingSnap: number; }'.
-        this.handlers = new HandlerManager(this, options);
+        this.handlers = new HandlerManager(this, options as MapOptions & typeof defaultOptions);
 
         this._localFontFamily = options.localFontFamily;
         this._localIdeographFontFamily = options.localIdeographFontFamily;
@@ -1516,13 +1519,14 @@ export class Map extends Camera {
      * the `x` and `y` components of the returned {@link Point} are set to Number.MAX_VALUE.
      *
      * @param {LngLatLike} lnglat The geographical location to project.
+     * @param {number} altitude (optional) altitude above the map plane in meters.
      * @returns {Point} The {@link Point} corresponding to `lnglat`, relative to the map's `container`.
      * @example
      * const coordinate = [-122.420679, 37.772537];
      * const point = map.project(coordinate);
      */
-    project(lnglat: LngLatLike): Point {
-        return this.transform.locationPoint3D(LngLat.convert(lnglat));
+    project(lnglat: LngLatLike, altitude?: number): Point {
+        return this.transform.locationPoint3D(LngLat.convert(lnglat), altitude);
     }
 
     /**
@@ -1532,6 +1536,7 @@ export class Map extends Camera {
      * to the point.
      *
      * @param {PointLike} point The pixel coordinates to unproject.
+     * @param {number} altitude (optional) altitude above the map plane in meters.
      * @returns {LngLat} The {@link LngLat} corresponding to `point`.
      * @example
      * map.on('click', (e) => {
@@ -1539,8 +1544,8 @@ export class Map extends Camera {
      *     const coordinate = map.unproject(e.point);
      * });
      */
-    unproject(point: PointLike): LngLat {
-        return this.transform.pointLocation3D(Point.convert(point));
+    unproject(point: PointLike, altitude?: number): LngLat {
+        return this.transform.pointLocation3D(Point.convert(point), altitude);
     }
 
     /** @section {Movement state} */
@@ -2208,6 +2213,32 @@ export class Map extends Camera {
         return this;
     }
 
+    /**
+     * Gets the state of `cooperativeGestures`.
+     *
+     * @returns {boolean} Returns the `cooperativeGestures` boolean.
+     * @example
+     * const cooperativeGesturesEnabled = map.getCooperativeGestures();
+     */
+    getCooperativeGestures(): boolean {
+        return this._cooperativeGestures;
+    }
+
+    /**
+     * Sets the state of `cooperativeGestures`.
+     *
+     * @param {boolean} enabled If `true`, scroll zoom will require pressing the ctrl or ⌘ key while scrolling to zoom map, and touch pan will require using two fingers while panning to move the map.
+     * Touch pitch will require three fingers to activate if enabled.
+     * @returns {Map} Returns itself to allow for method chaining.
+     *
+     * @example
+     * map.setCooperativeGestures(true);
+     */
+    setCooperativeGestures(enabled: boolean) {
+        this._cooperativeGestures = enabled;
+        return this;
+    }
+
     /** @section {Working with styles} */
 
     /**
@@ -2591,24 +2622,16 @@ export class Map extends Camera {
      */
     addImage(
         id: string,
-        image: HTMLImageElement | ImageBitmap | ImageData | StyleImageInterface | {
-            width: number;
-            height: number;
-            data: Uint8Array | Uint8ClampedArray;
-        },
-        {
-            pixelRatio = 1,
-            sdf = false,
-            stretchX,
-            stretchY,
-            content,
-        }: Partial<StyleImageMetadata> = {}) {
+        image: HTMLImageElement | ImageBitmap | ImageData | StyleImageInterface | {width: number; height: number; data: Uint8Array | Uint8ClampedArray},
+        {pixelRatio = 1, sdf = false, stretchX, stretchY, content}: Partial<StyleImageMetadata> = {}
+    ) {
         this._lazyInitEmptyStyle();
         const version = 0;
 
+        const imageId = ImageId.from(id);
         if (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) {
             const {width, height, data} = browser.getImageData(image);
-            this.style.addImage(id, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version, usvg: false});
+            this.style.addImage(imageId, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version, usvg: false});
         } else if (image.width === undefined || image.height === undefined) {
             this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
@@ -2618,7 +2641,7 @@ export class Map extends Camera {
             const userImage = (image as StyleImageInterface);
             const data = userImage.data;
 
-            this.style.addImage(id, {
+            this.style.addImage(imageId, {
                 data: new RGBAImage({width, height}, new Uint8Array(data)),
                 pixelRatio,
                 stretchX,
@@ -2658,15 +2681,14 @@ export class Map extends Camera {
      *     if (map.hasImage('cat')) map.updateImage('cat', image);
      * });
      */
-    updateImage(id: string,
-        image: HTMLImageElement | ImageBitmap | ImageData | {
-            width: number;
-            height: number;
-            data: Uint8Array | Uint8ClampedArray;
-        } | StyleImageInterface) {
+    updateImage(
+        id: string,
+        image: HTMLImageElement | ImageBitmap | ImageData | {width: number; height: number; data: Uint8Array | Uint8ClampedArray} | StyleImageInterface
+    ) {
         this._lazyInitEmptyStyle();
 
-        const existingImage = this.style.getImage(id);
+        const imageId = ImageId.from(id);
+        const existingImage = this.style.getImage(imageId);
         if (!existingImage) {
             this.fire(new ErrorEvent(new Error(
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
@@ -2706,7 +2728,7 @@ export class Map extends Camera {
             existingImage.data.replace(data, copy);
         }
 
-        this.style.updateImage(id, existingImage, performSymbolLayout);
+        this.style.updateImage(imageId, existingImage, performSymbolLayout);
     }
 
     /**
@@ -2730,7 +2752,7 @@ export class Map extends Camera {
 
         if (!this.style) return false;
 
-        return !!this.style.getImage(id);
+        return !!this.style.getImage(ImageId.from(id));
     }
 
     /**
@@ -2746,7 +2768,7 @@ export class Map extends Camera {
      * if (map.hasImage('cat')) map.removeImage('cat');
      */
     removeImage(id: string) {
-        this.style.removeImage(id);
+        this.style.removeImage(ImageId.from(id));
     }
 
     /**
@@ -2783,7 +2805,7 @@ export class Map extends Camera {
     * const allImages = map.listImages();
     */
     listImages(): Array<string> {
-        return this.style.listImages();
+        return this.style.listImages().map((image) => image.name);
     }
 
     /**
@@ -3462,6 +3484,30 @@ export class Map extends Camera {
     }
 
     /** @section {Style properties} */
+
+    /**
+     * Returns the glyphs URL of the current style.
+     *
+     * @returns {string} Returns a glyph URL template.
+     * @example
+     * map.getGlyphsUrl();
+     */
+    getGlyphsUrl(): string | undefined {
+        return this.style.getGlyphsUrl();
+    }
+
+    /**
+     * Sets a URL template for loading signed-distance-field glyph sets in PBF format. The URL must include `{fontstack}` and `{range}` tokens.
+     *
+     * @param {string} url A URL template for loading SDF glyph sets in PBF format.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setGlyphsUrl('mapbox://fonts/mapbox/{fontstack}/{range}.pbf');
+     */
+    setGlyphsUrl(url: string): this {
+        this.style.setGlyphsUrl(url);
+        return this._update(true);
+    }
 
     /**
      * Returns the imported style schema.
@@ -4163,7 +4209,10 @@ export class Map extends Camera {
 
     _contextRestored(event: any) {
         this._setupPainter();
-        this.resize();
+        this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
+        this._updateTerrain();
+        this.style.reloadModels();
+        this.style.clearSources();
         this._update();
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
@@ -4353,7 +4402,9 @@ export class Map extends Camera {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style.updateSources(this.transform);
             // Update positions of markers and popups on enabling/disabling terrain
-            this._forceMarkerAndPopupUpdate();
+            if (!this.isMoving()) {
+                this._forceMarkerAndPopupUpdate();
+            }
         } else {
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
         }
@@ -4405,6 +4456,12 @@ export class Map extends Camera {
 
         // Whenever precipitation effects are present -> force constant redraw
         if (this.style && (this.style.snow || this.style.rain)) {
+            this._styleDirty = true;
+        }
+
+        // Background patterns are rasterized in a worker thread, while
+        // it's still in progress we need to keep rendering
+        if (this.style && this.style.imageManager.hasPatternsInFlight()) {
             this._styleDirty = true;
         }
 
@@ -4635,8 +4692,6 @@ export class Map extends Camera {
 
         postStyleLoadEvent(this._requestManager._customAccessToken, {
             map: this,
-            // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'skuToken' does not exist in type 'StyleLoadEventInput'.
-            skuToken: this._requestManager._skuToken,
             style: this.style.globalId,
             importedStyles: this.style.getImportGlobalIds()
         });

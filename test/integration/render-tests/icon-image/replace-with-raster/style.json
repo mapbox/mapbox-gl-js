@@ -2,7 +2,6 @@
   "version": 8,
   "metadata": {
     "test": {
-      "spriteFormat": "icon_set",
       "width": 64,
       "height": 64,
       "operations": [

@@ -24,11 +24,11 @@ describe('shaping', () => {
         glyphPositonMap[id] = glyphData[id].rect;
     }
 
-    const images = {
-        [ResolvedImage.build('square').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-        [ResolvedImage.build('tall').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-        [ResolvedImage.build('wide').getSerializedPrimary()]: new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING),
-    };
+    const images = new Map([
+        [ResolvedImage.build('square').getPrimary().toString(), new ImagePosition({x: 0, y: 0, w: 16, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING)],
+        [ResolvedImage.build('tall').getPrimary().toString(), new ImagePosition({x: 0, y: 0, w: 16, h: 32}, {pixelRatio: 1, version: 1}, ICON_PADDING)],
+        [ResolvedImage.build('wide').getPrimary().toString(), new ImagePosition({x: 0, y: 0, w: 32, h: 16}, {pixelRatio: 1, version: 1}, ICON_PADDING)],
+    ]);
 
     const sectionForImage = (name) => {
         return new FormattedSection('', ResolvedImage.build(name), null, null, null);
@@ -86,10 +86,10 @@ describe('shaping', () => {
 
         // Null shaping.
         shaped = shaping.shapeText(Formatted.fromString(''), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(false).toEqual(shaped);
+        expect(undefined).toEqual(shaped);
 
         shaped = shaping.shapeText(Formatted.fromString(String.fromCharCode(0)), glyphMap, glyphPositions, images, fontStack, 15 * oneEm, oneEm, 'center', 'center', 0 * oneEm, [0, 0], WritingMode.horizontal, false, layoutTextSize, layoutTextSizeThisZoom);
-        expect(false).toEqual(shaped);
+        expect(undefined).toEqual(shaped);
     });
 
     test('mapbox-gl-js#3254', () => {
@@ -142,6 +142,10 @@ describe('shapeIcon', () => {
         paddedRect: Object.freeze({x: 0, y: 0, w: 22, h: 22}),
         pixelRatio: 1,
         version: 1,
+        scale: {
+            x: 1,
+            y: 1
+        },
         padding: ICON_PADDING
     });
 

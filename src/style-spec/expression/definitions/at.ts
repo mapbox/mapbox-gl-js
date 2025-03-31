@@ -18,9 +18,8 @@ class At implements Expression {
         this.input = input;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): At | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): At | null | void {
         if (args.length !== 3)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'At'.
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
 
         const index = context.parse(args[1], 1, NumberType);
@@ -40,28 +39,15 @@ class At implements Expression {
             throw new RuntimeError(`Array index out of bounds: ${index} < 0.`);
         }
 
-        if (index > array.length - 1) {
+        if (index >= array.length) {
             throw new RuntimeError(`Array index out of bounds: ${index} > ${array.length - 1}.`);
         }
 
-        if (index === Math.floor(index)) {
-            return array[index];
+        if (index !== Math.floor(index)) {
+            throw new RuntimeError(`Array index must be an integer, but found ${index} instead. Use at-interpolated to retrieve interpolated result with a fractional index.`);
         }
 
-        // Interpolation logic for non-integer indices
-        const lowerIndex = Math.floor(index);
-        const upperIndex = Math.ceil(index);
-
-        const lowerValue = array[lowerIndex];
-        const upperValue = array[upperIndex];
-
-        if (typeof lowerValue !== 'number' || typeof upperValue !== 'number') {
-            throw new RuntimeError(`Cannot interpolate between non-number values at index ${index}.`);
-        }
-
-        // Linear interpolation
-        const fraction = index - lowerIndex;
-        return lowerValue * (1 - fraction) + upperValue * fraction;
+        return array[index];
     }
 
     eachChild(fn: (_: Expression) => void) {

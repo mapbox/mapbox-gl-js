@@ -16,6 +16,7 @@ import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {TextureImage} from '../render/texture';
 import type {RasterDEMSourceSpecification} from '../style-spec/types';
+import type {WorkerSourceDEMTileRequest} from './worker_source';
 
 class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISource {
     override type: 'raster-dem';
@@ -61,10 +62,11 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
 
                 // @ts-expect-error - TS2345 - Argument of type 'TextureImage' is not assignable to parameter of type 'CanvasImageSource'.
                 const rawImageData = transfer ? img : browser.getImageData(img, padding);
-                const params = {
+                const params: WorkerSourceDEMTileRequest = {
                     uid: tile.uid,
-                    coord: tile.tileID,
+                    tileID: tile.tileID,
                     source: this.id,
+                    type: this.type,
                     scope: this.scope,
                     rawImageData,
                     encoding: this.encoding,
@@ -73,7 +75,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
 
                 if (!tile.actor || tile.state === 'expired') {
                     tile.actor = this.dispatcher.getActor();
-                    tile.actor.send('loadDEMTile', params, done.bind(this), undefined, true);
+                    tile.actor.send('loadTile', params, done.bind(this), undefined, true);
                 }
             }
         }

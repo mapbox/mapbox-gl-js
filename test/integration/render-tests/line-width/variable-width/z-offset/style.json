@@ -74,7 +74,7 @@
         "line-cap": "round",
         "line-join": "round",
         "line-z-offset":[
-          "at", 
+          "at-interpolated", 
           ["*", [ "line-progress" ], ["-", ["length", ["get", "elevation"]], 1]], 
           ["get", "elevation"]
         ]

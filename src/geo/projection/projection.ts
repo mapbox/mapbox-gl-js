@@ -71,8 +71,8 @@ export default class Projection {
         return {x, y, z: 0};
     }
 
-    locationPoint(tr: Transform, lngLat: LngLat, terrain: boolean = true): Point {
-        return tr._coordinatePoint(tr.locationCoordinate(lngLat), terrain);
+    locationPoint(tr: Transform, lngLat: LngLat, altitude?: number, terrain: boolean = true): Point {
+        return tr._coordinatePoint(tr.locationCoordinate(lngLat, altitude), terrain);
     }
 
     pixelsPerMeter(lat: number, worldSize: number): number {

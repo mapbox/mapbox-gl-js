@@ -1,9 +1,11 @@
+import browser from '../../src/util/browser';
 import {Evented, ErrorEvent, Event} from '../../src/util/evented';
 import {ResourceType} from '../../src/util/ajax';
 import loadTileJSON from '../../src/source/load_tilejson';
 import TileBounds from '../../src/source/tile_bounds';
 import {extend} from '../../src/util/util';
 import {postTurnstileEvent} from '../../src/util/mapbox';
+import {makeFQID} from '../../src/util/fqid';
 
 // Import Tiled3dModelBucket as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
@@ -17,8 +19,9 @@ import type {Callback} from '../../src/types/callback';
 import type {Cancelable} from '../../src/types/cancelable';
 import type {OverscaledTileID} from '../../src/source/tile_id';
 import type {ISource, SourceEvents} from '../../src/source/source';
-import type {ModelSourceSpecification} from '../../src/style-spec/types';
-import type {RequestedTileParameters, WorkerTileResult} from '../../src/source/worker_source';
+import type {ModelSourceSpecification, PromoteIdSpecification} from '../../src/style-spec/types';
+import type {WorkerSourceTiled3dModelRequest, WorkerSourceVectorTileResult} from '../../src/source/worker_source';
+import type {AJAXError} from '../../src/util/ajax';
 
 class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     type: 'batched-model';
@@ -36,6 +39,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
+    promoteId?: PromoteIdSpecification | null;
     vectorLayers?: never;
     vectorLayerIds?: never;
     rasterLayers?: never;
@@ -49,7 +53,6 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     map: Map;
 
     onRemove: undefined;
-    reload: undefined;
     abortTile: undefined;
     unloadTile: undefined;
     prepare: undefined;
@@ -80,6 +83,18 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     onAdd(map: Map) {
         this.map = map;
         this.load();
+    }
+
+    reload() {
+        this.cancelTileJSONRequest();
+        const fqid = makeFQID(this.id, this.scope);
+        this.load(() => this.map.style.clearSource(fqid));
+    }
+
+    cancelTileJSONRequest() {
+        if (!this._tileJSONRequest) return;
+        this._tileJSONRequest.cancel();
+        this._tileJSONRequest = null;
     }
 
     load(callback?: Callback<undefined>) {
@@ -126,7 +141,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     loadTile(tile: Tile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url((this.tiles as any), this.scheme));
         const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
-        const params: RequestedTileParameters = {
+        const params: WorkerSourceTiled3dModelRequest = {
             request,
             data: undefined,
             uid: tile.uid,
@@ -140,12 +155,8 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             showCollisionBoxes: this.map.showCollisionBoxes,
             isSymbolTile: tile.isSymbolTile,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
-            // Not supported in 3D models
-            lut: null,
-            maxZoom: null,
-            promoteId: null,
-            pixelRatio: null,
-            scaleFactor: null,
+            pixelRatio: browser.devicePixelRatio,
+            promoteId: this.promoteId,
         };
 
         if (!tile.actor || tile.state === 'expired') {
@@ -167,10 +178,9 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
-        function done(err?: Error | null, data?: WorkerTileResult | null) {
+        function done(err?: AJAXError | null, data?: WorkerSourceVectorTileResult | null) {
             if (tile.aborted) return callback(null);
 
-            // @ts-expect-error - TS2339 - Property 'status' does not exist on type 'Error'.
             if (err && err.status !== 404) {
                 return callback(err);
             }

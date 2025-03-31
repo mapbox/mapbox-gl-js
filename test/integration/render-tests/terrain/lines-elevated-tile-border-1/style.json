@@ -14,7 +14,7 @@
   "terrain": {
     "source": "rgbterrain"
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "lights": [
     {
       "type": "ambient",
@@ -70,7 +70,7 @@
             [
               -113.31561672006765,
               35.94908590590447
-            ] 
+            ]
           ]
         }
       }
@@ -139,7 +139,7 @@
         "line-join": "round",
         "line-z-offset": [
           "-",
-          ["at", ["*", [ "line-progress" ], 49], ["get", "elevation"]], 
+          ["at-interpolated", ["*", [ "line-progress" ], 49], ["get", "elevation"]],
           500
         ],
         "line-cross-slope": 0,
@@ -148,7 +148,7 @@
       "paint": {
         "line-width": 8,
         "line-color": "red",
-        "line-pattern": "dot"
+        "line-pattern": "border-dot-13"
       }
     },
     {
@@ -159,7 +159,7 @@
         "line-join": "round",
         "line-z-offset": [
           "-",
-          ["at", ["*", [ "line-progress" ], 49], ["get", "elevation"]], 
+          ["at-interpolated", ["*", [ "line-progress" ], 49], ["get", "elevation"]],
           300
         ],
         "line-cross-slope": 1,
@@ -168,7 +168,7 @@
       "paint": {
         "line-width": 8,
         "line-color": "red",
-        "line-pattern": "dot"
+        "line-pattern": "border-dot-13"
       }
     },
     {
@@ -179,7 +179,7 @@
         "line-join": "round",
         "line-z-offset": [
           "-",
-          ["at", ["*", [ "line-progress" ], 49], ["get", "elevation"]], 
+          ["at-interpolated", ["*", [ "line-progress" ], 49], ["get", "elevation"]],
           0
         ],
         "line-cross-slope": 1,
@@ -198,7 +198,7 @@
         "line-join": "round",
         "line-z-offset": [
           "+",
-          ["at", ["*", [ "line-progress" ], 49], ["get", "elevation"]], 
+          ["at-interpolated", ["*", [ "line-progress" ], 49], ["get", "elevation"]],
           400
         ],
         "line-cross-slope": 0,

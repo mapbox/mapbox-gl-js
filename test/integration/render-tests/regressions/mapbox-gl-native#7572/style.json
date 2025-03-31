@@ -29,14 +29,14 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "a",
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "icon-image": "generic_icon",
+        "icon-image": "information",
         "icon-allow-overlap": true,
         "icon-ignore-placement": true,
         "icon-offset": [0, 0]

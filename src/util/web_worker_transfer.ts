@@ -5,9 +5,10 @@ import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomCon
 import CompoundExpression from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions/index';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
-import {ImageIdWithOptions} from '../style-spec/expression/types/image_id_with_options';
 import {AJAXError} from './ajax';
 import Formatted, {FormattedSection} from '../style-spec/expression/types/formatted';
+import {ImageId} from '../style-spec/expression/types/image_id';
+import {ImageVariant} from '../style-spec/expression/types/image_variant';
 
 import type {Class} from '../types/class';
 import type {GridIndex} from '../types/grid-index';
@@ -110,7 +111,8 @@ register(AJAXError, 'AJAXError');
 register(ResolvedImage, 'ResolvedImage');
 register(StylePropertyFunction, 'StylePropertyFunction');
 register(StyleExpression, 'StyleExpression', {omit: ['_evaluator']});
-register(ImageIdWithOptions, 'ImageIdWithOptions');
+register(ImageId, 'ImageId');
+register(ImageVariant, 'ImageVariant');
 
 register(ZoomDependentExpression, 'ZoomDependentExpression');
 register(ZoomConstantExpression, 'ZoomConstantExpression');
@@ -186,9 +188,9 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
     }
 
     if (input instanceof Map) {
-        const properties: SerializedObject = {'$name': 'Map'};
+        const properties = {'$name': 'Map', entries: []} satisfies SerializedObject;
         for (const [key, value] of input.entries()) {
-            properties[key] = serialize(value);
+            properties.entries.push(serialize(key), serialize(value));
         }
         return properties;
     }
@@ -202,11 +204,24 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         return properties;
     }
 
+    if (input instanceof DOMMatrix) {
+        const properties: SerializedObject = {'$name': 'DOMMatrix'};
+        const matrixProperties = ['is2D', 'm11', 'm12', 'm13', 'm14', 'm21', 'm22', 'm23', 'm24', 'm31', 'm32', 'm33', 'm34', 'm41', 'm42', 'm43', 'm44', 'a', 'b', 'c', 'd', 'e', 'f'];
+        for (const property of matrixProperties) {
+            properties[property] = input[property];
+        }
+        return properties;
+    }
+
+    if (typeof input === 'bigint') {
+        return {$name: 'BigInt', value: input.toString()};
+    }
+
     if (typeof input === 'object') {
         const klass = input.constructor as Klass;
         const name = klass._classRegistryKey;
         if (!name) {
-            throw new Error(`Can't serialize object of unregistered class "${name}".`);
+            throw new Error(`Can't serialize object of unregistered class "${klass.name}".`);
         }
         assert(registry[name]);
 
@@ -274,12 +289,10 @@ export function deserialize(input: Serialized): unknown {
         const name = input.$name || 'Object';
 
         if (name === 'Map') {
+            const entries = input.entries as Array<[Serialized, Serialized]> || [];
             const map = new Map();
-            for (const key of Object.keys(input)) {
-                if (key === '$name')
-                    continue;
-                const value = input[key];
-                map.set(key, deserialize(value));
+            for (let i = 0; i < entries.length; i += 2) {
+                map.set(deserialize(entries[i]), deserialize(entries[i + 1]));
             }
             return map;
         }
@@ -293,6 +306,22 @@ export function deserialize(input: Serialized): unknown {
                 set.add(deserialize(value));
             }
             return set;
+        }
+
+        if (name === 'DOMMatrix') {
+            let values;
+            if (input['is2D']) { values = [input['a'], input['b'], input['c'], input['d'], input['e'], input['f']]; } else {
+                values = [input['m11'], input['m12'], input['m13'], input['m14'],
+                    input['m21'], input['m22'], input['m23'], input['m24'],
+                    input['m31'], input['m32'], input['m33'], input['m34'],
+                    input['m41'], input['m42'], input['m43'], input['m44']];
+            }
+            const matrix = new DOMMatrix(values);
+            return matrix;
+        }
+
+        if (name === 'BigInt') {
+            return BigInt(input.value as string);
         }
 
         const {klass} = registry[name];

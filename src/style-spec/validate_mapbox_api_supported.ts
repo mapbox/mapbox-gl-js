@@ -40,9 +40,9 @@ function getSourceErrors(source: any, i: number): Array<ValidationError> {
 
     /*
      * Inlined sources are not supported by the Mapbox Styles API, so only
-     * "type", "url", and "tileSize" properties are valid
+     * "type", "url", and "tileSize", "promoteId" properties are valid
      */
-    const sourceKeys = ['type', 'url', 'tileSize'];
+    const sourceKeys = ['type', 'url', 'tileSize', 'promoteId'];
     errors.push(...getAllowedKeyErrors(source, sourceKeys, 'source'));
 
     /*

@@ -17,6 +17,7 @@ import type {TilespaceQueryGeometry} from '../query_geometry';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
+import type {ImageId} from '../../style-spec/expression/types/image_id';
 
 class FillStyleLayer extends StyleLayer {
     override _unevaluatedLayout: Layout<LayoutProps>;
@@ -55,7 +56,7 @@ class FillStyleLayer extends StyleLayer {
         };
     }
 
-    override recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
 
         const outlineColor = this.paint._values['fill-outline-color'];
@@ -92,11 +93,14 @@ class FillStyleLayer extends StyleLayer {
     }
 
     override isTileClipped(): boolean {
-        return true;
+        return this.paint.get('fill-z-offset').constantOr(1.0) === 0.0;
     }
 
-    override is3D(): boolean {
-        return this.paint.get('fill-z-offset').constantOr(1.0) !== 0.0;
+    override is3D(terrainEnabled?: boolean): boolean {
+        if (this.paint.get('fill-z-offset').constantOr(1.0) !== 0.0) return true;
+
+        const potentially3D = this.layout && this.layout.get('fill-elevation-reference') !== 'none';
+        return terrainEnabled != null ? (potentially3D && !terrainEnabled) : potentially3D;
     }
 }
 

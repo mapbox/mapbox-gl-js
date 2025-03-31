@@ -1,6 +1,6 @@
 {
   "expression": ["image", "monument-15"],
-  "inputs": [[{"availableImages": ["monument-15"]}, {}], [{}, {}]],
+  "inputs": [[{"availableImages": [{"name": "monument-15"}]}, {}], [{}, {}]],
   "expected": {
     "compiled": {
       "result": "success",
@@ -9,8 +9,8 @@
       "type": "resolvedImage"
     },
     "outputs": [
-      {"namePrimary": "monument-15", "available": true},
-      {"namePrimary": "monument-15", "available": false}
+      {"primaryId": {"name": "monument-15"}, "available": true},
+      {"primaryId": {"name": "monument-15"}, "available": false}
     ],
     "serialized": ["image", "monument-15"]
   }

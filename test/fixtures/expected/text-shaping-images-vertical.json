@@ -4,7 +4,7 @@
       "positionedGlyphs": [
         {
           "glyph": 19977,
-          "imageName": null,
+          "image": null,
           "x": -33,
           "y": -18.5,
           "vertical": true,
@@ -27,7 +27,39 @@
         },
         {
           "glyph": 57344,
-          "imageName": "square",
+          "image": {
+            "id": {
+              "name": "square"
+            },
+            "options": {
+              "transform": {
+                "a": 1,
+                "b": 0,
+                "c": 0,
+                "d": 1,
+                "e": 0,
+                "f": 0,
+                "m11": 1,
+                "m12": 0,
+                "m13": 0,
+                "m14": 0,
+                "m21": 0,
+                "m22": 1,
+                "m23": 0,
+                "m24": 0,
+                "m31": 0,
+                "m32": 0,
+                "m33": 1,
+                "m34": 0,
+                "m41": 0,
+                "m42": 0,
+                "m43": 0,
+                "m44": 1,
+                "is2D": true,
+                "isIdentity": true
+              }
+            }
+          },
           "x": -9,
           "y": -15.5,
           "vertical": true,
@@ -52,7 +84,39 @@
         },
         {
           "glyph": 57345,
-          "imageName": "wide",
+          "image": {
+            "id": {
+              "name": "wide"
+            },
+            "options": {
+              "transform": {
+                "a": 1,
+                "b": 0,
+                "c": 0,
+                "d": 1,
+                "e": 0,
+                "f": 0,
+                "m11": 1,
+                "m12": 0,
+                "m13": 0,
+                "m14": 0,
+                "m21": 0,
+                "m22": 1,
+                "m23": 0,
+                "m24": 0,
+                "m31": 0,
+                "m32": 0,
+                "m33": 1,
+                "m34": 0,
+                "m41": 0,
+                "m42": 0,
+                "m43": 0,
+                "m44": 1,
+                "is2D": true,
+                "isIdentity": true
+              }
+            }
+          },
           "x": 12,
           "y": -15.5,
           "vertical": true,
@@ -82,7 +146,39 @@
       "positionedGlyphs": [
         {
           "glyph": 57346,
-          "imageName": "tall",
+          "image": {
+            "id": {
+              "name": "tall"
+            },
+            "options": {
+              "transform": {
+                "a": 1,
+                "b": 0,
+                "c": 0,
+                "d": 1,
+                "e": 0,
+                "f": 0,
+                "m11": 1,
+                "m12": 0,
+                "m13": 0,
+                "m14": 0,
+                "m21": 0,
+                "m22": 1,
+                "m23": 0,
+                "m24": 0,
+                "m31": 0,
+                "m32": 0,
+                "m33": 1,
+                "m34": 0,
+                "m41": 0,
+                "m42": 0,
+                "m43": 0,
+                "m44": 1,
+                "is2D": true,
+                "isIdentity": true
+              }
+            }
+          },
           "x": -43.5,
           "y": -15.5,
           "vertical": true,
@@ -107,7 +203,39 @@
         },
         {
           "glyph": 57347,
-          "imageName": "square",
+          "image": {
+            "id": {
+              "name": "square"
+            },
+            "options": {
+              "transform": {
+                "a": 1,
+                "b": 0,
+                "c": 0,
+                "d": 1,
+                "e": 0,
+                "f": 0,
+                "m11": 1,
+                "m12": 0,
+                "m13": 0,
+                "m14": 0,
+                "m21": 0,
+                "m22": 1,
+                "m23": 0,
+                "m24": 0,
+                "m31": 0,
+                "m32": 0,
+                "m33": 1,
+                "m34": 0,
+                "m41": 0,
+                "m42": 0,
+                "m43": 0,
+                "m44": 1,
+                "is2D": true,
+                "isIdentity": true
+              }
+            }
+          },
           "x": 1.5,
           "y": 8.5,
           "vertical": true,
@@ -132,7 +260,7 @@
         },
         {
           "glyph": 19977,
-          "imageName": null,
+          "image": null,
           "x": 22.5,
           "y": 5.5,
           "vertical": true,

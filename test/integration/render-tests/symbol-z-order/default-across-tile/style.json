@@ -2,9 +2,10 @@
     "version": 8,
     "metadata": {
         "test": {
-            "debug": true,
-            "height": 250,
-            "width": 250
+          "pixelRatio": 2,
+          "debug": true,
+          "height": 250,
+          "width": 250
         }
     },
     "center": [
@@ -52,12 +53,12 @@
                             "text": "C"
                         }
                     }
-                
+
                 ]
             }
         }
     },
-    "sprite": "local://sprites/sprite",
+    "sprite": "local://sprites/standard",
     "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
     "layers": [
     {
@@ -73,8 +74,8 @@
             "source": "icon-source",
             "layout": {
                 "text-allow-overlap":false,
-                "icon-image": "circle-12",
-                "icon-size": 2.5,
+                "icon-image": "restaurant",
+                "icon-size": 2,
                 "icon-allow-overlap": true,
                 "text-field": ["get","text"],
                 "text-offset": [-0.6, -0.85],

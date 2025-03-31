@@ -1,7 +1,7 @@
 {
   "expression": ["to-boolean", ["coalesce", ["image", "monument-15"], ""]],
   "propertySpec": {"type": "boolean"},
-  "inputs": [[{"availableImages": ["monument-15"]}, {}], [{}, {}]],
+  "inputs": [[{"availableImages": [{"name": "monument-15"}]}, {}], [{}, {}]],
   "expected": {
     "compiled": {
       "result": "success",

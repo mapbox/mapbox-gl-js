@@ -10,9 +10,8 @@ import VectorTileWorkerSource from './vector_tile_worker_source';
 import {createExpression} from '../style-spec/expression/index';
 
 import type {
-    RequestedTileParameters,
-    WorkerTileParameters,
-    WorkerTileCallback,
+    WorkerSourceVectorTileRequest,
+    WorkerSourceVectorTileCallback,
 } from '../source/worker_source';
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
@@ -20,6 +19,7 @@ import type {Feature} from '../style-spec/expression/index';
 import type {LoadVectorDataCallback} from './load_vector_tile';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {Callback} from '../types/callback';
+import type {ImageId} from '../style-spec/expression/types/image_id';
 
 export type GeoJSONWorkerOptions = {
     source: string;
@@ -38,7 +38,13 @@ export type LoadGeoJSONParameters = GeoJSONWorkerOptions & {
     append?: boolean;
 };
 
-export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<any>) => void;
+export type ResourceTiming = Record<string, Array<PerformanceResourceTiming>>;
+
+export type LoadGeoJSONResult = {
+    resourceTiming?: ResourceTiming;
+};
+
+export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<LoadGeoJSONResult>) => void;
 
 export interface GeoJSONIndex {
     getTile: (z: number, x: number, y: number) => any;
@@ -48,7 +54,7 @@ export interface GeoJSONIndex {
     getLeaves?: (clusterId: number, limit: number, offset: number) => Array<GeoJSON.Feature>;
 }
 
-function loadGeoJSONTile(params: RequestedTileParameters, callback: LoadVectorDataCallback): undefined {
+function loadGeoJSONTile(params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback): undefined {
     const canonical = params.tileID.canonical;
 
     if (!this._geoJSONIndex) {
@@ -99,7 +105,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * See {@link GeoJSONWorkerSource#loadGeoJSON}.
      * @private
      */
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadGeoJSON?: LoadGeoJSON | null, brightness?: number | null) {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], isSpriteLoaded: boolean, loadGeoJSON?: LoadGeoJSON | null, brightness?: number | null) {
         super(actor, layerIndex, availableImages, isSpriteLoaded, loadGeoJSONTile, brightness);
         if (loadGeoJSON) {
             this.loadGeoJSON = loadGeoJSON;
@@ -120,15 +126,9 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * they are coalesced into a single request using the latest data.
      * See {@link GeoJSONWorkerSource#coalesce}
      *
-     * @param params
-     * @param callback
      * @private
      */
-    loadData(params: LoadGeoJSONParameters, callback: Callback<{
-        resourceTiming?: {
-            [_: string]: Array<PerformanceResourceTiming>;
-        };
-    }>) {
+    loadData(params: LoadGeoJSONParameters, callback: ResponseCallback<LoadGeoJSONResult>): void {
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;
 
@@ -176,7 +176,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                     return callback(err);
                 }
 
-                const result: Record<string, any> = {};
+                const result: LoadGeoJSONResult = {};
                 if (perf) {
                     const resourceTimingData = getPerformanceMeasurement(requestParam);
                     // it's necessary to eval the result of getEntriesByName() here via parse/stringify
@@ -197,11 +197,9 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     * If the tile is loaded, uses the implementation in VectorTileWorkerSource.
     * Otherwise, such as after a setData() call, we load the tile fresh.
     *
-    * @param params
-    * @param params.uid The UID for this tile.
     * @private
     */
-    override reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback): void {
+    override reloadTile(params: WorkerSourceVectorTileRequest, callback: WorkerSourceVectorTileCallback): void {
         const loaded = this.loaded,
             uid = params.uid;
 

@@ -140,6 +140,17 @@
         }
       }
     },
+    "iconsets": {
+      "experimental": true,
+      "type": "iconsets",
+      "doc": "A collection of icon sets",
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      }
+    },
     "schema": {
       "type": "schema",
       "doc": "Definition of the schema for configuration options.",
@@ -220,6 +231,13 @@
       "experimental": true,
       "type": "featuresets",
       "doc": "Defines sets of features for querying, interaction, and state management on the map, referencing individual layers or subsets of layers within the map's style.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.9.0",
+          "android": "11.9.0",
+          "ios": "11.9.0"
+        }
+      },
       "example": {
         "poi": {
           "selectors": [
@@ -246,10 +264,12 @@
   "featureset": {
     "experimental": true,
     "metadata": {
+      "experimental": true,
       "type": "*",
       "doc": "Arbitrary properties useful to track with the stylesheet, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
     },
     "selectors": {
+      "experimental": true,
       "type": "array",
       "value": "selector",
       "doc": "A collection of categorized selectors."
@@ -258,24 +278,35 @@
   "selector": {
     "experimental": true,
     "layer": {
+      "experimental": true,
       "type": "string",
       "doc": "The ID of a layer that exists in the current style.",
       "required": true
     },
     "properties": {
+      "experimental": true,
       "type": "selectorProperty",
       "required": false,
       "doc": "Properties accessible to the end user through queried feautures. If properties are empty, no feature properties are exposed. If undefined, all original feature properties will be accessible."
     },
     "featureNamespace": {
+      "experimental": true,
       "type": "string",
       "required": false,
       "doc": "An optional field that represents the feature namespace defined by the selector within a featureset to which this feature belongs. If the underlying source is the same for multiple selectors within a featureset, the same featureNamespace should be used across those selectors."
+    },
+    "_uniqueFeatureID": {
+      "experimental": true,
+      "type": "boolean",
+      "private": true,
+      "required": false,
+      "doc": "Internal flag used for standard style, in case multiple features sharing the same featureId, only one feature will be returned for feature query."
     }
   },
   "selectorProperty": {
     "experimental": true,
     "*": {
+      "experimental": true,
       "type": "*",
       "doc": "The value of the property. It can be an expression that generates the returned value from the feature, or a constant value specifying the returned value."
     }
@@ -707,6 +738,51 @@
           "ios": "11.0.0"
         }
       }
+    }
+  },
+  "iconsets": {
+    "*": {
+      "type": "iconset",
+      "doc": "Specification of an icon set. For sprite icon set, a URL must be provided. For `raster-array` source icon set, a source name must be provided."
+    }
+  },
+  "iconset": [
+    "iconset_sprite",
+    "iconset_source"
+  ],
+  "iconset_sprite": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "sprite": {
+          "doc": "A sprite icon set."
+        }
+      },
+      "doc": "The type of the icon set."
+    },
+    "url": {
+      "required": true,
+      "type": "string",
+      "doc": "A base URL for retrieving the icon set and metadata. The extension `.pbf` will be automatically appended. The URL must be absolute, containing the [scheme, authority and path components](https://en.wikipedia.org/wiki/URL#Syntax).",
+      "example": "mapbox://sprites/mapbox/bright"
+    }
+  },
+  "iconset_source": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "source": {
+          "doc": "A source icon set."
+        }
+      },
+      "doc": "The type of the icon set."
+    },
+    "source": {
+      "required": true,
+      "type": "string",
+      "doc": "Name of a source of `raster-array` type to be used for the icon set."
     }
   },
   "sources": {
@@ -1686,6 +1762,32 @@
         "interpolated": false
       },
       "property-type": "data-constant"
+    },
+    "fill-construct-bridge-guard-rail": {
+      "type": "boolean",
+      "doc": "Determines whether bridge guard rails are added for elevated roads.",
+      "default": "true",
+      "transition": false,
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+            "android": "11.11.0",
+            "ios": "11.11.0"
+        },
+        "data-driven styling": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
     }
   },
   "layout_circle": {
@@ -1712,6 +1814,31 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "circle-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of circle-elevation. Some modes might require precomputed elevation data in the tileset.",
+      "values": {
+        "none": {
+          "doc": "Elevated rendering is disabled."
+        },
+        "hd-road-markup": {
+          "doc": "Elevated rendering is enabled. Use this mode to describe additive and stackable features that should exist only on top of road polygons."
+        }
+      },
+      "default": "none",
+      "experimental": true,
+      "transition": false,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant"
     },
     "visibility": {
       "type": "enum",
@@ -3974,7 +4101,7 @@
         }
       },
       "config": {
-        "doc": "Retrieves the configuration value for the given option.",
+        "doc": "Retrieves the configuration value for the given option. Returns null if the requested option is missing.",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
@@ -4014,6 +4141,17 @@
             "js": "0.41.0",
             "android": "6.0.0",
             "ios": "4.0.0"
+          }
+        }
+      },
+      "at-interpolated": {
+        "doc": "Retrieves an item from an array. If the array contains numeric values and the provided index is non-integer, the expression returns an interpolated value between adjacent items.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.11.0",
+            "android": "11.12.0",
+            "ios": "11.12.0"
           }
         }
       },
@@ -4661,7 +4799,7 @@
         }
       },
       "sin": {
-        "doc": "Returns the sine of the input.",
+        "doc": "Returns the sine of the input, interpreted as radians.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -4672,7 +4810,7 @@
         }
       },
       "cos": {
-        "doc": "Returns the cosine of the input.",
+        "doc": "Returns the cosine of the input, interpreted as radians.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -4683,7 +4821,7 @@
         }
       },
       "tan": {
-        "doc": "Returns the tangent of the input.",
+        "doc": "Returns the tangent of the input, interpreted as radians.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -4694,7 +4832,7 @@
         }
       },
       "asin": {
-        "doc": "Returns the arcsine of the input.",
+        "doc": "Returns the arcsine of the input, in radians between −π/2 and π/2.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -4705,7 +4843,7 @@
         }
       },
       "acos": {
-        "doc": "Returns the arccosine of the input.",
+        "doc": "Returns the arccosine of the input, in radians between −π/2 and π/2.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -4716,7 +4854,7 @@
         }
       },
       "atan": {
-        "doc": "Returns the arctangent of the input.",
+        "doc": "Returns the arctangent of the input, in radians between −π/2 and π/2.",
         "group": "Math",
         "sdk-support": {
           "basic functionality": {
@@ -5276,7 +5414,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5300,7 +5439,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5322,7 +5462,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5346,7 +5487,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5378,7 +5520,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5400,7 +5543,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5424,7 +5568,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5457,7 +5602,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5481,7 +5627,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     }
@@ -5515,7 +5662,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5539,7 +5687,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5569,7 +5718,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5601,7 +5751,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5633,7 +5784,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5663,7 +5815,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5687,7 +5840,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5720,7 +5874,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5753,7 +5908,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     },
@@ -5777,7 +5933,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.9.0",
-          "ios": "11.9.0"
+          "ios": "11.9.0",
+          "js": "3.9.0"
         }
       }
     }
@@ -6341,6 +6498,60 @@
         "interpolated": true,
         "parameters": [
           "zoom",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "fill-bridge-guard-rail-color": {
+      "type": "color",
+      "default": "rgba(241, 236, 225, 255)",
+      "doc": "The color of bridge guard rail.",
+      "experimental": true,
+      "private": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        },
+        "data-driven styling": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light",
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "fill-tunnel-structure-color": {
+      "type": "color",
+      "default": "rgba(241, 236, 225, 255)",
+      "doc": "The color of tunnel structures (tunnel entrance and tunnel walls).",
+      "transition": true,
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        },
+        "data-driven styling": {
+          "android": "11.11.0",
+          "ios": "11.11.0"
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light",
           "feature"
         ]
       },
@@ -10146,8 +10357,8 @@
   },
   "promoteId": {
     "*": {
-      "type": "string",
-      "doc": "A name of a feature property to use as ID for feature state."
+      "type": "*",
+      "doc": "A feature property name to use as the ID, or an expression to evaluate as the ID for feature state."
     }
   }
 }

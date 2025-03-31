@@ -243,13 +243,13 @@ export class Snow extends PrecipitationBase {
             }
             );
 
-            const count = Math.round(revealFactor * dp.intensity * this.particlesCount);
+            const count = Math.round(dp.intensity * this.particlesCount);
             const particlesSegments = SegmentVector.simpleSegment(0, 0, count * 4, count * 2);
 
             if (this.particlesVx && this.particlesIdx) {
                 program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
                 ColorMode.alphaBlended, CullFaceMode.disabled, uniforms, "snow_particles",
-                this.particlesVx, this.particlesIdx, particlesSegments, {});
+                this.particlesVx, this.particlesIdx, particlesSegments);
             }
         };
 

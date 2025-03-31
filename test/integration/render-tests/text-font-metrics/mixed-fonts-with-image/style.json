@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "pixelRatio": 2,
       "height": 100,
       "width": 200
     }
@@ -27,7 +28,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -59,7 +60,7 @@
             ],
             "font-scale": 1.6
           },
-          ["image", "interstate_1"], ["image", "government_icon"]
+          ["image", "au-national-route-6"], ["image", "school"]
         ],
         "symbol-placement": "point"
       }

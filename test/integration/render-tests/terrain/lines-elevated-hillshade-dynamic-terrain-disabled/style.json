@@ -23,7 +23,7 @@
       [
           "zoom"
       ],
-      0,            
+      0,
       1,
       11.3,
       1,
@@ -31,7 +31,7 @@
       0
     ]
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "lights": [
     {
       "type": "ambient",
@@ -276,7 +276,7 @@
       "layout": {
         "line-join": "round",
         "line-z-offset": [
-          "at",
+          "at-interpolated",
           ["*", [ "line-progress" ], 2],
           ["get", "elevation"]
         ]
@@ -293,14 +293,14 @@
       "layout": {
         "line-join": "none",
         "line-z-offset": [
-          "at",
+          "at-interpolated",
           ["*", [ "line-progress" ], 6],
           ["get", "elevation"]
         ]
       },
       "paint": {
         "line-width": 14,
-        "line-pattern": "dot"
+        "line-pattern": "border-dot-13"
       }
     }
   ]

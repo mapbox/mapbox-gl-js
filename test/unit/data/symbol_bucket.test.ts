@@ -3,7 +3,7 @@ import {test, expect, vi} from '../../util/vitest';
 import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import {CollisionBoxArray} from '../../../src/data/array_types';
-import {performSymbolLayout, SymbolBucketConstants} from '../../../src/symbol/symbol_layout';
+import {performSymbolLayout, postRasterizationSymbolLayout, SymbolBucketConstants} from '../../../src/symbol/symbol_layout';
 import {Placement} from '../../../src/symbol/placement';
 import Transform from '../../../src/geo/transform';
 import {OverscaledTileID} from '../../../src/source/tile_id';
@@ -50,7 +50,9 @@ test('SymbolBucket', () => {
 
     // add feature from bucket A
     bucketA.populate([{feature}], options);
-    performSymbolLayout(bucketA, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketAData = performSymbolLayout(bucketA, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    postRasterizationSymbolLayout(bucketA as SymbolBucket, bucketAData, null, null, null, null, projection, null, null, {});
+
     const tileA = new Tile(tileID, 512, 0, painter);
     tileA.latestFeatureIndex = new FeatureIndex(tileID);
     tileA.buckets = {test: bucketA};
@@ -58,7 +60,8 @@ test('SymbolBucket', () => {
 
     // add same feature from bucket B
     bucketB.populate([{feature}], options);
-    performSymbolLayout(bucketB, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    const bucketBData = performSymbolLayout(bucketB, stacks, glyphPositions, null, null, null, null, null, null, projection);
+    postRasterizationSymbolLayout(bucketB as SymbolBucket, bucketBData, null, null, null, null, projection, null, null, {});
     const tileB = new Tile(tileID, 512, 0, painter);
     tileB.buckets = {test: bucketB};
     tileB.collisionBoxArray = collisionBoxArray;
@@ -93,7 +96,8 @@ test('SymbolBucket integer overflow', () => {
 
     bucket.populate([{feature}], options);
     const fakeRect = {w: 10, h: 10};
-    performSymbolLayout(bucket, stacks, {'Test':  {97: fakeRect, 98: fakeRect, 99: fakeRect, 100: fakeRect, 101: fakeRect, 102: fakeRect}}, null, null, null, null, null, null, projection);
+    const bucketData = performSymbolLayout(bucket, stacks, {'Test':  {97: fakeRect, 98: fakeRect, 99: fakeRect, 100: fakeRect, 101: fakeRect, 102: fakeRect}}, null, null, null, null, null, null, projection);
+    postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
 
     expect(console.warn).toHaveBeenCalledTimes(1);
     expect(

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
 import {RequestManager} from '../../../src/util/mapbox';
-import loadGlyphRange from '../../../src/style/load_glyph_range';
+import {loadGlyphRange} from '../../../src/style/load_glyph_range';
 // eslint-disable-next-line import/no-unresolved
 import glyphStub from '../../fixtures/0-255.pbf?arraybuffer';
 

@@ -3,7 +3,6 @@
   "metadata": {
     "test": {
       "allowed": 0.00031,
-      "standardDerivatives": true,
       "height": 512,
       "operations": [
         ["wait"]

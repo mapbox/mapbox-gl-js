@@ -14,7 +14,7 @@
   "terrain": {
     "source": "rgbterrain"
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "lights": [
     {
       "type": "ambient",
@@ -168,7 +168,7 @@
       "layout": {
         "line-join": "round",
         "line-z-offset": [
-          "at",
+          "at-interpolated",
           ["*", [ "line-progress" ], 2],
           ["get", "elevation"]
         ],
@@ -186,7 +186,7 @@
       "layout": {
         "line-join": "none",
         "line-z-offset": [
-          "at",
+          "at-interpolated",
           ["*", [ "line-progress" ], 6],
           ["get", "elevation"]
         ],
@@ -194,7 +194,7 @@
       },
       "paint": {
         "line-width": 14,
-        "line-pattern": "dot"
+        "line-pattern": "border-dot-13"
       }
     }
   ]

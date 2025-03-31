@@ -1,0 +1,19 @@
+{
+  "expression": ["image", "poi_circle", {"iconset": {"id": "landmarks"}}],
+  "inputs": [[{}, {}]],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": true,
+      "isZoomConstant": true,
+      "type": "resolvedImage"
+    },
+    "outputs": [
+      {
+        "primaryId": {"name": "poi_circle", "iconsetId": "landmarks"},
+        "available": false
+      }
+    ],
+    "serialized": ["image", "poi_circle", {"iconset": {"id": "landmarks"}}]
+  }
+}

@@ -52,13 +52,15 @@ export default class Globe extends Mercator {
         return {x: pos[0], y: pos[1], z: pos[2]};
     }
 
-    override locationPoint(tr: Transform, lngLat: LngLat): Point {
+    override locationPoint(tr: Transform, lngLat: LngLat, altitude?: number): Point {
         const pos = latLngToECEF(lngLat.lat, lngLat.lng);
-        const up = vec3.normalize([] as any, pos);
+        const up = vec3.normalize([] as unknown as vec3, pos);
 
-        const elevation = tr.elevation ?
-            tr.elevation.getAtPointOrZero(tr.locationCoordinate(lngLat), tr._centerAltitude) :
-            tr._centerAltitude;
+        const elevation = altitude ?
+            tr._centerAltitude + altitude :
+            tr.elevation ?
+                tr.elevation.getAtPointOrZero(tr.locationCoordinate(lngLat), tr._centerAltitude) :
+                tr._centerAltitude;
 
         const upScale = mercatorZfromAltitude(1, 0) * EXTENT * elevation;
         vec3.scaleAndAdd(pos, pos, up, upScale);

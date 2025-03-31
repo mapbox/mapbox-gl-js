@@ -28,12 +28,10 @@ class Match implements Expression {
         this.otherwise = otherwise;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Match | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Match | null | void {
         if (args.length < 5)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
             return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
         if (args.length % 2 !== 1)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
             return context.error(`Expected an even number of arguments.`);
 
         let inputType;
@@ -52,23 +50,17 @@ class Match implements Expression {
             }
 
             const labelContext = context.concat(i);
-            // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'unknown'.
-            if (labels.length === 0) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
+            if ((labels as unknown[]).length === 0) {
                 return labelContext.error('Expected at least one branch label.');
             }
 
-            // @ts-expect-error - TS2488 - Type 'unknown' must have a '[Symbol.iterator]()' method that returns an iterator.
-            for (const label of labels) {
+            for (const label of (labels as unknown[])) {
                 if (typeof label !== 'number' && typeof label !== 'string') {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
                     return labelContext.error(`Branch labels must be numbers or strings.`);
                 } else if (typeof label === 'number' && Math.abs(label) > Number.MAX_SAFE_INTEGER) {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
                     return labelContext.error(`Branch labels must be integers no larger than ${Number.MAX_SAFE_INTEGER}.`);
 
                 } else if (typeof label === 'number' && Math.floor(label) !== label) {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
                     return labelContext.error(`Numeric branch labels must be integer values.`);
 
                 } else if (!inputType) {
@@ -78,7 +70,6 @@ class Match implements Expression {
                 }
 
                 if (typeof cases[String(label)] !== 'undefined') {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
                     return labelContext.error('Branch labels must be unique.');
                 }
 

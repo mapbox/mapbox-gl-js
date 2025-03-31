@@ -15,7 +15,7 @@
           {
             "type": "Feature",
             "properties": {
-              "property": "generic_icon"
+              "property": "information"
             },
             "geometry": {
               "type": "Polygon",
@@ -48,7 +48,7 @@
           {
             "type": "Feature",
             "properties": {
-              "property": "generic_metro"
+              "property": "car"
             },
             "geometry": {
               "type": "Polygon",
@@ -82,7 +82,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "pitch": 60,
   "zoom": 18,
   "layers": [

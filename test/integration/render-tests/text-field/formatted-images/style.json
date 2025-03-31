@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "pixelRatio": 2,
       "height": 128,
       "width": 128
     }
@@ -26,7 +27,7 @@
     }
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
-  "sprite": "local://sprites/emerald@2x",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "text",
@@ -51,8 +52,8 @@
         "text-size": 20,
         "text-field": ["format", ["image", "london-overground"],
                                  ["image", "london-underground"],
-                                 ["image", "dlr"],
-                                 ["image", "u-bahn"]
+                                 ["image", "gb-national-rail.london-dlr"],
+                                 ["image", "de-s-bahn.de-u-bahn"]
                                 ],
         "text-font": [
           "Open Sans Semibold",
