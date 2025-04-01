@@ -1,12 +1,17 @@
-## 3.11.0-beta.2
+## 3.11.0
+
+### Breaking changes ⚠️
+- The `at` expression does not interpolate anymore. Please use `at-interpolated` if you want to keep the old behavior.
 
 ### Features and improvements ✨
+- Add landmark icons. Landmark icons are stylized, uniquely designed POI icons that indicate the most popular and recognizable landmarks on the map. At the time of this release, we have landmarks for 5 cities: London, Berlin, New York City, San Francisco, and Tokyo.
 - Add `at-interpolated` expression as the interpolated counterpart to the `at` expression.
 - Add `altitude` marker property to adjust elevation. (h/t [@yangtanyu](https://github.com/yangtanyu)) [#13335](https://github.com/mapbox/mapbox-gl-js/pull/13335).
 - Add `getCooperativeGestures` and `setCooperativeGestures` map methods to control cooperative gestures logic after the map is initialized.
 - Add `getGlyphsUrl` and `setGlyphsUrl` map methods to manage the glyphs endpoint URL.
 - Add `pitchRotateKey` map option to override the modifier key for rotate and pitch handlers.
 - Add filtering support for model layers.
+- Add support for vector icons color parameters with alpha values.
 
 ### Bug fixes 🐞
 - Hide labels with unreadable angles.
@@ -15,6 +20,11 @@
 - Fix popup position update on map move. (h/t [@ThugRaven](https://github.com/ThugRaven)) [#13412](https://github.com/mapbox/mapbox-gl-js/pull/13412)
 - Fix rendering of self-intersecting elevated lines.
 - Prevent line pattern from turning black at certain zoom levels when shadows are enabled.
+- Fix missing triangles in variable-width lines.
+- Improve Style-Spec validator types.
+- Fix reloading of tiles in style imports.
+- Fix issue where updated images were never cleared after patching them.
+- Fix rendering performance regression related to use-theme.
 
 ## 3.10.0
 
