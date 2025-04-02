@@ -1786,7 +1786,7 @@ export function defaultTerrainUniforms(): UniformValues<TerrainUniformsType> {
         'u_depth': 3,
         'u_depth_size_inv': [0, 0],
         'u_depth_range_unpack': [0, 1],
-        'u_occluder_half_size':16,
+        'u_occluder_half_size': 16,
         'u_occlusion_depth_offset': -0.0001,
         'u_exaggeration': 0,
     };

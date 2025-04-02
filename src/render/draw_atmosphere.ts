@@ -68,10 +68,10 @@ class Atmosphere {
         this.params = new StarsParams();
         this.updateNeeded = true;
 
-        painter.tp.registerParameter(this.params, ["Stars"], "starsCount", {min:100, max: 16000, step:1}, () => { this.updateNeeded = true; });
-        painter.tp.registerParameter(this.params, ["Stars"], "sizeMultiplier", {min:0.01, max: 2.0, step:0.01});
-        painter.tp.registerParameter(this.params, ["Stars"], "sizeRange", {min:0.0, max: 200.0, step:1}, () => { this.updateNeeded = true; });
-        painter.tp.registerParameter(this.params, ["Stars"], "intensityRange", {min:0.0, max: 200.0, step:1}, () => { this.updateNeeded = true; });
+        painter.tp.registerParameter(this.params, ["Stars"], "starsCount", {min: 100, max: 16000, step: 1}, () => { this.updateNeeded = true; });
+        painter.tp.registerParameter(this.params, ["Stars"], "sizeMultiplier", {min: 0.01, max: 2.0, step: 0.01});
+        painter.tp.registerParameter(this.params, ["Stars"], "sizeRange", {min: 0.0, max: 200.0, step: 1}, () => { this.updateNeeded = true; });
+        painter.tp.registerParameter(this.params, ["Stars"], "intensityRange", {min: 0.0, max: 200.0, step: 1}, () => { this.updateNeeded = true; });
     }
 
     update(painter: Painter) {

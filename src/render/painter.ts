@@ -284,7 +284,7 @@ class Painter {
             forceEnablePrecipitation: false,
             showTerrainProxyTiles: false,
             fpsWindow: 30,
-            continousRedraw:false,
+            continousRedraw: false,
             enabledLayers: {
             }
         };
@@ -303,17 +303,17 @@ class Painter {
 
         tp.registerParameter(this._debugParams, ["FPS"], "fpsWindow", {min: 1, max: 100, step: 1});
         tp.registerBinding(this._debugParams, ["FPS"], 'continousRedraw', {
-            readonly:true,
+            readonly: true,
             label: "continuous redraw"
         });
         tp.registerBinding(this, ["FPS"], '_averageFPS', {
-            readonly:true,
+            readonly: true,
             label: "value"
         });
         tp.registerBinding(this, ["FPS"], '_averageFPS', {
-            readonly:true,
+            readonly: true,
             label: "graph",
-            view:'graph',
+            view: 'graph',
             min: 0,
             max: 200
         });

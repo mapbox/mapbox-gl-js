@@ -163,7 +163,7 @@ export default class ImageAtlas {
             // Add wrapped padding on each side of the image.
             // Leave one pixel transparent to avoid bleeding to neighbouring images
             RGBAImage.copy(src.data, image, {x: 0, y: h - padding}, {x, y: y - padding}, {width: w, height: padding}, lut); // T
-            RGBAImage.copy(src.data, image, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: padding}, lut); // B
+            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x, y: y + h}, {width: w, height: padding}, lut); // B
             RGBAImage.copy(src.data, image, {x: w - padding, y: 0}, {x: x - padding, y}, {width: padding, height: h}, lut); // L
             RGBAImage.copy(src.data, image, {x: 0,     y: 0}, {x: x + w, y}, {width: padding, height: h}, lut); // R
             // Fill corners

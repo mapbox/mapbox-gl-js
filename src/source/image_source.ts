@@ -504,7 +504,7 @@ class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Event
             this.minzoom = this.maxzoom = this.tileID.z;
         }
 
-        this.fire(new Event('data', {dataType:'source', sourceDataType: 'content'}));
+        this.fire(new Event('data', {dataType: 'source', sourceDataType: 'content'}));
         return this;
     }
 

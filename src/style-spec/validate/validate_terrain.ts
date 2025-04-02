@@ -31,7 +31,7 @@ export default function validateTerrain(options: ValidationOptions): Array<Valid
             errors = errors.concat(validate({
                 key,
                 value: terrain[key],
-                valueSpec: {type:'string'},
+                valueSpec: {type: 'string'},
                 style,
                 styleSpec
             }));

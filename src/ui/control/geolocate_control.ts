@@ -629,7 +629,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                 this._numberOfWatches++;
                 let positionOptions;
                 if (this._numberOfWatches > 1) {
-                    positionOptions = {maximumAge:600000, timeout:0};
+                    positionOptions = {maximumAge: 600000, timeout: 0};
                     this._noTimeout = true;
                 } else {
                     positionOptions = this.options.positionOptions;

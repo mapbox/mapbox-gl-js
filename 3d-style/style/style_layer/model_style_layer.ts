@@ -39,7 +39,7 @@ class ModelStyleLayer extends StyleLayer {
             paint: getPaintProperties()
         };
         super(layer, properties, scope, lut, options);
-        this._stats = {numRenderedVerticesInShadowPass : 0, numRenderedVerticesInTransparentPass: 0};
+        this._stats = {numRenderedVerticesInShadowPass: 0, numRenderedVerticesInTransparentPass: 0};
     }
 
     createBucket(parameters: BucketParameters<ModelStyleLayer>): ModelBucket {

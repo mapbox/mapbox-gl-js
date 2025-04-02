@@ -1713,7 +1713,7 @@ class Style extends Evented<MapEvents> {
             const sourceCache = this._mergedSourceCaches[sourceId];
             if (sourcesUsedBefore[sourceId] !== sourceCache.used) {
                 const source = sourceCache.getSource() as ISource;
-                source.fire(new Event('data', {sourceDataType: 'visibility', dataType:'source', sourceId: sourceCache.getSource().id}));
+                source.fire(new Event('data', {sourceDataType: 'visibility', dataType: 'source', sourceId: sourceCache.getSource().id}));
             }
         }
 
@@ -2024,7 +2024,7 @@ class Style extends Evented<MapEvents> {
             const id = getNameFromFQID(sourceCache.id);
             delete this._sourceCaches[id];
             this._changes.discardSourceCacheUpdate(sourceCache.id);
-            sourceCache.fire(new Event('data', {sourceDataType: 'metadata', dataType:'source', sourceId: sourceCache.getSource().id}));
+            sourceCache.fire(new Event('data', {sourceDataType: 'metadata', dataType: 'source', sourceId: sourceCache.getSource().id}));
             sourceCache.setEventedParent(null);
             sourceCache.clearTiles();
         }

@@ -540,7 +540,7 @@ class ImageManager extends Evented {
             // Add wrapped padding on each side of the image.
             // Leave one pixel transparent to avoid bleeding to neighbouring images
             RGBAImage.copy(src, dst, {x: 0, y: h - padding}, {x, y: y - padding}, {width: w, height: padding}, lut); // T
-            RGBAImage.copy(src, dst, {x: 0, y:     0}, {x, y: y + h}, {width: w, height: padding}, lut); // B
+            RGBAImage.copy(src, dst, {x: 0, y: 0}, {x, y: y + h}, {width: w, height: padding}, lut); // B
             RGBAImage.copy(src, dst, {x: w - padding, y: 0}, {x: x - padding, y}, {width: padding, height: h}, lut); // L
             RGBAImage.copy(src, dst, {x: 0,     y: 0}, {x: x + w, y}, {width: padding, height: h}, lut); // R
             // Fill corners

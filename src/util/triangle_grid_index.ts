@@ -123,7 +123,7 @@ class TriangleGridIndex {
         let idx = 0;
         while (idx < associatedTriangles.length) {
             const cellIdx = associatedTriangles[idx].cellIdx;
-            const cell = {start: this.payload.length, len:0};
+            const cell = {start: this.payload.length, len: 0};
 
             // Find all triangles belonging to the current cell
             while (idx < associatedTriangles.length && associatedTriangles[idx].cellIdx === cellIdx) {

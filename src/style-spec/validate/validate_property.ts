@@ -55,7 +55,7 @@ export default function validateProperty(options: PropertyValidationOptions, pro
         return validate({
             key,
             value,
-            valueSpec: {type:'string'},
+            valueSpec: {type: 'string'},
             style,
             styleSpec
         });

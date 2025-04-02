@@ -102,7 +102,7 @@ export class Tiled3dModelFeature {
         this.emissionHeightBasedParams = [];
         this.cameraCollisionOpacity = 1;
         // Needs to calculate geometry
-        this.feature = {type: 'Point', id: node.id, geometry: [], properties: {'height' : getNodeHeight(node)}};
+        this.feature = {type: 'Point', id: node.id, geometry: [], properties: {'height': getNodeHeight(node)}};
         this.aabb = this._getLocalBounds();
         this.state = null;
     }

@@ -774,7 +774,7 @@ const propertyExceptions = {
         'source': PatternLayoutArray,
         'composite': PatternLayoutArray
     },
-    'fill-extrusion-pattern':{
+    'fill-extrusion-pattern': {
         'source': PatternLayoutArray,
         'composite': PatternLayoutArray
     },

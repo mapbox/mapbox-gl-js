@@ -13,11 +13,11 @@ import type Context from '../gl/context';
  * @readonly
  */
 const AttributeType = {
-    Int8:   'BYTE',
-    Uint8:  'UNSIGNED_BYTE',
-    Int16:  'SHORT',
+    Int8: 'BYTE',
+    Uint8: 'UNSIGNED_BYTE',
+    Int16: 'SHORT',
     Uint16: 'UNSIGNED_SHORT',
-    Int32:  'INT',
+    Int32: 'INT',
     Uint32: 'UNSIGNED_INT',
     Float32: 'FLOAT'
 };

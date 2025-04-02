@@ -216,7 +216,6 @@ export default tseslint.config(
             '@stylistic/js/computed-property-spacing': 'off',
             '@stylistic/js/implicit-arrow-linebreak': 'off',
             '@stylistic/js/indent': 'off',
-            '@stylistic/js/key-spacing': 'off',
             '@stylistic/js/no-confusing-arrow': 'off',
             '@stylistic/js/quotes': 'off',
             '@stylistic/js/space-before-function-paren': 'off',

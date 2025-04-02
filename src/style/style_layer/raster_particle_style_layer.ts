@@ -91,7 +91,7 @@ class RasterParticleStyleLayer extends StyleLayer {
             expression,
             evaluationKey: 'rasterParticleSpeed',
             image: this.colorRamp,
-            clips: [{start:0, end}],
+            clips: [{start: 0, end}],
             resolution: COLOR_RAMP_RES,
         });
         this.colorRampTexture = null;

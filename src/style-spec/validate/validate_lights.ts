@@ -85,7 +85,7 @@ export default function validateLights(options: Options): Array<ValidationError>
                 errors = errors.concat(validate({
                     key,
                     value: light[key],
-                    valueSpec: {type:'string'},
+                    valueSpec: {type: 'string'},
                     style,
                     styleSpec
                 }));

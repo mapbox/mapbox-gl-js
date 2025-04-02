@@ -119,9 +119,9 @@ export type ModelNode = {
 };
 
 export const ModelTraits = {
-    CoordinateSpaceTile : 1,
-    CoordinateSpaceYUp : 2, // not used yet.
-    HasMapboxMeshFeatures : 1 << 2,
+    CoordinateSpaceTile: 1,
+    CoordinateSpaceYUp: 2, // not used yet.
+    HasMapboxMeshFeatures: 1 << 2,
     HasMeshoptCompression: 1 << 3
 } as const;
 

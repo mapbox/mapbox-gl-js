@@ -27,7 +27,7 @@ export default function validateFog(options: ValidationOptions): Array<Validatio
             errors = errors.concat(validate({
                 key,
                 value: fog[key],
-                valueSpec: {type:'string'},
+                valueSpec: {type: 'string'},
                 style,
                 styleSpec
             }));

@@ -16,7 +16,7 @@ const debugUniforms = (context: Context): DebugUniformsType => ({
     'u_color': new UniformColor(context),
     'u_matrix': new UniformMatrix4f(context),
     'u_overlay': new Uniform1i(context),
-    'u_overlay_scale':  new Uniform1f(context),
+    'u_overlay_scale': new Uniform1f(context),
 });
 
 const debugUniformValues = (matrix: mat4, color: Color, scaleRatio: number = 1): UniformValues<DebugUniformsType> => ({
