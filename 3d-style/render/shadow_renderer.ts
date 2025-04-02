@@ -545,7 +545,7 @@ export class ShadowRenderer {
         tileShadowVolume.planes = [computePlane(corners[1], corners[0], corners[4]), // top
             computePlane(corners[2], corners[1], corners[5]), // right
             computePlane(corners[3], corners[2], corners[6]), // bottom
-            computePlane(corners[0], corners[3], corners[7]) ];
+            computePlane(corners[0], corners[3], corners[7])];
         return tileShadowVolume;
     }
 

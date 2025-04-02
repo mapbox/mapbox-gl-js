@@ -212,7 +212,6 @@ export default tseslint.config(
     // Stylistic rules
     {
         rules: {
-            '@stylistic/js/array-bracket-spacing': 'off',
             '@stylistic/js/arrow-parens': 'off',
             '@stylistic/js/brace-style': 'off',
             '@stylistic/js/computed-property-spacing': 'off',

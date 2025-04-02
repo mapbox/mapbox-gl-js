@@ -233,7 +233,7 @@ function getTileData(
 
     return {
         texture,
-        textureOffset: [ buffer / (tileSize + 2 * buffer), tileSize / (tileSize + 2 * buffer)],
+        textureOffset: [buffer / (tileSize + 2 * buffer), tileSize / (tileSize + 2 * buffer)],
         tileSize,
         scalarData,
         scale: mix,
@@ -307,7 +307,7 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
     const isGlobeProjection = painter.transform.projection.name === 'globe';
     const maxSpeed = layer.paint.get('raster-particle-max-speed');
     for (const targetTile of tiles) {
-        const [targetTileID, targetTileData, targetTileState, ] = targetTile;
+        const [targetTileID, targetTileData, targetTileState,] = targetTile;
 
         context.activeTexture.set(gl.TEXTURE0 + VELOCITY_TEXTURE_UNIT);
         targetTileData.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
@@ -380,7 +380,7 @@ function updateParticles(painter: Painter, layer: RasterParticleStyleLayer, tile
     context.viewport.set([0, 0, particleFramebuffer.width, particleFramebuffer.height]);
 
     for (const tile of tiles) {
-        const [, data, state, ] = tile;
+        const [, data, state,] = tile;
 
         context.activeTexture.set(gl.TEXTURE0 + VELOCITY_TEXTURE_UNIT);
         data.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
