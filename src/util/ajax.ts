@@ -239,7 +239,7 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
     return {cancel: () => xhr.abort()};
 }
 
-export const makeRequest = function(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+export const makeRequest = function (requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
     // We're trying to use the Fetch API if possible. However, in some situations we can't use it:
     // - Safari exposes AbortController, but it doesn't work actually abort any requests in
     //   older versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2). In this case,
@@ -260,22 +260,22 @@ export const makeRequest = function(requestParameters: RequestParameters, callba
     return makeXMLHttpRequest(requestParameters, callback);
 };
 
-export const getJSON = function(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+export const getJSON = function (requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
     return makeRequest(extend(requestParameters, {type: 'json'}), callback);
 };
 
-export const getArrayBuffer = function(
+export const getArrayBuffer = function (
     requestParameters: RequestParameters,
     callback: ResponseCallback<ArrayBuffer>,
 ): Cancelable {
     return makeRequest(extend(requestParameters, {type: 'arrayBuffer'}), callback);
 };
 
-export const postData = function(requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
+export const postData = function (requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
     return makeRequest(extend(requestParameters, {method: 'POST'}), callback);
 };
 
-export const getData = function(requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
+export const getData = function (requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
     return makeRequest(extend(requestParameters, {method: 'GET'}), callback);
 };
 
@@ -319,7 +319,7 @@ export const resetImageRequestQueue = () => {
 };
 resetImageRequestQueue();
 
-export const getImage = function(
+export const getImage = function (
     requestParameters: RequestParameters,
     callback: ResponseCallback<HTMLImageElement | ImageBitmap>,
 ): Cancelable {
@@ -383,10 +383,10 @@ export const getImage = function(
     };
 };
 
-export const getVideo = function(urls: Array<string>, callback: Callback<HTMLVideoElement>): Cancelable {
+export const getVideo = function (urls: Array<string>, callback: Callback<HTMLVideoElement>): Cancelable {
     const video: HTMLVideoElement = document.createElement('video');
     video.muted = true;
-    video.onloadstart = function() {
+    video.onloadstart = function () {
         callback(null, video);
     };
     for (let i = 0; i < urls.length; i++) {

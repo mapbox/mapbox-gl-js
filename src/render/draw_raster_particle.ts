@@ -59,7 +59,7 @@ function createPositionRGBAData(textureDimension: number): Uint8Array {
     const numParticles = textureDimension * textureDimension;
     const RGBAPositions = new Uint8Array(4 * numParticles);
     // Hash function from https://www.shadertoy.com/view/XlGcRh
-    const esgtsa = function(s: number): number {
+    const esgtsa = function (s: number): number {
         s |= 0;
         s = Math.imul(s ^ 2747636419, 2654435769);
         s = Math.imul(s ^ (s >>> 16), 2654435769);

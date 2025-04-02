@@ -7,7 +7,7 @@ import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
 
-export default function(
+export default function (
     baseURL: string,
     requestManager: RequestManager,
     callback: Callback<StyleImages>,

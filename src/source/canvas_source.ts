@@ -127,12 +127,12 @@ class CanvasSource extends ImageSource<'canvas'> {
             return;
         }
 
-        this.play = function() {
+        this.play = function () {
             this._playing = true;
             this.map.triggerRepaint();
         };
 
-        this.pause = function() {
+        this.pause = function () {
             if (this._playing) {
                 this.prepare();
                 this._playing = false;

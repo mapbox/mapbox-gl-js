@@ -1683,8 +1683,8 @@ class Camera extends Evented<MapEvents> {
             const k = w1 < w0 ? -1 : 1;
             S = Math.abs(Math.log(w1 / w0)) / rho;
 
-            u = function() { return 0; };
-            w = function(s) { return Math.exp(k * rho * s); };
+            u = function () { return 0; };
+            w = function (s) { return Math.exp(k * rho * s); };
         }
 
         if ('duration' in options) {

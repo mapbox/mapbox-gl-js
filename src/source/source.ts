@@ -153,7 +153,7 @@ export type SourceType = keyof typeof sourceTypes;
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
-export const create = function(
+export const create = function (
     id: string,
     specification: SourceSpecification,
     dispatcher: Dispatcher,
@@ -169,7 +169,7 @@ export const create = function(
     return source;
 };
 
-export const getType = function(name: string): Class<ISource> {
+export const getType = function (name: string): Class<ISource> {
     return sourceTypes[name];
 };
 

@@ -47,7 +47,7 @@ function readGlyph(tag: number, glyph: any, pbf: Protobuf) {
     else if (tag === 7) glyph.advance = pbf.readVarint();
 }
 
-export default function(data: ArrayBuffer | Uint8Array): {
+export default function (data: ArrayBuffer | Uint8Array): {
     glyphs: Array<StyleGlyph>;
     ascender?: number;
     descender?: number;

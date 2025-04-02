@@ -17,7 +17,7 @@ import migrateToExpressions from './migrate/expressions';
  * var style = fs.readFileSync('./style.json', 'utf8');
  * fs.writeFileSync('./style.json', JSON.stringify(migrate(style)));
  */
-export default function(style) {
+export default function (style) {
     let migrated = false;
 
     if (style.version === 7) {

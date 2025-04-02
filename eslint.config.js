@@ -218,7 +218,6 @@ export default tseslint.config(
             '@stylistic/js/implicit-arrow-linebreak': 'off',
             '@stylistic/js/indent': 'off',
             '@stylistic/js/quotes': 'off',
-            '@stylistic/js/space-before-function-paren': 'off',
         }
     },
 

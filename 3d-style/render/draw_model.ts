@@ -795,7 +795,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     const cutoffParams = getCutoffParams(painter, layer.paint.get('model-cutoff-fade-range'));
 
     const stats = layer.getLayerRenderingStats();
-    const drawTiles = function() {
+    const drawTiles = function () {
         let start, end, step;
         // When front cutoff is enabled the tiles are iterated in back to front order
         if (frontCutoffEnabled) {

@@ -675,7 +675,7 @@ function createLightMatrix(
     let sphereRadius = radius * wsInverse;
 
     // Transform frustum bounds to mercator space
-    const frustumPointToMercator = function(point: vec3): vec3 {
+    const frustumPointToMercator = function (point: vec3): vec3 {
         point[0] /= scale;
         point[1] /= scale;
         point[2] = mercatorZfromAltitude(point[2], transform._center.lat);

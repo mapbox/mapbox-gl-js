@@ -188,7 +188,7 @@ type EaseFunction = (t: number) => number;
  */
 export function bezier(p1x: number, p1y: number, p2x: number, p2y: number): EaseFunction {
     const bezier = new UnitBezier(p1x, p1y, p2x, p2y);
-    return function(t: number) {
+    return function (t: number) {
         return bezier.solve(t);
     };
 }

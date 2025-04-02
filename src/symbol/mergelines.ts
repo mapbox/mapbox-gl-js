@@ -1,7 +1,7 @@
 import type Point from '@mapbox/point-geometry';
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
 
-export default function(features: Array<SymbolFeature>): Array<SymbolFeature> {
+export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
     const leftIndex: {
         [_: string]: number;
     } = {};

@@ -135,12 +135,12 @@ class MeshBuilder {
         this.addTriangles([a, b, c, c, d, a]);
     }
 
-    private getBits (val: number): bigint {
+    private getBits(val: number): bigint {
         this.view.setFloat32(0, val);
         return BigInt(this.view.getUint32(0));
     }
 
-    private getVec3Bits (vec: vec3): bigint {
+    private getVec3Bits(vec: vec3): bigint {
         const b0 = this.getBits(vec[0]);
         const b1 = this.getBits(vec[1]);
         const b2 = this.getBits(vec[2]);

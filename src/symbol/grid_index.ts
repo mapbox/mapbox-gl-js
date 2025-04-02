@@ -35,7 +35,7 @@ class GridIndex {
     boxUid: number;
     circleUid: number;
 
-    constructor (width: number, height: number, cellSize: number) {
+    constructor(width: number, height: number, cellSize: number) {
         const boxCells = this.boxCells = [];
         const circleCells = this.circleCells = [];
 
