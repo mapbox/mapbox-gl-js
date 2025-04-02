@@ -68,7 +68,7 @@ export type SourceVectorLayer = {
  * @property {boolean} roundZoom `true` if zoom levels are rounded to the nearest integer in the source data, `false`
  * if they are floor-ed to the nearest integer.
  */
-export interface ISource extends Evented<SourceEvents> {
+export interface ISource<T extends Tile = Tile> extends Evented<SourceEvents> {
     readonly type: string;
     id: string;
     scope: string;
@@ -95,15 +95,15 @@ export interface ISource extends Evented<SourceEvents> {
     readonly onAdd?: (map: Map) => void;
     readonly onRemove?: (map: Map) => void;
     loadTile: (
-        tile: Tile,
+        tile: T,
         callback: Callback<undefined>,
         tileWorkers?: {
             [key: string]: Actor;
         },
     ) => void;
     readonly hasTile?: (tileID: OverscaledTileID) => boolean;
-    readonly abortTile?: (tile: Tile, callback?: Callback<undefined>) => void;
-    readonly unloadTile?: (tile: Tile, callback?: Callback<undefined>) => void;
+    readonly abortTile?: (tile: T, callback?: Callback<undefined>) => void;
+    readonly unloadTile?: (tile: T, callback?: Callback<undefined>) => void;
     readonly reload?: () => void;
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.

@@ -38,7 +38,7 @@ import type {WorkerSourceRasterArrayTileRequest} from './worker_source';
  *
  * @see [Example: Create a wind particle animation](https://docs.mapbox.com/mapbox-gl-js/example/raster-particle-layer/)
  */
-class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource {
+class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource<RasterArrayTile> {
     override type: 'raster-array';
     override map: MapboxMap;
 
