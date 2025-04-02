@@ -212,10 +212,11 @@ export default tseslint.config(
     // Stylistic rules
     {
         rules: {
+            '@stylistic/js/no-confusing-arrow': ['error', {onlyOneSimpleParam: true}],
+
             '@stylistic/js/arrow-parens': 'off',
             '@stylistic/js/implicit-arrow-linebreak': 'off',
             '@stylistic/js/indent': 'off',
-            '@stylistic/js/no-confusing-arrow': 'off',
             '@stylistic/js/quotes': 'off',
             '@stylistic/js/space-before-function-paren': 'off',
         }

@@ -1315,7 +1315,7 @@ export class Map extends Camera {
         if (language === 'auto') return navigator.language;
         if (Array.isArray(language)) return language.length === 0 ?
             undefined :
-            language.map(l => l === 'auto' ? navigator.language : l);
+            language.map(l => (l === 'auto' ? navigator.language : l));
 
         return language;
     }
