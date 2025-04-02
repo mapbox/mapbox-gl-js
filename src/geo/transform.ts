@@ -68,14 +68,16 @@ const lerpMatrix = (out: mat4, a: mat4, b: mat4, value: number) => {
     return out;
 };
 
-const enum QuadrantVisibility {
-    None = 0,
-    TopLeft = 1,
-    TopRight = 2,
-    BottomLeft = 4,
-    BottomRight = 8,
-    All = 15
-}
+const QuadrantVisibility = {
+    None: 0,
+    TopLeft: 1,
+    TopRight: 2,
+    BottomLeft: 4,
+    BottomRight: 8,
+    All: 15
+} as const;
+
+type QuadrantMask = typeof QuadrantVisibility[keyof typeof QuadrantVisibility];
 
 /**
  * A single transform, generally used for a single tile to be
@@ -1318,8 +1320,7 @@ class Transform {
                     continue;
                 }
 
-                let visibility = QuadrantVisibility.None;
-                // Perform more precise intersection tests to cull the remaining < 1% false positives from the earlier test.
+                let visibility: QuadrantMask = QuadrantVisibility.None;
                 if (!fullyVisible) {
                     let intersectResult = verticalFrustumIntersect ? it.aabb.intersectsPrecise(cameraFrustum) : it.aabb.intersectsPreciseFlat(cameraFrustum);
 

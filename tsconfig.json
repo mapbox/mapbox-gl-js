@@ -18,6 +18,7 @@
     "target": "es2022",
     "useDefineForClassFields": false,
     "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "lib": [
       "ESNext",
       "DOM",
