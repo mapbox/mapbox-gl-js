@@ -31,7 +31,7 @@ export type TextureDescriptor = {
 const FIRST_TRY_HEADER_LENGTH = 16384;
 const MRT_DECODED_BAND_CACHE_SIZE = 30;
 
-class RasterArrayTile extends Tile {
+class RasterArrayTile extends Tile implements Tile {
     override texture: Texture | null | undefined;
     entireBuffer: ArrayBuffer | null | undefined;
     requestParams: RequestParameters | null | undefined;

@@ -47,8 +47,8 @@ class SourceCache extends Evented {
     _cache: TileCache;
     _timers: Partial<Record<any, number>>;
     _cacheTimers: Partial<Record<any, number>>;
-    _minTileCacheSize: number | null | undefined;
-    _maxTileCacheSize: number | null | undefined;
+    _minTileCacheSize?: number;
+    _maxTileCacheSize?: number;
     _paused: boolean;
     _isRaster: boolean;
     _shouldReloadOnResume: boolean;

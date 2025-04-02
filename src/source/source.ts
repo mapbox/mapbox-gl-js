@@ -68,8 +68,8 @@ export type SourceVectorLayer = {
  * @property {boolean} roundZoom `true` if zoom levels are rounded to the nearest integer in the source data, `false`
  * if they are floor-ed to the nearest integer.
  */
-export interface ISource extends Evented<SourceEvents> {
-    readonly type: string;
+export interface ISource<T = Source['type']> extends Evented<SourceEvents> {
+    readonly type: T;
     id: string;
     scope: string;
     minzoom: number;
@@ -81,29 +81,23 @@ export interface ISource extends Evented<SourceEvents> {
     mapbox_logo?: boolean;
     tileID?: CanonicalTileID;
     reparseOverscaled?: boolean;
-    minTileCacheSize?: number | null | undefined;
-    maxTileCacheSize?: number | null | undefined;
-    language?: string | null | undefined;
-    worldview?: string | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
+    language?: string;
+    worldview?: string;
     readonly usedInConflation?: boolean;
     vectorLayers?: Array<SourceVectorLayer>;
     vectorLayerIds?: Array<string>;
     rasterLayers?: Array<SourceRasterLayer>;
     rasterLayerIds?: Array<string>;
-    hasTransition: () => boolean;
-    loaded: () => boolean;
+    readonly hasTransition: () => boolean;
+    readonly loaded: () => boolean;
     readonly onAdd?: (map: Map) => void;
     readonly onRemove?: (map: Map) => void;
-    loadTile: (
-        tile: Tile,
-        callback: Callback<undefined>,
-        tileWorkers?: {
-            [key: string]: Actor;
-        },
-    ) => void;
+    readonly loadTile: (tile: Tile, callback: Callback<unknown>) => void;
     readonly hasTile?: (tileID: OverscaledTileID) => boolean;
-    readonly abortTile?: (tile: Tile, callback?: Callback<undefined>) => void;
-    readonly unloadTile?: (tile: Tile, callback?: Callback<undefined>) => void;
+    readonly abortTile?: (tile: Tile, callback?: Callback<unknown>) => void;
+    readonly unloadTile?: (tile: Tile, callback?: Callback<unknown>) => void;
     readonly reload?: () => void;
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.
@@ -111,7 +105,7 @@ export interface ISource extends Evented<SourceEvents> {
      * equivalent to this one.
      * @private
      */
-    serialize: () => SourceSpecification | {type: 'custom', [key: string]: unknown};
+    readonly serialize: () => SourceSpecification | {type: 'custom', [key: string]: unknown};
     readonly prepare?: () => void;
     readonly afterUpdate?: () => void;
     readonly _clear?: () => void;

@@ -49,7 +49,7 @@ import type {AJAXError} from '../util/ajax';
  * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
  * @see [Example: Add a third party vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/third-party/)
  */
-class VectorTileSource extends Evented<SourceEvents> implements ISource {
+class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'> {
     type: 'vector';
     id: string;
     scope: string;
@@ -58,8 +58,8 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
     url: string;
     scheme: string;
     tileSize: number;
-    minTileCacheSize?: number | null;
-    maxTileCacheSize?: number | null;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     roundZoom?: boolean;
     attribution?: string;
     // eslint-disable-next-line camelcase

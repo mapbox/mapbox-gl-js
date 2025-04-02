@@ -34,8 +34,8 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     reparseOverscaled: boolean | undefined;
     usedInConflation: boolean;
     tileSize: number;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;

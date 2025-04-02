@@ -15,7 +15,6 @@ import type RasterArrayTile from './raster_array_tile';
 import type {Map as MapboxMap} from '../ui/map';
 import type {Evented} from '../util/evented';
 import type {Callback} from '../types/callback';
-import type {ISource} from './source';
 import type {AJAXError} from '../util/ajax';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 import type {TextureDescriptor} from './raster_array_tile';
@@ -37,8 +36,7 @@ import type {WorkerSourceRasterArrayTileRequest} from './worker_source';
  *
  * @see [Example: Create a wind particle animation](https://docs.mapbox.com/mapbox-gl-js/example/raster-particle-layer/)
  */
-class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource {
-    override type: 'raster-array';
+class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
     override map: MapboxMap;
 
     /**

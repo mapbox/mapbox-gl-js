@@ -78,8 +78,8 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     attribution: string | undefined;
     promoteId: PromoteIdSpecification | null | undefined;
     // eslint-disable-next-line camelcase

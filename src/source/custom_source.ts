@@ -138,8 +138,8 @@ export interface CustomSourceInterface<T> extends Evented {
     maxzoom: number | null | undefined;
     scheme: string | null | undefined;
     tileSize: number | null | undefined;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     attribution: string | null | undefined;
     mapbox_logo: boolean | undefined;
     bounds: [number, number, number, number] | null | undefined;
@@ -189,8 +189,8 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
 
     roundZoom: boolean | undefined;
     tileBounds: TileBounds | null | undefined;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     reparseOverscaled: boolean | undefined;
 
     map: Map;

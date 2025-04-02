@@ -215,7 +215,7 @@ function sortTriangles(centerLatitudes: number[], indices: TriangleIndexArray): 
  * @see [Example: Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  * @see [Example: Animate a series of images](https://www.mapbox.com/mapbox-gl-js/example/animate-images/)
  */
-class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Evented<SourceEvents> implements ISource {
+class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<T> {
     type: T;
     id: string;
     scope: string;
@@ -225,8 +225,8 @@ class ImageSource<T extends 'image' | 'canvas' | 'video'= 'image'> extends Event
     url: string | null | undefined;
     width: number;
     height: number;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     roundZoom: boolean | undefined;
     reparseOverscaled: boolean | undefined;
     attribution: string | undefined;

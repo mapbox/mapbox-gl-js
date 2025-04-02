@@ -24,8 +24,8 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     roundZoom: boolean | undefined;
     reparseOverscaled: boolean | undefined;
     attribution: string | undefined;

@@ -10,7 +10,6 @@ import '../data/dem_data';
 
 import type {Evented} from '../util/evented';
 import type DEMData from '../data/dem_data';
-import type {ISource} from './source';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
@@ -18,8 +17,7 @@ import type {TextureImage} from '../render/texture';
 import type {RasterDEMSourceSpecification} from '../style-spec/types';
 import type {WorkerSourceDEMTileRequest} from './worker_source';
 
-class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISource {
-    override type: 'raster-dem';
+class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
     encoding: 'mapbox' | 'terrarium';
 
     constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {

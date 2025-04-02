@@ -60,7 +60,6 @@ export type CanvasSourceOptions = {
  * @see [Example: Add a canvas source](https://docs.mapbox.com/mapbox-gl-js/example/canvas-source/)
  */
 class CanvasSource extends ImageSource<'canvas'> {
-    override type: 'canvas';
     override options: CanvasSourceSpecification;
     animate: boolean;
     canvas: HTMLCanvasElement;

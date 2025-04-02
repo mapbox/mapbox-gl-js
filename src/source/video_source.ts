@@ -42,7 +42,6 @@ import type {VideoSourceSpecification} from '../style-spec/types';
  * @see [Example: Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
 class VideoSource extends ImageSource<'video'> {
-    override type: 'video';
     override options: VideoSourceSpecification;
     urls: Array<string>;
     video: HTMLVideoElement;
