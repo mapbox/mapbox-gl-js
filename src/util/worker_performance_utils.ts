@@ -15,11 +15,11 @@ export const WorkerPerformanceUtils = {
 
         const createTime = performance.getEntriesByName('create', 'mark')[0].startTime;
 
-        dispatcher.broadcast('getWorkerPerformanceMetrics', {}, (err, results: WorkerPerformanceMetrics[]) => {
+        dispatcher.broadcast('getWorkerPerformanceMetrics', undefined, (err, results: WorkerPerformanceMetrics[]) => {
             dispatcher.remove();
             if (err) return callback(err);
 
-            const sums: Record<string, any> = {};
+            const sums: Record<string, number> = {};
 
             for (const result of results) {
                 for (const measure of result.entries) {

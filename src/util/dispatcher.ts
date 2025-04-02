@@ -5,6 +5,13 @@ import WorkerPool from './worker_pool';
 
 import type {Class} from '../types/class';
 import type {Callback} from '../types/callback';
+import type {ActorCallback} from './actor';
+import type {ActorMessage, ActorMessages} from './actor_messages';
+
+/**
+ * Utility type that converts an `ActorCallback<T>` to an `ActorCallback<T[]>` or `Callback<T[]>`.
+ */
+export type DispatcherCallback<T = unknown> = T extends ActorCallback<infer U> ? ActorCallback<U[]> : Callback<T[]>;
 
 /**
  * Responsible for sending messages from a {@link Source} to an associated
@@ -46,9 +53,9 @@ class Dispatcher {
      * Broadcast a message to all Workers.
      * @private
      */
-    broadcast(type: string, data?: unknown, cb?: Callback<unknown>) {
+    broadcast<T extends ActorMessage>(type: T, data?: ActorMessages[T]['params'], cb?: DispatcherCallback<ActorMessages[T]['callback']>) {
         assert(this.actors.length);
-        cb = cb || function () {};
+        cb = cb || function () {} as DispatcherCallback<ActorMessages[T]['callback']>;
         asyncAll(this.actors, (actor, done) => {
             actor.send(type, data, done);
         }, cb);

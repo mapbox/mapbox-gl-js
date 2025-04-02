@@ -12,7 +12,7 @@ import {MeshoptDecoder} from './meshopt_decoder';
 
 import type {Class} from '../../src/types/class';
 
-let dispatcher = null;
+let dispatcher: Dispatcher | null = null;
 
 let dracoLoading: Promise<any> | undefined;
 let dracoUrl: string | null | undefined;

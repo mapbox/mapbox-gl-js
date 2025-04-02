@@ -39,8 +39,7 @@ import type {TileTransform} from '../geo/projection/tile_transform';
 import type {LUT} from "../util/lut";
 import type {GlyphMap} from '../render/glyph_manager';
 import type {ImagePositionMap} from '../render/image_atlas';
-import type {GetImagesParameters, GetGlyphsParameters} from '../style/style';
-import type {RasterizedImageMap, ImageRasterizationTasks, RasterizeImagesParameters} from '../render/image_manager';
+import type {RasterizedImageMap, ImageRasterizationTasks} from '../render/image_manager';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 
@@ -349,8 +348,7 @@ class WorkerTile {
         if (!this.extraShadowCaster) {
             const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
             if (Object.keys(stacks).length) {
-                const params: GetGlyphsParameters = {uid: this.uid, stacks, scope: this.scope};
-                actor.send('getGlyphs', params, (err, result: GlyphMap) => {
+                actor.send('getGlyphs', {uid: this.uid, stacks, scope: this.scope}, (err, result: GlyphMap) => {
                     if (!error) {
                         error = err;
                         glyphMap = result;
@@ -363,7 +361,7 @@ class WorkerTile {
 
             const images = Array.from(options.iconDependencies.keys()).map((id) => ImageId.parse(id));
             if (images.length) {
-                const params: GetImagesParameters = {images, source: this.source, scope: this.scope, tileID: this.tileID, type: 'icons'};
+                const params = {images, source: this.source, scope: this.scope, tileID: this.tileID, type: 'icons'} as const;
                 actor.send('getImages', params, (err: Error, result: StyleImageMap<StringifiedImageId>) => {
                     if (error) {
                         return;
@@ -381,7 +379,7 @@ class WorkerTile {
 
             const patterns = Array.from(options.patternDependencies.keys()).map((id) => ImageId.parse(id));
             if (patterns.length) {
-                const params: GetImagesParameters = {images: patterns, source: this.source, scope: this.scope, tileID: this.tileID, type: 'patterns'};
+                const params = {images: patterns, source: this.source, scope: this.scope, tileID: this.tileID, type: 'patterns'} as const;
                 actor.send('getImages', params, (err: Error, result: StyleImageMap<StringifiedImageId>) => {
                     if (error) {
                         return;
@@ -459,8 +457,7 @@ class WorkerTile {
     }
 
     rasterize(actor: Actor, imageMap: StyleImageMap<StringifiedImageVariant>, tasks: ImageRasterizationTasks, callback: () => void) {
-        const params: RasterizeImagesParameters = {scope: this.scope, tasks};
-        this.rasterizeTask = actor.send('rasterizeImages', params, (err: Error, rasterizedImages: RasterizedImageMap) => {
+        this.rasterizeTask = actor.send('rasterizeImages', {scope: this.scope, tasks}, (err: Error, rasterizedImages: RasterizedImageMap) => {
             if (!err) {
                 for (const [id, data] of rasterizedImages.entries()) {
                     const image = Object.assign(imageMap.get(id), {data});

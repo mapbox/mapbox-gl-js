@@ -17,9 +17,9 @@ import type {PromoteIdSpecification} from '../style-spec/types';
 import type Projection from '../geo/projection/projection';
 import type {LUT} from '../util/lut';
 import type {Callback} from '../types/callback';
-import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
+import type {TDecodingResult} from '../data/mrt/types';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
-import type {RasterizedImageMap, ImageRasterizationWorkerTasks} from '../render/image_manager';
+import type {RasterizedImageMap} from '../render/image_manager';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 
@@ -28,6 +28,7 @@ import type {StringifiedImageVariant} from '../style-spec/expression/types/image
  */
 export type WorkerSourceRequest = {
     type: string; // The source type must be a string, because we can register new source types dynamically.
+    uid: number;
     source: string;
     scope: string;
 };
@@ -38,8 +39,7 @@ export type WorkerSourceRequest = {
  * {@link WorkerSource#removeTile}.
  */
 export type WorkerSourceTileRequest = WorkerSourceRequest & {
-    uid: number;
-    tileID: OverscaledTileID;
+    tileID?: OverscaledTileID;
     request?: RequestParameters;
     projection?: Projection;
 };
@@ -136,21 +136,6 @@ export type WorkerSourceRasterArrayTileRequest = WorkerSourceTileRequest & {
     fetchLength?: number;
     sourceLayer?: string;
     band?: string | number;
-};
-
-export type WorkerSourceRasterArrayDecodingParameters = WorkerSourceTileRequest & {
-    buffer: ArrayBuffer;
-    task: TProcessingBatch;
-};
-
-export type WorkerSourceImageRaserizeParameters = {
-    scope: string;
-    tasks: ImageRasterizationWorkerTasks;
-};
-
-export type WorkerSourceRemoveRasterizedImagesParameters = {
-    scope: string;
-    imageIds: ImageId[];
 };
 
 export type WorkerSourceVectorTileCallback = Callback<WorkerSourceVectorTileResult>;

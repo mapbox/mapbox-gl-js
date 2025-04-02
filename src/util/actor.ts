@@ -2,15 +2,17 @@ import {bindAll, isWorker} from './util';
 import {serialize, deserialize} from './web_worker_transfer';
 import Scheduler from './scheduler';
 
+import type MapWorker from '../source/worker';
 import type {Serialized} from './web_worker_transfer';
 import type {Transferable} from '../types/transferable';
 import type {Cancelable} from '../types/cancelable';
 import type {Callback} from '../types/callback';
 import type {TaskMetadata} from './scheduler';
+import type {ActorMessage, ActorMessages} from './actor_messages';
 import '../types/worker';
 
 export type Task = {
-    type: string;
+    type: ActorMessage | '<response>' | '<cancel>';
     id?: string;
     data?: Serialized;
     error?: Serialized;
@@ -20,7 +22,7 @@ export type Task = {
     mustQueue?: boolean;
 };
 
-type ActorCallback = Callback<unknown> & {metadata?: TaskMetadata};
+export type ActorCallback<T = unknown> = Callback<T> & {metadata?: TaskMetadata};
 
 /**
  * An implementation of the [Actor design pattern](http://en.wikipedia.org/wiki/Actor_model)
@@ -35,14 +37,14 @@ type ActorCallback = Callback<unknown> & {metadata?: TaskMetadata};
  */
 class Actor {
     target: Worker;
-    parent: Worker;
+    parent: MapWorker;
     name?: string;
     mapId?: number;
-    callbacks: Record<number, ActorCallback>;
+    callbacks: Record<number, ActorCallback<ActorMessage>>;
     cancelCallbacks: Record<string | number, Cancelable>;
     scheduler: Scheduler;
 
-    constructor(target: Worker, parent: Worker, mapId?: number) {
+    constructor(target: Worker, parent: MapWorker, mapId?: number) {
         this.target = target;
         this.parent = parent;
         this.mapId = mapId;
@@ -61,13 +63,13 @@ class Actor {
      * @param targetMapId A particular mapId to which to send this message.
      * @private
      */
-    send(
-        type: string,
-        data: unknown,
-        callback?: ActorCallback,
+    send<T extends ActorMessage>(
+        type: T,
+        data: ActorMessages[T]['params'],
+        callback?: ActorMessages[T]['callback'],
         targetMapId?: number,
         mustQueue: boolean = false,
-        callbackMetadata?: ActorCallback['metadata'],
+        callbackMetadata?: TaskMetadata,
     ): Cancelable | undefined {
         // We're using a string ID instead of numbers because they are being used as object keys
         // anyway, and thus stringified implicitly. We use random IDs because an actor may receive
@@ -171,15 +173,16 @@ class Actor {
                 } as Task, buffers as unknown as Transferable[]);
             } : () => {};
 
-            const params = deserialize(task.data) as any;
+            const params = deserialize(task.data);
             if (this.parent[task.type]) {
                 // task.type == 'loadTile', 'removeTile', etc.
-                this.parent[task.type](task.sourceMapId, params, done);
+                this.parent[task.type](task.sourceMapId, params as ActorMessages[ActorMessage]['params'], done);
             } else if (this.parent.getWorkerSource) {
                 // task.type == sourcetype.method
                 const keys = task.type.split('.');
-                const scope = this.parent.getWorkerSource(task.sourceMapId, keys[0], params.source, params.scope);
-                scope[keys[1]](params, done);
+                const {source, scope} = params as {source: string; scope: string};
+                const workerSource = this.parent.getWorkerSource(task.sourceMapId, keys[0], source, scope);
+                workerSource[keys[1]](params, done);
             } else {
                 // No function was found.
                 done(new Error(`Could not find function ${task.type}`));

@@ -109,10 +109,8 @@ import type {LightProps as Directional} from '../../3d-style/style/directional_l
 import type {LightProps as Ambient} from '../../3d-style/style/ambient_light_properties';
 import type {Placement} from '../symbol/placement';
 import type {Cancelable} from '../types/cancelable';
-import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Validator, ValidationErrors} from './validate_style';
-import type {OverscaledTileID} from '../source/tile_id';
 import type {FeatureState, StyleExpression} from '../style-spec/expression/index';
 import type {PointLike} from '../types/point-like';
 import type {ISource, Source, SourceClass} from '../source/source';
@@ -121,9 +119,7 @@ import type {QrfQuery, QrfTarget, QueryResult} from '../source/query_features';
 import type {GeoJSONFeature, FeaturesetDescriptor, TargetDescriptor, default as Feature} from '../util/vectortile_to_geojson';
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
-import type {FontStacks, GlyphMap} from '../render/glyph_manager';
-import type {RasterizeImagesParameters, RasterizedImageMap} from '../render/image_manager';
-import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
+import type {ActorMessages} from '../util/actor_messages';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -137,25 +133,6 @@ export type QueryRenderedFeaturesetParams = {
     filter?: FilterSpecification;
     validate?: boolean;
     layers?: never;
-};
-
-export type GetImagesParameters = {
-    images: ImageId[];
-    scope: string;
-    source: string;
-    tileID: OverscaledTileID;
-    type: 'icons' | 'patterns';
-};
-
-export type SetImagesParameters = {
-    images: ImageId[];
-    scope: string;
-};
-
-export type GetGlyphsParameters = {
-    scope: string;
-    stacks: FontStacks;
-    uid?: number;
 };
 
 // We're skipping validation errors with the `source.canvas` identifier in order
@@ -1877,8 +1854,7 @@ class Style extends Evented<MapEvents> {
         const style = this.getFragmentStyle(scope);
         if (!style) return;
         style._availableImages = style.imageManager.listImages(scope);
-        const params: SetImagesParameters = {scope, images: style._availableImages};
-        style.dispatcher.broadcast('setImages', params);
+        style.dispatcher.broadcast('setImages', {scope, images: style._availableImages});
     }
 
     /**
@@ -4267,7 +4243,7 @@ class Style extends Evented<MapEvents> {
 
     // Callbacks from web workers
 
-    getImages(mapId: number, params: GetImagesParameters, callback: Callback<StyleImageMap<StringifiedImageId>>) {
+    getImages(mapId: number, params: ActorMessages['getImages']['params'], callback: ActorMessages['getImages']['callback']) {
         this.imageManager.getImages(params.images, params.scope, callback);
 
         // Apply queued image changes before setting the tile's dependencies so that the tile
@@ -4292,15 +4268,15 @@ class Style extends Evented<MapEvents> {
         setDependencies(this._mergedSymbolSourceCaches[fqid]);
     }
 
-    rasterizeImages(mapId: string, params: RasterizeImagesParameters, callback: Callback<RasterizedImageMap>) {
+    rasterizeImages(mapId: string, params: ActorMessages['rasterizeImages']['params'], callback: ActorMessages['rasterizeImages']['callback']) {
         this.imageManager.rasterizeImages(params, callback);
     }
 
-    getGlyphs(mapId: string, params: GetGlyphsParameters, callback: Callback<GlyphMap>) {
+    getGlyphs(mapId: string, params: ActorMessages['getGlyphs']['params'], callback: ActorMessages['getGlyphs']['callback']) {
         this.glyphManager.getGlyphs(params.stacks, params.scope, callback);
     }
 
-    getResource(mapId: string, params: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
+    getResource(mapId: string, params: ActorMessages['getResource']['params'], callback: ActorMessages['getResource']['callback']): Cancelable {
         return makeRequest(params, callback);
     }
 

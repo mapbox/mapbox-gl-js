@@ -24,8 +24,8 @@ import type {LUT} from '../util/lut';
 import type {FQID} from '../util/fqid';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
-import type {WorkerSourceRemoveRasterizedImagesParameters} from '../source/worker_source';
 import type {ImageProvider} from '../render/image_provider';
+import type {ActorMessages} from '../util/actor_messages';
 
 const IMAGE_RASTERIZER_WORKER_POOL_COUNT = 1;
 
@@ -36,19 +36,14 @@ type Pattern = {
 
 export type PatternMap = Record<string, Pattern>;
 
+export type ImageRasterizationTasks = Map<StringifiedImageVariant, ImageVariant>;
+
 export type ImageRasterizationWorkerTask = {
     image: StyleImage,
     imageVariant: ImageVariant
 };
 
 export type ImageRasterizationWorkerTasks = Map<StringifiedImageVariant, ImageRasterizationWorkerTask>;
-
-export type ImageRasterizationTasks = Map<StringifiedImageVariant, ImageVariant>;
-
-export type RasterizeImagesParameters = {
-    scope: string;
-    tasks: ImageRasterizationTasks;
-};
 
 export type RasterizedImageMap = Map<StringifiedImageVariant, RGBAImage>;
 
@@ -285,8 +280,7 @@ class ImageManager extends Evented {
         }
 
         if (offscreenCanvasSupported()) {
-            const params: WorkerSourceRemoveRasterizedImagesParameters = {imageIds: [id], scope};
-            this.imageRasterizerDispatcher.getActor().send('removeRasterizedImages', params);
+            this.imageRasterizerDispatcher.getActor().send('removeRasterizedImages', {imageIds: [id], scope});
         } else {
             this.imageRasterizer.removeImagesFromCacheByIds([id], scope);
         }
@@ -358,9 +352,10 @@ class ImageManager extends Evented {
         }
     }
 
-    rasterizeImages({scope, tasks}: RasterizeImagesParameters, callback: Callback<RasterizedImageMap>) {
+    rasterizeImages(params: ActorMessages['rasterizeImages']['params'], callback: ActorMessages['rasterizeImages']['callback']) {
         const imageWorkerTasks: ImageRasterizationWorkerTasks = new Map();
 
+        const {tasks, scope} = params;
         for (const [id, imageVariant] of tasks.entries()) {
             const image = this.getImage(imageVariant.id, scope);
             if (image) {
@@ -374,7 +369,7 @@ class ImageManager extends Evented {
     _rasterizeImages(scope: string, tasks: ImageRasterizationWorkerTasks, callback?: Callback<RasterizedImageMap>) {
         if (offscreenCanvasSupported()) {
             // Use the worker thread to rasterize images
-            this.imageRasterizerDispatcher.getActor().send('rasterizeImages', {tasks, scope}, callback);
+            this.imageRasterizerDispatcher.getActor().send('rasterizeImagesWorker', {tasks, scope}, callback);
         } else {
             // Fallback to main thread rasterization
             const rasterizedImages: RasterizedImageMap = new Map();
