@@ -763,16 +763,15 @@ class Painter {
         const layers = this.style._mergedLayers;
 
         const drapingEnabled = !!(this.terrain && this.terrain.enabled);
-        const getLayerIds = () =>
-            this.style._getOrder(drapingEnabled).filter((id) => {
-                const layer = layers[id];
+        const getLayerIds = () => this.style._getOrder(drapingEnabled).filter((id) => {
+            const layer = layers[id];
 
-                if (layer.type in this._debugParams.enabledLayers) {
-                    return this._debugParams.enabledLayers[layer.type];
-                }
+            if (layer.type in this._debugParams.enabledLayers) {
+                return this._debugParams.enabledLayers[layer.type];
+            }
 
-                return true;
-            });
+            return true;
+        });
 
         let layerIds = getLayerIds();
 

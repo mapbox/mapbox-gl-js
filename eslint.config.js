@@ -215,7 +215,6 @@ export default tseslint.config(
             '@stylistic/js/no-confusing-arrow': ['error', {onlyOneSimpleParam: true}],
 
             '@stylistic/js/arrow-parens': 'off',
-            '@stylistic/js/implicit-arrow-linebreak': 'off',
             '@stylistic/js/indent': 'off',
             '@stylistic/js/quotes': 'off',
         }

@@ -68,8 +68,7 @@ export class ElevationFeature {
         this.edges = edges;
 
         // Check that edges are valid
-        this.edges = this.edges.filter(edge =>
-            edge.a < this.vertices.length &&
+        this.edges = this.edges.filter(edge => edge.a < this.vertices.length &&
             edge.b < this.vertices.length &&
             !vec2.exactEquals(this.vertices[edge.a].position, this.vertices[edge.b].position)
         );
@@ -314,10 +313,9 @@ export abstract class ElevationFeatures {
 
         vertices.sort((a, b) => a.id - b.id || a.idx - b.idx);
 
-        vertices = vertices.filter((value, index, self) =>
-            index === self.findIndex((t) => (
-                t.id === value.id && t.idx === value.idx
-            ))
+        vertices = vertices.filter((value, index, self) => index === self.findIndex((t) => (
+            t.id === value.id && t.idx === value.idx
+        ))
         );
 
         const elevationFeatures = new Array<ElevationFeature>();
@@ -364,8 +362,7 @@ export abstract class ElevationFeatures {
         }
 
         // Ensure that features are sorted by id
-        assert(elevationFeatures.every((feature, index, array) =>
-            index === 0 || array[index - 1].id <= feature.id
+        assert(elevationFeatures.every((feature, index, array) => index === 0 || array[index - 1].id <= feature.id
         ));
 
         return elevationFeatures;
