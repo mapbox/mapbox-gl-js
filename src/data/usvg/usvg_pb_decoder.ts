@@ -1,4 +1,4 @@
-/* eslint-disable camelcase */
+/* eslint-disable camelcase, @stylistic/js/brace-style */
 
 import Color from "../../style-spec/util/color";
 
