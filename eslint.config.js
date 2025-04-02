@@ -213,7 +213,6 @@ export default tseslint.config(
     {
         rules: {
             '@stylistic/js/arrow-parens': 'off',
-            '@stylistic/js/computed-property-spacing': 'off',
             '@stylistic/js/implicit-arrow-linebreak': 'off',
             '@stylistic/js/indent': 'off',
             '@stylistic/js/no-confusing-arrow': 'off',

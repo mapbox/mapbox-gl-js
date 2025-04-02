@@ -666,7 +666,7 @@ function decodeLights(base64: string): Array<AreaLight> {
     const stride = 6;
     for (let i = 0; i < lightCount; i++) {
         const height = lightData[i * 2 * stride] / 30;
-        const elevation = lightData[i * 2 * stride + 1 ] / 30;
+        const elevation = lightData[i * 2 * stride + 1] / 30;
         const depth = lightData[i * 2 * stride + 10] / 100;
         const x0 = lightDataFloat[i * stride + 1];
         const y0 = lightDataFloat[i * stride + 2];
