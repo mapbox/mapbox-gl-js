@@ -190,7 +190,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
     if (input instanceof Map) {
         const properties = {'$name': 'Map', entries: []} satisfies SerializedObject;
         for (const [key, value] of input.entries()) {
-            properties.entries.push(serialize(key), serialize(value));
+            properties.entries.push(serialize(key), serialize(value, transferables));
         }
         return properties;
     }
