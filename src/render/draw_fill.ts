@@ -77,7 +77,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 
     const terrainEnabled = !!(painter.terrain && painter.terrain.enabled);
 
-    const drawFillParams = <DrawFillParams>{
+    const drawFillParams: DrawFillParams = {
         painter, sourceCache, layer, coords, colorMode, elevationType, terrainEnabled, pass
     };
 

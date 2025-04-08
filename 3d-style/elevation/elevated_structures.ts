@@ -261,7 +261,7 @@ export class ElevatedStructures {
     addPortalCandidates(id: number, polygon: Point[][], isTunnel: boolean, elevation: ElevationFeature, zLevel: number) {
         if (polygon.length === 0) return;
 
-        const leveledPoly = <LeveledPolygon>{geometry: polygon, zLevel};
+        const leveledPoly: LeveledPolygon = {geometry: polygon, zLevel};
         this.portalPolygons.add(id, leveledPoly);
 
         const pointsEqual = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
@@ -333,7 +333,7 @@ export class ElevatedStructures {
         // shadow caster segment: [------------------------------------------------------------------------------------------------------------]
         assert(this.vertexPositions.length === 0 && this.vertexNormals.length === 0 && this.indexArray.length === 0);
 
-        const beginSegment = () => <Segment>{vertexOffset: 0, primitiveOffset: this.indexArray.length};
+        const beginSegment = () => ({vertexOffset: 0, primitiveOffset: this.indexArray.length} as Segment);
         const endSegment = (segment: Segment) => { segment.primitiveLength = this.indexArray.length - segment.primitiveOffset; };
 
         const builder = new MeshBuilder(this.vertexPositions, this.vertexNormals, this.indexArray);

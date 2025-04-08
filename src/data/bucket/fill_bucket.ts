@@ -345,11 +345,11 @@ class FillBucket implements Bucket {
     }
 
     private addElevatedGeometry(polygons: Point[][][], elevationSampler: ElevationFeatureSampler, elevation: ElevationFeature, bias: number, index: number) {
-        const elevationParams = <ElevationParams>{elevation, elevationSampler, bias, index};
+        const elevationParams: ElevationParams = {elevation, elevationSampler, bias, index};
         const [min, max] = this.addGeometry(polygons, this.elevationBufferData, elevationParams);
 
         if (this.elevationBufferData.heightRange == null) {
-            this.elevationBufferData.heightRange = <Range>{min, max};
+            this.elevationBufferData.heightRange = {min, max} as Range;
         } else {
             this.elevationBufferData.heightRange.min = Math.min(this.elevationBufferData.heightRange.min, min);
             this.elevationBufferData.heightRange.max = Math.max(this.elevationBufferData.heightRange.max, max);

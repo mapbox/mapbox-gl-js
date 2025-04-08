@@ -228,13 +228,13 @@ export abstract class ElevationFeatureParser {
 
             // Expect to find only "curve_meta" and "curve_point" features
             if (VectorTileFeature.types[feature.type] === 'Point' && type === 'curve_point') {
-                const out = <Vertex>{};
+                const out = {} as Vertex;
 
                 if (schema.parseVertex(parser, feature, out)) {
                     vertices.push(out);
                 }
             } else if (VectorTileFeature.types[feature.type] === 'Polygon' && type === 'curve_meta') {
-                const out = <Feature>{};
+                const out = {} as Feature;
 
                 if (schema.parseFeature(parser, feature, out)) {
                     features.push(out);

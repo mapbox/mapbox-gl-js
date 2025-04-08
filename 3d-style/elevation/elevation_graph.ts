@@ -24,7 +24,7 @@ export interface ElevationPortalEdge {
     type: ElevationPortalType;
 }
 
-export class LeveledPolygon {
+export type LeveledPolygon = {
     geometry: Point[][];
     zLevel: number;
 }
