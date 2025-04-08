@@ -48,7 +48,7 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.8",
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.23.0",
+    "@eslint/js": "^9.24.0",
     "@mapbox/mvt-fixtures": "^3.10.0",
     "@octokit/rest": "^21.1.1",
     "@rollup/plugin-commonjs": "^28.0.3",
