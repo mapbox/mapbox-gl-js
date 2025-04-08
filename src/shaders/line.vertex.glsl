@@ -212,9 +212,10 @@ void main() {
 #endif
 
 #ifndef RENDER_TO_TEXTURE
+    float epsilon = 0.0001;
     // calculate how much the perspective view squishes or stretches the extrude
-    float extrude_length_without_perspective = length(dist);
-    float extrude_length_with_perspective = max(length(projected_extrude_xy / gl_Position.w * u_units_to_pixels), 0.001);
+    float extrude_length_without_perspective = max(length(dist), epsilon);
+    float extrude_length_with_perspective = max(length(projected_extrude_xy / gl_Position.w * u_units_to_pixels), epsilon);
     v_gamma_scale = mix(extrude_length_without_perspective / extrude_length_with_perspective, 1.0, step(0.01, blur));
 #else
     v_gamma_scale = 1.0;
