@@ -38,7 +38,7 @@ export function prepare(layer: LineStyleLayer, sourceCache: SourceCache, painter
             const tile = sourceCache.getTile(coord);
             const bucket: LineBucket | undefined = tile.getBucket(layer) as LineBucket;
             if (!bucket) continue;
-            if (bucket.hasZOffset) {
+            if (bucket.elevationType !== 'none') {
                 layer.hasElevatedBuckets = true;
             } else {
                 layer.hasNonElevatedBuckets = true;
@@ -63,6 +63,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const elevationReference = layer.layout.get('line-elevation-reference');
     const unitInMeters = layer.layout.get('line-width-unit') === 'meters';
     const elevationFromSea = elevationReference === 'sea';
+    const terrainEnabled = !!(painter.terrain && painter.terrain.enabled);
 
     const context = painter.context;
     const gl = context.gl;
@@ -130,7 +131,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
             const bucket: LineBucket | null | undefined = (tile.getBucket(layer) as any);
             if (!bucket) continue;
-            if ((bucket.hasZOffset && !elevated) || (!bucket.hasZOffset && elevated)) continue;
+            if ((bucket.elevationType !== 'none' && !elevated) || (bucket.elevationType === 'none' && elevated)) continue;
 
             painter.prepareDrawTile();
 
@@ -279,13 +280,15 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
     };
 
+    let depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
+    const depthModeFor3D = new DepthMode(painter.depthOcclusion ? gl.GREATER : gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
+
     if (layer.hasNonElevatedBuckets) {
         const terrainEnabledImmediateMode = !isDraping && painter.terrain;
         if (occlusionOpacity !== 0 && terrainEnabledImmediateMode) {
             warnOnce(`Occlusion opacity for layer ${layer.id} is supported on terrain only if the layer has line-z-offset enabled.`);
         } else {
             if (!terrainEnabledImmediateMode) {
-                const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
                 const stencilMode3D = StencilMode.disabled;
                 renderTiles(coords, definesValues, depthMode, stencilMode3D, false, true);
             } else {
@@ -298,17 +301,24 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     }
 
     if (layer.hasElevatedBuckets) {
-        definesValues.push("ELEVATED");
-        if (hasCrossSlope) {
-            definesValues.push(crossSlopeHorizontal ? "CROSS_SLOPE_HORIZONTAL" : "CROSS_SLOPE_VERTICAL");
-        }
-        if (elevationFromSea) {
-            definesValues.push('ELEVATION_REFERENCE_SEA');
+        if (elevationReference === 'hd-road-markup') {
+            if (!terrainEnabled) {
+                depthMode = depthModeFor3D;
+                definesValues.push('ELEVATED_ROADS');
+            }
+        } else {
+            definesValues.push("ELEVATED");
+            depthMode = depthModeFor3D;
+            if (hasCrossSlope) {
+                definesValues.push(crossSlopeHorizontal ? "CROSS_SLOPE_HORIZONTAL" : "CROSS_SLOPE_VERTICAL");
+            }
+            if (elevationFromSea) {
+                definesValues.push('ELEVATION_REFERENCE_SEA');
+            }
         }
 
         // No need for tile clipping, a single pass only even for transparent lines.
         const stencilMode3D = useStencilMaskRenderPass ? painter.stencilModeFor3D() : StencilMode.disabled;
-        const depthMode = new DepthMode(painter.depthOcclusion ? gl.GREATER : gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
         painter.forceTerrainMode = true;
         renderTiles(coords, definesValues, depthMode, stencilMode3D, true, true);
         if (useStencilMaskRenderPass) {

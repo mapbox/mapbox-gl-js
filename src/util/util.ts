@@ -7,6 +7,7 @@ import deepEqual from '../style-spec/util/deep_equal';
 import type {vec4} from 'gl-matrix';
 import type {UnionToIntersection} from 'utility-types';
 import type {Callback} from '../types/callback';
+import type {Range} from '../../3d-style/elevation/elevation_feature';
 
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
@@ -869,6 +870,14 @@ export function computeColorAdjustmentMatrix(
     mat4.multiply(m, brightnessMatrix, contrastMatrix);
     mat4.multiply(m, m, saturationMatrix);
     return m;
+}
+
+function mapRangeValue(value: number, from: Range, to: Range): number {
+    return ((value - from.min) * (to.max - to.min)) / (from.max - from.min) + to.min;
+}
+
+export function mapRange(range: Range, from: Range, to: Range): Range {
+    return {min: mapRangeValue(range.min, from, to), max: mapRangeValue(range.max, from, to)};
 }
 
 export {deepEqual};

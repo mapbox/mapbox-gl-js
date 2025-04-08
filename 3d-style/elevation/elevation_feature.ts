@@ -5,12 +5,13 @@ import {ElevationFeatureParser, type Bounds} from "./elevation_feature_parser";
 import {tileToMeter} from "../../src/geo/mercator_coordinate";
 import {Ray2D} from "../../src/util/primitives";
 import {clamp, smoothstep} from "../../src/util/util";
-import {MARKUP_ELEVATION_BIAS} from "./elevation_constants";
+import {MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ID} from "./elevation_constants";
 import EXTENT from "../../src/style-spec/data/extent";
+import Point from "@mapbox/point-geometry";
 
 import type {VectorTileLayer} from "@mapbox/vector-tile";
 import type {CanonicalTileID} from "../../src/source/tile_id";
-import type Point from "@mapbox/point-geometry";
+import type {BucketFeature} from "../../src/data/bucket";
 
 export interface Vertex {
     position: vec2;
@@ -40,6 +41,44 @@ export interface Range {
 
 // Hard-coded depth after which roads are rendered as tunnels
 const TUNNEL_THRESHOLD_METERS = 5.0;
+
+export class EdgeIterator {
+
+    feature: ElevationFeature;
+    metersToTile: number;
+    index: number;
+
+    constructor(feature: ElevationFeature, metersToTile: number) {
+        this.feature = feature;
+        this.metersToTile = metersToTile;
+        this.index = 0;
+    }
+
+    get(): [Point, Point] {
+        assert(this.index < this.feature.vertices.length);
+
+        const vertex = this.feature.vertices[this.index];
+        const dir = this.feature.vertexProps[this.index].dir;
+
+        // Compute perpendicular split line
+        const perpX = dir[1];
+        const perpY = -dir[0];
+        const dist = (vertex.extent + 1) * this.metersToTile;
+
+        const a = new Point(Math.trunc(vertex.position[0] + perpX * dist), Math.trunc(vertex.position[1] + perpY * dist));
+        const b = new Point(Math.trunc(vertex.position[0] - perpX * dist), Math.trunc(vertex.position[1] - perpY * dist));
+
+        return [a, b];
+    }
+
+    next(): void {
+        this.index++;
+    }
+
+    valid(): boolean {
+        return this.index < this.feature.vertices.length;
+    }
+}
 
 // ElevationFeature describes a three dimensional linestring that acts as a "skeleton"
 // for guiding elevation other features such as lines an polygons attached to it. Its
@@ -366,6 +405,15 @@ export abstract class ElevationFeatures {
         ));
 
         return elevationFeatures;
+    }
+
+    static getElevationFeature(feature: BucketFeature, elevationFeatures?: ElevationFeature[]): ElevationFeature | undefined {
+        if (!elevationFeatures) return undefined;
+
+        const value = +feature.properties[PROPERTY_ELEVATION_ID];
+        if (Number.isNaN(value)) return undefined;
+
+        return elevationFeatures.find(f => f.id === value);
     }
 }
 

@@ -1,6 +1,5 @@
 import Anchor from './anchor';
 import {getAnchors, getCenterAnchor} from './get_anchors';
-import clipLine from './clip_line';
 import {shapeText, shapeIcon, WritingMode, fitIconToText} from './shaping';
 import {getGlyphQuads, getIconQuads} from './quads';
 import {warnOnce, degToRad, clamp} from '../util/util';
@@ -18,6 +17,7 @@ import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
 import * as symbolSize from '../symbol/symbol_size';
 import {PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constants';
+import {clipLines} from '../util/line_clipping';
 
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
@@ -619,7 +619,7 @@ function addFeature(bucket: SymbolBucket,
     };
 
     if (symbolPlacement === 'line') {
-        for (const line of clipLine(feature.geometry, 0, 0, EXTENT, EXTENT)) {
+        for (const line of clipLines(feature.geometry, 0, 0, EXTENT, EXTENT)) {
             const anchors = getAnchors(
                 line,
                 symbolMinDistance,

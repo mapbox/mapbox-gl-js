@@ -12,8 +12,8 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
-import {ElevationFeatureSampler, type ElevationFeature, type Range} from '../../../3d-style/elevation/elevation_feature';
-import {MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ID, PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL} from '../../../3d-style/elevation/elevation_constants';
+import {ElevationFeatures, ElevationFeatureSampler, type ElevationFeature, type Range} from '../../../3d-style/elevation/elevation_feature';
+import {MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL} from '../../../3d-style/elevation/elevation_constants';
 import {ElevatedStructures} from '../../../3d-style/elevation/elevated_structures';
 
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
@@ -297,7 +297,7 @@ class FillBucket implements Bucket {
 
         // Layers using vector sources should always use the precomputed elevation.
         // In case of geojson sources the elevation snapshot will be used instead
-        const tiledElevation = this.getElevationFeature(feature, elevationFeatures);
+        const tiledElevation = ElevationFeatures.getElevationFeature(feature, elevationFeatures);
         if (tiledElevation) {
             elevatedGeometry.push({polygons, elevationFeature: tiledElevation, elevationTileID: canonical});
         } else {
@@ -473,15 +473,6 @@ class FillBucket implements Bucket {
         }
 
         return [min, max];
-    }
-
-    private getElevationFeature(feature: BucketFeature, elevationFeatures?: ElevationFeature[]): ElevationFeature | undefined {
-        if (!elevationFeatures) return undefined;
-
-        const value = +feature.properties[PROPERTY_ELEVATION_ID];
-        if (value == null) return undefined;
-
-        return elevationFeatures.find(f => f.id === value);
     }
 }
 

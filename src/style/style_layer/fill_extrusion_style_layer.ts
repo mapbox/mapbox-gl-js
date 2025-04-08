@@ -6,7 +6,7 @@ import {getLayoutProperties, getPaintProperties} from './fill_extrusion_style_la
 import Point from '@mapbox/point-geometry';
 import {vec3, vec4} from 'gl-matrix';
 import EXTENT from '../../style-spec/data/extent';
-import {Point3D} from '../../util/polygon_clipping';
+import {Point3D} from '../../util/line_clipping';
 
 import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {CanonicalTileID} from '../../source/tile_id';

@@ -19,13 +19,16 @@ import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
 import assert from 'assert';
-import {Point4D, clipLine} from '../../util/polygon_clipping';
-import {warnOnce} from '../../util/util';
+import {Point4D, clipLine, clipLines, lineSubdivision, type LineInfo} from '../../util/line_clipping';
+import {mapRange, warnOnce} from '../../util/util';
 import {tileToMeter} from '../../geo/mercator_coordinate';
 // Import LineAtlas as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../../render/line_atlas';
 import {number as interpolate} from '../../style-spec/util/interpolate';
+import Point from "@mapbox/point-geometry";
+import {ELEVATION_CLIP_MARGIN, MARKUP_ELEVATION_BIAS, type ElevationType} from '../../../3d-style/elevation/elevation_constants';
+import {ElevationFeatures, ElevationFeatureSampler, type Range, type ElevationFeature, EdgeIterator} from '../../../3d-style/elevation/elevation_feature';
 
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
@@ -49,7 +52,6 @@ import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {PossiblyEvaluatedValue} from '../../style/properties';
-import type Point from "@mapbox/point-geometry";
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 import type {ImageId} from '../../style-spec/expression/types/image_id';
 
@@ -97,6 +99,12 @@ type LineProgressFeatures = {
     zOffset: number;
     variableWidth: number;
 };
+
+interface Subsegment {
+    progress: Range;
+    nextDir: Point | undefined;
+    prevDir: Point | undefined;
+}
 
 /**
  * @private
@@ -150,7 +158,6 @@ class LineBucket implements Bucket {
     indexBuffer: IndexBuffer;
 
     hasPattern: boolean;
-    hasZOffset: boolean;
     tileToMeter: number;
     hasCrossSlope: boolean;
     programConfigurations: ProgramConfigurationSet<LineStyleLayer>;
@@ -163,6 +170,9 @@ class LineBucket implements Bucket {
 
     evaluationGlobals = {'zoom': 0, 'lineProgress': undefined};
 
+    elevationType: ElevationType = 'none';
+    heightRange: Range | undefined;
+
     constructor(options: BucketParameters<LineStyleLayer>) {
         this.zoom = options.zoom;
         this.evaluationGlobals.zoom = this.zoom;
@@ -173,7 +183,6 @@ class LineBucket implements Bucket {
         this.index = options.index;
         this.projection = options.projection;
         this.hasPattern = false;
-        this.hasZOffset = false;
         this.hasCrossSlope = false;
         this.patternFeatures = [];
         this.lineClipsArray = [];
@@ -207,21 +216,23 @@ class LineBucket implements Bucket {
 
         this.tileToMeter = tileToMeter(canonical);
 
-        const zOffset = this.layers[0].layout.get('line-z-offset');
-        const zOffsetZero = zOffset.isConstant() && !zOffset.constantOr(0);
         const elevationReference = this.layers[0].layout.get('line-elevation-reference');
-        const seaOrGroundReference = elevationReference === 'sea' || elevationReference === 'ground';
-        // The bucket has z-offset if elevationReference is 'sea' or 'ground'
-        // or when elevationReference is 'none' and z-offset property is non-zero.
-        // We need to explicitly compare elevationReference agains 'none', because the property
-        // can also have hd-road specific values which are unrelated to normal z-offset.
-        this.hasZOffset = seaOrGroundReference || (!zOffsetZero && elevationReference === 'none');
-        if (this.hasZOffset && elevationReference === 'none') {
-            warnOnce(`line-elevation-reference: ground is used for the layer ${this.layerIds[0]} because non-zero line-z-offset value was found.`);
+        if (elevationReference === 'hd-road-markup') {
+            this.elevationType = 'road';
+        } else {
+            const zOffset = this.layers[0].layout.get('line-z-offset');
+            const zOffsetZero = zOffset.isConstant() && !zOffset.constantOr(0);
+            const seaOrGroundReference = elevationReference === 'sea' || elevationReference === 'ground';
+            // The bucket has z-offset if elevationReference is 'sea' or 'ground'
+            // or when elevationReference is 'none' and z-offset property is non-zero.
+            this.elevationType = seaOrGroundReference || !zOffsetZero ? 'offset' : 'none';
+            if (this.elevationType === 'offset' && elevationReference === 'none') {
+                warnOnce(`line-elevation-reference: ground is used for the layer ${this.layerIds[0]} because non-zero line-z-offset value was found.`);
+            }
         }
 
         const crossSlope = this.layers[0].layout.get('line-cross-slope');
-        this.hasCrossSlope = this.hasZOffset && crossSlope !== undefined;
+        this.hasCrossSlope = this.elevationType === 'offset' && crossSlope !== undefined;
 
         const bucketFeatures = [];
 
@@ -274,7 +285,7 @@ class LineBucket implements Bucket {
                 this.patternFeatures.push(patternBucketFeature);
 
             } else {
-                this.addFeature(bucketFeature, geometry, index, canonical, lineAtlas.positions, options.availableImages, options.brightness);
+                this.addFeature(bucketFeature, geometry, index, canonical, lineAtlas.positions, options.availableImages, options.brightness, options.elevationFeatures);
             }
 
             const feature = features[index].feature;
@@ -399,7 +410,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], brightness?: number | null) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], brightness?: number | null, elevationFeatures?: ElevationFeature[]) {
         const layout = this.layers[0].layout;
 
         const join = layout.get('line-join').evaluate(feature, {});
@@ -417,14 +428,142 @@ class LineBucket implements Bucket {
             this.variableWidthValue = lineWidth;
         }
 
-        for (const line of geometry) {
-            this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit);
+        if (this.elevationType === 'road') {
+            const vertexOffset = this.layoutVertexArray.length;
+            const added = this.addElevatedRoadFeature(feature, geometry, canonical, elevationFeatures, join, cap, miterLimit, roundLimit);
+
+            if (!added) {
+                // Feature is not elevated but is rendered as part of (road) elevated bucket.
+                // Due to clipping we're actually passing (possibly) a slightly smaller subsegment
+                // of the original line.
+                const [clippedLines, linesInfo] = this.clipRuntimeLinesToTile(geometry, ELEVATION_CLIP_MARGIN);
+                for (let i = 0; i < clippedLines.length; i++) {
+                    const line = clippedLines[i];
+                    const info = linesInfo[i];
+
+                    const subseg: Subsegment = {
+                        progress: {min: info.progress.min, max: info.progress.max},
+                        nextDir: this.computeSegNextDir(info, line),
+                        prevDir: this.computeSegPrevDir(info, line)
+                    };
+
+                    this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit, subseg);
+                }
+
+                this.fillNonElevatedRoadSegment(vertexOffset);
+            }
+        } else {
+            for (const line of geometry) {
+                this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit);
+            }
         }
 
         this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
     }
 
-    addLine(vertices: Array<Point>, feature: BucketFeature, canonical: CanonicalTileID, join: string, cap: string, miterLimit: number, roundLimit: number) {
+    private computeSegNextDir(info: LineInfo, line: Point[]) {
+        assert(line.length > 1);
+        return info.nextPoint.sub(line.at(-2)).unit();
+    }
+
+    private computeSegPrevDir(info: LineInfo, line: Point[]) {
+        assert(line.length > 1);
+        return line[1].sub(info.prevPoint).unit();
+    }
+
+    private clipLinesToTile(lines: Point[][], margin: number): Point[][] {
+        return clipLines(lines, -margin, -margin, EXTENT + margin, EXTENT + margin);
+    }
+
+    private clipRuntimeLinesToTile(lines: Point[][], margin: number): [Point[][], LineInfo[]] {
+        const linesInfo: LineInfo[] = [];
+        const clipped = clipLines(lines, -margin, -margin, EXTENT + margin, EXTENT + margin, linesInfo);
+        return [clipped, linesInfo];
+    }
+
+    private addElevatedRoadFeature(feature: BucketFeature, geometry: Array<Array<Point>>, canonical: CanonicalTileID, elevationFeatures: ElevationFeature[] | undefined, join: string, cap: string, miterLimit: number, roundLimit: number): boolean {
+        interface ElevatedGeometry {
+            geometry: Point[];
+            elevation: ElevationFeature;
+            elevationTileID: CanonicalTileID;
+            segment: Subsegment;
+        }
+
+        const elevatedGeometry: ElevatedGeometry[] = [];
+
+        const tiledElevation = ElevationFeatures.getElevationFeature(feature, elevationFeatures);
+        if (tiledElevation) {
+            const clippedLines = this.clipLinesToTile(geometry, ELEVATION_CLIP_MARGIN);
+            const preparedLines = this.prepareElevatedLines(clippedLines, tiledElevation, canonical);
+            for (const line of preparedLines) {
+                elevatedGeometry.push({geometry: line, elevation: tiledElevation, elevationTileID: canonical,
+                    segment: {progress: {min: 0, max: 1}, nextDir: undefined, prevDir: undefined}});
+            }
+        }
+
+        if (elevatedGeometry.length === 0) return false;
+
+        // Construct renderable geometries
+        for (const elevated of elevatedGeometry) {
+            const vertexOffset = this.layoutVertexArray.length;
+
+            this.addLine(elevated.geometry, feature, canonical, join, cap, miterLimit, roundLimit);
+
+            // Populate height information for each vertex
+            const sampler = new ElevationFeatureSampler(canonical, elevated.elevationTileID);
+
+            if (elevated.elevation) {
+                for (let i = vertexOffset; i < this.layoutVertexArray.length; i++) {
+                    const point = new Point(this.layoutVertexArray.int16[i * 6] >> 1, this.layoutVertexArray.int16[i * 6 + 1] >> 1);
+
+                    const height = sampler.pointElevation(point, elevated.elevation, MARKUP_ELEVATION_BIAS);
+                    this.updateHeightRange(height);
+
+                    this.zOffsetVertexArray.emplaceBack(height, 0.0, 0.0);
+                }
+            } else {
+                this.fillNonElevatedRoadSegment(vertexOffset);
+            }
+
+            assert(this.layoutVertexArray.length === this.zOffsetVertexArray.length);
+        }
+
+        return true;
+    }
+
+    private prepareElevatedLines(lines: Point[][], elevation: ElevationFeature, tileID: CanonicalTileID) {
+        if (elevation.constantHeight != null) {
+            return lines;
+        }
+
+        // Subdivide the lines along the assigned elevation curve
+        const splitLines: Point[][] = [];
+
+        const metersToTile = 1.0 / tileToMeter(tileID);
+
+        for (const line of lines) {
+            lineSubdivision(line, new EdgeIterator(elevation, metersToTile), false, splitLines);
+        }
+
+        return splitLines;
+    }
+
+    private fillNonElevatedRoadSegment(vertexOffset: number) {
+        for (let i = vertexOffset; i < this.layoutVertexArray.length; i++) {
+            this.zOffsetVertexArray.emplaceBack(0, 0, 0);
+        }
+    }
+
+    private updateHeightRange(height: number) {
+        if (this.heightRange) {
+            this.heightRange.min = Math.min(this.heightRange.min, height);
+            this.heightRange.max = Math.max(this.heightRange.max, height);
+        } else {
+            this.heightRange = {min: height, max: height};
+        }
+    }
+
+    addLine(vertices: Array<Point>, feature: BucketFeature, canonical: CanonicalTileID, join: string, cap: string, miterLimit: number, roundLimit: number, subsegment?: Subsegment) {
         this.distance = 0;
         this.prevDistance = 0;
         this.scaledDistance = 0;
@@ -439,16 +578,52 @@ class LineBucket implements Bucket {
         this.segmentStartf32 = 0;
         this.segmentPoints = [];
 
+        // End points of a sub-segment line are treated as middle vertices in some occasions.
+        // For example we don't want to place cap geometries at these locations.
+        const intermediateStartPoint = subsegment && subsegment.progress.min > 0.0;
+        const intermediateEndPoint = subsegment && subsegment.progress.max < 1.0;
+
         if (this.lineClips) {
-            this.lineClipsArray.push(this.lineClips);
-            // Calculate the total distance, in tile units, of this tiled line feature
-            for (let i = 0; i < vertices.length - 1; i++) {
-                this.totalDistance += vertices[i].dist(vertices[i + 1]);
+            let range: Range = {min: this.lineClips.start, max: this.lineClips.end};
+            let clipRangeScale = 1.0;
+
+            // Preserve correct "progress" values for subsegments
+            if (subsegment) {
+                const clipRange = this.lineClips.end - this.lineClips.start;
+                range = mapRange(subsegment.progress, {min: 0.0, max: 1.0}, range);
+
+                if (clipRange > 0.0) {
+                    // Any clipping operations done to this feature have to be applied to
+                    // precomputed length variables as well.
+                    clipRangeScale = (range.max - range.min) / clipRange;
+                }
             }
-            const featureShare = this.lineClips.end - this.lineClips.start;
-            this.totalFeatureLength = this.totalDistance / featureShare;
+
+            const featureLen = +feature.properties['mapbox_clip_feature_len'];
+            const segmentLen = +feature.properties['mapbox_clip_seg_len'];
+
+            // Check if precomputed feature and segment lengths are available. Computing them manually might
+            // result in some precision issues especially with longer lines.
+            if (!Number.isNaN(featureLen) && !Number.isNaN(segmentLen)) {
+                this.totalFeatureLength = featureLen;
+                this.distance = segmentLen * clipRangeScale;
+                this.lineClips.start = range.min;
+                this.lineClips.end = range.max;
+                this.maxLineLength = Math.max(this.maxLineLength, this.distance);
+            } else {
+                // Calculate the total distance, in tile units, of this tiled line feature
+                for (let i = 0; i < vertices.length - 1; i++) {
+                    this.totalDistance += vertices[i].dist(vertices[i + 1]);
+                }
+                const featureLen = this.totalDistance / (range.max - range.min);
+                this.totalFeatureLength = Number.isFinite(featureLen) ? featureLen : 0.0;
+                this.lineClips.start = range.min;
+                this.lineClips.end = range.max;
+                this.maxLineLength = Math.max(this.maxLineLength, this.totalDistance);
+            }
+
+            this.lineClipsArray.push(this.lineClips);
             this.updateScaledDistance();
-            this.maxLineLength = Math.max(this.maxLineLength, this.totalDistance);
         }
 
         const isPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
@@ -471,11 +646,21 @@ class LineBucket implements Bucket {
         // we could be more precise, but it would only save a negligible amount of space
         const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
 
-        let currentVertex;
-        let prevVertex = (undefined as Point);
-        let nextVertex = (undefined as Point);
-        let prevNormal = (undefined as Point);
-        let nextNormal = (undefined as Point);
+        let currentVertex: Point | undefined;
+        let prevVertex: Point | undefined;
+        let nextVertex: Point | undefined;
+        let prevNormal: Point | undefined;
+        let nextNormal: Point | undefined;
+        let startNormal: Point | undefined;
+        let endNormal: Point | undefined;
+
+        // Preserve continuity between consecutive segments of the same line.
+        if (subsegment && subsegment.prevDir) {
+            startNormal = subsegment.prevDir.perp();
+        }
+        if (subsegment && subsegment.nextDir) {
+            endNormal = subsegment.nextDir.perp();
+        }
 
         // the last two vertices added
         this.e1 = this.e2 = -1;
@@ -533,7 +718,7 @@ class LineBucket implements Bucket {
 
                         // Reset line segment
                         bucket.segmentPoints.length = 0;
-                        assert(bucket.zOffsetVertexArray.length === bucket.patternVertexArray.length || !bucket.hasZOffset);
+                        assert(bucket.zOffsetVertexArray.length === bucket.patternVertexArray.length || bucket.elevationType !== 'offset');
                     }
 
                     bucket.e1 = bucket.e2 = -1;
@@ -605,7 +790,7 @@ class LineBucket implements Bucket {
                     const outside = pointOutsideBounds(currentVertex, boundsMin, boundsMax);
                     // Disable 'fakeround' for line-z-offset when either outside tile bounds or when using line-cross-slope.
                     // In these cases, using 'fakeround' either causes some rendering artifacts or doesn't look good.
-                    currentJoin = (this.hasZOffset && (outside || this.hasCrossSlope)) ? 'miter' : 'fakeround';
+                    currentJoin = (this.elevationType === 'offset' && (outside || this.hasCrossSlope)) ? 'miter' : 'fakeround';
                 }
             }
 
@@ -667,7 +852,7 @@ class LineBucket implements Bucket {
             } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
                 if (lineProgressFeatures != null && prevVertex) {
                     // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, prevNormal, -1, -1, segment, lineProgressFeatures);
+                    this.addCurrentVertex(currentVertex, endNormal ? endNormal : prevNormal, -1, -1, segment, lineProgressFeatures);
                 }
 
                 const dist = currentVertex.dist(prevVertex);
@@ -720,38 +905,49 @@ class LineBucket implements Bucket {
 
                 if (lineProgressFeatures != null && nextVertex) {
                     // Start next segment with a butt
-                    this.addCurrentVertex(currentVertex, nextNormal, 1, 1, segment, lineProgressFeatures);
+                    this.addCurrentVertex(currentVertex, startNormal ? startNormal : nextNormal, 1, 1, segment, lineProgressFeatures);
                 }
             } else if (currentJoin === 'butt') {
                 this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment, lineProgressFeatures); // butt cap
 
             } else if (currentJoin === 'square') {
                 if (!prevVertex) {
-                    this.addCurrentVertex(currentVertex, joinNormal, -1, -1, segment, lineProgressFeatures);
+                    // Intermediate start & end points are using butt instead.
+                    const capExt = intermediateStartPoint ? 0 : -1;
+                    this.addCurrentVertex(currentVertex, joinNormal, capExt, capExt, segment, lineProgressFeatures);
                 }
 
                 // make the cap it's own quad to avoid the cap affecting the line distance
                 this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment, lineProgressFeatures);
 
                 if (prevVertex) {
-                    this.addCurrentVertex(currentVertex, joinNormal, 1, 1, segment, lineProgressFeatures);
+                    const capExt = intermediateEndPoint ? 0 : 1;
+                    this.addCurrentVertex(currentVertex, joinNormal, capExt, capExt, segment, lineProgressFeatures);
                 }
 
             } else if (currentJoin === 'round') {
 
                 if (prevVertex) {
-                    // Close previous segment with butt
-                    this.addCurrentVertex(currentVertex, prevNormal, 0, 0, segment, lineProgressFeatures);
+                    const vertexNormal = !middleVertex && endNormal ? endNormal : prevNormal;
 
-                    // Add round cap or linejoin at end of segment
-                    this.addCurrentVertex(currentVertex, prevNormal, 1, 1, segment, lineProgressFeatures, true);
+                    // Close previous segment with butt
+                    this.addCurrentVertex(currentVertex, vertexNormal, 0, 0, segment, lineProgressFeatures);
+
+                    if (middleVertex || !intermediateEndPoint) {
+                        // Add round cap or linejoin at end of segment
+                        this.addCurrentVertex(currentVertex, vertexNormal, 1, 1, segment, lineProgressFeatures, true);
+                    }
                 }
                 if (nextVertex) {
+                    const vertexNormal = !middleVertex && startNormal ? startNormal : nextNormal;
+
                     // Add round cap before first segment
-                    this.addCurrentVertex(currentVertex, nextNormal, -1, -1, segment, lineProgressFeatures, true);
+                    if (middleVertex || !intermediateStartPoint) {
+                        this.addCurrentVertex(currentVertex, vertexNormal, -1, -1, segment, lineProgressFeatures, true);
+                    }
 
                     // Start next segment with a butt
-                    this.addCurrentVertex(currentVertex, nextNormal, 0, 0, segment, lineProgressFeatures);
+                    this.addCurrentVertex(currentVertex, vertexNormal, 0, 0, segment, lineProgressFeatures);
                 }
             }
         }
@@ -791,7 +987,7 @@ class LineBucket implements Bucket {
 
     evaluateLineProgressFeatures(distance: number): LineProgressFeatures | null {
         assert(distance >= 0);
-        if (!this.variableWidthValue && !this.hasZOffset) {
+        if (!this.variableWidthValue && this.elevationType !== 'offset') {
             return null;
         }
         this.evaluationGlobals.lineProgress = 0;
@@ -804,7 +1000,7 @@ class LineBucket implements Bucket {
         if (this.variableWidthValue && this.variableWidthValue.kind !== 'constant') {
             variableWidth = this.variableWidthValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
         }
-        if (!this.hasZOffset) {
+        if (this.elevationType !== 'offset') {
             return {zOffset: 0.0, variableWidth};
         }
         if (this.zOffsetValue.kind === 'constant') {
@@ -833,7 +1029,7 @@ class LineBucket implements Bucket {
         const rightY = -normal.y - normal.x * endRight;
 
         if (lineProgressFeatures != null) {
-            const dropOutOfBounds = this.hasZOffset;
+            const dropOutOfBounds = this.elevationType === 'offset';
             const boundsMin = -10;
             const boundsMax = EXTENT + 10;
             const zOffset = lineProgressFeatures.zOffset;
@@ -956,7 +1152,7 @@ class LineBucket implements Bucket {
                 lineProgressFeatures.variableWidth
             );
         }
-        assert(this.zOffsetVertexArray.length === this.layoutVertexArray.length || !this.hasZOffset);
+        assert(this.zOffsetVertexArray.length === this.layoutVertexArray.length || this.elevationType !== 'offset');
     }
 
     updateScaledDistance() {

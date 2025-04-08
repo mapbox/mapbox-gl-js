@@ -269,7 +269,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
     }
 
     const renderElevatedRoads = activeElevationType === 'road';
-    const depthModeFor3D = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+    const depthModeFor3D = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
 
     const image = patternProperty && patternProperty.constantOr((1 as any));
 
@@ -346,7 +346,12 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
 
             painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
 
-            program.draw(painter, drawMode, activeElevationType !== 'none' ? depthModeFor3D : depthMode,
+            let activeDepthMode = depthMode;
+            if ((elevationType === 'road' && !terrainEnabled) || elevationType === 'offset') {
+                activeDepthMode = depthModeFor3D;
+            }
+
+            program.draw(painter, drawMode, activeDepthMode,
                 stencilModeOverride ? stencilModeOverride : painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
                 layer.id, bufferData.layoutVertexBuffer, indexBuffer, segments,
                 layer.paint, painter.transform.zoom, programConfiguration, dynamicBuffers);

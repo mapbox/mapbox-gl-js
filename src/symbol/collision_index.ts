@@ -1,5 +1,4 @@
 import Point from '@mapbox/point-geometry';
-import clipLine from './clip_line';
 import PathInterpolator from './path_interpolator';
 import * as intersectionTests from '../util/intersection_tests';
 import Grid from './grid_index';
@@ -9,6 +8,7 @@ import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/
 import assert from 'assert';
 import * as symbolProjection from '../symbol/projection';
 import {degToRad} from '../util/util';
+import {clipLines} from '../util/line_clipping';
 
 import type {OverscaledTileID} from '../source/tile_id';
 import type {vec3} from 'gl-matrix';
@@ -285,7 +285,7 @@ class CollisionIndex {
                     if (minx < screenPlaneMin.x || maxx > screenPlaneMax.x ||
                         miny < screenPlaneMin.y || maxy > screenPlaneMax.y) {
                         // Path partially visible, clip
-                        segments = clipLine(segments, screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
+                        segments = clipLines(segments, screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
                     }
                 }
             }
