@@ -1,13 +1,16 @@
-import {ValueType} from '../types';
+import {typeEquals, ValueType} from '../types';
 import {Color, typeOf, toString as valueToString} from '../values';
 import Formatted from '../types/formatted';
 import ResolvedImage from '../types/resolved_image';
+import * as isConstant from '../is_constant';
 import Literal from './literal';
 
 import type {Type} from '../types';
 import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
+
+const FQIDSeparator = '\u001F';
 
 function coerceValue(type: string, value: any): any {
     switch (type) {
@@ -42,11 +45,13 @@ class Config implements Expression {
     type: Type;
     key: string;
     scope: string | null | undefined;
+    featureConstant: boolean;
 
-    constructor(type: Type, key: string, scope?: string) {
+    constructor(type: Type, key: string, scope?: string, featureConstant: boolean = false) {
         this.type = type;
         this.key = key;
         this.scope = scope;
+        this.featureConstant = featureConstant;
     }
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Config | null | void {
@@ -63,19 +68,31 @@ class Config implements Expression {
             return context.error(`Key name of 'config' expression must be a string literal.`);
         }
 
+        let featureConstant = true;
+        let configScopeValue: string | undefined;
+        const configKeyValue = valueToString(configKey.value);
+
         if (args.length >= 3) {
             const configScope = context.parse(args[2], 2);
             if (!(configScope instanceof Literal)) {
                 return context.error(`Scope of 'config' expression must be a string literal.`);
             }
-            return new Config(type, valueToString(configKey.value), valueToString(configScope.value));
+
+            configScopeValue = valueToString(configScope.value);
         }
 
-        return new Config(type, valueToString(configKey.value));
+        if (context.options) {
+            const key = [configKeyValue, configScopeValue, context._scope].filter(Boolean).join(FQIDSeparator);
+            const config = context.options.get(key);
+            if (config) {
+                featureConstant = isConstant.isFeatureConstant(config.value || config.default);
+            }
+        }
+
+        return new Config(type, configKeyValue, configScopeValue, featureConstant);
     }
 
     evaluate(ctx: EvaluationContext): any {
-        const FQIDSeparator = '\u001F';
         const configKey = [this.key, this.scope, ctx.scope].filter(Boolean).join(FQIDSeparator);
 
         const config = ctx.getConfig(configKey);
