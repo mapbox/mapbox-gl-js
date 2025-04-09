@@ -130,7 +130,7 @@ class Config implements Expression {
     serialize(): SerializedExpression {
         const res = ["config", this.key];
         if (this.scope) {
-            res.concat(this.key);
+            res.concat(this.scope);
         }
         return res;
     }
