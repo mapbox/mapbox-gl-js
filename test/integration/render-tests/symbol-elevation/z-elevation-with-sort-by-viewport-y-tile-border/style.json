@@ -1,0 +1,108 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "debug": "true",
+      "allowed": 0.0003,
+      "width": 512,
+      "height": 512,
+      "operations": [
+      ]
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://models/vector/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "test": {
+      "maxzoom": 15,
+      "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": [
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58280, 48.12910]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58278, 48.12912]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58276, 48.12914]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58274, 48.12916]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58272, 48.12918]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58270, 48.12920]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58268, 48.12922]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58266, 48.12924]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58264, 48.12926]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58262, 48.12928]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58260, 48.12930]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58258, 48.12932]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58256, 48.12934]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58254, 48.12936]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58252, 48.12938]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58250, 48.12940]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58248, 48.12942]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58246, 48.12944]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58244, 48.12946]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58242, 48.12948]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58240, 48.12950]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58238, 48.12952]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58236, 48.12954]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58234, 48.12956]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58232, 48.12958]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58230, 48.12960]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58228, 48.12962]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58226, 48.12964]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58224, 48.12966]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [11.58222, 48.12968]}}
+          ]
+        }
+    }
+  },
+  "pitch": 56,
+  "zoom": 18,
+  "bearing": 0,
+  "center": [
+    11.5825,
+    48.1295
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "type": "fill-extrusion",
+      "paint": {
+        "fill-extrusion-height": ["number", ["get", "height"]],
+        "fill-extrusion-base": ["number", ["get", "min_height"]],
+        "fill-extrusion-color": "white"
+      },
+      "source-layer": "building",
+      "filter": [
+        "==",
+        [
+          "get",
+          "extrude"
+        ],
+        "true"
+      ],
+      "source": "composite",
+      "id": "3d-buildings1"
+    },
+    {
+      "id": "test",
+      "type": "symbol",
+      "source": "test",
+      "layout": {
+        "symbol-z-elevate": true,
+        "icon-image": "building-12",
+        "symbol-z-order": "viewport-y",
+        "icon-allow-overlap": true
+      }
+    }
+  ]
+}
