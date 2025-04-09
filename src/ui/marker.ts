@@ -105,7 +105,6 @@ export default class Marker extends Evented<MarkerEvents> {
     _pitchAlignment: string;
     _rotationAlignment: string;
     _originalTabIndex: string | null | undefined; // original tabindex of _element
-    _fadeTimer: number | null | undefined;
     _updateFrameId: number;
     _updateMoving: () => void;
     _occludedOpacity: number;
@@ -126,7 +125,6 @@ export default class Marker extends Evented<MarkerEvents> {
             '_addDragHandler',
             '_onMapClick',
             '_onKeyPress',
-            '_clearFadeTimer'
         ], this);
 
         options = extend({}, defaultOptions, options);
@@ -247,7 +245,6 @@ export default class Marker extends Evented<MarkerEvents> {
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._updateMoving);
         map.on('moveend', this._update);
-        map.on('remove', this._clearFadeTimer);
         map._addMarker(this);
         this.setDraggable(this._draggable);
         this._update();
@@ -280,11 +277,9 @@ export default class Marker extends Evented<MarkerEvents> {
             map.off('touchend', this._onUp);
             map.off('mousemove', this._onMove);
             map.off('touchmove', this._onMove);
-            map.off('remove', this._clearFadeTimer);
             map._removeMarker(this);
             this._map = undefined;
         }
-        this._clearFadeTimer();
         this._element.remove();
         if (this._popup) this._popup.remove();
         return this;
@@ -516,7 +511,6 @@ export default class Marker extends Evented<MarkerEvents> {
         const pos = this._pos;
 
         if (!pos || pos.x < 0 || pos.x > map.transform.width || pos.y < 0 || pos.y > map.transform.height) {
-            this._clearFadeTimer();
             return;
         }
         const mapLocation = map.unproject(pos, this._altitude);
@@ -534,15 +528,6 @@ export default class Marker extends Evented<MarkerEvents> {
         this._element.style.pointerEvents = opacity > 0 ? 'auto' : 'none';
         if (this._popup) {
             this._popup._setOpacity(opacity);
-        }
-
-        this._fadeTimer = null;
-    }
-
-    _clearFadeTimer() {
-        if (this._fadeTimer) {
-            clearTimeout(this._fadeTimer);
-            this._fadeTimer = null;
         }
     }
 
@@ -656,8 +641,8 @@ export default class Marker extends Evented<MarkerEvents> {
                 this._updateDOM();
             }
 
-            if ((map._showingGlobe() || map.getTerrain() || map.getFog()) && !this._fadeTimer) {
-                this._fadeTimer = window.setTimeout(this._evaluateOpacity.bind(this), 60);
+            if (map._showingGlobe() || map.getTerrain() || map.getFog()) {
+                this._evaluateOpacity();
             }
         });
     }
