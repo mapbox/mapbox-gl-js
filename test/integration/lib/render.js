@@ -183,7 +183,7 @@ async function getExpectedImages(currentTestName, currentFixture) {
     return expectedImages;
 }
 
-async function renderMap(style, options) {
+async function renderMap(style, options, currentTestName) {
     errors = [];
     map = new mapboxgl.Map({
         container,
@@ -217,6 +217,7 @@ async function renderMap(style, options) {
         errors.push({error: e.error.message, stack: e.error.stack});
 
         // Log errors immediately in case test times out and doesn't have a chance to output the error messages
+        console.error(currentTestName);
         console.error(e.error.message);
     });
 
@@ -247,7 +248,7 @@ async function renderMap(style, options) {
     }
 
     // 3. Run the operations on the map
-    await applyOperations(map, options);
+    await applyOperations(map, options, currentTestName);
 
     // 4. Wait until the map is idle and ensure that call stack is empty
     map.repaint = true;
@@ -319,9 +320,9 @@ function calculateDiff(actualImageData, expectedImages, {w, h}, threshold) {
     return {minDiff, minDiffImage, minExpectedCanvas, minImageSrc};
 }
 
-async function getActualImage(style, options) {
+async function getActualImage(style, options, currentTestName) {
     await setupLayout(options);
-    map = await renderMap(style, options);
+    map = await renderMap(style, options, currentTestName);
     const {w, h} = getViewportSize(map);
     const actualImageData = getActualImageData(map, {w, h}, options);
     return {actualImageData, w, h};
@@ -372,7 +373,7 @@ async function runTest(t) {
             }
         }
 
-        const {actualImageData, w, h} = await getActualImage(style, options);
+        const {actualImageData, w, h} = await getActualImage(style, options, currentTestName);
 
         const { minDiff, minDiffImage, minExpectedCanvas, minImageSrc } = calculateDiff(actualImageData, expectedImages, { w, h }, options['diff-calculation-threshold']);
         const pass = minDiff <= options.allowed;

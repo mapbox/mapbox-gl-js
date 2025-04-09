@@ -241,7 +241,7 @@ export const operationHandlers = {
     }
 };
 
-export async function applyOperations(map, {operations}) {
+export async function applyOperations(map, {operations}, currentTestName) {
     if (!operations) return Promise.resolve();
 
     return new Promise((resolve, reject) => {
@@ -257,7 +257,7 @@ export async function applyOperations(map, {operations}) {
             handleOperation(map, operations, ++lastOpIndex, scheduleNextOperation);
         };
         map.once('error', (e) => {
-            reject(new Error(`Error occured during ${JSON.stringify(currentOperation)}. ${e.error.stack}`));
+            reject(new Error(`${currentTestName}: Error occured during ${JSON.stringify(currentOperation)}. ${e.error.stack}`));
         });
         scheduleNextOperation(-1);
     });
