@@ -133,3 +133,11 @@ export function isValidNativeType(provided: any, allowedTypes: Array<NativeType>
         }
     });
 }
+
+export function typeEquals(a: Type, b: Type): boolean {
+    if (a.kind === 'array' && b.kind === 'array') {
+        return a.N === b.N && typeEquals(a.itemType, b.itemType);
+    } else {
+        return a.kind === b.kind;
+    }
+}

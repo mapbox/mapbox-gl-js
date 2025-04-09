@@ -6,6 +6,7 @@ import {
     StringType,
     ColorType,
     ResolvedImageType,
+    typeEquals,
 } from '../types';
 import Formatted, {FormattedSection} from '../types/formatted';
 import {toString, typeOf} from '../values';
@@ -92,7 +93,7 @@ export default class FormatExpression implements Expression {
     evaluate(ctx: EvaluationContext): Formatted {
         const evaluateSection = (section: FormattedSectionExpression) => {
             const evaluatedContent = section.content.evaluate(ctx);
-            if (typeOf(evaluatedContent) === ResolvedImageType) {
+            if (typeEquals(typeOf(evaluatedContent), ResolvedImageType)) {
                 return new FormattedSection('', evaluatedContent, null, null, null);
             }
 

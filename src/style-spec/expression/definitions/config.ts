@@ -114,7 +114,7 @@ class Config implements Expression {
         }
 
         // @ts-expect-error - TS2367 - This comparison appears to be unintentional because the types 'string' and 'Type' have no overlap.
-        if ((type && type !== this.type) || (result !== undefined && typeOf(result) !== this.type)) {
+        if ((type && type !== this.type) || (result !== undefined && !typeEquals(typeOf(result), this.type))) {
             result = coerceValue(this.type.kind, result);
         }
 
