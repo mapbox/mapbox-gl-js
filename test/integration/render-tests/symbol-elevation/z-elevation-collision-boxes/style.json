@@ -4,8 +4,8 @@
     "test": {
       "collisionDebug": "true",
       "allowed": 0.0035,
-      "width": 256,
-      "height": 256,
+      "width": 512,
+      "height": 512,
       "operations": [
       ]
     }
@@ -19,36 +19,6 @@
       "tiles": [
         "local://models/vector/{z}-{x}-{y}.vector.pbf"
       ]
-    },
-    "test": {
-      "maxzoom": 15,
-      "type": "geojson",
-      "data": {
-        "type": "FeatureCollection",
-        "features": [
-          {
-            "type": "Feature",
-            "geometry": {
-              "type": "Point",
-              "coordinates": [11.58195, 48.12975]
-            }
-          },
-          {
-            "type": "Feature",
-            "geometry": {
-              "type": "Point",
-              "coordinates": [11.58198, 48.12976]
-            }
-          },
-          {
-            "type": "Feature",
-            "geometry": {
-              "type": "Point",
-              "coordinates": [11.58201, 48.12977]
-            }
-          }
-        ]
-      }
     }
   },
   "pitch": 56,
@@ -88,14 +58,17 @@
     {
       "id": "test",
       "type": "symbol",
-      "source": "test",
+      "source": "composite",
+      "source-layer": "poi_label",
       "layout": {
         "symbol-z-elevate": true,
         "icon-image": "building-12",
-        "symbol-z-order": "viewport-y",
-        "icon-allow-overlap": true,
         "text-optional": true,
-        "text-field": "Test",
+        "text-field": [
+          "format",
+          [ "coalesce", [ "get", "name_en" ], [ "get", "name" ] ],
+          { }
+        ],
         "text-font": ["NotoCJK"],
         "text-offset": [0, 1]
       }
