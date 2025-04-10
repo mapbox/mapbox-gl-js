@@ -12,6 +12,10 @@ import type EvaluationContext from '../evaluation_context';
 
 const FQIDSeparator = '\u001F';
 
+function makeConfigFQID(id: string, ownScope?: string | null, contextScope?: string | null): string {
+    return [id, ownScope, contextScope].filter(Boolean).join(FQIDSeparator);
+}
+
 function coerceValue(type: string, value: any): any {
     switch (type) {
     case 'string': return valueToString(value);
@@ -82,8 +86,8 @@ class Config implements Expression {
         }
 
         if (context.options) {
-            const key = [configKeyValue, configScopeValue, context._scope].filter(Boolean).join(FQIDSeparator);
-            const config = context.options.get(key);
+            const fqid = makeConfigFQID(configKeyValue, configScopeValue, context._scope);
+            const config = context.options.get(fqid);
             if (config) {
                 featureConstant = isConstant.isFeatureConstant(config.value || config.default);
             }
@@ -93,9 +97,8 @@ class Config implements Expression {
     }
 
     evaluate(ctx: EvaluationContext): any {
-        const configKey = [this.key, this.scope, ctx.scope].filter(Boolean).join(FQIDSeparator);
-
-        const config = ctx.getConfig(configKey);
+        const fqid = makeConfigFQID(this.key, this.scope, ctx.scope);
+        const config = ctx.getConfig(fqid);
         if (!config) return null;
 
         const {type, value, values, minValue, maxValue, stepValue} = config;
