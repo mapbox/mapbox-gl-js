@@ -1,0 +1,58 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64
+    }
+  },
+  "zoom": 0,
+  "center": [0, 0],
+  "schema": {
+    "room-color": {
+      "type": "color",
+      "default": ["match", ["get", "room"], "kitchen", "#ff0000", "#00ff00"]
+    }
+  },
+  "sources": {
+    "rooms": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [0, -10]
+            },
+            "properties": { "room": "kitchen" }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [0, 10]
+            },
+            "properties": { "room": "living room" }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "layout": {},
+      "paint": { "background-color": "#ddd" }
+    },
+    {
+      "id": "rooms",
+      "type": "circle",
+      "source": "rooms",
+      "layout": {},
+      "paint": { "circle-color": ["config", "room-color"] }
+    }
+  ]
+}

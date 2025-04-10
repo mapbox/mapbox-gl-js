@@ -32,6 +32,10 @@ function isFeatureConstant(e: Expression): boolean {
         return false;
     }
 
+    if (e instanceof Config) {
+        return e.featureConstant;
+    }
+
     let result = true;
     e.eachChild(arg => {
         if (result && !isFeatureConstant(arg)) { result = false; }
