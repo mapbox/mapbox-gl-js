@@ -14,7 +14,12 @@ const config = (input, file, format) => ({
         indent: false,
         banner
     },
-    treeshake: true,
+    treeshake: {
+        moduleSideEffects: (id, external) => {
+            return !id.endsWith("tracked_parameters.ts");
+        },
+        preset: "recommended"
+    },
     plugins: plugins({minified: true, production: true, keepClassNames: true, test: false, bench: false, mode: 'production'})
 });
 
