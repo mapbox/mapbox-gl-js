@@ -98,7 +98,12 @@ function tsObject(properties, indent, overrides = {}) {
     return `{
 ${Object.keys(properties)
         .map(k => {
-            const property = `    ${indent}${tsProperty(k, properties[k], overrides[k])}`;
+            let property = `    ${indent}${tsProperty(k, properties[k], overrides[k])}`;
+
+            if (properties[k].experimental) {
+                const experimentalTag = tag('@experimental', 'This property is experimental and subject to change in future versions.', `    ${indent}`);
+                property = [experimentalTag, property].join('\n');
+            }
 
             if( properties[k].type === 'color') {
 
@@ -115,9 +120,6 @@ ${Object.keys(properties)
             if (properties[k].transition) {
                 const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification`;
                 return [property, propertyTransition].join(',\n');
-            } else if (properties[k].experimental) {
-                const experimentalTag = tag('@experimental', 'This property is experimental and subject to change in future versions.', `    ${indent}`);
-                return [experimentalTag, property].join('\n');
             } else {
                 return property;
             }
