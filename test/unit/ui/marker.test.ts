@@ -29,6 +29,16 @@ test('Marker uses a default marker element with an appropriate offset', () => {
     expect(marker.getOffset().equals(new Point(0, -14))).toBeTruthy();
 });
 
+test('Marker retain default options for passed undefined', () => {
+    const marker = new Marker({
+        rotation: undefined,
+        altitude: undefined,
+    });
+
+    expect(marker.getRotation()).toEqual(0);
+    expect(marker.getAltitude()).toEqual(0);
+});
+
 test('Marker uses a default marker element with custom color', () => {
     const marker = new Marker({color: '#123456'});
     expect(marker.getElement().innerHTML.includes('#123456')).toBeTruthy();
