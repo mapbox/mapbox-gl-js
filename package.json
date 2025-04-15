@@ -61,8 +61,8 @@
     "@types/offscreencanvas": "^2019.7.3",
     "@typescript-eslint/eslint-plugin": "^8.22.0",
     "@typescript-eslint/parser": "^8.22.0",
-    "@vitest/browser": "^2.1.9",
-    "@vitest/ui": "^2.0.3",
+    "@vitest/browser": "^3.1.1",
+    "@vitest/ui": "^3.1.1",
     "address": "^2.0.3",
     "browserify": "^17.0.1",
     "chalk": "^5.4.1",
@@ -115,8 +115,8 @@
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.22.0",
     "utility-types": "^3.11.0",
-    "vite-plugin-arraybuffer": "^0.0.8",
-    "vitest": "^2.0.3"
+    "vite-plugin-arraybuffer": "^0.1.0",
+    "vitest": "^3.1.1"
   },
   "scripts": {
     "build-dev": "rollup -c --environment BUILD:dev",
