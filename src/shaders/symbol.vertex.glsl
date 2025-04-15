@@ -22,6 +22,13 @@ in vec2 a_texb;
 in float a_occlusion_query_opacity;
 #endif
 
+#ifdef ELEVATED_ROADS
+in vec3 a_x_axis;
+in vec3 a_y_axis;
+
+uniform float u_normal_scale;
+#endif
+
 #ifdef INDICATOR_CUTOUT
 out highp float v_z_offset;
 #endif
@@ -243,7 +250,14 @@ void main() {
 
     gl_Position = mix(u_coord_matrix * vec4(projected_pos.xyz / projected_pos.w + xAxis * offset.x + yAxis * offset.y, 1.0), AWAY, hidden);
 #else
+#ifdef ELEVATED_ROADS
+    vec3 xAxis = vec3(a_x_axis.xy, a_x_axis.z * u_normal_scale);
+    vec3 yAxis = vec3(a_y_axis.xy, a_y_axis.z * u_normal_scale);
+
+    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xyz / projected_pos.w + xAxis * offset.x + yAxis * offset.y, 1.0), AWAY, hidden);
+#else // ELEVATED_ROADS
     gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, hidden);
+#endif // ELEVATED_ROADS
 #endif
     float gamma_scale = gl_Position.w;
 
