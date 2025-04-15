@@ -82,12 +82,12 @@ export default class FeaturePositionMap {
     }
 }
 
-function getNumericId(value: unknown) {
+function getNumericId(value: unknown): number {
     const numValue = +value;
     if (!isNaN(numValue) && Number.MIN_SAFE_INTEGER <= numValue && numValue <= Number.MAX_SAFE_INTEGER) {
         return numValue;
     }
-    return murmur3(String(value as number));
+    return murmur3(String(value as number)) as number;
 }
 
 // custom quicksort that sorts ids, indices and offsets together (by ids)

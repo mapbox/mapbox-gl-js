@@ -81,8 +81,8 @@ class ShadowReceivers {
             this.receivers[tileId.key] = new ShadowReceiver(aabb, null);
         }
     }
+
     clear() {
-        // @ts-expect-error - TS2741 - Property 'number' is missing in type '{}' but required in type '{ number: ShadowReceiver; }'.
         this.receivers = {};
     }
 
@@ -97,7 +97,7 @@ class ShadowReceivers {
         let lastCascade = 0;
 
         for (const receiverKey in this.receivers) {
-            const receiver = (this.receivers[receiverKey] as ShadowReceiver | null | undefined);
+            const receiver = this.receivers[receiverKey];
             if (!receiver) continue;
 
             if (!frustumAabb.intersectsAabb(receiver.aabb)) continue;
@@ -131,9 +131,7 @@ class ShadowReceivers {
         return lastCascade + 1;
     }
 
-    receivers: {
-        number: ShadowReceiver;
-    };
+    receivers: Record<number, ShadowReceiver>;
 }
 
 export class ShadowRenderer {

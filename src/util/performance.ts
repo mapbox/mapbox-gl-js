@@ -123,7 +123,7 @@ export const PerformanceUtils = {
 
     getWorkerPerformanceMetrics(): WorkerPerformanceMetrics {
         const entries = performance.getEntries().map((entry: PerformanceEntry & PerformanceMarkOptions) => {
-            const result = entry.toJSON();
+            const result: PerformanceEntry & PerformanceMarkOptions = entry.toJSON();
             if (entry.detail) Object.assign(result, {detail: entry.detail});
             return result;
         });

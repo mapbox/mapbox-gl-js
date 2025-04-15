@@ -93,7 +93,7 @@ Grid.serialize = function serialize(grid: GridIndex, transferables?: Set<Transfe
 };
 
 Grid.deserialize = function deserialize(serialized: SerializedGrid): GridIndex {
-    return new Grid(serialized.buffer);
+    return new Grid(serialized.buffer) as GridIndex;
 };
 
 Object.defineProperty(Grid, 'name', {value: 'Grid'});

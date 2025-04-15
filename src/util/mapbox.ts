@@ -213,7 +213,7 @@ export class RequestManager {
 
     canonicalizeTileset(tileJSON: TileJSON, sourceURL?: string): Array<string> {
         const removeAccessToken = sourceURL ? isMapboxURL(sourceURL) : false;
-        const canonical = [];
+        const canonical: string[] = [];
         for (const url of tileJSON.tiles || []) {
             if (isMapboxHTTPURL(url)) {
                 canonical.push(this.canonicalizeTileURL(url, removeAccessToken));
@@ -287,7 +287,7 @@ function formatUrl(obj: UrlObject): string {
 
 const telemEventKey = 'mapbox.eventData';
 
-function parseAccessToken(accessToken?: string | null) {
+function parseAccessToken(accessToken?: string | null): {u?: string} | null {
     if (!accessToken) {
         return null;
     }
@@ -298,9 +298,9 @@ function parseAccessToken(accessToken?: string | null) {
     }
 
     try {
-        const jsonData = JSON.parse(b64DecodeUnicode(parts[1]));
+        const jsonData: {u?: string} = JSON.parse(b64DecodeUnicode(parts[1]));
         return jsonData;
-    } catch (e: any) {
+    } catch (e) {
         return null;
     }
 }

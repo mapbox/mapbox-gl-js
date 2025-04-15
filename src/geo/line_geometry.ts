@@ -200,9 +200,9 @@ const tileCorners = [
     new Point(0, EXTENT)];
 
 // Removes connection lines outside of the tile bounds if they don't intersect with the original tile
-export function dropBufferConnectionLines(polygon: Array<Point>, isPolygon: boolean) {
-    const lineSegments = [];
-    let lineSegment = [];
+export function dropBufferConnectionLines(polygon: Array<Point>, isPolygon: boolean): Array<Point[]> {
+    const lineSegments: Array<Point[]> = [];
+    let lineSegment: Point[] = [];
     if (!isPolygon || polygon.length < 2) {
         return [polygon];
     } else if (polygon.length === 2) {

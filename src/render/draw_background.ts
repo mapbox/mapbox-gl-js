@@ -53,10 +53,10 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const programName = image ? 'backgroundPattern' : 'background';
 
     let tileIDs = coords;
-    let backgroundTiles;
+    let backgroundTiles: Record<number, Tile>;
     if (!tileIDs) {
         backgroundTiles = painter.getBackgroundTiles();
-        tileIDs = Object.values(backgroundTiles).map(tile => (tile as any).tileID);
+        tileIDs = Object.values(backgroundTiles).map(tile => tile.tileID);
     }
 
     if (image) {

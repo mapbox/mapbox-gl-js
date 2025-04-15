@@ -1119,7 +1119,7 @@ class Transform {
 
         // Do a depth-first traversal to find visible tiles and proper levels of detail
         const stack: RootTile[] = [];
-        let result = [];
+        let result: Array<{tileID: OverscaledTileID, distanceSq: number}> = [];
         const maxZoom = z;
         const overscaledZ = options.reparseOverscaled ? actualZ : z;
         const cameraHeight = (cameraAltitude - this._centerAltitude) * meterToTile; // in tile coordinates.
@@ -2011,7 +2011,7 @@ class Transform {
         expanded: boolean = false,
     ): mat4 {
         const projMatrixKey = unwrappedTileID.key;
-        let cache;
+        let cache: Record<number, mat4>;
         if (expanded) {
             cache = this._expandedProjMatrixCache;
         } else if (aligned) {

@@ -150,13 +150,14 @@ class SymbolStyleLayer extends StyleLayer {
         return this._colorAdjustmentMatrix;
     }
 
-    getValueAndResolveTokens(
-        name: any,
+    getValueAndResolveTokens<T extends keyof LayoutProps>(
+        name: T,
         feature: Feature,
         canonical: CanonicalTileID,
         availableImages: ImageId[],
     ): string {
-        const value = this.layout.get(name).evaluate(feature, {}, canonical, availableImages);
+        const property = this.layout.get(name) as unknown as PossiblyEvaluatedPropertyValue<LayoutProps[T]>;
+        const value = property.evaluate(feature, {}, canonical, availableImages) as unknown as string;
         const unevaluated = this._unevaluatedLayout._values[name];
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
             return resolveTokens(feature.properties, value);

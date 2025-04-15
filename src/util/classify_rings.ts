@@ -3,13 +3,15 @@ import {calculateSignedArea} from './util';
 
 import type Point from '@mapbox/point-geometry';
 
+type Ring = Point[] & {area?: number};
+
 // classifies an array of rings into polygons with outer rings and holes
-export default function classifyRings(rings: Array<Array<Point>>, maxRings: number): Array<Array<Array<Point>>> {
+export default function classifyRings(rings: Ring[], maxRings: number): Array<Ring[]> {
     const len = rings.length;
 
     if (len <= 1) return [rings];
 
-    const polygons = [];
+    const polygons: Array<Ring[]> = [];
     let polygon,
         ccw;
 
@@ -17,7 +19,7 @@ export default function classifyRings(rings: Array<Array<Point>>, maxRings: numb
         const area = calculateSignedArea(rings[i]);
         if (area === 0) continue;
 
-        (rings[i] as any).area = Math.abs(area);
+        rings[i].area = Math.abs(area);
 
         if (ccw === undefined) ccw = area < 0;
 
@@ -44,10 +46,6 @@ export default function classifyRings(rings: Array<Array<Point>>, maxRings: numb
     return polygons;
 }
 
-function compareAreas(a: {
-    area: number;
-}, b: {
-    area: number;
-}) {
+function compareAreas(a: Ring, b: Ring): number {
     return b.area - a.area;
 }

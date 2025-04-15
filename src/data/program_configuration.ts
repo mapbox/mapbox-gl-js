@@ -155,7 +155,7 @@ class ConstantBinder implements UniformBinder {
         }
     }
 
-    getBinding(context: Context, _: string): Partial<IUniform<any>> {
+    getBinding(context: Context, _: string): IUniform<any> {
         return (this.type === 'color') ?
             new UniformColor(context) :
             new Uniform1f(context);
@@ -187,7 +187,7 @@ class PatternConstantBinder implements UniformBinder {
         if (pos) uniform.set(program, uniformName, pos);
     }
 
-    getBinding(context: Context, name: string): Partial<IUniform<any>> {
+    getBinding(context: Context, name: string): IUniform<any> {
         return name === 'u_pattern' || name === 'u_dash' ?
             new Uniform4f(context) :
             new Uniform1f(context);
@@ -576,7 +576,7 @@ export default class ProgramConfiguration {
     }
 
     defines(): Array<string> {
-        const result = [];
+        const result: string[] = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof ConstantBinder || binder instanceof PatternConstantBinder) {
@@ -587,7 +587,7 @@ export default class ProgramConfiguration {
     }
 
     getBinderAttributes(): Array<string> {
-        const result = [];
+        const result: string[] = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder) {
@@ -600,7 +600,7 @@ export default class ProgramConfiguration {
     }
 
     getBinderUniforms(): Array<string> {
-        const uniforms = [];
+        const uniforms: string[] = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof ConstantBinder || binder instanceof PatternConstantBinder || binder instanceof CompositeExpressionBinder) {
@@ -617,7 +617,7 @@ export default class ProgramConfiguration {
     }
 
     getUniforms(context: Context): Array<BinderUniform> {
-        const uniforms = [];
+        const uniforms: BinderUniform[] = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof ConstantBinder || binder instanceof PatternConstantBinder || binder instanceof CompositeExpressionBinder) {
@@ -738,7 +738,7 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
     }
 }
 
-const attributeNameExceptions = {
+const attributeNameExceptions: Record<string, string[]> = {
     'text-opacity': ['opacity'],
     'icon-opacity': ['opacity'],
     'text-occlusion-opacity': ['occlusion_opacity'],
@@ -761,7 +761,7 @@ const attributeNameExceptions = {
     'line-dasharray': ['dash']
 };
 
-function paintAttributeNames(property: string, type: string) {
+function paintAttributeNames(property: string, type: string): string[] {
     return attributeNameExceptions[property] || [property.replace(`${type}-`, '').replace(/-/g, '_')];
 }
 
@@ -782,7 +782,7 @@ const propertyExceptions = {
         'source': DashLayoutArray,
         'composite': DashLayoutArray
     }
-};
+} as const;
 
 const defaultLayouts = {
     'color': {
@@ -793,13 +793,13 @@ const defaultLayouts = {
         'source': StructArrayLayout1f4,
         'composite': StructArrayLayout2f8
     }
-};
+} as const;
 
 type LayoutType = 'array' | 'boolean' | 'color' | 'enum' | 'number' | 'resolvedImage' | 'string';
 
-function layoutType(property: string, type: LayoutType, binderType: string): Class<StructArray> {
-    const layoutException = propertyExceptions[property];
-    return (layoutException && layoutException[binderType]) || defaultLayouts[type][binderType];
+function layoutType(property: string, type: LayoutType, binderType: 'source' | 'composite'): Class<StructArray> {
+    const layoutException = propertyExceptions[property as keyof typeof propertyExceptions];
+    return (layoutException && layoutException[binderType]) || defaultLayouts[type as keyof typeof defaultLayouts][binderType];
 }
 
 register(ConstantBinder, 'ConstantBinder');

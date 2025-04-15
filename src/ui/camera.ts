@@ -1859,7 +1859,7 @@ class Camera extends Evented<MapEvents> {
         const frameRate = 15;
         const numFrames = Math.ceil(duration * frameRate / 1000);
 
-        const transforms = [];
+        const transforms: Transform[] = [];
         const emulateFrame = frame(initialTransform.clone());
         for (let i = 0; i <= numFrames; i++) {
             const transform = emulateFrame(i / numFrames);

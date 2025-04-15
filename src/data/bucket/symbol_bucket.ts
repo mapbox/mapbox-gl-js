@@ -1266,7 +1266,7 @@ class SymbolBucket implements Bucket {
         const cos = Math.cos(angle);
         const rotatedYs = [];
         const featureIndexes = [];
-        const result = [];
+        const result: number[] = [];
 
         for (let i = 0; i < this.symbolInstances.length; ++i) {
             result.push(i);

@@ -97,7 +97,7 @@ export function rotationFor3Points(
     const to = p0p1;
     vec3.cross(to, p0p1, p0p2);
     vec3.normalize(to, to);
-    return quat.rotationTo(out, from, to);
+    return quat.rotationTo(out, from, to) as quat;
 }
 
 export function coordinateFrameAtEcef(ecef: vec3): mat4 {

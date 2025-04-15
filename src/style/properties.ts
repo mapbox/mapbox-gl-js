@@ -236,9 +236,9 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
     }
 
     serialize(): PropertyValueSpecifications<Props> {
-        const result: any = {};
+        const result = {} as PropertyValueSpecifications<Props>;
         for (const property of Object.keys(this._values) as Array<keyof Props>) {
-            const value = this.getValue(property);
+            const value = this.getValue(property) as Props[keyof Props];
             if (value !== undefined) {
                 result[property] = value;
             }
@@ -449,9 +449,9 @@ export class Layout<Props extends {
     }
 
     serialize(): PropertyValueSpecifications<Props> {
-        const result: any = {};
+        const result = {} as PropertyValueSpecifications<Props>;
         for (const property of Object.keys(this._values) as Array<keyof Props>) {
-            const value = this.getValue(property);
+            const value = this.getValue(property) as Props[keyof Props];
             if (value !== undefined) {
                 result[property] = value;
             }
@@ -597,7 +597,7 @@ export class DataConstantProperty<T> implements Property<T, T> {
 
     possiblyEvaluate(value: PropertyValue<T, T>, parameters: EvaluationParameters): T {
         assert(!value.isDataDriven());
-        return value.expression.evaluate(parameters);
+        return value.expression.evaluate(parameters) as T;
     }
 
     interpolate(a: T, b: T, t: number): T {
@@ -638,7 +638,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         availableImages?: ImageId[],
     ): PossiblyEvaluatedPropertyValue<T> {
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: value.expression.evaluate(parameters, (null as any), {}, canonical, availableImages)}, parameters);
+            return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: value.expression.evaluate(parameters, (null as any), {}, canonical, availableImages)}, parameters);
         } else {
             return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
         }
@@ -662,7 +662,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         // `Properties#defaultPossiblyEvaluatedValues`, which serves as the prototype of
         // `PossiblyEvaluated#_values`.
         if (a.value.value === undefined || b.value.value === undefined) {
-            return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: (undefined as any)}, a.parameters);
+            return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: (undefined as any)}, a.parameters);
         }
 
         const interp: (a: T, b: T, t: number) => T | null | undefined = (interpolate as any)[this.specification.type];
@@ -684,7 +684,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         if (value.kind === 'constant') {
             return value.value;
         } else {
-            return value.evaluate(parameters, feature, featureState, canonical, availableImages);
+            return value.evaluate(parameters, feature, featureState, canonical, availableImages) as T;
         }
     }
 }

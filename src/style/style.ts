@@ -1412,7 +1412,7 @@ class Style extends Evented<MapEvents> {
         return true;
     }
 
-    _serializeImports(): Array<ImportSpecification> | void {
+    _serializeImports(): Array<ImportSpecification> | undefined {
         if (!this.stylesheet.imports) return undefined;
 
         return this.stylesheet.imports.map((importSpec, index) => {
@@ -1425,9 +1425,7 @@ class Style extends Evented<MapEvents> {
         });
     }
 
-    _serializeSources(): {
-        [sourceId: string]: SourceSpecification;
-        } {
+    _serializeSources(): {[sourceId: string]: SourceSpecification} {
         const sources: Record<string, any> = {};
         for (const cacheId in this._sourceCaches) {
             const source = this._sourceCaches[cacheId].getSource();
@@ -3025,7 +3023,7 @@ class Style extends Evented<MapEvents> {
             snow: this.stylesheet.snow,
             rain: this.stylesheet.rain,
             center: this.stylesheet.center,
-            "color-theme": this.stylesheet["color-theme"],
+            'color-theme': this.stylesheet['color-theme'],
             zoom: this.stylesheet.zoom,
             bearing: this.stylesheet.bearing,
             pitch: this.stylesheet.pitch,
@@ -3035,7 +3033,7 @@ class Style extends Evented<MapEvents> {
             projection: this.stylesheet.projection,
             sources: this._serializeSources(),
             layers: this._serializeLayers(this._order)
-        }, (value) => { return value !== undefined; });
+        }, (value) => value !== undefined);
     }
 
     _updateFilteredLayers(filter: (layer: StyleLayer) => boolean) {

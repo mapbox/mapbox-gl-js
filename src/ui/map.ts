@@ -1591,7 +1591,7 @@ export class Map extends Camera {
 
     _createDelegatedListener<T extends MapEventType>(type: T, targets: string[] | TargetDescriptor, listener: Listener<T>): DelegatedListener {
         const queryRenderedFeatures = (point: PointLike | [PointLike, PointLike]) => {
-            let features = [];
+            let features: Array<GeoJSONFeature | TargetFeature> = [];
 
             if (Array.isArray(targets)) {
                 const filteredLayers = targets.filter(layerId => this.getLayer(layerId));
@@ -2070,7 +2070,7 @@ export class Map extends Camera {
         }
 
         // Query for rendered features and featureset targets if both layers and featureset are provided
-        let features = [];
+        let features: Array<GeoJSONFeature | TargetFeature> = [];
         if (layersAreValid) {
             features = features.concat(this.style.queryRenderedFeatures(geometry, options as QueryRenderedFeaturesParams, this.transform));
         }
@@ -2314,7 +2314,7 @@ export class Map extends Camera {
         }
     }
 
-    _getUIString(key: string): string {
+    _getUIString(key: keyof typeof defaultLocale): string {
         const str = this._locale[key];
         if (str == null) {
             throw new Error(`Missing UI string '${key}'`);

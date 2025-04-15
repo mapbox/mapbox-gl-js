@@ -38,7 +38,7 @@ class Terrain extends Evented {
     }
 
     get(): TerrainSpecification {
-        return this._transitionable.serialize() as any;
+        return this._transitionable.serialize() as TerrainSpecification;
     }
 
     set(terrain: TerrainSpecification, configOptions?: ConfigOptions | null) {

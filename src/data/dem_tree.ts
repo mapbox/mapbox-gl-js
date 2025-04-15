@@ -382,11 +382,12 @@ export default class DemMinMaxQuadTree {
     }
 }
 
-function bilinearLerp(p00: any, p10: any, p01: any, p11: any, x: number, y: number): any {
+function bilinearLerp(p00: number, p10: number, p01: number, p11: number, x: number, y: number): number {
     return interpolate(
         interpolate(p00, p01, y),
         interpolate(p10, p11, y),
-        x);
+        x
+    );
 }
 
 // Sample elevation in normalized uv-space ([0, 0] is the top left)

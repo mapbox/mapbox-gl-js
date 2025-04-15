@@ -3,7 +3,7 @@ import assert from 'assert';
 
 import type MercatorCoordinate from '../../geo/mercator_coordinate';
 import type {Map} from '../../ui/map';
-import type {ValidationErrors} from '../validate_style';
+import type {ValidationError, ValidationErrors} from '../validate_style';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type SourceCache from '../../source/source_cache';
 
@@ -180,7 +180,7 @@ export interface CustomLayerInterface {
 }
 
 export function validateCustomStyleLayer(layerObject: CustomLayerInterface): ValidationErrors {
-    const errors = [];
+    const errors: ValidationError[] = [];
     const id = layerObject.id;
 
     if (id === undefined) {

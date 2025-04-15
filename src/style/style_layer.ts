@@ -48,7 +48,7 @@ class StyleLayer extends Evented {
     scope: string;
     lut: LUT | null;
     metadata: unknown;
-    type: string;
+    type: LayerSpecification['type'] | 'custom';
     source: string;
     sourceLayer: string | null | undefined;
     slot: string | null | undefined;
@@ -71,10 +71,13 @@ class StyleLayer extends Evented {
     options: ConfigOptions | null | undefined;
     _stats: LayerRenderingStats | null | undefined;
 
-    constructor(layer: LayerSpecification | CustomLayerInterface, properties: Readonly<{
-        layout?: Properties<any>;
-        paint?: Properties<any>;
-    }>, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+    constructor(
+        layer: LayerSpecification | CustomLayerInterface,
+        properties: Readonly<{layout?: Properties<any>; paint?: Properties<any>;}>,
+        scope: string,
+        lut: LUT | null,
+        options?: ConfigOptions | null
+    ) {
         super();
 
         this.id = layer.id;
@@ -260,6 +263,8 @@ class StyleLayer extends Evented {
     }
 
     serialize(): LayerSpecification {
+        assert(this.type !== 'custom', 'Custom layers cannot be serialized');
+
         const output = {
             'id': this.id,
             'type': this.type,
@@ -272,7 +277,7 @@ class StyleLayer extends Evented {
             'filter': this.filter,
             'layout': this._unevaluatedLayout && this._unevaluatedLayout.serialize(),
             'paint': this._transitionablePaint && this._transitionablePaint.serialize()
-        };
+        } as LayerSpecification;
 
         return filterObject(output, (value, key) => {
             return value !== undefined &&

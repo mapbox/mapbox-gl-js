@@ -157,7 +157,7 @@ export function polygonizeBounds(min: Point, max: Point, buffer: number = 0, clo
  */
 export function bufferConvexPolygon(ring: Point[], buffer: number): Point[] {
     assert(ring.length > 2, 'bufferConvexPolygon requires the ring to have atleast 3 points');
-    const output = [];
+    const output: Point[] = [];
     for (let currIdx = 0; currIdx < ring.length; currIdx++) {
         const prevIdx = wrap(currIdx - 1, -1, ring.length - 1);
         const nextIdx = wrap(currIdx + 1, -1, ring.length - 1);
@@ -293,14 +293,10 @@ export function asyncAll<Item, Result>(
  * @private
  */
 export function keysDifference<S, T>(
-    obj: {
-        [key: string]: S;
-    },
-    other: {
-        [key: string]: T;
-    },
+    obj: Record<PropertyKey, S>,
+    other: Record<PropertyKey, T>,
 ): Array<string> {
-    const difference = [];
+    const difference: string[] = [];
     for (const i in obj) {
         if (!(i in other)) {
             difference.push(i);
@@ -344,7 +340,7 @@ export function extend<T extends object, U extends Array<object | null | undefin
  * @private
  */
 export function pick<T extends object, K extends keyof T>(src: T, properties: Array<K>): Pick<T, K> {
-    const result: any = {};
+    const result = {} as Pick<T, K>;
     for (let i = 0; i < properties.length; i++) {
         const k = properties[i];
         if (k in src) {
@@ -372,13 +368,13 @@ export function uniqueId(): number {
  * @private
  */
 export function uuid(): string {
-    function b(a: undefined) {
-        return a ? (a ^ Math.random() * (16 >> a / 4)).toString(16) :
-        // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'number[]' and 'number'.
-        // eslint-disable-next-line
-            ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
+    function b(a?: undefined): string {
+        return a ?
+            (a ^ Math.random() * (16 >> a / 4)).toString(16) :
+            // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'number[]' and 'number'.
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-unsafe-unary-minus
+            ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b) as string;
     }
-    // @ts-expect-error - TS2554 - Expected 1 arguments, but got 0.
     return b();
 }
 
@@ -452,8 +448,12 @@ export function bindAll(fns: Array<string>, context: any): void {
  *
  * @private
  */
-export function mapObject(input: any, iterator: any, context?: any): any {
-    const output: Record<string, any> = {};
+export function mapObject<T, U>(
+    input: Record<PropertyKey, T>,
+    iterator: (value: T, key: PropertyKey, obj: Record<PropertyKey, T>) => U,
+    context?: unknown
+): Record<PropertyKey, U> {
+    const output: Record<PropertyKey, U> = {};
     for (const key in input) {
         output[key] = iterator.call(context || this, input[key], key, input);
     }
@@ -465,8 +465,12 @@ export function mapObject(input: any, iterator: any, context?: any): any {
  *
  * @private
  */
-export function filterObject(input: any, iterator: any, context?: any): any {
-    const output: Record<string, any> = {};
+export function filterObject<T extends Record<PropertyKey, unknown>>(
+    input: T,
+    iterator: (value: T[keyof T], key: keyof T, obj: T) => boolean,
+    context?: unknown
+): T {
+    const output = {} as T;
     for (const key in input) {
         if (iterator.call(context || this, input[key], key, input)) {
             output[key] = input[key];
@@ -484,7 +488,7 @@ export function clone<T>(input: T): T {
     if (Array.isArray(input)) {
         return input.map(clone) as T;
     } else if (typeof input === 'object' && input) {
-        return mapObject(input, clone) as T;
+        return mapObject(input as Record<PropertyKey, unknown>, clone) as T;
     } else {
         return input;
     }
@@ -662,7 +666,7 @@ export function parseCacheControl(cacheControl: string): any {
     return header;
 }
 
-let _isSafari = null;
+let _isSafari: boolean | null = null;
 
 export function _resetSafariCheckForTest() {
     _isSafari = null;
@@ -681,21 +685,21 @@ export function _resetSafariCheckForTest() {
  *      let the calling scope pass in the global scope object.
  * @returns {boolean}
  */
-export function isSafari(scope: any): boolean {
+export function isSafari(scope: WindowOrWorkerGlobalScope): boolean {
     if (_isSafari == null) {
-        const userAgent = scope.navigator ? scope.navigator.userAgent : null;
-        _isSafari = !!scope.safari ||
+        const userAgent = (scope as Window).navigator ? (scope as Window).navigator.userAgent : null;
+        _isSafari = !!(scope as any).safari ||
         !!(userAgent && (/\b(iPad|iPhone|iPod)\b/.test(userAgent) || (!!userAgent.match('Safari') && !userAgent.match('Chrome'))));
     }
     return _isSafari;
 }
 
-export function isSafariWithAntialiasingBug(scope: any): boolean | null | undefined {
-    const userAgent = scope.navigator ? scope.navigator.userAgent : null;
+export function isSafariWithAntialiasingBug(scope: WindowOrWorkerGlobalScope): boolean | null | undefined {
+    const userAgent: Navigator['userAgent'] = (scope as Window).navigator ? (scope as Window).navigator.userAgent : null;
     if (!isSafari(scope)) return false;
     // 15.4 is known to be buggy.
     // 15.5 may or may not include the fix. Mark it as buggy to be on the safe side.
-    return userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5') || userAgent.match(/CPU (OS|iPhone OS) (15_4|15_5) like Mac OS X/));
+    return !!(userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5') || userAgent.match(/CPU (OS|iPhone OS) (15_4|15_5) like Mac OS X/)));
 }
 
 export function isFullscreen(): boolean {
@@ -708,7 +712,7 @@ export function storageAvailable(type: string): boolean {
         storage.setItem('_mapbox_test_', 1);
         storage.removeItem('_mapbox_test_');
         return true;
-    } catch (e: any) {
+    } catch (e) {
         return false;
     }
 }

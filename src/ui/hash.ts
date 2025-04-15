@@ -86,7 +86,7 @@ export default class Hash {
         const hash = location.hash.replace('#', '');
         if (this._hashName) {
             // Split the parameter-styled hash into parts and find the value we need
-            let keyval;
+            let keyval: string[];
             hash.split('&').map(
                 part => part.split('=')
             ).forEach(part => {
