@@ -15,8 +15,8 @@ import type IndexBuffer from '../../src/gl/index_buffer';
 import type {CanonicalTileID} from '../../src/source/tile_id';
 import type {ElevationFeature, Range} from './elevation_feature';
 import type {Segment} from '../../src/data/segment';
-import type {Bounds} from './elevation_feature_parser';
 import type Context from '../../src/gl/context';
+import type {Bounds} from '../../src/style-spec/util/geometry_util';
 
 const TUNNEL_ENTERANCE_HEIGHT = 4.0; // meters
 
@@ -689,7 +689,7 @@ export class ElevatedStructures {
                 return index === 0 || portals[index - 1].hash >= portal.hash;
             }));
 
-            edges.sort((a, b) => a.hash < b.hash ? 1 : -1);
+            edges.sort((a, b) => a.portalHash < b.portalHash ? 1 : -1);
 
             let eIndex = 0;
             let pIndex = 0;

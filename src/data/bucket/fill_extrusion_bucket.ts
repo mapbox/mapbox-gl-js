@@ -26,7 +26,7 @@ import EvaluationParameters from '../../style/evaluation_parameters';
 import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../../style-spec/util/interpolate';
 import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, tileToMeter} from '../../geo/mercator_coordinate';
-import {subdividePolygons} from '../../util/polygon_clipping';
+import {gridSubdivision} from '../../util/polygon_clipping';
 import {regionsEquals, footprintTrianglesIntersect} from '../../../3d-style/source/replacement_source';
 import {clamp, warnOnce} from '../../util/util';
 import {earthRadius} from '../../geo/lng_lat';
@@ -1800,7 +1800,7 @@ export function resampleFillExtrusionPolygonsForGlobe(polygons: Point[][][], til
         }
     };
 
-    return subdividePolygons(polygons, tileBounds, cellCountOnXAxis, cellCountOnYAxis, 1.0, splitFn);
+    return gridSubdivision(polygons, tileBounds, cellCountOnXAxis, cellCountOnYAxis, 1.0, splitFn);
 }
 
 function transformFootprintVertices(vertices: PosArray, offset: number, count: number, footprintId: CanonicalTileID, centroidId: CanonicalTileID, out: Array<Point>) {

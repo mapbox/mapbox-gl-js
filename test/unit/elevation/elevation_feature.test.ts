@@ -12,8 +12,8 @@ import {CanonicalTileID} from '../../../src/source/tile_id';
 import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../../../3d-style/elevation/elevation_constants';
 import Point from '@mapbox/point-geometry';
 
-import type {Bounds} from '../../../3d-style/elevation/elevation_feature_parser';
 import type {BucketFeature} from '../../../src/data/bucket';
+import type {Bounds} from '../../../src/style-spec/util/geometry_util';
 
 interface ConstantFeature {
     id: number;

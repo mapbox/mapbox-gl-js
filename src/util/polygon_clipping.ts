@@ -1,5 +1,8 @@
 import assert from 'assert';
+import * as martinez from 'martinez-polygon-clipping';
 import Point from '@mapbox/point-geometry';
+
+import type {EdgeIterator} from '../../3d-style/elevation/elevation_feature';
 
 export type ClippedPolygon = {
     polygon: Array<Array<Point>>;
@@ -73,7 +76,7 @@ function clipPolygon(polygons: PolygonArray, clipAxis1: number, clipAxis2: numbe
     return polygonsClipped;
 }
 
-export function subdividePolygons(
+export function gridSubdivision(
     polygons: PolygonArray,
     bounds: [Point, Point],
     gridSizeX: number,
@@ -179,3 +182,67 @@ export function subdividePolygons(
     return outPolygons;
 }
 
+export function clip(subjectPolygon: Point[][], clipRing: Point[]): Point[][][] {
+    const geom = toMultiPolygon(subjectPolygon);
+    const clipGeom = toMultiPolygon([clipRing]);
+
+    const polygons = martinez.intersection(geom, clipGeom) as martinez.MultiPolygon;
+    if (polygons == null) return [];
+
+    return fromMultiPolygon(polygons);
+}
+
+export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: EdgeIterator): Point[][][] {
+    // Perform clipping temporarily in a 32bit space where few unit wide polygons are just
+    // lines when scaled back to 16bit.
+    const scale = 1 << 16;
+
+    let polygons = toMultiPolygon(subjectPolygon, scale);
+
+    // Split the polygon using edges from the iterator
+    for (; subdivisionEdges.valid(); subdivisionEdges.next()) {
+        const [a, b] = subdivisionEdges.get();
+
+        const ax = a.x * scale;
+        const ay = a.y * scale;
+        const bx = b.x * scale;
+        const by = b.y * scale;
+
+        const dx = bx - ax;
+        const dy = by - ay;
+        const len = Math.hypot(dx, dy);
+
+        // Expand the polygon towards the perpendicular vector by few units
+        const shiftX = Math.trunc(dy / len * 3.0);
+        const shiftY = -Math.trunc(dx / len * 3.0);
+
+        const clipLine: martinez.Polygon = [
+            [
+                [ax, ay],
+                [bx, by],
+                [bx + shiftX, by + shiftY],
+                [ax + shiftX, ay + shiftY],
+                [ax, ay]
+            ]
+        ];
+
+        polygons = martinez.diff(polygons, clipLine) as martinez.MultiPolygon;
+    }
+
+    return fromMultiPolygon(polygons, 1 / scale);
+}
+
+function toMultiPolygon(polygon: Point[][], scale: number = 1.0): martinez.MultiPolygon {
+    return [polygon.map(ring => ring.map(p => [p.x * scale, p.y * scale]))];
+}
+
+function fromMultiPolygon(geometry: martinez.MultiPolygon, scale: number = 1.0): Point[][][] {
+    return geometry.map(poly => poly.map((ring, index) => {
+        const r = ring.map(p => new Point(p[0] * scale, p[1] * scale).round());
+        if (index > 0) {
+            // Reverse holes
+            r.reverse();
+        }
+        return r;
+    }));
+}

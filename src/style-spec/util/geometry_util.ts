@@ -1,6 +1,5 @@
 import quickselect from 'quickselect';
-
-import type Point from '@mapbox/point-geometry';
+import Point from '@mapbox/point-geometry';
 
 // minX, minY, maxX, maxY
 export type BBox = [number, number, number, number];
@@ -154,3 +153,21 @@ export function segmentIntersectSegment(
     return false;
 }
 
+export interface Bounds {
+    min: Point;
+    max: Point;
+}
+
+export function computeBounds(points: Point[][]): Bounds {
+    const min = new Point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+    const max = new Point(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+
+    for (const point of points[0]) {
+        if (min.x > point.x) min.x = point.x;
+        if (min.y > point.y) min.y = point.y;
+        if (max.x < point.x) max.x = point.x;
+        if (max.y < point.y) max.y = point.y;
+    }
+
+    return {min, max};
+}

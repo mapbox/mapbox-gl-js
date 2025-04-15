@@ -1,7 +1,7 @@
 import {vec2, vec3} from "gl-matrix";
 import {register} from '../../src/util/web_worker_transfer';
 import assert from 'assert';
-import {ElevationFeatureParser, type Bounds} from "./elevation_feature_parser";
+import {ElevationFeatureParser} from "./elevation_feature_parser";
 import {tileToMeter} from "../../src/geo/mercator_coordinate";
 import {Ray2D} from "../../src/util/primitives";
 import {clamp, smoothstep} from "../../src/util/util";
@@ -12,6 +12,7 @@ import Point from "@mapbox/point-geometry";
 import type {VectorTileLayer} from "@mapbox/vector-tile";
 import type {CanonicalTileID} from "../../src/source/tile_id";
 import type {BucketFeature} from "../../src/data/bucket";
+import type {Bounds} from "../../src/style-spec/util/geometry_util";
 
 export interface Vertex {
     position: vec2;
