@@ -67,7 +67,7 @@ import featureFilter from '../style-spec/feature_filter/index';
 import {TargetFeature} from '../util/vectortile_to_geojson';
 import {loadIconset} from './load_iconset';
 import {ImageId} from '../style-spec/expression/types/image_id';
-import {Iconset} from './iconset';
+import {ImageProvider} from '../render/image_provider';
 
 import type {GeoJSON} from 'geojson';
 import type GeoJSONSource from '../source/geojson_source';
@@ -186,7 +186,9 @@ const supportedDiffOperations = pick(diffOperations, [
     'setCamera',
     'addImport',
     'removeImport',
-    'updateImport'
+    'updateImport',
+    'addIconset',
+    'removeIconset',
     // 'setGlyphs',
     // 'setSprite',
 ]);
@@ -422,7 +424,7 @@ class Style extends Evented<MapEvents> {
             this.imageManager = new ImageManager(this.map._spriteFormat);
             this.imageManager.setEventedParent(this);
         }
-        this.imageManager.createScope(this.scope);
+        this.imageManager.addScope(this.scope);
 
         if (options.glyphManager) {
             this.glyphManager = options.glyphManager;
@@ -1237,10 +1239,10 @@ class Style extends Evented<MapEvents> {
                     return;
                 }
 
-                if (this.getImage(styleLutName)) {
-                    this.removeImage(styleLutName);
+                if (this.getImage(styleLutName, this.scope)) {
+                    this.removeImage(styleLutName, this.scope);
                 }
-                this.addImage(styleLutName, {data: new RGBAImage({width, height}, data), pixelRatio: 1, sdf: false, usvg: false, version: 0});
+                this.addImage(styleLutName, this.scope, {data: new RGBAImage({width, height}, data), pixelRatio: 1, sdf: false, usvg: false, version: 0});
 
                 const image = this.imageManager.getImage(styleLutName, this.scope);
                 if (!image) {
@@ -1310,7 +1312,7 @@ class Style extends Evented<MapEvents> {
                 for (const id in images) {
                     styleImageMap.set(ImageId.from(id), images[id]);
                 }
-                this.addImages(styleImageMap);
+                this.addImages(styleImageMap, this.scope);
             }
 
             this.imageManager.setLoaded(true, this.scope);
@@ -1325,21 +1327,26 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        const source = this.getOwnSource(iconset.source);
-        if (!source) {
+        const sourceCache = this.getOwnSourceCache(iconset.source);
+        if (!sourceCache) {
             this.fire(new ErrorEvent(new Error(`Source "${iconset.source}" as specified by iconset "${iconsetId}" does not exist and cannot be used as an iconset source`)));
             return;
         }
 
+        const source = sourceCache.getSource();
         if (source.type !== 'raster-array') {
             this.fire(new ErrorEvent(new Error(`Source "${iconset.source}" as specified by iconset "${iconsetId}" is not a "raster-array" source and cannot be used as an iconset source`)));
             return;
         }
 
-        this.imageManager.createIconset(this.scope, iconsetId);
+        source.partial = false;
 
-        const sourceIconset = new Iconset(iconsetId, this);
-        source.addIconset(iconsetId, sourceIconset);
+        const imageProvider = new ImageProvider(iconsetId, this.scope, sourceCache);
+        this.imageManager.addImageProvider(imageProvider, this.scope);
+    }
+
+    removeIconset(iconsetId: string) {
+        this.imageManager.removeImageProvider(iconsetId, this.scope);
     }
 
     /**
@@ -1370,7 +1377,7 @@ class Style extends Evented<MapEvents> {
                 for (const id in images) {
                     styleImageMap.set(ImageId.from(id), images[id]);
                 }
-                this.addImages(styleImageMap);
+                this.addImages(styleImageMap, this.scope);
             }
 
             this.imageManager.setLoaded(true, this.scope);
@@ -1711,17 +1718,6 @@ class Style extends Evented<MapEvents> {
             }
         }
 
-        // eslint-disable-next-line
-        // TODO: use only the iconsets that are actually used by the layers
-        for (const sourceId in this._mergedSourceCaches) {
-            const sourceCache = this._mergedSourceCaches[sourceId];
-            if (!sourceCache) continue;
-
-            const source = sourceCache._source as Source;
-            if (source.type !== 'raster-array') continue;
-            if (source.iconsets) sourceCache.used = true;
-        }
-
         if (this._shouldPrecompile) {
             this._precompileDone = true;
         }
@@ -1729,6 +1725,11 @@ class Style extends Evented<MapEvents> {
         if (this.terrain && layersUpdated) {
             // Changed layers (layout properties only) could have become drapeable.
             this.mergeLayers();
+        }
+
+        const pendingImageProviders = this.imageManager.getPendingImageProviders();
+        for (const imageProvider of pendingImageProviders) {
+            imageProvider.sourceCache.used = true;
         }
 
         for (const sourceId in sourcesUsedBefore) {
@@ -1773,16 +1774,35 @@ class Style extends Evented<MapEvents> {
         }
     }
 
+    /**
+     * Resolves pending image requests from ImageProviders during the map render cycle.
+     * @private
+     */
+    updateImageProviders() {
+        const pendingImageProviders = this.imageManager.getPendingImageProviders();
+        for (const imageProvider of pendingImageProviders) {
+            const images = imageProvider.resolvePendingRequests();
+            this.addImages(images, imageProvider.scope);
+        }
+    }
+
     /*
      * Apply any queued image changes.
      */
     _updateTilesForChangedImages() {
-        const updatedImages = this._changes.getUpdatedImages();
-        if (updatedImages.length) {
-            for (const name in this._mergedSourceCaches) {
-                this._mergedSourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], updatedImages);
-            }
-            this._changes.resetUpdatedImages();
+        const updatedImages: Record<string, StringifiedImageId[]> = {};
+
+        for (const name in this._mergedSourceCaches) {
+            const sourceCache = this._mergedSourceCaches[name];
+            const scope = sourceCache.getSource().scope;
+            updatedImages[scope] = updatedImages[scope] || this._changes.getUpdatedImages(scope);
+            if (updatedImages[scope].length === 0) continue;
+
+            this._mergedSourceCaches[name].reloadTilesForDependencies(['icons', 'patterns'], updatedImages[scope]);
+        }
+
+        for (const scope in updatedImages) {
+            this._changes.resetUpdatedImages(scope);
         }
     }
 
@@ -1853,10 +1873,12 @@ class Style extends Evented<MapEvents> {
     /**
      * Broadcast the current set of available images to the Workers.
      */
-    _updateWorkerImages() {
-        this._availableImages = this.imageManager.listImages(this.scope);
-        const params: SetImagesParameters = {scope: this.scope, images: this._availableImages};
-        this.dispatcher.broadcast('setImages', params);
+    _updateWorkerImages(scope: string) {
+        const style = this.getFragmentStyle(scope);
+        if (!style) return;
+        style._availableImages = style.imageManager.listImages(scope);
+        const params: SetImagesParameters = {scope, images: style._availableImages};
+        style.dispatcher.broadcast('setImages', params);
     }
 
     /**
@@ -1864,51 +1886,51 @@ class Style extends Evented<MapEvents> {
      * @fires Map.event:data Fires `data` with `{dataType: 'style'}` to indicate that the set of available images has changed.
      * @returns {Style}
      */
-    addImages(images: StyleImageMap<ImageId>): this {
+    addImages(images: StyleImageMap<ImageId>, scope: string): this {
         for (const [id, image] of images.entries()) {
-            if (this.getImage(id) && !id.iconsetId) {
+            if (this.getImage(id, scope)) {
                 return this.fire(new ErrorEvent(new Error(`An image with the name "${id.name}" already exists.`)));
             }
-            this.imageManager.addImage(id, this.scope, image);
-            this._changes.updateImage(id);
+            this.imageManager.addImage(id, scope, image);
+            this._changes.updateImage(id, scope);
         }
 
-        this._updateWorkerImages();
+        this._updateWorkerImages(scope);
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
 
-    addImage(id: ImageId, image: StyleImage): this {
-        if (this.getImage(id) && !id.iconsetId) {
+    addImage(id: ImageId, scope: string, image: StyleImage): this {
+        if (this.getImage(id, scope)) {
             return this.fire(new ErrorEvent(new Error(`An image with the name "${id.name}" already exists.`)));
         }
-        this.imageManager.addImage(id, this.scope, image);
-        this._changes.updateImage(id);
-        this._updateWorkerImages();
+        this.imageManager.addImage(id, scope, image);
+        this._changes.updateImage(id, scope);
+        this._updateWorkerImages(scope);
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
 
-    updateImage(id: ImageId, image: StyleImage, performSymbolLayout = false) {
-        this.imageManager.updateImage(id, this.scope, image);
+    updateImage(id: ImageId, scope: string, image: StyleImage, performSymbolLayout = false) {
+        this.imageManager.updateImage(id, scope, image);
         if (performSymbolLayout) {
-            this._changes.updateImage(id);
-            this._updateWorkerImages();
+            this._changes.updateImage(id, scope);
+            this._updateWorkerImages(scope);
             this.fire(new Event('data', {dataType: 'style'}));
         }
     }
 
-    getImage(id: ImageId): StyleImage | null | undefined {
-        return this.imageManager.getImage(id, this.scope);
+    getImage(id: ImageId, scope: string): StyleImage | null | undefined {
+        return this.imageManager.getImage(id, scope);
     }
 
-    removeImage(id: ImageId): this {
-        if (!this.getImage(id)) {
+    removeImage(id: ImageId, scope: string): this {
+        if (!this.getImage(id, scope)) {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
-        this.imageManager.removeImage(id, this.scope);
-        this._changes.updateImage(id);
-        this._updateWorkerImages();
+        this.imageManager.removeImage(id, scope);
+        this._changes.updateImage(id, scope);
+        this._updateWorkerImages(scope);
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
@@ -2005,13 +2027,20 @@ class Style extends Evented<MapEvents> {
         if (!source) {
             throw new Error('There is no source with this ID');
         }
+
         for (const layerId in this._layers) {
             if (this._layers[layerId].source === id) {
                 return this.fire(new ErrorEvent(new Error(`Source "${id}" cannot be removed while layer "${layerId}" is using it.`)));
             }
         }
+
         if (this.terrain && this.terrain.scope === this.scope && this.terrain.get().source === id) {
             return this.fire(new ErrorEvent(new Error(`Source "${id}" cannot be removed while terrain is using it.`)));
+        }
+
+        if (this.stylesheet.iconsets) {
+            const iconset = Object.entries(this.stylesheet.iconsets).find(([_, iconset]) => (iconset.type === 'source' ? iconset.source === id : false));
+            if (iconset) return this.fire(new ErrorEvent(new Error(`Source "${id}" cannot be removed while iconset "${iconset[0]}" is using it.`)));
         }
 
         const sourceCaches = this.getOwnSourceCaches(id);
@@ -3779,6 +3808,8 @@ class Style extends Evented<MapEvents> {
             this._mergedSourceCaches[id].clearTiles();
             this._mergedSourceCaches[id].setEventedParent(null);
         }
+
+        this.imageManager.removeScope(this.scope);
 
         this.setEventedParent(null);
 

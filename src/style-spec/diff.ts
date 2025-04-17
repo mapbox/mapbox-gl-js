@@ -1,6 +1,6 @@
 import isEqual from './util/deep_equal';
 
-import type {StyleSpecification, ImportSpecification, SourceSpecification, LayerSpecification} from './types';
+import type {StyleSpecification, ImportSpecification, SourceSpecification, LayerSpecification, IconsetsSpecification} from './types';
 
 type Sources = {
     [key: string]: SourceSpecification;
@@ -11,9 +11,7 @@ type Command = {
     args: Array<any>;
 };
 
-export const operations: {
-    [_: string]: string;
-} = {
+export const operations = {
 
     /*
      * { command: 'setStyle', args: [stylesheet] }
@@ -163,8 +161,18 @@ export const operations: {
     /**
      * { command: 'updateImport', args: [importId, importSpecification | styleUrl] }
      */
-    updateImport: 'updateImport'
-};
+    updateImport: 'updateImport',
+
+    /*
+     *  { command: 'addIconset', args: [iconsetId, IconsetSpecification] }
+     */
+    addIconset: 'addIconset',
+
+    /*
+     *  { command: 'removeIconset', args: [iconsetId] }
+     */
+    removeIconset: 'removeIconset'
+} as const;
 
 function addSource(sourceId: string, after: Sources, commands: Array<Command>) {
     commands.push({command: operations.addSource, args: [sourceId, after[sourceId]]});
@@ -201,9 +209,7 @@ function canUpdateGeoJSON(before: Sources, after: Sources, sourceId: string) {
     return true;
 }
 
-function diffSources(before: Sources, after: Sources, commands: Array<Command>, sourcesRemoved: {
-    [key: string]: true;
-}) {
+function diffSources(before: Sources, after: Sources, commands: Array<Command>, sourcesRemoved: {[key: string]: true}) {
     before = before || {};
     after = after || {};
 
@@ -446,6 +452,33 @@ export function diffImports(before: Array<ImportSpecification> | null | undefine
     }
 }
 
+function diffIconsets(before: IconsetsSpecification, after: IconsetsSpecification, commands: Array<Command>) {
+    before = before || {};
+    after = after || {};
+
+    let iconsetId;
+
+    // look for iconsets to remove
+    for (iconsetId in before) {
+        if (!before.hasOwnProperty(iconsetId)) continue;
+        if (!after.hasOwnProperty(iconsetId)) {
+            commands.push({command: operations.removeIconset, args: [iconsetId]});
+        }
+    }
+
+    // look for iconsets to add/update
+    for (iconsetId in after) {
+        if (!after.hasOwnProperty(iconsetId)) continue;
+        const iconset = after[iconsetId];
+        if (!before.hasOwnProperty(iconsetId)) {
+            commands.push({command: operations.addIconset, args: [iconsetId, iconset]});
+        } else if (!isEqual(before[iconsetId], iconset)) {
+            commands.push({command: operations.removeIconset, args: [iconsetId]});
+            commands.push({command: operations.addIconset, args: [iconsetId, iconset]});
+        }
+    }
+}
+
 /**
  * Diff two stylesheet
  *
@@ -520,6 +553,9 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         if (!isEqual(before.camera, after.camera)) {
             commands.push({command: operations.setCamera, args: [after.camera]});
         }
+        if (!isEqual(before.iconsets, after.iconsets)) {
+            diffIconsets(before.iconsets, after.iconsets, commands);
+        }
         if (!isEqual(before["color-theme"], after["color-theme"])) {
             // Update this to setColorTheme after
             // https://mapbox.atlassian.net/browse/GLJS-842 is implemented
@@ -529,7 +565,7 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         // Handle changes to `sources`
         // If a source is to be removed, we also--before the removeSource
         // command--need to remove all the style layers that depend on it.
-        const sourcesRemoved: Record<string, any> = {};
+        const sourcesRemoved: Record<string, true> = {};
 
         // First collect the {add,remove}Source commands
         const removeOrAddSourceCommands = [];
@@ -570,7 +606,7 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
 
         // Handle changes to `layers`
         diffLayers(beforeLayers, after.layers, commands);
-    } catch (e: any) {
+    } catch (e) {
         // fall back to setStyle
         console.warn('Unable to compute style diff:', e);
         commands = [{command: operations.setStyle, args: [after]}];

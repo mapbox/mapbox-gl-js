@@ -15,8 +15,8 @@ import {makeFQID} from '../util/fqid';
 import {ImageId} from '../style-spec/expression/types/image_id';
 import {ImageVariant} from '../style-spec/expression/types/image_variant';
 
-import type {StyleImage, StyleImages, StyleImageMap} from '../style/style_image';
 import type Context from '../gl/context';
+import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type {PotpackBox} from 'potpack';
 import type {Callback} from '../types/callback';
 import type {Size} from '../util/image';
@@ -25,6 +25,7 @@ import type {FQID} from '../util/fqid';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {WorkerSourceRemoveRasterizedImagesParameters} from '../source/worker_source';
+import type {ImageProvider} from '../render/image_provider';
 
 const IMAGE_RASTERIZER_WORKER_POOL_COUNT = 1;
 
@@ -71,55 +72,39 @@ type ImageRequestor = {
     to refactor this.
 */
 class ImageManager extends Evented {
-    _images: {
-        [scope: string]: StyleImages;
-    };
-    _iconsets: {
-        [scope: string]: Record<string, StyleImages>;
-    };
-    updatedImages: {
-        [scope: string]: Set<ImageId>;
-    };
-    callbackDispatchedThisFrame: {
-        [scope: string]: Set<StringifiedImageId>;
-    };
-    loaded: {
-        [scope: string]: boolean;
-    };
+    dirty: boolean;
+    spriteFormat: SpriteFormat;
+    imageProviders: Map<string, Map<ImageProvider['id'], ImageProvider>>;
+
+    loaded: Map<string, boolean>;
     requestors: ImageRequestor[];
 
-    patterns: {
-        [scope: string]: {
-            [id: string]: Pattern;
-        };
-    };
+    images: Map<string, Map<StringifiedImageId, StyleImage>>;
+    updatedImages: Map<string, Set<ImageId>>;
+    callbackDispatchedThisFrame: Map<string, Set<StringifiedImageId>>;
+
+    patterns: Map<string, Map<StringifiedImageId, Pattern>>;
     patternsInFlight: Set<FQID<StringifiedImageId>>;
-    atlasImage: {
-        [scope: string]: RGBAImage;
-    };
-    atlasTexture: {
-        [scope: string]: Texture | null | undefined;
-    };
-    spriteFormat: SpriteFormat;
-    dirty: boolean;
+
+    atlasImage: Map<string, RGBAImage>;
+    atlasTexture: Map<string, Texture | null | undefined>;
 
     imageRasterizerDispatcher: Dispatcher;
-
     _imageRasterizer: ImageRasterizer;
 
     constructor(spriteFormat: SpriteFormat) {
         super();
-        this._images = {};
-        this._iconsets = {};
-        this.updatedImages = {};
-        this.callbackDispatchedThisFrame = {};
-        this.loaded = {};
+        this.imageProviders = new Map();
+        this.images = new Map();
+        this.updatedImages = new Map();
+        this.callbackDispatchedThisFrame = new Map();
+        this.loaded = new Map();
         this.requestors = [];
 
-        this.patterns = {};
+        this.patterns = new Map();
         this.patternsInFlight = new Set();
-        this.atlasImage = {};
-        this.atlasTexture = {};
+        this.atlasImage = new Map();
+        this.atlasTexture = new Map();
         this.dirty = true;
 
         this.spriteFormat = spriteFormat;
@@ -136,6 +121,59 @@ class ImageManager extends Evented {
         }
     }
 
+    addScope(scope: string) {
+        this.loaded.set(scope, false);
+        this.imageProviders.set(scope, new Map());
+        this.images.set(scope, new Map());
+        this.updatedImages.set(scope, new Set());
+        this.callbackDispatchedThisFrame.set(scope, new Set());
+        this.patterns.set(scope, new Map());
+        this.atlasImage.set(scope, new RGBAImage({width: 1, height: 1}));
+    }
+
+    removeScope(scope: string) {
+        this.loaded.delete(scope);
+        this.imageProviders.delete(scope);
+        this.images.delete(scope);
+        this.updatedImages.delete(scope);
+        this.callbackDispatchedThisFrame.delete(scope);
+        this.patterns.delete(scope);
+        this.atlasImage.delete(scope);
+
+        const atlasTexture = this.atlasTexture.get(scope);
+        if (atlasTexture) {
+            atlasTexture.destroy();
+            this.atlasTexture.delete(scope);
+        }
+    }
+
+    addImageProvider(imageProvider: ImageProvider, scope: string) {
+        if (!this.imageProviders.has(scope)) {
+            this.imageProviders.set(scope, new Map());
+        }
+
+        assert(!this.imageProviders.get(scope).has(imageProvider.id), 'ImageProvider already exists');
+        this.imageProviders.get(scope).set(imageProvider.id, imageProvider);
+    }
+
+    removeImageProvider(imageProviderId: ImageProvider['id'], scope: string) {
+        if (this.imageProviders.has(scope)) {
+            this.imageProviders.get(scope).delete(imageProviderId);
+        }
+    }
+
+    getPendingImageProviders(): ImageProvider[] {
+        const pendingImageProviders: ImageProvider[] = [];
+        for (const imageProviders of this.imageProviders.values()) {
+            for (const imageProvider of imageProviders.values()) {
+                if (imageProvider.hasPendingRequests()) {
+                    pendingImageProviders.push(imageProvider);
+                }
+            }
+        }
+        return pendingImageProviders;
+    }
+
     get imageRasterizer(): ImageRasterizer {
         if (!this._imageRasterizer) {
             this._imageRasterizer = new ImageRasterizer();
@@ -143,33 +181,19 @@ class ImageManager extends Evented {
         return this._imageRasterizer;
     }
 
-    createScope(scope: string) {
-        this._images[scope] = {};
-        this._iconsets[scope] = {};
-        this.loaded[scope] = false;
-        this.updatedImages[scope] = new Set();
-        this.patterns[scope] = {};
-        this.callbackDispatchedThisFrame[scope] = new Set();
-        this.atlasImage[scope] = new RGBAImage({width: 1, height: 1});
-    }
-
-    createIconset(scope: string, iconsetId: string) {
-        this._iconsets[scope][iconsetId] = {};
-    }
-
     isLoaded(): boolean {
-        for (const scope in this.loaded) {
-            if (!this.loaded[scope]) return false;
+        for (const scope of this.loaded.keys()) {
+            if (!this.loaded.get(scope)) return false;
         }
         return true;
     }
 
     setLoaded(loaded: boolean, scope: string) {
-        if (this.loaded[scope] === loaded) {
+        if (this.loaded.get(scope) === loaded) {
             return;
         }
 
-        this.loaded[scope] = loaded;
+        this.loaded.set(scope, loaded);
 
         if (loaded) {
             for (const {ids, callback} of this.requestors) {
@@ -184,15 +208,13 @@ class ImageManager extends Evented {
     }
 
     getImage(id: ImageId, scope: string): StyleImage | null | undefined {
-        const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
-        return images[id.name];
+        return this.images.get(scope).get(id.toString());
     }
 
     addImage(id: ImageId, scope: string, image: StyleImage) {
-        const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
-        assert(!images[id.name]);
+        assert(!this.images.get(scope).has(id.toString()), `Image "${id.toString()}" already exists in scope "${scope}"`);
         if (this._validate(id, image)) {
-            images[id.name] = image;
+            this.images.get(scope).set(id.toString(), image);
         }
     }
 
@@ -244,19 +266,17 @@ class ImageManager extends Evented {
     }
 
     updateImage(id: ImageId, scope: string, image: StyleImage) {
-        const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
-        const oldImage = images[id.name];
-        assert(oldImage);
-        assert(oldImage.data.width === image.data.width);
-        assert(oldImage.data.height === image.data.height);
+        const oldImage = this.images.get(scope).get(id.toString());
+        assert(oldImage, `Image "${id.toString()}" does not exist in scope "${scope}"`);
+        assert(oldImage.data.width === image.data.width && oldImage.data.height === image.data.height, `Image "${id.toString()}" dimensions mismatch`);
         image.version = oldImage.version + 1;
-        images[id.name] = image;
-        this.updatedImages[scope].add(id);
+        this.images.get(scope).set(id.toString(), image);
+        this.updatedImages.get(scope).add(id);
         this.removeFromImageRasterizerCache(id, scope);
     }
 
     clearUpdatedImages(scope: string) {
-        this.updatedImages[scope].clear();
+        this.updatedImages.get(scope).clear();
     }
 
     removeFromImageRasterizerCache(id: ImageId, scope: string) {
@@ -273,11 +293,11 @@ class ImageManager extends Evented {
     }
 
     removeImage(id: ImageId, scope: string) {
-        const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
-        assert(images[id.name]);
-        const image = images[id.name];
-        delete images[id.name];
-        delete this.patterns[scope][id.name];
+        const images = this.images.get(scope);
+        assert(images.has(id.toString()), `Image "${id.toString()}" does not exist in scope "${scope}"`);
+        const image = images.get(id.toString());
+        images.delete(id.toString());
+        this.patterns.get(scope).delete(id.toString());
         this.removeFromImageRasterizerCache(id, scope);
         if (image.userImage && image.userImage.onRemove) {
             image.userImage.onRemove();
@@ -285,39 +305,56 @@ class ImageManager extends Evented {
     }
 
     listImages(scope: string): ImageId[] {
-        const result = [];
-        for (const name of Object.keys(this._images[scope])) {
-            result.push(new ImageId(name));
-        }
-
-        for (const iconsetId in this._iconsets[scope]) {
-            for (const name of Object.keys(this._iconsets[scope][iconsetId])) {
-                result.push(new ImageId({name, iconsetId}));
-            }
-        }
-
-        return result;
+        return Array.from(this.images.get(scope).keys()).map((id) => ImageId.from(id));
     }
 
     getImages(ids: ImageId[], scope: string, callback: Callback<StyleImageMap<StringifiedImageId>>) {
+        const images: ImageId[] = [];
+        const resolvedImages: ImageId[] = [];
+        const imageProviders = this.imageProviders.get(scope);
+        for (const id of ids) {
+            // Populate `images` with all image ids that are not part of an iconset.
+            if (!id.iconsetId) {
+                images.push(id);
+                continue;
+            }
+
+            const imageProvider = imageProviders.get(id.iconsetId);
+            if (!imageProvider) continue;
+
+            const image = this.getImage(id, scope);
+            if (image) resolvedImages.push(id);
+            else imageProvider.addPendingRequest(id);
+        }
+
+        // Skip the request if all images are part of an iconset.
+        // Requested images will be resolved during the imageProvider update.
+        if (images.length === 0) {
+            // Notify the requestor with the resolved images.
+            // Missing images will be provided after the
+            // ImageProvider#resolvePendingRequests and Style#_updateTilesForChangedImages.
+            this._notify(resolvedImages, scope, callback);
+            return;
+        }
+
         // If the sprite has been loaded, or if all the icon dependencies are already present
         // (i.e. if they've been added via runtime styling), then notify the requestor immediately.
         // Otherwise, delay notification until the sprite is loaded. At that point, if any of the
         // dependencies are still unavailable, we'll just assume they are permanently missing.
         let hasAllDependencies = true;
-        const isLoaded = !!this.loaded[scope];
+        const isLoaded = !!this.loaded.get(scope);
+        const imagesInScope = this.images.get(scope);
         if (!isLoaded) {
-            for (const id of ids) {
-                const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
-                if (!images[id.name]) {
+            for (const id of images) {
+                if (!imagesInScope.has(id.toString())) {
                     hasAllDependencies = false;
                 }
             }
         }
         if (isLoaded || hasAllDependencies) {
-            this._notify(ids, scope, callback);
+            this._notify(images, scope, callback);
         } else {
-            this.requestors.push({ids, scope, callback});
+            this.requestors.push({ids: images, scope, callback});
         }
     }
 
@@ -349,19 +386,15 @@ class ImageManager extends Evented {
     }
 
     getUpdatedImages(scope: string): Set<ImageId> {
-        return this.updatedImages[scope] || new Set();
+        return this.updatedImages.get(scope) || new Set();
     }
 
     _notify(ids: ImageId[], scope: string, callback: Callback<StyleImageMap<StringifiedImageId>>) {
+        const imagesInScope = this.images.get(scope);
         const response: StyleImageMap<StringifiedImageId> = new Map();
 
         for (const id of ids) {
-            if (id.iconsetId) {
-                this._iconsets[scope][id.iconsetId] = this._iconsets[scope][id.iconsetId] || {};
-            }
-
-            const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
-            const image = images[id.name];
+            const image = imagesInScope.get(id.toString());
 
             if (!image) {
                 // Don't fire the `styleimagemissing` event if the image is a part of an iconset
@@ -404,14 +437,14 @@ class ImageManager extends Evented {
     // Pattern stuff
 
     getPixelSize(scope: string): Size {
-        const {width, height} = this.atlasImage[scope];
+        const {width, height} = this.atlasImage.get(scope);
         return {width, height};
     }
 
     getPattern(id: ImageId, scope: string, lut: LUT | null): ImagePosition | null | undefined {
-        // eslint-disable-next-line
-        // TODO: add iconsets support
-        const pattern = this.patterns[scope][id.name];
+        const strImageId = id.toString();
+        const patternsInScope = this.patterns.get(scope);
+        const pattern = patternsInScope.get(strImageId);
 
         const image = this.getImage(id, scope);
         if (!image) {
@@ -426,7 +459,7 @@ class ImageManager extends Evented {
             }
         } else {
             if (image.usvg && !image.data) {
-                const patternInFlightId = this.getPatternInFlightId(id.toString(), scope);
+                const patternInFlightId = this.getPatternInFlightId(strImageId, scope);
                 if (this.patternsInFlight.has(patternInFlightId)) {
                     return null;
                 }
@@ -442,8 +475,7 @@ class ImageManager extends Evented {
         }
 
         this._updatePatternAtlas(scope, lut);
-
-        return this.patterns[scope][id.name].position;
+        return patternsInScope.get(strImageId).position;
     }
 
     getPatternInFlightId(id: StringifiedImageId, scope: string): FQID<StringifiedImageId> {
@@ -470,18 +502,18 @@ class ImageManager extends Evented {
         const h = image.data.height + PATTERN_PADDING * 2;
         const bin = {w, h, x: 0, y: 0};
         const position = new ImagePosition(bin, image, PATTERN_PADDING);
-        this.patterns[scope][id.name] = {bin, position};
+        this.patterns.get(scope).set(id.toString(), {bin, position});
     }
 
     bind(context: Context, scope: string) {
         const gl = context.gl;
-        let atlasTexture = this.atlasTexture[scope];
+        let atlasTexture = this.atlasTexture.get(scope);
 
         if (!atlasTexture) {
-            atlasTexture = new Texture(context, this.atlasImage[scope], gl.RGBA8);
-            this.atlasTexture[scope] = atlasTexture;
+            atlasTexture = new Texture(context, this.atlasImage.get(scope), gl.RGBA8);
+            this.atlasTexture.set(scope, atlasTexture);
         } else if (this.dirty) {
-            atlasTexture.update(this.atlasImage[scope]);
+            atlasTexture.update(this.atlasImage.get(scope));
             this.dirty = false;
         }
 
@@ -489,22 +521,19 @@ class ImageManager extends Evented {
     }
 
     _updatePatternAtlas(scope: string, lut: LUT | null) {
-        const bins = [];
-        for (const name in this.patterns[scope]) {
-            bins.push(this.patterns[scope][name].bin);
-        }
-
+        const patternsInScope = this.patterns.get(scope);
+        const bins = Array.from(patternsInScope.values()).map(({bin}) => bin);
         const {w, h} = potpack(bins);
 
-        const dst = this.atlasImage[scope];
+        const dst = this.atlasImage.get(scope);
         dst.resize({width: w || 1, height: h || 1});
 
-        for (const name in this.patterns[scope]) {
-            const {bin, position} = this.patterns[scope][name];
+        const imagesInScope = this.images.get(scope);
+        for (const [id, {bin, position}] of patternsInScope.entries()) {
             let padding = position.padding;
             const x = bin.x + padding;
             const y = bin.y + padding;
-            const src = this._images[scope][name].data;
+            const src = imagesInScope.get(id).data;
             const w = src.width;
             const h = src.height;
 
@@ -530,20 +559,20 @@ class ImageManager extends Evented {
     }
 
     beginFrame() {
-        for (const scope in this._images) {
-            this.callbackDispatchedThisFrame[scope] = new Set();
+        for (const scope of this.images.keys()) {
+            this.callbackDispatchedThisFrame.set(scope, new Set());
         }
     }
 
     dispatchRenderCallbacks(ids: ImageId[], scope: string) {
+        const imagesInScope = this.images.get(scope);
         for (const id of ids) {
             // the callback for the image was already dispatched for a different frame
-            if (this.callbackDispatchedThisFrame[scope].has(id.toString())) continue;
-            this.callbackDispatchedThisFrame[scope].add(id.toString());
+            if (this.callbackDispatchedThisFrame.get(scope).has(id.toString())) continue;
+            this.callbackDispatchedThisFrame.get(scope).add(id.toString());
 
-            const images = id.iconsetId ? this._iconsets[scope][id.iconsetId] : this._images[scope];
-            const image = images[id.name];
-            assert(image);
+            const image = imagesInScope.get(id.toString());
+            assert(image, `Image "${id.toString()}" does not exist in scope "${scope}"`);
 
             const updated = renderStyleImage(image);
             if (updated) {

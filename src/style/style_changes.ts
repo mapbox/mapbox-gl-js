@@ -17,7 +17,9 @@ class StyleChanges {
         };
     };
     _updatedPaintProps: Set<string>;
-    _updatedImages: Set<StringifiedImageId>;
+    _updatedImages: {
+        [_: string]: Set<StringifiedImageId>;
+    };
     _updatedSourceCaches: {
         [_: string]: 'clear' | 'reload';
     };
@@ -31,7 +33,7 @@ class StyleChanges {
         this._updatedSourceCaches = {};
         this._updatedPaintProps = new Set();
 
-        this._updatedImages = new Set();
+        this._updatedImages = {};
     }
 
     isDirty(): boolean {
@@ -152,21 +154,24 @@ class StyleChanges {
         this.setDirty();
     }
 
-    getUpdatedImages(): StringifiedImageId[] {
-        return Array.from(this._updatedImages.values());
+    getUpdatedImages(scope: string): StringifiedImageId[] {
+        return this._updatedImages[scope] ? Array.from(this._updatedImages[scope].values()) : [];
     }
 
     /**
      * Mark an image as having changes.
      * @param {ImageId} id
      */
-    updateImage(id: ImageId) {
-        this._updatedImages.add(ImageId.toString(id));
+    updateImage(id: ImageId, scope: string) {
+        this._updatedImages[scope] = this._updatedImages[scope] || new Set();
+        this._updatedImages[scope].add(ImageId.toString(id));
         this.setDirty();
     }
 
-    resetUpdatedImages() {
-        this._updatedImages.clear();
+    resetUpdatedImages(scope: string) {
+        if (this._updatedImages[scope]) {
+            this._updatedImages[scope].clear();
+        }
     }
 
     /**
@@ -181,7 +186,7 @@ class StyleChanges {
         this._updatedSourceCaches = {};
         this._updatedPaintProps.clear();
 
-        this._updatedImages.clear();
+        this._updatedImages = {};
     }
 }
 

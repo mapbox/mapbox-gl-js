@@ -3042,7 +3042,7 @@ test('Style#_updateTilesForChangedImages', async () => {
     expect(tile.setDependencies).toHaveBeenCalledWith('icons', [imageIdStr]);
     expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(true);
 
-    style.addImage(imageId, {});
+    style.addImage(imageId, 'basemap', {});
     style.update({});
 
     expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(2);

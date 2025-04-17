@@ -2632,7 +2632,7 @@ export class Map extends Camera {
         const imageId = ImageId.from(id);
         if (image instanceof HTMLImageElement || (ImageBitmap && image instanceof ImageBitmap)) {
             const {width, height, data} = browser.getImageData(image);
-            this.style.addImage(imageId, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version, usvg: false});
+            this.style.addImage(imageId, this.style.scope, {data: new RGBAImage({width, height}, data), pixelRatio, stretchX, stretchY, content, sdf, version, usvg: false});
         } else if (image.width === undefined || image.height === undefined) {
             this.fire(new ErrorEvent(new Error(
                 'Invalid arguments to map.addImage(). The second argument must be an `HTMLImageElement`, `ImageData`, `ImageBitmap`, ' +
@@ -2642,7 +2642,7 @@ export class Map extends Camera {
             const userImage = (image as StyleImageInterface);
             const data = userImage.data;
 
-            this.style.addImage(imageId, {
+            this.style.addImage(imageId, this.style.scope, {
                 data: new RGBAImage({width, height}, new Uint8Array(data)),
                 pixelRatio,
                 stretchX,
@@ -2688,7 +2688,7 @@ export class Map extends Camera {
         this._lazyInitEmptyStyle();
 
         const imageId = ImageId.from(id);
-        const existingImage = this.style.getImage(imageId);
+        const existingImage = this.style.getImage(imageId, this.style.scope);
         if (!existingImage) {
             this.fire(new ErrorEvent(new Error(
                 'The map has no image with that id. If you are adding a new image use `map.addImage(...)` instead.')));
@@ -2728,7 +2728,7 @@ export class Map extends Camera {
             existingImage.data.replace(data, copy);
         }
 
-        this.style.updateImage(imageId, existingImage, performSymbolLayout);
+        this.style.updateImage(imageId, this.style.scope, existingImage, performSymbolLayout);
     }
 
     /**
@@ -2752,7 +2752,7 @@ export class Map extends Camera {
 
         if (!this.style) return false;
 
-        return !!this.style.getImage(ImageId.from(id));
+        return !!this.style.getImage(ImageId.from(id), this.style.scope);
     }
 
     /**
@@ -2768,7 +2768,7 @@ export class Map extends Camera {
      * if (map.hasImage('cat')) map.removeImage('cat');
      */
     removeImage(id: string) {
-        this.style.removeImage(ImageId.from(id));
+        this.style.removeImage(ImageId.from(id), this.style.scope);
     }
 
     /**
@@ -4398,6 +4398,7 @@ export class Map extends Camera {
             this._updateTerrain(); // Terrain DEM source updates here and skips update in Style#updateSources.
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style.updateSources(this.transform);
+            this.style.updateImageProviders();
             // Update positions of markers and popups on enabling/disabling terrain
             if (!this.isMoving()) {
                 this._forceMarkerAndPopupUpdate();
