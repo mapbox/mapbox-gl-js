@@ -44,8 +44,8 @@ test('worker source messages dispatched to the correct map instance', () => {
         return {cancel: () => {}};
     };
 
-    _self.registerWorkerSource('test', function(actor) {
-        this.loadTile = function() {
+    _self.registerWorkerSource('test', function (actor) {
+        this.loadTile = function () {
             // we expect the map id to get appended in the call to the "real"
             // actor.send()
             actor.send('main thread task', {}, () => {}, null);
@@ -64,7 +64,7 @@ test('worker source messages dispatched to the correct map instance', () => {
 test('worker sources should be scoped', () => {
     const worker = new MapWorker(_self);
 
-    _self.registerWorkerSource('sourceType', function() {} as unknown as WorkerSourceConstructor);
+    _self.registerWorkerSource('sourceType', function () {} as unknown as WorkerSourceConstructor);
 
     const a = worker.getWorkerSource(999, 'sourceType', 'sourceId', 'scope1');
     const b = worker.getWorkerSource(999, 'sourceType', 'sourceId', 'scope2');

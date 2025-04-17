@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
 import {VectorTile} from '@mapbox/vector-tile';
@@ -6,7 +7,6 @@ import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_sourc
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import perf from '../../../src/util/performance';
 import {getProjection} from '../../../src/geo/projection/index';
-// eslint-disable-next-line import/no-unresolved
 import rawTileData from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 const actor = {send: () => {}};
@@ -232,7 +232,7 @@ test('VectorTileWorkerSource provides resource timing information', () => {
 
     const source = new VectorTileWorkerSource(actor, layerIndex, [], true, loadVectorData);
 
-    vi.spyOn(perf, 'getEntriesByName').mockImplementation(() => { return [ exampleResourceTiming ]; });
+    vi.spyOn(perf, 'getEntriesByName').mockImplementation(() => { return [exampleResourceTiming]; });
 
     source.loadTile({
         source: 'source',

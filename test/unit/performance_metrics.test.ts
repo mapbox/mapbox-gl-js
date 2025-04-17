@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, createMap, waitFor} from '../util/vitest';
 import {simulateDoubleTap} from '../util/simulate_interaction';
@@ -45,6 +46,7 @@ test('Performance metrics collected', async () => {
     const performance = await new Promise((resolve, reject) => {
         mapboxgl.getPerformanceMetricsAsync((err, result) => {
             if (err) {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                 reject(err);
                 return;
             }

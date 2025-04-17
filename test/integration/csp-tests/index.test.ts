@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/extensions
 import {vi, describe, test, beforeAll, afterAll, doneAsync} from '../../util/vitest.ts';
 
 const rules = `

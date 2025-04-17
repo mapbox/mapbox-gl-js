@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect} from '../../../util/vitest';
 import migrate from '../../../../src/style-spec/migrate/v9';
@@ -6,7 +7,7 @@ test('deref layers', () => {
     const input = {
         version: 8,
         sources: {
-            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
+            a: {type: 'vector', tiles: ['http://dev/null']}
         },
         layers: [{
             id: 'parent',
@@ -22,7 +23,7 @@ test('deref layers', () => {
     expect(migrate(input)).toEqual({
         version: 9,
         sources: {
-            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
+            a: {type: 'vector', tiles: ['http://dev/null']}
         },
         layers: [{
             id: 'parent',
@@ -42,7 +43,7 @@ test('declass style', () => {
     const input = {
         version: 8,
         sources: {
-            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
+            a: {type: 'vector', tiles: ['http://dev/null']}
         },
         layers: [{
             id: 'a',
@@ -61,7 +62,7 @@ test('declass style', () => {
     expect(migrate(input)).toEqual({
         version: 9,
         sources: {
-            a: {type: 'vector', tiles: [ 'http://dev/null' ]}
+            a: {type: 'vector', tiles: ['http://dev/null']}
         },
         layers: [{
             id: 'a',

@@ -5,14 +5,14 @@ export const image = {
     height: size,
     data: new Uint8Array(size * size * 4),
 
-    onAdd: function () {
+    onAdd() {
         const canvas = document.createElement('canvas');
         canvas.width = this.width;
         canvas.height = this.height;
         this.context = canvas.getContext('2d', {willReadFrequently: true});
     },
 
-    render: function () {
+    render() {
         const radius = (size / 2) * 0.3;
         const outerRadius = (size / 2) * 0.7 + radius;
         const context = this.context;
@@ -56,4 +56,4 @@ export const image = {
         // Return `true` to let the map know that the image was updated.
         return true;
     }
-}
+};

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 
 // Emscripten-based JavaScript wrapper for Google Draco WASM decoder, manually optimized for much smaller size

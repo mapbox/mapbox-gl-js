@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {assertTransitionTime, attachSimulateFrame, createCamera} from './utils';
 import {describe, test, expect, vi, equalWithPrecision} from '../../../util/vitest';
@@ -24,9 +25,9 @@ describe('camera', () => {
         test(
             'does not throw when cameras current zoom is sufficiently greater than passed zoom option',
             () => {
-                const camera = createCamera({zoom: 22, center:[0, 0]});
+                const camera = createCamera({zoom: 22, center: [0, 0]});
                 expect(() => {
-                    camera.flyTo({zoom:10, center:[0, 0]});
+                    camera.flyTo({zoom: 10, center: [0, 0]});
                 }).not.toThrowError();
             }
         );
@@ -37,11 +38,11 @@ describe('camera', () => {
                 const transform = new Transform(0, 20.9999, 0, 60, true);
                 transform.resize(512, 512);
                 const camera = attachSimulateFrame(new Camera(transform, {}))
-                    .jumpTo({zoom: 21, center:[0, 0]});
+                    .jumpTo({zoom: 21, center: [0, 0]});
                 camera._update = () => {};
                 camera._preloadTiles = () => {};
 
-                expect(() => camera.flyTo({zoom:7.5, center:[0, 0], offset:[0, 70]})).not.toThrowError();
+                expect(() => camera.flyTo({zoom: 7.5, center: [0, 0], offset: [0, 70]})).not.toThrowError();
             }
         );
 
@@ -165,7 +166,7 @@ describe('camera', () => {
                         .on('move', (d) => { moved = d.data; })
                         .on('rotate', (d) => { rotated = d.data; })
                         .on('pitch', (d) => { pitched = d.data; })
-                        .on('moveend', function(d) {
+                        .on('moveend', function (d) {
                             expect(this._zooming).toBeFalsy();
                             expect(this._panning).toBeFalsy();
                             expect(this._rotating).toBeFalsy();
@@ -233,6 +234,7 @@ describe('camera', () => {
 
         test(
             'for short flights, emits (solely) move events, preserving eventData',
+            // eslint-disable-next-line @typescript-eslint/require-await
             async () => {
                 //As I type this, the code path for guiding super-short flights is (and will probably remain) different.
                 //As such; it deserves a separate test case. This test case flies the map from A to A.
@@ -255,7 +257,7 @@ describe('camera', () => {
                     .on('pitchstart', (d) => { pitchstarted = d.data; })
                     .on('pitch', (d) => { pitched = d.data; })
                     .on('pitchend', (d) => { pitchended = d.data; })
-                    .on('moveend', function(d) {
+                    .on('moveend', function (d) {
                         expect(this._zooming).toBeFalsy();
                         expect(this._panning).toBeFalsy();
                         expect(this._rotating).toBeFalsy();
@@ -749,13 +751,13 @@ describe('camera', () => {
         test('retain or not padding based on provided padding option', () => {
             const camera = createCamera();
             camera.flyTo({center: [100, 0], duration: 0, padding: {top: 100}});
-            expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+            expect(camera.getPadding()).toEqual({top: 100, bottom: 0, left: 0, right: 0});
 
             camera.flyTo({center: [120, 0], duration: 0, padding: {top: 200}, retainPadding: false});
-            expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+            expect(camera.getPadding()).toEqual({top: 100, bottom: 0, left: 0, right: 0});
 
             camera.flyTo({center: [80, 0], duration: 0, padding: {top: 300}, retainPadding: true});
-            expect(camera.getPadding()).toEqual({top:300, bottom:0, left:0, right:0});
+            expect(camera.getPadding()).toEqual({top: 300, bottom: 0, left: 0, right: 0});
         });
     });
 });

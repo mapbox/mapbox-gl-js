@@ -1,8 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
 import {RequestManager} from '../../../src/util/mapbox';
 import {loadGlyphRange} from '../../../src/style/load_glyph_range';
-// eslint-disable-next-line import/no-unresolved
 import glyphStub from '../../fixtures/0-255.pbf?arraybuffer';
 
 test('loadGlyphRange', async () => {
@@ -10,6 +10,7 @@ test('loadGlyphRange', async () => {
     const manager = new RequestManager(transform);
 
     let request: any;
+    // eslint-disable-next-line @typescript-eslint/require-await
     vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
         request = req;
         return new window.Response(glyphStub);

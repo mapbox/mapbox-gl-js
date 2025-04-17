@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
 import Tile from '../../../src/source/tile';
@@ -16,7 +17,7 @@ const wrapDispatcher = (dispatcher) => {
 };
 
 const mockDispatcher = wrapDispatcher({
-    send () {}
+    send() {}
 });
 
 const hawkHill = {
@@ -58,8 +59,9 @@ describe('GeoJSONSource#setData', () => {
         opts = opts || {};
         opts = extend(opts, {data: {}});
         return new GeoJSONSource('id', opts, wrapDispatcher({
-            send (type, data, callback) {
+            send(type, data, callback) {
                 if (callback) {
+                    // eslint-disable-next-line @typescript-eslint/no-implied-eval
                     return setTimeout(callback, 0);
                 }
             }
@@ -97,9 +99,10 @@ describe('GeoJSONSource#setData', () => {
                 transformRequest: (url) => { return {url}; }
             }
         };
-        source.actor.send = function(type, params, cb) {
+        source.actor.send = function (type, params, cb) {
             if (type === 'geojson.loadData') {
                 expect(params.request.collectResourceTiming).toBeTruthy();
+                // eslint-disable-next-line @typescript-eslint/no-implied-eval
                 setTimeout(cb, 0);
             }
         };
@@ -122,7 +125,6 @@ describe('GeoJSONSource#update', () => {
             }
         });
 
-        /* eslint-disable no-new */
         new GeoJSONSource('id', {data: {}}, mockDispatcher).setData({});
     });
 
@@ -139,12 +141,12 @@ describe('GeoJSONSource#update', () => {
                         expect(ids).to.deep.equal([2, 3]);
                         resolve();
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-implied-eval
                     setTimeout(callback);
                     return true;
                 }
             });
 
-            /* eslint-disable no-new */
             const source = new GeoJSONSource('id', {dynamic: true, data: {}}, mockDispatcher);
 
             source.updateData({type: 'Feature', id: 1});
@@ -218,6 +220,7 @@ describe('GeoJSONSource#update', () => {
         const mockDispatcher = wrapDispatcher({
             send(message, args, callback) {
                 if (callback) {
+                    // eslint-disable-next-line @typescript-eslint/no-implied-eval
                     setTimeout(callback, 0);
                 }
             }
@@ -272,6 +275,7 @@ describe('GeoJSONSource#update', () => {
                         resolve();
                     }
                     if (callback) {
+                        // eslint-disable-next-line @typescript-eslint/no-implied-eval
                         setTimeout(callback, 0);
                     }
                 }

@@ -1,4 +1,5 @@
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, waitFor, vi, createMap} from '../../../util/vitest';
 import {createStyle} from './util';
@@ -513,7 +514,7 @@ describe('Map#setStyle', () => {
         const styleB = {
             'version': 8,
             'sources': {},
-            'fog':  {
+            'fog': {
                 'color': '#0F2127',
                 'high-color': '#000',
                 'horizon-blend': 0.5,
@@ -654,6 +655,7 @@ describe('Map#setStyle', () => {
         });
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('emits load event after a style is set', async () => {
         vi.spyOn(Map.prototype, '_detectMissingCSS').mockImplementation(() => {});
         vi.spyOn(Map.prototype, '_authenticate').mockImplementation(() => {});

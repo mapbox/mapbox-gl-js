@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 /* eslint-disable camelcase */
-/* eslint-disable no-process-exit */
 
 import {ESLint} from 'eslint';
 import {Octokit} from '@octokit/rest';
@@ -39,6 +38,7 @@ async function getBannedTsComments() {
 
     const eslint = new ESLint({
         overrideConfigFile: true,
+        // @ts-expect-error - type mismatch
         overrideConfig: config
     });
 
@@ -169,7 +169,7 @@ if (priorBannedTsComments) {
 
 await notifyPR(pullRequest, bannedTsComments, priorBannedTsComments);
 
-process.on('unhandledRejection', error => {
+process.on('unhandledRejection', (/** @type {Error} */ error) => {
     // don't log `error` directly, because errors from child_process.execSync
     // contain an (undocumented) `envPairs` with environment variable values
     console.error(error.message || 'Error');

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import Point from '@mapbox/point-geometry';
@@ -33,7 +34,7 @@ describe('getAnchors', () => {
         expect(anchors).toEqual([
             {x: 1, y: 2.2, z: 0.0, angle: 1.5707963267948966, segment: 1},
             {x: 1, y: 5.2, z: 0.0, angle: 1.5707963267948966, segment: 4},
-            {x: 1, y: 8.2, z: 0.0, angle: 1.5707963267948966, segment: 7} ]);
+            {x: 1, y: 8.2, z: 0.0, angle: 1.5707963267948966, segment: 7}]);
 
         expect(
             labelLength / 2 + 1 <= anchors[0].y && anchors[0].y < labelLength / 2 + 3 * glyphSize + 1
@@ -46,7 +47,7 @@ describe('getAnchors', () => {
         expect(anchors).toEqual([
             {x: 1, y: 2.2, z: 0.0, angle: 1.5707963267948966, segment: 1},
             {x: 1, y: 4.7, z: 0.0, angle: 1.5707963267948966, segment: 3},
-            {x: 1, y: 7.2, z: 0.0, angle: 1.5707963267948966, segment: 6} ]);
+            {x: 1, y: 7.2, z: 0.0, angle: 1.5707963267948966, segment: 6}]);
     });
 
     test('continued line with short labels', () => {
@@ -55,7 +56,7 @@ describe('getAnchors', () => {
         expect(anchors).toEqual([
             {x: 1, y: 1.5, z: 0.0, angle: 1.5707963267948966, segment: 1},
             {x: 1, y: 4.5, z: 0.0, angle: 1.5707963267948966, segment: 4},
-            {x: 1, y: 7.5, z: 0.0, angle: 1.5707963267948966, segment: 7} ]);
+            {x: 1, y: 7.5, z: 0.0, angle: 1.5707963267948966, segment: 7}]);
     });
 
     test('continued line with long labels', () => {
@@ -64,7 +65,7 @@ describe('getAnchors', () => {
         expect(anchors).toEqual([
             {x: 1, y: 1.25, z: 0.0, angle: 1.5707963267948966, segment: 1},
             {x: 1, y: 3.75, z: 0.0, angle: 1.5707963267948966, segment: 3},
-            {x: 1, y: 6.25, z: 0.0, angle: 1.5707963267948966, segment: 6} ]);
+            {x: 1, y: 6.25, z: 0.0, angle: 1.5707963267948966, segment: 6}]);
     });
 
     test('overscaled anchors contain all anchors in parent', () => {
@@ -94,7 +95,7 @@ describe('getAnchors', () => {
         const line = [new Point(1, 1), new Point(1, 3.1), new Point(3, 6), new Point(4, 7)];
         const anchor = getCenterAnchor(line, Math.PI, shapedText, shapedIcon, glyphSize, 1);
         expect(anchor).toEqual(
-            {x:  1.8053282193580078, y: 4.267725918069111, z: 0.0, angle: 0.9670469933974603, segment: 1}
+            {x: 1.8053282193580078, y: 4.267725918069111, z: 0.0, angle: 0.9670469933974603, segment: 1}
         );
     });
 

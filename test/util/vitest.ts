@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, assert, beforeEach, beforeAll, afterEach, afterAll, vi} from 'vitest';
 import {Map} from '../../src/ui/map';

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi, createMap as globalCreateMap} from '../../../util/vitest';
 import Marker from '../../../../src/ui/marker';

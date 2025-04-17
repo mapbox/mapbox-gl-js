@@ -1,4 +1,3 @@
-/* eslint-disable no-process-exit */
 
 import path from 'path';
 import fs from 'fs';
@@ -8,7 +7,7 @@ import {queue} from 'd3-queue';
 import chalk from 'chalk';
 import template from 'lodash/template.js';
 import createServer from './server.js';
-
+// eslint-disable-next-line import/order
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -31,7 +30,7 @@ export default function (directory, implementation, options, run) {
             server.localizeURLs(style);
 
             style.metadata = style.metadata || {};
-            let testName = `${path.basename(directory)}/${id}`;
+            const testName = `${path.basename(directory)}/${id}`;
             style.metadata.test = Object.assign({
                 id,
                 skip: ignores.skip.includes(testName) || ignores.todo.includes(testName),
@@ -80,7 +79,7 @@ export default function (directory, implementation, options, run) {
                 handleResult(error);
             }
 
-            function handleResult (error) {
+            function handleResult(error) {
                 if (error) {
                     test.error = error;
                 }
@@ -183,8 +182,7 @@ export default function (directory, implementation, options, run) {
             stats[test.status] = (stats[test.status] || 0) + 1;
         }
 
-        const unsuccessful = tests.filter(test =>
-            test.status === 'failed' || test.status === 'errored');
+        const unsuccessful = tests.filter(test => test.status === 'failed' || test.status === 'errored');
 
         const resultsShell = resultsTemplate({unsuccessful, tests, stats, shuffle: options.shuffle, seed: options.seed})
             .split('<!-- results go here -->');

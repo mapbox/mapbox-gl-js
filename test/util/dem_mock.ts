@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import DEMData from '../../src/data/dem_data';
 import {RGBAImage} from '../../src/util/image';

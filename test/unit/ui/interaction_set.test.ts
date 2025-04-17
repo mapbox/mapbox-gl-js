@@ -17,12 +17,14 @@ describe('InteractionSet', () => {
         const featureset = {layerId: 'foo'};
         const layer = {id: featureset.layerId};
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         map.style = {
             queryRenderedTargets: () => [
                 feature({id: 1, layer, variants: {test: [{target: featureset}]}}),
             ]
         };
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         map.getFeatureState = () => ({});
 
@@ -51,6 +53,7 @@ describe('InteractionSet', () => {
         const featureset = {layerId: 'foo'};
         const layer = {id: featureset.layerId};
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         map.style = {
             queryRenderedTargets: () => [
@@ -58,6 +61,7 @@ describe('InteractionSet', () => {
                 feature({id: 2, layer, variants: {test: [{target: featureset}]}})
             ]
         };
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         map.getFeatureState = () => ({});
 
@@ -81,6 +85,7 @@ describe('InteractionSet', () => {
         const map = new Evented();
         const interactions = new InteractionSet(map);
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         map.style = {
             queryRenderedTargets: () => []
@@ -108,6 +113,7 @@ describe('InteractionSet', () => {
         const featureset = {layerId: 'bar'};
         const layer = {id: featureset.layerId};
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         map.style = {
             queryRenderedTargets: (_, featuresetQueryTargets) => {
@@ -117,6 +123,7 @@ describe('InteractionSet', () => {
                 ];
             }
         };
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         map.getFeatureState = () => ({});
 

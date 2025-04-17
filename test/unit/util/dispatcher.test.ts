@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
 import Dispatcher from '../../../src/util/dispatcher';
@@ -10,10 +11,10 @@ describe('Dispatcher', () => {
 
         const releaseCalled: Array<any> = [];
         const workerPool = {
-            acquire () {
+            acquire() {
                 return workers;
             },
-            release (id) {
+            release(id) {
                 releaseCalled.push(id);
             }
         };
@@ -27,7 +28,7 @@ describe('Dispatcher', () => {
 
     test('creates Actors with unique map id', () => {
         const ids: Array<any> = [];
-        function Actor (target, parent, mapId) { ids.push(mapId); }
+        function Actor(target, parent, mapId) { ids.push(mapId); }
         vi.spyOn(Dispatcher, 'Actor', 'get').mockImplementation(() => Actor);
         vi.spyOn(Dispatcher.prototype, 'broadcast').mockImplementation(() => {});
         vi.spyOn(WorkerPool, 'workerCount', 'get').mockImplementation(() => 1);
@@ -40,7 +41,7 @@ describe('Dispatcher', () => {
     test('#remove destroys actors', () => {
         const actorsRemoved: Array<any> = [];
         function Actor() {
-            this.remove = function() { actorsRemoved.push(this); };
+            this.remove = function () { actorsRemoved.push(this); };
         }
         vi.spyOn(Dispatcher, 'Actor', 'get').mockImplementation(() => Actor);
         vi.spyOn(Dispatcher.prototype, 'broadcast').mockImplementation(() => {});

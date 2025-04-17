@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import {ReplacementSource, ReplacementOrderLandmark} from '../../../3d-style/source/replacement_source';
@@ -124,7 +125,7 @@ describe('ReplacementSource', () => {
             getClipMask: () => {
                 return LayerTypeMask.All;
             },
-            
+
             getClipScope: () => {
                 return [];
             }

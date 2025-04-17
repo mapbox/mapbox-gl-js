@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
 import WorkerTile from '../../../src/source/worker_tile';
@@ -116,6 +117,7 @@ test('WorkerTile#parse adds $localized property and filters features based on th
         }));
 
     // no worldview
+    // eslint-disable-next-line no-promise-executor-return
     await new Promise((resolve) => createWorkerTile({worldview: null}).parse(vt, layerIndex, [], {}, resolve));
     const allFeatures = bucketPopulateSpy.mock.lastCall[0];
     expect(allFeatures.length).toEqual(5);
@@ -126,6 +128,7 @@ test('WorkerTile#parse adds $localized property and filters features based on th
     expect(allFeatures[4].feature.properties).toMatchObject({worldview: 'US'});
 
     // worldview: 'US'
+    // eslint-disable-next-line no-promise-executor-return
     await new Promise((resolve) => createWorkerTile({worldview: 'US', localizableLayerIds: new Set(['_geojsonTileLayer'])}).parse(vt, layerIndex, [], {}, resolve));
     const usFeatures = bucketPopulateSpy.mock.lastCall[0];
     expect(usFeatures.length).toEqual(3);

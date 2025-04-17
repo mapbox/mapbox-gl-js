@@ -1,6 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
-
 import ModelManager from '../../../3d-style/render/model_manager';
 import {Evented} from '../../../src/util/evented';
 import {RequestManager} from '../../../src/util/mapbox';
@@ -13,6 +13,7 @@ function createModelManager() {
 }
 
 describe('ModelManager', () => {
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('#addModel', async () => {
         const {modelManager, eventedParent} = createModelManager();
 
@@ -37,6 +38,7 @@ describe('ModelManager', () => {
         modelManager.addModel('model', 'uri', 'basemap');
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('#removeModel', async () => {
         const {modelManager, eventedParent} = createModelManager();
 
@@ -54,7 +56,7 @@ describe('ModelManager', () => {
         };
 
         vi.spyOn(modelManager, 'loadModel').mockImplementation(
-            (id) => id === 'model' ? Promise.resolve(model) : Promise.reject(new Error('Not found'))
+            (id) => (id === 'model' ? Promise.resolve(model) : Promise.reject(new Error('Not found')))
         );
 
         eventedParent.on('data', () => {
@@ -71,6 +73,7 @@ describe('ModelManager', () => {
         modelManager.addModel('model', 'uri', 'basemap');
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('#addModels', async () => {
         const {modelManager, eventedParent} = createModelManager();
 
@@ -100,6 +103,7 @@ describe('ModelManager', () => {
         modelManager.addModels(models, 'basemap');
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('#addModelsFromBucket', async () => {
         const {modelManager, eventedParent} = createModelManager();
 

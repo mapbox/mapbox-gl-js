@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import {mockFetch} from '../../util/network';
@@ -46,8 +47,8 @@ describe('ModelLayer#loadStyleExpressionConstraint', () => {
                             "paint": {
                                 "model-scale": [
                                     "interpolate",
-                                    [ "linear" ],
-                                    [ "zoom" ],
+                                    ["linear"],
+                                    ["zoom"],
                                     14.2,
                                     [
                                         1.0,
@@ -70,8 +71,8 @@ describe('ModelLayer#loadStyleExpressionConstraint', () => {
                                     "door",
                                     [
                                         "interpolate",
-                                        [ "linear" ],
-                                        [ "measure-light", "brightness" ],
+                                        ["linear"],
+                                        ["measure-light", "brightness"],
                                         0.2,
                                         1.5,
                                         0.4,
@@ -92,15 +93,15 @@ describe('ModelLayer#loadStyleExpressionConstraint', () => {
                                 ],
                                 "model-color": [
                                     "interpolate",
-                                    [ "linear" ],
-                                    [ "measure-light", "brightness" ],
+                                    ["linear"],
+                                    ["measure-light", "brightness"],
                                     0, "white",
                                     0.15, "yellow"
                                 ],
                                 "model-color-mix-intensity": [
                                     "interpolate",
-                                    [ "linear" ],
-                                    [ "measure-light", "brightness" ],
+                                    ["linear"],
+                                    ["measure-light", "brightness"],
                                     0, 0,
                                     0.15, 1
                                 ]

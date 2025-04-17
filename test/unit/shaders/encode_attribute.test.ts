@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect} from '../../util/vitest';
 import {packUint8ToFloat} from '../../../src/shaders/encode_attribute';

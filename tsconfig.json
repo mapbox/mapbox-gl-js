@@ -33,16 +33,21 @@
   },
   "include": [
     "./src/**/*",
-    "./test/unit/**/*",
-    "./test/usvg/**/*",
-    "./test/util/**/*",
+    "./test/**/*",
+    "./build/**/*",
+    "./3d-style/**/*",
     "./*.config.*"
   ],
   "exclude": [
     "./dist",
-    "./build",
+    "./debug",
+    "./rollup",
     "./node_modules",
     "./src/style-spec/bin",
-    "./src/style-spec/dist"
+    "./src/style-spec/dist",
+    "./test/release/**/*",
+    "./test/integration/**/*",
+    "./test/build/typings/**/*",
+    "./test/build/transpilation/**/*",
   ]
 }

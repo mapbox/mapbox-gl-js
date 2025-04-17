@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 /* eslint-disable camelcase */
 
 import esbuild from 'rollup-plugin-esbuild';
@@ -34,7 +33,7 @@ export const plugins = ({mode, minified, production, test, bench, keepClassNames
     (production && !bench) ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*'],
-        include:['**/*.ts']
+        include: ['**/*.ts']
     }) : false,
     production || bench ? unassert({include: ['*.js', '**/*.js', '*.ts', '**/*.ts']}) : false,
     test ? replace({

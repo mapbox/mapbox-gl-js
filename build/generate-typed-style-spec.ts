@@ -105,13 +105,13 @@ ${Object.keys(properties)
                 property = [experimentalTag, property].join('\n');
             }
 
-            if( properties[k].type === 'color') {
+            if (properties[k].type === 'color') {
 
                 if (properties[k].transition) {
+                    // eslint-disable-next-line no-useless-concat
                     const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification` + `,\n    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
                     return [property, propertyTransition].join(',\n');
-                }
-                else {
+                } else {
                     const propertyUseTheme = `    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
                     return [property, propertyUseTheme].join(',\n');
                 }

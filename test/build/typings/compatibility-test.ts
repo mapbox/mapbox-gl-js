@@ -13,7 +13,7 @@
 /* eslint-disable prefer-arrow-callback */
 /* eslint-disable prefer-const */
 /* eslint-disable prefer-template */
-/* eslint-disable no-restricted-syntax */
+
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */

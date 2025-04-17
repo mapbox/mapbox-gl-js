@@ -27,7 +27,7 @@ describe('QueryFeatures#source', () => {
         }, {
             getActor() {
                 return {
-                    send(type, params, callback) {return callback ? callback() : undefined; }
+                    send(type, params, callback) { return callback ? callback() : undefined; }
                 };
             }
         } as Dispatcher, this);

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import {getIconQuads} from '../../../src/symbol/quads';
@@ -5,7 +6,7 @@ import {getIconQuads} from '../../../src/symbol/quads';
 describe('getIconQuads', () => {
     const imagePrimary = Object.freeze({
         pixelRatio: 1,
-        displaySize: Object.freeze([ 15, 11 ]),
+        displaySize: Object.freeze([15, 11]),
         paddedRect: Object.freeze({x: 0, y: 0, w: 17, h: 13})
     });
 

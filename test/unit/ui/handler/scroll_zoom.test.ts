@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {
     describe,
@@ -94,6 +95,7 @@ describe('ScrollZoomHandler', () => {
         // simulate the above sequence of wheel events, with render frames
         // interspersed every 20ms
         while (now++ < end) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             if (events.length && lastWheelEvent + events[0][0] === now) {
                 const [, event] = events.shift();
                 simulate.wheel(map.getCanvas(), event);
@@ -267,7 +269,7 @@ describe('ScrollZoomHandler', () => {
 
             now += 500;
             map.transform.zoom = 0;
-            map.setProjection({name:'globe'});
+            map.setProjection({name: 'globe'});
 
             for (let i = 0; i < 5; i++) {
                 simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -100});
@@ -334,6 +336,7 @@ describe('ScrollZoomHandler', () => {
         map._renderTaskQueue.run();
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('does not zoom if preventDefault is called on the wheel event', async () => {
         const map = createMap({
             interactive: true
@@ -355,6 +358,7 @@ describe('ScrollZoomHandler', () => {
     /**
      * @note Flacky
      */
+    // eslint-disable-next-line @typescript-eslint/require-await
     test.skip('emits one movestart event and one moveend event while zooming', async () => {
         vi.useFakeTimers(now);
         const map = createMap({
@@ -381,6 +385,7 @@ describe('ScrollZoomHandler', () => {
         let lastWheelEvent = now;
 
         while (now++ < end) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             if (events.length && lastWheelEvent + events[0][0] === now) {
                 const [, event] = events.shift();
                 simulate.wheel(map.getCanvas(), event);
@@ -428,6 +433,7 @@ describe('ScrollZoomHandler', () => {
         let lastWheelEvent = now;
 
         while (now++ < end) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             if (events.length && lastWheelEvent + events[0][0] === now) {
                 const [, event] = events.shift();
                 simulate.wheel(map.getCanvas(), event);

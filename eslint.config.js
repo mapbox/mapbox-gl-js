@@ -12,7 +12,15 @@ const __dirname = path.dirname(__filename);
 const gitignorePath = path.resolve(__dirname, '.gitignore');
 
 export default tseslint.config(
-    globalIgnores(['dist/**/*', 'src/style-spec/bin/*']),
+    globalIgnores([
+        './debug/**/*',
+        './rollup/**/*',
+        './src/style-spec/bin',
+        './src/style-spec/dist',
+        './test/build/typings/**/*',
+        './test/build/transpilation/**/*',
+    ]),
+
     includeIgnoreFile(gitignorePath),
 
     ...config,
@@ -285,5 +293,28 @@ export default tseslint.config(
             'jsdoc/require-returns': 'error',
             'jsdoc/tag-lines': ['error', 'any', {startLines: 1}],
         },
+    },
+
+    // Disable `no-restricted-syntax` for test/, build/, and config files
+    {
+        files: [
+            'test/**',
+            'build/**',
+            'rollup.*'
+        ],
+
+        rules: {
+            'no-restricted-syntax': 'off',
+        }
+    },
+
+    // Disable type-aware linting for files that are not migrated to TypeScript
+    {
+        files: [
+            './test/release/**/*',
+            './test/integration/**/*',
+        ],
+
+        extends: [tseslint.configs.disableTypeChecked],
     },
 );

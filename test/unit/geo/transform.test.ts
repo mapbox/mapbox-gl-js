@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import Point from '@mapbox/point-geometry';
@@ -292,7 +293,7 @@ describe('transform', () => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
+            assertDueNorth({x: 0.5, y: 0.5, z: 0}, coord);
         });
 
         test('high pitch', () => {
@@ -304,7 +305,7 @@ describe('transform', () => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
+            assertDueNorth({x: 0.5, y: 0.5, z: 0}, coord);
         });
 
         test('medium pitch', () => {
@@ -316,7 +317,7 @@ describe('transform', () => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
+            assertDueNorth({x: 0.5, y: 0.5, z: 0}, coord);
         });
     });
 
@@ -341,7 +342,7 @@ describe('transform', () => {
             expect(transform.locationPoint(bounds.getSouthWest()).y.toFixed(10)).toBe(transform.height.toFixed(10));
 
             expect(toFixed(bounds.toArray())).toStrictEqual(
-                toFixed([[ -56.6312307639145, 62.350646608460806 ], [ 56.63123076391412, 85.0511287798 ]])
+                toFixed([[-56.6312307639145, 62.350646608460806], [56.63123076391412, 85.0511287798]])
             );
         });
         test('Looking at South Pole', () => {
@@ -361,7 +362,7 @@ describe('transform', () => {
             expect(transform.locationPoint(bounds.getNorthWest()).y.toFixed(10)).toBe(transform.height.toFixed(10));
 
             expect(toFixed(bounds.toArray())).toStrictEqual(
-                toFixed([[ -56.6312307639145, -85.0511287798], [ 56.63123076391412, -62.350646608460806]])
+                toFixed([[-56.6312307639145, -85.0511287798], [56.63123076391412, -62.350646608460806]])
             );
         });
 
@@ -1329,7 +1330,7 @@ describe('transform', () => {
         transform.zoom = 10;
         transform.center = {lng: 0, lat: 0};
         transform.pitch = 90;
-        transform.padding = {top:0, bottom:0, left:0, right:0};
+        transform.padding = {top: 0, bottom: 0, left: 0, right: 0};
         transform._horizonShift = 0.0;
         const eq = (a, b, eps = 0.000001) => {
             return Math.abs(a - b) < eps;
@@ -1339,11 +1340,11 @@ describe('transform', () => {
         expect(eq(transform.horizonLineFromTop(), 400.0)).toBeTruthy();
 
         // Padding from top, horizon line should go down
-        transform.padding = {top:300, bottom:0, left:0, right:0};
+        transform.padding = {top: 300, bottom: 0, left: 0, right: 0};
         expect(eq(transform.horizonLineFromTop(), 550.0)).toBeTruthy();
 
         // Padding from bottom, horizon line should go up
-        transform.padding = {top:0, bottom:300, left:0, right:0};
+        transform.padding = {top: 0, bottom: 300, left: 0, right: 0};
         expect(eq(transform.horizonLineFromTop(), 250.0)).toBeTruthy();
     });
 

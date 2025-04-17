@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, beforeEach, afterEach, expect, waitFor, vi, createMap, createStyleJSON} from '../../util/vitest';
 import {createStyle, createStyleSource} from './map/util';
@@ -84,7 +85,7 @@ describe('Map', () => {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});
         Object.defineProperty(container, 'offsetHeight', {value: 512});
-        createMap({accessToken:'notAToken'});
+        createMap({accessToken: 'notAToken'});
     });
 
     describe('disables handlers', () => {
@@ -346,10 +347,10 @@ describe('Map', () => {
         });
 
         test('listen to window resize event', () => {
-            window.addEventListener = function(type) {
+            window.addEventListener = function (type) {
                 if (type === 'resize') {
                     //restore empty function not to mess with other tests
-                    window.addEventListener = function() {};
+                    window.addEventListener = function () {};
                 }
             };
 

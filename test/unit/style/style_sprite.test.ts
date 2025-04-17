@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {vi, describe, test, expect, createStyleJSON, waitFor, doneAsync} from '../../../test/util/vitest';
 import Style from '../../../src/style/style';

@@ -1,7 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect} from '../../util/vitest';
-
-/* eslint-disable import/namespace */
 import * as spec from '../../../src/style-spec/style-spec';
 
 ['v8', 'latest'].forEach((version) => {

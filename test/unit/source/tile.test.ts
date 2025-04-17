@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
 import {createSymbolBucket} from '../../util/create_symbol_layer';
@@ -9,7 +10,6 @@ import FeatureIndex from '../../../src/data/feature_index';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {extend} from '../../../src/util/util';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
-// eslint-disable-next-line import/no-unresolved
 import rawTileData from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 describe('querySourceFeatures', () => {

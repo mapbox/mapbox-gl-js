@@ -1,7 +1,8 @@
-/* eslint-disable no-restricted-syntax */
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
-import CrossTileSymbolIndex, { TileLayerIndex } from '../../../src/symbol/cross_tile_symbol_index';
+import CrossTileSymbolIndex, {TileLayerIndex} from '../../../src/symbol/cross_tile_symbol_index';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 
 const styleLayer = {

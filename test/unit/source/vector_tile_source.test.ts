@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, waitFor, vi, doneAsync} from '../../util/vitest';
 import {mockFetch} from '../../util/network';
@@ -17,7 +18,7 @@ const wrapDispatcher = (dispatcher) => {
 };
 
 const mockDispatcher = wrapDispatcher({
-    send () {}
+    send() {}
 });
 
 function createSource(options, {transformCallback, customAccessToken} = {}) {
@@ -233,7 +234,7 @@ describe('VectorTileSource', () => {
             const tile = {
                 tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                 state: 'loading',
-                loadVectorData () {},
+                loadVectorData() {},
                 setExpiryData() {}
             };
             source.loadTile(tile, () => {});
@@ -257,7 +258,7 @@ describe('VectorTileSource', () => {
             const tile = {
                 tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                 state: 'loading',
-                loadVectorData () {},
+                loadVectorData() {},
                 setExpiryData() {}
             };
             source.loadTile(tile, () => {});
@@ -288,7 +289,7 @@ describe('VectorTileSource', () => {
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
-                    loadVectorData () {
+                    loadVectorData() {
                         this.state = 'loaded';
                         events.push('tileLoaded');
                     },
@@ -332,7 +333,7 @@ describe('VectorTileSource', () => {
 
         const e = await waitFor(source, "data");
         if (e.sourceDataType === 'metadata') {
-            expect(source.tileBounds.bounds).toEqual({_sw:{lng: -47, lat: -7}, _ne:{lng: -45, lat: 90}});
+            expect(source.tileBounds.bounds).toEqual({_sw: {lng: -47, lat: -7}, _ne: {lng: -45, lat: 90}});
         }
     });
 
@@ -377,7 +378,7 @@ describe('VectorTileSource', () => {
             const tile = {
                 tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                 state: 'loading',
-                loadVectorData () {},
+                loadVectorData() {},
                 setExpiryData() {}
             };
             source.loadTile(tile, () => {});

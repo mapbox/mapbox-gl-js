@@ -1,9 +1,15 @@
 /* eslint-disable import/no-commonjs */
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const runAll = require('npm-run-all');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const chokidar = require('chokidar');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const rollup = require('rollup');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const notifier = require('node-notifier');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require('fs');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const os = require('os');
 
 // hack to be able to import ES modules inside a CommonJS one
@@ -68,7 +74,6 @@ function getQueryParams() {
     if (spriteFormatIndex !== -1) {
         spriteFormat = String(params[spriteFormatIndex]).split('=')[1];
     }
-
 
     const queryParams = {
         spriteFormat
@@ -142,6 +147,7 @@ function buildArtifactsDev() {
                         resolve();
                     }
                     if (e.code === 'FATAL') {
+
                         reject(e);
                     }
                 });
@@ -158,7 +164,7 @@ function buildArtifactsDev() {
 
 function silenceWarnings(config) {
     function addEmptyWarningHandler(configObj) {
-        configObj["onwarn"] = function() {};
+        configObj["onwarn"] = function () {};
         return configObj;
     }
 
@@ -175,7 +181,7 @@ function notify(title, message) {
     }
 }
 
-module.exports = async function() {
+module.exports = async function () {
     await loadModules();
     await (ci ? buildArtifactsCi() : buildArtifactsDev());
 
@@ -187,7 +193,7 @@ module.exports = async function() {
 
     // Configuration for tests running in CI mode (i.e. test-... not watch-...)
     const ciTestemConfig = {
-        "launch_in_ci": [ browser ],
+        "launch_in_ci": [browser],
         "reporter": "xunit",
         "report_file": ciOutputFile,
         "xunit_intermediate_output": true,

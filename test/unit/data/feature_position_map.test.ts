@@ -1,6 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
-
 import FeatureMap from '../../../src/data/feature_position_map';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 

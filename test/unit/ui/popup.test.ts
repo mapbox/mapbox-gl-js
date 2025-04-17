@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {
     describe,
@@ -70,6 +71,7 @@ describe('Popup', () => {
         expect(!popup.isOpen()).toBeTruthy();
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('Popup close event listener is removed on map click', async () => {
         const map = createMap();
         const popup = new Popup()
@@ -483,6 +485,7 @@ describe('Popup', () => {
         const point = args[1];
         const transform = args[2];
 
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         test(`Popup automatically anchors to ${anchor}`, () => {
             const map = createMap();
             const popup = new Popup()
@@ -499,9 +502,11 @@ describe('Popup', () => {
             popup.setLngLat([0, 0]);
             map._domRenderTaskQueue.run();
 
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             expect(popup.getElement().classList.contains(`mapboxgl-popup-anchor-${anchor}`)).toBeTruthy();
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         test(`Popup translation reflects offset and ${anchor} anchor`, () => {
             const map = createMap();
             vi.spyOn(map, 'project').mockImplementation(() => new Point(0, 0));
@@ -842,8 +847,8 @@ describe('Popup', () => {
             .trackPointer()
             .addTo(map);
 
-        simulate.mousemove(map.getCanvas(), {screenX:10, screenY:1000});
-        expect(popup._pos).toEqual({x:0, y:0});
+        simulate.mousemove(map.getCanvas(), {screenX: 10, screenY: 1000});
+        expect(popup._pos).toEqual({x: 0, y: 0});
     });
 
     test('Popup closes on Map#remove', () => {

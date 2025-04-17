@@ -60,6 +60,7 @@ export const operationHandlers = {
         }, doneCb);
     },
     sleep(map, params, doneCb) {
+
         setTimeout(doneCb, params[0]);
     },
     addImage(map, params, doneCb) {
@@ -139,7 +140,7 @@ export const operationHandlers = {
         waitForRender(map, () => true, doneCb);
     },
     updateFakeCanvas(map, params, doneCb) {
-        const updateFakeCanvas = async function() {
+        const updateFakeCanvas = async function () {
             const canvasSource = map.getSource(params[0]);
             canvasSource.play();
             // update before pause should be rendered
@@ -283,7 +284,7 @@ function updateCanvas(imagePath) {
 
 function waitForRender(map, conditional, doneCb) {
     let frameCt = 0;
-    const wait = function() {
+    const wait = function () {
         if (conditional() && frameCt >= MIN_FRAMES) {
             doneCb();
         } else {

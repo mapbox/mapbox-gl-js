@@ -1,6 +1,6 @@
 /* eslint-env browser */
 /* global tape:readonly, mapboxgl:readonly */
-/* eslint-disable import/no-unresolved */
+
 // render-fixtures.json is automatically generated before this file gets built
 // refer testem.js#before_tests()
 import fixtures from '../dist/render-fixtures.json';
@@ -252,6 +252,7 @@ async function renderMap(style, options, currentTestName) {
 
     // 4. Wait until the map is idle and ensure that call stack is empty
     map.repaint = true;
+    // eslint-disable-next-line no-promise-executor-return
     await new Promise(resolve => requestAnimationFrame(map._requestDomTask.bind(map, resolve)));
 
     return map;
@@ -347,7 +348,6 @@ async function runTest(t) {
             options.spriteFormat = options.spriteFormat ?? 'icon_set';
         }
 
-
         if (options.spriteFormat === 'icon_set') {
             if (style.sprite && !style.sprite.endsWith('.pbf')) {
                 style.sprite += '.pbf';
@@ -375,7 +375,7 @@ async function runTest(t) {
 
         const {actualImageData, w, h} = await getActualImage(style, options, currentTestName);
 
-        const { minDiff, minDiffImage, minExpectedCanvas, minImageSrc } = calculateDiff(actualImageData, expectedImages, { w, h }, options['diff-calculation-threshold']);
+        const {minDiff, minDiffImage, minExpectedCanvas, minImageSrc} = calculateDiff(actualImageData, expectedImages, {w, h}, options['diff-calculation-threshold']);
         const pass = minDiff <= options.allowed;
 
         if (!pass && !t._todo && process.env.UPDATE) {
@@ -432,7 +432,7 @@ async function runTest(t) {
         updateHTML(testMetaData);
     } catch (e) {
         t.error(e);
-        updateHTML({name: t.name, status:'failed', error: e, errors});
+        updateHTML({name: t.name, status: 'failed', error: e, errors});
     }
 }
 
@@ -454,6 +454,7 @@ function drawImage(canvas, ctx, src, getImageData = true) {
         image.onerror = (e) => {
             // try loading the image several times on error because it sometimes fails randomly
             if (++attempts < 3) loadImage(resolve, reject);
+
             else reject(e);
         };
         image.src = src;
@@ -478,12 +479,12 @@ function drawTerrainDepth(map, width, height) {
     // Compute frustum corner points in web mercator [0, 1] space where altitude is in meters
     const clipSpaceCorners = [
         [-1, 1, -1, 1],
-        [ 1, 1, -1, 1],
-        [ 1, -1, -1, 1],
+        [1, 1, -1, 1],
+        [1, -1, -1, 1],
         [-1, -1, -1, 1],
         [-1, 1, 1, 1],
-        [ 1, 1, 1, 1],
-        [ 1, -1, 1, 1],
+        [1, 1, 1, 1],
+        [1, -1, 1, 1],
         [-1, -1, 1, 1]
     ];
 

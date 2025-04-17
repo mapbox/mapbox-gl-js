@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import {polygonSubdivision, gridSubdivision, clip} from '../../../src/util/polygon_clipping';
@@ -318,7 +319,6 @@ describe('polygon clipping, complex polygon clipping', () => {
         expect(result[0][0]).toEqualRing([new Point(20, 20), new Point(60, 20), new Point(60, 80), new Point(50, 80), new Point(50, 70), new Point(30, 70), new Point(30, 80), new Point(20, 80), new Point(20, 20)]);
         expect(result[0][1]).toEqualRing(topHole);
     });
-
 
     test('clip polygon inside exterior of the subject polygon, top hole fully inside the clip polygon', () => {
         const clipPoly = [new Point(25, 25), new Point(55, 25), new Point(55, 55), new Point(25, 55), new Point(25, 25)];

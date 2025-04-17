@@ -1,9 +1,10 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect} from '../../util/vitest';
 import resolveTokens from '../../../src/util/resolve_tokens';
 
 test('resolveToken', () => {
-    expect('3 Fine Fields').toEqual(resolveTokens({a:3, b:'Fine', c:'Fields'}, '{a} {b} {c}'));
+    expect('3 Fine Fields').toEqual(resolveTokens({a: 3, b: 'Fine', c: 'Fields'}, '{a} {b} {c}'));
 
     // No tokens.
     expect(resolveTokens({}, 'Test')).toEqual('Test');

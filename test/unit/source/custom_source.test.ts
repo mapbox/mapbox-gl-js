@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
 import CustomSource from '../../../src/source/custom_source';
@@ -91,6 +92,7 @@ describe('CustomSource', () => {
     test('loadTile throws', async () => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         const loadTile = vi.fn(async () => {
             throw new Error('Error loading tile');
         });
@@ -116,6 +118,7 @@ describe('CustomSource', () => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
         const expectedData = new window.ImageData(512, 512);
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         const loadTile = vi.fn(async () => expectedData);
         const {source, sourceCache, eventedParent} = createSource({loadTile});
 
@@ -141,6 +144,7 @@ describe('CustomSource', () => {
     test('loadTile resolves to undefined', async () => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         const loadTile = vi.fn(async () => {
             return undefined;
         });
@@ -166,6 +170,7 @@ describe('CustomSource', () => {
     test('loadTile resolves to null', async () => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         const loadTile = vi.fn(async () => null);
 
         const {source, sourceCache, eventedParent} = createSource({loadTile});
@@ -193,6 +198,7 @@ describe('CustomSource', () => {
 
         await new Promise(resolve => {
 
+            // eslint-disable-next-line @typescript-eslint/require-await
             const loadTile = vi.fn(async (tile, {signal}) => {
                 const {x, y, z} = tileID.canonical;
                 expect(tile).toEqual({x, y, z});
