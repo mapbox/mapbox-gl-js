@@ -147,7 +147,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
         // clear the geolocation watch if exists
         if (this._geolocationWatchID !== undefined) {
             this.options.geolocation.clearWatch(this._geolocationWatchID);
-            this._geolocationWatchID = (undefined as any);
+            this._geolocationWatchID = undefined;
         }
 
         // clear the markers from the map
@@ -160,7 +160,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
 
         this._container.remove();
         this._map.off('zoom', this._onZoom);
-        this._map = (undefined as any);
+        this._map = undefined;
         this._numberOfWatches = 0;
         this._noTimeout = false;
     }
@@ -688,7 +688,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
         // @ts-expect-error - TS2769 - No overload matches this call.
         window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientation);
 
-        this._geolocationWatchID = (undefined as any);
+        this._geolocationWatchID = undefined;
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
         this._geolocateButton.setAttribute('aria-pressed', 'false');
 

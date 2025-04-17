@@ -638,7 +638,7 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         availableImages?: ImageId[],
     ): PossiblyEvaluatedPropertyValue<T> {
         if (value.expression.kind === 'constant' || value.expression.kind === 'camera') {
-            return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: value.expression.evaluate(parameters, (null as any), {}, canonical, availableImages)}, parameters);
+            return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: value.expression.evaluate(parameters, null, {}, canonical, availableImages)}, parameters);
         } else {
             return new PossiblyEvaluatedPropertyValue(this, value.expression, parameters);
         }
@@ -662,10 +662,10 @@ export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPrope
         // `Properties#defaultPossiblyEvaluatedValues`, which serves as the prototype of
         // `PossiblyEvaluated#_values`.
         if (a.value.value === undefined || b.value.value === undefined) {
-            return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: (undefined as any)}, a.parameters);
+            return new PossiblyEvaluatedPropertyValue<T>(this, {kind: 'constant', value: undefined}, a.parameters);
         }
 
-        const interp: (a: T, b: T, t: number) => T | null | undefined = (interpolate as any)[this.specification.type];
+        const interp: (a: T, b: T, t: number) => T | null | undefined = interpolate[this.specification.type];
         if (interp) {
             return new PossiblyEvaluatedPropertyValue(this, {kind: 'constant', value: interp(a.value.value, b.value.value, t)}, a.parameters);
         } else {
@@ -709,7 +709,7 @@ export class ColorRampProperty implements Property<Color, boolean> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
     ): boolean {
-        return !!value.expression.evaluate(parameters, (null as any), {}, canonical, availableImages);
+        return !!value.expression.evaluate(parameters, null, {}, canonical, availableImages);
     }
 
     interpolate(): boolean { return false; }

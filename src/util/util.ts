@@ -435,7 +435,7 @@ export function validateUuid(str?: string | null): boolean {
  * setTimeout(myClass.ontimer, 100);
  * @private
  */
-export function bindAll(fns: Array<string>, context: any): void {
+export function bindAll(fns: Array<string>, context: unknown): void {
     fns.forEach((fn) => {
         if (!context[fn]) { return; }
         context[fn] = context[fn].bind(context);
@@ -583,7 +583,7 @@ export type Direction = {
  * @param spherical Spherical coordinates, in [radial, azimuthal, polar]
  * @return Position cartesian coordinates
  */
-export function sphericalPositionToCartesian([r, azimuthal, polar]: [any, any, any]): Position {
+export function sphericalPositionToCartesian([r, azimuthal, polar]: [number, number, number]): Position {
     // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
     // correct for that here
     const a = degToRad(azimuthal + 90), p = degToRad(polar);
@@ -603,7 +603,7 @@ export function sphericalPositionToCartesian([r, azimuthal, polar]: [any, any, a
  * @param spherical Spherical direction, in [azimuthal, polar]
  * @return Direction cartesian direction
  */
-export function sphericalDirectionToCartesian([azimuthal, polar]: [any, any]): Direction {
+export function sphericalDirectionToCartesian([azimuthal, polar]: [number, number]): Direction {
     const position = sphericalPositionToCartesian([1.0, azimuthal, polar]);
 
     return {
@@ -646,11 +646,11 @@ export function isWorker(): boolean {
  * @return object containing parsed header info.
  */
 
-export function parseCacheControl(cacheControl: string): any {
+export function parseCacheControl(cacheControl: string): Record<string, number> {
     // Taken from [Wreck](https://github.com/hapijs/wreck)
     const re = /(?:^|(?:\s*\,\s*))([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)(?:\=(?:([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)|(?:\"((?:[^"\\]|\\.)*)\")))?/g;
 
-    const header: Record<string, any> = {};
+    const header: Record<string, string | number> = {};
     cacheControl.replace(re, ($0, $1, $2, $3) => {
         const value = $2 || $3;
         header[$1] = value ? value.toLowerCase() : true;
@@ -658,12 +658,12 @@ export function parseCacheControl(cacheControl: string): any {
     });
 
     if (header['max-age']) {
-        const maxAge = parseInt(header['max-age'], 10);
+        const maxAge = parseInt(header['max-age'] as string, 10);
         if (isNaN(maxAge)) delete header['max-age'];
         else header['max-age'] = maxAge;
     }
 
-    return header;
+    return header as Record<string, number>;
 }
 
 let _isSafari: boolean | null = null;
@@ -688,7 +688,7 @@ export function _resetSafariCheckForTest() {
 export function isSafari(scope: WindowOrWorkerGlobalScope): boolean {
     if (_isSafari == null) {
         const userAgent = (scope as Window).navigator ? (scope as Window).navigator.userAgent : null;
-        _isSafari = !!(scope as any).safari ||
+        _isSafari = !!(scope as {safari?: boolean}).safari ||
         !!(userAgent && (/\b(iPad|iPhone|iPod)\b/.test(userAgent) || (!!userAgent.match('Safari') && !userAgent.match('Chrome'))));
     }
     return _isSafari;
@@ -703,7 +703,7 @@ export function isSafariWithAntialiasingBug(scope: WindowOrWorkerGlobalScope): b
 }
 
 export function isFullscreen(): boolean {
-    return !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
+    return !!document.fullscreenElement || !!(document as {webkitFullscreenElement?: boolean}).webkitFullscreenElement;
 }
 
 export function storageAvailable(type: string): boolean {

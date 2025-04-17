@@ -235,7 +235,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         } else if (typeof params.data === 'string') {
             try {
                 return callback(null, JSON.parse(params.data));
-            } catch (e: any) {
+            } catch (e) {
                 return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
             }
         } else {
@@ -248,7 +248,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }, callback: Callback<number>) {
         try {
             callback(null, this._geoJSONIndex.getClusterExpansionZoom(params.clusterId));
-        } catch (e: any) {
+        } catch (e) {
             callback(e);
         }
     }
@@ -258,7 +258,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }, callback: Callback<Array<GeoJSON.Feature>>) {
         try {
             callback(null, this._geoJSONIndex.getChildren(params.clusterId));
-        } catch (e: any) {
+        } catch (e) {
             callback(e);
         }
     }
@@ -270,7 +270,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }, callback: Callback<Array<GeoJSON.Feature>>) {
         try {
             callback(null, this._geoJSONIndex.getLeaves(params.clusterId, params.limit, params.offset));
-        } catch (e: any) {
+        } catch (e) {
             callback(e);
         }
     }

@@ -27,7 +27,7 @@ let sharedCache: Promise<Cache> | null | undefined;
 function getCaches() {
     try {
         return caches;
-    } catch (e: any) {
+    } catch (e) {
         // <iframe sandbox> triggers exceptions when trying to access window.caches
         // Chrome: DOMException, Safari: SecurityError, Firefox: NS_ERROR_FAILURE
         // Seems more robust to catch all exceptions instead of trying to match only these.
@@ -53,7 +53,7 @@ function prepareBody(response: Response, callback: (body?: Blob | ReadableStream
         try {
             new Response(new ReadableStream());
             responseConstructorSupportsReadableStream = true;
-        } catch (e: any) {
+        } catch (e) {
             // Edge
             responseConstructorSupportsReadableStream = false;
         }

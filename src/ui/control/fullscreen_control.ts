@@ -63,14 +63,14 @@ class FullscreenControl implements IControl {
 
     onRemove() {
         this._controlContainer.remove();
-        this._map = (null as any);
+        this._map = null;
         document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
 
     _checkFullscreenSupport(): boolean {
         return !!(
             document.fullscreenEnabled ||
-            (document as any).webkitFullscreenEnabled
+            (document as {webkitFullscreenEnabled?: boolean}).webkitFullscreenEnabled
         );
     }
 

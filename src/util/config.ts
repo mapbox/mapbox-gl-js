@@ -58,7 +58,7 @@ const config: Config = {
             } else {
                 return null;
             }
-        } catch (e: any) {
+        } catch (e) {
             return null;
         }
     },

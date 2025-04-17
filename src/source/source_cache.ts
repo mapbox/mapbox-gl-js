@@ -861,9 +861,6 @@ class SourceCache extends Evented {
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
-        // Impossible, but silence flow.
-        if (!tile) return null as any;
-
         tile.uses++;
         this._tiles[tileID.key] = tile;
         if (!cached) this._source.fire(new Event('dataloading', {tile, coord: tile.tileID, dataType: 'source'}));

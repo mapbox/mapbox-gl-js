@@ -20,7 +20,7 @@ function getPropertyReference(propertyName: string): StylePropertySpecification 
         }
     }
 
-    return null as any;
+    return null;
 }
 
 export function eachSource(style: StyleSpecification, callback: (_: SourceSpecification) => void) {

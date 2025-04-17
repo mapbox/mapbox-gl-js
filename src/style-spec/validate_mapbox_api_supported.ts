@@ -212,7 +212,7 @@ export default function validateMapboxApiSupported(style: any, styleSpec: any = 
     let s = style;
     try {
         s = readStyle(s);
-    } catch (e: any) {
+    } catch (e) {
         return [e];
     }
 

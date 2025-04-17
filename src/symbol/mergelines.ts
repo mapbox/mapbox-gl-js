@@ -63,7 +63,7 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
             delete rightIndex[rightKey];
 
             rightIndex[getKey(text, mergedFeatures[i].geometry, true)] = i;
-            mergedFeatures[j].geometry = (null as any);
+            mergedFeatures[j].geometry = null;
 
         } else if (leftKey in rightIndex) {
             // found mergeable line adjacent to the start of the current line, merge

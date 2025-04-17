@@ -673,7 +673,7 @@ class LineBucket implements Bucket {
         let lineProgressFeatures: LineProgressFeatures | null;
         for (let i = first; i < len; i++) {
             nextVertex = i === len - 1 ?
-                (isPolygon ? vertices[first + 1] : (undefined as any)) : // if it's a polygon, treat the last vertex like the first
+                (isPolygon ? vertices[first + 1] : undefined) : // if it's a polygon, treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
 
             // if two consecutive vertices exist, skip the current one

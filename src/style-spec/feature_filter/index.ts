@@ -99,7 +99,7 @@ function createFilter(filter?: FilterSpecification, scope: string = "", options:
     let staticFilter = true;
     try {
         staticFilter = extractStaticFilter(filterExp);
-    } catch (e: any) {
+    } catch (e) {
         console.warn(
 `Failed to extract static filter. Filter will continue working, but at higher memory usage and slower framerate.
 This is most likely a bug, please report this via https://github.com/mapbox/mapbox-gl-js/issues/new?assignees=&labels=&template=Bug_report.md

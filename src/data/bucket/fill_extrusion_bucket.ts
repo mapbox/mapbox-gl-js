@@ -538,10 +538,10 @@ export class GroundEffect {
         }
 
         // Free up memory as we no longer need these.
-        this._segmentToGroundQuads = (null as any);
-        this._segmentToRegionTriCounts = (null as any);
+        this._segmentToGroundQuads = null;
+        this._segmentToRegionTriCounts = null;
         this._segments.destroy();
-        this._segments = (null as any);
+        this._segments = null;
     }
 
     addPaintPropertiesData(feature: Feature, index: number, imagePositions: SpritePositions, availableImages: ImageId[], canonical: CanonicalTileID, brightness?: number | null) {

@@ -29,7 +29,7 @@ class Dispatcher {
     // exposed to allow stubbing in unit tests
     static Actor: Class<Actor>;
 
-    constructor(workerPool: WorkerPool, parent: any, name = 'Worker', count = WorkerPool.workerCount) {
+    constructor(workerPool: WorkerPool, parent: unknown, name = 'Worker', count = WorkerPool.workerCount) {
         this.workerPool = workerPool;
         this.actors = [];
         this.currentActor = 0;

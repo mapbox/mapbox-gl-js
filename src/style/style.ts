@@ -534,7 +534,7 @@ class Style extends Evented<MapEvents> {
         const handleStyle = (json: StyleSpecification, callback: (err: Error | null, isUpdateNeeded: boolean) => void) => {
             try {
                 callback(null, this.setState(json, onFinished));
-            } catch (e: any) {
+            } catch (e) {
                 callback(e, false);
             }
         };

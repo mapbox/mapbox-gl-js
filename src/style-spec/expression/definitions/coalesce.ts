@@ -21,7 +21,7 @@ class Coalesce implements Expression {
             // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Coalesce'.
             return context.error("Expectected at least one argument.");
         }
-        let outputType: Type = (null as any);
+        let outputType: Type = null;
         const expectedType = context.expectedType;
         if (expectedType && expectedType.kind !== 'value') {
             outputType = expectedType;
@@ -46,7 +46,7 @@ class Coalesce implements Expression {
 
         return needsAnnotation ?
             new Coalesce(ValueType, parsedArgs) :
-            new Coalesce((outputType as any), parsedArgs);
+            new Coalesce(outputType, parsedArgs);
     }
 
     evaluate(ctx: EvaluationContext): any {

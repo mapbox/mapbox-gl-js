@@ -129,7 +129,7 @@ class ScaleControl implements IControl {
     onRemove() {
         this._container.remove();
         this._map.off('move', this._update);
-        this._map = (undefined as any);
+        this._map = undefined;
     }
 
     _setLanguage(language?: string | string[]) {

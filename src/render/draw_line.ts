@@ -86,7 +86,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     const constantDash = dasharrayProperty.constantOr(null);
 
-    const constantCap = capProperty.constantOr((null as any));
+    const constantCap = capProperty.constantOr(null);
     const patternProperty = layer.paint.get('line-pattern');
 
     const image = patternProperty.constantOr((1 as any));

@@ -27,7 +27,7 @@ class EvaluationContext {
     };
 
     constructor(scope?: string | null, options?: ConfigOptions | null) {
-        this.globals = (null as any);
+        this.globals = null;
         this.feature = null;
         this.featureState = null;
         this.formattedSection = null;

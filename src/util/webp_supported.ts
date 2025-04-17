@@ -60,7 +60,7 @@ function testWebpTextureUpload(gl: WebGL2RenderingContext) {
         if (gl.isContextLost()) return;
 
         exported.supported = true;
-    } catch (e: any) {
+    } catch (e) {
         // Catch "Unspecified Error." in Edge 18.
     }
 

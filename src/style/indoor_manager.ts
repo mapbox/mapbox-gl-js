@@ -25,7 +25,7 @@ type IndoorEvents = {
         levels: [Level],
         selectedLevelId?: string
     };
-    'floorplangone': any;
+    'floorplangone': void;
     'buildingselected': {
         buildingId?: string
         levels: [Level]
@@ -108,6 +108,13 @@ type FloorplanState = {
     selectedLevel?: string;
 };
 
+type SelectedLevel = {
+    id: string;
+    base: string;
+    extent: [[number, number], [number, number]];
+    isUnderground: boolean;
+}
+
 class IndoorManager extends Evented<IndoorEvents> {
     //// Public configuration options
 
@@ -131,7 +138,7 @@ class IndoorManager extends Evented<IndoorEvents> {
     // The selected level of the floorplan. If undefined, the map should show the overview of the area.
     // Note: currently only one level can be active per floorplan,
     // but this could be extended for multi-level selection in future use-cases.
-    _selectedLevel = undefined;
+    _selectedLevel: SelectedLevel = undefined;
 
     // Tracker of the previously selected floorplan elements
     // which is used to restore selections when leaving and returning to the area.
@@ -155,7 +162,7 @@ class IndoorManager extends Evented<IndoorEvents> {
     destroy() {
         this._map.indoor.off('load', this._onLoad);
         this._map.indoor.off('move', this._onMove);
-        this._map = (undefined as any);
+        this._map = undefined;
     }
 
     // Prepare IndoorManager on the map load.
@@ -320,7 +327,7 @@ class IndoorManager extends Evented<IndoorEvents> {
         }));
     }
 
-    _updateLevels(selectedLevel: any, animated: boolean) {
+    _updateLevels(selectedLevel: SelectedLevel | undefined, animated: boolean) {
         if (!selectedLevel) {
             // Deselect
             this._map.setConfigProperty(this._scope, "mbx-indoor-loaded-levels", ["literal", []]);
@@ -419,7 +426,7 @@ class IndoorManager extends Evented<IndoorEvents> {
         const features = this._map.queryRenderedFeatures(wholeScreen, queryParams);
         if (features.length > 0) {
             for (const feature of features) {
-                const indoorData = JSON.parse(feature.properties["indoor-data"]);
+                const indoorData = JSON.parse(feature.properties['indoor-data'] as string);
                 if (indoorData.floorplanIDs.includes(floorplanId)) {
                     this._selectedFloorplan = feature;
                     this._floorplanSelected(true);

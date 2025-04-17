@@ -135,7 +135,7 @@ export class StyleExpression {
                 throw new RuntimeError(`Expected value to be one of ${Object.keys(this._enumValues).map(v => JSON.stringify(v)).join(', ')}, but found ${JSON.stringify(val)} instead.`);
             }
             return val;
-        } catch (e: any) {
+        } catch (e) {
             if (!this._warningHistory[e.message]) {
                 this._warningHistory[e.message] = true;
                 if (typeof console !== 'undefined') {

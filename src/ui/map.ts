@@ -2327,7 +2327,7 @@ export class Map extends Camera {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
-            this.style = (undefined as any); // we lazy-init it so it's never undefined when accessed
+            this.style = undefined; // we lazy-init it so it's never undefined when accessed
         }
 
         if (style) {
@@ -4793,10 +4793,10 @@ export class Map extends Camera {
         this._controlContainer.remove();
         this._missingCSSCanary.remove();
 
-        this._canvas = (undefined as any);
-        this._canvasContainer = (undefined as any);
-        this._controlContainer = (undefined as any);
-        this._missingCSSCanary = (undefined as any);
+        this._canvas = undefined;
+        this._canvasContainer = undefined;
+        this._controlContainer = undefined;
+        this._missingCSSCanary = undefined;
 
         this._container.classList.remove('mapboxgl-map');
         this._container.removeEventListener('scroll', this._onMapScroll, false);

@@ -97,7 +97,7 @@ export interface Bucket {
     layerIds: Array<string>;
     hasPattern: boolean;
     readonly layers: Array<any>;
-    readonly stateDependentLayers: Array<any>;
+    stateDependentLayers: Array<any>;
     readonly stateDependentLayerIds: Array<string>;
     populate: (
         features: Array<IndexedFeature>,
@@ -149,7 +149,7 @@ export function deserialize(input: Array<Bucket>, style: Style): Record<string, 
         // @ts-expect-error - layers is a readonly property
         bucket.layers = layers;
         if (bucket.stateDependentLayerIds) {
-            (bucket as any).stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
+            bucket.stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
         }
         for (const layer of layers) {
             output[layer.fqid] = bucket;

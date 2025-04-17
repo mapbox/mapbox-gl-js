@@ -73,7 +73,7 @@ class CompoundExpression implements Expression {
 
         const overloadParams = [];
 
-        let signatureContext: ParsingContext = (null as any);
+        let signatureContext: ParsingContext = null;
 
         let overloadIndex = -1;
 
