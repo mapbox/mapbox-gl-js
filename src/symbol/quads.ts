@@ -330,7 +330,7 @@ export function getGlyphQuads(
                 [0, 0];
 
             let builtInOffset = [0, 0];
-            let verticalizedLabelOffset = [0, 0];
+            let verticalizedLabelOffset: [number, number] = [0, 0];
             let useRotateOffset = false;
             if (!alongLine) {
                 if (rotateVerticalGlyph) {
@@ -379,7 +379,6 @@ export function getGlyphQuads(
                 const yShift = (positionedGlyph.y - currentOffset);
                 const center = new Point(-halfAdvance, halfAdvance - yShift);
                 const verticalRotation = -Math.PI / 2;
-                // @ts-expect-error - TS2556 - A spread argument must either have a tuple type or be passed to a rest parameter.
                 const verticalOffsetCorrection = new Point(...verticalizedLabelOffset);
                 // Relative position before rotation
                 // tl ----- tr

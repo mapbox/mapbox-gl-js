@@ -203,10 +203,7 @@ class Camera extends Evented<MapEvents> {
     _onEaseEnd: (easeId?: string) => void | null | undefined;
     _easeFrameId: TaskID | null | undefined;
 
-    constructor(transform: Transform, options: {
-        bearingSnap: number;
-        respectPrefersReducedMotion?: boolean;
-    }) {
+    constructor(transform: Transform, options: {bearingSnap?: number; respectPrefersReducedMotion?: boolean}) {
         super();
         this._moving = false;
         this._zooming = false;

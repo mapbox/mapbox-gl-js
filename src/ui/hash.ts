@@ -103,8 +103,7 @@ export default class Hash {
         const map = this._map;
         if (!map) return false;
         const loc = this._getCurrentHash();
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'number'.
-        if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
+        if (loc.length >= 3 && !loc.some(v => isNaN(Number(v)))) {
             const bearing = map.dragRotate.isEnabled() && map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : map.getBearing();
             map.jumpTo({
                 center: [+loc[2], +loc[1]],

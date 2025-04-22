@@ -25,10 +25,9 @@ export default function validateSource(options: ValidationOptions): Array<Valida
         return [new ValidationError(key, value, '"type" is required')];
     }
 
-    const type = unbundle(value.type);
+    const type = unbundle(value.type) as string;
     let errors = [];
 
-    // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string'.
     if (['vector', 'raster', 'raster-dem', 'raster-array'].includes(type)) {
         if (!value.url && !value.tiles) {
             errors.push(new ValidationWarning(key, value, 'Either "url" or "tiles" is required.'));
@@ -111,8 +110,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
 }
 
 function getSourceTypeValues(styleSpec: StyleReference) {
-// @ts-expect-error - TS2347 - Untyped function calls may not accept type arguments.
-    return styleSpec.source.reduce<Array<any>>((memo, source) => {
+    return styleSpec.source.reduce((memo, source) => {
         const sourceType = styleSpec[source];
         if (sourceType.type.type === 'enum') {
             memo = memo.concat(Object.keys(sourceType.type.values));

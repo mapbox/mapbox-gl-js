@@ -69,7 +69,7 @@ class ModelManager extends Evented {
         const modelIds = Object.keys(modelUris);
         this.numModelsLoading[scope] = (this.numModelsLoading[scope] || 0) + modelIds.length;
 
-        const modelLoads = [];
+        const modelLoads: Promise<Model>[] = [];
         for (const modelId of modelIds) {
             modelLoads.push(this.loadModel(modelId, modelUris[modelId]));
         }
@@ -77,8 +77,7 @@ class ModelManager extends Evented {
         Promise.allSettled(modelLoads)
             .then(results => {
                 for (let i = 0; i < results.length; i++) {
-                    // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'PromiseSettledResult<any>'.
-                    const {status, value} = results[i];
+                    const {status, value} = results[i] as PromiseFulfilledResult<Model>;
                     if (status === 'fulfilled' && value) {
                         const previousModel = this.models[scope][modelIds[i]];
                         const numReferences = options.keepNumReferences && previousModel ? previousModel.numReferences : 1;
@@ -129,9 +128,8 @@ class ModelManager extends Evented {
 
         const modelUris: Record<string, any> = this.modelUris[scope];
         for (const modelId in models) {
-            // Add a void object so we mark this model as requested
-            // @ts-expect-error - TS2739 - Type '{}' is missing the following properties from type 'ReferencedModel': model, numReferences
-            this.models[scope][modelId] = {};
+            // Add an empty object so we mark this model as requested
+            this.models[scope][modelId] = {} as ReferencedModel;
             modelUris[modelId] = this.requestManager.normalizeModelURL(models[modelId]);
         }
         this.load(modelUris, scope, {keepNumReferences: true});

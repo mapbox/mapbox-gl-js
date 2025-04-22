@@ -209,8 +209,7 @@ class MouseRotateWrapper {
     off() {
         const element = this.element;
         element.removeEventListener('mousedown', this.mousedown);
-        // @ts-expect-error - TS2769 - No overload matches this call.
-        element.removeEventListener('touchstart', this.touchstart, {passive: false});
+        element.removeEventListener('touchstart', this.touchstart);
         element.removeEventListener('touchmove', this.touchmove);
         element.removeEventListener('touchend', this.touchend);
         element.removeEventListener('touchcancel', this.reset);

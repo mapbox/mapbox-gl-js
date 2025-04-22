@@ -96,7 +96,7 @@ export type BucketFeature = {
 export interface Bucket {
     layerIds: Array<string>;
     hasPattern: boolean;
-    readonly layers: Array<any>;
+    layers: Array<any>;
     stateDependentLayers: Array<any>;
     readonly stateDependentLayerIds: Array<string>;
     populate: (
@@ -146,7 +146,6 @@ export function deserialize(input: Array<Bucket>, style: Style): Record<string, 
 
         // look up StyleLayer objects from layer ids (since we don't
         // want to waste time serializing/copying them from the worker)
-        // @ts-expect-error - layers is a readonly property
         bucket.layers = layers;
         if (bucket.stateDependentLayerIds) {
             bucket.stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);

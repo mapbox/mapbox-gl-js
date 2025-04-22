@@ -188,8 +188,7 @@ class LineBucket implements Bucket {
         this.lineClipsArray = [];
         this.gradients = {};
         this.layers.forEach(layer => {
-            // @ts-expect-error - TS2739 - Type '{}' is missing the following properties from type 'GradientTexture': texture, gradient, version
-            this.gradients[layer.id] = {};
+            this.gradients[layer.id] = {} as GradientTexture;
         });
 
         this.layoutVertexArray = new LineLayoutArray();

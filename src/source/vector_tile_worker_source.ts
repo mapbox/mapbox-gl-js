@@ -17,6 +17,7 @@ import type {
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type Scheduler from '../util/scheduler';
+import type {TaskMetadata} from '../util/scheduler';
 import type {LoadVectorData} from './load_vector_tile';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 
@@ -121,8 +122,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                 // Defer tile parsing until sprite is ready. Style emits 'spriteLoaded' event, which triggers the 'isSpriteLoaded' event here.
                 this.once('isSpriteLoaded', () => {
                     if (this.scheduler) {
-                        const metadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
-                        // @ts-expect-error - TS2345 - Argument of type '{ type: string; isSymbolTile: boolean; zoom: number; }' is not assignable to parameter of type 'TaskMetadata'.
+                        const metadata: TaskMetadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
                         this.scheduler.add(parseTile, metadata);
                     } else {
                         parseTile();

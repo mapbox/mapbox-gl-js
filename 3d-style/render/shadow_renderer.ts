@@ -517,8 +517,7 @@ export class ShadowRenderer {
 
     computeSimplifiedTileShadowVolume(id: UnwrappedTileID, height: number, worldSize: number, lightDir: vec3): TileShadowVolume {
         if (lightDir[2] >= 0.0) {
-            // @ts-expect-error - TS2739 - Type '{}' is missing the following properties from type 'TileShadowVolume': vertices, planes
-            return {};
+            return {} as TileShadowVolume;
         }
         const corners = tileAabb(id, height, worldSize).getCorners();
         const t = height / -lightDir[2];
@@ -537,8 +536,7 @@ export class ShadowRenderer {
             vec3.add(corners[2], corners[2], [0.0, lightDir[1] * t, 0.0]);
             vec3.add(corners[3], corners[3], [0.0, lightDir[1] * t, 0.0]);
         }
-        // @ts-expect-error - TS2739 - Type '{}' is missing the following properties from type 'TileShadowVolume': vertices, planes
-        const tileShadowVolume: TileShadowVolume = {};
+        const tileShadowVolume = {} as TileShadowVolume;
         tileShadowVolume.vertices = corners;
         tileShadowVolume.planes = [computePlane(corners[1], corners[0], corners[4]), // top
             computePlane(corners[2], corners[1], corners[5]), // right

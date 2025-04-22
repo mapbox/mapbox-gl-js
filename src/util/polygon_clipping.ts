@@ -152,12 +152,11 @@ export function gridSubdivision(
 
             const bbMax = new Point(bbMaxX, bbMaxY);
 
-            const lclipBounds = [bboxMin, bbMax];
+            const lclipBounds: [Point, Point] = [bboxMin, bbMax];
 
             if (splits.length > depth + 1) {
                 stack.push({polygons: lclip, bounds: lclipBounds, depth: depth + 1});
             } else {
-                // @ts-expect-error - TS2345 - Argument of type 'any[]' is not assignable to parameter of type '[Point, Point]'.
                 addResult(lclip, lclipBounds);
             }
         }

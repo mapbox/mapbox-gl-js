@@ -160,8 +160,7 @@ function isFresh(response: Response) {
     if (!response) return false;
     const expires = new Date(response.headers.get('Expires') || 0);
     const cacheControl = parseCacheControl(response.headers.get('Cache-Control') || '');
-    // @ts-expect-error - TS2365 - Operator '>' cannot be applied to types 'Date' and 'number'.
-    return expires > Date.now() && !cacheControl['no-cache'];
+    return Number(expires) > Date.now() && !cacheControl['no-cache'];
 }
 
 // `Infinity` triggers a cache check after the first tile is loaded

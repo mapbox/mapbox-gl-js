@@ -608,7 +608,6 @@ export class Map extends Camera {
         }
 
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, null, null);
-        // @ts-expect-error - TS2345 - Argument of type 'MapOptions' is not assignable to parameter of type '{ bearingSnap: number; respectPrefersReducedMotion?: boolean; }'.
         super(transform, options);
 
         this._repaint = !!options.repaint;
@@ -1445,12 +1444,11 @@ export class Map extends Camera {
         if (!projection) {
             projection = null;
         } else if (typeof projection === 'string') {
-            projection = ({name: projection} as ProjectionSpecification);
+            projection = {name: projection} as ProjectionSpecification;
         }
 
         this._useExplicitProjection = !!projection;
-        // @ts-expect-error - TS2345 - Argument of type 'string | ProjectionSpecification' is not assignable to parameter of type 'ProjectionSpecification'.
-        return this._prioritizeAndUpdateProjection(projection, this.style.projection);
+        return this._prioritizeAndUpdateProjection(projection as ProjectionSpecification, this.style.projection);
     }
 
     _updateProjectionTransition() {
@@ -2292,20 +2290,20 @@ export class Map extends Camera {
         if (this.style && style && diffNeeded) {
             this.style._diffStyle(
                 style,
-                (e: Error | {
-                    error: string;
-                } | null, isUpdateNeeded) => {
+                (e: Error | {error: string} | string | null, isUpdateNeeded) => {
                     if (e) {
-                        // @ts-expect-error - TS2339 - Property 'message' does not exist on type 'Error | { error: string; }'. | TS2339 - Property 'error' does not exist on type 'Error | { error: string; }'.
-                        warnOnce(`Unable to perform style diff: ${String(e.message || e.error || e)}. Rebuilding the style from scratch.`);
+                        const message = typeof e === 'string' ? e :
+                            e instanceof Error ?
+                                e.message :
+                                e.error;
+
+                        warnOnce(`Unable to perform style diff: ${message}. Rebuilding the style from scratch.`);
                         this._updateStyle(style, options);
                     } else if (isUpdateNeeded) {
                         this._update(true);
                     }
                 },
-                () => {
-                    this._postStyleLoadEvent();
-                });
+                () => this._postStyleLoadEvent());
             return this;
         } else {
             this._localIdeographFontFamily = options.localIdeographFontFamily;

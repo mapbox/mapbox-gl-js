@@ -396,8 +396,7 @@ export class Placement {
     } | null | undefined {
 
         const {textOffset0, textOffset1, crossTileID} = symbolInstance;
-        const textOffset = [textOffset0, textOffset1];
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
+        const textOffset: [number, number] = [textOffset0, textOffset1];
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textScale);
 
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
@@ -424,7 +423,6 @@ export class Placement {
             }
             assert(crossTileID !== 0);
             this.variableOffsets[crossTileID] = {
-                // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number]'.
                 textOffset,
                 width,
                 height,
