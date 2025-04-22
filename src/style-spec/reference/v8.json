@@ -1367,6 +1367,13 @@
             }
           }
         },
+        "building": {
+          "doc": "A procedural 3D building.",
+          "sdk-support": {
+          },
+          "experimental": true,
+          "private": true
+        },
         "raster": {
           "doc": "Raster map textures such as satellite imagery.",
           "sdk-support": {
@@ -1955,6 +1962,115 @@
         "interpolated": false
       },
       "property-type": "constant"
+    }
+  },
+  "layout_building": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+          "doc": "The layer is shown."
+        },
+        "none": {
+          "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "constant"
+    },
+    "building-roof-shape": {
+      "type": "enum",
+      "values": {
+        "flat": {
+          "doc": "Use regular extruded buildings with flat roofs."
+        },
+        "hipped": {
+          "doc": "Use hipped roof for the procedurally generated buildings."
+        },
+        "gabled": {
+          "doc": "Use gabled roof for the procedurally generated buildings."
+        },
+        "parapet": {
+          "doc": "Use parapet roof for the procedurally generated buildings."
+        },
+        "mansard": {     
+          "doc": "Use mansard roof for the procedurally generated buildings."
+        },
+        "skillion": {      
+          "doc": "Use skillion roof for the procedurally generated buildings."
+        },
+        "pyramidal": {    
+          "doc": "Use pyramidal roof for the procedurally generated buildings."
+        }
+      },
+      "default": "flat",
+      "doc": "Roof type to use for the procedural buildings.",
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+        },
+        "data-driven styling": {
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "building-height": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "units": "meters",
+      "doc": "The height of the procedural buildings.",
+      "transition": true,
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+        },
+        "data-driven styling": {
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-driven"
+    },
+    "building-base": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "units": "meters",
+      "doc": "The height with which to extrude the base of this layer. Must be less than or equal to `building-height`.",
+      "transition": true,
+      "requires": [
+        "building-height"
+      ],
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+        },
+        "data-driven styling": {
+        }
+      },
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-driven"
     }
   },
   "layout_line": {
@@ -7233,6 +7349,189 @@
         }
       },
       "property-type": "data-constant"
+    }
+  },
+  "paint_building": {
+    "building-opacity": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "The opacity of the entire procedural buildings layer. This is rendered on a per-layer, not per-feature, basis, and data-driven styling is not available.",
+      "transition": true,
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
+    "building-ambient-occlusion-wall-intensity": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "private": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "Controls the intensity of shading concave angles between walls and building elements, such as facades and rooftop.",
+      "sdk-support": {
+        "basic functionality": {
+        }
+      }
+    },
+    "building-ambient-occlusion-ground-intensity": {
+      "property-type": "data-constant",
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "experimental": true,
+      "private": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "Controls the intensity of shading near ground",
+      "sdk-support": {
+        "basic functionality": {
+        }
+      }
+    },
+    "building-ambient-occlusion-ground-radius": {
+      "property-type": "data-constant",
+      "type": "number",
+      "experimental": true,
+      "private": true,
+      "default": 3.0,
+      "minimum": 0,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "transition": true,
+      "doc": "The extent of the ambient occlusion effect on the ground beneath the procedural buildings in meters.",
+      "sdk-support": {
+        "basic functionality": {
+        }
+      }
+    },
+    "building-ambient-occlusion-ground-attenuation": {
+      "property-type": "data-constant",
+      "type": "number",
+      "experimental": true,
+      "private": true,
+      "default": 0.69,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "doc": "Provides a control to further fine-tune the look of the ambient occlusion on the ground beneath the procedural buildings. Lower values give the effect a more solid look while higher values make it smoother.",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+        }
+      }
+    },
+    "building-vertical-scale": {
+      "property-type": "data-constant",
+      "type": "number",
+      "experimental": true,
+      "private": true,
+      "default": 1.0,
+      "minimum": 0.0,
+      "doc": "A global multiplier that can be used to scale base and height of the procedural buildings.",
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+        }
+      }
+    },
+    "building-cast-shadows": {
+      "type": "boolean",
+      "default": true,
+      "doc": "Enable/Disable shadow casting for this layer",
+      "transition": false,
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+          "basic functionality": {
+        }
+      },
+      "property-type": "data-constant"
+    },
+    "building-color": {
+      "type": "color",
+      "default": "rgba(193, 154, 127, 1)",
+      "doc": "Color buildings. This can be styled using different building parts (e.g. windows, wall, roof, etc.). This won't be used if `building-roof-shape` has a value `flat`.",
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+        },
+        "data-driven styling": {
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "feature",
+          "feature-state"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "building-emissive-strength": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "doc": "Controls the intensity of light emitted on the source features.",
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+        },
+        "data-driven styling": {
+        }
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "feature",
+          "feature-state",
+          "measure-light"
+        ]
+      },
+      "property-type": "data-driven"
     }
   },
   "paint_line": {

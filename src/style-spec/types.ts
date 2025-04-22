@@ -1047,6 +1047,90 @@ export type FillExtrusionLayout = FillExtrusionLayerSpecification['layout'];
  */
 export type FillExtrusionPaint = FillExtrusionLayerSpecification['paint'];
 
+export type BuildingLayerSpecification = {
+    "id": string,
+    "type": "building",
+    "metadata"?: unknown,
+    "source": string,
+    "source-layer"?: string,
+    "slot"?: string,
+    "minzoom"?: number,
+    "maxzoom"?: number,
+    "filter"?: FilterSpecification,
+    "layout"?: {
+        "visibility"?: "visible" | "none" | ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-roof-shape"?: DataDrivenPropertyValueSpecification<"flat" | "hipped" | "gabled" | "parapet" | "mansard" | "skillion" | "pyramidal">,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-height"?: DataDrivenPropertyValueSpecification<number>,
+        "building-height-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-base"?: DataDrivenPropertyValueSpecification<number>,
+        "building-base-transition"?: TransitionSpecification
+    },
+    "paint"?: {
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-opacity"?: PropertyValueSpecification<number>,
+        "building-opacity-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-ambient-occlusion-wall-intensity"?: PropertyValueSpecification<number>,
+        "building-ambient-occlusion-wall-intensity-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-ambient-occlusion-ground-intensity"?: PropertyValueSpecification<number>,
+        "building-ambient-occlusion-ground-intensity-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-ambient-occlusion-ground-radius"?: PropertyValueSpecification<number>,
+        "building-ambient-occlusion-ground-radius-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-ambient-occlusion-ground-attenuation"?: PropertyValueSpecification<number>,
+        "building-ambient-occlusion-ground-attenuation-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-vertical-scale"?: PropertyValueSpecification<number>,
+        "building-vertical-scale-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-cast-shadows"?: boolean,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
+        "building-color-use-theme"?: PropertyValueSpecification<string>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-emissive-strength"?: DataDrivenPropertyValueSpecification<number>
+    }
+}
+
+/**
+ * @deprecated Use `BuildingLayerSpecification['layout']` instead.
+ */
+export type BuildingLayout = BuildingLayerSpecification['layout'];
+
+/**
+ * @deprecated Use `BuildingLayerSpecification['paint']` instead.
+ */
+export type BuildingPaint = BuildingLayerSpecification['paint'];
+
 export type RasterLayerSpecification = {
     "id": string,
     "type": "raster",
@@ -1362,6 +1446,7 @@ export type LayerSpecification =
     | CircleLayerSpecification
     | HeatmapLayerSpecification
     | FillExtrusionLayerSpecification
+    | BuildingLayerSpecification
     | RasterLayerSpecification
     | RasterParticleLayerSpecification
     | HillshadeLayerSpecification
@@ -1431,6 +1516,11 @@ export type HeatmapLayer = HeatmapLayerSpecification;
  * @deprecated Use `FillExtrusionLayerSpecification` instead.
  */
 export type FillExtrusionLayer = FillExtrusionLayerSpecification;
+
+/**
+ * @deprecated Use `BuildingLayerSpecification` instead.
+ */
+export type BuildingLayer = BuildingLayerSpecification;
 
 /**
  * @deprecated Use `RasterLayerSpecification` instead.

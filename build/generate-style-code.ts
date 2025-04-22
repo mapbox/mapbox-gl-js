@@ -181,7 +181,7 @@ for (const layer of layers) {
     let styleDir = '..';
     let outputDir = `src/style/style_layer`;
     let properties = layerPropertiesJs;
-    if (layer.type === 'model') {
+    if (layer.type === 'model' || layer.type === 'building') {
         srcDir = '../../../src';
         styleDir = '../../../src/style';
         outputDir = `3d-style/style/style_layer`;
