@@ -10,6 +10,7 @@ import terser from '@rollup/plugin-terser';
 import strip from '@rollup/plugin-strip';
 import replace from '@rollup/plugin-replace';
 import {createFilter} from '@rollup/pluginutils';
+import browserslistToEsbuild from 'browserslist-to-esbuild';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 
 // Common set of plugins/transformations shared across different rollup
@@ -18,9 +19,7 @@ import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 export const plugins = ({mode, minified, production, test, bench, keepClassNames}) => [
     minifyStyleSpec(),
     esbuild({
-        // We target `esnext` and disable minification so esbuild
-        // doesn't transform the code, which we'll minify later with the terser
-        target: 'esnext',
+        target: browserslistToEsbuild(),
         minify: false,
         sourceMap: true,
         define: {
