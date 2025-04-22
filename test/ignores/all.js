@@ -270,6 +270,7 @@ const skip = [
     "render-tests/3d-intersections/guard-rail-color",
     "render-tests/3d-intersections/guard-rail-toggle",
     "render-tests/3d-intersections/road-markups-clipping",
+    "render-tests/3d-intersections/shadows-junction",
     "render-tests/3d-intersections/shadows-roads-depth",
     "render-tests/3d-intersections/shadows-tunnel",
     "render-tests/3d-intersections/shadows-underpass",

@@ -423,7 +423,7 @@ export class ElevatedStructures {
         }
     }
 
-    private computeVertexConnections(heights: number[], edges: Edge[], startEdge: number, endEdge: number): Map<number, VertexConnection> {
+    private computeVertexConnections(vertices: Point[], heights: number[], edges: Edge[], startEdge: number, endEdge: number): Map<number, VertexConnection> {
         assert(endEdge <= edges.length);
         const map = new Map<number, VertexConnection>();
 
@@ -433,25 +433,28 @@ export class ElevatedStructures {
             const a = edge.a;
             const b = edge.b;
 
+            const aHash = ElevatedStructures.computePosHash(vertices[a]);
+            const bHash = ElevatedStructures.computePosHash(vertices[b]);
+
             // Ensure the vertex connections exist in the map
-            if (!map.has(a)) {
-                map.set(a, {});
+            if (!map.has(aHash)) {
+                map.set(aHash, {});
             }
-            if (!map.has(b)) {
-                map.set(b, {});
+            if (!map.has(bHash)) {
+                map.set(bHash, {});
             }
 
-            const pA = map.get(a);
-            const pB = map.get(b);
+            const pA = map.get(aHash);
+            const pB = map.get(bHash);
 
             // Do not create connectivity to edges that are not supposed
-            // to have rail guard geometry
-            if (heights[b] > 0.0) {
-                pA.to = b;
+            // to have guard rail geometry
+            if (heights[a] <= 0.0 && heights[b] <= 0.0) {
+                continue;
             }
-            if (heights[a] > 0.0) {
-                pB.from = a;
-            }
+
+            pA.to = b;
+            pB.from = a;
         }
 
         return map;
@@ -460,7 +463,7 @@ export class ElevatedStructures {
     private constructBridgeStructures(builder: MeshBuilder, vertices: Point[], heights: number[], edges: Edge[], edgeRange: Range, tileToMeters: number) {
         // Compute connectivity graph for vertices in order to find
         // forward and normal vectors for the geometry
-        const vertexConnectivity = this.computeVertexConnections(heights, edges, edgeRange.min, edgeRange.max);
+        const vertexConnectivity = this.computeVertexConnections(vertices, heights, edges, edgeRange.min, edgeRange.max);
 
         const metersToTile = 1.0 / tileToMeters;
         const scale = 0.5 * metersToTile;
@@ -469,7 +472,7 @@ export class ElevatedStructures {
 
         const computeFwd = (vIdx: number): vec3 | undefined => {
             // Use connectivity information to compute the vertex normal vector
-            const connectivity = vertexConnectivity.get(vIdx);
+            const connectivity = vertexConnectivity.get(ElevatedStructures.computePosHash(vertices[vIdx]));
             assert(connectivity);
 
             const from = connectivity.from;
@@ -501,7 +504,7 @@ export class ElevatedStructures {
         // Generate bridge "guard rails"
         for (let i = edgeRange.min; i < edgeRange.max; i++) {
             const edge = edges[i];
-            const bridgeEdge = this.prepareEdgePoints(vertices, heights, edge, (a, b) => a >= b);
+            const bridgeEdge = this.prepareEdgePoints(vertices, heights, edge, (a, b) => a > b);
 
             if (bridgeEdge == null) continue;
 
@@ -568,7 +571,7 @@ export class ElevatedStructures {
         const normalize = (v: vec3) => vec3.normalize(v, v);
         // Generate underground walls
         for (let i = wallRange.min; i < wallRange.max; i++) {
-            const tunnelEdge = this.prepareEdgePoints(vertices, heights, edges[i], (a, b) => a <= b);
+            const tunnelEdge = this.prepareEdgePoints(vertices, heights, edges[i], (a, b) => a < b);
 
             if (tunnelEdge == null) continue;
 
@@ -611,32 +614,34 @@ export class ElevatedStructures {
     private prepareEdgePoints(vertices: Point[], heights: number[], edge: Edge, comp: (a: number, b: number) => boolean): [ElevatedPoint, ElevatedPoint] | undefined {
         // Prepare the edge by accepting only the segment that
         // passes the comparison function. In practice either the part above or below ground.
-        const va = vertices[edge.a];
-        const vb = vertices[edge.b];
         let ha = heights[edge.a];
         let hb = heights[edge.b];
+        const aPass = comp(ha, 0.0);
+        const bPass = comp(hb, 0.0);
 
-        if ((ha === 0.0 || !comp(ha, 0.0)) && (hb === 0.0 || !comp(hb, 0.0))) {
+        if (aPass && bPass) {
+            return [{coord: vertices[edge.a], height: ha}, {coord: vertices[edge.b], height: hb}];
+        } else if (!aPass && !bPass) {
             return undefined;
         }
 
-        const pa = va.clone();
-        const pb = vb.clone();
+        const va = vertices[edge.a].clone();
+        const vb = vertices[edge.b].clone();
 
         // Interpolate the line so that both points passes the comparison function
-        if (!comp(ha, 0.0)) {
+        if (!aPass) {
             const t = ha / (ha - hb);
-            pa.x = lerp(pa.x, pb.x, t);
-            pa.y = lerp(pa.y, pb.y, t);
+            va.x = lerp(va.x, vb.x, t);
+            va.y = lerp(va.y, vb.y, t);
             ha = lerp(ha, hb, t);
-        } else if (!comp(hb, 0.0)) {
+        } else if (!bPass) {
             const t = hb / (hb - ha);
-            pb.x = lerp(pb.x, pa.x, t);
-            pb.y = lerp(pb.y, pa.y, t);
+            vb.x = lerp(vb.x, va.x, t);
+            vb.y = lerp(vb.y, va.y, t);
             hb = lerp(hb, ha, t);
         }
 
-        return [{coord: pa, height: ha}, {coord: pb, height: hb}];
+        return [{coord: va, height: ha}, {coord: vb, height: hb}];
     }
 
     private prepareEdges(portals: ElevationPortalEdge[], edges: Edge[]) {
