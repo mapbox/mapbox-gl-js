@@ -53,7 +53,6 @@ test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
     });
 
     t.test('exports components directly, not behind `default` - https://github.com/mapbox/mapbox-gl-js/issues/6601', (t) => {
-        // @ts-expect-error - importing dynamic module that doesn't yet exist
         const spec = require('../../dist/style-spec/index.cjs');
         t.ok(spec.validate);
         t.notOk(spec.default && spec.default.validate);

@@ -313,6 +313,8 @@ export default tseslint.config(
         files: [
             './test/release/**/*',
             './test/integration/**/*',
+            './test/build/style-spec.test.js',
+            './test/build/browserify-test-fixture.js'
         ],
 
         extends: [tseslint.configs.disableTypeChecked],
