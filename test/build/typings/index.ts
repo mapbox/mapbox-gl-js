@@ -263,6 +263,22 @@ if (source) {
     }
 }
 
+class CustomSource implements mapboxgl.CustomSourceInterface<ImageBitmap> {
+    id: string;
+    type: 'custom';
+
+    constructor() {
+        this.id = 'custom-source';
+        this.type = 'custom';
+    }
+
+    async loadTile(tileID: {z: number; x: number; y: number}, options: {signal: AbortSignal}): Promise<ImageBitmap> {
+        return Promise.resolve(new ImageBitmap());
+    }
+}
+
+map.addSource('custom-source', new CustomSource());
+
 //
 // Adding layers
 //

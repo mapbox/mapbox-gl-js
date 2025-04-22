@@ -121,6 +121,8 @@ import type {GeoJSONFeature, FeaturesetDescriptor, TargetDescriptor, default as 
 import type {LUT} from '../util/lut';
 import type {SerializedExpression} from '../style-spec/expression/expression';
 import type {ActorMessages} from '../util/actor_messages';
+import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
+import type {CustomSourceInterface} from '../source/custom_source';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -1939,7 +1941,7 @@ class Style extends Evented<MapEvents> {
         return this.modelManager.listModels(this.scope);
     }
 
-    addSource(id: string, source: SourceSpecification & {collectResourceTiming?: boolean}, options: StyleSetterOptions = {}): void {
+    addSource(id: string, source: (SourceSpecification | CustomSourceInterface<unknown>) & {collectResourceTiming?: boolean}, options: StyleSetterOptions = {}): void {
         this._checkLoaded();
 
         if (this.getOwnSource(id) !== undefined) {

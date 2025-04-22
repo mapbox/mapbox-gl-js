@@ -50,6 +50,7 @@ export type {LngLatLike, LngLatBoundsLike} from './geo/lng_lat';
 export type {FeatureSelector} from './style/style';
 export type {StyleImageInterface} from './style/style_image';
 export type {CustomLayerInterface} from './style/style_layer/custom_style_layer';
+export type {CustomSourceInterface} from './source/custom_source';
 
 export type {Anchor} from './ui/anchor';
 export type {PopupOptions} from './ui/popup';
