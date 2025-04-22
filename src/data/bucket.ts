@@ -63,9 +63,9 @@ export type BucketFeature = {
     index: number;
     sourceLayerIndex: number;
     geometry: Array<Array<Point>>;
-    properties: any;
+    properties: Record<PropertyKey, unknown>;
     type: 0 | 1 | 2 | 3;
-    id?: any;
+    id?: string | number | null;
     readonly patterns: Record<string, string>;
     sortKey?: number;
 };

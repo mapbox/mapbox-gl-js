@@ -30,6 +30,7 @@ import type {GridIndex} from '../../../src/types/grid-index';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {FeatureStates} from '../../../src/source/source_state';
 import type {FeatureState} from '../../../src/style-spec/expression/index';
+import type {PossiblyEvaluatedValue} from '../../../src/style/properties';
 
 const lookup = new Float32Array(512 * 512);
 const passLookup = new Uint8Array(512 * 512);
@@ -591,7 +592,7 @@ class Tiled3dModelBucket implements Bucket {
 
         const tmpVertex = [0, 0, 0];
 
-        const nodeInverse = mat4.identity([] as any);
+        const nodeInverse = mat4.identity([] as unknown as mat4);
 
         for (let i = 0; i < this.nodesInfo.length; i++) {
             const nodeInfo = nodesInfo[i];
@@ -626,9 +627,14 @@ class Tiled3dModelBucket implements Bucket {
     }
 }
 
-function expressionRequiresReevaluation(e: any, brightnessChanged: boolean): boolean {
+function expressionRequiresReevaluation<T>(e: PossiblyEvaluatedValue<T>, brightnessChanged: boolean): boolean {
     assert(e.kind === 'constant' || e instanceof ZoomConstantExpression);
-    return !e.isLightConstant && brightnessChanged;
+
+    if (e instanceof ZoomConstantExpression) {
+        return !e.isLightConstant && brightnessChanged;
+    }
+
+    return false;
 }
 
 function encodeEmissionToByte(emission: number) {

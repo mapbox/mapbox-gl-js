@@ -709,7 +709,7 @@ function addTextVertices(bucket: SymbolBucket,
                             layer, textAlongLine, feature, imageMap, bucket.allowVerticalPlacement);
 
     const sizeData = bucket.textSizeData;
-    let textSizeData = null;
+    let textSizeData: number[] = null;
 
     if (sizeData.kind === 'source') {
         textSizeData = [
@@ -959,7 +959,7 @@ function addSymbol(bucket: SymbolBucket,
             iconOffset,
             iconAlongLine,
             feature,
-            false,
+            undefined,
             globe,
             anchor,
             lineArray.lineStartIndex,

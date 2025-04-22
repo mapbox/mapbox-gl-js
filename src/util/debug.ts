@@ -17,22 +17,22 @@ import type {OverscaledTileID} from '../source/tile_id';
 export const Debug: {
     debugCanvas: HTMLCanvasElement | null | undefined;
     aabbCorners: Array<vec3>;
-    extend: (...args: any) => void;
-    run: (...args: any) => void;
-    logToElement: (...args: any) => void;
-    drawAabbs: (...args: any) => void;
-    clearAabbs: (...args: any) => void;
-    _drawBox: (...args: any) => void;
-    _drawLine: (...args: any) => void;
-    _drawQuad: (...args: any) => void;
+    extend: (...args: unknown[]) => void;
+    run: (...args: unknown[]) => void;
+    logToElement: (...args: unknown[]) => void;
+    drawAabbs: (...args: unknown[]) => void;
+    clearAabbs: (...args: unknown[]) => void;
+    _drawBox: (...args: unknown[]) => void;
+    _drawLine: (...args: unknown[]) => void;
+    _drawQuad: (...args: unknown[]) => void;
     _initializeCanvas: (tr: Transform) => HTMLCanvasElement;
 } =
 {
-    extend(dest: any, ...sources: Array<any>): any {
+    extend(dest: object, ...sources: Array<object | null | undefined>): object {
         return extend(dest, ...sources);
     },
 
-    run(fn: () => any) {
+    run(fn: () => unknown) {
         fn();
     },
 
@@ -69,11 +69,9 @@ export const Debug: {
         return Debug.debugCanvas;
     },
 
-    _drawLine(ctx: CanvasRenderingContext2D, start?: vec2 | null, end?: vec2 | null) {
-        if (!start || !end) { return; }
-        // @ts-expect-error - TS2556 - A spread argument must either have a tuple type or be passed to a rest parameter.
+    _drawLine(ctx: CanvasRenderingContext2D, start?: [number, number], end?: [number, number]) {
+        if (!start || !end) return;
         ctx.moveTo(...start);
-        // @ts-expect-error - TS2556 - A spread argument must either have a tuple type or be passed to a rest parameter.
         ctx.lineTo(...end);
     },
 
@@ -135,11 +133,11 @@ export const Debug: {
                 // This means that AABBs close to the camera may appear to be missing.
                 // (A more correct algorithm would shorten the line segments instead of removing them entirely.)
                 // Full AABBs can be viewed by enabling `map.transform.freezeTileCoverage` and panning.
-                const cameraPos = vec3.transformMat4([] as any, ecef, ecefToCameraMatrix);
+                const cameraPos = vec3.transformMat4([] as unknown as vec3, ecef, ecefToCameraMatrix);
 
                 if (cameraPos[2] > 0) { return null; }
 
-                return vec3.transformMat4([] as any, ecef, ecefToPixelMatrix);
+                return vec3.transformMat4([] as unknown as vec3, ecef, ecefToPixelMatrix);
             });
             ctx.strokeStyle = `hsl(${360 * i / tileCount}, 100%, 50%)`;
             Debug._drawBox(ctx, pixelCorners);

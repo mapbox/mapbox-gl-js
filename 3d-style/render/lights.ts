@@ -83,7 +83,7 @@ export const lightsUniformValues = (directional: Lights<Directional>, ambient: L
     const ambientColorLinear = sRGBToLinearAndScale(ambientColor, ambientIntensity);
 
     const directionalColorLinear = sRGBToLinearAndScale(directionalColor, directionalIntensity);
-    const groundRadianceSrgb = calculateGroundRadiance((dirVec as any), (directionalColorLinear as any), (ambientColorLinear as any));
+    const groundRadianceSrgb = calculateGroundRadiance(dirVec, directionalColorLinear, ambientColorLinear);
     return {
         'u_lighting_ambient_color': ambientColorLinear,
         'u_lighting_directional_dir': dirVec,

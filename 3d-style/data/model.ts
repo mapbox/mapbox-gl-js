@@ -330,7 +330,7 @@ export function uploadTexture(texture: ModelTexture, context: Context, useSingle
         const useMipmap = texture.sampler.minFilter >= context.gl.NEAREST_MIPMAP_NEAREST;
         texture.gfxTexture = new Texture(context, texture.image, textureFormat, {useMipmap});
         texture.uploaded = true;
-        texture.image = (null as any);
+        texture.image = null;
     }
 }
 

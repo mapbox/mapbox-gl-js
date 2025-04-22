@@ -51,9 +51,7 @@ export function validateHSLA(h: unknown, s: unknown, l: unknown, a?: unknown): s
     return null;
 }
 
-export type Value = null | string | boolean | number | Color | Collator | Formatted | ResolvedImage | ReadonlyArray<Value> | {
-    readonly [key: string]: Value;
-};
+export type Value = null | string | boolean | number | Color | Collator | Formatted | ResolvedImage | ReadonlyArray<Value> | {readonly [key: string]: Value};
 
 export function isValue(mixed: unknown): boolean {
     if (mixed === null) {

@@ -47,6 +47,7 @@ import Distance from './distance';
 import {mulberry32} from '../../util/random';
 
 import type {Type} from '../types';
+import type {Value} from '../values';
 import type EvaluationContext from '../evaluation_context';
 import type {Varargs} from '../compound_expression';
 import type {Expression, ExpressionRegistry} from '../expression';
@@ -242,7 +243,7 @@ CompoundExpression.register(expressions, {
     'properties': [
         ObjectType,
         [],
-        (ctx) => ctx.properties()
+        (ctx) => ctx.properties() as Value
     ],
     'geometry-type': [
         StringType,

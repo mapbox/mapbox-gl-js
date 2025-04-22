@@ -70,8 +70,8 @@ export default class FeaturePositionMap {
         const map = new FeaturePositionMap();
         // after transferring, we only use these arrays statically (no pushes),
         // so TypedArray vs Array distinction that TS points out doesn't matter
-        map.ids = obj.ids as any;
-        map.positions = obj.positions as any;
+        map.ids = obj.ids as unknown as number[];
+        map.positions = obj.positions as unknown as number[];
         let prev;
         for (const id of map.ids) {
             if (id !== prev) map.uniqueIds.push(id);

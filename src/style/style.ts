@@ -70,6 +70,7 @@ import {ImageId} from '../style-spec/expression/types/image_id';
 import {ImageProvider} from '../render/image_provider';
 
 import type {GeoJSON} from 'geojson';
+import type Tile from '../source/tile';
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import type Painter from '../render/painter';
@@ -325,7 +326,7 @@ class Style extends Evented<MapEvents> {
     _loaded: boolean;
     _shouldPrecompile: boolean;
     _precompileDone: boolean;
-    _rtlTextPluginCallback: any;
+    _rtlTextPluginCallback: (state: {pluginStatus: string; pluginURL: string | null | undefined}) => void;
     _changes: StyleChanges;
     _optionsChanged: boolean;
     _layerOrderChanged: boolean;
@@ -517,7 +518,7 @@ class Style extends Evented<MapEvents> {
             if (!url.startsWith('http')) {
                 try {
                     return new URL(url, location.href).toString();
-                } catch (_e: any) {
+                } catch (e) {
                     return url;
                 }
             }
@@ -604,14 +605,14 @@ class Style extends Evented<MapEvents> {
         imports: Array<ImportSpecification>,
         validate: boolean,
         beforeId?: string | null,
-    ): Promise<any> {
+    ): Promise<void> {
         // We take the root style into account when calculating the import depth.
         if (this.importDepth >= MAX_IMPORT_DEPTH - 1) {
             warnOnce(`Style doesn't support nesting deeper than ${MAX_IMPORT_DEPTH}`);
             return Promise.resolve();
         }
 
-        const waitForStyles = [];
+        const waitForStyles: Promise<void>[] = [];
         for (const importSpec of imports) {
             const style = this._createFragmentStyle(importSpec);
 
@@ -619,8 +620,7 @@ class Style extends Evented<MapEvents> {
             const waitForStyle = new Promise((resolve) => {
                 style.once('style.import.load', resolve);
                 style.once('error', resolve);
-            })
-                .then(() => this.mergeAll());
+            }).then(() => this.mergeAll());
             waitForStyles.push(waitForStyle);
 
             // Load empty style if one of the ancestors was already
@@ -668,7 +668,7 @@ class Style extends Evented<MapEvents> {
 
         }
 
-        return Promise.allSettled(waitForStyles);
+        return Promise.allSettled(waitForStyles) as unknown as Promise<void>;
     }
 
     getImportGlobalIds(style: Style = this, ids: Set<string> = new Set()): string[] {
@@ -1425,8 +1425,8 @@ class Style extends Evented<MapEvents> {
         });
     }
 
-    _serializeSources(): {[sourceId: string]: SourceSpecification} {
-        const sources: Record<string, any> = {};
+    _serializeSources(): Record<string, SourceSpecification> {
+        const sources: Record<string, SourceSpecification> = {};
         for (const cacheId in this._sourceCaches) {
             const source = this._sourceCaches[cacheId].getSource();
             if (!sources[source.id]) {
@@ -1825,7 +1825,7 @@ class Style extends Evented<MapEvents> {
         const changesPromises = [];
 
         changes.forEach((op) => {
-            changesPromises.push((this as any)[op.command].apply(this, op.args));
+            changesPromises.push(this[op.command](...op.args));
         });
 
         if (onFinish) {
@@ -2349,7 +2349,7 @@ class Style extends Evented<MapEvents> {
         const schema = fragmentStyle.stylesheet.schema;
         if (!schema) return null;
 
-        const config: Record<string, any> = {};
+        const config: ConfigSpecification = {};
         for (const key in schema) {
             const fqid = makeFQID(key, fragmentStyle.scope);
             const expressions = fragmentStyle.options.get(fqid);
@@ -3082,7 +3082,7 @@ class Style extends Evented<MapEvents> {
 
         const order = this.order;
 
-        const layerIndex: Record<string, any> = {};
+        const layerIndex: Record<string, number> = {};
         const features3D: Array<{feature: Feature; featureIndex: number; intersectionZ: number}> = [];
         for (let l = order.length - 1; l >= 0; l--) {
             const layerId = order[l];
@@ -3456,7 +3456,7 @@ class Style extends Evented<MapEvents> {
             }
 
             const validationOptions = extend({}, options);
-            const validationProps: Record<string, any> = {};
+            const validationProps: {style?: StyleSpecification} = {};
 
             if (this.terrain && isUpdating) {
                 validationOptions.source = this.terrain.get().source;
@@ -3868,8 +3868,8 @@ class Style extends Evented<MapEvents> {
         let symbolBucketsChanged = false;
         let placementCommitted = false;
 
-        const layerTiles: Record<string, any> = {};
-        const layerTilesInYOrder: Record<string, any> = {};
+        const layerTiles: Record<string, Tile[]> = {};
+        const layerTilesInYOrder: Record<string, Tile[]> = {};
 
         for (const layerId of this._mergedOrder) {
             const styleLayer = this._mergedLayers[layerId];
@@ -3957,7 +3957,7 @@ class Style extends Evented<MapEvents> {
 
     // Fragments and merging
 
-    addImport(importSpec: ImportSpecification, beforeId?: string | null): Promise<any> | void {
+    addImport(importSpec: ImportSpecification, beforeId?: string | null): Promise<unknown> | void {
         this._checkLoaded();
 
         const imports = this.stylesheet.imports = this.stylesheet.imports || [];

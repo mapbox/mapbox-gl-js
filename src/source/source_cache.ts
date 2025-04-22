@@ -45,8 +45,8 @@ class SourceCache extends Evented {
     _tiles: Partial<Record<string | number, Tile>>;
     _prevLng: number | undefined;
     _cache: TileCache;
-    _timers: Partial<Record<any, number>>;
-    _cacheTimers: Partial<Record<any, number>>;
+    _timers: Partial<Record<number, number>>;
+    _cacheTimers: Partial<Record<number, number>>;
     _minTileCacheSize?: number;
     _maxTileCacheSize?: number;
     _paused: boolean;
@@ -617,7 +617,7 @@ class SourceCache extends Evented {
 
         if (isRasterType(this._source.type) && idealTileIDs.length !== 0) {
             const parentsForFading: Partial<Record<string | number, OverscaledTileID>> = {};
-            const fadingTiles: Record<string, any> = {};
+            const fadingTiles: Record<string, OverscaledTileID> = {};
             const ids = Object.keys(retain);
             for (const id of ids) {
                 const tileID = retain[id];
@@ -672,7 +672,7 @@ class SourceCache extends Evented {
         }
 
         // Remove the tiles we don't need anymore.
-        const remove = keysDifference((this._tiles as any), (retain as any));
+        const remove = keysDifference(this._tiles, retain);
         for (const tileID of remove) {
             const tile = this._tiles[tileID];
             if (tile.hasSymbolBuckets && !tile.holdingForFade()) {
@@ -709,7 +709,7 @@ class SourceCache extends Evented {
         const minCoveringZoom = Math.max(maxZoom - SourceCache.maxOverzooming, this._source.minzoom);
         const maxCoveringZoom = Math.max(maxZoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
-        const missingTiles: Record<string, any> = {};
+        const missingTiles: Record<string, OverscaledTileID> = {};
         for (const tileID of idealTileIDs) {
             const tile = this._addTile(tileID);
 
@@ -1127,7 +1127,7 @@ class SourceCache extends Evented {
      * @private
      * @returns {Object} Returns `this` | Promise.
      */
-    _preloadTiles(transform: Transform | Array<Transform>, callback: Callback<any>) {
+    _preloadTiles(transform: Transform | Array<Transform>, callback: Callback<Tile[]>) {
         if (!this._sourceLoaded) {
             const waitUntilSourceLoaded = () => {
                 if (!this._sourceLoaded) return;

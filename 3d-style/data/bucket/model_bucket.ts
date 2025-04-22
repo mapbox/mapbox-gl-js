@@ -15,7 +15,7 @@ import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import {isValidUrl} from '../../../src/style-spec/validate/validate_model';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
-import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import type {ReplacementSource, Region} from '../../../3d-style/source/replacement_source';
 import type Point from '@mapbox/point-geometry';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type {mat4} from 'gl-matrix';
@@ -113,7 +113,7 @@ class ModelBucket implements Bucket {
     modelUris: Array<string>;
     modelsRequested: boolean;
 
-    activeReplacements: Array<any>;
+    activeReplacements: Array<Region>;
     replacementUpdateTime: number;
 
     constructor(options: BucketParameters<ModelStyleLayer>) {
@@ -165,7 +165,7 @@ class ModelBucket implements Bucket {
                 continue;
 
             const bucketFeature: BucketFeature = {
-                id: featureId,
+                id: featureId as number,
                 sourceLayerIndex,
                 index,
                 geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),

@@ -40,7 +40,7 @@ class EvaluationContext {
         this.options = options;
     }
 
-    id(): number | null {
+    id(): string | number | null {
         return this.feature && this.feature.id !== undefined ? this.feature.id : null;
     }
 
@@ -56,9 +56,7 @@ class EvaluationContext {
         return this.canonical;
     }
 
-    properties(): {
-        [key: string]: any;
-        } {
+    properties(): {readonly [key: string]: unknown} {
         return (this.feature && this.feature.properties) || {};
     }
 

@@ -39,13 +39,9 @@ import type {ImageId} from './types/image_id';
 
 export interface Feature {
     readonly type: 0 | 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
-    readonly id?: number | null;
-    readonly properties: {
-        [_: string]: any;
-    };
-    readonly patterns?: {
-        [_: string]: string;
-    };
+    readonly id?: string | number | null;
+    readonly properties: Record<PropertyKey, unknown>;
+    readonly patterns?: Record<PropertyKey, string>;
     readonly geometry?: Array<Array<Point>>;
 }
 

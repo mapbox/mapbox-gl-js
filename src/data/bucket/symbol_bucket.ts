@@ -72,7 +72,7 @@ import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
 import type {SymbolQuad} from '../../symbol/quads';
-import type {SizeData} from '../../symbol/symbol_size';
+import type {SizeData, InterpolatedSize} from '../../symbol/symbol_size';
 import type {FeatureStates} from '../../source/source_state';
 import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
@@ -921,11 +921,11 @@ class SymbolBucket implements Bucket {
 
     addSymbols(arrays: SymbolBuffers,
                quads: Array<SymbolQuad>,
-               sizeVertex: any,
+               sizeVertex: number[],
                lineOffset: [number, number],
                alongLine: boolean,
                feature: SymbolFeature,
-               writingMode: any,
+               writingMode: number | undefined,
                globe: {
                    anchor: Anchor;
                    up: vec3;
@@ -1048,7 +1048,7 @@ class SymbolBucket implements Bucket {
 
         segment.vertexLength += 4;
 
-        const indexArray: LineIndexArray = (arrays.indexArray as any);
+        const indexArray = arrays.indexArray as LineIndexArray;
         indexArray.emplaceBack(index, index + 1);
         indexArray.emplaceBack(index + 1, index + 2);
         indexArray.emplaceBack(index + 2, index + 3);
@@ -1057,18 +1057,18 @@ class SymbolBucket implements Bucket {
         segment.primitiveLength += 4;
     }
 
-    _addTextDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
+    _addTextDebugCollisionBoxes(size: InterpolatedSize, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
         for (let b = startIndex; b < endIndex; b++) {
-            const box: CollisionBox = (collisionBoxArray.get(b) as any);
+            const box: CollisionBox = collisionBoxArray.get(b);
             const scale = this.getSymbolInstanceTextSize(size, instance, zoom, b);
 
             this._addCollisionDebugVertices(box, scale, this.textCollisionBox, box.projectedAnchorX, box.projectedAnchorY, box.projectedAnchorZ, instance);
         }
     }
 
-    _addIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
+    _addIconDebugCollisionBoxes(size: InterpolatedSize, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance) {
         for (let b = startIndex; b < endIndex; b++) {
-            const box: CollisionBox = (collisionBoxArray.get(b) as any);
+            const box: CollisionBox = collisionBoxArray.get(b);
             const scale = this.getSymbolInstanceIconSize(size, zoom, instance.placedIconSymbolIndex);
 
             this._addCollisionDebugVertices(box, scale, this.iconCollisionBox, box.projectedAnchorX, box.projectedAnchorY, box.projectedAnchorZ, instance);
@@ -1095,7 +1095,7 @@ class SymbolBucket implements Bucket {
         }
     }
 
-    getSymbolInstanceTextSize(textSize: any, instance: SymbolInstance, zoom: number, boxIndex: number): number {
+    getSymbolInstanceTextSize(textSize: InterpolatedSize, instance: SymbolInstance, zoom: number, boxIndex: number): number {
         const symbolIndex = instance.rightJustifiedTextSymbolIndex >= 0 ?
             instance.rightJustifiedTextSymbolIndex : instance.centerJustifiedTextSymbolIndex >= 0 ?
                 instance.centerJustifiedTextSymbolIndex : instance.leftJustifiedTextSymbolIndex >= 0 ?
@@ -1108,7 +1108,7 @@ class SymbolBucket implements Bucket {
         return this.tilePixelRatio * featureSize;
     }
 
-    getSymbolInstanceIconSize(iconSize: any, zoom: number, iconIndex: number): number {
+    getSymbolInstanceIconSize(iconSize: InterpolatedSize, zoom: number, iconIndex: number): number {
         const symbol = this.icon.placedSymbolArray.get(iconIndex);
         const featureSize = symbolSize.evaluateSizeForFeature(this.iconSizeData, iconSize, symbol);
 
@@ -1122,16 +1122,16 @@ class SymbolBucket implements Bucket {
         array.emplaceBack(scale, -padding,  padding, zOffset);
     }
 
-    _updateTextDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance, scaleFactor: number) {
+    _updateTextDebugCollisionBoxes(size: InterpolatedSize, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance, scaleFactor: number) {
         for (let b = startIndex; b < endIndex; b++) {
-            const box: CollisionBox = (collisionBoxArray.get(b) as any);
+            const box: CollisionBox = collisionBoxArray.get(b);
             const scale = this.getSymbolInstanceTextSize(size, instance, zoom, b);
             const array = this.textCollisionBox.collisionVertexArrayExt;
             this._commitDebugCollisionVertexUpdate(array, scale, box.padding, instance.zOffset);
         }
     }
 
-    _updateIconDebugCollisionBoxes(size: any, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance, iconScaleFactor: number) {
+    _updateIconDebugCollisionBoxes(size: InterpolatedSize, zoom: number, collisionBoxArray: CollisionBoxArray, startIndex: number, endIndex: number, instance: SymbolInstance, iconScaleFactor: number) {
         for (let b = startIndex; b < endIndex; b++) {
             const box = (collisionBoxArray.get(b));
             const scale = this.getSymbolInstanceIconSize(size, zoom, instance.placedIconSymbolIndex);
