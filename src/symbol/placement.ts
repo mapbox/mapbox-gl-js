@@ -1,7 +1,6 @@
 import CollisionIndex from './collision_index';
 import EXTENT from '../style-spec/data/extent';
 import ONE_EM from './one_em';
-import * as symbolSize from './symbol_size';
 import * as projection from './projection';
 import {getAnchorJustification, evaluateVariableOffset} from './symbol_layout';
 import {getAnchorAlignment, WritingMode} from './shaping';
@@ -12,6 +11,7 @@ import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projecti
 import {clamp, warnOnce} from '../util/util';
 import {transformPointToTile, pointInFootprint, skipClipping} from '../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
+import {evaluateSizeForFeature, evaluateSizeForZoom} from './symbol_size';
 
 import type BuildingIndex from '../source/building_index';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
@@ -351,8 +351,8 @@ export class Placement {
             textPixelRatio,
             holdingForFade: tile.holdingForFade(),
             collisionBoxArray,
-            partiallyEvaluatedTextSize: symbolSize.evaluateSizeForZoom(symbolBucket.textSizeData, this.transform.zoom, textScaleFactor),
-            partiallyEvaluatedIconSize: symbolSize.evaluateSizeForZoom(symbolBucket.iconSizeData, this.transform.zoom, iconScaleFactor),
+            partiallyEvaluatedTextSize: evaluateSizeForZoom(symbolBucket.textSizeData, this.transform.zoom, textScaleFactor),
+            partiallyEvaluatedIconSize: evaluateSizeForZoom(symbolBucket.iconSizeData, this.transform.zoom, iconScaleFactor),
             collisionGroup: this.collisionGroups.get(symbolBucket.sourceID),
             latestFeatureIndex: tile.latestFeatureIndex
         };
@@ -736,7 +736,7 @@ export class Placement {
             if (symbolInstance.useRuntimeCollisionCircles) {
                 const placedSymbolIndex = symbolInstance.centerJustifiedTextSymbolIndex >= 0 ? symbolInstance.centerJustifiedTextSymbolIndex : symbolInstance.verticalPlacedTextSymbolIndex;
                 const placedSymbol = bucket.text.placedSymbolArray.get(placedSymbolIndex);
-                const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
+                const fontSize = evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
 
                 const textPixelPadding = layout.get('text-padding');
                 // Convert circle collision height into pixels

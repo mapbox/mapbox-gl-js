@@ -196,10 +196,9 @@ class SymbolStyleLayer extends StyleLayer {
                 expression = (new ZoomDependentExpression('composite',
                                                           styleExpression,
                                                           overriden.value.zoomStops,
-                                                          // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
-                                                          overriden.value._interpolationType) as CompositeExpression);
+                                                          overriden.value.interpolationType) as CompositeExpression);
             }
-            // @ts-expect-error - TS2339 - Property 'property' does not exist on type 'unknown'.
+            // @ts-expect-error - TS2322 - Type 'PossiblyEvaluatedPropertyValue<PaintProps>' is not assignable to type 'never'.
             this.paint._values[overridable] = new PossiblyEvaluatedPropertyValue(overriden.property,
                                                                                  expression,
                                                                                  overriden.parameters);
@@ -237,7 +236,7 @@ class SymbolStyleLayer extends StyleLayer {
                 if (hasOverrides) return;
 
                 if (expression instanceof Literal && typeOf(expression.value) === FormattedType) {
-                    const formatted: Formatted = ((expression.value) as any);
+                    const formatted = (expression.value) as Formatted;
                     checkSections(formatted.sections);
                 } else if (expression instanceof FormatExpression) {
                     checkSections(expression.sections);
@@ -246,7 +245,7 @@ class SymbolStyleLayer extends StyleLayer {
                 }
             };
 
-            const expr: ZoomConstantExpression<'source'> = ((textField.value) as any);
+            const expr = (textField.value) as ZoomConstantExpression<'source'>;
             if (expr._styleExpression) {
                 checkExpression(expr._styleExpression.expression);
             }

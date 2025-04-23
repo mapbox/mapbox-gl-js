@@ -819,6 +819,14 @@ function align(positionedLines: Array<PositionedLine>,
     }
 }
 
+export function isPositionedIcon(icon: unknown): icon is PositionedIcon {
+    return icon["imagePrimary"] !== undefined &&
+        icon["top"] !== undefined &&
+        icon["bottom"] !== undefined &&
+        icon["left"] !== undefined &&
+        icon["right"] !== undefined;
+}
+
 export type PositionedIcon = {
     imagePrimary: ImagePosition;
     imageSecondary: ImagePosition | null | undefined;

@@ -23,7 +23,6 @@ import {SymbolLayoutArray,
     ZOffsetVertexArray
 } from '../array_types';
 import ONE_EM from '../../symbol/one_em';
-import * as symbolSize from '../../symbol/symbol_size';
 import Point from '@mapbox/point-geometry';
 import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';
@@ -37,7 +36,7 @@ import toEvaluationFeature from '../evaluation_feature';
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
-import {getSizeData} from '../../symbol/symbol_size';
+import {evaluateSizeForFeature, evaluateSizeForZoom, getSizeData} from '../../symbol/symbol_size';
 import {getScaledImageVariant, MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
@@ -54,7 +53,7 @@ import {clamp} from '../../util/util';
 
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type Anchor from '../../symbol/anchor';
-import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import type {Region, ReplacementSource} from '../../../3d-style/source/replacement_source';
 import type SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
 import type {Class} from '../../types/class';
 import type {ProjectionSpecification} from '../../style-spec/types';
@@ -116,9 +115,9 @@ export type SymbolFeature = {
     index: number;
     sourceLayerIndex: number;
     geometry: Array<Array<Point>>;
-    properties: any;
+    properties: VectorTileFeature["properties"];
     type: 'Unknown' | 'Point' | 'LineString' | 'Polygon';
-    id?: any;
+    id?: number | string | undefined;
 };
 
 export type SortKeyRange = {
@@ -140,11 +139,11 @@ type LineVertexRange = {
 // const placementOpacityAttributes = [
 //     { name: 'a_fade_opacity', components: 1, type: 'Uint32' }
 // ];
-const shaderOpacityAttributes = [
+const shaderOpacityAttributes: ReadonlyArray<StructArrayMember> = [
     {name: 'a_fade_opacity', components: 1, type: 'Uint8', offset: 0}
 ];
 
-function addVertex(array: SymbolLayoutArray, tileAnchorX: number, tileAnchorY: number, ox: number, oy: number, tx: number, ty: number, sizeVertex: any, isSDF: boolean, pixelOffsetX: number, pixelOffsetY: number, minFontScaleX: number, minFontScaleY: number) {
+function addVertex(array: SymbolLayoutArray, tileAnchorX: number, tileAnchorY: number, ox: number, oy: number, tx: number, ty: number, sizeVertex: number[], isSDF: boolean, pixelOffsetX: number, pixelOffsetY: number, minFontScaleX: number, minFontScaleY: number) {
     const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0])) : 0;
     const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1])) : 0;
 
@@ -266,7 +265,6 @@ export class SymbolBuffers {
             this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, symbolLayoutAttributes.members);
             this.indexBuffer = context.createIndexBuffer(this.indexArray, dynamicIndexBuffer);
             this.dynamicLayoutVertexBuffer = context.createVertexBuffer(this.dynamicLayoutVertexArray, dynamicLayoutAttributes.members, true);
-            // @ts-expect-error - TS2345 - Argument of type '{ name: string; components: number; type: string; offset: number; }[]' is not assignable to parameter of type 'readonly StructArrayMember[]'.
             this.opacityVertexBuffer = context.createVertexBuffer(this.opacityVertexArray, shaderOpacityAttributes, true);
             if (this.iconTransitioningVertexArray.length > 0) {
                 this.iconTransitioningVertexBuffer = context.createVertexBuffer(this.iconTransitioningVertexArray, iconTransitioningAttributes.members, true);
@@ -456,7 +454,7 @@ class SymbolBucket implements Bucket {
     elevationFeatureIdToIndex: Map<number, number>;
     elevationStateComplete: boolean;
 
-    activeReplacements: Array<any>;
+    activeReplacements: Array<Region>;
     replacementUpdateTime: number;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
@@ -656,11 +654,10 @@ class SymbolBucket implements Bucket {
                 // but plain string token evaluation skips that pathway so do the
                 // conversion here.
                 const resolvedTokens = layer.getValueAndResolveTokens('icon-image', evaluationFeature, canonical, availableImages);
-                // @ts-expect-error - TS2358 - The left-hand side of an 'instanceof' expression must be of type 'any', an object type or a type parameter.
-                if (resolvedTokens instanceof ResolvedImage) {
-                    icon = resolvedTokens;
-                } else {
+                if (typeof resolvedTokens === "string") {
                     icon = ResolvedImage.build(resolvedTokens);
+                } else {
+                    icon = resolvedTokens;
                 }
             }
 
@@ -1083,8 +1080,8 @@ class SymbolBucket implements Bucket {
         this.textCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
         this.iconCollisionBox = new CollisionBuffers(CollisionBoxLayoutArray, collisionBoxLayout.members, LineIndexArray);
 
-        const iconSize = symbolSize.evaluateSizeForZoom(this.iconSizeData, zoom);
-        const textSize = symbolSize.evaluateSizeForZoom(this.textSizeData, zoom, textScaleFactor);
+        const iconSize = evaluateSizeForZoom(this.iconSizeData, zoom);
+        const textSize = evaluateSizeForZoom(this.textSizeData, zoom, textScaleFactor);
 
         for (let i = 0; i < this.symbolInstances.length; i++) {
             const symbolInstance = this.symbolInstances.get(i);
@@ -1103,14 +1100,14 @@ class SymbolBucket implements Bucket {
                         instance.verticalPlacedTextSymbolIndex : boxIndex;
 
         const symbol = this.text.placedSymbolArray.get(symbolIndex);
-        const featureSize = symbolSize.evaluateSizeForFeature(this.textSizeData, textSize, symbol) / ONE_EM;
+        const featureSize = evaluateSizeForFeature(this.textSizeData, textSize, symbol) / ONE_EM;
 
         return this.tilePixelRatio * featureSize;
     }
 
     getSymbolInstanceIconSize(iconSize: InterpolatedSize, zoom: number, iconIndex: number): number {
         const symbol = this.icon.placedSymbolArray.get(iconIndex);
-        const featureSize = symbolSize.evaluateSizeForFeature(this.iconSizeData, iconSize, symbol);
+        const featureSize = evaluateSizeForFeature(this.iconSizeData, iconSize, symbol);
 
         return this.tilePixelRatio * featureSize;
     }
@@ -1148,8 +1145,8 @@ class SymbolBucket implements Bucket {
         if (this.hasTextCollisionBoxData()) this.textCollisionBox.collisionVertexArrayExt.clear();
         if (this.hasIconCollisionBoxData()) this.iconCollisionBox.collisionVertexArrayExt.clear();
 
-        const iconSize = symbolSize.evaluateSizeForZoom(this.iconSizeData, zoom, iconScaleFactor);
-        const textSize = symbolSize.evaluateSizeForZoom(this.textSizeData, zoom, textScaleFactor);
+        const iconSize = evaluateSizeForZoom(this.iconSizeData, zoom, iconScaleFactor);
+        const textSize = evaluateSizeForZoom(this.textSizeData, zoom, textScaleFactor);
 
         for (let i = 0; i < this.symbolInstances.length; i++) {
             const symbolInstance = this.symbolInstances.get(i);
@@ -1182,7 +1179,7 @@ class SymbolBucket implements Bucket {
     ): CollisionArrays {
 
         // Only one box allowed per instance
-        const collisionArrays: Record<string, any> = {};
+        const collisionArrays: CollisionArrays = {};
         if (textStartIndex < textEndIndex) {
             const {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY, featureIndex} = collisionBoxArray.get(textStartIndex);
             collisionArrays.textBox = {x1, y1, x2, y2, padding, projectedAnchorX, projectedAnchorY, projectedAnchorZ, tileAnchorX, tileAnchorY};

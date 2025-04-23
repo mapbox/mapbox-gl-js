@@ -8,9 +8,7 @@ import type {InterpolationType} from '../style-spec/expression/definitions/inter
 import type {CanonicalTileID} from '../source/tile_id';
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
 
-const SIZE_PACK_FACTOR = 128;
-
-export {getSizeData, evaluateSizeForFeature, evaluateSizeForZoom, SIZE_PACK_FACTOR};
+export const SIZE_PACK_FACTOR = 128;
 
 export type SizeData = {
     kind: 'constant';
@@ -70,7 +68,7 @@ export function getRasterizedIconSize(
 
 // For {text,icon}-size, get the bucket-level data that will be needed by
 // the painter to set symbol-size-related uniforms
-function getSizeData(
+export function getSizeData(
     tileZoom: number,
     value: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>,
 ): SizeData {
@@ -113,7 +111,7 @@ function getSizeData(
     }
 }
 
-function evaluateSizeForFeature(
+export function evaluateSizeForFeature(
     sizeData: SizeData,
     {
         uSize,
@@ -135,7 +133,7 @@ function evaluateSizeForFeature(
     return uSize;
 }
 
-function evaluateSizeForZoom(sizeData: SizeData, zoom: number, scaleFactor: number = 1): InterpolatedSize {
+export function evaluateSizeForZoom(sizeData: SizeData, zoom: number, scaleFactor: number = 1): InterpolatedSize {
     let uSizeT = 0;
     let uSize = 0;
 

@@ -2,7 +2,6 @@ import Point from '@mapbox/point-geometry';
 import drawCollisionDebug from './draw_collision_debug';
 import SegmentVector from '../data/segment';
 import * as symbolProjection from '../symbol/projection';
-import * as symbolSize from '../symbol/symbol_size';
 import {mat4, vec3, vec4} from 'gl-matrix';
 import {clamp} from '../util/util';
 const identityMat4 = mat4.create();
@@ -23,6 +22,7 @@ import {
     symbolUniformValues
 } from './program/symbol_program';
 import {getSymbolTileProjectionMatrix} from '../geo/projection/projection_util';
+import {evaluateSizeForFeature, evaluateSizeForZoom, type InterpolatedSize} from '../symbol/symbol_size';
 
 import type Tile from '../source/tile';
 import type Transform from '../geo/transform';
@@ -37,8 +37,8 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type {UniformValues} from './uniform_binding';
 import type {SymbolUniformsType} from '../render/program/symbol_program';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
-import type {InterpolatedSize} from '../symbol/symbol_size';
 import type {DynamicDefinesType} from './program/program_uniforms';
+import type Program from './program';
 
 export default drawSymbols;
 
@@ -46,13 +46,13 @@ type SymbolTileRenderState = {
     segments: SegmentVector;
     sortKey: number;
     state: {
-        program: any;
+        program: Program<SymbolUniformsType>;
         buffers: SymbolBuffers;
-        uniformValues: any;
+        uniformValues: UniformValues<SymbolUniformsType>;
         atlasTexture: Texture | null;
         atlasTextureIcon: Texture | null;
-        atlasInterpolation: any;
-        atlasInterpolationIcon: any;
+        atlasInterpolation: WebGLRenderingContextBase["NEAREST"] | WebGLRenderingContextBase["LINEAR"];
+        atlasInterpolationIcon: WebGLRenderingContextBase["NEAREST"] | WebGLRenderingContextBase["LINEAR"];
         isSDF: boolean;
         hasHalo: boolean;
         depthMode: DepthMode;
@@ -157,13 +157,13 @@ function updateVariableAnchors(coords: Array<OverscaledTileID>, painter: Painter
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        const bucket = tile.getBucket(layer) as SymbolBucket;
+        const bucket = (tile.getBucket(layer) as SymbolBucket);
         if (!bucket || !bucket.text || !bucket.text.segments.get().length) {
             continue;
         }
 
         const sizeData = bucket.textSizeData;
-        const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom, textScaleFactor);
+        const size = evaluateSizeForZoom(sizeData, tr.zoom, textScaleFactor);
         const tileMatrix = getSymbolTileProjectionMatrix(coord, bucket.getProjection(), tr);
 
         const pixelsToTileUnits = tr.calculatePixelsToTileUnitsMatrix(tile);
@@ -172,18 +172,24 @@ function updateVariableAnchors(coords: Array<OverscaledTileID>, painter: Painter
 
         if (size) {
             const tileScale = Math.pow(2, tr.zoom - tile.tileID.overscaledZ);
-            updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets, symbolSize,
+            updateVariableAnchorsForBucket(bucket, rotateWithMap, pitchWithMap, variableOffsets,
                 tr, labelPlaneMatrix as Float32Array, coord, tileScale, size, updateTextFitIcon);
         }
     }
 }
 
-// @ts-expect-error - TS2502 - 'symbolSize' is referenced directly or indirectly in its own type annotation.
-function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boolean, pitchWithMap: boolean, variableOffsets: Partial<Record<CrossTileID, VariableOffset>>, symbolSize: typeof symbolSize, transform: Transform, labelPlaneMatrix: Float32Array, coord: OverscaledTileID, tileScale: number, size: InterpolatedSize, updateTextFitIcon: boolean) {
+type PlacedTextShift = {
+    x: number,
+    y: number,
+    z: number,
+    angle: number
+}
+
+function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boolean, pitchWithMap: boolean, variableOffsets: Partial<Record<CrossTileID, VariableOffset>>, transform: Transform, labelPlaneMatrix: Float32Array, coord: OverscaledTileID, tileScale: number, size: InterpolatedSize, updateTextFitIcon: boolean) {
     const placedSymbols = bucket.text.placedSymbolArray;
     const dynamicTextLayoutVertexArray = bucket.text.dynamicLayoutVertexArray;
     const dynamicIconLayoutVertexArray = bucket.icon.dynamicLayoutVertexArray;
-    const placedTextShifts: Record<string, any> = {};
+    const placedTextShifts: Record<string, PlacedTextShift> = {};
     const projection = bucket.getProjection();
     const tileMatrix = getSymbolTileProjectionMatrix(coord, projection, transform);
     const elevation = transform.elevation;
@@ -217,7 +223,7 @@ function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boo
                 pitchWithMap ? tileMatrix : labelPlaneMatrix);
 
             const perspectiveRatio = symbolProjection.getPerspectiveRatio(transform.getCameraToCenterDistance(projection), w);
-            let renderTextSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, size, symbol) * perspectiveRatio / ONE_EM;
+            let renderTextSize = evaluateSizeForFeature(bucket.textSizeData, size, symbol) * perspectiveRatio / ONE_EM;
             if (pitchWithMap) {
                 // Go from size in pixels to equivalent size in tile units
                 renderTextSize *= bucket.tilePixelRatio / tileScale;
@@ -329,7 +335,7 @@ function drawLayerSymbols(
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
 
-        const bucket = tile.getBucket(layer) as SymbolBucket;
+        const bucket = (tile.getBucket(layer) as SymbolBucket);
 
         if (!bucket) continue;
         // Allow rendering of buckets built for globe projection in mercator mode
@@ -366,7 +372,7 @@ function drawLayerSymbols(
             }
         }
 
-        const setOcclusionDefines = (defines:any[]) => {
+        const setOcclusionDefines = (defines: DynamicDefinesType[]) => {
             // Globe or orthographic - no depth occlusion needed
             if (!tr.depthOcclusionForSymbolsAndCircles) {
                 return;
@@ -424,7 +430,7 @@ function drawLayerSymbols(
             }
 
             const programConfiguration = bucket.icon.programConfigurations.get(layer.id);
-            const program = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
+            const program: Program<SymbolUniformsType> = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
 
             if (renderWithShadows) {
                 shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
@@ -432,11 +438,11 @@ function drawLayerSymbols(
 
             const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
             const sizeData = bucket.iconSizeData;
-            const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom);
+            const size = evaluateSizeForZoom(sizeData, tr.zoom);
             const transformed = iconPitchWithMap || tr.pitch !== 0;
 
             const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, iconPitchWithMap, iconRotateWithMap, tr, bucket.getProjection(), s);
-            // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
+
             const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, iconPitchWithMap, iconRotateWithMap, tr, bucket.getProjection(), s);
 
             const uglCoordMatrix = painter.translatePosMatrix(glCoordMatrix, tile, iconTranslate, iconTranslateAnchor, true);
@@ -466,6 +472,7 @@ function drawLayerSymbols(
             const atlasInterpolation = bucket.sdfIcons || painter.options.rotating || painter.options.zooming || iconScaled || transformed ? gl.LINEAR : gl.NEAREST;
 
             const hasHalo = bucket.sdfIcons && layer.paint.get('icon-halo-width').constantOr(1) !== 0;
+            // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
             const labelPlaneMatrixInv = painter.terrain && iconPitchWithMap && alongLine ? mat4.invert(mat4.create(), labelPlaneMatrixRendering) : identityMat4;
 
             // Line label rotation happens in `updateLineLabels`
@@ -546,7 +553,7 @@ function drawLayerSymbols(
             const texSize: [number, number] = tile.glyphAtlasTexture ? tile.glyphAtlasTexture.size : [0, 0];
             const textSizeScaleRange = layer.layout.get('text-size-scale-range');
             const textScaleFactor = clamp(painter.scaleFactor, textSizeScaleRange[0], textSizeScaleRange[1]);
-            const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom, textScaleFactor);
+            const size = evaluateSizeForZoom(sizeData, tr.zoom, textScaleFactor);
             const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
             // labelPlaneMatrixInv is used for converting vertex pos to tile coordinates needed for sampling elevation.
             const glCoordMatrix = symbolProjection.getGlCoordMatrix(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
@@ -693,13 +700,13 @@ function drawLayerSymbols(
         painter.uploadCommonLightUniforms(painter.context, state.program);
 
         if (state.hasHalo) {
-            const uniformValues = (state.uniformValues as UniformValues<SymbolUniformsType>);
+            const uniformValues = (state.uniformValues);
             uniformValues['u_is_halo'] = 1;
             drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, state.depthMode, stencilMode, colorMode, uniformValues, 2);
             uniformValues['u_is_halo'] = 0;
         } else {
             if (state.isSDF) {
-                const uniformValues = (state.uniformValues as UniformValues<SymbolUniformsType>);
+                const uniformValues = (state.uniformValues);
                 if (state.hasHalo) {
                     uniformValues['u_is_halo'] = 1;
                     drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, state.depthMode, stencilMode, colorMode, uniformValues, 1);
@@ -711,7 +718,7 @@ function drawLayerSymbols(
     }
 }
 
-function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, layer: SymbolStyleLayer, painter: Painter, program: any, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, uniformValues: UniformValues<SymbolUniformsType>, instanceCount: number) {
+function drawSymbolElements(buffers: SymbolBuffers, segments: SegmentVector, layer: SymbolStyleLayer, painter: Painter, program: Program<SymbolUniformsType>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, uniformValues: UniformValues<SymbolUniformsType>, instanceCount: number) {
     const context = painter.context;
     const gl = context.gl;
     const dynamicBuffers = [buffers.dynamicLayoutVertexBuffer, buffers.opacityVertexBuffer, buffers.iconTransitioningVertexBuffer, buffers.globeExtVertexBuffer, buffers.zOffsetVertexBuffer];
