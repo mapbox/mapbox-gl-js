@@ -1,3 +1,19 @@
+## 3.12.0-beta.1
+
+### Features and improvements ✨
+
+- Add _experimental_ support for rendering 3D road intersections.
+- Add shadow rendering support for elevated lines.
+- Slightly improve JS bundle sizes.
+- Various TypeScript types improvements.
+
+### Bug fixes 🐞
+
+- Fixed an issue where calling `setData` on symbol layers could cause flickering.
+- Expose `CustomSourceInterface` TypeScript type that was missing in the public interface.
+- Fix some edge cases related to rendering of elevated structures.
+- Relax `line-gradient` validation to work not only on GeoJSON, but also on vector tile sources if they have `mapbox_clip_start` and `mapbox_clip_end` properties precomputed.
+
 ## 3.11.1
 
 - Improve icon loading performance, in particular for landmark icons.
