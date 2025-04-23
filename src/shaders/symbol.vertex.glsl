@@ -236,9 +236,9 @@ void main() {
 #endif
 
 #ifdef Z_OFFSET
-    z += u_pitch_with_map ? a_auto_z_offset + (u_elevation_from_sea ? z_offset : z_offset) : 0.0;
+    z += u_pitch_with_map ? a_auto_z_offset + z_offset : 0.0;
 #else
-    z += u_pitch_with_map ? (u_elevation_from_sea ? z_offset : z_offset) : 0.0;
+    z += u_pitch_with_map ? z_offset : 0.0;
 #endif
 
     // Symbols might end up being behind the camera. Move them AWAY.
