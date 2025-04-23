@@ -264,7 +264,7 @@ describe('primitives', () => {
                 expect(vec3.fromValues(0.8, 0, 0.60000050)).toEqual(point);
 
                 r.pos = vec3.fromValues(1, 1, 1);
-                r.dir = vec3.normalize([] as any, vec3.fromValues(-1, -1, -1));
+                r.dir = vec3.normalize([] as unknown as vec3, vec3.fromValues(-1, -1, -1));
                 intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1.0, point);
                 expect(intersection).toBeTruthy();
                 expect(vec3.fromValues(0.57735026, 0.57735026, 0.57735026)).toEqual(point);

@@ -92,7 +92,7 @@ const BOUNDS_FEATURE = (() => {
  * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
  */
 function getPixelPosMatrix(transform: Transform, tileID: OverscaledTileID) {
-    const t = mat4.fromScaling([] as any, [transform.width * 0.5, -transform.height * 0.5, 1]);
+    const t = mat4.fromScaling([] as unknown as mat4, [transform.width * 0.5, -transform.height * 0.5, 1]);
     mat4.translate(t, t, [1, -1, 0]);
     mat4.multiply(t, t, transform.calculateProjMatrix(tileID.toUnwrapped()));
     return Float32Array.from(t);

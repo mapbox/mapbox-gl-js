@@ -18,7 +18,7 @@ import type {LUT} from "../../util/lut";
 
 function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean): [number, number, number] {
     const up: [number, number, number] = [0, 0, 1];
-    const rotation = quat.identity([] as any);
+    const rotation = quat.identity([] as unknown as quat);
 
     quat.rotateY(rotation, rotation, leftHanded ? -degToRad(azimuth) + Math.PI : degToRad(azimuth));
     quat.rotateX(rotation, rotation, -degToRad(altitude));

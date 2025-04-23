@@ -669,9 +669,9 @@ class Camera extends Evented<MapEvents> {
 
         const origin = latLngToECEF(midLat, midLng);
 
-        const zAxis = vec3.normalize([] as any, origin);
-        const xAxis = vec3.normalize([] as any, vec3.cross([] as any, zAxis, [0, 1, 0]));
-        const yAxis = vec3.cross([] as any, xAxis, zAxis);
+        const zAxis = vec3.normalize([] as unknown as vec3, origin);
+        const xAxis = vec3.normalize([] as unknown as vec3, vec3.cross([] as unknown as vec3, zAxis, [0, 1, 0]));
+        const yAxis = vec3.cross([] as unknown as vec3, xAxis, zAxis);
 
         const aabbOrientation: mat4 = [
             xAxis[0], xAxis[1], xAxis[2], 0,
@@ -709,7 +709,7 @@ class Camera extends Evented<MapEvents> {
         const worldToCamera = tr.getWorldToCameraMatrix();
         const cameraToWorld = mat4.invert(new Float64Array(16) as unknown as mat4, worldToCamera);
 
-        aabb = Aabb.applyTransform(aabb, mat4.multiply([] as any, worldToCamera, aabbOrientation));
+        aabb = Aabb.applyTransform(aabb, mat4.multiply([] as unknown as mat4, worldToCamera, aabbOrientation));
         const extendedAabb = this._extendAABB(aabb, tr, eOptions, bearing);
         if (!extendedAabb) {
             warnOnce('Map cannot fit within canvas with the given bounds, padding, and/or offset.');
@@ -722,16 +722,16 @@ class Camera extends Evented<MapEvents> {
         const aabbHalfExtentZ = (aabb.max[2] - aabb.min[2]) * 0.5;
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);
 
-        const offsetZ = vec3.scale([] as any, [0, 0, 1], aabbHalfExtentZ);
+        const offsetZ = vec3.scale([] as unknown as vec3, [0, 0, 1], aabbHalfExtentZ);
         const aabbClosestPoint = vec3.add(offsetZ, center, offsetZ);
         const offsetDistance = frustumDistance + (tr.pitch === 0 ? 0 : vec3.distance(center, aabbClosestPoint));
 
         const globeCenter = tr.globeCenterInViewSpace;
-        const normal = vec3.sub([] as any, center, [globeCenter[0], globeCenter[1], globeCenter[2]]);
+        const normal = vec3.sub([] as unknown as vec3, center, [globeCenter[0], globeCenter[1], globeCenter[2]]);
         vec3.normalize(normal, normal);
         vec3.scale(normal, normal, offsetDistance);
 
-        const cameraPosition = vec3.add([] as any, center, normal);
+        const cameraPosition = vec3.add([] as unknown as vec3, center, normal);
 
         vec3.transformMat4(cameraPosition, cameraPosition, cameraToWorld);
 
@@ -912,7 +912,7 @@ class Camera extends Evented<MapEvents> {
         }
 
         aabb = extendedAabb;
-        const size = vec3.sub([] as any, aabb.max, aabb.min);
+        const size = vec3.sub([] as unknown as vec3, aabb.max, aabb.min);
         const aabbHalfExtentZ = size[2] * 0.5;
         const frustumDistance = this._minimumAABBFrustumDistance(tr, aabb);
 

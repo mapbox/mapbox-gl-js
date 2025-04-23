@@ -72,7 +72,7 @@ export function getFogOpacityAtMercCoord(
     elevation: number,
     transform: Transform,
 ): number {
-    const pos = vec3.transformMat4([] as any, [x, y, elevation], transform.mercatorFogMatrix);
+    const pos = vec3.transformMat4([] as unknown as vec3, [x, y, elevation], transform.mercatorFogMatrix);
     return getFogOpacity(state, vec3.length(pos), transform.pitch, transform._fov);
 }
 

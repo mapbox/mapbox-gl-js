@@ -584,14 +584,14 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
         // door posts. Later, additional vertices at depth distance from door could be reconsidered.
         // 0.01f to prevent intersection with door post.
         const width = light.width - 2 * light.depth * zScale * (horizontalSpread + 0.01);
-        const v1 = vec3.scaleAndAdd([] as any, light.pos, tangent as [number, number, number], width / 2);
-        const v2 = vec3.scaleAndAdd([] as any, light.pos, tangent as [number, number, number], -width / 2);
+        const v1 = vec3.scaleAndAdd([] as unknown as vec3, light.pos, tangent as [number, number, number], width / 2);
+        const v2 = vec3.scaleAndAdd([] as unknown as vec3, light.pos, tangent as [number, number, number], -width / 2);
         const v0 = [v1[0], v1[1], v1[2] + light.height];
         const v3 = [v2[0], v2[1], v2[2] + light.height];
 
-        const v1extrusion = vec3.scaleAndAdd([] as any, light.normal, tangent as [number, number, number], horizontalSpread);
+        const v1extrusion = vec3.scaleAndAdd([] as unknown as vec3, light.normal, tangent as [number, number, number], horizontalSpread);
         vec3.scale(v1extrusion, v1extrusion, fallOff);
-        const v2extrusion = vec3.scaleAndAdd([] as any, light.normal, tangent as [number, number, number], -horizontalSpread);
+        const v2extrusion = vec3.scaleAndAdd([] as unknown as vec3, light.normal, tangent as [number, number, number], -horizontalSpread);
         vec3.scale(v2extrusion, v2extrusion, fallOff);
 
         vec3.add(v1extrusion, v1, v1extrusion);

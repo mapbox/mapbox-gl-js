@@ -566,10 +566,10 @@ function tileAabb(id: UnwrappedTileID, height: number, worldSize: number): Aabb 
 }
 
 function computePlane(a: vec3, b: vec3, c: vec3): vec4 {
-    const bc = vec3.sub([] as any, c, b);
-    const ba = vec3.sub([] as any, a, b);
+    const bc = vec3.sub([] as unknown as vec3, c, b);
+    const ba = vec3.sub([] as unknown as vec3, a, b);
 
-    const normal = vec3.cross([] as any, bc, ba);
+    const normal = vec3.cross([] as unknown as vec3, bc, ba);
     const len = vec3.length(normal);
 
     if (len === 0) {

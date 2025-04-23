@@ -135,7 +135,7 @@ export function queryIntersectsCircle(
                 queryGeometry.tilespaceRays.map((r) => intersectAtHeight(r, z)) :
                 queryGeometry.queryGeometry.screenGeometry;
 
-            const projectedCenter = vec4.transformMat4([] as any, [reproj.x, reproj.y, reproj.z, 1], pixelPosMatrix);
+            const projectedCenter = vec4.transformMat4([] as unknown as vec4, [reproj.x, reproj.y, reproj.z, 1], pixelPosMatrix);
             if (!scaleWithMap && alignWithMap) {
                 size *= projectedCenter[3] / transform.cameraToCenterDistance;
             } else if (scaleWithMap && !alignWithMap) {
@@ -158,7 +158,7 @@ export function queryIntersectsCircle(
 }
 
 function projectPoint(x: number, y: number, z: number, pixelPosMatrix: Float32Array) {
-    const point = vec4.transformMat4([] as any, [x, y, z, 1], pixelPosMatrix);
+    const point = vec4.transformMat4([] as unknown as vec4, [x, y, z, 1], pixelPosMatrix);
     return new Point(point[0] / point[3], point[1] / point[3]);
 }
 

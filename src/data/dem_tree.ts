@@ -272,7 +272,7 @@ export default class DemMinMaxQuadTree {
                 // The ray might go below the two surface triangles but hit one of the sides.
                 // This covers the case of skirt geometry between two dem tiles of different zoom level
                 if (tMin === Number.MAX_VALUE) {
-                    const hitPos = vec3.scaleAndAdd([] as any, p, d, t);
+                    const hitPos = vec3.scaleAndAdd([] as unknown as vec3, p, d, t);
                     const fracx = frac(hitPos[0], boundsMin[0], boundsMax[0]);
                     const fracy = frac(hitPos[1], boundsMin[1], boundsMax[1]);
 

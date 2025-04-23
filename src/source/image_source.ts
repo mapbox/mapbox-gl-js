@@ -46,24 +46,24 @@ type ImageSourceTexture = {
 // (0, 0, 1) -> (c * x3, c * y3, c)
 // (1, 1, 1) -> (x4, y4, 1)
 function basisToPoints(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
-    const m = [x1, y1, 1, x2, y2, 1, x3, y3, 1];
-    const s = [x4, y4, 1];
-    const ma = mat3.adjoint([] as any, m as [number, number, number, number, number, number, number, number, number]);
-    const [sx, sy, sz] = vec3.transformMat3(s as [number, number, number], s as [number, number, number], ma);
-    return mat3.multiply(m as [number, number, number, number, number, number, number, number, number], m as [number, number, number, number, number, number, number, number, number], [sx, 0, 0, 0, sy, 0, 0, 0, sz]);
+    const m: mat3 = [x1, y1, 1, x2, y2, 1, x3, y3, 1];
+    const s: vec3 = [x4, y4, 1];
+    const ma = mat3.adjoint([] as unknown as mat3, m);
+    const [sx, sy, sz] = vec3.transformMat3(s, s, ma);
+    return mat3.multiply(m, m, [sx, 0, 0, 0, sy, 0, 0, 0, sz]);
 }
 
 function getTileToTextureTransformMatrix(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
     const a = basisToPoints(0, 0, 1, 0, 1, 1, 0, 1);
     const b = basisToPoints(x1, y1, x2, y2, x3, y3, x4, y4);
-    const adjB = mat3.adjoint([] as any, b);
+    const adjB = mat3.adjoint([] as unknown as mat3, b);
     return mat3.multiply(a, a, adjB);
 }
 
 function getTextureToTileTransformMatrix(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
     const a = basisToPoints(0, 0, 1, 0, 1, 1, 0, 1);
     const b = basisToPoints(x1, y1, x2, y2, x3, y3, x4, y4);
-    const adjA = mat3.adjoint([] as any, a);
+    const adjA = mat3.adjoint([] as unknown as mat3, a);
     return mat3.multiply(b, b, adjA);
 }
 
@@ -614,7 +614,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
                 const x = Math.round((point.lng - minLng) / lngDiff * EXTENT);
                 const y = Math.round((point.lat - minLat) / latDiff * EXTENT);
                 const imagePoint = transformToImagePoint(tilePoint);
-                const uv = vec3.transformMat3([] as any, [imagePoint[0], imagePoint[1], 1], toUV);
+                const uv = vec3.transformMat3([] as unknown as vec3, [imagePoint[0], imagePoint[1], 1], toUV);
                 const u = Math.round(uv[0] / uv[2] * EXTENT);
                 const v = Math.round(uv[1] / uv[2] * EXTENT);
                 elevatedGlobeVertexArray.emplaceBack(x, y, u, v);

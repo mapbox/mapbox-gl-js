@@ -1419,7 +1419,7 @@ export class Terrain extends Elevation {
         const camera = transform._camera.position;
         const mercatorZScale = mercatorZfromAltitude(1, transform.center.lat);
         const p: [number, number, number, number] = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
-        const dir = vec3.subtract([] as any, far.slice(0, 3) as vec3, p as unknown as vec3);
+        const dir = vec3.subtract([] as unknown as vec3, far.slice(0, 3) as vec3, p as unknown as vec3);
         vec3.normalize(dir, dir);
 
         const exaggeration = this._exaggeration;

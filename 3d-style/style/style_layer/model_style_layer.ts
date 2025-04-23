@@ -124,7 +124,7 @@ class ModelStyleLayer extends StyleLayer {
                     if (transform.projection.name === 'globe') {
                         matrix = convertModelMatrixForGlobe(matrix, transform);
                     }
-                    const worldViewProjection = mat4.multiply([] as any, transform.projMatrix, matrix);
+                    const worldViewProjection = mat4.multiply([] as unknown as mat4, transform.projMatrix, matrix);
                     // Collision checks are performed in screen space. Corners are in ndc space.
                     const screenQuery = queryGeometry.queryGeometry;
                     const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
