@@ -31,7 +31,7 @@ function getKey(layer: LayerSpecification) {
         if (layer.type === 'model' && (k === 'minzoom' || k === 'maxzoom')) {
             continue;
         } else {
-            key += `/${stringify((layer as any)[k])}`;
+            key += `/${stringify(layer[k])}`;
         }
     }
     return key;

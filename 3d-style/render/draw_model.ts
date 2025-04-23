@@ -900,7 +900,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 if (!isShadowPass) {
                     if (frontCutoffEnabled) {
                         opacity *= nodeInfo.cameraCollisionOpacity;
-                        opacity *= calculateFrontCutoffOpacity(tileModelMatrix as any, tr, nodeInfo.aabb, frontCutoffParams);
+                        opacity *= calculateFrontCutoffOpacity(tileModelMatrix, tr, nodeInfo.aabb, frontCutoffParams);
                     }
 
                     opacity *= calculateFarCutoffOpacity(cutoffParams, depth);

@@ -193,10 +193,10 @@ export default function validateFunction(options: ValidationOptions): any {
             previousStopDomainValue = value;
         }
 
-        if (functionType === 'categorical' && (value as any) in stopDomainValues) {
+        if (functionType === 'categorical' && (value as string) in stopDomainValues) {
             return [new ValidationError(options.key, reportValue, 'stop domain values must be unique')];
         } else {
-            stopDomainValues[(value as any)] = true;
+            stopDomainValues[(value as string)] = true;
         }
 
         return [];

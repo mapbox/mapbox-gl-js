@@ -230,12 +230,12 @@ class Within implements Expression {
         if (args.length !== 2)
             return context.error(`'within' expression requires exactly one argument, but found ${args.length - 1} instead.`);
         if (isValue(args[1])) {
-            const geojson = (args[1] as any);
+            const geojson = args[1] as GeoJSON.GeoJSON;
             if (geojson.type === 'FeatureCollection') {
                 for (let i = 0; i < geojson.features.length; ++i) {
                     const type = geojson.features[i].geometry.type;
                     if (type === 'Polygon' || type === 'MultiPolygon') {
-                        return new Within(geojson, geojson.features[i].geometry);
+                        return new Within(geojson, geojson.features[i].geometry as GeoJSONPolygons);
                     }
                 }
             } else if (geojson.type === 'Feature') {

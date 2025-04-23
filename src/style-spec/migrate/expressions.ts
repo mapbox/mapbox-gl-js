@@ -3,7 +3,7 @@ import {isExpression} from '../expression/index';
 import convertFunction, {convertTokenString} from '../function/convert';
 import convertFilter from '../feature_filter/convert';
 
-import type {StyleSpecification, FunctionSpecification} from '../types';
+import type {StyleSpecification, FilterSpecification, FunctionSpecification} from '../types';
 
 /**
  * Migrate the given style object in place to use expressions. Specifically,
@@ -15,7 +15,7 @@ export default function (style: StyleSpecification): StyleSpecification {
 
     eachLayer(style, (layer) => {
         if (layer.filter) {
-            layer.filter = (convertFilter(layer.filter) as any);
+            layer.filter = convertFilter(layer.filter) as FilterSpecification;
         }
     });
 

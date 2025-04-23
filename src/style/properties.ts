@@ -601,7 +601,7 @@ export class DataConstantProperty<T> implements Property<T, T> {
     }
 
     interpolate(a: T, b: T, t: number): T {
-        const interp: (a: T, b: T, t: number) => T | null | undefined = (interpolate as any)[this.specification.type];
+        const interp: (a: T, b: T, t: number) => T | null | undefined = interpolate[this.specification.type];
         if (interp) {
             return interp(a, b, t);
         } else {

@@ -527,19 +527,19 @@ class Distance implements Expression {
             return context.error(`'distance' expression requires either one argument, but found ' ${args.length - 1} instead.`);
         }
         if (isValue(args[1])) {
-            const geojson = (args[1] as any);
+            const geojson = args[1] as GeoJSON.GeoJSON;
             if (geojson.type === 'FeatureCollection') {
                 for (let i = 0; i < geojson.features.length; ++i) {
                     if (isTypeValid(geojson.features[i].geometry.type)) {
-                        return new Distance(geojson, geojson.features[i].geometry);
+                        return new Distance(geojson, geojson.features[i].geometry as DistanceGeometry);
                     }
                 }
             } else if (geojson.type === 'Feature') {
                 if (isTypeValid(geojson.geometry.type)) {
-                    return new Distance(geojson, geojson.geometry);
+                    return new Distance(geojson, geojson.geometry as DistanceGeometry);
                 }
             } else if (isTypeValid(geojson.type)) {
-                return new Distance(geojson, geojson);
+                return new Distance(geojson, geojson as DistanceGeometry);
             }
         }
         return context.error(

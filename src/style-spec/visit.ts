@@ -57,7 +57,7 @@ export function eachProperty(
 ) {
     function inner(layer: LayerSpecification, propertyType: 'paint' | 'layout') {
         if (layer.type === 'slot' || layer.type === 'clip') return;
-        const properties = (layer[propertyType] as any);
+        const properties = layer[propertyType];
         if (!properties) return;
         Object.keys(properties).forEach((key) => {
             callback({

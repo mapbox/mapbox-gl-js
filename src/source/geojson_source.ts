@@ -134,7 +134,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         this.actor = dispatcher.getActor();
         this.setEventedParent(eventedParent);
 
-        this._data = (options.data as any);
+        this._data = options.data;
         this._options = extend({}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;

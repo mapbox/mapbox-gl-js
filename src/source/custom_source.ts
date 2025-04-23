@@ -300,7 +300,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
             // A map will render nothing in the tile’s space.
             if (data === null) {
                 const emptyImage = {width: this.tileSize, height: this.tileSize, data: null};
-                this.loadTileData(tile, (emptyImage as any));
+                this.loadTileData(tile, emptyImage);
                 tile.state = 'loaded';
                 return callback(null);
             }
@@ -318,7 +318,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
 
     loadTileData(tile: Tile, data: T): void {
         // Only raster data supported at the moment
-        tile.setTexture((data as any), this.map.painter);
+        tile.setTexture(data as TextureImage, this.map.painter);
     }
 
     unloadTile(tile: Tile, callback?: Callback<undefined>): void {

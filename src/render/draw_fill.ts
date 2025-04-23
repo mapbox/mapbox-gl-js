@@ -324,7 +324,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
             const tile = sourceCache.getTile(coord);
             if (image && !tile.patternsLoaded()) continue;
 
-            const bucket: FillBucket | null | undefined = (tile.getBucket(layer) as any);
+            const bucket = tile.getBucket(layer) as FillBucket;
             if (!bucket) continue;
 
             const bufferData = elevatedGeometry ? bucket.elevationBufferData : bucket.bufferData;

@@ -59,7 +59,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             if (sourceCache.hasRenderableParent(coord)) continue;
 
             const tile = sourceCache.getTile(coord);
-            const bucket: HeatmapBucket | null | undefined = (tile.getBucket(layer) as any);
+            const bucket = tile.getBucket(layer) as HeatmapBucket;
             if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
             const affectedByFog = painter.isTileAffectedByFog(coord);

@@ -1270,8 +1270,8 @@ class FillExtrusionBucket implements Bucket {
             assert(borderCentroidData.centroidDataIndex === this.centroidData.length - 1);
             this.featuresOnBorder.push(borderCentroidData);
             const borderIndex = this.featuresOnBorder.length - 1;
-            for (let i = 0; i < (borderCentroidData.borders as any).length; i++) {
-                if ((borderCentroidData.borders as any)[i][0] !== Number.MAX_VALUE) {
+            for (let i = 0; i < borderCentroidData.borders.length; i++) {
+                if (borderCentroidData.borders[i][0] !== Number.MAX_VALUE) {
                     this.borderFeatureIndices[i].push(borderIndex);
                 }
             }
@@ -1286,7 +1286,7 @@ class FillExtrusionBucket implements Bucket {
     sortBorders() {
         for (let i = 0; i < this.borderFeatureIndices.length; i++) {
             const borders = this.borderFeatureIndices[i];
-            borders.sort((a, b) => (this.featuresOnBorder[a].borders as any)[i][0] - (this.featuresOnBorder[b].borders as any)[i][0]);
+            borders.sort((a, b) => this.featuresOnBorder[a].borders[i][0] - this.featuresOnBorder[b].borders[i][0]);
         }
     }
 

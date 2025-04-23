@@ -69,7 +69,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     if (terrain || conflateLayer) {
         for (const coord of coords) {
             const tile = source.getTile(coord);
-            const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
+            const bucket = tile.getBucket(layer) as FillExtrusionBucket;
             if (!bucket) {
                 continue;
             }
@@ -521,7 +521,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
         const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
         if (!bucket || bucket.projection.name !== tr.projection.name || !bucket.groundEffect || (bucket.groundEffect && !bucket.groundEffect.hasData())) continue;
 
-        const groundEffect: GroundEffect = (bucket.groundEffect as any);
+        const groundEffect = bucket.groundEffect;
         const meterToTile = 1 / bucket.tileToMeter;
         {
             const matrix = painter.translatePosMatrix(
@@ -541,10 +541,10 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
                 const nTile = source.getTile(nCoord);
                 if (!nTile) continue;
 
-                const nBucket: FillExtrusionBucket | null | undefined = (nTile.getBucket(layer) as any);
+                const nBucket = nTile.getBucket(layer) as FillExtrusionBucket;
                 if (!nBucket || nBucket.projection.name !== tr.projection.name || !nBucket.groundEffect || (nBucket.groundEffect && !nBucket.groundEffect.hasData())) continue;
 
-                const nGroundEffect: GroundEffect = (nBucket.groundEffect as any);
+                const nGroundEffect = nBucket.groundEffect;
                 assert(nGroundEffect.regionSegments);
 
                 let translation, regionId;
@@ -738,7 +738,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             const partA = bucket.featuresOnBorder[ia];
             const centroidA = bucket.centroidData[partA.centroidDataIndex];
             assert(partA.borders);
-            const partABorderRange = (partA.borders as any)[i];
+            const partABorderRange = partA.borders[i];
 
             // Find all nBucket parts that share the border overlap
             let partB;

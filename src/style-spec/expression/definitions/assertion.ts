@@ -40,7 +40,7 @@ class Assertion implements Expression {
         let i = 1;
         let type;
 
-        const name: string = (args[0] as any);
+        const name = args[0] as string;
         if (name === 'array') {
             let itemType;
             if (args.length > 2) {

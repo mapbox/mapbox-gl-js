@@ -1,6 +1,8 @@
 import quickselect from 'quickselect';
 import Point from '@mapbox/point-geometry';
 
+type Ring = Point[] & {area?: number};
+
 // minX, minY, maxX, maxY
 export type BBox = [number, number, number, number];
 
@@ -9,7 +11,7 @@ export type BBox = [number, number, number, number];
  * have a clockwise winding.  Negative areas are interior rings and have a counter clockwise
  * ordering.
  */
-function calculateSignedArea(ring: Array<Point>): number {
+function calculateSignedArea(ring: Ring): number {
     let sum = 0;
     for (let i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
         p1 = ring[i];
@@ -19,16 +21,12 @@ function calculateSignedArea(ring: Array<Point>): number {
     return sum;
 }
 
-function compareAreas(a: {
-    area: number;
-}, b: {
-    area: number;
-}) {
+function compareAreas(a: Ring, b: Ring): number {
     return b.area - a.area;
 }
 
 // classifies an array of rings into polygons with outer rings and holes
-export function classifyRings(rings: Array<Array<Point>>, maxRings: number): Array<Array<Array<Point>>> {
+export function classifyRings(rings: Array<Ring>, maxRings: number): Array<Array<Ring>> {
     const len = rings.length;
 
     if (len <= 1) return [rings];
@@ -41,7 +39,7 @@ export function classifyRings(rings: Array<Array<Point>>, maxRings: number): Arr
         const area = calculateSignedArea(rings[i]);
         if (area === 0) continue;
 
-        (rings[i] as any).area = Math.abs(area);
+        rings[i].area = Math.abs(area);
 
         if (ccw === undefined) ccw = area < 0;
 

@@ -1,6 +1,6 @@
 import {isExpressionFilter} from './index';
 
-import type {FilterSpecification} from '../types';
+import type {FilterSpecification, ExpressionSpecification} from '../types';
 
 type ExpectedTypes = {
     [_: string]: 'string' | 'number' | 'boolean';
@@ -80,15 +80,15 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
         op === '<=' ||
         op === '>='
     ) {
-        const [, property, value] = (filter as any);
+        const [, property, value] = filter;
         converted = convertComparisonOp(property, value, op, expectedTypes);
     } else if (op === 'any') {
-        const children = (filter as any).slice(1).map(f => {
+        const children = filter.slice(1).map(f => {
             const types: Record<string, any> = {};
             const child = _convertFilter(f, types);
             const typechecks = runtimeTypeChecks(types);
             return typechecks === true ? child : ['case', typechecks, child, false];
-        });
+        }) as ExpressionSpecification;
         return ['any'].concat(children);
     } else if (op === 'all') {
         const children: any[] = (filter).slice(1).map(f => _convertFilter(f, expectedTypes));
@@ -140,7 +140,7 @@ function convertComparisonOp(property: string, value: any, op: string, expectedT
     }
 
     if (expectedTypes && value !== null) {
-        const type = ((typeof value) as any);
+        const type = typeof value as 'string' | 'number' | 'boolean';
         expectedTypes[property] = type;
     }
 
@@ -161,7 +161,7 @@ function convertComparisonOp(property: string, value: any, op: string, expectedT
     return [op, get, value];
 }
 
-function convertInOp(property: string, values: Array<any>, negate: boolean = false) {
+function convertInOp(property: string, values: Array<unknown>, negate: boolean = false) {
     if (values.length === 0) return negate;
 
     let get: string[];

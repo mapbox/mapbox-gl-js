@@ -46,7 +46,7 @@ class CircleStyleLayer extends StyleLayer {
     }
 
     override queryRadius(bucket: Bucket): number {
-        const circleBucket: CircleBucket<CircleStyleLayer> = (bucket as any);
+        const circleBucket = bucket as CircleBucket<CircleStyleLayer>;
         return getMaximumPaintValue('circle-radius', this, circleBucket) +
             getMaximumPaintValue('circle-stroke-width', this, circleBucket) +
 

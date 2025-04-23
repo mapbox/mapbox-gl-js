@@ -435,7 +435,7 @@ export function normalizePropertyExpression<T>(
     options?: ConfigOptions | null,
 ): StylePropertyExpression {
     if (isFunction(value)) {
-        return new StylePropertyFunction(value, specification) as any;
+        return new StylePropertyFunction(value, specification) as unknown as StylePropertyExpression;
 
     } else if (isExpression(value) || (Array.isArray(value) && value.length > 0)) {
         const expression = createPropertyExpression(value, specification, scope, options);
@@ -446,7 +446,7 @@ export function normalizePropertyExpression<T>(
         return expression.value;
 
     } else {
-        let constant: any = value;
+        let constant = value as Color;
         if (typeof value === 'string' && specification.type === 'color') {
             constant = Color.parse(value);
         }

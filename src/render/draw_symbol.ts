@@ -157,7 +157,7 @@ function updateVariableAnchors(coords: Array<OverscaledTileID>, painter: Painter
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
-        const bucket: SymbolBucket = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as SymbolBucket;
         if (!bucket || !bucket.text || !bucket.text.segments.get().length) {
             continue;
         }
@@ -329,7 +329,7 @@ function drawLayerSymbols(
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
 
-        const bucket: SymbolBucket = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as SymbolBucket;
 
         if (!bucket) continue;
         // Allow rendering of buckets built for globe projection in mercator mode

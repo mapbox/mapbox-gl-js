@@ -68,7 +68,7 @@ class Rain extends Evented {
     }
 
     get(): RainSpecification {
-        return this._transitionable.serialize() as any;
+        return this._transitionable.serialize() as RainSpecification;
     }
 
     set(rain?: RainSpecification, configOptions?: ConfigOptions | null, options: StyleSetterOptions = {}) {

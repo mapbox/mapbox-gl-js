@@ -30,6 +30,7 @@ import {Aabb} from '../util/primitives';
 import {getZoomAdjustment} from '../geo/projection/adjustments';
 
 import type Transform from '../geo/transform';
+import type HandlerManager from './handler_manager';
 import type BoxZoomHandler from './handler/box_zoom';
 import type {TaskID} from '../util/task_queue';
 import type {Callback} from '../types/callback';
@@ -202,6 +203,8 @@ class Camera extends Evented<MapEvents> {
     _onEaseFrame: (_: number) => Transform | void | null | undefined;
     _onEaseEnd: (easeId?: string) => void | null | undefined;
     _easeFrameId: TaskID | null | undefined;
+
+    handlers?: HandlerManager;
 
     constructor(transform: Transform, options: {bearingSnap?: number; respectPrefersReducedMotion?: boolean}) {
         super();
@@ -1787,7 +1790,7 @@ class Camera extends Evented<MapEvents> {
             onEaseEnd.call(this, easeId);
         }
         if (!allowGestures) {
-            const handlers = (this as any).handlers;
+            const handlers = this.handlers;
             if (handlers) handlers.stop(false);
         }
         return this;

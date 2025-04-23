@@ -40,7 +40,7 @@ class Coercion implements Expression {
         if (args.length < 2)
             return context.error(`Expected at least one argument.`);
 
-        const name: string = (args[0] as any);
+        const name = args[0] as string;
         const parsed = [];
         let type: Type | ArrayType = NullType;
         if (name === 'to-array') {

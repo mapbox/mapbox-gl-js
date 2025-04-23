@@ -130,7 +130,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const tile = sourceCache.getTile(coord);
             if (image && !tile.patternsLoaded()) continue;
 
-            const bucket: LineBucket | null | undefined = (tile.getBucket(layer) as any);
+            const bucket = tile.getBucket(layer) as LineBucket;
             if (!bucket) continue;
             if ((bucket.elevationType !== 'none' && !elevated) || (bucket.elevationType === 'none' && elevated)) continue;
 

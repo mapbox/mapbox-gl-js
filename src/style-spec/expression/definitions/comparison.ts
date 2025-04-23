@@ -83,7 +83,7 @@ function makeComparison(
             if (args.length !== 3 && args.length !== 4)
                 return context.error(`Expected two or three arguments.`);
 
-            const op: ComparisonOperator = (args[0] as any);
+            const op = args[0] as ComparisonOperator;
 
             let lhs = context.parse(args[1], 1, ValueType);
             if (!lhs) return null;

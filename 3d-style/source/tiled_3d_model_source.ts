@@ -168,7 +168,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         } else {
             // If the tile has already been parsed we may just need to reevaluate
             if (tile.buckets) {
-                const buckets: Tiled3dModelBucket[] = (Object.values(tile.buckets) as any[]);
+                const buckets = Object.values(tile.buckets) as Tiled3dModelBucket[];
                 for (const bucket of buckets) {
                     bucket.dirty = true;
                 }

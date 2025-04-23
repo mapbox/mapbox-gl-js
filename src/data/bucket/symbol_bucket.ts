@@ -1006,7 +1006,7 @@ class SymbolBucket implements Bucket {
             writingMode,
             // placedOrientation is null initially; will be updated to horizontal(1)/vertical(2) if placed
             0,
-            (false as any),
+            0,
             // The crossTileID is only filled/used on the foreground for dynamic text anchors
             0,
             associatedIconIndex,

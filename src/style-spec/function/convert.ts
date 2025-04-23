@@ -250,7 +250,7 @@ function getFunctionType<T>(parameters: FunctionSpecification<T>, propertySpec: 
         return parameters.type;
     } else {
         assert(propertySpec.expression);
-        return (propertySpec.expression as any).interpolated ? 'exponential' : 'interval';
+        return propertySpec.expression.interpolated ? 'exponential' : 'interval';
     }
 }
 

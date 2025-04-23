@@ -170,11 +170,11 @@ class TriangleGridIndex {
             const byte = Math.floor(triIdx / 8);
             const bit = 1 << (triIdx % 8);
 
-            if ((this.lookup as any)[byte] & bit) {
+            if (this.lookup[byte] & bit) {
                 continue;
             }
 
-            (this.lookup as any)[byte] |= bit;
+            this.lookup[byte] |= bit;
             out.push(triIdx);
 
             if (out.length === this.triangleCount) {
@@ -218,11 +218,11 @@ class TriangleGridIndex {
                     const byte = Math.floor(triIdx / 8);
                     const bit = 1 << (triIdx % 8);
 
-                    if ((this.lookup as any)[byte] & bit) {
+                    if (this.lookup[byte] & bit) {
                         continue;
                     }
 
-                    (this.lookup as any)[byte] |= bit;
+                    this.lookup[byte] |= bit;
                     out.push(triIdx);
 
                     if (out.length === this.triangleCount) {

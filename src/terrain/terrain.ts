@@ -412,7 +412,7 @@ export class Terrain extends Elevation {
             return terrainStyle.getExaggeration(transform.zoom);
         }
         const previousAltitude = this._previousCameraAltitude;
-        const altitude = (transform.getFreeCameraOptions().position as any).z / transform.pixelsPerMeter * transform.worldSize;
+        const altitude = transform.getFreeCameraOptions().position.z / transform.pixelsPerMeter * transform.worldSize;
         this._previousCameraAltitude = altitude;
         // 2 meters as threshold for constant sea elevation movement.
         const altitudeDelta = previousAltitude != null ? (altitude - previousAltitude) : Number.MAX_VALUE;
@@ -424,7 +424,7 @@ export class Terrain extends Elevation {
         const cameraZoom = transform.zoom;
 
         assert(this._style.terrain);
-        const terrainStyle = (this._style.terrain as any);
+        const terrainStyle = this._style.terrain;
 
         if (!this._previousUpdateTimestamp) {
             // covers also 0 (timestamp in render tests is 0).
@@ -807,11 +807,11 @@ export class Terrain extends Elevation {
     ): UniformValues<GlobeUniformsType> {
         const projection = tr.projection;
         return {
-            'u_tile_tl_up': (projection.upVector(id, 0, 0) as any),
-            'u_tile_tr_up': (projection.upVector(id, EXTENT, 0) as any),
-            'u_tile_br_up': (projection.upVector(id, EXTENT, EXTENT) as any),
-            'u_tile_bl_up': (projection.upVector(id, 0, EXTENT) as any),
-            'u_tile_up_scale': (useDenormalizedUpVectorScale ? globeMetersToEcef(1) : projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile as any)
+            'u_tile_tl_up': projection.upVector(id, 0, 0),
+            'u_tile_tr_up': projection.upVector(id, EXTENT, 0),
+            'u_tile_br_up': projection.upVector(id, EXTENT, EXTENT),
+            'u_tile_bl_up': projection.upVector(id, 0, EXTENT),
+            'u_tile_up_scale': useDenormalizedUpVectorScale ? globeMetersToEcef(1) : projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile
         };
     }
 
@@ -976,7 +976,7 @@ export class Terrain extends Elevation {
         // The maximum DEM error in meters to be conservative (SRTM).
         const maxDEMError = 30.0;
         this._visibleDemTiles.filter(tile => tile.dem).forEach(tile => {
-            const minMaxTree = (tile.dem as any).tree;
+            const minMaxTree = tile.dem.tree;
             min = Math.min(min, minMaxTree.minimums[0]);
         });
         return min === 0.0 ? min : (min - maxDEMError) * this._exaggeration;
@@ -1000,7 +1000,7 @@ export class Terrain extends Elevation {
             const maxx = (x + 1) / tiles;
             const miny = y / tiles;
             const maxy = (y + 1) / tiles;
-            const tree = (tile.dem as any).tree;
+            const tree = tile.dem.tree;
 
             return {
                 minx, miny, maxx, maxy,
@@ -1021,7 +1021,7 @@ export class Terrain extends Elevation {
 
             // Perform more accurate raycast against the dem tree. First intersection is the closest on
             // as all tiles are sorted from closest to furthest
-            const tree = (obj.tile.dem as any).tree;
+            const tree = obj.tile.dem.tree;
             const t = tree.raycast(obj.minx, obj.miny, obj.maxx, obj.maxy, pos, dir, exaggeration);
 
             if (t != null)

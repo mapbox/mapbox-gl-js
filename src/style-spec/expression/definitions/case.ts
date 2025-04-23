@@ -50,7 +50,7 @@ class Case implements Expression {
         if (!otherwise) return null;
 
         assert(outputType);
-        return new Case((outputType as any), branches, otherwise);
+        return new Case(outputType, branches, otherwise);
     }
 
     evaluate(ctx: EvaluationContext): any {

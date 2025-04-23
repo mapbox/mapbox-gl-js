@@ -3,6 +3,15 @@ import {bindAll, warnOnce} from '../../util/util';
 
 import type {Map, IControl} from '../map';
 
+type WebkitDocument = Document & {
+    webkitFullscreenElement?: Element;
+    webkitCancelFullScreen?: () => void;
+};
+
+type WebkitFullscreenElement = Element & {
+    webkitRequestFullscreen?: () => void;
+};
+
 export type FullscreenControlOptions = {
     container?: HTMLElement | null;
 };
@@ -100,7 +109,7 @@ class FullscreenControl implements IControl {
     _changeIcon() {
         const fullscreenElement =
             document.fullscreenElement ||
-            (document as any).webkitFullscreenElement;
+            (document as WebkitDocument).webkitFullscreenElement;
 
         if ((fullscreenElement === this._container) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
@@ -113,14 +122,14 @@ class FullscreenControl implements IControl {
     _onClickFullscreen() {
         if (this._isFullscreen()) {
             if (document.exitFullscreen) {
-                (document as any).exitFullscreen();
-            } else if ((document as any).webkitCancelFullScreen) {
-                (document as any).webkitCancelFullScreen();
+                document.exitFullscreen();
+            } else if ((document as WebkitDocument).webkitCancelFullScreen) {
+                (document as WebkitDocument).webkitCancelFullScreen();
             }
         } else if (this._container.requestFullscreen) {
             this._container.requestFullscreen();
-        } else if ((this._container as any).webkitRequestFullscreen) {
-            (this._container as any).webkitRequestFullscreen();
+        } else if ((this._container as WebkitFullscreenElement).webkitRequestFullscreen) {
+            (this._container as WebkitFullscreenElement).webkitRequestFullscreen();
         }
     }
 }

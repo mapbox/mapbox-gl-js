@@ -485,7 +485,7 @@ export class PixelStoreUnpackPremultiplyAlpha extends BaseValue<boolean> {
     override set(v: boolean): void {
         if (v === this.current && !this.dirty) return;
         const gl = this.gl;
-        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (v as any));
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, v);
         this.current = v;
         this.dirty = false;
     }
@@ -499,7 +499,7 @@ export class PixelStoreUnpackFlipY extends BaseValue<boolean> {
     override set(v: boolean): void {
         if (v === this.current && !this.dirty) return;
         const gl = this.gl;
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, (v as any));
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, v);
         this.current = v;
         this.dirty = false;
     }

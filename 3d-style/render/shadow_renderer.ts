@@ -93,7 +93,7 @@ class ShadowReceivers {
     // Returns the number of cascades that need to be rendered based on visibility on screen.
     // Cascades that need to be rendered always include the first cascade.
     computeRequiredCascades(frustum: Frustum, worldSize: number, cascades: Array<ShadowCascade>): number {
-        const frustumAabb = Aabb.fromPoints((frustum.points as any));
+        const frustumAabb = Aabb.fromPoints(frustum.points);
         let lastCascade = 0;
 
         for (const receiverKey in this.receivers) {
@@ -245,7 +245,7 @@ export class ShadowRenderer {
             const elevation = transform.elevation;
             const range = [10000, -10000];
             elevation.visibleDemTiles.filter(tile => tile.dem).forEach(tile => {
-                const minMaxTree = (tile.dem as any).tree;
+                const minMaxTree = tile.dem.tree;
                 range[0] = Math.min(range[0], minMaxTree.minimums[0]);
                 range[1] = Math.max(range[1], minMaxTree.maximums[0]);
             });

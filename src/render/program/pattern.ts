@@ -71,10 +71,10 @@ function bgPatternUniformValues(
 
     return {
         'u_image': 0,
-        'u_pattern_tl': (patternPosition as any).tl,
-        'u_pattern_br': (patternPosition as any).br,
+        'u_pattern_tl': patternPosition.tl,
+        'u_pattern_br': patternPosition.br,
         'u_texsize': [width, height],
-        'u_pattern_size': (patternPosition as any).displaySize,
+        'u_pattern_size': patternPosition.displaySize,
         'u_pattern_units_to_pixels': isViewport ? [painter.transform.width, -1.0 * painter.transform.height] : [1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom), 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom)],
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
         'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],

@@ -100,12 +100,12 @@ function validateNonExpressionFilter(options: Options) {
     case 'all':
     case 'none':
         for (let i = 1; i < value.length; i++) {
-            errors = errors.concat(validateNonExpressionFilter(({
+            errors = errors.concat(validateNonExpressionFilter({
                 key: `${key}[${i}]`,
                 value: value[i],
                 style: options.style,
                 styleSpec: options.styleSpec
-            } as any)));
+            }));
         }
         break;
 

@@ -250,7 +250,7 @@ const fillExtrusionUniformValues = (
         uniformValues['u_zoom_transition'] = zoomTransition;
         uniformValues['u_inv_rot_matrix'] = invMatrix as Float32Array;
         uniformValues['u_merc_center'] = mercatorCenter;
-        uniformValues['u_up_dir'] = (tr.projection.upVector(new CanonicalTileID(0, 0, 0), mercatorCenter[0] * EXTENT, mercatorCenter[1] * EXTENT) as any);
+        uniformValues['u_up_dir'] = tr.projection.upVector(new CanonicalTileID(0, 0, 0), mercatorCenter[0] * EXTENT, mercatorCenter[1] * EXTENT);
         uniformValues['u_height_lift'] = heightLift;
     }
 

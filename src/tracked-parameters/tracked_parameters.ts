@@ -460,7 +460,7 @@ export class TrackedParameters implements ITrackedParameters {
                     this._paneState.folders.set(fullScopeName, folderObj);
                 }
 
-                const folderObj: FolderState = (this._paneState.folders.get(fullScopeName) as any);
+                const folderObj: FolderState = this._paneState.folders.get(fullScopeName);
                 currentScope.expanded = !folderObj.isFolded;
 
                 currentScope.on('fold', (ev) => {
@@ -477,7 +477,7 @@ export class TrackedParameters implements ITrackedParameters {
     registerParameter(containerObject: any, scope: Array<string>, name: string, description?: Description, changeValueCallback?: any) {
         const {currentScope, fullScopeName} = this.createFoldersChainAndSelectScope(scope);
 
-        const folderStateObj: FolderState = (this._paneState.folders.get(fullScopeName) as any);
+        const folderStateObj: FolderState = this._paneState.folders.get(fullScopeName);
 
         // Full parameter name with scope prefix
         const fullParameterName = `${fullScopeName}|${name}`;

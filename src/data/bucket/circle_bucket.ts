@@ -58,7 +58,7 @@ function addGlobeExtVertex(vertexArray: CircleGlobeExtArray, pos: {
  * vector that is where it points.
  * @private
  */
-class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
+class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
     index: number;
     zoom: number;
     overscaling: number;

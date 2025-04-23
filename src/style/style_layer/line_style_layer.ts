@@ -151,7 +151,7 @@ class LineStyleLayer extends StyleLayer {
     }
 
     override queryRadius(bucket: Bucket): number {
-        const lineBucket: LineBucket = (bucket as any);
+        const lineBucket = bucket as LineBucket;
         const width = getLineWidth(
             getMaximumPaintValue('line-width', this, lineBucket),
             getMaximumPaintValue('line-gap-width', this, lineBucket));

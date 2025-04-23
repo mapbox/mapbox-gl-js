@@ -94,7 +94,7 @@ class Match implements Expression {
             return null;
         }
 
-        return new Match((inputType), (outputType as any), input, cases, outputs, otherwise);
+        return new Match(inputType, outputType, input, cases, outputs, otherwise);
     }
 
     evaluate(ctx: EvaluationContext): any {

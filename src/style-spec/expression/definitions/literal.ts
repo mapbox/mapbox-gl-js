@@ -23,7 +23,7 @@ class Literal implements Expression {
         if (!isValue(args[1]))
             return context.error(`invalid value`);
 
-        const value = (args[1] as any);
+        const value = args[1] as Value;
         let type = typeOf(value);
 
         // special case: infer the item type if possible for zero-length arrays
@@ -67,7 +67,7 @@ class Literal implements Expression {
                 typeof this.value === 'string' ||
                 typeof this.value === 'number' ||
                 typeof this.value === 'boolean');
-            return this.value as any;
+            return this.value as SerializedExpression;
         }
     }
 }

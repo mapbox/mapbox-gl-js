@@ -27,7 +27,7 @@ class At implements Expression {
 
         if (!index || !input) return null;
 
-        const t: ArrayType = (input.type as any);
+        const t = input.type as ArrayType;
         return new At(t.itemType, index, input);
     }
 
