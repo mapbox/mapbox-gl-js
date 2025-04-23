@@ -1,7 +1,6 @@
 import StyleLayer from '../style_layer';
 import assert from 'assert';
 
-import type MercatorCoordinate from '../../geo/mercator_coordinate';
 import type {Map} from '../../ui/map';
 import type {ValidationError, ValidationErrors} from '../validate_style';
 import type {ProjectionSpecification} from '../../style-spec/types';
@@ -39,6 +38,7 @@ type CustomLayerRenderMethod = (
  * @property {string} id A unique layer id.
  * @property {string} type The layer's type. Must be `"custom"`.
  * @property {string} renderingMode Either `"2d"` or `"3d"`. Defaults to `"2d"`.
+ * @property {boolean} wrapTileId If `renderWorldCopies` is enabled `renderToTile` of the custom layer method will be called with different `x` value of the tile rendered on different copies of the world unless `wrapTileId` is set to `true`. Defaults to `false`.
  * @example
  * // Custom layer implemented as ES6 class
  * class NullIslandLayer {
@@ -158,14 +158,31 @@ type CustomLayerRenderMethod = (
  * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLngLat
  * can be used to project a `LngLat` to a mercator coordinate.
  */
+
+/**
+ * Called for every tile of a map with enabled terrain or globe projection.
+ * By default it passes the unwrapped tile ID of corresponding tile.
+ * You can use `wrapTileId` to pass the wrapped tile ID.
+ *
+ * The layer can assume blending and depth state is set to allow the layer to properly
+ * blend and clip other layers. The layer cannot make any other assumptions about the
+ * current GL state.
+ *
+ * @function
+ * @memberof CustomLayerInterface
+ * @name renderToTile
+ * @param {WebGL2RenderingContext} gl The map's gl context.
+ * @param {{ z: number, x: number, y: number }} tileId Tile ID to render to.
+ */
 export interface CustomLayerInterface {
     id: string;
     type: 'custom';
     slot?: string;
     renderingMode?: '2d' | '3d';
+    wrapTileId?: boolean;
     render: CustomLayerRenderMethod;
     prerender?: CustomLayerRenderMethod;
-    renderToTile?: (gl: WebGL2RenderingContext, tileId: MercatorCoordinate) => void;
+    renderToTile?: (gl: WebGL2RenderingContext, tileId: {z: number, x: number, y: number}) => void;
     shouldRerenderTiles?: () => boolean;
     onAdd?: (map: Map, gl: WebGL2RenderingContext) => void;
     onRemove?: (map: Map, gl: WebGL2RenderingContext) => void;

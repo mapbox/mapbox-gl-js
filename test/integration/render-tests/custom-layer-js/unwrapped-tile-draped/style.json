@@ -1,0 +1,65 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 256,
+      "allowed": 0.0012,
+      "operations": [
+        ["wait"],
+        ["setStyle", {
+          "version": 8,
+          "sources": {
+            "mapbox": {
+              "type": "vector",
+              "tiles": ["local://tiles/{z}-{x}-{y}.mvt"]
+            },
+            "rgbterrain": {
+              "type": "raster-dem",
+              "tiles": [
+                "local://tiles/{z}-{x}-{y}.terrain.png"
+              ],
+              "maxzoom": 12,
+              "tileSize": 256
+            }
+          },
+
+          "terrain": {
+            "source": "rgbterrain",
+            "exaggeration": 0
+          },
+          "layers": [
+            {
+              "id": "background",
+              "type": "background",
+              "paint": {
+                "background-color": "transparent"
+              }
+            },
+            {
+              "id": "water",
+              "type": "fill",
+              "source": "mapbox",
+              "source-layer": "water",
+              "paint": {
+                "fill-color": "blue"
+              }
+            }
+          ]
+        }],
+        ["wait"],
+        ["addCustomLayer", "unwrapped-tile-draped"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [
+    95,
+    45
+  ],
+  "zoom": 0,
+  "sources": {
+  },
+  "layers": [
+  ]
+}
