@@ -3,47 +3,80 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.00045,
+            "width": 512,
+            "height": 512,
+            "allowed": 0.00025,
             "operations": [
-                ["wait"],
-                ["wait"],
-                [
-                    "check",
-                    "shadowPassVerticesCount",
-                    "",
-                    0,
-                    "This check verifies that lazy rendering to shadow map works."
-                ],
                 ["wait"]
             ],
             "spriteFormat": "raster"
         }
     },
     "center": [
-        11.540431,
-        48.176251
+        139.7617,
+        35.662
     ],
-    "zoom": 20,
-    "pitch": 70,
-    "bearing": 38.28,
+    "zoom": 19.11,
+    "pitch": 47.5,
+    "bearing": 153.6,
     "sources": {
         "hd-roads": {
             "type": "vector",
             "tileSize": 512,
-            "maxzoom": 14,
+            "maxzoom": 18,
             "tiles": [
                 "local://tiles/3d-intersections/{z}-{x}-{y}.mvt"
             ]
+        },
+        "shadow-casters": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "coordinates": [
+                                [
+                                    [
+                                        139.76178588102198,
+                                        35.66329900052
+                                    ],
+                                    [
+                                        139.7605596020885,
+                                        35.663121670436695
+                                    ],
+                                    [
+                                        139.76068795952398,
+                                        35.662695747547204
+                                    ],
+                                    [
+                                        139.76189500312324,
+                                        35.662882224614805
+                                    ],
+                                    [
+                                        139.76178588102198,
+                                        35.66329900052
+                                    ]
+                                ]
+                            ],
+                            "type": "Polygon"
+                        }
+                    }
+                ]
+            }
         }
     },
     "sprite": "local://sprites/3d_intersections",
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
     "lights": [
         {
             "id": "ambient",
             "type": "ambient",
             "properties": {
                 "color": "hsl(0, 0%, 100%)",
-                "intensity": 0.2
+                "intensity": 0.1
             }
         },
         {
@@ -53,14 +86,14 @@
                 "direction": [
                     "literal",
                     [
-                        180,
-                        20
+                        3.5,
+                        50
                     ]
                 ],
                 "color": "hsl(0, 0%, 100%)",
-                "intensity": 0.8,
+                "intensity": 0.75,
                 "cast-shadows": true,
-                "shadow-intensity": 1
+                "shadow-intensity": 1.0
             }
         }
     ],
@@ -70,6 +103,31 @@
             "type": "background",
             "paint": {
                 "background-color": "rgb(234, 243, 240)"
+            }
+        },
+        {
+            "id": "fake-road-shade",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "road",
+                        "bridge"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "paint": {
+                "fill-color": "rgb(214, 221, 219)"
             }
         },
         {
@@ -433,6 +491,153 @@
                         ]
                     ]
                 ]
+            }
+        },
+        {
+            "id": "turnlane-arrows-ground",
+            "type": "symbol",
+            "source": "hd-roads",
+            "source-layer": "hd_road_point",
+            "slot": "",
+            "minzoom": 17,
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "road_marking"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "level"
+                    ],
+                    [
+                        0
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "symbol-elevation-reference": "hd-road-markup",
+                "text-field": "42",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "text-allow-overlap": true,
+                "text-rotate": [
+                    "number",
+                    [
+                        "get",
+                        "angle"
+                    ]
+                ],
+                "text-rotation-alignment": "map",
+                "text-size": [
+                    "interpolate",
+                    [
+                        "exponential",
+                        1.5
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    17.0,
+                    10.0,
+                    22.0,
+                    100.0
+                ]
+            },
+            "paint": {
+                "text-color": "white"
+            }
+        },
+        {
+            "id": "turnlane-arrows-bridge",
+            "type": "symbol",
+            "source": "hd-roads",
+            "source-layer": "hd_road_point",
+            "slot": "",
+            "minzoom": 17,
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "road_marking"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "level"
+                    ],
+                    [
+                        3
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "symbol-elevation-reference": "hd-road-markup",
+                "text-field": "42",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "text-allow-overlap": true,
+                "text-pitch-alignment": "map",
+                "text-rotate": [
+                    "number",
+                    [
+                        "get",
+                        "angle"
+                    ]
+                ],
+                "text-rotation-alignment": "map",
+                "text-size": [
+                    "interpolate",
+                    [
+                        "exponential",
+                        1.5
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    17.0,
+                    10.0,
+                    22.0,
+                    100.0
+                ]
+            },
+            "paint": {
+                "text-color": "white"
+            }
+        },
+        {
+            "id": "shadow-casters",
+            "type": "fill-extrusion",
+            "source": "shadow-casters",
+            "paint": {
+                "fill-extrusion-height": 200
             }
         }
     ]

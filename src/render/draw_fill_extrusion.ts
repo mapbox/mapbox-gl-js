@@ -324,6 +324,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;
     const drawDepth = isShadowPass && !!shadowRenderer;
+    const cullFaceMode = isShadowPass ? CullFaceMode.disabled : CullFaceMode.backCCW;
     if (painter.shadowRenderer) painter.shadowRenderer.useNormalOffset = true;
 
     let groundShadowFactor: [number, number, number] = [0, 0, 0];
@@ -445,7 +446,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         if (isGlobeProjection) dynamicBuffers.push(bucket.layoutVertexExtBuffer);
         if (wallMode) dynamicBuffers.push(bucket.wallVertexBuffer);
 
-        program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+        program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             segments, layer.paint, painter.transform.zoom,
             programConfiguration, dynamicBuffers);

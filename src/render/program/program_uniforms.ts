@@ -1,5 +1,5 @@
 import {fillExtrusionDepthUniforms, fillExtrusionUniforms, fillExtrusionPatternUniforms, fillExtrusionGroundEffectUniforms} from './fill_extrusion_program';
-import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms, type FillDefinesType, elevatedStructuresUniforms, elevatedStructuresDepthReconstructUniforms} from './fill_program';
+import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms, type FillDefinesType, elevatedStructuresDepthUniforms, elevatedStructuresUniforms, elevatedStructuresDepthReconstructUniforms} from './fill_program';
 import {circleUniforms} from './circle_program';
 import {collisionUniforms, collisionCircleUniforms} from './collision_program';
 import {debugUniforms} from './debug_program';
@@ -76,6 +76,7 @@ export const programUniforms = {
     fillPattern: fillPatternUniforms,
     fillOutline: fillOutlineUniforms,
     fillOutlinePattern: fillOutlinePatternUniforms,
+    elevatedStructuresDepth: elevatedStructuresDepthUniforms,
     elevatedStructures: elevatedStructuresUniforms,
     elevatedStructuresDepthReconstruct: elevatedStructuresDepthReconstructUniforms,
     circle: circleUniforms,

@@ -4,6 +4,18 @@
         "test": {
             "mapMode": "static",
             "allowed": 0.00042,
+            "operations": [
+                ["wait"],
+                ["wait"],
+                [
+                    "check",
+                    "shadowPassVerticesCount",
+                    "",
+                    0,
+                    "This check verifies that lazy rendering to shadow map works."
+                ],
+                ["wait"]
+            ],
             "spriteFormat": "raster"
         }
     },

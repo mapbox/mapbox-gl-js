@@ -1,4 +1,4 @@
-import {Uniform1i, Uniform1f, Uniform2f, Uniform4f, UniformMatrix2f, UniformMatrix4f} from '../uniform_binding';
+import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, Uniform4f, UniformMatrix2f, UniformMatrix4f} from '../uniform_binding';
 import pixelsToTileUnits from '../../source/pixels_to_tile_units';
 import {clamp} from '../../../src/util/util';
 import {tileToMeter} from '../../../src/geo/mercator_coordinate';
@@ -30,6 +30,7 @@ export type LineUniformsType = {
     ['u_emissive_strength']: Uniform1f;
     ['u_zbias_factor']: Uniform1f;
     ['u_tile_to_meter']: Uniform1f;
+    ['u_ground_shadow_factor']: Uniform3f;
 };
 
 export type LinePatternUniformsType = {
@@ -49,6 +50,7 @@ export type LinePatternUniformsType = {
     ['u_emissive_strength']: Uniform1f;
     ['u_zbias_factor']: Uniform1f;
     ['u_tile_to_meter']: Uniform1f;
+    ['u_ground_shadow_factor']: Uniform3f;
 };
 
 export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'VARIABLE_LINE_WIDTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA';
@@ -71,7 +73,8 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_trim_color': new Uniform4f(context),
     'u_emissive_strength': new Uniform1f(context),
     'u_zbias_factor': new Uniform1f(context),
-    'u_tile_to_meter': new Uniform1f(context)
+    'u_tile_to_meter': new Uniform1f(context),
+    'u_ground_shadow_factor': new Uniform3f(context),
 });
 
 const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
@@ -90,7 +93,8 @@ const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
     'u_trim_color': new Uniform4f(context),
     'u_emissive_strength': new Uniform1f(context),
     'u_zbias_factor': new Uniform1f(context),
-    'u_tile_to_meter': new Uniform1f(context)
+    'u_tile_to_meter': new Uniform1f(context),
+    'u_ground_shadow_factor': new Uniform3f(context),
 });
 
 const lerp = (a: number, b: number, t: number) => { return (1 - t) * a + t * b; };
@@ -105,6 +109,7 @@ const lineUniformValues = (
     widthScale: number,
     floorWidthScale: number,
     trimOffset: [number, number],
+    groundShadowFactor: [number, number, number],
 ): UniformValues<LineUniformsType> => {
     const transform = painter.transform;
     const pixelsToTileUnits = transform.calculatePixelsToTileUnitsMatrix(tile);
@@ -134,7 +139,8 @@ const lineUniformValues = (
         'u_trim_color': layer.paint.get('line-trim-color').toRenderColor(ignoreLut ? null : layer.lut).toArray01(),
         'u_emissive_strength': layer.paint.get('line-emissive-strength'),
         'u_zbias_factor': zbiasFactor,
-        'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0)
+        'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0),
+        'u_ground_shadow_factor': groundShadowFactor,
     };
 };
 
@@ -147,6 +153,7 @@ const linePatternUniformValues = (
     widthScale: number,
     floorWidthScale: number,
     trimOffset: [number, number],
+    groundShadowFactor: [number, number, number],
 ): UniformValues<LinePatternUniformsType> => {
     const transform = painter.transform;
     const zbiasFactor = transform.pitch < 15.0 ? lerp(0.07, 0.7, clamp((14.0 - transform.zoom) / (14.0 - 9.0), 0.0, 1.0)) : 0.07;
@@ -174,7 +181,8 @@ const linePatternUniformValues = (
         'u_trim_color': layer.paint.get('line-trim-color').toRenderColor(ignoreLut ? null : layer.lut).toArray01(),
         'u_emissive_strength': layer.paint.get('line-emissive-strength'),
         'u_zbias_factor': zbiasFactor,
-        'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0)
+        'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0),
+        'u_ground_shadow_factor': groundShadowFactor,
     };
 };
 

@@ -102,6 +102,10 @@ class FillStyleLayer extends StyleLayer {
         const potentially3D = this.layout && this.layout.get('fill-elevation-reference') !== 'none';
         return terrainEnabled != null ? (potentially3D && !terrainEnabled) : potentially3D;
     }
+
+    override hasShadowPass(): boolean {
+        return this.layout && this.layout.get('fill-elevation-reference') !== 'none';
+    }
 }
 
 export default FillStyleLayer;

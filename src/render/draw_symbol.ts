@@ -10,6 +10,7 @@ import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {addDynamicAttributes} from '../data/bucket/symbol_bucket';
+import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
 import {getAnchorAlignment, WritingMode} from '../symbol/shaping';
 import ONE_EM from '../symbol/one_em';
 import {evaluateVariableOffset} from '../symbol/symbol_layout';
@@ -53,6 +54,7 @@ type SymbolTileRenderState = {
         atlasInterpolationIcon: any;
         isSDF: boolean;
         hasHalo: boolean;
+        depthMode: DepthMode;
         tile: Tile;
         labelPlaneMatrixInv: mat4 | null | undefined;
     } | null;
@@ -311,7 +313,8 @@ function drawLayerSymbols(
     const hasSortKey = layer.layout.get('symbol-sort-key').constantOr(1) !== undefined;
     let sortFeaturesByKey = false;
 
-    const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
+    const depthModeForLayer = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
+    const depthModeFor3D = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
     const mercatorCenter: [number, number] = [
         mercatorXfromLng(tr.center.lng),
         mercatorYfromLat(tr.center.lat)
@@ -347,7 +350,20 @@ function drawLayerSymbols(
             hasVariableAnchors &&
             bucket.hasIconData();
 
+        const depthMode = bucket.elevationType === 'road' ? depthModeFor3D : depthModeForLayer;
         const invMatrix = bucket.getProjection().createInversionMatrix(tr, coord.canonical);
+
+        const renderElevatedRoads = bucket.elevationType === 'road';
+        const shadowRenderer = painter.shadowRenderer;
+        const renderWithShadows = renderElevatedRoads && !!shadowRenderer && shadowRenderer.enabled;
+        let groundShadowFactor: [number, number, number] = [0, 0, 0];
+        if (renderWithShadows) {
+            const directionalLight = painter.style.directionalLight;
+            const ambientLight = painter.style.ambientLight;
+            if (directionalLight && ambientLight) {
+                groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
+            }
+        }
 
         const setOcclusionDefines = (defines:any[]) => {
             // Globe or orthographic - no depth occlusion needed
@@ -402,8 +418,16 @@ function drawLayerSymbols(
                 baseDefines.push('RENDER_SDF');
             }
 
+            if (renderWithShadows) {
+                baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+            }
+
             const programConfiguration = bucket.icon.programConfigurations.get(layer.id);
             const program = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
+
+            if (renderWithShadows) {
+                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
+            }
 
             const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
             const sizeData = bucket.iconSizeData;
@@ -433,7 +457,7 @@ function drawLayerSymbols(
 
             const colorAdjustmentMatrix = layer.getColorAdjustmentMatrix(iconSaturation, iconContrast, iconBrightnessMin, iconBrightnessMax);
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, iconPitchWithMap, painter,
-                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, false, texSize, [0, 0], true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), colorAdjustmentMatrix, transitionProgress);
+                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, false, texSize, [0, 0], true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), groundShadowFactor, colorAdjustmentMatrix, transitionProgress);
 
             const atlasTexture = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
 
@@ -465,6 +489,7 @@ function drawLayerSymbols(
                 atlasInterpolationIcon: null,
                 isSDF: bucket.sdfIcons,
                 hasHalo,
+                depthMode,
                 tile,
                 labelPlaneMatrixInv,
             };
@@ -493,6 +518,10 @@ function drawLayerSymbols(
             }
 
             baseDefines.push('RENDER_SDF');
+
+            if (renderWithShadows) {
+                baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+            }
 
             setOcclusionDefines(baseDefines);
 
@@ -543,7 +572,11 @@ function drawLayerSymbols(
             const cameraUpVector = bucketIsGlobeProjection ? globeCameraUp : mercatorCameraUp;
 
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
-                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), null, null, textScaleFactor);
+                matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), groundShadowFactor, null, null, textScaleFactor);
+
+            if (renderWithShadows) {
+                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
+            }
 
             const atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
             const atlasInterpolation = gl.LINEAR;
@@ -569,6 +602,7 @@ function drawLayerSymbols(
                 atlasInterpolationIcon,
                 isSDF: true,
                 hasHalo,
+                depthMode,
                 tile,
                 labelPlaneMatrixInv,
             };
@@ -660,18 +694,18 @@ function drawLayerSymbols(
         if (state.hasHalo) {
             const uniformValues = (state.uniformValues as UniformValues<SymbolUniformsType>);
             uniformValues['u_is_halo'] = 1;
-            drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, uniformValues, 2);
+            drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, state.depthMode, stencilMode, colorMode, uniformValues, 2);
             uniformValues['u_is_halo'] = 0;
         } else {
             if (state.isSDF) {
                 const uniformValues = (state.uniformValues as UniformValues<SymbolUniformsType>);
                 if (state.hasHalo) {
                     uniformValues['u_is_halo'] = 1;
-                    drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, uniformValues, 1);
+                    drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, state.depthMode, stencilMode, colorMode, uniformValues, 1);
                 }
                 uniformValues['u_is_halo'] = 0;
             }
-            drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, depthMode, stencilMode, colorMode, state.uniformValues, 1);
+            drawSymbolElements(state.buffers, segmentState.segments, layer, painter, state.program, state.depthMode, stencilMode, colorMode, state.uniformValues, 1);
         }
     }
 }

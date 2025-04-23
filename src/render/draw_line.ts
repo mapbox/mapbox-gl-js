@@ -9,6 +9,7 @@ import {
 } from './program/line_program';
 import browser from '../util/browser';
 import {clamp, nextPowerOfTwo, warnOnce} from '../util/util';
+import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
 import {renderColorRamp} from '../util/color_ramp';
 import EXTENT from '../style-spec/data/extent';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
@@ -124,7 +125,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         definesValues.push("VARIABLE_LINE_WIDTH");
     }
 
-    const renderTiles = (coords: OverscaledTileID[], defines: DynamicDefinesType[], depthMode: DepthMode, stencilMode3D: StencilMode, elevated: boolean, firstPass: boolean) => {
+    const renderTiles = (coords: OverscaledTileID[], baseDefines: DynamicDefinesType[], depthMode: DepthMode, stencilMode3D: StencilMode, elevated: boolean, firstPass: boolean) => {
         for (const coord of coords) {
             const tile = sourceCache.getTile(coord);
             if (image && !tile.patternsLoaded()) continue;
@@ -134,6 +135,20 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if ((bucket.elevationType !== 'none' && !elevated) || (bucket.elevationType === 'none' && elevated)) continue;
 
             painter.prepareDrawTile();
+
+            const defines = [...baseDefines];
+            const renderElevatedRoads = bucket.elevationType === 'road';
+            const shadowRenderer = painter.shadowRenderer;
+            const renderWithShadows = renderElevatedRoads && !!shadowRenderer && shadowRenderer.enabled;
+            let groundShadowFactor: [number, number, number] = [0, 0, 0];
+            if (renderWithShadows) {
+                const directionalLight = painter.style.directionalLight;
+                const ambientLight = painter.style.ambientLight;
+                if (directionalLight && ambientLight) {
+                    groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
+                }
+                defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+            }
 
             const programConfiguration = bucket.programConfigurations.get(layer.id);
             const affectedByFog = painter.isTileAffectedByFog(coord);
@@ -148,6 +163,10 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             if (!image && constantDash && constantCap && tile.lineAtlas) {
                 const posTo = tile.lineAtlas.getDash(constantDash, constantCap);
                 if (posTo) programConfiguration.setConstantPatternPositions(posTo);
+            }
+
+            if (renderWithShadows) {
+                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
             }
 
             let [trimStart, trimEnd] = layer.paint.get('line-trim-offset');
@@ -173,8 +192,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const lineWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, painter.transform.zoom) : 1.0;
             const lineFloorWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, Math.floor(painter.transform.zoom)) : 1.0;
             const uniformValues = image ?
-                linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd]) :
-                lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd]);
+                linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor) :
+                lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor);
 
             if (gradient) {
                 const layerGradient = bucket.gradients[layer.id];
