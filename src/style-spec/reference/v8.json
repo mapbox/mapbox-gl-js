@@ -1515,6 +1515,7 @@
     "layout_circle",
     "layout_heatmap",
     "layout_fill-extrusion",
+    "layout_building",
     "layout_symbol",
     "layout_raster",
     "layout_raster-particle",
@@ -4041,6 +4042,17 @@
       "parameters": ["zoom", "feature"]
     }
   },
+  "filter_building": {
+    "type": "boolean",
+    "doc": "Expression which determines whether or not to display a Polygon. Building layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
+    "default": false,
+    "transition": false,
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": false,
+      "parameters": ["zoom", "feature"]
+    }
+  },
   "filter_heatmap": {
     "type": "boolean",
     "doc": "Expression used to determine whether a point is being displayed or not. Heatmap layer does NOT support dynamic filtering, meaning this expression can NOT use the `[\"pitch\"]` and `[\"distance-from-center\"]` expressions to reference the current state of the view.",
@@ -6363,6 +6375,7 @@
     "paint_circle",
     "paint_heatmap",
     "paint_fill-extrusion",
+    "paint_building",
     "paint_symbol",
     "paint_raster",
     "paint_raster-particle",
