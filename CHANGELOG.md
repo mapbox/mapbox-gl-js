@@ -1,3 +1,8 @@
+## 3.11.1
+
+- Improve icon loading performance, in particular for landmark icons.
+- Fix `undefined` passed in `Marker` options not falling back to default values.
+
 ## 3.11.0
 
 ### Breaking changes ⚠️
