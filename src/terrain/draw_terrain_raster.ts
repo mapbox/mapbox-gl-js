@@ -294,7 +294,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         const setShaderMode = (mode: number) => {
             if (programMode === mode)
                 return;
-            const modes = ([] as any);
+            const modes: DynamicDefinesType[] = [];
             modes.push(shaderDefines[mode]);
             if (cutoffParams.shouldRenderCutoff) {
                 modes.push('RENDER_CUTOFF');

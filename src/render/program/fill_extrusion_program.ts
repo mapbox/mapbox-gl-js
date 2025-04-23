@@ -17,6 +17,16 @@ import type {UniformValues} from '../uniform_binding';
 import type Tile from '../../source/tile';
 import type {OverscaledTileID} from '../../source/tile_id';
 
+export type FillExtrusionDefinesType =
+    | 'CLEAR_FROM_TEXTURE'
+    | 'CLEAR_SUBPASS'
+    | 'FAUX_AO'
+    | 'FLOOD_LIGHT'
+    | 'HAS_CENTROID'
+    | 'RENDER_WALL_MODE'
+    | 'SDF_SUBPASS'
+    | 'ZERO_ROOF_RADIUS';
+
 const fillExtrusionAlignmentType = {
     'terrain': 0,
     'flat': 1,

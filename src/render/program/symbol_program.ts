@@ -47,7 +47,14 @@ export type SymbolUniformsType = {
     ['u_inv_matrix']: UniformMatrix4f;
 };
 
-export type SymbolDefinesType = 'PITCH_WITH_MAP_TERRAIN';
+export type SymbolDefinesType =
+    | 'COLOR_ADJUSTMENT'
+    | 'ICON_TRANSITION'
+    | 'PITCH_WITH_MAP_TERRAIN'
+    | 'PROJECTED_POS_ON_VIEWPORT'
+    | 'RENDER_SDF'
+    | 'RENDER_TEXT_AND_SYMBOL'
+    | 'Z_OFFSET';
 
 const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_is_size_zoom_constant': new Uniform1i(context),

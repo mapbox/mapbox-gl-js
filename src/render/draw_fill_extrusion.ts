@@ -32,6 +32,7 @@ import {ZoomDependentExpression} from '../style-spec/expression/index';
 import browser from '../util/browser';
 
 import type {vec3} from 'gl-matrix';
+import type {DynamicDefinesType} from './program/program_uniforms';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
 import type SourceCache from '../source/source_cache';
 import type Painter from './painter';
@@ -294,7 +295,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const baseAlignment = layer.paint.get('fill-extrusion-base-alignment');
 
     const cutoffParams = getCutoffParams(painter, layer.paint.get('fill-extrusion-cutoff-fade-range'));
-    const baseDefines = ([] as any);
+    const baseDefines: DynamicDefinesType[] = [];
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
     }
@@ -458,7 +459,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 function updateReplacement(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, layerIndex: number) {
     for (const coord of coords) {
         const tile = source.getTile(coord);
-        const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as FillExtrusionBucket;
         if (!bucket) {
             continue;
         }
@@ -472,7 +473,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     const gl = context.gl;
     const tr = painter.transform;
     const zoom = painter.transform.zoom;
-    const defines = ([] as any);
+    const defines: DynamicDefinesType[] = [];
 
     const cutoffParams = getCutoffParams(painter, layer.paint.get('fill-extrusion-cutoff-fade-range'));
     if (subpass === 'clear') {

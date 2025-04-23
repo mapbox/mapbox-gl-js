@@ -38,6 +38,7 @@ import type {UniformValues} from './uniform_binding';
 import type {SymbolUniformsType} from '../render/program/symbol_program';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
 import type {InterpolatedSize} from '../symbol/symbol_size';
+import type {DynamicDefinesType} from './program/program_uniforms';
 
 export default drawSymbols;
 
@@ -387,7 +388,7 @@ function drawLayerSymbols(
         const getIconState = () => {
             const alongLine = iconRotateWithMap && layer.layout.get('symbol-placement') !== 'point';
 
-            const baseDefines = ([] as any);
+            const baseDefines: DynamicDefinesType[] = [];
 
             setOcclusionDefines(baseDefines);
 
@@ -497,7 +498,7 @@ function drawLayerSymbols(
 
         const getTextState = () => {
             const alongLine = textRotateWithMap && layer.layout.get('symbol-placement') !== 'point';
-            const baseDefines = ([] as any);
+            const baseDefines: DynamicDefinesType[] = [];
             const projectedPosOnLabelSpace = alongLine || variablePlacement || updateTextFitIcon;
 
             if (painter.terrainRenderModeElevated() && textPitchWithMap) {
