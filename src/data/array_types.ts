@@ -1688,5 +1688,8 @@ export {
     StructArrayLayout4ui3f20 as FeatureVertexArray,
     StructArrayLayout1i2 as ParticleIndexLayoutArray,
     StructArrayLayout1ub1 as FillExtrusionHiddenByLandmarkArray,
+    StructArrayLayout3f12 as BuildingPositionArray,
+    StructArrayLayout3f12 as BuildingNormalArray,
+    StructArrayLayout2ui4 as BuildingColorArray,
     StructArrayLayout6i12 as CircleGlobeExtArray
 };
