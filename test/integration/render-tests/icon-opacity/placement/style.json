@@ -1,0 +1,51 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "zoom": 14,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0, 0]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "restaurant-12"
+      },
+      "paint": {
+        "icon-opacity": 0.5
+      }
+    },
+    {
+      "id": "repeated_icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "restaurant-12"
+      },
+      "paint": {
+        "icon-opacity": 0.5
+      }
+    }
+  ]
+}

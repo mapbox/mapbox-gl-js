@@ -39,7 +39,7 @@
             "type": "symbol",
             "source": "point",
             "layout": {
-                "text-field": "Rendered Twice",
+                "text-field": "Rendered Once",
                 "text-font": [
                     "Open Sans Semibold",
                     "Arial Unicode MS Bold"
@@ -51,7 +51,7 @@
             "type": "symbol",
             "source": "point",
             "layout": {
-                "text-field": "Rendered Twice",
+                "text-field": "Rendered Once",
                 "text-font": [
                     "Open Sans Semibold",
                     "Arial Unicode MS Bold"

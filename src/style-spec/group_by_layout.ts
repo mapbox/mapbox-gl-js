@@ -84,13 +84,18 @@ export default function groupByLayout(
         let k = cachedKeys && cachedKeys[layer.id];
 
         if (!k) {
-            k =  getKey(layer);
-            // The usage of "line-progress" inside "line-width" makes the property act like a layout property.
-            // We need to split it from the group to avoid conflicts in the bucket creation.
-            if (layer.type === 'line' && layer["paint"]) {
-                const lineWidth = layer["paint"]['line-width'];
-                if (containsKey(lineWidth, 'line-progress')) {
-                    k += `/${stringify(layer["paint"]['line-width'])}`;
+            // Do not group symbol layers together, as their paint properties affect placement
+            if (layer.type === 'symbol') {
+                k = layer.id;
+            } else {
+                k =  getKey(layer);
+                // The usage of "line-progress" inside "line-width" makes the property act like a layout property.
+                // We need to split it from the group to avoid conflicts in the bucket creation.
+                if (layer.type === 'line' && layer["paint"]) {
+                    const lineWidth = layer["paint"]['line-width'];
+                    if (containsKey(lineWidth, 'line-progress')) {
+                        k += `/${stringify(layer["paint"]['line-width'])}`;
+                    }
                 }
             }
         }

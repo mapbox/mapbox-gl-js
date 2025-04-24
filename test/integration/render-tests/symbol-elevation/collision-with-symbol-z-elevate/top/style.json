@@ -1,0 +1,86 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "projection": {
+    "name": "mercator"
+  },
+  "pitch": 40,
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "test1": {
+      "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [0, 0]
+              }
+            }
+          ]
+        }
+    },
+    "test2": {
+      "type": "geojson",
+        "data": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [0, 35]
+              }
+            }
+          ]
+        }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "front_non_elevated",
+      "type": "symbol",
+      "source": "test1",
+      "layout": {
+        "icon-image": "building-12"
+      }
+    },
+    {
+      "id": "front_elevated",
+      "type": "symbol",
+      "source": "test1",
+      "layout": {
+        "icon-image": "building-12"
+      },
+      "paint": {
+        "symbol-z-offset": 5000000
+      }
+    },
+    {
+      "id": "back",
+      "type": "symbol",
+      "source": "test2",
+      "layout": {
+        "icon-image": "building-12"
+      },
+      "paint": {
+        "icon-color-brightness-max": 0.3
+      }
+    }
+  ]
+}
