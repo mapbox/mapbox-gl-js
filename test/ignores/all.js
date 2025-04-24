@@ -276,6 +276,24 @@ const skip = [
     "render-tests/3d-intersections/ortho-camera",
     "render-tests/3d-intersections/road-extend-tilecover",
     "render-tests/3d-intersections/max-zoom-mismatch",
+
+    // Procedural buildings gl-js port
+    // https://mapbox.atlassian.net/browse/MAPS3D-1664
+    "render-tests/building/conflation",
+    "render-tests/building/emissive-strength",
+    "render-tests/building/facades",
+    "render-tests/building/gabled",
+    "render-tests/building/ground-ao",
+    "render-tests/building/hipped",
+    "render-tests/building/mansard",
+    "render-tests/building/parapet",
+    "render-tests/building/property-update",
+    "render-tests/building/pyramidal",
+    "render-tests/building/skillion",
+    "render-tests/building/symbol-z-offset",
+    "render-tests/building/tile-border",
+    "render-tests/building/vertical-scale",
+    "render-tests/building/with-shadows",
 ];
 
 export default {todo, skip};
