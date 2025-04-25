@@ -32,6 +32,7 @@ import {ZoomDependentExpression} from '../style-spec/expression/index';
 import browser from '../util/browser';
 
 import type {vec3} from 'gl-matrix';
+import type {UniformValues} from './uniform_binding';
 import type {DynamicDefinesType} from './program/program_uniforms';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
 import type SourceCache from '../source/source_cache';
@@ -40,10 +41,12 @@ import type Tile from '../source/tile';
 import type {Terrain} from '../terrain/terrain';
 import type Context from '../gl/context';
 import type {OverscaledTileID} from '../source/tile_id';
+import type {GroundEffect, PartData} from '../data/bucket/fill_extrusion_bucket';
 import type {
-    GroundEffect,
-    PartData
-} from '../data/bucket/fill_extrusion_bucket';
+    FillExtrusionDepthUniformsType,
+    FillExtrusionPatternUniformsType,
+    FillExtrusionGroundEffectUniformsType
+} from './program/fill_extrusion_program';
 
 export default draw;
 
@@ -359,7 +362,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
         const affectedByFog = painter.isTileAffectedByFog(coord);
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.getOrCreateProgram(programName,
+        const program = painter.getOrCreateProgram<FillExtrusionDepthUniformsType | FillExtrusionPatternUniformsType>(programName,
             {config: programConfiguration, defines: singleCascade ? singleCascadeDefines : baseDefines, overrideFog: affectedByFog});
 
         if (painter.terrain) {
@@ -394,7 +397,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const lineWidthScale = 1.0 / bucket.tileToMeter;
-        let uniformValues;
+        let uniformValues: UniformValues<FillExtrusionDepthUniformsType | FillExtrusionPatternUniformsType>;
         if (isShadowPass && shadowRenderer) {
             if (frustumCullShadowCaster(tile.tileID, bucket, painter)) {
                 continue;
@@ -497,7 +500,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     const renderGroundEffectTile = (coord: OverscaledTileID, groundEffect: GroundEffect, segments: any, matrix: mat4, meterToTile: number) => {
         const programConfiguration = groundEffect.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        const program = painter.getOrCreateProgram('fillExtrusionGroundEffect', {config: programConfiguration, defines, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram<FillExtrusionGroundEffectUniformsType>('fillExtrusionGroundEffect', {config: programConfiguration, defines, overrideFog: affectedByFog});
 
         const ao: [number, number] = [aoIntensity, aoRadius * meterToTile];
 

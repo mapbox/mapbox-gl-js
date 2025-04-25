@@ -18,6 +18,7 @@ import type HeatmapStyleLayer from '../style/style_layer/heatmap_style_layer';
 import type HeatmapBucket from '../data/bucket/heatmap_bucket';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {DynamicDefinesType} from './program/program_uniforms';
+import type {HeatmapUniformsType, HeatmapTextureUniformsType} from './program/heatmap_program';
 
 export default drawHeatmap;
 
@@ -64,7 +65,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
             const affectedByFog = painter.isTileAffectedByFog(coord);
             const programConfiguration = bucket.programConfigurations.get(layer.id);
-            const program = painter.getOrCreateProgram('heatmap', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
+            const program = painter.getOrCreateProgram<HeatmapUniformsType>('heatmap', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
             const {zoom} = painter.transform;
             if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 
@@ -146,7 +147,7 @@ function renderTextureToMap(painter: Painter, layer: HeatmapStyleLayer) {
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-    painter.getOrCreateProgram('heatmapTexture').draw(painter, gl.TRIANGLES,
+    painter.getOrCreateProgram<HeatmapTextureUniformsType>('heatmapTexture').draw(painter, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
         heatmapTextureUniformValues(painter, layer, 0, 1),
         layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,

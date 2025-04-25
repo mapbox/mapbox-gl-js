@@ -35,7 +35,13 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
 import type SourceCache from '../source/source_cache';
 import type Painter from './painter';
-import type {DynamicDefinesType} from "./program/program_uniforms";
+import type {DynamicDefinesType} from './program/program_uniforms';
+import type {
+    RasterParticleUniformsType,
+    RasterParticleTextureUniforms,
+    RasterParticleDrawUniformsType,
+    RasterParticleUpdateUniformsType,
+} from './program/raster_particle_program';
 
 export default drawRasterParticle;
 
@@ -253,7 +259,7 @@ function renderBackground(painter: Painter, layer: RasterParticleStyleLayer, til
 
     const opacityValue = fadeOpacityCurve(layer.paint.get('raster-particle-fade-opacity-factor'));
     const uniforms = rasterParticleTextureUniformValues(textureUnit, opacityValue);
-    const program = painter.getOrCreateProgram('rasterParticleTexture', {defines: [], overrideFog: false});
+    const program = painter.getOrCreateProgram<RasterParticleTextureUniforms>('rasterParticleTexture', {defines: [], overrideFog: false});
 
     for (const tile of tiles) {
         const [, , particleState, renderBackground] = tile;
@@ -313,7 +319,7 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
         targetTileData.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
         framebuffer.colorAttachment.set(targetTileState.targetColorTexture.texture);
         const defines = targetTileData.defines;
-        const program = painter.getOrCreateProgram('rasterParticleDraw', {defines, overrideFog: false});
+        const program = painter.getOrCreateProgram<RasterParticleDrawUniformsType>('rasterParticleDraw', {defines, overrideFog: false});
 
         context.activeTexture.set(gl.TEXTURE0 + RASTER_PARTICLE_TEXTURE_UNIT);
         const tileIDs = targetTileData.scalarData ? [] : [0, 1, 2, 3].map(idx => neighborCoord[idx](targetTileID));
@@ -402,7 +408,7 @@ function updateParticles(painter: Painter, layer: RasterParticleStyleLayer, tile
         );
         particleFramebuffer.colorAttachment.set(state.particleTexture1.texture);
         context.clear({color: Color.transparent});
-        const updateProgram = painter.getOrCreateProgram('rasterParticleUpdate', {defines: data.defines});
+        const updateProgram = painter.getOrCreateProgram<RasterParticleUpdateUniformsType>('rasterParticleUpdate', {defines: data.defines});
         updateProgram.draw(
             painter,
             gl.TRIANGLES,
@@ -511,7 +517,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
             rasterElevation
         );
         const overrideFog = painter.isTileAffectedByFog(coord);
-        const program = painter.getOrCreateProgram('rasterParticle', {defines, overrideFog});
+        const program = painter.getOrCreateProgram<RasterParticleUniformsType>('rasterParticle', {defines, overrideFog});
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 

@@ -53,7 +53,20 @@ import type {UniformValues} from '../render/uniform_binding';
 import type Transform from '../geo/transform';
 import type {CanonicalTileID} from '../source/tile_id';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
+import type {DebugUniformsType} from '../render/program/debug_program';
+import type {CircleUniformsType} from '../render/program/circle_program';
+import type {SymbolUniformsType} from '../render/program/symbol_program';
 import type {SourceSpecification} from '../style-spec/types';
+import type {HeatmapUniformsType} from '../render/program/heatmap_program';
+import type {LineUniformsType, LinePatternUniformsType} from '../render/program/line_program';
+import type {CollisionUniformsType} from '../render/program/collision_program';
+import type {ClippingMaskUniformsType} from '../render/program/clipping_mask_program';
+import type {GlobeRasterUniformsType} from './globe_raster_program';
+import type {TerrainRasterUniformsType} from './terrain_raster_program';
+import type {
+    FillExtrusionDepthUniformsType,
+    FillExtrusionPatternUniformsType
+} from '../render/program/fill_extrusion_program';
 
 const GRID_DIM = 128;
 
@@ -64,6 +77,32 @@ type RenderBatch = {
     start: number;
     end: number;
 };
+
+type ElevationDrawOptions = {
+    useDepthForOcclusion?: boolean;
+    useMeterToDem?: boolean;
+    labelPlaneMatrixInv?: mat4 | null;
+    morphing?: {
+        srcDemTile: Tile;
+        dstDemTile: Tile;
+        phase: number;
+    };
+    useDenormalizedUpVectorScale?: boolean;
+};
+
+type ElevationUniformsType =
+    | CircleUniformsType
+    | CollisionUniformsType
+    | DebugUniformsType
+    | FillExtrusionDepthUniformsType
+    | FillExtrusionPatternUniformsType
+    | GlobeRasterUniformsType
+    | GlobeUniformsType
+    | HeatmapUniformsType
+    | LinePatternUniformsType
+    | LineUniformsType
+    | SymbolUniformsType
+    | TerrainRasterUniformsType;
 
 class MockSourceCache extends SourceCache {
     constructor(map: Map) {
@@ -715,18 +754,7 @@ export class Terrain extends Elevation {
     // useDepthForOcclusion: Pre-rendered depth texture is used for occlusion
     // useMeterToDem: u_meter_to_dem uniform is not used for all terrain programs,
     // optimization to avoid unnecessary computation and upload.
-    setupElevationDraw(tile: Tile, program: Program<any>,
-        options?: {
-            useDepthForOcclusion?: boolean;
-            useMeterToDem?: boolean;
-            labelPlaneMatrixInv?: mat4 | null;
-            morphing?: {
-                srcDemTile: Tile;
-                dstDemTile: Tile;
-                phase: number;
-            };
-            useDenormalizedUpVectorScale?: boolean;
-        }) {
+    setupElevationDraw(tile: Tile, program: Program<ElevationUniformsType>, options?: ElevationDrawOptions) {
         const context = this.painter.context;
         const gl = context.gl;
         const uniforms = defaultTerrainUniforms();
@@ -1387,7 +1415,7 @@ export class Terrain extends Elevation {
         context.setColorMode(ColorMode.disabled);
         context.setDepthMode(DepthMode.disabled);
 
-        const program = painter.getOrCreateProgram('clippingMask');
+        const program = painter.getOrCreateProgram<ClippingMaskUniformsType>('clippingMask');
 
         for (const tileID of proxiedCoords) {
             const id = painter._tileClippingMaskIDs[tileID.key] = --ref;

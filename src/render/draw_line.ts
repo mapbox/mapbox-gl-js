@@ -20,8 +20,10 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type LineBucket from '../data/bucket/line_bucket';
+import type {UniformValues} from './uniform_binding';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {DynamicDefinesType} from './program/program_uniforms';
+import type {LineUniformsType, LinePatternUniformsType} from './program/line_program';
 
 export function prepare(layer: LineStyleLayer, sourceCache: SourceCache, painter: Painter) {
     layer.hasElevatedBuckets = false;
@@ -152,7 +154,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
             const programConfiguration = bucket.programConfigurations.get(layer.id);
             const affectedByFog = painter.isTileAffectedByFog(coord);
-            const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines, overrideFog: affectedByFog, overrideRtt: elevated ? false : undefined});
+            const program = painter.getOrCreateProgram<LineUniformsType | LinePatternUniformsType>(programId, {config: programConfiguration, defines, overrideFog: affectedByFog, overrideRtt: elevated ? false : undefined});
 
             if (constantPattern && tile.imageAtlas) {
                 const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(pixelRatio).toString();
@@ -191,7 +193,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const matrix = isDraping ? coord.projMatrix : null;
             const lineWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, painter.transform.zoom) : 1.0;
             const lineFloorWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, Math.floor(painter.transform.zoom)) : 1.0;
-            const uniformValues = image ?
+            const uniformValues: UniformValues<LineUniformsType | LinePatternUniformsType> = image ?
                 linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor) :
                 lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor);
 

@@ -35,9 +35,10 @@ import type Texture from '../render/texture';
 import type ColorMode from '../gl/color_mode';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {UniformValues} from './uniform_binding';
-import type {SymbolUniformsType} from '../render/program/symbol_program';
+import type {SymbolUniformsType} from './program/symbol_program';
 import type {CrossTileID, VariableOffset} from '../symbol/placement';
 import type {DynamicDefinesType} from './program/program_uniforms';
+import type {LightsUniformsType} from '../../3d-style/render/lights';
 import type Program from './program';
 
 export default drawSymbols;
@@ -430,7 +431,7 @@ function drawLayerSymbols(
             }
 
             const programConfiguration = bucket.icon.programConfigurations.get(layer.id);
-            const program: Program<SymbolUniformsType> = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
+            const program = painter.getOrCreateProgram<SymbolUniformsType>('symbol', {config: programConfiguration, defines: baseDefines});
 
             if (renderWithShadows) {
                 shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
@@ -534,7 +535,7 @@ function drawLayerSymbols(
             setOcclusionDefines(baseDefines);
 
             const programConfiguration = bucket.text.programConfigurations.get(layer.id);
-            const program = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
+            const program = painter.getOrCreateProgram<SymbolUniformsType>('symbol', {config: programConfiguration, defines: baseDefines});
 
             let texSizeIcon: [number, number] = [0, 0];
             let atlasTextureIcon: Texture | null = null;
@@ -697,7 +698,7 @@ function drawLayerSymbols(
             }
         }
 
-        painter.uploadCommonLightUniforms(painter.context, state.program);
+        painter.uploadCommonLightUniforms(painter.context, state.program as unknown as Program<LightsUniformsType>);
 
         if (state.hasHalo) {
             const uniformValues = (state.uniformValues);

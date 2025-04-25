@@ -443,7 +443,7 @@ class Program<Us extends UniformBindings> {
         }
     }
 
-    draw(
+    draw<Us>(
          painter: Painter,
          drawMode: DrawMode,
          depthMode: Readonly<DepthMode>,

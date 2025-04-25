@@ -23,7 +23,7 @@ export default drawCircles;
 
 type TileRenderState = {
     programConfiguration: ProgramConfiguration;
-    program: Program<any>;
+    program: Program<CircleUniformsType>;
     layoutVertexBuffer: VertexBuffer;
     globeExtVertexBuffer: VertexBuffer | null | undefined;
     indexBuffer: IndexBuffer;
@@ -85,7 +85,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             definesValues.push('DEPTH_OCCLUSION');
         }
 
-        const program = painter.getOrCreateProgram('circle', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram<CircleUniformsType>('circle', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
         const indexBuffer = bucket.indexBuffer;
@@ -107,7 +107,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             for (const segment of oldSegments) {
                 segmentsRenderStates.push({
                     segments: new SegmentVector([segment]),
-                    sortKey: (segment.sortKey),
+                    sortKey: segment.sortKey,
                     state
                 });
             }

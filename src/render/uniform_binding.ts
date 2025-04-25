@@ -209,6 +209,4 @@ export {
     UniformMatrix4f
 };
 
-export type UniformBindings = {
-    [_: string]: IUniform<any>;
-};
+export type UniformBindings = Record<string, IUniform<any>>;

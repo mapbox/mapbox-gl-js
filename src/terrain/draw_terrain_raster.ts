@@ -31,6 +31,8 @@ import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
 import type Tile from '../source/tile';
 import type {DynamicDefinesType} from '../render/program/program_uniforms';
+import type {GlobeRasterUniformsType} from './globe_raster_program';
+import type {TerrainRasterUniformsType} from './terrain_raster_program';
 
 export {
     drawTerrainRaster
@@ -147,7 +149,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const context = painter.context;
     const gl = context.gl;
 
-    let program, programMode;
+    let program: Program<GlobeRasterUniformsType>;
+    let programMode: number;
     const tr = painter.transform;
     const useCustomAntialiasing = globeUseCustomAntiAliasing(painter, context, tr);
 
@@ -158,7 +161,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        program = painter.getOrCreateProgram('globeRaster', {defines, overrideFog: affectedByFog});
+        program = painter.getOrCreateProgram<GlobeRasterUniformsType>('globeRaster', {defines, overrideFog: affectedByFog});
         programMode = mode;
     };
 
@@ -236,7 +239,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         const defines: DynamicDefinesType[] = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
-        program = painter.getOrCreateProgram('globeRaster', {defines});
+        program = painter.getOrCreateProgram<GlobeRasterUniformsType>('globeRaster', {defines});
         for (const coord of tileIDs) {
             // Fill poles by extrapolating adjacent border tiles
             const {x, y, z} = coord.canonical;
@@ -257,7 +260,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
                 const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
 
-                const drawPole = (program: Program<any>, vertexBuffer: VertexBuffer) => program.draw(
+                const drawPole = (program: Program<GlobeRasterUniformsType>, vertexBuffer: VertexBuffer) => program.draw(
                     painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     globeRasterUniformValues(tr.expandedFarZProjMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
                     tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
@@ -287,7 +290,8 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         const context = painter.context;
         const gl = context.gl;
 
-        let program, programMode;
+        let program: Program<TerrainRasterUniformsType>;
+        let programMode: number;
         const shadowRenderer = painter.shadowRenderer;
         const cutoffParams = getCutoffParams(painter, painter.longestCutoffRange);
 
@@ -305,7 +309,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                     modes.push('NORMAL_OFFSET');
                 }
             }
-            program = painter.getOrCreateProgram('terrainRaster', {defines: modes});
+            program = painter.getOrCreateProgram<TerrainRasterUniformsType>('terrainRaster', {defines: modes});
             programMode = mode;
         };
 

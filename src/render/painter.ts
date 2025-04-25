@@ -54,7 +54,7 @@ import {Snow} from '../precipitation/draw_snow';
 
 // 3D-style related
 import type {Source} from '../source/source';
-import type {CutoffParams} from '../render/cutoff';
+import type {CutoffParams, CutoffUniformsType} from '../render/cutoff';
 import type Transform from '../geo/transform';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
 import type Style from '../style/style';
@@ -70,6 +70,30 @@ import type {ContextOptions} from '../gl/context';
 import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type ProgramConfiguration from '../data/program_configuration';
+import type {UniformBindings} from './uniform_binding';
+import type {FogUniformsType} from './fog';
+import type {ModelUniformsType, ModelDepthUniformsType} from '../../3d-style/render/program/model_program';
+import type {LightsUniformsType} from '../../3d-style/render/lights';
+import type {GroundShadowUniformsType} from '../../3d-style/render/program/ground_shadow_program';
+import type {RainUniformsType} from '../precipitation/rain_program';
+import type {SnowUniformsType} from '../precipitation/snow_program';
+import type {VignetteUniformsType} from '../precipitation/vignette_program';
+import type {AtmosphereUniformsType, GlobeRasterUniformsType} from '../terrain/globe_raster_program';
+import type {StarsUniformsType} from '../terrain/stars_program';
+import type {BackgroundUniformsType, BackgroundPatternUniformsType} from './program/background_program';
+import type {CircleUniformsType} from './program/circle_program';
+import type {ElevatedStructuresDepthUniformsType} from './program/fill_program';
+import type {HeatmapUniformsType} from './program/heatmap_program';
+import type {HillshadeUniformsType} from './program/hillshade_program';
+import type {RasterUniformsType} from '../render/program/raster_program';
+import type {RasterParticleUniformsType} from './program/raster_particle_program';
+import type {ClippingMaskUniformsType} from './program/clipping_mask_program';
+import type {SkyboxUniformsType, SkyboxGradientlUniformsType} from '../render/program/skybox_program';
+import type {
+    FillExtrusionDepthUniformsType,
+    FillExtrusionPatternUniformsType,
+    FillExtrusionGroundEffectUniformsType
+} from './program/fill_extrusion_program';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
@@ -116,9 +140,35 @@ type TileBoundsBuffers = {
     tileBoundsSegments: SegmentVector;
 };
 
-type GPUTimers = {
-    [layerId: string]: any;
-};
+type GPUTimer = {calls: number; cpuTime: number; query: WebGLQuery};
+type GPUTimers = Record<string, GPUTimer>;
+
+type CommonUniformsTypes =
+    | AtmosphereUniformsType
+    | BackgroundPatternUniformsType
+    | BackgroundUniformsType
+    | CircleUniformsType
+    | CutoffUniformsType
+    | ElevatedStructuresDepthUniformsType
+    | FillExtrusionDepthUniformsType
+    | FillExtrusionGroundEffectUniformsType
+    | FillExtrusionPatternUniformsType
+    | FogUniformsType
+    | GlobeRasterUniformsType
+    | GroundShadowUniformsType
+    | HeatmapUniformsType
+    | HillshadeUniformsType
+    | LightsUniformsType
+    | ModelDepthUniformsType
+    | ModelUniformsType
+    | RainUniformsType
+    | RasterParticleUniformsType
+    | RasterUniformsType
+    | SkyboxGradientlUniformsType
+    | SkyboxUniformsType
+    | SnowUniformsType
+    | StarsUniformsType
+    | VignetteUniformsType
 
 const draw = {
     symbol,
@@ -157,9 +207,7 @@ const depthPrepass = {
 class Painter {
     context: Context;
     transform: Transform;
-    _tileTextures: {
-        [_: number]: Array<Texture>;
-    };
+    _tileTextures: Record<number, Array<Texture>>;
     numSublayers: number;
     depthEpsilon: number;
     emptyProgramConfiguration: ProgramConfiguration;
@@ -175,9 +223,7 @@ class Painter {
     quadTriangleIndexBuffer: IndexBuffer;
     mercatorBoundsBuffer: VertexBuffer;
     mercatorBoundsSegments: SegmentVector;
-    _tileClippingMaskIDs: {
-        [_: number]: number;
-    };
+    _tileClippingMaskIDs: Record<number, number>;
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
@@ -196,9 +242,7 @@ class Painter {
     id: string;
     _showOverdrawInspector: boolean;
     _shadowMapDebug: boolean;
-    cache: {
-        [_: string]: Program<any>;
-    };
+    cache: Record<string, Program<UniformBindings>>;
     symbolFadeChange: number;
     gpuTimers: GPUTimers;
     deferredRenderGpuTimeQueries: Array<any>;
@@ -212,12 +256,10 @@ class Painter {
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
-    _backgroundTiles: {
-        [key: number]: Tile;
-    };
+    _backgroundTiles: Record<number, Tile>;
     _atmosphere: Atmosphere | null | undefined;
-    _rain: any;
-    _snow: any;
+    _rain?: Rain;
+    _snow?: Snow;
     replacementSource: ReplacementSource;
     conflationActive: boolean;
     firstLightBeamLayer: number;
@@ -229,12 +271,8 @@ class Painter {
     renderDefaultSouthPole: boolean;
     renderElevatedRasterBackface: boolean;
     _fogVisible: boolean;
-    _cachedTileFogOpacities: {
-        [key: number]: [number, number];
-    };
-
-    _shadowRenderer: ShadowRenderer | null | undefined;
-
+    _cachedTileFogOpacities: Record<number, [number, number]>;
+    _shadowRenderer?: ShadowRenderer;
     _wireframeDebugCache: WireframeDebugCache;
 
     tp: ITrackedParameters;
@@ -531,7 +569,7 @@ class Painter {
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
         // this function in favor of context.clear({ stencil: 0x0 })
-        this.getOrCreateProgram('clippingMask').draw(this, gl.TRIANGLES,
+        this.getOrCreateProgram<ClippingMaskUniformsType>('clippingMask').draw(this, gl.TRIANGLES,
             DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
             clippingMaskUniformValues(this.identityMat),
             '$clipping', this.viewportBuffer,
@@ -577,7 +615,7 @@ class Painter {
         context.setColorMode(ColorMode.disabled);
         context.setDepthMode(DepthMode.disabled);
 
-        const program = this.getOrCreateProgram('clippingMask');
+        const program = this.getOrCreateProgram<ClippingMaskUniformsType>('clippingMask');
 
         this._tileClippingMaskIDs = {};
 
@@ -1619,7 +1657,7 @@ class Painter {
         return defines;
     }
 
-    getOrCreateProgram(name: string, options?: CreateProgramParams): Program<any> {
+    getOrCreateProgram<T extends UniformBindings>(name: string, options?: CreateProgramParams): Program<T> {
         this.cache = this.cache || {};
         const defines = ((options && options.defines) || []);
         const config = options && options.config;
@@ -1633,7 +1671,8 @@ class Painter {
         if (!this.cache[key]) {
             this.cache[key] = new Program(this.context, name, shaders[name], config, programUniforms[name], allDefines);
         }
-        return this.cache[key];
+
+        return this.cache[key] as Program<T>;
     }
 
     /*
@@ -1711,7 +1750,7 @@ class Painter {
         }
     }
 
-    uploadCommonLightUniforms(context: Context, program: Program<any>) {
+    uploadCommonLightUniforms(context: Context, program: Program<LightsUniformsType>) {
         if (this.style.enable3dLights()) {
             const directionalLight = this.style.directionalLight;
             const ambientLight = this.style.ambientLight;
@@ -1723,8 +1762,8 @@ class Painter {
         }
     }
 
-    uploadCommonUniforms(context: Context, program: Program<any>, tileID?: UnwrappedTileID | null, fogMatrix?: Float32Array | null, cutoffParams?: CutoffParams | null) {
-        this.uploadCommonLightUniforms(context, program);
+    uploadCommonUniforms(context: Context, program: Program<CommonUniformsTypes>, tileID?: UnwrappedTileID | null, fogMatrix?: Float32Array | null, cutoffParams?: CutoffParams | null) {
+        this.uploadCommonLightUniforms(context, program as Program<LightsUniformsType>);
 
         // Fog is not enabled when rendering to texture so we
         // can safely skip uploading uniforms in that case

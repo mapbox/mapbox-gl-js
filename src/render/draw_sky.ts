@@ -14,6 +14,8 @@ import type SkyLayer from '../style/style_layer/sky_style_layer';
 import type Program from './program';
 import type SourceCache from '../source/source_cache';
 import type Painter from './painter';
+import type {SkyboxCaptureUniformsType} from '../render/program/skybox_capture_program';
+import type {SkyboxUniformsType, SkyboxGradientlUniformsType} from '../render/program/skybox_program';
 
 export default drawSky;
 
@@ -54,7 +56,7 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
     const context = painter.context;
     const gl = context.gl;
     const transform = painter.transform;
-    const program = painter.getOrCreateProgram('skyboxGradient');
+    const program = painter.getOrCreateProgram<SkyboxGradientlUniformsType>('skyboxGradient');
 
     // Lazily initialize geometry and texture if they havent been created yet.
     if (!layer.skyboxGeometry) {
@@ -87,7 +89,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
     const context = painter.context;
     const gl = context.gl;
     const transform = painter.transform;
-    const program = painter.getOrCreateProgram('skybox');
+    const program = painter.getOrCreateProgram<SkyboxUniformsType>('skybox');
 
     context.activeTexture.set(gl.TEXTURE0);
 
@@ -103,7 +105,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
 
-function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<any>, faceRotate: mat4, sunDirection: [number, number, number], i: number) {
+function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<SkyboxCaptureUniformsType>, faceRotate: mat4, sunDirection: [number, number, number], i: number) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -155,7 +157,7 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
     context.viewport.set([0, 0, width, height]);
 
     const sunDirection = layer.getCenter(painter, true);
-    const program = painter.getOrCreateProgram('skyboxCapture');
+    const program = painter.getOrCreateProgram<SkyboxCaptureUniformsType>('skyboxCapture');
     const faceRotate = new Float64Array(16) as unknown as mat4;
 
     // +x;

@@ -28,7 +28,23 @@ import type {UniformValues} from '../../src/render/uniform_binding';
 import type {LightProps as Directional} from '../style/directional_light_properties';
 import type {LightProps as Ambient} from '../style/ambient_light_properties';
 import type {ShadowUniformsType} from '../render/shadow_uniforms';
+import type {GroundShadowUniformsType} from '../render/program/ground_shadow_program';
+import type {ModelUniformsType, ModelDepthUniformsType} from '../render/program/model_program';
+import type {SymbolUniformsType} from '../../src/render/program/symbol_program';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms';
+import type {
+    FillExtrusionDepthUniformsType,
+    FillExtrusionPatternUniformsType
+} from '../../src/render/program/fill_extrusion_program';
+
+type ShadowsUniformsType =
+    | ShadowUniformsType
+    | GroundShadowUniformsType
+    | SymbolUniformsType
+    | ModelUniformsType
+    | ModelDepthUniformsType
+    | FillExtrusionDepthUniformsType
+    | FillExtrusionPatternUniformsType;
 
 type ShadowCascade = {
     framebuffer: Framebuffer;
@@ -392,7 +408,7 @@ export class ShadowRenderer {
         for (const id of this._groundShadowTiles) {
             const unwrapped = id.toUnwrapped();
             const affectedByFog = painter.isTileAffectedByFog(id);
-            const program = painter.getOrCreateProgram('groundShadow', {defines: baseDefines, overrideFog: affectedByFog});
+            const program = painter.getOrCreateProgram<GroundShadowUniformsType>('groundShadow', {defines: baseDefines, overrideFog: affectedByFog});
 
             this.setupShadows(unwrapped, program);
 
@@ -433,7 +449,7 @@ export class ShadowRenderer {
         return Float32Array.from(matrix);
     }
 
-    setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<any>, normalOffsetMode?: ShadowNormalOffsetMode | null, tileOverscaledZ: number = 0) {
+    setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<ShadowsUniformsType>, normalOffsetMode?: ShadowNormalOffsetMode | null, tileOverscaledZ: number = 0) {
         if (!this.enabled) {
             return;
         }
@@ -475,7 +491,7 @@ export class ShadowRenderer {
         program.setShadowUniformValues(context, uniforms);
     }
 
-    setupShadowsFromMatrix(worldMatrix: mat4, program: Program<any>, normalOffset: boolean = false) {
+    setupShadowsFromMatrix(worldMatrix: mat4, program: Program<ShadowUniformsType | ModelUniformsType>, normalOffset: boolean = false) {
         if (!this.enabled) {
             return;
         }

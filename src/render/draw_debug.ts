@@ -11,6 +11,7 @@ import {mat4} from 'gl-matrix';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type {OverscaledTileID} from '../source/tile_id';
+import type {DebugUniformsType} from './program/debug_program';
 import type {DynamicDefinesType} from './program/program_uniforms';
 
 const topColor = new Color(1, 0, 0, 1);
@@ -85,7 +86,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
 
     mat4.multiply(posMatrix, jitterMatrix, posMatrix);
 
-    const program = painter.getOrCreateProgram('debug', {defines: definesValues});
+    const program = painter.getOrCreateProgram<DebugUniformsType>('debug', {defines: definesValues});
     const tile = sourceCache.getTileByID(coord.key);
     if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 
@@ -170,7 +171,7 @@ function drawTileQueryGeometry(painter: Painter, sourceCache: SourceCache, coord
     const gl = context.gl;
 
     const posMatrix = coord.projMatrix;
-    const program = painter.getOrCreateProgram('debug');
+    const program = painter.getOrCreateProgram<DebugUniformsType>('debug');
     const tile = sourceCache.getTileByID(coord.key);
     if (painter.terrain) painter.terrain.setupElevationDraw(tile, program);
 

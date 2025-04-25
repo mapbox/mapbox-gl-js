@@ -11,12 +11,13 @@ import {mulberry32} from '../style-spec/util/random';
 import {snowLayout} from "./snow_attributes";
 import {PrecipitationRevealParams} from './precipitation_reveal_params';
 import {createTpBindings} from './vignette';
-import {type VignetteParams} from './vignette';
 import {boxWrap, generateUniformDistributedPointsInsideCube, lerpClamp, PrecipitationBase} from './common';
 import {Debug} from '../util/debug';
 
-import type Painter from '../render/painter';
 import type {vec2, vec4} from 'gl-matrix';
+import type Painter from '../render/painter';
+import type {VignetteParams} from './vignette';
+import type {SnowUniformsType} from './snow_program';
 
 export class Snow extends PrecipitationBase {
     _revealParams: PrecipitationRevealParams;
@@ -207,7 +208,7 @@ export class Snow extends PrecipitationBase {
         const gl = context.gl;
         const tr = painter.transform;
 
-        const program = painter.getOrCreateProgram('snowParticle');
+        const program = painter.getOrCreateProgram<SnowUniformsType>('snowParticle');
 
         painter.uploadCommonUniforms(context, program);
 

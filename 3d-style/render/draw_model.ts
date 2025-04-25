@@ -20,8 +20,10 @@ import {Texture3D} from '../../src/render/texture';
 import {pointInFootprint} from '../../3d-style/source/replacement_source';
 import Point from '@mapbox/point-geometry';
 
+import type Program from '../../src/render/program';
 import type Transform from '../../src/geo/transform';
 import type ModelBucket from '../data/bucket/model_bucket';
+import type {UniformValues} from '../../src/render/uniform_binding';
 import type {OverscaledTileID} from '../../src/source/tile_id';
 import type {Tiled3dModelFeature} from '../data/bucket/tiled_3d_model_bucket';
 import type Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket';
@@ -34,6 +36,7 @@ import type {DynamicDefinesType} from '../../src/render/program/program_uniforms
 import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type {CutoffParams} from '../../src/render/cutoff';
 import type {LUT} from "../../src/util/lut";
+import type {ModelUniformsType, ModelDepthUniformsType} from '../render/program/model_program';
 
 export default drawModels;
 
@@ -225,7 +228,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         programOptions.defines.push('RENDER_CUTOFF');
     }
 
-    const program = painter.getOrCreateProgram('model', programOptions);
+    const program = painter.getOrCreateProgram<ModelUniformsType>('model', programOptions);
 
     painter.uploadCommonUniforms(context, program, null, fogMatrixArray, cutoffParams);
 
@@ -310,7 +313,7 @@ function drawShadowCaster(mesh: Mesh, matrix: mat4, painter: Painter, layer: Mod
     const shadowMatrix = shadowRenderer.calculateShadowPassMatrixFromMatrix(matrix);
     const uniformValues = modelDepthUniformValues(shadowMatrix);
     const definesValues = (painter._shadowMapDebug) ? [] : ['DEPTH_TEXTURE'];
-    const program = painter.getOrCreateProgram('modelDepth', {defines: (definesValues as DynamicDefinesType[])});
+    const program = painter.getOrCreateProgram<ModelDepthUniformsType>('modelDepth', {defines: (definesValues as DynamicDefinesType[])});
     const context = painter.context;
     program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
@@ -653,8 +656,8 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
         for (const mesh of node.meshes) {
             const definesValues = ['MODEL_POSITION_ON_GPU'];
             const dynamicBuffers = [];
-            let program;
-            let uniformValues;
+            let program: Program<ModelUniformsType | ModelDepthUniformsType>;
+            let uniformValues: UniformValues<ModelUniformsType | ModelDepthUniformsType>;
             let colorMode;
 
             if (modelInstances.instancedDataArray.length > minimumInstanceCount) {
@@ -666,14 +669,14 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
                 definesValues.push('RENDER_CUTOFF');
             }
             if (isShadowPass && shadowRenderer) {
-                program = painter.getOrCreateProgram('modelDepth', {defines: (definesValues as DynamicDefinesType[])});
+                program = painter.getOrCreateProgram<ModelDepthUniformsType>('modelDepth', {defines: (definesValues as DynamicDefinesType[])});
                 uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.matrix));
                 colorMode = shadowRenderer.getShadowPassColorMode();
             } else {
 
                 const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
                 setupMeshDraw(definesValues, dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
-                program = painter.getOrCreateProgram('model', {defines: (definesValues as DynamicDefinesType[]), overrideFog: affectedByFog});
+                program = painter.getOrCreateProgram<ModelUniformsType>('model', {defines: (definesValues as DynamicDefinesType[]), overrideFog: affectedByFog});
                 const material = mesh.material;
                 const pbr = material.pbrMetallicRoughness;
                 const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
@@ -1030,7 +1033,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         programOptions.defines.push('OCCLUSION_TEXTURE_TRANSFORM');
                     }
 
-                    const program = painter.getOrCreateProgram('model', programOptions);
+                    const program = painter.getOrCreateProgram<ModelUniformsType>('model', programOptions);
 
                     if (!isShadowPass && shadowRenderer) {
                         // The shadow matrix does not need to include node transforms,

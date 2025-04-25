@@ -10,7 +10,6 @@ import {
     elevatedStructuresDepthUniformValues,
     elevatedStructuresUniformValues,
     elevatedStructuresDepthReconstructUniformValues,
-    type ElevatedStructuresDepthReconstructUniformsType
 } from './program/fill_program';
 import StencilMode from '../gl/stencil_mode';
 import browser from '../util/browser';
@@ -38,6 +37,13 @@ import type {DepthPrePass} from './painter';
 import type MercatorCoordinate from '../geo/mercator_coordinate';
 import type {UniformValues} from './uniform_binding';
 import type SegmentVector from '../data/segment';
+import type {
+    FillUniformsType,
+    FillPatternUniformsType,
+    ElevatedStructuresUniformsType,
+    ElevatedStructuresDepthUniformsType,
+    ElevatedStructuresDepthReconstructUniformsType,
+} from './program/fill_program';
 
 export default drawFill;
 
@@ -166,8 +172,8 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache, lay
     const depthBias = computeDepthBias(painter.transform);
     const cameraMercPos = painter.transform.getFreeCameraOptions().position;
     const programName = 'elevatedStructuresDepthReconstruct';
-    const depthReconstructProgram = painter.getOrCreateProgram(programName, {defines: ['DEPTH_RECONSTRUCTION']});
-    const depthGeometryProgram = painter.getOrCreateProgram(programName);
+    const depthReconstructProgram = painter.getOrCreateProgram<ElevatedStructuresDepthReconstructUniformsType>(programName, {defines: ['DEPTH_RECONSTRUCTION']});
+    const depthGeometryProgram = painter.getOrCreateProgram<ElevatedStructuresDepthReconstructUniformsType>(programName);
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -188,7 +194,7 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache, lay
         let uniformValues: UniformValues<ElevatedStructuresDepthReconstructUniformsType>;
         let depthMode: DepthMode;
         let segments: SegmentVector;
-        let program: Program<any>;
+        let program: Program<ElevatedStructuresDepthReconstructUniformsType>;
 
         if (pass === 'initialize') {
             // Depth reconstruction is required only for underground models. Use a slight margin
@@ -263,7 +269,7 @@ function drawElevatedStructures(params: DrawFillParams) {
         if (renderWithShadows) {
             dynamicDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
         }
-        const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
+        const program = painter.getOrCreateProgram<ElevatedStructuresUniformsType>(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
 
         const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
@@ -281,7 +287,6 @@ function drawElevatedStructures(params: DrawFillParams) {
             layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.renderableSegments,
             layer.paint, painter.transform.zoom, programConfiguration, [elevatedStructures.vertexBufferNormal]);
     }
-
 }
 
 function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stencilModeOverride?: StencilMode) {
@@ -311,7 +316,10 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
     const image = patternProperty && patternProperty.constantOr((1 as any));
 
     const draw = (depthMode: DepthMode, isOutline: boolean) => {
-        let drawMode, programName, uniformValues, indexBuffer, segments;
+        let programName: string;
+        let uniformValues: UniformValues<FillUniformsType | FillPatternUniformsType>;
+
+        let drawMode, indexBuffer, segments;
         if (!isOutline) {
             programName = image ? 'fillPattern' : 'fill';
             drawMode = gl.TRIANGLES;
@@ -345,7 +353,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
                 dynamicDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
             }
 
-            const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
+            const program = painter.getOrCreateProgram<FillUniformsType | FillPatternUniformsType>(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
 
             if (image) {
                 painter.context.activeTexture.set(gl.TEXTURE0);
@@ -453,7 +461,7 @@ function drawShadows(params: DrawFillParams) {
         const programConfiguration = bucket.bufferData.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
 
-        const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram<ElevatedStructuresDepthUniformsType>(programName, {config: programConfiguration, overrideFog: affectedByFog});
 
         const tileMatrix = shadowRenderer.calculateShadowPassMatrixFromTile(tile.tileID.toUnwrapped());
 
