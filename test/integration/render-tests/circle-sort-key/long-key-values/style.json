@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "properties": {"key": 100000000, "color": "blue"}, "geometry": {"type": "Point", "coordinates": [-7,  7]}},
+          {"type": "Feature", "properties": {"key": 100000003, "color": "pink"}, "geometry": {"type": "Point", "coordinates": [-7, -7]}},
+          {"type": "Feature", "properties": {"key": 100000001, "color": "grey"}, "geometry": {"type": "Point", "coordinates": [ 7, -7]}},
+          {"type": "Feature", "properties": {"key": 100000002, "color":  "red"}, "geometry": {"type": "Point", "coordinates": [ 7,  7]}}
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/rect",
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson",
+      "paint": {
+        "circle-radius": 20,
+        "circle-color": ["get", "color"],
+        "circle-opacity": 0.8
+      },
+      "layout": {
+        "circle-sort-key": ["get", "key"]
+      }
+    }
+  ]
+}

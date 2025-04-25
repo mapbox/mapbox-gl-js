@@ -1,0 +1,102 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "key": 100000000,
+              "color": "blue"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [-20, 15],
+                [ 20, 15],
+                [ 20,  5],
+                [-20,  5],
+                [-20, 15]
+              ]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "key": 100000003,
+              "color": "pink"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [ 5, -20],
+                [15, -20],
+                [15,  20],
+                [ 5,  20],
+                [ 5, -20]
+              ]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "key": 100000001,
+              "color": "red"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [ -5, -20],
+                [ -5,  20],
+                [-15,  20],
+                [-15, -20],
+                [ -5, -20]
+              ]]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "key": 100000002,
+              "color": "grey"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[
+                [-20, -15],
+                [ 20, -15],
+                [ 20,  -5],
+                [-20,  -5],
+                [-20, -15]
+              ]]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/rect",
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "layout": {
+        "fill-sort-key": ["get", "key"]
+      },
+      "paint": {
+        "fill-color": ["get", "color"],
+        "fill-antialias": false
+      }
+    }
+  ]
+}
