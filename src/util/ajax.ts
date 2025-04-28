@@ -63,7 +63,7 @@ if (typeof Object.freeze == 'function') {
  */
 export type RequestParameters = {
     url: string;
-    headers?: any;
+    headers?: Record<string, string>;
     method?: 'GET' | 'POST' | 'PUT';
     body?: string;
     type?: 'string' | 'json' | 'arrayBuffer';
@@ -110,7 +110,7 @@ export const getReferrer: () => string = isWorker() ?
 // via a file:// URL.
 const isFileURL = (url: string) => /^file:/.test(url) || (/^file:/.test(getReferrer()) && !/^\w+:/.test(url));
 
-function makeFetchRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+function makeFetchRequest(requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
     const controller = new AbortController();
     const request = new Request(requestParameters.url, {
         method: requestParameters.method || 'GET',
@@ -202,7 +202,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
     }};
 }
 
-function makeXMLHttpRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+function makeXMLHttpRequest(requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
     const xhr: XMLHttpRequest = new XMLHttpRequest();
     xhr.open(requestParameters.method || 'GET', requestParameters.url, true);
     if (requestParameters.type === 'arrayBuffer') {
@@ -226,7 +226,7 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
                 // We're manually parsing JSON here to get better error messages.
                 try {
                     data = JSON.parse(xhr.response);
-                } catch (err: any) {
+                } catch (err) {
                     return callback(err);
                 }
             }
@@ -239,7 +239,7 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
     return {cancel: () => xhr.abort()};
 }
 
-export const makeRequest = function (requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+export const makeRequest = function (requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
     // We're trying to use the Fetch API if possible. However, in some situations we can't use it:
     // - Safari exposes AbortController, but it doesn't work actually abort any requests in
     //   older versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2). In this case,
@@ -260,7 +260,7 @@ export const makeRequest = function (requestParameters: RequestParameters, callb
     return makeXMLHttpRequest(requestParameters, callback);
 };
 
-export const getJSON = function (requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+export const getJSON = function (requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
     return makeRequest(extend(requestParameters, {type: 'json'}), callback);
 };
 
@@ -327,7 +327,7 @@ export const getImage = function (
         if (!requestParameters.headers) {
             requestParameters.headers = {};
         }
-        requestParameters.headers.accept = 'image/webp,*/*';
+        requestParameters.headers['accept'] = 'image/webp,*/*';
     }
 
     // limit concurrent image loads to help with raster sources performance on big screens

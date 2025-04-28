@@ -635,7 +635,7 @@ class Tile {
             if (!painter.style.hasLayer(id)) continue;
 
             const bucket = this.buckets[id];
-            const bucketLayer = bucket.layers[0] as StyleLayer;
+            const bucketLayer = bucket.layers[0];
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
             const sourceLayer = vtLayers[sourceLayerId];

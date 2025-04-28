@@ -64,7 +64,7 @@ export class MapboxRasterLayer {
     dataIndex: TPbfDataIndexEntry[];
     bandShape: number[];
     _decodedBlocks: LRUCache<object>;
-    _blocksInProgress: Set<any>;
+    _blocksInProgress: Set<number>;
     get dimension(): number;
     get cacheSize(): number;
     getBandList(): Array<string>;

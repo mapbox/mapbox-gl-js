@@ -1032,8 +1032,8 @@ describe('Map', () => {
             const [index] = Object.entries(window.document.styleSheets[0].cssRules).find(([, rule]: [any, any]) => {
                 return rule.selectorText === '.mapboxgl-canary';
             });
-            try { window.document.body.removeChild(container); } catch (err: any) { /* noop */ }
-            try { window.document.styleSheets[0].deleteRule(index); } catch (err: any) { /* noop */ }
+            try { window.document.body.removeChild(container); } catch (err) { /* noop */ }
+            try { window.document.styleSheets[0].deleteRule(index); } catch (err) { /* noop */ }
         });
 
         test('should not warn when CSS is present', async () => {

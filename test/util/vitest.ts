@@ -34,7 +34,7 @@ export function doneAsync() {
         return async (...args) => {
             try {
                 await fn(...args, doneRef);
-            } catch (err: any) {
+            } catch (err) {
                 doneRef.reject(err);
             }
         };

@@ -4,6 +4,7 @@ import './feature_index';
 
 import type {CollisionBoxArray} from './array_types';
 import type Style from '../style/style';
+import type StyleLayer from '../style/style_layer';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
 import type Context from '../gl/context';
@@ -96,7 +97,7 @@ export type BucketFeature = {
 export interface Bucket {
     layerIds: Array<string>;
     hasPattern: boolean;
-    layers: Array<any>;
+    layers: StyleLayer[];
     stateDependentLayers: Array<any>;
     readonly stateDependentLayerIds: Array<string>;
     populate: (

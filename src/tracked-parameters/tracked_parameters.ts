@@ -98,7 +98,7 @@ function deSerializePaneParams(input?: string | null): PaneState {
     if (input) {
         try {
             obj = deserialize(input);
-        } catch (err: any) {
+        } catch (err) {
             console.log(`Tracked parameters deserialization error: ${err}`);
         }
     }

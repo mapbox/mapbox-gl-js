@@ -4,7 +4,19 @@ import readStyle from './read_style';
 import ValidationError from './error/validation_error';
 import getType from './util/get_type';
 
+import type {StyleReference} from './reference/latest';
 import type {ValidationErrors} from './validate_style.min';
+import type {
+    StyleSpecification,
+    SourceSpecification,
+    SourcesSpecification,
+    ImportSpecification
+} from './types';
+
+type MapboxStyleSpecification = StyleSpecification & {
+    visibility?: 'public' | 'private';
+    protected?: boolean;
+};
 
 const SUPPORTED_SPEC_VERSION = 8;
 const MAX_SOURCES_IN_STYLE = 15;
@@ -14,15 +26,15 @@ function isValid(value: string | null | undefined, regex: RegExp): boolean {
     return !!value.match(regex);
 }
 
-function getSourceCount(source: any): number {
-    if (source.url) {
+function getSourceCount(source: SourceSpecification): number {
+    if ('url' in source) {
         return source.url.split(',').length;
     } else {
         return 0;
     }
 }
 
-function getAllowedKeyErrors(obj: any, keys: Array<any>, path?: string | null): Array<ValidationError> {
+function getAllowedKeyErrors(obj: object, keys: string[], path?: string | null): Array<ValidationError> {
     const allowed = new Set(keys);
     const errors = [];
     Object.keys(obj).forEach(k => {
@@ -34,8 +46,8 @@ function getAllowedKeyErrors(obj: any, keys: Array<any>, path?: string | null): 
     return errors;
 }
 
-const acceptedSourceTypes = new Set(["vector", "raster", "raster-dem", "raster-array", "model", "batched-model"]);
-function getSourceErrors(source: any, i: number): Array<ValidationError> {
+const acceptedSourceTypes = new Set<SourceSpecification['type']>(['vector', 'raster', 'raster-dem', 'raster-array', 'model', 'batched-model']);
+function getSourceErrors(source: SourceSpecification, i: number): Array<ValidationError> {
     const errors = [];
 
     /*
@@ -48,7 +60,7 @@ function getSourceErrors(source: any, i: number): Array<ValidationError> {
     /*
      * "type" is required and must be one of "vector", "raster", "raster-dem", "raster-array"
      */
-    if (!acceptedSourceTypes.has(String(source.type))) {
+    if (!acceptedSourceTypes.has(String(source.type) as SourceSpecification['type'])) {
         errors.push(new ValidationError(`sources[${i}].type`, source.type, `Expected one of [${Array.from(acceptedSourceTypes).join(", ")}]`));
     }
 
@@ -59,8 +71,8 @@ function getSourceErrors(source: any, i: number): Array<ValidationError> {
      * mapbox://mapbox.abcd1234,penny.abcd1234
      */
     const sourceUrlPattern = /^mapbox:\/\/([^/]*)$/;
-    if (!source.url || !isValid(source.url, sourceUrlPattern)) {
-        errors.push(new ValidationError(`sources[${i}].url`, source.url, 'Expected a valid Mapbox tileset url'));
+    if (!('url' in source) || !isValid(source.url, sourceUrlPattern)) {
+        errors.push(new ValidationError(`sources[${i}].url`, (source as {url?: string}).url, 'Expected a valid Mapbox tileset url'));
     }
 
     return errors;
@@ -74,7 +86,7 @@ function getMaxSourcesErrors(sourcesCount: number): Array<ValidationError> {
     return errors;
 }
 
-function getSourcesErrors(sources: any): {
+function getSourcesErrors(sources: SourcesSpecification): {
     errors: Array<ValidationError>;
     sourcesCount: number;
 } {
@@ -95,14 +107,11 @@ function getSourcesErrors(sources: any): {
     return {errors, sourcesCount};
 }
 
-function getImportErrors(imports: Array<any> = []): {
-    errors: Array<ValidationError>;
-    sourcesCount: number;
-} {
+function getImportErrors(imports: ImportSpecification[] = []): {errors: Array<ValidationError>; sourcesCount: number} {
     let errors: Array<ValidationError> = [];
 
     let sourcesCount = 0;
-    const validateImports = (imports: Array<any> = []) => {
+    const validateImports = (imports: ImportSpecification[] = []) => {
         for (const importSpec of imports) {
             const style = importSpec.data;
             if (!style) continue;
@@ -129,7 +138,7 @@ function getImportErrors(imports: Array<any> = []): {
     return {errors, sourcesCount};
 }
 
-function getRootErrors(style: any, specKeys: Array<any>): Array<ValidationError> {
+function getRootErrors(style: MapboxStyleSpecification, specKeys: string[]): Array<ValidationError> {
     const errors = [];
 
     /*
@@ -208,7 +217,7 @@ function getRootErrors(style: any, specKeys: Array<any>): Array<ValidationError>
  *   var validateMapboxApiSupported = require('mapbox-gl-style-spec/lib/validate_style_mapbox_api_supported.js');
  *   var errors = validateMapboxApiSupported(style);
  */
-export default function validateMapboxApiSupported(style: any, styleSpec: any = v8): ValidationErrors {
+export default function validateMapboxApiSupported(style: MapboxStyleSpecification, styleSpec: StyleReference = v8): ValidationErrors {
     let s = style;
     try {
         s = readStyle(s);

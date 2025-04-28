@@ -38,11 +38,11 @@ export type LoadGeoJSONParameters = GeoJSONWorkerOptions & {
     append?: boolean;
 };
 
-export type ResourceTiming = Record<string, Array<PerformanceResourceTiming>>;
+type FeatureCollectionOrFeature = GeoJSON.FeatureCollection | GeoJSON.Feature;
 
-export type LoadGeoJSONResult = {
-    resourceTiming?: ResourceTiming;
-};
+type ResourceTiming = Record<string, PerformanceResourceTiming[]>;
+
+export type LoadGeoJSONResult = FeatureCollectionOrFeature & {resourceTiming?: ResourceTiming};
 
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<LoadGeoJSONResult>) => void;
 
@@ -128,11 +128,11 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      *
      * @private
      */
-    loadData(params: LoadGeoJSONParameters, callback: ResponseCallback<LoadGeoJSONResult>): void {
+    loadData(params: LoadGeoJSONParameters, callback: ResponseCallback<{resourceTiming?: ResourceTiming}>): void {
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;
 
-        this.loadGeoJSON(params, (err?: Error, data?: GeoJSON.FeatureCollection | GeoJSON.Feature) => {
+        this.loadGeoJSON(params, (err?: Error, data?: FeatureCollectionOrFeature) => {
             if (err || !data) {
                 return callback(err);
 
@@ -172,11 +172,11 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                         params.dynamic ? this._dynamicIndex :
                         geojsonvt(data, params.geojsonVtOptions);
 
-                } catch (err: any) {
+                } catch (err) {
                     return callback(err);
                 }
 
-                const result: LoadGeoJSONResult = {};
+                const result: {resourceTiming?: ResourceTiming} = {};
                 if (perf) {
                     const resourceTimingData = getPerformanceMeasurement(requestParam);
                     // it's necessary to eval the result of getEntriesByName() here via parse/stringify
@@ -225,7 +225,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
      * @private
      */
-    loadGeoJSON(params: LoadGeoJSONParameters, callback: ResponseCallback<any>): void {
+    loadGeoJSON(params: LoadGeoJSONParameters, callback: ResponseCallback<FeatureCollectionOrFeature>): void {
         // Because of same origin issues, urls must either include an explicit
         // origin or absolute path.
         // ie: /foo/bar.json or http://example.com/bar.json

@@ -245,7 +245,7 @@ class Painter {
     cache: Record<string, Program<UniformBindings>>;
     symbolFadeChange: number;
     gpuTimers: GPUTimers;
-    deferredRenderGpuTimeQueries: Array<any>;
+    deferredRenderGpuTimeQueries: WebGLQuery[];
     emptyTexture: Texture;
     identityMat: mat4;
     debugOverlayTexture: Texture;
@@ -1512,7 +1512,7 @@ class Painter {
         return currentLayerTimers;
     }
 
-    collectDeferredRenderGpuQueries(): Array<any> {
+    collectDeferredRenderGpuQueries(): WebGLQuery[] {
         const currentQueries = this.deferredRenderGpuTimeQueries;
         this.deferredRenderGpuTimeQueries = [];
         return currentQueries;
@@ -1521,19 +1521,19 @@ class Painter {
     queryGpuTimers(gpuTimers: GPUTimers): {
         [layerId: string]: number;
     } {
-        const layers: Record<string, any> = {};
+        const layers: Record<string, number> = {};
         for (const layerId in gpuTimers) {
             const gpuTimer = gpuTimers[layerId];
             const ext = this.context.extTimerQuery;
             const gl = this.context.gl;
             const gpuTime = ext.getQueryParameter(gpuTimer.query, gl.QUERY_RESULT) / (1000 * 1000);
             ext.deleteQueryEXT(gpuTimer.query);
-            layers[layerId] = (gpuTime);
+            layers[layerId] = gpuTime;
         }
         return layers;
     }
 
-    queryGpuTimeDeferredRender(gpuQueries: Array<any>): number {
+    queryGpuTimeDeferredRender(gpuQueries: WebGLQuery[]): number {
         if (!this.options.gpuTimingDeferredRender) return 0;
         const gl = this.context.gl;
 

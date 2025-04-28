@@ -29,6 +29,7 @@ import MercatorCoordinate, {
 import {Aabb} from '../util/primitives';
 import {getZoomAdjustment} from '../geo/projection/adjustments';
 
+import type Tile from '../source/tile';
 import type Transform from '../geo/transform';
 import type HandlerManager from './handler_manager';
 import type BoxZoomHandler from './handler/box_zoom';
@@ -147,6 +148,13 @@ export type AnimationOptions = {
 };
 
 export type EasingOptions = CameraOptions & AnimationOptions;
+
+type MotionState = {
+    moving?: boolean;
+    zooming?: boolean;
+    rotating?: boolean;
+    pitching?: boolean;
+};
 
 export type ElevationBoxRaycast = {
     minLngLat: LngLat;
@@ -1428,7 +1436,7 @@ class Camera extends Evented<MapEvents> {
             return this;
         }
 
-        const currently = {
+        const currently: MotionState = {
             moving: this._moving,
             zooming: this._zooming,
             rotating: this._rotating,
@@ -1451,7 +1459,7 @@ class Camera extends Evented<MapEvents> {
         return this;
     }
 
-    _prepareEase(eventData: EventData | null | undefined, noMoveStart: boolean, currently: any = {}) {
+    _prepareEase(eventData: EventData | null | undefined, noMoveStart: boolean, currently: MotionState = {}) {
         this._moving = true;
         this.transform.cameraElevationReference = "sea";
         if (this.transform._orthographicProjectionAtLowPitch && this.transform.pitch  === 0 && this.transform.projection.name !== 'globe') {
@@ -1855,7 +1863,7 @@ class Camera extends Evented<MapEvents> {
     }
 
     // emulates frame function for some transform
-    _emulate(frame: any, duration: number, initialTransform: Transform): Array<Transform> {
+    _emulate(frame: (Transform) => (number) => Transform, duration: number, initialTransform: Transform): Array<Transform> {
         const frameRate = 15;
         const numFrames = Math.ceil(duration * frameRate / 1000);
 
@@ -1870,7 +1878,7 @@ class Camera extends Evented<MapEvents> {
     }
 
     // No-op in the Camera class, implemented by the Map class
-    _preloadTiles(_transform: Transform | Array<Transform>, _callback?: Callback<any>): any {}
+    _preloadTiles(_transform: Transform | Array<Transform>, _callback?: Callback<Tile[]>) {}
 }
 
 // In debug builds, check that camera change events are fired in the correct order.
@@ -1878,7 +1886,7 @@ class Camera extends Evented<MapEvents> {
 // - another ___start event can't be fired before a ___end event has been fired for the previous one
 function addAssertions(camera: Camera) { //eslint-disable-line
     Debug.run(() => {
-        const inProgress: Record<string, any> = {};
+        const inProgress: Record<string, boolean> = {};
 
         (['drag', 'zoom', 'rotate', 'pitch', 'move'] as const).forEach(name => {
             inProgress[name] = false;

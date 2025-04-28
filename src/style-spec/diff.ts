@@ -8,7 +8,7 @@ type Sources = {
 
 type Command = {
     command: string;
-    args: Array<any>;
+    args: unknown[];
 };
 
 export const operations = {
@@ -240,7 +240,16 @@ function diffSources(before: Sources, after: Sources, commands: Array<Command>, 
     }
 }
 
-function diffLayerPropertyChanges(before: any, after: any, commands: Array<Command>, layerId: string, klass: string | null | undefined, command: string) {
+function diffLayerPropertyChanges(before: LayerSpecification['layout'], after: LayerSpecification['layout'], commands: Array<Command>, layerId: string, klass: string | null | undefined, command: string): void;
+function diffLayerPropertyChanges(before: LayerSpecification['paint'], after: LayerSpecification['paint'], commands: Array<Command>, layerId: string, klass: string | null | undefined, command: string): void;
+function diffLayerPropertyChanges(
+    before: LayerSpecification['paint'] | LayerSpecification['layout'],
+    after: LayerSpecification['paint'] | LayerSpecification['layout'],
+    commands: Command[],
+    layerId: string,
+    klass: string | null | undefined,
+    command: string
+) {
     before = before || {};
     after = after || {};
 
@@ -260,22 +269,11 @@ function diffLayerPropertyChanges(before: any, after: any, commands: Array<Comma
     }
 }
 
-function pluckId<T extends {
-    id: string;
-}>(item: T): string {
+function pluckId<T extends {id: string}>(item: T): string {
     return item.id;
 }
 
-function indexById<T extends {
-    id: string;
-}>(
-    group: {
-        [key: string]: T;
-    },
-    item: T,
-): {
-    [id: string]: T;
-} {
+function indexById<T extends {id: string}>(group: {[key: string]: T}, item: T): {[id: string]: T} {
     group[item.id] = item;
     return group;
 }
@@ -289,14 +287,14 @@ function diffLayers(before: Array<LayerSpecification>, after: Array<LayerSpecifi
     const afterOrder = after.map(pluckId);
 
     // index of layer by id
-    const beforeIndex = before.reduce<Record<string, any>>(indexById, {});
-    const afterIndex = after.reduce<Record<string, any>>(indexById, {});
+    const beforeIndex = before.reduce(indexById, {});
+    const afterIndex = after.reduce(indexById, {});
 
     // track order of layers as if they have been mutated
     const tracker = beforeOrder.slice();
 
     // layers that have been added do not need to be diffed
-    const clean: any = Object.create(null);
+    const clean = Object.create(null);
 
     let i, d, layerId, beforeLayer: LayerSpecification, afterLayer: LayerSpecification, insertBeforeLayerId, prop;
 
@@ -401,8 +399,8 @@ export function diffImports(before: Array<ImportSpecification> | null | undefine
     const afterOrder = after.map(pluckId);
 
     // index imports by id
-    const beforeIndex = before.reduce<Record<string, any>>(indexById, {});
-    const afterIndex = after.reduce<Record<string, any>>(indexById, {});
+    const beforeIndex = before.reduce(indexById, {});
+    const afterIndex = after.reduce(indexById, {});
 
     // track order of imports as if they have been mutated
     const tracker = beforeOrder.slice();

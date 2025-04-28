@@ -40,7 +40,7 @@ type ArrayWithStructAccessors = {
 
 const arraysWithStructAccessors: ArrayWithStructAccessors[] = [];
 const arrayTypeEntries = new Set();
-const layoutCache: Record<string, any> = {};
+const layoutCache: Record<string, {className: string; members: StructArrayMember[]; size: number; usedTypes: Set<string>}> = {};
 
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 function normalizeMembers(members: StructArrayMember[], usedTypes: Set<string | ViewType>): StructArrayMember[] {
@@ -90,7 +90,7 @@ function createStructArrayLayoutType({
 
     // combine consecutive 'members' with same underlying type, summing their
     // component counts
-    if (!alignment || alignment === 1) members = members.reduce<Array<any>>((memo, member) => {
+    if (!alignment || alignment === 1) members = members.reduce((memo, member) => {
         if (memo.length > 0 && memo[memo.length - 1].type === member.type) {
             const last = memo[memo.length - 1];
             return memo.slice(0, -1).concat(extend({}, last, {

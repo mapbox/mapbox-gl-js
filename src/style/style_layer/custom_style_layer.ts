@@ -126,7 +126,7 @@ type CustomLayerRenderMethod = (
  * coordinates to gl coordinates. The mercator coordinate `[0, 0]` represents the
  * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. When
  * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
- * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLngLat
+ * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate#fromLngLat}
  * can be used to project a `LngLat` to a mercator coordinate.
  */
 
@@ -155,7 +155,7 @@ type CustomLayerRenderMethod = (
  * coordinates to gl coordinates. The spherical mercator coordinate `[0, 0]` represents the
  * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. When
  * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
- * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLngLat
+ * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate#fromLngLat}
  * can be used to project a `LngLat` to a mercator coordinate.
  */
 

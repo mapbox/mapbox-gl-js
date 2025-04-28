@@ -26,7 +26,7 @@ export type PerformanceMetrics = {
     workerIdle: number;
     workerIdlePercent: number;
     placementTime: number;
-    timelines: Array<any>;
+    timelines: WorkerPerformanceMetrics[];
 };
 
 export type WorkerPerformanceMetrics = {
