@@ -293,6 +293,10 @@ class StyleLayer extends Evented {
         return false;
     }
 
+    hasElevation(): boolean {
+        return false;
+    }
+
     isSky(): boolean {
         return false;
     }

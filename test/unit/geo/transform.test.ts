@@ -656,6 +656,26 @@ describe('transform', () => {
                 new OverscaledTileID(14, 0, 14, 2633, 6337)
             ]);
         });
+
+        test('Extend tile coverage for roads', () => {
+            transform.resize(512, 512);
+            transform.center = new LngLat(-122.156884, 37.709877);
+            transform.zoom = 18;
+            transform.pitch = 79;
+            transform.bearing = 0;
+
+            const visibleTiles = transform.coveringTiles({tileSize: 512, minzoom: 14, maxzoom: 14, roundZoom: true, calculateQuadrantVisibility: false});
+
+            expect(visibleTiles).toStrictEqual([
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6336))
+            ]);
+
+            const tileExtension = transform.extendTileCover(visibleTiles, 14, transform._camera.forward());
+
+            expect(tileExtension).toStrictEqual([
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6337))
+            ]);
+        });
     });
 
     test('coveringTiles with fog culling enabled', () => {

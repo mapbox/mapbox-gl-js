@@ -854,18 +854,18 @@ class Transform {
     }
 
     /**
-     * Extends tile coverage to include potential neighboring tiles using either light direction or quadrant visibility information.
+     * Extends tile coverage to include potential neighboring tiles using either a direction vector or quadrant visibility information.
      * @param {Array<OverscaledTileID>} coveringTiles tile cover that is extended
      * @param {number} maxZoom maximum zoom level
-     * @param {vec3} lightDir direction of the light (unit vector), if undefined quadrant visibility information is used
+     * @param {vec3} direction direction unit vector, if undefined quadrant visibility information is used
      * @returns {Array<OverscaledTileID>} a set of extension tiles
      */
-    extendTileCover(coveringTiles: Array<OverscaledTileID>, maxZoom: number, lightDir?: vec3): Array<OverscaledTileID> {
+    extendTileCover(coveringTiles: Array<OverscaledTileID>, maxZoom: number, direction?: vec3): Array<OverscaledTileID> {
         let out: OverscaledTileID[] = [];
-        const extendShadows = lightDir !== undefined;
-        const extendQuadrants = !extendShadows;
+        const extendDirection = direction != null;
+        const extendQuadrants = !extendDirection;
         if (extendQuadrants && this.zoom < maxZoom) return out;
-        if (extendShadows && lightDir[0] === 0.0 && lightDir[1] === 0.0) return out;
+        if (extendDirection && direction[0] === 0.0 && direction[1] === 0.0) return out;
 
         const addedTiles = new Set<number>();
         const addTileId = (overscaledZ: number, wrap: number, z: number, x: number, y: number) => {
@@ -899,29 +899,29 @@ class Transform {
             const leftTileX = xMinInsideRange ? tileId.x - 1 : tiles - 1;
             const rightTileX = xMaxInsideRange ? tileId.x + 1 : 0;
 
-            if (extendShadows) {
-                if (lightDir[0] < 0.0) {
+            if (extendDirection) {
+                if (direction[0] < 0.0) {
                     addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y);
-                    if (lightDir[1] < 0.0 && yMaxInsideRange) {
+                    if (direction[1] < 0.0 && yMaxInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
                         addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y + 1);
                     }
-                    if (lightDir[1] > 0.0 && yMinInsideRange) {
+                    if (direction[1] > 0.0 && yMinInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);
                         addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y - 1);
                     }
-                } else if (lightDir[0] > 0.0) {
+                } else if (direction[0] > 0.0) {
                     addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y);
-                    if (lightDir[1] < 0.0 && yMaxInsideRange) {
+                    if (direction[1] < 0.0 && yMaxInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
                         addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y + 1);
                     }
-                    if (lightDir[1] > 0.0 && yMinInsideRange) {
+                    if (direction[1] > 0.0 && yMinInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);
                         addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y - 1);
                     }
                 } else {
-                    if (lightDir[1] < 0.0 && yMaxInsideRange) {
+                    if (direction[1] < 0.0 && yMaxInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
                     } else if (yMinInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);

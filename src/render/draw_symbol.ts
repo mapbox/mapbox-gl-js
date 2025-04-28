@@ -58,6 +58,7 @@ type SymbolTileRenderState = {
         hasHalo: boolean;
         depthMode: DepthMode;
         tile: Tile;
+        renderWithShadows: boolean;
         labelPlaneMatrixInv: mat4 | null | undefined;
     } | null;
 };
@@ -433,10 +434,6 @@ function drawLayerSymbols(
             const programConfiguration = bucket.icon.programConfigurations.get(layer.id);
             const program = painter.getOrCreateProgram<SymbolUniformsType>('symbol', {config: programConfiguration, defines: baseDefines});
 
-            if (renderWithShadows) {
-                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
-            }
-
             const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
             const sizeData = bucket.iconSizeData;
             const size = evaluateSizeForZoom(sizeData, tr.zoom);
@@ -500,6 +497,7 @@ function drawLayerSymbols(
                 hasHalo,
                 depthMode,
                 tile,
+                renderWithShadows,
                 labelPlaneMatrixInv,
             };
         };
@@ -583,10 +581,6 @@ function drawLayerSymbols(
             const uniformValues = symbolUniformValues(sizeData.kind, size, rotateInShader, textPitchWithMap, painter,
                 matrix, uLabelPlaneMatrix, uglCoordMatrix, elevationFromSea, true, texSize, texSizeIcon, true, coord, globeToMercator, mercatorCenter, invMatrix, cameraUpVector, bucket.getProjection(), groundShadowFactor, null, null, textScaleFactor);
 
-            if (renderWithShadows) {
-                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
-            }
-
             const atlasTexture = tile.glyphAtlasTexture ? tile.glyphAtlasTexture : null;
             const atlasInterpolation = gl.LINEAR;
 
@@ -613,6 +607,7 @@ function drawLayerSymbols(
                 hasHalo,
                 depthMode,
                 tile,
+                renderWithShadows,
                 labelPlaneMatrixInv,
             };
         };
@@ -696,6 +691,10 @@ function drawLayerSymbols(
             if (state.atlasTextureIcon) {
                 state.atlasTextureIcon.bind(state.atlasInterpolationIcon, gl.CLAMP_TO_EDGE, true);
             }
+        }
+
+        if (state.renderWithShadows) {
+            painter.shadowRenderer.setupShadows(state.tile.tileID.toUnwrapped(), state.program, 'vector-tile', state.tile.tileID.overscaledZ);
         }
 
         painter.uploadCommonLightUniforms(painter.context, state.program as unknown as Program<LightsUniformsType>);

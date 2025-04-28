@@ -3843,8 +3843,18 @@ class Style extends Evented<MapEvents> {
         if (this.directionalLight) {
             lightDirection = shadowDirectionFromProperties(this.directionalLight);
         }
+        // Find sources with elevated layers
+        const sourcesWithElevatedLayers: Set<string> = new Set();
+        for (const id in this._mergedLayers) {
+            const layer = this._mergedLayers[id];
+            if (layer.hasElevation() && !sourcesWithElevatedLayers.has(layer.source)) {
+                sourcesWithElevatedLayers.add(layer.source);
+            }
+        }
         for (const id in this._mergedSourceCaches) {
-            this._mergedSourceCaches[id].update(transform, undefined, undefined, lightDirection);
+            const sourceCache = this._mergedSourceCaches[id];
+            const elevatedLayers = sourcesWithElevatedLayers.has(sourceCache._source.id);
+            sourceCache.update(transform, undefined, undefined, lightDirection, elevatedLayers);
         }
     }
 

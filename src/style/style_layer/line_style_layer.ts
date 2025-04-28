@@ -193,6 +193,10 @@ class LineStyleLayer extends StyleLayer {
     override isDraped(_?: SourceCache | null): boolean {
         return !this.hasElevatedBuckets;
     }
+
+    override hasElevation(): boolean {
+        return this.layout && this.layout.get('line-elevation-reference') !== 'none';
+    }
 }
 
 export default LineStyleLayer;

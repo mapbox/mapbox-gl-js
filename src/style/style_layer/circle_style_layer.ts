@@ -89,6 +89,10 @@ class CircleStyleLayer extends StyleLayer {
             overrideFog: false
         };
     }
+
+    override hasElevation(): boolean {
+        return this.layout && this.layout.get('circle-elevation-reference') !== 'none';
+    }
 }
 
 export function queryIntersectsCircle(

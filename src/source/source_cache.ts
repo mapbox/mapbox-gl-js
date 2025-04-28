@@ -506,7 +506,7 @@ class SourceCache extends Evented {
      * @param {tileSize} tileSize If needed to get lower resolution ideal cover,
      * override source.tileSize used in tile cover calculation.
      */
-    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean, directionalLight?: vec3) {
+    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean, directionalLight?: vec3, elevatedLayers?: boolean) {
         this.transform = transform;
         if (!this._sourceLoaded || this._paused || this.transform.freezeTileCoverage) { return; }
         assert(!(updateForTerrain && !this.usedForTerrain));
@@ -585,8 +585,7 @@ class SourceCache extends Evented {
             }
         }
 
-        if (idealTileIDs.length > 0 && this.castsShadows &&
-            directionalLight && this.transform.projection.name !== 'globe' &&
+        if (idealTileIDs.length > 0 && this.transform.projection.name !== 'globe' &&
             !this.usedForTerrain && !isRasterType(this._source.type)) {
             // compute desired max zoom level
             const coveringZoom = transform.coveringZoomLevel({
@@ -600,7 +599,12 @@ class SourceCache extends Evented {
                 for (const id of batchedModelTileIDs) {
                     idealTileIDs.push(id);
                 }
-            } else {
+            } else if (elevatedLayers) {
+                const batchedModelTileIDs = transform.extendTileCover(idealTileIDs, idealZoom, this.transform._camera.forward());
+                for (const id of batchedModelTileIDs) {
+                    idealTileIDs.push(id);
+                }
+            } else if (this.castsShadows && directionalLight) {
                 // find shadowCasterTiles
                 const shadowCasterTileIDs = transform.extendTileCover(idealTileIDs, idealZoom, directionalLight);
                 for (const id of shadowCasterTileIDs) {

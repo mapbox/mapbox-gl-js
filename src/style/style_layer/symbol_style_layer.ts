@@ -264,6 +264,10 @@ class SymbolStyleLayer extends StyleLayer {
             overrideFog: false
         };
     }
+
+    override hasElevation(): boolean {
+        return this.layout && this.layout.get('symbol-elevation-reference') === 'hd-road-markup';
+    }
 }
 
 export default SymbolStyleLayer;
