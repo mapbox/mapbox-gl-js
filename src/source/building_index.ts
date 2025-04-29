@@ -159,6 +159,7 @@ class BuildingIndex {
             maxFillExtrusionHeight = Math.max(heightData.height * verticalScale, maxFillExtrusionHeight || 0);
         }
         if (maxFillExtrusionHeight !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return maxFillExtrusionHeight;
         }
 

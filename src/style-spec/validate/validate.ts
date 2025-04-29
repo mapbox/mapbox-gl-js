@@ -83,6 +83,7 @@ export default function validate(options: ValidationOptions, arrayAsExpression: 
     const styleSpec = options.styleSpec;
 
     if (valueSpec.expression && isFunction(unbundle(value))) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return validateFunction(options);
     } else if (valueSpec.expression && isExpression(deepUnbundle(value))) {
         return validateExpression(options);
@@ -92,6 +93,7 @@ export default function validate(options: ValidationOptions, arrayAsExpression: 
             // Try to validate as an expression
             return validateExpression(options);
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return valid;
         }
     } else {

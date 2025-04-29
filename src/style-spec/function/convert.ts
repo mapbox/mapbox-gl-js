@@ -33,6 +33,7 @@ export default function convertFunction<T>(parameters: FunctionSpecification<T>,
     if (zoomAndFeatureDependent) {
         return convertZoomAndPropertyFunction(parameters, propertySpec, stops as Array<ZoomAndPropertyFunctionStop<T>>);
     } else if (zoomDependent) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return convertZoomFunction(parameters, propertySpec, stops as PropertyFunctionStop<T>[]);
     } else {
         return convertPropertyFunction(parameters, propertySpec, stops as PropertyFunctionStop<T>[]);
@@ -221,6 +222,7 @@ function convertZoomFunction<T>(parameters: FunctionSpecification<T>, propertySp
 
     fixupDegenerateStepCurve(expression);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return expression;
 }
 

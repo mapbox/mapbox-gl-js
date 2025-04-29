@@ -43,6 +43,7 @@ function getAllowedKeyErrors(obj: object, keys: string[], path?: string | null):
             errors.push(new ValidationError(prop, obj[k], `Unsupported property "${k}"`));
         }
     });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }
 
@@ -75,6 +76,7 @@ function getSourceErrors(source: SourceSpecification, i: number): Array<Validati
         errors.push(new ValidationError(`sources[${i}].url`, (source as {url?: string}).url, 'Expected a valid Mapbox tileset url'));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }
 
@@ -83,6 +85,7 @@ function getMaxSourcesErrors(sourcesCount: number): Array<ValidationError> {
     if (sourcesCount > MAX_SOURCES_IN_STYLE) {
         errors.push(new ValidationError('sources', null, `Styles must contain ${MAX_SOURCES_IN_STYLE} or fewer sources`));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }
 
@@ -204,6 +207,7 @@ function getRootErrors(style: MapboxStyleSpecification, specKeys: string[]): Arr
         errors.push(new ValidationError('protected', style.protected, 'Style protection must be true or false'));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }
 
@@ -222,6 +226,7 @@ export default function validateMapboxApiSupported(style: MapboxStyleSpecificati
     try {
         s = readStyle(s);
     } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [e];
     }
 

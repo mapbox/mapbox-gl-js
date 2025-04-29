@@ -251,6 +251,7 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
     if (start < text.length) {
         lines.push(input.substring(start, text.length));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return lines;
 }
 

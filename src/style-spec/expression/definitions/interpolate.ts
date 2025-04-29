@@ -157,16 +157,19 @@ class Interpolate implements Expression {
         const outputs = this.outputs;
 
         if (labels.length === 1) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return outputs[0].evaluate(ctx);
         }
 
         const value = (this.input.evaluate(ctx) as number);
         if (value <= labels[0]) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return outputs[0].evaluate(ctx);
         }
 
         const stopCount = labels.length;
         if (value >= labels[stopCount - 1]) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return outputs[stopCount - 1].evaluate(ctx);
         }
 
@@ -179,6 +182,7 @@ class Interpolate implements Expression {
         const outputUpper = outputs[index + 1].evaluate(ctx);
 
         if (this.operator === 'interpolate') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return interpolate[this.type.kind.toLowerCase()](outputLower, outputUpper, t);
         } else if (this.operator === 'interpolate-hcl') {
             return hcl.reverse(hcl.interpolate(hcl.forward(outputLower), hcl.forward(outputUpper), t));

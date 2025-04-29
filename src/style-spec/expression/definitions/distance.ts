@@ -147,6 +147,7 @@ function getLngLatPoints(coordinates: Array<Point>, canonical: CanonicalTileID) 
     for (let i = 0; i < coordinates.length; ++i) {
         coords.push(getLngLatPoint(coordinates[i], canonical));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return coords;
 }
 

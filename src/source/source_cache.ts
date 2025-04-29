@@ -955,6 +955,7 @@ class SourceCache extends Evented {
         const tileResults = [];
 
         const transform = this.transform;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         if (!transform) return tileResults;
 
         const isGlobe = transform.projection.name === 'globe';
@@ -1007,6 +1008,7 @@ class SourceCache extends Evented {
                 }
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return tileResults;
     }
 

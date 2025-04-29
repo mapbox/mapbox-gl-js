@@ -66,5 +66,6 @@ export default function validateObject(options: Options): Array<ValidationError>
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

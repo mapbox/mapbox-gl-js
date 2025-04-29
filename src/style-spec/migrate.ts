@@ -34,5 +34,6 @@ export default function (style) {
         throw new Error('cannot migrate from', style.version);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return style;
 }

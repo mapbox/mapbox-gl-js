@@ -131,6 +131,7 @@ function get(key: string, obj: {
     [key: string]: any;
 }) {
     const v = obj[key];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return typeof v === 'undefined' ? null : v;
 }
 
@@ -181,6 +182,7 @@ CompoundExpression.register(expressions, {
         array(NumberType, 4),
         [ColorType],
         (ctx, [v]) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return v.evaluate(ctx).toRenderColor(null).toArray();
         }
     ],
@@ -188,6 +190,7 @@ CompoundExpression.register(expressions, {
         array(NumberType, 4),
         [ColorType],
         (ctx, [v]) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return v.evaluate(ctx).toRenderColor(null).toHslaArray();
         }
     ],
@@ -228,9 +231,11 @@ CompoundExpression.register(expressions, {
         overloads: [
             [
                 [StringType],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 (ctx, [key]) => get(key.evaluate(ctx), ctx.properties())
             ], [
                 [StringType, ObjectType],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 (ctx, [key, obj]) => get(key.evaluate(ctx), obj.evaluate(ctx))
             ]
         ]
@@ -238,6 +243,7 @@ CompoundExpression.register(expressions, {
     'feature-state': [
         ValueType,
         [StringType],
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         (ctx, [key]) => get(key.evaluate(ctx), ctx.featureState || {})
     ],
     'properties': [
@@ -422,11 +428,13 @@ CompoundExpression.register(expressions, {
     'min': [
         NumberType,
         varargs(NumberType),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         (ctx, args) => Math.min(...args.map(arg => arg.evaluate(ctx)))
     ],
     'max': [
         NumberType,
         varargs(NumberType),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         (ctx, args) => Math.max(...args.map(arg => arg.evaluate(ctx)))
     ],
     'abs': [
@@ -579,6 +587,7 @@ CompoundExpression.register(expressions, {
         overloads: [
             [
                 [BooleanType, BooleanType],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 (ctx, [a, b]) => a.evaluate(ctx) && b.evaluate(ctx)
             ],
             [
@@ -598,6 +607,7 @@ CompoundExpression.register(expressions, {
         overloads: [
             [
                 [BooleanType, BooleanType],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 (ctx, [a, b]) => a.evaluate(ctx) || b.evaluate(ctx)
             ],
             [
@@ -632,11 +642,13 @@ CompoundExpression.register(expressions, {
     'upcase': [
         StringType,
         [StringType],
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         (ctx, [s]) => s.evaluate(ctx).toUpperCase()
     ],
     'downcase': [
         StringType,
         [StringType],
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         (ctx, [s]) => s.evaluate(ctx).toLowerCase()
     ],
     'concat': [
@@ -647,17 +659,21 @@ CompoundExpression.register(expressions, {
     'resolved-locale': [
         StringType,
         [CollatorType],
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         (ctx, [collator]) => collator.evaluate(ctx).resolvedLocale()
     ],
     'random': [
         NumberType,
         [NumberType, NumberType, ValueType],
         (ctx, args) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             const [min, max, seed] = args.map(arg => arg.evaluate(ctx));
             if (min > max) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return min;
             }
             if (min === max) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return min;
             }
             let seedVal;
@@ -669,6 +685,7 @@ CompoundExpression.register(expressions, {
                 throw new RuntimeError(`Invalid seed input: ${seed}`);
             }
             const random = mulberry32(seedVal)();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return min + random * (max - min);
         }
     ],

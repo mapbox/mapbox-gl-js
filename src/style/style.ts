@@ -1447,6 +1447,7 @@ class Style extends Evented<MapEvents> {
                 serializedLayers.push(layer.serialize());
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return serializedLayers;
     }
 
@@ -2071,6 +2072,7 @@ class Style extends Evented<MapEvents> {
             if (sourceCache) sources.push(sourceCache.getSource());
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return sources;
     }
 
@@ -2191,6 +2193,7 @@ class Style extends Evented<MapEvents> {
         if (this.ambientLight) {
             lights.push(this.ambientLight.get());
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return lights;
     }
 
@@ -2292,6 +2295,7 @@ class Style extends Evented<MapEvents> {
             if (layer) layers.push(layer);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return layers;
     }
 
@@ -3185,6 +3189,7 @@ class Style extends Evented<MapEvents> {
             if (scope === this.scope) features.push(feature);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return features;
     }
 
@@ -3229,6 +3234,7 @@ class Style extends Evented<MapEvents> {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return targetFeatures;
     }
 
@@ -3349,6 +3355,7 @@ class Style extends Evented<MapEvents> {
             results = results.concat(querySourceFeatures(sourceCache, params));
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return results;
     }
 
@@ -4169,6 +4176,7 @@ class Style extends Evented<MapEvents> {
             if (sourceCache) sources.push(sourceCache.getSource());
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return sources;
     }
 
@@ -4217,6 +4225,7 @@ class Style extends Evented<MapEvents> {
         if (this._mergedSymbolSourceCaches[fqid]) {
             sourceCaches.push(this._mergedSymbolSourceCaches[fqid]);
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return sourceCaches;
     }
 
@@ -4307,6 +4316,7 @@ class Style extends Evented<MapEvents> {
         if (this._symbolSourceCaches[source]) {
             sourceCaches.push(this._symbolSourceCaches[source]);
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return sourceCaches;
     }
 

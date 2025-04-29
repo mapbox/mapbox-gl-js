@@ -306,6 +306,7 @@ class IndoorManager extends Evented<IndoorEvents> {
 
         this._floorplanStates[this._indoorData.id].selectedBuilding = selectedBuilding ? selectedBuilding.id : undefined;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const levelsForBuilding = this._indoorData.levels.filter((item) => selectedBuilding.levels.includes(item.id));
 
         this.fire(new Event('buildingselected', {
@@ -347,11 +348,13 @@ class IndoorManager extends Evented<IndoorEvents> {
 
         function getIdFromFloorString(input) {
             const floorIndex = input.indexOf('/floor/');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             if (floorIndex === -1) return input;
 
             const idStart = floorIndex + '/floor/'.length;
             const idEnd = input.indexOf('/', idStart);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return idEnd === -1 ? input.slice(idStart) : input.slice(idStart, idEnd);
         }
 

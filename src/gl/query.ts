@@ -23,6 +23,7 @@ export class OcclusionQuery {
     isResultAvailable(): boolean {
         const resultReady: any =  this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT_AVAILABLE);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return resultReady;
     }
 
@@ -31,6 +32,7 @@ export class OcclusionQuery {
 
         this._isFree = true;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return samplesPassed;
     }
 

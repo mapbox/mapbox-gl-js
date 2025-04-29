@@ -63,6 +63,7 @@ export function classifyRings(rings: Array<Ring>, maxRings: number): Array<Array
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return polygons;
 }
 

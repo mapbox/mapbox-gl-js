@@ -59,6 +59,7 @@ class FeatureWrapper implements VectorTileFeature {
             for (const point of this._feature.geometry) {
                 geometry.push([new Point(point[0], point[1])]);
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return geometry;
         } else {
             const geometry = [];
@@ -69,11 +70,13 @@ class FeatureWrapper implements VectorTileFeature {
                 }
                 geometry.push(newRing);
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return geometry;
         }
     }
 
     toGeoJSON(x: number, y: number, z: number): GeoJSON.Feature {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return toGeoJSON.call(this, x, y, z);
     }
 }

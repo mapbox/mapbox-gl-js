@@ -300,6 +300,7 @@ export class TrackedParameters implements ITrackedParameters {
         };
         // @ts-expect-error - TS2349 - This expression is not callable.
         window.showSaveFilePicker(opts).then((fileHandle) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return fileHandle.createWritable();
         }).then((writable) => {
             const serialized = serialize(this._paneState);
@@ -327,8 +328,10 @@ export class TrackedParameters implements ITrackedParameters {
         };
         // @ts-expect-error - TS2551 - Property 'showOpenFilePicker' does not exist on type 'Window & typeof globalThis & Record<"showSaveFilePicker", unknown>'. Did you mean 'showSaveFilePicker'?
         window.showOpenFilePicker(opts).then((fileHandles) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return fileHandles[0].getFile();
         }).then((file) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return file.text();
         }).then((fileData) => {
             const loadedPaneState = deSerializePaneParams(fileData);
@@ -534,6 +537,7 @@ export class TrackedParameters implements ITrackedParameters {
             }
 
             if ("label" in description) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return description.label;
             }
 

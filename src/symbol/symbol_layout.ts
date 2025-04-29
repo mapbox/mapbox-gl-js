@@ -759,6 +759,7 @@ function getDefaultHorizontalShaping(horizontalShaping: Partial<Record<TextJusti
     // and all the justifications have the same collision box
     // eslint-disable-next-line no-unreachable-loop
     for (const justification in horizontalShaping) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return horizontalShaping[justification];
     }
     return null;

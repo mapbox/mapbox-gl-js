@@ -18,5 +18,6 @@ export default function validateEnum(options: ValidationOptions): Array<Validati
             errors.push(new ValidationError(key, value, `expected one of [${Object.keys(valueSpec.values).join(', ')}], ${JSON.stringify(value)} found`));
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

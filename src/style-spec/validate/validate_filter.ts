@@ -26,6 +26,7 @@ export default function validateFilter(options: Options): Array<ValidationError>
             valueSpec: options.styleSpec[`filter_${layerType}`]
         }));
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return validateNonExpressionFilter(options);
     }
 }
@@ -119,5 +120,6 @@ function validateNonExpressionFilter(options: Options) {
         }
         break;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

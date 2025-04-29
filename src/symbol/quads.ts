@@ -197,6 +197,7 @@ export function getIconQuads(
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return quads;
 }
 
@@ -275,6 +276,7 @@ export function getGlyphQuads(
     allowVerticalPlacement: boolean,
 ): Array<SymbolQuad> {
     const quads = [];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (shaping.positionedLines.length === 0) return quads;
 
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
@@ -455,5 +457,6 @@ export function getGlyphQuads(
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return quads;
 }

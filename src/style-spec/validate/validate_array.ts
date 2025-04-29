@@ -56,5 +56,6 @@ export default function validateArray(options: Options): Array<ValidationError> 
             key: `${key}[${i}]`
         }, true));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

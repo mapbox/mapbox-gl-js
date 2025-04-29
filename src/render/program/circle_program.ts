@@ -104,6 +104,7 @@ const circleDefinesValues = (layer: CircleStyleLayer): CircleDefinesType[] => {
     if (layer.paint.get('circle-pitch-alignment') === 'map') values.push('PITCH_WITH_MAP');
     if (layer.paint.get('circle-pitch-scale') === 'map') values.push('SCALE_WITH_MAP');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return values;
 };
 

@@ -70,5 +70,6 @@ export function disallowedFilterParameters(e: Expression, options: any): Array<V
         errors.push(...disallowedFilterParameters(arg, options));
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

@@ -136,6 +136,7 @@ class Coercion implements Expression {
         } else if (this.type.kind === 'resolvedImage') {
             return ResolvedImage.build(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'array') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return this.args.map(arg => { return arg.evaluate(ctx); });
         } else {
             return valueToString(this.args[0].evaluate(ctx));

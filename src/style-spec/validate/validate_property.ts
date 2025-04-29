@@ -30,6 +30,7 @@ export default function validateProperty(options: PropertyValidationOptions, pro
     if (propertyType === 'paint' && useThemeMatch && layerSpec[useThemeMatch[1]]) {
         if (isExpression(value)) {
             const errors = [];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return errors.concat(validate({
                 key: options.key,
                 value,
@@ -109,6 +110,7 @@ export default function validateProperty(options: PropertyValidationOptions, pro
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors.concat(validate({
         key: options.key,
         value,

@@ -280,6 +280,7 @@ function getSuperclusterOptions({
     superclusterOptions,
     clusterProperties,
 }: LoadGeoJSONParameters) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (!clusterProperties || !superclusterOptions) return superclusterOptions;
 
     const mapExpressions: Record<string, any> = {};
@@ -318,6 +319,7 @@ function getSuperclusterOptions({
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return superclusterOptions;
 }
 

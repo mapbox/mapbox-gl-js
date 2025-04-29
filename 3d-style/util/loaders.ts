@@ -24,6 +24,7 @@ export function getDracoUrl(): string {
 // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
     if (isWorker() && self.worker && self.worker.dracoUrl) {
         // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return self.worker.dracoUrl;
     }
 
@@ -57,6 +58,7 @@ export function getMeshoptUrl(): string {
 // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
     if (isWorker() && self.worker && self.worker.meshoptUrl) {
         // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return self.worker.meshoptUrl;
     }
 
@@ -259,6 +261,7 @@ function loadBuffer(buffer: {
 function getGLTFBytes(gltf: any, bufferViewIndex: number): Uint8Array {
     const bufferView = gltf.json.bufferViews[bufferViewIndex];
     const buffer = gltf.buffers[bufferView.buffer];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return new Uint8Array(buffer, bufferView.byteOffset || 0, bufferView.byteLength);
 }
 
@@ -374,6 +377,7 @@ export function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, bas
 export function loadGLTF(url: string): Promise<any> {
     return fetch(url)
         .then(response => response.arrayBuffer())
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         .then(buffer => decodeGLTF(buffer, 0, url));
 }
 
@@ -388,5 +392,6 @@ export function load3DTile(data: ArrayBuffer): Promise<any> {
             warnOnce('Invalid b3dm header information.');
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return decodeGLTF(data, gltfOffset);
 }

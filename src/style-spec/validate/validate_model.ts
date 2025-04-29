@@ -19,12 +19,14 @@ export default function validateModel(options: ValidationOptions): Array<Validat
     let errors = [];
 
     if (!url) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
     const type = getType(url);
     if (type !== 'string') {
         errors = errors.concat([new ValidationError(options.key, url, `string expected, "${type}" found`)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
@@ -32,5 +34,6 @@ export default function validateModel(options: ValidationOptions): Array<Validat
         errors = errors.concat([new ValidationError(options.key, url, `invalid url "${url}"`)]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

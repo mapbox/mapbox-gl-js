@@ -245,6 +245,7 @@ class GlyphManager {
         // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
         if (this.localGlyphs[tinySDF.fontWeight][id]) {
             // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return this.localGlyphs[tinySDF.fontWeight][id];
         }
 

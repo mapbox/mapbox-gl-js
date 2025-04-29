@@ -117,5 +117,6 @@ export default function groupByLayout(
         result.push(groups[k]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return result;
 }

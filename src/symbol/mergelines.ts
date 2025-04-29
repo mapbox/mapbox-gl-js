@@ -81,5 +81,6 @@ export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return mergedFeatures.filter((f) => f.geometry);
 }

@@ -125,6 +125,7 @@ function runtimeTypeChecks(expectedTypes: ExpectedTypes) {
         conditions.push(['==', ['typeof', get], expectedTypes[property]]);
     }
     if (conditions.length === 0) return true;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (conditions.length === 1) return conditions[0];
     return ['all'].concat(conditions);
 }
@@ -132,6 +133,7 @@ function runtimeTypeChecks(expectedTypes: ExpectedTypes) {
 function convertComparisonOp(property: string, value: any, op: string, expectedTypes?: ExpectedTypes | null) {
     let get;
     if (property === '$type') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [op, ['geometry-type'], value];
     } else if (property === '$id') {
         get = ['id'];
@@ -158,6 +160,7 @@ function convertComparisonOp(property: string, value: any, op: string, expectedT
         ];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return [op, get, value];
 }
 

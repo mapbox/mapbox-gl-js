@@ -28,5 +28,6 @@ export default function validateProjection(options: ValidationOptions): Array<Va
         errors = errors.concat([new ValidationError('projection', projection, `object or string expected, ${rootType} found`)]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

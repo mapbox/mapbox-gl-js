@@ -130,6 +130,7 @@ class GridIndex {
                     y2: y + radius
                 });
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return predicate ? result.filter(predicate) : result;
         } else {
             const queryArgs = {
@@ -166,14 +167,17 @@ class GridIndex {
     }
 
     query(x1: number, y1: number, x2: number, y2: number, predicate?: any): Array<GridItem> {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._query(x1, y1, x2, y2, false, predicate) as any;
     }
 
     hitTest(x1: number, y1: number, x2: number, y2: number, predicate?: any): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._query(x1, y1, x2, y2, true, predicate) as any;
     }
 
     hitTestCircle(x: number, y: number, radius: number, predicate?: any): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._queryCircle(x, y, radius, true, predicate) as any;
     }
 

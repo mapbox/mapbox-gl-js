@@ -47,6 +47,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
             styleSpec,
             objectElementValidators
         }));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
 
     case 'geojson':
@@ -75,6 +76,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
                 }));
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
 
     case 'video':
@@ -110,11 +112,13 @@ export default function validateSource(options: ValidationOptions): Array<Valida
 }
 
 function getSourceTypeValues(styleSpec: StyleReference) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return styleSpec.source.reduce((memo, source) => {
         const sourceType = styleSpec[source];
         if (sourceType.type.type === 'enum') {
             memo = memo.concat(Object.keys(sourceType.type.values));
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return memo;
     }, []);
 }
@@ -142,12 +146,14 @@ function validatePromoteId({
             errors.push(new ValidationError(`${key}`, null, 'promoteId expression should be only feature dependent'));
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else {
         const errors = [];
         for (const prop in value) {
             errors.push(...validatePromoteId({key: `${key}.${prop}`, value: value[prop]}));
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 }

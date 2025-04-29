@@ -73,6 +73,7 @@ function clipPolygon(polygons: PolygonArray, clipAxis1: number, clipAxis2: numbe
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return polygonsClipped;
 }
 
@@ -87,6 +88,7 @@ export function gridSubdivision(
     const outPolygons = [];
 
     if (!polygons.length || !gridSizeX || !gridSizeY) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return outPolygons;
     }
 
@@ -117,6 +119,7 @@ export function gridSubdivision(
     split = clipPolygon(split, bounds[0].x - padding, bounds[1].x + padding, 0);
 
     if (!split.length) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return outPolygons;
     }
 
@@ -178,6 +181,7 @@ export function gridSubdivision(
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return outPolygons;
 }
 

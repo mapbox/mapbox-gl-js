@@ -14,9 +14,11 @@ export default function validateLight(options: ValidationOptions): Array<Validat
 
     const rootType = getType(light);
     if (light === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else if (rootType !== 'object') {
         errors = errors.concat([new ValidationError('light', light, `object expected, ${rootType} found`)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
@@ -53,5 +55,6 @@ export default function validateLight(options: ValidationOptions): Array<Validat
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

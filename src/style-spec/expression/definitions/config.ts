@@ -101,6 +101,7 @@ class Config implements Expression {
             if (typeof result === 'number') {
                 result = clampToAllowedNumber(result, minValue, maxValue, stepValue);
             } else if (Array.isArray(result)) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 result = result.map((item) => (typeof item === 'number' ? clampToAllowedNumber(item, minValue, maxValue, stepValue) : item));
             }
         }

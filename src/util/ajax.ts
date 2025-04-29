@@ -102,6 +102,7 @@ export class AJAXError extends Error {
 // and we will set an empty referrer. Otherwise, we're using the document's URL.
 export const getReferrer: () => string = isWorker() ?
 // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     () => self.worker && self.worker.referrer :
     () => (location.protocol === 'blob:' ? parent : self).location.href;
 
@@ -254,6 +255,7 @@ export const makeRequest = function (requestParameters: RequestParameters, callb
         if (isWorker() && self.worker && self.worker.actor) {
             const queueOnMainThread = true;
             // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return self.worker.actor.send('getResource', requestParameters, callback, undefined, queueOnMainThread);
         }
     }

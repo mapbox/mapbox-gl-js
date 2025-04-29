@@ -231,5 +231,6 @@ function offsetLine(rings: Array<Array<Point>>, offset: number) {
         }
         newRings.push(newRing);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return newRings;
 }

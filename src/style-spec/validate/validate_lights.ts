@@ -15,12 +15,14 @@ export default function validateLights(options: Options): Array<ValidationError>
     let errors = [];
 
     if (!light) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
     const type = getType(light);
     if (type !== 'object') {
         errors = errors.concat([new ValidationError('light-3d', light, `object expected, ${type} found`)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
@@ -33,6 +35,7 @@ export default function validateLights(options: Options): Array<ValidationError>
     for (const key of ['type', 'id']) {
         if (!(key in light)) {
             errors = errors.concat([new ValidationError('light-3d', light, `missing property ${key} on light`)]);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return errors;
         }
     }
@@ -51,6 +54,7 @@ export default function validateLights(options: Options): Array<ValidationError>
     const lightType = `properties_light_${light['type']}`;
     if (!(lightType in styleSpec)) {
         errors = errors.concat([new ValidationError('light-3d', light, `Invalid light type ${light['type']}`)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
@@ -62,6 +66,7 @@ export default function validateLights(options: Options): Array<ValidationError>
             const propertiesType = getType(properties);
             if (propertiesType !== 'object') {
                 errors = errors.concat([new ValidationError('properties', properties, `object expected, ${propertiesType} found`)]);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return errors;
             }
             for (const propertyKey in properties) {
@@ -111,5 +116,6 @@ export default function validateLights(options: Options): Array<ValidationError>
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

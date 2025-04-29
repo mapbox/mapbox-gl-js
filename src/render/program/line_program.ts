@@ -226,6 +226,7 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
 function hasDash(layer: LineStyleLayer) {
     const dashPropertyValue = layer.paint.get('line-dasharray').value;
     // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'PossiblyEvaluatedValue<number[]>'.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return dashPropertyValue.value || dashPropertyValue.kind !== "constant";
 }
 

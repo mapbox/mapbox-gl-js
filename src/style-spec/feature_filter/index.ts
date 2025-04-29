@@ -121,6 +121,7 @@ ${JSON.stringify(filterExp, null, 2)}
         if (compiledStaticFilter.result === 'error') {
             throw new Error(compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             filterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical);
         }
     }
@@ -135,6 +136,7 @@ ${JSON.stringify(filterExp, null, 2)}
         if (compiledDynamicFilter.result === 'error') {
             throw new Error(compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             dynamicFilterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, undefined, undefined, featureTileCoord, featureDistanceData);
             needFeature = !isFeatureConstant(compiledDynamicFilter.value.expression);
         }
@@ -177,6 +179,7 @@ function collapseDynamicBooleanExpressions(expression: any): any {
     if (collapsed === true) {
         return collapsed;
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return collapsed.map((subExpression) => collapseDynamicBooleanExpressions(subExpression));
     }
 }
@@ -316,10 +319,13 @@ function convertFilter(filter?: Array<any> | null): unknown {
 function convertComparisonOp(property: string, value: any, op: string) {
     switch (property) {
     case '$type':
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [`filter-type-${op}`, value];
     case '$id':
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [`filter-id-${op}`, value];
     default:
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [`filter-${op}`, property, value];
     }
 }

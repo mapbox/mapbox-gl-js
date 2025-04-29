@@ -11,6 +11,7 @@ export function DracoDecoderModule(wasmPromise) {
         throw new Error("Unexpected Draco error.");
     }
     function memcpyBig(dest, src, num) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return HEAPU8.copyWithin(dest, src, src + num);
     }
     function resizeHeap(requestedSize) {
@@ -37,8 +38,10 @@ export function DracoDecoderModule(wasmPromise) {
 
     const instantiateWasm = WebAssembly.instantiateStreaming ?
         WebAssembly.instantiateStreaming(wasmPromise, wasmImports) :
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         wasmPromise.then(wasm => wasm.arrayBuffer()).then(buffer => WebAssembly.instantiate(buffer, wasmImports));
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return instantiateWasm.then(output => {
         // minified exports values might change when recompiling Draco WASM, to be manually updated on version ugprade
         const {

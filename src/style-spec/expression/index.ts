@@ -343,6 +343,7 @@ export function createPropertyExpression(
 ): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, scope, options);
     if (expression.result === 'error') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return expression;
     }
 
@@ -494,6 +495,7 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
         }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return result;
 }
 

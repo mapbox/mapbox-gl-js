@@ -46,6 +46,7 @@ export default function createStyleLayer(
     if (layer.type === 'custom') {
         return new CustomStyleLayer(layer, scope);
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return new subclasses[layer.type](layer, scope, lut, options);
     }
 }

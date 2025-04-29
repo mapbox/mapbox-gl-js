@@ -88,6 +88,7 @@ export default function validateFunction(options: ValidationOptions): any {
             errors.push(new ValidationError(options.key, value, 'array must have at least one stop'));
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
@@ -147,9 +148,11 @@ export default function validateFunction(options: ValidationOptions): any {
         }
 
         if (isExpression(deepUnbundle(value[1]))) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return errors.concat([new ValidationError(`${key}[1]`, value[1], 'expressions are not allowed in function stops.')]);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors.concat(validate({
             key: `${key}[1]`,
             value: value[1],

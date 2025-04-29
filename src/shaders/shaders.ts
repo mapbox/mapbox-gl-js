@@ -326,6 +326,7 @@ export function compile(fragmentSource: string, vertexSource: string): ShaderSou
     if (staticAttributes) {
         staticAttributes = staticAttributes.map((str) => {
             const tokens = str.split(' ');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return tokens[tokens.length - 1];
         });
         // remove duplicates as Safari does not support lookbehind in regex

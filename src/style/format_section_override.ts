@@ -24,6 +24,7 @@ export default class FormatSectionOverride<T> implements Expression {
         if (ctx.formattedSection) {
             const overrides = this.defaultValue.property.overrides;
             if (overrides && overrides.hasOverride(ctx.formattedSection)) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return overrides.getOverride(ctx.formattedSection);
             }
         }
