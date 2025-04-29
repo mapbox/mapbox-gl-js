@@ -48,9 +48,6 @@
     -110,
     33
   ],
-  "light": {
-    "intensity": 0.2
-  },
   "projection": {
     "name": "globe"
   },
@@ -95,8 +92,7 @@
           300000
         ],
         "fill-extrusion-opacity": 0.9,
-        "fill-extrusion-ambient-occlusion-intensity": 0.9,
-        "fill-extrusion-ambient-occlusion-radius": 600000
+        "fill-extrusion-vertical-gradient": false
       },
       "source": "country-boundaries",
       "source-layer": "country_boundaries"

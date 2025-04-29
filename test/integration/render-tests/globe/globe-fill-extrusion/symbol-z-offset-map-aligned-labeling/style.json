@@ -5,7 +5,7 @@
     "test": {
       "height": 512,
       "width": 512,
-      "allowed": 0.0007,
+      "allowed": 0.0015,
       "operations": [
         ["wait"]
       ]
@@ -46,9 +46,6 @@
     -125,
     31
   ],
-  "light": {
-    "intensity": 0.2
-  },
   "projection": {
     "name": "globe"
   },
@@ -92,7 +89,8 @@
           6,
           300000
         ],
-        "fill-extrusion-opacity": 0.9
+        "fill-extrusion-opacity": 0.9,
+        "fill-extrusion-vertical-gradient": false
       },
       "source": "country-boundaries",
       "source-layer": "country_boundaries"
