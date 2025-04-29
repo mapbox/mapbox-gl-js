@@ -99,6 +99,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
     } else if (painter.renderPass === 'translucent') {
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const noPattern = !layer.paint.get('fill-extrusion-pattern').constantOr((1 as any));
 
         const color = layer.paint.get('fill-extrusion-color').constantOr(Color.white);
@@ -274,6 +275,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const tr = painter.transform;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const image = patternProperty.constantOr((1 as any));
     const opacity = layer.paint.get('fill-extrusion-opacity');
     const lighting3DMode = painter.style.enable3dLights();
@@ -289,6 +291,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
     const floodLightColorUseTheme = layer.paint.get('fill-extrusion-flood-light-color-use-theme').constantOr('default') === 'none';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(floodLightColorUseTheme ? null : layer.lut).toArray01().slice(0, 3) as any);
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
@@ -351,6 +354,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const stats = layer.getLayerRenderingStats();
     for (const coord of coords) {
         const tile = source.getTile(coord);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
@@ -470,6 +474,7 @@ function updateReplacement(painter: Painter, source: SourceCache, layer: FillExt
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number, replacementActive: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture | null) {
     const context = painter.context;
     const gl = context.gl;
@@ -496,6 +501,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     }
     const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const renderGroundEffectTile = (coord: OverscaledTileID, groundEffect: GroundEffect, segments: any, matrix: mat4, meterToTile: number) => {
         const programConfiguration = groundEffect.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
@@ -520,6 +526,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
         if (!bucket || bucket.projection.name !== tr.projection.name || !bucket.groundEffect || (bucket.groundEffect && !bucket.groundEffect.hasData())) continue;
 

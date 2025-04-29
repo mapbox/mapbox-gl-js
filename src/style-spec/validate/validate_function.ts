@@ -14,6 +14,7 @@ import {
 
 import type {ValidationOptions} from './validate';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function validateFunction(options: ValidationOptions): any {
     const functionValueSpec = options.valueSpec;
     const functionType = unbundle(options.value.type);
@@ -162,6 +163,7 @@ export default function validateFunction(options: ValidationOptions): any {
         }));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function validateStopDomainValue(options: ValidationOptions, stop: any) {
         const type = getType(options.value);
         const value = unbundle(options.value);

@@ -25,7 +25,9 @@ export interface Result {
     features: Feature[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Convert = (value: any) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Setter = (value: any) => void;
 
 class PropertyParser {

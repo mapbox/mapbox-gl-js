@@ -12,6 +12,7 @@ export default function (
     requestManager: RequestManager,
     callback: Callback<StyleImages>,
 ): Cancelable {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let json: any, image, error;
     const format = browser.devicePixelRatio > 1 ? '@2x' : '';
 
@@ -38,6 +39,7 @@ export default function (
             callback(error);
         } else if (json && image) {
             const imageData = browser.getImageData(image);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const result: Record<string, any> = {};
 
             for (const id in json) {

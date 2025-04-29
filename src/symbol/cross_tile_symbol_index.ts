@@ -130,6 +130,7 @@ class CrossTileSymbolLayerIndex {
         if (wrapDelta !== 0) {
             for (const zoom in this.indexes) {
                 const zoomIndexes = this.indexes[zoom];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const newZoomIndex: Record<string, any> = {};
                 for (const key in zoomIndexes) {
                     // change the tileID's wrap and add it to a new index
@@ -257,6 +258,7 @@ class CrossTileSymbolIndex {
         }
 
         let symbolBucketsChanged = false;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const currentBucketIDs: Record<string, any> = {};
 
         if (projection.name !== 'globe') {
@@ -286,6 +288,7 @@ class CrossTileSymbolIndex {
     }
 
     pruneUnusedLayers(usedLayers: Array<string>) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const usedLayerMap: Record<string, any> = {};
         usedLayers.forEach((usedLayer) => {
             usedLayerMap[usedLayer] = true;

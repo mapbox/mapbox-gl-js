@@ -153,6 +153,7 @@ ${JSON.stringify(filterExp, null, 2)}
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractStaticFilter(filter: any): any {
     if (!isDynamicFilter(filter)) {
         return filter;
@@ -170,6 +171,7 @@ function extractStaticFilter(filter: any): any {
     return result;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function collapseDynamicBooleanExpressions(expression: any): any {
     if (!Array.isArray(expression)) {
         return expression;
@@ -193,6 +195,7 @@ function collapseDynamicBooleanExpressions(expression: any): any {
  *
  * @param {Array<any>} filter the filter expression mutated in-place.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function unionDynamicBranches(filter: any) {
     let isBranchingDynamically = false;
     const branches = [];
@@ -230,6 +233,7 @@ function unionDynamicBranches(filter: any) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isDynamicFilter(filter: any): boolean {
     // Base Cases
     if (!Array.isArray(filter)) {
@@ -265,6 +269,7 @@ const dynamicConditionExpressions = new Set([
     'to-boolean'
 ]);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function collapsedExpression(expression: any): any {
     if (dynamicConditionExpressions.has(expression[0])) {
 
@@ -283,6 +288,7 @@ function compare(a: number, b: number) {
     return a < b ? -1 : a > b ? 1 : 0;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function geometryNeeded(filter: Array<any> | boolean) {
     if (!Array.isArray(filter)) return false;
     if (filter[0] === 'within' || filter[0] === 'distance') return true;
@@ -292,6 +298,7 @@ function geometryNeeded(filter: Array<any> | boolean) {
     return false;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertFilter(filter?: Array<any> | null): unknown {
     if (!filter) return true;
     const op = filter[0];
@@ -316,6 +323,7 @@ function convertFilter(filter?: Array<any> | null): unknown {
     return converted;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertComparisonOp(property: string, value: any, op: string) {
     switch (property) {
     case '$type':
@@ -330,11 +338,13 @@ function convertComparisonOp(property: string, value: any, op: string) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertDisjunctionOp(filters: Array<Array<any>>) {
 // @ts-expect-error - TS2769 - No overload matches this call.
     return ['any'].concat(filters.map(convertFilter));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertInOp(property: string, values: Array<any>) {
     if (values.length === 0) { return false; }
     switch (property) {

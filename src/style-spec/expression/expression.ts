@@ -6,7 +6,9 @@ export type SerializedExpression = Array<unknown> | Array<string> | string | num
 
 export interface Expression {
     readonly type: Type;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate: (ctx: EvaluationContext) => any;
     eachChild: (fn: (arg1: Expression) => void) => void;
     /**
@@ -20,6 +22,7 @@ export interface Expression {
 export type ExpressionParser = (args: ReadonlyArray<unknown>, context: ParsingContext) => Expression | void;
 
 export type ExpressionRegistration = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     new(...args: any[]): Expression;
     readonly parse: ExpressionParser;
     _classRegistryKey?: string;

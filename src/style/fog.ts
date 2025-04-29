@@ -190,6 +190,7 @@ class Fog extends Evented {
     }
 
     _validate(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         validate: any,
         value: unknown,
         options?: {

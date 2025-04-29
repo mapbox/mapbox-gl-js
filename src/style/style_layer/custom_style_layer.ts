@@ -255,6 +255,7 @@ class CustomStyleLayer extends StyleLayer {
         return false;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override serialize(): any {
         assert(false, "Custom layers cannot be serialized");
     }

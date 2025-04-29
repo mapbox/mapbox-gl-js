@@ -126,6 +126,7 @@ class ModelManager extends Evented {
         if (!this.models[scope]) this.models[scope] = {};
         if (!this.modelUris[scope]) this.modelUris[scope] = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const modelUris: Record<string, any> = this.modelUris[scope];
         for (const modelId in models) {
             // Add an empty object so we mark this model as requested
@@ -143,6 +144,7 @@ class ModelManager extends Evented {
         if (!this.models[scope]) this.models[scope] = {};
         if (!this.modelUris[scope]) this.modelUris[scope] = {};
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const modelsRequests: Record<string, any> = {};
         for (const modelUri of modelUris) {
             if (this.hasModel(modelUri, scope)) {

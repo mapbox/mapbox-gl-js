@@ -233,6 +233,7 @@ class Painter {
         showTerrainProxyTiles: boolean;
         fpsWindow: number;
         continousRedraw: boolean;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         enabledLayers: any;
     };
 
@@ -625,6 +626,7 @@ class Painter {
             if (this.nextStencilID + stencilValues > 256) {
                 this.clearStencil();
             }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const zToStencilMode: Record<string, any> = {};
             for (let i = 0; i < stencilValues; i++) {
                 zToStencilMode[i + minTileZ] = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, i + this.nextStencilID, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
@@ -1848,6 +1850,7 @@ class Painter {
     }
 
     // For native compatibility depth for occlusion is kept as before
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setupDepthForOcclusion(useDepthForOcclusion: boolean, program: Program<any>, uniforms?: ReturnType<typeof defaultTerrainUniforms>) {
         const context = this.context;
         const gl = context.gl;

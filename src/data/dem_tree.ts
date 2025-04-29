@@ -253,12 +253,14 @@ export default class DemMinMaxQuadTree {
                 const cz = sampleElevation(maxxUv, maxyUv, this.dem) * exaggeration;
                 const dz = sampleElevation(minxUv, maxyUv, this.dem) * exaggeration;
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const t0: any = triangleRayIntersect(
                     boundsMin[0], boundsMin[1], az,     // A
                     boundsMax[0], boundsMin[1], bz,     // B
                     boundsMax[0], boundsMax[1], cz,     // C
                     p, d);
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const t1: any = triangleRayIntersect(
                     boundsMax[0], boundsMax[1], cz,
                     boundsMin[0], boundsMax[1], dz,

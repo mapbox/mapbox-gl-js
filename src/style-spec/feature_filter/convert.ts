@@ -84,6 +84,7 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
         converted = convertComparisonOp(property, value, op, expectedTypes);
     } else if (op === 'any') {
         const children = filter.slice(1).map(f => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const types: Record<string, any> = {};
             const child = _convertFilter(f, types);
             const typechecks = runtimeTypeChecks(types);
@@ -91,6 +92,7 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
         }) as ExpressionSpecification;
         return ['any'].concat(children);
     } else if (op === 'all') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const children: any[] = (filter).slice(1).map(f => _convertFilter(f, expectedTypes));
         return children.length > 1 ? ['all'].concat(children) : [].concat(...children);
     } else if (op === 'none') {
@@ -130,6 +132,7 @@ function runtimeTypeChecks(expectedTypes: ExpectedTypes) {
     return ['all'].concat(conditions);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertComparisonOp(property: string, value: any, op: string, expectedTypes?: ExpectedTypes | null) {
     let get;
     if (property === '$type') {
@@ -196,6 +199,7 @@ function convertInOp(property: string, values: Array<unknown>, negate: boolean =
     }
 
     return [negate ? 'all' : 'any'].concat(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         values.map(v => [negate ? '!=' : '==', get, v]) as any[]
     );
 }

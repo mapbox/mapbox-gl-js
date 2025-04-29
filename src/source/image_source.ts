@@ -242,6 +242,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
     tiles: {
         [_: string]: Tile;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     options: any;
     dispatcher: Dispatcher;
     map: Map;
@@ -731,6 +732,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     serialize(): any {
         return {
             type: 'image',

@@ -406,6 +406,7 @@ type PropertyValues<Props> = {
  * @private
  */
 type PropertyValueSpecifications<Props> = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [Key in keyof Props]: Props[Key] extends Property<infer T, any> ? PropertyValueSpecification<T> : never;
 };
 
@@ -441,6 +442,7 @@ export class Layout<Props extends {
         return clone(this._values[name].value as PropertyValueSpecification<T> | void);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setValue<S extends keyof Props>(name: S, value: any) {
         this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options) as PropertyValues<Props>[S];
         if (this._values[name].expression.configDependencies) {
@@ -557,6 +559,7 @@ export class PossiblyEvaluatedPropertyValue<T> {
  * @private
  */
 type PossiblyEvaluatedPropertyValues<Properties> = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [Key in keyof Properties]: Properties[Key] extends Property<any, infer R> ? R : never;
 };
 
@@ -620,11 +623,13 @@ export class DataConstantProperty<T> implements Property<T, T> {
 export class DataDrivenProperty<T> implements Property<T, PossiblyEvaluatedPropertyValue<T>> {
     specification: StylePropertySpecification;
     overrides: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
     } | null | undefined;
     useIntegerZoom: boolean | null | undefined;
 
     constructor(specification: StylePropertySpecification, overrides?: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
     }) {
         this.specification = specification;

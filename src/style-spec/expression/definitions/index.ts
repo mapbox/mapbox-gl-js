@@ -121,6 +121,7 @@ function hsla(ctx: EvaluationContext, [h, s, l, a]: Expression[]) {
 function has(
     key: string,
     obj: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
     },
 ): boolean {
@@ -128,6 +129,7 @@ function has(
 }
 
 function get(key: string, obj: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
 }) {
     const v = obj[key];
@@ -135,7 +137,9 @@ function get(key: string, obj: {
     return typeof v === 'undefined' ? null : v;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function binarySearch(v: any, a: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: number]: any;
 }, i: number, j: number) {
     while (i <= j) {

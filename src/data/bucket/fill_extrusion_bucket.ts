@@ -406,6 +406,7 @@ export class GroundEffect {
         this.regionSegments[4] = new SegmentVector();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getDefaultSegment(): any {
         return this.regionSegments[4];
     }
@@ -518,6 +519,7 @@ export class GroundEffect {
                         segmentVector = this.regionSegments[k] = new SegmentVector();
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const nSegment: any = {
                         vertexOffset: segment.vertexOffset,
                         primitiveOffset: segment.primitiveOffset + regionTriCountOffset,
@@ -560,6 +562,7 @@ export class GroundEffect {
         this.programConfigurations.upload(context);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     update(states: FeatureStates, vtLayer: VectorTileLayer, layers: any, availableImages: ImageId[], imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null) {
         if (!this.hasData()) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
@@ -1038,6 +1041,7 @@ class FillExtrusionBucket implements Bucket {
                         flattened.push(p1.x, p1.y);
 
                         if (isGlobe) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const array: any = this.layoutVertexExtArray;
                             const projectedP = projection.projectTilePoint(q.x, q.y, canonical);
                             const n = projection.upVector(canonical, q.x, q.y);
@@ -1223,6 +1227,7 @@ class FillExtrusionBucket implements Bucket {
                     }
 
                     if (isGlobe) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const array: any = this.layoutVertexExtArray;
 
                         const projectedP0 = projection.projectTilePoint(p0.x, p0.y, canonical);

@@ -5,8 +5,10 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 
 export type EvaluationFeature = {
     readonly type: 0 | 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readonly id?: any;
     properties: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [_: string]: any;
     };
     readonly patterns?: {

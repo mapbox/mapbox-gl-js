@@ -98,6 +98,7 @@ export interface Bucket {
     layerIds: Array<string>;
     hasPattern: boolean;
     layers: StyleLayer[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stateDependentLayers: Array<any>;
     readonly stateDependentLayerIds: Array<string>;
     populate: (

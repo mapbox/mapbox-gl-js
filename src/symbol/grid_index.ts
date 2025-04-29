@@ -1,4 +1,5 @@
 type GridItem = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     key: any;
     x1: number;
     y1: number;
@@ -20,7 +21,9 @@ type GridItem = {
  * @private
  */
 class GridIndex {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     circleKeys: Array<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     boxKeys: Array<any>;
     boxCells: Array<Array<number>>;
     circleCells: Array<Array<number>>;
@@ -66,6 +69,7 @@ class GridIndex {
         return this.boxKeys.length + this.circleKeys.length;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     insert(key: any, x1: number, y1: number, x2: number, y2: number) {
         this._forEachCell(x1, y1, x2, y2, this._insertBoxCell, this.boxUid++);
         this.boxKeys.push(key);
@@ -75,6 +79,7 @@ class GridIndex {
         this.bboxes.push(y2);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     insertCircle(key: any, x: number, y: number, radius: number) {
         // Insert circle into grid for all cells in the circumscribing square
         // It's more than necessary (by a factor of 4/PI), but fast to insert
@@ -99,6 +104,7 @@ class GridIndex {
         x2: number,
         y2: number,
         hitTest: boolean,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         predicate?: any,
     ): boolean | Array<GridItem> {
         if (x2 < 0 || x1 > this.width || y2 < 0 || y1 > this.height) {
@@ -142,6 +148,7 @@ class GridIndex {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _queryCircle(x: number, y: number, radius: number, hitTest: boolean, predicate?: any): boolean | Array<GridItem> {
         // Insert circle into grid for all cells in the circumscribing square
         // It's more than necessary (by a factor of 4/PI), but fast to insert
@@ -166,18 +173,24 @@ class GridIndex {
         return hitTest ? result.length > 0 : result;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     query(x1: number, y1: number, x2: number, y2: number, predicate?: any): Array<GridItem> {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
         return this._query(x1, y1, x2, y2, false, predicate) as any;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hitTest(x1: number, y1: number, x2: number, y2: number, predicate?: any): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
         return this._query(x1, y1, x2, y2, true, predicate) as any;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hitTestCircle(x: number, y: number, radius: number, predicate?: any): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
         return this._queryCircle(x, y, radius, true, predicate) as any;
     }
 
@@ -187,8 +200,11 @@ class GridIndex {
         x2: number,
         y2: number,
         cellIndex: number,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         result: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         queryArgs: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         predicate?: any,
     ): void | boolean {
         const seenUids = queryArgs.seenUids;
@@ -263,8 +279,11 @@ class GridIndex {
         x2: number,
         y2: number,
         cellIndex: number,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         result: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         queryArgs: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         predicate?: any,
     ): void | boolean {
         const circle = queryArgs.circle;
@@ -315,6 +334,7 @@ class GridIndex {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _forEachCell(x1: number, y1: number, x2: number, y2: number, fn: any, arg1: any, arg2?: any, predicate?: any) {
         const cx1 = this._convertToXCellCoord(x1);
         const cy1 = this._convertToYCellCoord(y1);

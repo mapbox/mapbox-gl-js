@@ -211,6 +211,7 @@ export class Snow extends PrecipitationBase {
 
         painter.uploadCommonUniforms(context, program);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const drawParticlesBox = (boxSize: number, sizeScale: number, dp: any) => {
             const camPos = boxWrap(this._movement.getPosition(), boxSize);
 

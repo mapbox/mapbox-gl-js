@@ -104,6 +104,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
         const nx = (canonical.x + 1 + dim) % dim;
         const nxw = canonical.x + 1 === dim ? tileID.wrap + 1 : tileID.wrap;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const neighboringTiles: Record<string, any> = {};
         // add adjacent tiles
         neighboringTiles[new OverscaledTileID(tileID.overscaledZ, pxw, canonical.z, px, canonical.y).key] = {backfilled: false};

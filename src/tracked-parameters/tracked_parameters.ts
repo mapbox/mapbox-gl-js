@@ -45,6 +45,7 @@ if (!isWorker()) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function deserialize(serialized: string): any {
     return [eval][0](`(${serialized})`);
 }
@@ -52,6 +53,7 @@ function deserialize(serialized: string): any {
 // Serializable folder state
 class FolderState {
     isFolded: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     current: any;
 
     constructor() {
@@ -94,6 +96,7 @@ function mergePaneParams(dest: PaneState, src: PaneState) {
 }
 
 function deSerializePaneParams(input?: string | null): PaneState {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let obj: Record<string, any> = {};
     if (input) {
         try {
@@ -133,13 +136,17 @@ function deSerializePaneParams(input?: string | null): PaneState {
 
 // Reference to actual object and default values
 class ParameterInfo {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     containerObject: any;
     parameterName: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     defaultValue: any;
     noSave: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tpBinding: any;
     label: string;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(object: any, parameterName: string, defaultValue: any, noSave: boolean, tpBinding: any) {
         this.containerObject = object;
         this.parameterName = parameterName;
@@ -156,6 +163,7 @@ export class TrackedParameters implements ITrackedParameters {
     _container: HTMLElement;
 
     // All TweakPane scopes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _folders: Map<string, any>;
 
     // For (de)serialization
@@ -171,6 +179,7 @@ export class TrackedParameters implements ITrackedParameters {
 
     constructor(map: MapboxMap) {
         this._map = map;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this._folders = new Map<string, any>();
 
         const id = map._getMapId();
@@ -305,6 +314,7 @@ export class TrackedParameters implements ITrackedParameters {
         }).then((writable) => {
             const serialized = serialize(this._paneState);
             return Promise.all([writable, writable.write(serialized)]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }).then(([writable, _]: [any, any]) => {
             writable.close();
         }).catch((err) => {
@@ -436,12 +446,14 @@ export class TrackedParameters implements ITrackedParameters {
     }
 
     createFoldersChainAndSelectScope(scope: Array<string>): {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         currentScope: any;
         fullScopeName: string;
     } {
         assert(scope.length >= 1);
 
         // Iterate/create panes
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let currentScope: any = this._folders.get("_");
         let fullScopeName = "_";
         for (let i = 0; i < scope.length; ++i) {
@@ -477,6 +489,7 @@ export class TrackedParameters implements ITrackedParameters {
         return {currentScope, fullScopeName};
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerParameter(containerObject: any, scope: Array<string>, name: string, description?: Description, changeValueCallback?: any) {
         const {currentScope, fullScopeName} = this.createFoldersChainAndSelectScope(scope);
 
@@ -518,6 +531,7 @@ export class TrackedParameters implements ITrackedParameters {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerButton(scope: Array<string>, buttonTitle: string, onClick: any) {
         const {currentScope} = this.createFoldersChainAndSelectScope(scope);
 
@@ -528,6 +542,7 @@ export class TrackedParameters implements ITrackedParameters {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerBinding(containerObject: any, scope: Array<string>, name: string, description?: Description) {
         const {currentScope} = this.createFoldersChainAndSelectScope(scope);
 

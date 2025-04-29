@@ -215,6 +215,7 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
 
     const hasJoinNone = layer.layout.get('line-join').constantOr('miter') === 'none';
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const hasPattern = !!layer.paint.get('line-pattern').constantOr((1 as any));
     if (hasJoinNone && hasPattern) {
         values.push('LINE_JOIN_NONE');

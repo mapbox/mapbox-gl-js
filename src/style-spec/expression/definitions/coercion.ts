@@ -93,6 +93,7 @@ class Coercion implements Expression {
         return new Coercion(type, parsed);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         if (this.type.kind === 'boolean') {
             return Boolean(this.args[0].evaluate(ctx));

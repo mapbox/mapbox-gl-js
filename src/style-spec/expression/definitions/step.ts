@@ -69,6 +69,7 @@ class Step implements Expression {
         return new Step(outputType, input, stops);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         const labels = this.labels;
         const outputs = this.outputs;

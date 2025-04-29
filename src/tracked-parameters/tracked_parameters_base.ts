@@ -1,24 +1,29 @@
 import {Debug} from '../util/debug';
 import {warnOnce} from '../util/util';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Description = any;
 
 export interface ITrackedParameters {
   registerParameter: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     containerObject: any,
     scope: Array<string>,
     name: string,
     description?: Description,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     changeValueCallback?: any
   ) => void;
 
   registerButton: (
     scope: Array<string>,
     buttonTitle: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onClick: any
   ) => void;
 
   registerBinding: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     containerObject: any,
     scope: Array<string>,
     name: string,
@@ -35,6 +40,7 @@ export function setGlobal(tp: ITrackedParameters) {
     global = tp;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function registerParameter(object: any, scope: Array<string>, name: string, description: Description, onChange: any) {
     Debug.run(() => {
         if (global) {
@@ -45,6 +51,7 @@ export function registerParameter(object: any, scope: Array<string>, name: strin
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function registerButton(scope: Array<string>, buttonTitle: string, onClick: any) {
     Debug.run(() => {
         if (global) {
@@ -55,6 +62,7 @@ export function registerButton(scope: Array<string>, buttonTitle: string, onClic
     });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function registerBinding(containerObject: any, scope: Array<string>, name: string, description?: Description) {
     Debug.run(() => {
         if (global) {

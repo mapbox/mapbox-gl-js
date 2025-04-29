@@ -7,6 +7,7 @@ import type {LayerSpecification} from '../types';
 
 type Options = ValidationOptions & {
     layer?: LayerSpecification;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     objectElementValidators?: any;
 };
 

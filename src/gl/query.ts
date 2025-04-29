@@ -21,6 +21,7 @@ export class OcclusionQuery {
     }
 
     isResultAvailable(): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const resultReady: any =  this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT_AVAILABLE);
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return

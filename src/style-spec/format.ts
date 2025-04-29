@@ -5,6 +5,7 @@ import reference from './reference/latest';
 import stringifyPretty from 'json-stringify-pretty-compact';
 
 function sortKeysBy(obj, reference) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: Record<string, any> = {};
     for (const key in reference) {
         if (obj[key] !== undefined) {

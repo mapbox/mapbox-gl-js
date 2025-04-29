@@ -69,12 +69,19 @@ class Context {
     renderer: string | null | undefined;
     vendor: string | null | undefined;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     extTextureFilterAnisotropic: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     extTextureFilterAnisotropicMax: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     extTextureHalfFloat: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     extRenderToTextureHalfFloat: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     extDebugRendererInfo: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     extTimerQuery: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     extTextureFloatLinear: any;
     options: ContextOptions;
     maxPointSize: number;

@@ -77,7 +77,9 @@ function convertZoomAndPropertyFunction<T>(
     propertySpec: StylePropertySpecification,
     stops: Array<ZoomAndPropertyFunctionStop<T>>,
 ): ExpressionSpecification {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const featureFunctionParameters: Record<string, any> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const featureFunctionStops: Record<string, any> = {};
     const zoomStops = [];
     for (let s = 0; s < stops.length; s++) {

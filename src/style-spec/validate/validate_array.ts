@@ -5,6 +5,7 @@ import ValidationError from '../error/validation_error';
 import type {ValidationOptions} from './validate';
 
 type Options = ValidationOptions & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     arrayElementValidator: any;
 };
 

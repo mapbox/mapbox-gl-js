@@ -120,6 +120,7 @@ export function isValidType(provided: Type, allowedTypes: Array<Type>): boolean 
     return allowedTypes.some(t => t.kind === provided.kind);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isValidNativeType(provided: any, allowedTypes: Array<NativeType>): boolean {
     return allowedTypes.some(t => {
         if (t === 'null') {

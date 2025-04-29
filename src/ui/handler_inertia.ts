@@ -44,6 +44,7 @@ export default class HandlerInertia {
     _map: Map;
     _inertiaBuffer: Array<{
         time: number;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         settings: any;
     }>;
 
@@ -56,6 +57,7 @@ export default class HandlerInertia {
         this._inertiaBuffer = [];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     record(settings: any) {
         this._drainInertiaBuffer();
         this._inertiaBuffer.push({time: browser.now(), settings});
@@ -103,6 +105,7 @@ export default class HandlerInertia {
         const lastEntry = this._inertiaBuffer[this._inertiaBuffer.length - 1];
         const duration = (lastEntry.time - this._inertiaBuffer[0].time);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const easeOptions: Record<string, any> = {};
 
         if (deltas.pan.mag()) {

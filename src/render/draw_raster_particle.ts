@@ -44,6 +44,7 @@ const RASTER_PARTICLE_TEXTURE_UNIT = 1;
 const RASTER_COLOR_TEXTURE_UNIT = 2;
 const SPEED_MAX_VALUE = 0.15;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function drawRasterParticle(painter: Painter, sourceCache: SourceCache, layer: RasterParticleStyleLayer, tileIDs: Array<OverscaledTileID>, _: any, isInitialLoad: boolean) {
     if (painter.renderPass === 'offscreen') {
         renderParticlesToTexture(painter, sourceCache, layer, tileIDs);

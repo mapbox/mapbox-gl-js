@@ -22,6 +22,7 @@ export function DracoDecoderModule(wasmPromise) {
             wasmMemory.grow(pages);
             updateMemoryViews();
             return true;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             return false;
         }

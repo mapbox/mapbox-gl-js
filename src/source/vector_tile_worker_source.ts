@@ -90,6 +90,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             }
 
             const rawTileData = response.rawData;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const cacheControl: Record<string, any> = {};
             if (response.expires) cacheControl.expires = response.expires;
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
@@ -101,6 +102,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                 const WorkerSourceVectorTileCallback = (err?: Error | null, result?: WorkerSourceVectorTileResult | null) => {
                     if (err || !result) return callback(err);
 
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const resourceTiming: Record<string, any> = {};
                     if (perf) {
                         // Transferring a copy of rawTileData because the worker needs to retain its copy.

@@ -53,6 +53,7 @@ class Case implements Expression {
         return new Case(outputType, branches, otherwise);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         for (const [test, expression] of this.branches) {
             if (test.evaluate(ctx)) {
@@ -71,6 +72,7 @@ class Case implements Expression {
     }
 
     outputDefined(): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return this.branches.every(([_, out]: [any, any]) => out.outputDefined()) && this.otherwise.outputDefined();
     }
 

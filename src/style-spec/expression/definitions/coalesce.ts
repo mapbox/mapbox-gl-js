@@ -49,6 +49,7 @@ class Coalesce implements Expression {
             new Coalesce(outputType, parsedArgs);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         let result = null;
         let argCount = 0;

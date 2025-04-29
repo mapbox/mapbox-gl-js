@@ -308,8 +308,10 @@ function parseAccessToken(accessToken?: string | null): {u?: string} | null {
 type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth' | 'gljs.performance' | 'style.load';
 
 class TelemetryEvent {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     eventData: any;
     anonId: string | null | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     queue: Array<any>;
     type: TelemetryEventType;
     pendingRequest: Cancelable | null | undefined;

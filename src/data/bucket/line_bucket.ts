@@ -139,6 +139,7 @@ class LineBucket implements Bucket {
     gradients: {
         [key: string]: GradientTexture;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stateDependentLayers: Array<any>;
     stateDependentLayerIds: Array<string>;
     patternFeatures: Array<BucketFeature>;

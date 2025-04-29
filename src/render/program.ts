@@ -309,6 +309,7 @@ class Program<Us extends UniformBindings> {
         stencilMode: Readonly<StencilMode>,
         colorMode: Readonly<ColorMode>,
         indexBuffer: IndexBuffer, segment: Segment,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         currentProperties: PossiblyEvaluated<any>,
         zoom?: number,
         configuration?: ProgramConfiguration,
@@ -365,6 +366,7 @@ class Program<Us extends UniformBindings> {
 
         context.program.set(debugProgram.program);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const copyUniformValues = (group: string, pSrc: any, pDst: any) => {
             if (pSrc[group] && pDst[group]) {
                 for (const name in pSrc[group]) {
@@ -435,6 +437,7 @@ class Program<Us extends UniformBindings> {
         context.setColorMode(colorMode);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     checkUniforms(name: string, define: DynamicDefinesType, uniforms: any) {
         if (this.fixedDefines.includes(define)) {
             for (const key of Object.keys(uniforms)) {
@@ -457,6 +460,7 @@ class Program<Us extends UniformBindings> {
          layoutVertexBuffer: VertexBuffer,
          indexBuffer: IndexBuffer | undefined,
          segments: SegmentVector,
+         // eslint-disable-next-line @typescript-eslint/no-explicit-any
          currentProperties?: PossiblyEvaluated<any>,
          zoom?: number,
          configuration?: ProgramConfiguration,

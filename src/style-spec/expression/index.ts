@@ -89,6 +89,7 @@ export class StyleExpression {
         formattedSection?: FormattedSection,
         featureTileCoord?: Point,
         featureDistanceData?: FeatureDistanceData,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
@@ -111,6 +112,7 @@ export class StyleExpression {
         formattedSection?: FormattedSection,
         featureTileCoord?: Point,
         featureDistanceData?: FeatureDistanceData,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
@@ -201,6 +203,7 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
@@ -212,6 +215,7 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
@@ -246,6 +250,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
@@ -257,6 +262,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
@@ -279,6 +285,7 @@ export type ConstantExpression = {
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) => any;
 };
 
@@ -295,6 +302,7 @@ export type SourceExpression = {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) => any;
 };
 
@@ -308,6 +316,7 @@ export type CameraExpression = {
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) => any;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;
     zoomStops: Array<number>;
@@ -327,6 +336,7 @@ export interface CompositeExpression {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) => any;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;
     zoomStops: Array<number>;
@@ -336,6 +346,7 @@ export interface CompositeExpression {
 export type StylePropertyExpression = ConstantExpression | SourceExpression | CameraExpression | CompositeExpression;
 
 export function createPropertyExpression(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expression: any,
     propertySpec: StylePropertySpecification,
     scope?: string | null,
@@ -399,6 +410,7 @@ export class StylePropertyFunction<T> {
     _specification: StylePropertySpecification;
 
     kind: EvaluationKind;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate: (globals: GlobalProperties, feature?: Feature) => any;
     interpolationFactor: (input: number, lower: number, upper: number) => number | null | undefined;
     zoomStops: Array<number> | null | undefined;

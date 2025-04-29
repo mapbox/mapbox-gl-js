@@ -152,7 +152,6 @@ export default tseslint.config(
         rules: {
             '@typescript-eslint/unbound-method': 'off',
             '@typescript-eslint/no-unsafe-call': 'off',
-            '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-unsafe-argument': 'off',
             '@typescript-eslint/no-unsafe-assignment': 'off',
             '@typescript-eslint/no-loss-of-precision': 'off',
@@ -304,6 +303,7 @@ export default tseslint.config(
 
         rules: {
             'no-restricted-syntax': 'off',
+            '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-unsafe-return': 'off',
         }
     },

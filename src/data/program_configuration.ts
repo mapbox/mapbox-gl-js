@@ -42,6 +42,7 @@ import type {ImageId} from '../style-spec/expression/types/image_id';
 export type BinderUniform = {
     name: string;
     property: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     binding: IUniform<any>;
 };
 
@@ -118,11 +119,14 @@ interface UniformBinder {
 
     setUniform: (
         program: WebGLProgram,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         uniform: IUniform<any>,
         globals: GlobalProperties,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         currentValue: PossiblyEvaluatedPropertyValue<any>,
         uniformName: string,
     ) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getBinding: (context: Context, name: string) => Partial<IUniform<any>>;
 }
 class ConstantBinder implements UniformBinder {
@@ -141,6 +145,7 @@ class ConstantBinder implements UniformBinder {
 
     setUniform(
         program: WebGLProgram,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         uniform: IUniform<any>,
         globals: GlobalProperties,
         currentValue: PossiblyEvaluatedPropertyValue<unknown>,
@@ -148,6 +153,7 @@ class ConstantBinder implements UniformBinder {
     ): void {
         const value = currentValue.constantOr(this.value);
         if (value instanceof Color) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const lut = this.lutExpression && (this.lutExpression as any).value === 'none' ? null : this.context.lut;
             uniform.set(program, uniformName, value.toRenderColor(lut));
         } else {
@@ -155,6 +161,7 @@ class ConstantBinder implements UniformBinder {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getBinding(context: Context, _: string): IUniform<any> {
         return (this.type === 'color') ?
             new UniformColor(context) :
@@ -180,6 +187,7 @@ class PatternConstantBinder implements UniformBinder {
         this.pattern = posTo.tl.concat(posTo.br);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setUniform(program: WebGLProgram, uniform: IUniform<any>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<unknown>, uniformName: string) {
         const pos =
             uniformName === 'u_pattern' || uniformName === 'u_dash' ? this.pattern :
@@ -187,6 +195,7 @@ class PatternConstantBinder implements UniformBinder {
         if (pos) uniform.set(program, uniformName, pos);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getBinding(context: Context, name: string): IUniform<any> {
         return name === 'u_pattern' || name === 'u_dash' ?
             new Uniform4f(context) :
@@ -195,6 +204,7 @@ class PatternConstantBinder implements UniformBinder {
 }
 
 class SourceExpressionBinder implements AttributeBinder {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expression: PossiblyEvaluatedValue<any> | SourceExpression;
     type: string;
     maxValue: number;
@@ -205,6 +215,7 @@ class SourceExpressionBinder implements AttributeBinder {
     paintVertexAttributes: Array<StructArrayMember>;
     paintVertexBuffer: VertexBuffer | null | undefined;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(expression: PossiblyEvaluatedValue<any>, names: Array<string>, type: string, PaintVertexArray: Class<StructArray>) {
         this.expression = expression;
         this.type = type;
@@ -236,6 +247,7 @@ class SourceExpressionBinder implements AttributeBinder {
         this._setPaintValue(start, end, value, ignoreLut ? null : this.context.lut);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _setPaintValue(start: number, end: number, value: any, lut: LUT) {
         if (this.type === 'color') {
             const color = packColor(value.toRenderColor(lut));
@@ -317,6 +329,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this._setPaintValue(start, end, min, max, ignoreLut ? null : this.context.lut);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _setPaintValue(start: number, end: number, min: any, max: any, lut: LUT) {
         if (this.type === 'color') {
             const minColor = packColor(min.toRenderColor(lut));
@@ -350,8 +363,10 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
 
     setUniform(
         program: WebGLProgram,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         uniform: IUniform<any>,
         globals: GlobalProperties,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _: PossiblyEvaluatedPropertyValue<any>,
         uniformName: string,
     ): void {
@@ -472,6 +487,7 @@ export default class ProgramConfiguration {
 
             // @ts-expect-error - TS2345: Argument of type 'string' is not assignable to parameter of type ...
             const valueUseTheme = layer.paint.get(`${property}-use-theme`);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const sourceException = (property === 'line-dasharray' && (layer.layout as any).get('line-cap').value.kind !== 'constant') || (valueUseTheme && valueUseTheme.value.kind !== 'constant');
 
             if (expression.kind === 'constant' && !sourceException) {
@@ -545,13 +561,16 @@ export default class ProgramConfiguration {
         for (const property in this.binders) {
             const binder = this.binders[property];
             binder.context = this.context;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const isExpressionNotConst = (binder as any).expression && (binder as any).expression.kind && (binder as any).expression.kind !== 'constant';
             if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                  binder instanceof PatternCompositeBinder) && isExpressionNotConst && ((binder as any).expression.isStateDependent === true || (binder as any).expression.isLightConstant === false)) {
                 //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                 // @ts-expect-error - TS2349 - This expression is not callable.
                 const value = layer.paint.get(property);
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (binder as any).expression = value.value;
                 for (const id of ids) {
                     const state = featureStates[id.toString()];
@@ -629,6 +648,7 @@ export default class ProgramConfiguration {
         return uniforms;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setUniforms<Properties extends any>(
         program: WebGLProgram,
         context: Context,
@@ -639,6 +659,7 @@ export default class ProgramConfiguration {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguration's binder members.
         for (const {name, property, binding} of binderUniforms) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.binders[property] as any).setUniform(program, binding, globals, properties.get(property as keyof Properties), name);
         }
     }

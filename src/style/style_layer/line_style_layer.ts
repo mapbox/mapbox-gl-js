@@ -111,6 +111,7 @@ class LineStyleLayer extends StyleLayer {
 
     override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'line-gradient') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const expression: ZoomConstantExpression<'source'> = ((this._transitionablePaint._values['line-gradient'].value.expression) as any);
             this.stepInterpolant = expression._styleExpression && expression._styleExpression.expression instanceof Step;
             this.gradientVersion = (this.gradientVersion + 1) % Number.MAX_SAFE_INTEGER;
@@ -127,6 +128,7 @@ class LineStyleLayer extends StyleLayer {
 
     override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.paint._values as any)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
     }
 
@@ -137,6 +139,7 @@ class LineStyleLayer extends StyleLayer {
     override getProgramIds(): ProgramName[] {
         const patternProperty = this.paint.get('line-pattern');
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const image = patternProperty.constantOr((1 as any));
         const programId = image ? 'linePattern' : 'line';
         return [programId];

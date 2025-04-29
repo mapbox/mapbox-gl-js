@@ -3570,6 +3570,7 @@ export class Map extends Camera {
      * @example
      * map.getConfigProperty('basemap', 'showLabels');
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getConfigProperty(importId: string, configName: string): any {
         return this.style.getConfigProperty(importId, configName);
     }
@@ -3584,6 +3585,7 @@ export class Map extends Camera {
      * @example
      * map.setConfigProperty('basemap', 'showLabels', false);
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setConfigProperty(importId: string, configName: string, value: any): this {
         this.style.setConfigProperty(importId, configName, value);
         return this._update(true);
@@ -4193,6 +4195,7 @@ export class Map extends Camera {
         webpSupported.testSupport(gl);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _contextLost(event: any) {
         event.preventDefault();
         if (this._frame) {
@@ -4202,6 +4205,7 @@ export class Map extends Camera {
         this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _contextRestored(event: any) {
         this._setupPainter();
         this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
@@ -4212,6 +4216,7 @@ export class Map extends Camera {
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _onMapScroll(event: any): boolean | null | undefined {
         if (event.target !== this._container) return;
 

@@ -121,14 +121,18 @@ class Tile {
     lineAtlasTexture: Texture | null | undefined;
     glyphAtlasImage: AlphaImage | null | undefined;
     glyphAtlasTexture: Texture | null | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expirationTime: any;
     expiredRequestCount: number;
     state: TileState;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     timeAdded: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fadeEndTime: any;
     collisionBoxArray: CollisionBoxArray | null | undefined;
     redoWhenDone: boolean;
     showCollisionBoxes: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     placementSource: any;
     actor: Actor | null | undefined;
     vtLayers: {
@@ -151,6 +155,7 @@ class Tile {
     hillshadeFBO: Framebuffer | null | undefined;
     demTexture: Texture | null | undefined;
     refreshedUponExpiration: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reloadCallback: any;
     resourceTiming: Array<PerformanceResourceTiming> | null | undefined;
     queryPadding: number;

@@ -276,6 +276,7 @@ function polygonToPolygonDistance(polygon1: Array<Array<[number, number]>>, poly
     return dist;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateQueue(distQueue: any, miniDist: number, ruler: CheapRuler, pointSet1: Array<[number, number]>, pointSet2: Array<[number, number]>, r1: IndexRange | null, r2: IndexRange | null) {
     if (r1 === null || r2 === null) return;
     const tempDist = bboxToBBoxDistance(getBBox(pointSet1, r1), getBBox(pointSet2, r2), ruler);

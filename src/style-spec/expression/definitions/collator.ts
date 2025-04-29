@@ -69,6 +69,7 @@ export default class CollatorExpression implements Expression {
     }
 
     serialize(): SerializedExpression {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options: Record<string, any> = {};
         options['case-sensitive'] = this.caseSensitive.serialize();
         options['diacritic-sensitive'] = this.diacriticSensitive.serialize();

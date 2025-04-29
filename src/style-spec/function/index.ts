@@ -75,6 +75,7 @@ export function createFunction(parameters, propertySpec) {
     }
 
     if (zoomAndFeatureDependent) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const featureFunctions: Record<string, any> = {};
         const zoomStops = [];
         for (let s = 0; s < parameters.stops.length; s++) {

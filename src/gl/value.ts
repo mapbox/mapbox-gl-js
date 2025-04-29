@@ -450,11 +450,14 @@ export class BindElementBuffer extends BaseValue<WebGLBuffer | null | undefined>
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class BindVertexArrayOES extends BaseValue<any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override getDefault(): any {
         return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override set(v: any) {
         if (!this.gl || (v === this.current && !this.dirty)) return;
         this.gl.bindVertexArray(v);

@@ -68,12 +68,16 @@ const VALIDATORS = {
 // - styleSpec: current full spec being evaluated.
 export type ValidationOptions = {
     key: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     valueSpec?: any;
     style: Partial<StyleSpecification>;
     styleSpec: StyleReference;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     object?: any;
     objectKey?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     objectElementValidators?: Record<string, (...args: any[]) => Array<ValidationError>>;
 };
 

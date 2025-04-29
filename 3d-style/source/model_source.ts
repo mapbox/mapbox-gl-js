@@ -110,6 +110,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
 
     loadTile(tile: Tile, callback: Callback<undefined>) {}
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     serialize(): any {
         return {
             type: 'model'

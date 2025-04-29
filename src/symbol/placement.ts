@@ -194,7 +194,9 @@ export type VariableOffset = {
 
 type TileLayerParameters = {
     bucket: SymbolBucket;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     layout: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     paint: any;
     posMatrix: mat4;
     textLabelPlaneMatrix: mat4;
@@ -203,8 +205,11 @@ type TileLayerParameters = {
     textPixelRatio: number;
     holdingForFade: boolean;
     collisionBoxArray: CollisionBoxArray | null | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     partiallyEvaluatedTextSize: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     collisionGroup: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     latestFeatureIndex: any;
 };
 
@@ -236,6 +241,7 @@ export class Placement {
     collisionGroups: CollisionGroups;
     prevPlacement: Placement | null | undefined;
     zoomAtLastRecencyCheck: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     collisionCircleArrays: Partial<Record<any, CollisionCircleArray>>;
     buildingIndex: BuildingIndex | null | undefined;
 
@@ -388,7 +394,9 @@ export class Placement {
         bucket: SymbolBucket,
         orientation: Orientation,
         iconBox: SingleCollisionBox | null | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         textSize: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         iconSize: any,
     ): {
         shift: Point;
@@ -441,6 +449,7 @@ export class Placement {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     placeLayerBucketPart(bucketPart: any, seenCrossTileIDs: Set<number>, showCollisionBoxes: boolean, updateCollisionBoxIfNecessary: boolean, scaleFactor: number = 1) {
 
         const {

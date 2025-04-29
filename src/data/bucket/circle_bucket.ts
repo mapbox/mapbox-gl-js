@@ -217,6 +217,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
                 if (projection) {
                     const projectedPoint = projection.projectTilePoint(x, y, canonical);
                     const normal = projection.upVector(canonical, x, y);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const array: any = this.globeExtVertexArray;
 
                     addGlobeExtVertex(array, projectedPoint, normal);

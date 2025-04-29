@@ -9,6 +9,7 @@ import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function coerceValue(type: string, value: any): any {
     switch (type) {
     case 'string': return valueToString(value);
@@ -74,6 +75,7 @@ class Config implements Expression {
         return new Config(type, valueToString(configKey.value));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         const FQIDSeparator = '\u001F';
         const configKey = [this.key, this.scope, ctx.scope].filter(Boolean).join(FQIDSeparator);

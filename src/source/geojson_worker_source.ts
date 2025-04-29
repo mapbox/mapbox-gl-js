@@ -25,8 +25,11 @@ export type GeoJSONWorkerOptions = {
     source: string;
     scope: string;
     cluster: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     superclusterOptions?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     geojsonVtOptions?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clusterProperties?: any;
     filter?: Array<unknown>;
     dynamic?: boolean;
@@ -47,6 +50,7 @@ export type LoadGeoJSONResult = FeatureCollectionOrFeature & {resourceTiming?: R
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<LoadGeoJSONResult>) => void;
 
 export interface GeoJSONIndex {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getTile: (z: number, x: number, y: number) => any;
     // supercluster methods
     getClusterExpansionZoom?: (clusterId: number) => number;
@@ -283,7 +287,9 @@ function getSuperclusterOptions({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (!clusterProperties || !superclusterOptions) return superclusterOptions;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapExpressions: Record<string, any> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const reduceExpressions: Record<string, any> = {};
     const globals = {accumulated: null, zoom: 0};
     const feature = {properties: null};
@@ -305,6 +311,7 @@ function getSuperclusterOptions({
 
     superclusterOptions.map = (pointProperties) => {
         feature.properties = pointProperties;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const properties: Record<string, any> = {};
         for (const key of propertyNames) {
             properties[key] = mapExpressions[key].evaluate(globals, feature);

@@ -96,6 +96,7 @@ class CollisionIndex {
         allowOverlap: boolean,
         textPixelRatio: number,
         posMatrix: mat4,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         collisionGroupPredicate?: any,
     ): PlacedCollisionBox {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
@@ -186,6 +187,7 @@ class CollisionIndex {
         const labelPlaneFontScale = (pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio) / ONE_EM;
         const labelPlaneAnchorPoint = symbolProjection.project(anchorX, anchorY, anchorZ, labelPlaneMatrix);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const projectionCache: Record<string, any> = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
@@ -245,6 +247,7 @@ class CollisionIndex {
             if (labelToScreenMatrix) {
                 assert(pitchWithMap);
                 // @ts-expect-error - TS2322 - Type 'vec4[]' is not assignable to type 'vec3[]'.
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 projectedPath = projectedPath.map(([x, y, z]: [any, any, any], index) => {
                     if (getElevation && !isGlobe) {
                         z = getElevation(index < firstLen - 1 ? first.tilePath[firstLen - 1 - index] : last.tilePath[index - firstLen + 2])[2];
@@ -379,7 +382,9 @@ class CollisionIndex {
         const features = this.grid.query(minX, minY, maxX, maxY)
             .concat(this.ignoredGrid.query(minX, minY, maxX, maxY));
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const seenFeatures: Record<string, any> = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result: Record<string, any> = {};
 
         for (const feature of features) {

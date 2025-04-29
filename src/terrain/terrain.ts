@@ -171,6 +171,7 @@ class ProxySourceCache extends SourceCache {
 
         const incoming: {
             [key: string]: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } = idealTileIDs.reduce<Record<string, any>>((acc, tileID) => {
             acc[tileID.key] = '';
             if (!this._tiles[tileID.key]) {
@@ -529,6 +530,7 @@ export class Terrain extends Elevation {
         return demScale * proxyTileSize;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _onStyleDataEvent(event: any) {
         if (event.coord && event.dataType === 'source') {
             this._clearRenderCacheForTile(event.sourceCacheId, event.coord);
@@ -657,6 +659,7 @@ export class Terrain extends Elevation {
         this.renderingToTexture = false;
 
         // Gather all dem tiles that are assigned to proxy tiles
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const visibleKeys: Record<string, any> = {};
         this._visibleDemTiles = [];
 
@@ -777,6 +780,7 @@ export class Terrain extends Elevation {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const filteringForDemTile = (tile: any) => {
             if (!tile || !tile.demTexture) {
                 return gl.NEAREST;
@@ -1135,6 +1139,7 @@ export class Terrain extends Elevation {
 
         if (!hasVectorSource) return;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const clearSourceCaches: Record<string, any> = {};
         for (let i = 0; i < this._style.order.length; ++i) {
             const layer = this._style._mergedLayers[this._style.order[i]];
@@ -1173,6 +1178,7 @@ export class Terrain extends Elevation {
 
         if (!hasRasterSource) return;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const clearSourceCaches: Record<string, any> = {};
         for (let i = 0; i < this._style.order.length; ++i) {
             const layer = this._style._mergedLayers[this._style.order[i]];

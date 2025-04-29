@@ -54,6 +54,7 @@ class Slice implements Expression {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         const input = (this.input.evaluate(ctx));
         const beginIndex = (this.beginIndex.evaluate(ctx) as number);

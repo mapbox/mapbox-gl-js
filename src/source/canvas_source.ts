@@ -217,6 +217,7 @@ class CanvasSource extends ImageSource<'canvas'> {
         this._prepareData(context);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override serialize(): any {
         return {
             type: 'canvas',

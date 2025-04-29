@@ -82,6 +82,7 @@ class Assertion implements Expression {
         return new Assertion(type, parsed);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         for (let i = 0; i < this.args.length; i++) {
             const value = this.args[i].evaluate(ctx);

@@ -22,6 +22,7 @@ import type {Footprint} from '../util/conflation';
 import type {TextureImage} from '../../src/render/texture';
 import type {Mesh, ModelNode, Material, MaterialDescription, ModelTexture, Sampler, AreaLight, PbrMetallicRoughness} from '../data/model';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertTextures(gltf: any, images: Array<TextureImage>): Array<ModelTexture> {
     const textures: ModelTexture[] = [];
     const gl = WebGL2RenderingContext;
@@ -124,6 +125,7 @@ function getNormalizedScale(arrayType: Class<ArrayBufferView>) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getBufferData(gltf: any, accessor: any) {
     const bufferView = gltf.json.bufferViews[accessor.bufferView];
     const buffer = gltf.buffers[bufferView.buffer];
@@ -137,6 +139,7 @@ function getBufferData(gltf: any, accessor: any) {
     return bufferData;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setArrayData(gltf: any, accessor: any, array: any, buffer: ArrayBufferView) {
     const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
     const norm = getNormalizedScale(ArrayType);
@@ -153,6 +156,7 @@ function setArrayData(gltf: any, accessor: any, array: any, buffer: ArrayBufferV
     array._trim();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertPrimitive(primitive: any, gltf: any, textures: Array<ModelTexture>): Mesh {
     const indicesIdx = primitive.indices;
     const attributeMap = primitive.attributes;
@@ -237,6 +241,7 @@ function convertPrimitive(primitive: any, gltf: any, textures: Array<ModelTextur
     return mesh;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertMeshes(gltf: any, textures: Array<ModelTexture>): Array<Array<Mesh>> {
     const meshes: Mesh[][] = [];
     for (const meshDesc of gltf.json.meshes) {
@@ -249,6 +254,7 @@ function convertMeshes(gltf: any, textures: Array<ModelTexture>): Array<Array<Me
     return meshes;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): ModelNode {
     const {matrix, rotation, translation, scale, mesh, extras, children} = nodeDesc;
     const node = {} as ModelNode;
@@ -308,6 +314,7 @@ function convertFootprint(mesh: FootprintMesh): Footprint | null | undefined {
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseLegacyFootprintMesh(gltfNode: any): FootprintMesh | null | undefined {
     if (!gltfNode.extras || !gltfNode.extras.ground) {
         return null;
@@ -418,6 +425,7 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
     return {vertices, indices};
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertFootprints(convertedNodes: Array<ModelNode>, sceneNodes: any, modelNodes: any) {
     // modelNodes == a list of nodes in the gltf file
     // sceneNodes == an index array pointing to modelNodes being parsed
@@ -493,6 +501,7 @@ function convertFootprints(convertedNodes: Array<ModelNode>, sceneNodes: any, mo
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function convertModel(gltf: any): Array<ModelNode> {
     const textures = convertTextures(gltf, gltf.images);
     const meshes = convertMeshes(gltf, textures);
@@ -509,6 +518,7 @@ export default function convertModel(gltf: any): Array<ModelNode> {
     return resultNodes;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function process3DTile(gltf: any, zScale: number): Array<ModelNode> {
     const nodes = convertModel(gltf);
     for (const node of nodes) {
