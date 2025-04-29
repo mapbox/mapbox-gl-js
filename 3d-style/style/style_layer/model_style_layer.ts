@@ -25,6 +25,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type {LUT} from "../../../src/util/lut";
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
+import type {ProgramName} from '../../../src/render/program';
 
 class ModelStyleLayer extends StyleLayer {
     override _transitionablePaint: Transitionable<PaintProps>;
@@ -46,7 +47,7 @@ class ModelStyleLayer extends StyleLayer {
         return new ModelBucket(parameters);
     }
 
-    override getProgramIds(): Array<string> {
+    override getProgramIds(): ProgramName[] {
         return ['model'];
     }
 

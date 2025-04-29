@@ -17,7 +17,6 @@ import {Debug} from '../util/debug';
 import type {vec2, vec4} from 'gl-matrix';
 import type Painter from '../render/painter';
 import type {VignetteParams} from './vignette';
-import type {SnowUniformsType} from './snow_program';
 
 export class Snow extends PrecipitationBase {
     _revealParams: PrecipitationRevealParams;
@@ -208,7 +207,7 @@ export class Snow extends PrecipitationBase {
         const gl = context.gl;
         const tr = painter.transform;
 
-        const program = painter.getOrCreateProgram<SnowUniformsType>('snowParticle');
+        const program = painter.getOrCreateProgram('snowParticle');
 
         painter.uploadCommonUniforms(context, program);
 

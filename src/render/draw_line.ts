@@ -154,7 +154,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
             const programConfiguration = bucket.programConfigurations.get(layer.id);
             const affectedByFog = painter.isTileAffectedByFog(coord);
-            const program = painter.getOrCreateProgram<LineUniformsType | LinePatternUniformsType>(programId, {config: programConfiguration, defines, overrideFog: affectedByFog, overrideRtt: elevated ? false : undefined});
+            const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines, overrideFog: affectedByFog, overrideRtt: elevated ? false : undefined});
 
             if (constantPattern && tile.imageAtlas) {
                 const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(pixelRatio).toString();

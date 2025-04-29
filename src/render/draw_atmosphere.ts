@@ -22,8 +22,6 @@ import type Painter from './painter';
 import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {DynamicDefinesType} from './program/program_uniforms';
-import type {StarsUniformsType} from '../terrain/stars_program';
-import type {AtmosphereUniformsType} from '../terrain/globe_raster_program';
 
 function generateUniformDistributedPointsOnSphere(pointsCount: number): Array<vec3> {
     const sRand = mulberry32(30);
@@ -172,7 +170,7 @@ class Atmosphere {
             if (alphaPass) {
                 defines.push("ALPHA_PASS");
             }
-            const program = painter.getOrCreateProgram<AtmosphereUniformsType>('globeAtmosphere', {defines: (defines as DynamicDefinesType[])});
+            const program = painter.getOrCreateProgram('globeAtmosphere', {defines: (defines as DynamicDefinesType[])});
 
             const uniforms = atmosphereUniformValues(
                 tr.frustumCorners.TL,
@@ -218,7 +216,7 @@ class Atmosphere {
         const gl = context.gl;
         const tr = painter.transform;
 
-        const program = painter.getOrCreateProgram<StarsUniformsType>('stars');
+        const program = painter.getOrCreateProgram('stars');
 
         const orientation = quat.identity([] as unknown as quat);
         quat.rotateX(orientation, orientation, -tr._pitch);

@@ -33,12 +33,14 @@ import type {UniformBindings, UniformValues} from './uniform_binding';
 import type {BinderUniform} from '../data/program_configuration';
 import type Painter from './painter';
 import type {Segment} from "../data/segment";
-import type {DynamicDefinesType} from '../render/program/program_uniforms';
+import type {ProgramUniformsType, DynamicDefinesType} from '../render/program/program_uniforms';
 import type {PossiblyEvaluated} from '../style/properties';
+
+export type ProgramName = keyof ProgramUniformsType;
 
 export type DrawMode = WebGL2RenderingContext['POINTS'] | WebGL2RenderingContext['LINES'] | WebGL2RenderingContext['TRIANGLES'] | WebGL2RenderingContext['LINE_STRIP'];
 
-type ShaderSource = {
+export type ShaderSource = {
     fragmentSource: string;
     vertexSource: string;
     staticAttributes: Array<string>;
@@ -72,9 +74,7 @@ const instancingUniforms = (context: Context): InstancingUniformType => ({
 
 class Program<Us extends UniformBindings> {
     program: WebGLProgram;
-    attributes: {
-        [_: string]: number;
-    };
+    attributes: Record<string, number>;
     numAttributes: number;
     fixedUniforms: Us;
     binderUniforms: Array<BinderUniform>;
@@ -86,7 +86,7 @@ class Program<Us extends UniformBindings> {
     globeUniforms: GlobeUniformsType | null | undefined;
     shadowUniforms: ShadowUniformsType | null | undefined;
 
-    name: string;
+    name: ProgramName;
     configuration: ProgramConfiguration | null | undefined;
     fixedDefines: DynamicDefinesType[];
 
@@ -109,14 +109,16 @@ class Program<Us extends UniformBindings> {
         return key;
     }
 
-    constructor(context: Context,
-                name: string,
-                source: ShaderSource,
-                configuration: ProgramConfiguration | null | undefined,
-                fixedUniforms: (arg1: Context) => Us,
-                fixedDefines: DynamicDefinesType[]) {
+    constructor(
+        context: Context,
+        name: ProgramName,
+        source: ShaderSource,
+        configuration: ProgramConfiguration | null | undefined,
+        fixedUniforms: (arg1: Context) => Us,
+        fixedDefines: DynamicDefinesType[]
+    ) {
         const gl = context.gl;
-        this.program = (gl.createProgram());
+        this.program = gl.createProgram();
 
         this.configuration = configuration;
         this.name = name;
@@ -357,7 +359,7 @@ class Program<Us extends UniformBindings> {
             return;
         }
 
-        const debugDefines = [...this.fixedDefines] as DynamicDefinesType[];
+        const debugDefines: DynamicDefinesType[] = [...this.fixedDefines];
         debugDefines.push('DEBUG_WIREFRAME');
         const debugProgram = painter.getOrCreateProgram(this.name, {config: this.configuration, defines: debugDefines});
 

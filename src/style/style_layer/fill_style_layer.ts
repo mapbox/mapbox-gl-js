@@ -18,6 +18,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
 import type {ImageId} from '../../style-spec/expression/types/image_id';
+import type {ProgramName} from '../../render/program';
 
 class FillStyleLayer extends StyleLayer {
     override _unevaluatedLayout: Layout<LayoutProps>;
@@ -35,12 +36,12 @@ class FillStyleLayer extends StyleLayer {
         super(layer, properties, scope, lut, options);
     }
 
-    override getProgramIds(): string[] {
+    override getProgramIds(): ProgramName[] {
         const pattern = this.paint.get('fill-pattern');
 
         const image = pattern && pattern.constantOr((1 as any));
 
-        const ids = [image ? 'fillPattern' : 'fill'];
+        const ids: ProgramName[] = [image ? 'fillPattern' : 'fill'];
 
         if (this.paint.get('fill-antialias')) {
             ids.push(image && !this.getPaintProperty('fill-outline-color') ? 'fillOutlinePattern' : 'fillOutline');

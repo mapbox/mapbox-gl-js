@@ -45,7 +45,6 @@ import type {GroundEffect, PartData} from '../data/bucket/fill_extrusion_bucket'
 import type {
     FillExtrusionDepthUniformsType,
     FillExtrusionPatternUniformsType,
-    FillExtrusionGroundEffectUniformsType
 } from './program/fill_extrusion_program';
 
 export default draw;
@@ -362,7 +361,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
         const affectedByFog = painter.isTileAffectedByFog(coord);
         const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.getOrCreateProgram<FillExtrusionDepthUniformsType | FillExtrusionPatternUniformsType>(programName,
+        const program = painter.getOrCreateProgram(programName,
             {config: programConfiguration, defines: singleCascade ? singleCascadeDefines : baseDefines, overrideFog: affectedByFog});
 
         if (painter.terrain) {
@@ -500,7 +499,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     const renderGroundEffectTile = (coord: OverscaledTileID, groundEffect: GroundEffect, segments: any, matrix: mat4, meterToTile: number) => {
         const programConfiguration = groundEffect.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        const program = painter.getOrCreateProgram<FillExtrusionGroundEffectUniformsType>('fillExtrusionGroundEffect', {config: programConfiguration, defines, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram('fillExtrusionGroundEffect', {config: programConfiguration, defines, overrideFog: affectedByFog});
 
         const ao: [number, number] = [aoIntensity, aoRadius * meterToTile];
 

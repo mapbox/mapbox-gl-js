@@ -119,3 +119,7 @@ export const programUniforms = {
     vignette: vignetteUniforms,
     occlusion: occlusionUniforms
 } as const;
+
+export type ProgramUniformsType = {
+    [K in keyof typeof programUniforms]: ReturnType<typeof programUniforms[K]>;
+};

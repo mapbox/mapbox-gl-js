@@ -20,6 +20,7 @@ import type {DEMSampler} from '../../terrain/elevation';
 import type {vec2} from 'gl-matrix';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {LUT} from "../../../src/util/lut";
+import type {ProgramName} from '../../../src/render/program';
 
 class FillExtrusionStyleLayer extends StyleLayer {
     override _transitionablePaint: Transitionable<PaintProps>;
@@ -60,7 +61,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
         return true;
     }
 
-    override getProgramIds(): string[] {
+    override getProgramIds(): ProgramName[] {
         const patternProperty = this.paint.get('fill-extrusion-pattern');
 
         const image = patternProperty.constantOr((1 as any));

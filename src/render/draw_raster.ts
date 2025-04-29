@@ -34,7 +34,6 @@ import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import type {Source} from '../source/source';
 import type {UserManagedTexture} from './texture';
 import type {DynamicDefinesType} from '../render/program/program_uniforms';
-import type {RasterUniformsType} from '../render/program/raster_program';
 import type VertexBuffer from '../gl/vertex_buffer';
 
 export default drawRaster;
@@ -244,7 +243,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             );
             const affectedByFog = painter.isTileAffectedByFog(coord);
 
-            const program = painter.getOrCreateProgram<RasterUniformsType>('raster', {defines: rasterConfig.defines, overrideFog: affectedByFog});
+            const program = painter.getOrCreateProgram('raster', {defines: rasterConfig.defines, overrideFog: affectedByFog});
 
             painter.uploadCommonUniforms(context, program, unwrappedTileID);
 
@@ -382,7 +381,7 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
     const rasterColorMix = adjustColorMix(rasterConfig.mix);
 
     const uniformValues = rasterPoleUniformValues(projMatrix, normalizeMatrix, globeMatrix as Float32Array, globeToMercatorTransition(painter.transform.zoom), fade, layer, [0, 0], elevation, RASTER_COLOR_TEXTURE_UNIT, rasterColorMix, rasterConfig.offset, rasterConfig.range, emissiveStrength);
-    const program = painter.getOrCreateProgram<RasterUniformsType>('raster', {defines});
+    const program = painter.getOrCreateProgram('raster', {defines});
 
     painter.uploadCommonUniforms(context, program, null);
     program.draw(

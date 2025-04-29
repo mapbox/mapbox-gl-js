@@ -68,7 +68,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     if (isViewportPitch) {
         // Set overrideRtt to ignore 3D lights
-        const program = painter.getOrCreateProgram<BackgroundUniformsType | BackgroundPatternUniformsType>(programName, {overrideFog: false, overrideRtt: true});
+        const program = painter.getOrCreateProgram(programName, {overrideFog: false, overrideRtt: true});
         const matrix = new Float32Array(mat4.identity([] as unknown as mat4));
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
@@ -84,7 +84,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     for (const tileID of tileIDs) {
         const affectedByFog = painter.isTileAffectedByFog(tileID);
-        const program = painter.getOrCreateProgram<BackgroundUniformsType | BackgroundPatternUniformsType>(programName, {overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram(programName, {overrideFog: affectedByFog});
         const unwrappedTileID = tileID.toUnwrapped();
         const matrix = coords ? tileID.projMatrix : painter.transform.calculateProjMatrix(unwrappedTileID);
         painter.prepareDrawTile();

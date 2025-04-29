@@ -10,7 +10,6 @@ import {vignetteLayout} from "./vignette_attributes";
 import type Painter from '../render/painter';
 import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';
-import type {VignetteUniformsType} from './vignette_program';
 
 export type VignetteParams={
     strength: number,
@@ -46,7 +45,7 @@ export class Vignette {
     }
 
     draw(painter: Painter, params: VignetteParams) {
-        const program = painter.getOrCreateProgram<VignetteUniformsType>('vignette');
+        const program = painter.getOrCreateProgram('vignette');
 
         if (!this.vignetteVx || !this.vignetteIdx) {
             const vertices = new VignetteVertexArray();

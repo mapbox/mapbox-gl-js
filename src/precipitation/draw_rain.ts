@@ -19,7 +19,6 @@ import {Debug} from '../util/debug';
 import type {vec4} from 'gl-matrix';
 import type Painter from '../render/painter';
 import type {VignetteParams} from './vignette';
-import type {RainUniformsType} from '../precipitation/rain_program';
 
 export class Rain extends PrecipitationBase {
     screenTexture: Texture | null | undefined;
@@ -233,7 +232,7 @@ export class Rain extends PrecipitationBase {
             gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, painter.width, painter.height);
         }
 
-        const program = painter.getOrCreateProgram<RainUniformsType>('rainParticle');
+        const program = painter.getOrCreateProgram('rainParticle');
 
         painter.uploadCommonUniforms(context, program);
 

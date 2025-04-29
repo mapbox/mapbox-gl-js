@@ -6,6 +6,7 @@ import type {PaintProps} from './background_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 class BackgroundStyleLayer extends StyleLayer {
     override _transitionablePaint: Transitionable<PaintProps>;
@@ -20,7 +21,7 @@ class BackgroundStyleLayer extends StyleLayer {
         super(layer, properties, scope, lut, options);
     }
 
-    override getProgramIds(): Array<string> {
+    override getProgramIds(): ProgramName[] {
         const image = this.paint.get('background-pattern');
         return [image ? 'backgroundPattern' : 'background'];
     }

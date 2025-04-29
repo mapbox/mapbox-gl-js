@@ -31,6 +31,7 @@ import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
 import type {LUT} from '../util/lut';
 import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {ProgramName} from '../render/program';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -225,7 +226,7 @@ class StyleLayer extends Evented {
         // No-op; can be overridden by derived classes.
     }
 
-    getProgramIds(): string[] | null {
+    getProgramIds(): ProgramName[] | null {
         // No-op; can be overridden by derived classes.
         return null;
     }

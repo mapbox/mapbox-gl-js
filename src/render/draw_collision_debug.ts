@@ -16,7 +16,6 @@ import type StyleLayer from '../style/style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type Projection from '../geo/projection/projection';
-import type {CollisionUniformsType, CollisionCircleUniformsType} from '../render/program/collision_program';
 
 export default drawCollisionDebug;
 
@@ -34,7 +33,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
-    const program = painter.getOrCreateProgram<CollisionUniformsType>('collisionBox');
+    const program = painter.getOrCreateProgram('collisionBox');
     const tileBatches: Array<TileBatch> = [];
     let circleCount = 0;
     let circleOffset = 0;
@@ -92,7 +91,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
     }
 
     // Render collision circles
-    const circleProgram = painter.getOrCreateProgram<CollisionCircleUniformsType>('collisionCircle');
+    const circleProgram = painter.getOrCreateProgram('collisionCircle');
 
     // Construct vertex data
     const vertexData = new CollisionCircleLayoutArray();

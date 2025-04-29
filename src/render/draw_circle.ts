@@ -85,7 +85,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             definesValues.push('DEPTH_OCCLUSION');
         }
 
-        const program = painter.getOrCreateProgram<CircleUniformsType>('circle', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram('circle', {config: programConfiguration, defines: definesValues, overrideFog: affectedByFog});
         const layoutVertexBuffer = bucket.layoutVertexBuffer;
         const globeExtVertexBuffer = bucket.globeExtVertexBuffer;
         const indexBuffer = bucket.indexBuffer;

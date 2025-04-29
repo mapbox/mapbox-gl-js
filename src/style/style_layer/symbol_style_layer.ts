@@ -41,6 +41,7 @@ import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {LUT} from "../../util/lut";
 import type {ImageId} from '../../style-spec/expression/types/image_id';
+import type {ProgramName} from '../../render/program';
 
 let properties: {
     layout: Properties<LayoutProps>;
@@ -254,7 +255,7 @@ class SymbolStyleLayer extends StyleLayer {
         return hasOverrides;
     }
 
-    override getProgramIds(): string[] {
+    override getProgramIds(): ProgramName[] {
         return ['symbol'];
     }
 

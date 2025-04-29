@@ -16,7 +16,6 @@ import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer
 import type {OverscaledTileID} from '../source/tile_id';
 import type DEMData from '../data/dem_data';
 import type {DynamicDefinesType} from './program/program_uniforms';
-import type {HillshadeUniformsType, HillshadePrepareUniformsType} from './program/hillshade_program';
 
 export default drawHillshade;
 
@@ -60,7 +59,7 @@ function renderHillshade(painter: Painter, coord: OverscaledTileID, tile: Tile, 
     painter.prepareDrawTile();
 
     const affectedByFog = painter.isTileAffectedByFog(coord);
-    const program = painter.getOrCreateProgram<HillshadeUniformsType>('hillshade', {overrideFog: affectedByFog});
+    const program = painter.getOrCreateProgram('hillshade', {overrideFog: affectedByFog});
 
     context.activeTexture.set(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
@@ -129,7 +128,7 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
     const definesValues: DynamicDefinesType[] = [];
     if (painter.linearFloatFilteringSupported()) definesValues.push('TERRAIN_DEM_FLOAT_FORMAT');
 
-    painter.getOrCreateProgram<HillshadePrepareUniformsType>('hillshadePrepare', {defines: definesValues}).draw(painter, gl.TRIANGLES,
+    painter.getOrCreateProgram('hillshadePrepare', {defines: definesValues}).draw(painter, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.disabled,
         hillshadeUniformPrepareValues(tile.tileID, dem),
         layer.id, tileBoundsBuffer,

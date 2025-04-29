@@ -432,7 +432,7 @@ function drawLayerSymbols(
             }
 
             const programConfiguration = bucket.icon.programConfigurations.get(layer.id);
-            const program = painter.getOrCreateProgram<SymbolUniformsType>('symbol', {config: programConfiguration, defines: baseDefines});
+            const program = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
 
             const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
             const sizeData = bucket.iconSizeData;
@@ -533,7 +533,7 @@ function drawLayerSymbols(
             setOcclusionDefines(baseDefines);
 
             const programConfiguration = bucket.text.programConfigurations.get(layer.id);
-            const program = painter.getOrCreateProgram<SymbolUniformsType>('symbol', {config: programConfiguration, defines: baseDefines});
+            const program = painter.getOrCreateProgram('symbol', {config: programConfiguration, defines: baseDefines});
 
             let texSizeIcon: [number, number] = [0, 0];
             let atlasTextureIcon: Texture | null = null;

@@ -60,7 +60,6 @@ import type {SourceSpecification} from '../style-spec/types';
 import type {HeatmapUniformsType} from '../render/program/heatmap_program';
 import type {LineUniformsType, LinePatternUniformsType} from '../render/program/line_program';
 import type {CollisionUniformsType} from '../render/program/collision_program';
-import type {ClippingMaskUniformsType} from '../render/program/clipping_mask_program';
 import type {GlobeRasterUniformsType} from './globe_raster_program';
 import type {TerrainRasterUniformsType} from './terrain_raster_program';
 import type {
@@ -1415,7 +1414,7 @@ export class Terrain extends Elevation {
         context.setColorMode(ColorMode.disabled);
         context.setDepthMode(DepthMode.disabled);
 
-        const program = painter.getOrCreateProgram<ClippingMaskUniformsType>('clippingMask');
+        const program = painter.getOrCreateProgram('clippingMask');
 
         for (const tileID of proxiedCoords) {
             const id = painter._tileClippingMaskIDs[tileID.key] = --ref;

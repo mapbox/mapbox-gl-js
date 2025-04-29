@@ -24,6 +24,7 @@ import type {DynamicDefinesType} from '../../render/program/program_uniforms';
 import type SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
 import type {ImageId} from '../../style-spec/expression/types/image_id';
+import type {ProgramName} from '../../render/program';
 
 let properties: {
     layout: Properties<LayoutProps>;
@@ -133,7 +134,7 @@ class LineStyleLayer extends StyleLayer {
         return new LineBucket(parameters);
     }
 
-    override getProgramIds(): string[] {
+    override getProgramIds(): ProgramName[] {
         const patternProperty = this.paint.get('line-pattern');
 
         const image = patternProperty.constantOr((1 as any));
