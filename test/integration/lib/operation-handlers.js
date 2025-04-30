@@ -60,7 +60,6 @@ export const operationHandlers = {
         }, doneCb);
     },
     sleep(map, params, doneCb) {
-
         setTimeout(doneCb, params[0]);
     },
     addImage(map, params, doneCb) {
@@ -238,6 +237,10 @@ export const operationHandlers = {
     },
     updateGeoJSONData(map, [sourceId, data], doneCb) {
         map.getSource(sourceId).updateData(data);
+        doneCb();
+    },
+    on(map, params, doneCb) {
+        map.on(params[0], () => applyOperations(map, {operations: params[1]}, params[0]));
         doneCb();
     }
 };

@@ -389,14 +389,17 @@ class ImageManager extends Evented {
         const response: StyleImageMap<StringifiedImageId> = new Map();
 
         for (const id of ids) {
-            const image = imagesInScope.get(id.toString());
-
-            if (!image) {
+            if (!imagesInScope.get(id.toString())) {
                 // Don't fire the `styleimagemissing` event if the image is a part of an iconset
                 if (id.iconsetId) continue;
 
-                warnOnce(`Image "${id.name}" could not be loaded. Please make sure you have added the image with map.addImage() or a "sprite" property in your style. You can provide missing images by listening for the "styleimagemissing" map event.`);
                 this.fire(new Event('styleimagemissing', {id: id.name}));
+            }
+
+            // Check if the image was added to the map after the `styleimagemissing` event was fired
+            const image = imagesInScope.get(id.toString());
+            if (!image) {
+                warnOnce(`Image "${id.name}" could not be loaded. Please make sure you have added the image with map.addImage() or a "sprite" property in your style. You can provide missing images by listening for the "styleimagemissing" map event.`);
                 continue;
             }
 
