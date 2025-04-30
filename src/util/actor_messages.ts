@@ -13,6 +13,7 @@ import type {StyleImageMap} from '../style/style_image';
 import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
 import type {WorkerPerformanceMetrics} from './performance';
 import type {WorkerSourceRequest, WorkerSourceTileRequest} from '../source/worker_source';
+import type {StyleModelMap} from '../style/style_mode';
 
 /**
  * Message registry maps message types to their data and result types.
@@ -140,6 +141,11 @@ export type ActorMessages = {
 
     'setLayers': {
         params: {layers: LayerSpecification[]; scope: string; options: ConfigOptions};
+        callback: ActorCallback<void>;
+    };
+
+    'setModels': {
+        params: {models: StyleModelMap; scope: string;};
         callback: ActorCallback<void>;
     };
 

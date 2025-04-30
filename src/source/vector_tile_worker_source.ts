@@ -20,6 +20,7 @@ import type Scheduler from '../util/scheduler';
 import type {TaskMetadata} from '../util/scheduler';
 import type {LoadVectorData} from './load_vector_tile';
 import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {StyleModelMap} from '../style/style_mode';
 
 /**
  * The {@link WorkerSource} implementation that supports {@link VectorTileSource}.
@@ -34,6 +35,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
     actor: Actor;
     layerIndex: StyleLayerIndex;
     availableImages: ImageId[];
+    availableModels: StyleModelMap;
     loadVectorData: LoadVectorData;
     loading: Record<number, WorkerTile>;
     loaded: Record<number, WorkerTile>;
@@ -49,11 +51,12 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * loads the pbf at `params.url`.
      * @private
      */
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], isSpriteLoaded: boolean, loadVectorData?: LoadVectorData | null, brightness?: number | null) {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, isSpriteLoaded: boolean, loadVectorData?: LoadVectorData | null, brightness?: number | null) {
         super();
         this.actor = actor;
         this.layerIndex = layerIndex;
         this.availableImages = availableImages;
+        this.availableModels = availableModels;
         this.loadVectorData = loadVectorData || loadVectorTile;
         this.loading = {};
         this.loaded = {};
@@ -115,7 +118,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                     }
                     callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
                 };
-                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, WorkerSourceVectorTileCallback);
+                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, WorkerSourceVectorTileCallback);
             };
 
             if (this.isSpriteLoaded) {
@@ -158,7 +161,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;
-                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, reloadCallback);
+                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, reloadCallback);
                 }
                 callback(err, data);
             };
@@ -168,7 +171,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             } else if (workerTile.status === 'done') {
                 // if there was no vector tile data on the initial load, don't try and re-parse tile
                 if (workerTile.vectorTile) {
-                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, done);
+                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, done);
                 } else {
                     done();
                 }

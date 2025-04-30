@@ -22,6 +22,7 @@ import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 import type {RasterizedImageMap} from '../render/image_manager';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
+import type {StyleModelMap} from '../style/style_mode';
 
 /**
  * The parameters passed to the {@link MapWorker#getWorkerSource}.
@@ -164,6 +165,7 @@ export type WorkerSourceImageRaserizeCallback = Callback<RasterizedImageMap>;
  */
 export interface WorkerSource {
     availableImages?: ImageId[];
+    availableModels?: StyleModelMap;
 
     /**
      * Loads a tile from the given params and parse it into buckets ready to send
@@ -197,6 +199,7 @@ export interface WorkerSourceConstructor {
         actor?: Actor,
         layerIndex?: StyleLayerIndex,
         availableImages?: ImageId[],
+        availableModels?: StyleModelMap,
         isSpriteLoaded?: boolean,
         loadData?: (params: {source: string; scope: string}, callback: Callback<unknown>) => () => void | undefined,
         brightness?: number

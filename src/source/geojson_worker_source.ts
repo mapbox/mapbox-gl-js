@@ -20,6 +20,7 @@ import type {LoadVectorDataCallback} from './load_vector_tile';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {Callback} from '../types/callback';
 import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {StyleModelMap} from '../style/style_mode';
 
 export type GeoJSONWorkerOptions = {
     source: string;
@@ -109,8 +110,8 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * See {@link GeoJSONWorkerSource#loadGeoJSON}.
      * @private
      */
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], isSpriteLoaded: boolean, loadGeoJSON?: LoadGeoJSON | null, brightness?: number | null) {
-        super(actor, layerIndex, availableImages, isSpriteLoaded, loadGeoJSONTile, brightness);
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, isSpriteLoaded: boolean, loadGeoJSON?: LoadGeoJSON | null, brightness?: number | null) {
+        super(actor, layerIndex, availableImages, availableModels, isSpriteLoaded, loadGeoJSONTile, brightness);
         if (loadGeoJSON) {
             this.loadGeoJSON = loadGeoJSON;
         }

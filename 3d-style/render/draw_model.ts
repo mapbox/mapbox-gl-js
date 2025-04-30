@@ -585,7 +585,6 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
         const modelUris = bucket.getModelUris();
         if (modelUris && !bucket.modelsRequested) {
-            // geojson models are always set in the root scope to avoid model duplication
             modelManager.addModelsFromBucket(modelUris, scope);
             bucket.modelsRequested = true;
         }
@@ -634,6 +633,11 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
             }
 
             const model = modelManager.getModel(modelId, scope);
+            if (!model && !modelManager.hasURLBeenRequested(modelId) && !bucket.modelUris.includes(modelId)) {
+                // We are asking for a model that's not yet on this bucket's model list
+                bucket.modelUris.push(modelId);
+                bucket.modelsRequested = false;
+            }
             if (!model || !model.uploaded) continue;
 
             for (const node of model.nodes) {

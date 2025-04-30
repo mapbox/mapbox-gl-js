@@ -32,10 +32,61 @@ describe('ModelManager', () => {
             expect(modelManager.isLoaded()).toEqual(true);
             expect(modelManager.hasModel('model', 'basemap')).toEqual(true);
             expect(modelManager.listModels('basemap')).toEqual(['model']);
-            expect(modelManager.getModel('model', 'basemap')).toEqual({id: 'model', url: 'uri'});
+            expect(modelManager.getModel('model', 'basemap')).toEqual({id: 'model', url: 'https://www.example.com/'});
         });
 
-        modelManager.addModel('model', 'uri', 'basemap');
+        modelManager.addModel('model', 'https://www.example.com/', 'basemap');
+    });
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    test("#addModel with an already existing model id but different URL loads it", async () => {
+        const {modelManager, eventedParent} = createModelManager();
+
+        eventedParent.on('error', ({error}) => {
+            expect.unreachable(error.message);
+        });
+
+        modelManager.loadModel = vi.fn((id, url) => Promise.resolve({id, url}));
+
+        modelManager.addModel('model', 'https://www.example.com/', 'basemap');
+        modelManager.addModel('model', 'https://www.example2.com/', 'basemap');
+
+        expect(modelManager.loadModel).toHaveBeenCalledTimes(2);
+        expect(modelManager.models['basemap']['model'].numReferences).toBe(1);
+    });
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    test("#addModel with an already existing model id and same URL increases the reference number", async () => {
+        const {modelManager, eventedParent} = createModelManager();
+
+        eventedParent.on('error', ({error}) => {
+            expect.unreachable(error.message);
+        });
+
+        modelManager.loadModel = vi.fn((id, url) => Promise.resolve({id, url}));
+
+        modelManager.addModel('model', 'https://www.example.com/', 'basemap');
+        modelManager.addModel('model', 'https://www.example.com/', 'basemap');
+
+        expect(modelManager.loadModel).toHaveBeenCalledTimes(1);
+        expect(modelManager.models['basemap']['model'].numReferences).toBe(2);
+    });
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    test("#addModel with different ids but with same URL increases it's number of references but doesn't load it again", async () => {
+        const {modelManager, eventedParent} = createModelManager();
+
+        eventedParent.on('error', ({error}) => {
+            expect.unreachable(error.message);
+        });
+
+        modelManager.loadModel = vi.fn((id, url) => Promise.resolve({id, url}));
+
+        modelManager.addModel('model', 'https://www.example.com/', 'basemap');
+        modelManager.addModel('model2', 'https://www.example.com/', 'basemap');
+
+        expect(modelManager.loadModel).toHaveBeenCalledOnce();
+        expect(modelManager.models['basemap']['model'].numReferences).toBe(2);
     });
 
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -51,7 +102,7 @@ describe('ModelManager', () => {
 
         const model = {
             id: 'model',
-            url: 'uri',
+            url: 'https://www.example.com/',
             destroy: vi.fn()
         };
 
@@ -70,11 +121,11 @@ describe('ModelManager', () => {
             expect(modelManager.hasModel('model', 'basemap')).toEqual(false);
         });
 
-        modelManager.addModel('model', 'uri', 'basemap');
+        modelManager.addModel('model', 'https://www.example.com/', 'basemap');
     });
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    test('#addModels', async () => {
+    test('#addModelURLs', async () => {
         const {modelManager, eventedParent} = createModelManager();
 
         eventedParent.on('error', ({error}) => {
@@ -89,18 +140,18 @@ describe('ModelManager', () => {
         );
 
         const models = {
-            'model1': 'uri1',
-            'model2': 'uri2',
-            'model3': 'uri3'
+            'model1': 'https://www.example.com/1',
+            'model2': 'https://www.example.com/2',
+            'model3': 'https://www.example.com/3'
         };
 
         eventedParent.on('data', () => {
             expect(modelManager.isLoaded()).toEqual(true);
             expect(modelManager.listModels('basemap')).toEqual(['model1', 'model2', 'model3']);
-            expect(modelManager.getModel('model3', 'basemap')).toEqual({id: 'model3', url: 'uri3'});
+            expect(modelManager.getModel('model3', 'basemap')).toEqual({id: 'model3', url: 'https://www.example.com/3'});
         });
 
-        modelManager.addModels(models, 'basemap');
+        modelManager.addModelURLs(models, 'basemap');
     });
 
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -115,15 +166,56 @@ describe('ModelManager', () => {
         expect(modelManager.listModels()).toEqual([]);
 
         vi.spyOn(modelManager, 'loadModel').mockImplementation(
-            (id, url) => url.startsWith('uri') ? Promise.resolve({id, url}) : Promise.reject(new Error('Not found'))
+            (id, url) => url.startsWith('https://www.example.com/') ? Promise.resolve({id, url}) : Promise.reject(new Error('Not found'))
         );
 
         eventedParent.on('data', () => {
             expect(modelManager.isLoaded()).toEqual(true);
-            expect(modelManager.listModels('basemap')).toEqual(['uri1', 'uri2', 'uri3']);
-            expect(modelManager.getModel('uri3', 'basemap')).toEqual({id: 'uri3', url: 'uri3'});
+            expect(modelManager.listModels('basemap')).toEqual(['https://www.example.com/1', 'https://www.example.com/2', 'https://www.example.com/3']);
+            expect(modelManager.getModel('https://www.example.com/3', 'basemap')).toEqual({id: 'https://www.example.com/3', url: 'https://www.example.com/3'});
         });
 
-        modelManager.addModelsFromBucket(['uri1', 'uri2', 'uri3'], 'basemap');
+        modelManager.addModelsFromBucket(['https://www.example.com/1', 'https://www.example.com/2', 'https://www.example.com/3'], 'basemap');
+    });
+
+    test('#reloadModels', async () => {
+        const {modelManager, eventedParent} = createModelManager();
+
+        eventedParent.on('error', ({error}) => {
+            expect.unreachable(error.message);
+        });
+
+        modelManager.loadModel = vi.fn((id, url) => Promise.resolve({id, url}));
+
+        modelManager.addModel('model', 'https://www.example.com/', 'basemap');
+        modelManager.addModel('model2', 'https://www.example2.com/', 'basemap');
+
+        expect(modelManager.loadModel).toHaveBeenCalledTimes(2);
+        expect(modelManager.models['basemap']['model'].numReferences).toBe(1);
+        expect(modelManager.models['basemap']['model2'].numReferences).toBe(1);
+
+        modelManager.reloadModels('basemap');
+
+        expect(modelManager.loadModel).toHaveBeenCalledTimes(4);
+        expect(modelManager.models['basemap']['model'].numReferences).toBe(1);
+        expect(modelManager.models['basemap']['model2'].numReferences).toBe(1);
+    });
+
+    test('#destroy', async () => {
+        const {modelManager, eventedParent} = createModelManager();
+
+        eventedParent.on('error', ({error}) => {
+            expect.unreachable(error.message);
+        });
+
+        modelManager.loadModel = vi.fn((id, url) => Promise.resolve({id, url}));
+
+        modelManager.addModel('model', 'https://www.example.com/', '');
+        modelManager.addModel('model2', 'https://www.example2.com/', 'basemap');
+
+        modelManager.destroy();
+
+        expect(modelManager.listModels('')).toStrictEqual([]);
+        expect(modelManager.listModels('basemap')).toStrictEqual([]);
     });
 });

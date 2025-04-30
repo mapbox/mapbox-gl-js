@@ -42,6 +42,7 @@ import type {ImagePositionMap} from '../render/image_atlas';
 import type {RasterizedImageMap, ImageRasterizationTasks} from '../render/image_manager';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
+import type {StyleModelMap} from '../style/style_mode';
 
 type RasterizationStatus = { iconsPending: boolean, patternsPending: boolean};
 class WorkerTile {
@@ -104,7 +105,7 @@ class WorkerTile {
         this.scaleFactor = params.scaleFactor;
     }
 
-    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: ImageId[], actor: Actor, callback: WorkerSourceVectorTileCallback) {
+    parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, actor: Actor, callback: WorkerSourceVectorTileCallback) {
         const m = PerformanceUtils.beginMeasure('parseTile1');
         this.status = 'parsing';
         this.data = data;
@@ -234,7 +235,8 @@ class WorkerTile {
                     sourceLayerIndex,
                     sourceID: this.source,
                     projection: this.projection.spec,
-                    tessellationStep: this.tessellationStep
+                    tessellationStep: this.tessellationStep,
+                    styleDefinedModelURLs: availableModels
                 });
 
                 assert(this.tileTransform.projection.name === this.projection.name);

@@ -20,6 +20,7 @@ import type {RtlTextPlugin} from './rtl_text_plugin';
 import type {RasterizedImageMap} from '../render/image_manager';
 import type {ActorMessage, ActorMessages} from '../util/actor_messages';
 import type {WorkerSource, WorkerSourceConstructor} from './worker_source';
+import type {StyleModelMap} from '../style/style_mode';
 
 /**
  * Source types that can instantiate a {@link WorkerSource} in {@link MapWorker}.
@@ -49,6 +50,7 @@ export default class MapWorker {
     actor: Actor;
     layerIndexes: WorkerScopeRegistry<StyleLayerIndex>;
     availableImages: WorkerScopeRegistry<ImageId[]>;
+    availableModels: WorkerScopeRegistry<StyleModelMap>;
     workerSourceTypes: Record<WorkerSourceType, WorkerSourceConstructor>;
     workerSources: WorkerSourceRegistry;
     projections: Record<string, Projection>;
@@ -66,6 +68,7 @@ export default class MapWorker {
 
         this.layerIndexes = {};
         this.availableImages = {};
+        this.availableModels = {};
         this.isSpriteLoaded = {};
         this.imageRasterizer = new ImageRasterizer();
 
@@ -104,6 +107,7 @@ export default class MapWorker {
     clearCaches(mapId: number, params: ActorMessages['clearCaches']['params'], callback: ActorMessages['clearCaches']['callback']) {
         delete this.layerIndexes[mapId];
         delete this.availableImages[mapId];
+        delete this.availableModels[mapId];
         delete this.workerSources[mapId];
         callback();
     }
@@ -157,6 +161,28 @@ export default class MapWorker {
             const ws = this.workerSources[mapId][scope][workerSource];
             for (const source in ws) {
                 ws[source].availableImages = images;
+            }
+        }
+
+        callback();
+    }
+
+    setModels(mapId: number, {scope, models}: ActorMessages['setModels']['params'], callback: ActorMessages['setModels']['callback']) {
+        if (!this.availableModels[mapId]) {
+            this.availableModels[mapId] = {};
+        }
+
+        this.availableModels[mapId][scope] = models;
+
+        if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
+            callback();
+            return;
+        }
+
+        for (const workerSource in this.workerSources[mapId][scope]) {
+            const ws = this.workerSources[mapId][scope][workerSource];
+            for (const source in ws) {
+                ws[source].availableModels = models;
             }
         }
 
@@ -282,6 +308,20 @@ export default class MapWorker {
         return availableImages;
     }
 
+    getAvailableModels(mapId: number, scope: string): StyleModelMap {
+        if (!this.availableModels[mapId]) {
+            this.availableModels[mapId] = {};
+        }
+
+        let availableModels = this.availableModels[mapId][scope];
+
+        if (!availableModels) {
+            availableModels = {};
+        }
+
+        return availableModels;
+    }
+
     getLayerIndex(mapId: number, scope: string): StyleLayerIndex {
         if (!this.layerIndexes[mapId]) {
             this.layerIndexes[mapId] = {};
@@ -324,6 +364,7 @@ export default class MapWorker {
                 actor,
                 this.getLayerIndex(mapId, scope),
                 this.getAvailableImages(mapId, scope),
+                this.getAvailableModels(mapId, scope),
                 this.isSpriteLoaded[mapId][scope],
                 undefined,
                 this.brightness

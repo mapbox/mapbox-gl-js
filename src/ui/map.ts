@@ -4210,8 +4210,10 @@ export class Map extends Camera {
         this._setupPainter();
         this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
         this._updateTerrain();
-        this.style.reloadModels();
-        this.style.clearSources();
+        if (this.style) {
+            this.style.reloadModels();
+            this.style.clearSources();
+        }
         this._update();
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
@@ -4463,6 +4465,10 @@ export class Map extends Camera {
         // Background patterns are rasterized in a worker thread, while
         // it's still in progress we need to keep rendering
         if (this.style && this.style.imageManager.hasPatternsInFlight()) {
+            this._styleDirty = true;
+        }
+
+        if (this.style && (!this.style.modelManager.isLoaded())) {
             this._styleDirty = true;
         }
 

@@ -22,6 +22,7 @@ import type {LoadVectorData} from '../../src/source/load_vector_tile';
 import type Projection from '../../src/geo/projection/projection';
 import type ModelStyleLayer from '../style/style_layer/model_style_layer';
 import type {ImageId} from '../../src/style-spec/expression/types/image_id';
+import type {StyleModelMap} from '../../src/style/style_mode';
 
 class Tiled3dWorkerTile {
     tileID: OverscaledTileID;
@@ -109,14 +110,16 @@ class Tiled3dModelWorkerSource implements WorkerSource {
     actor: Actor;
     layerIndex: StyleLayerIndex;
     availableImages: ImageId[];
+    availableModels: StyleModelMap;
     loading: Record<number, Tiled3dWorkerTile>;
     loaded: Record<number, Tiled3dWorkerTile>;
     brightness?: number;
 
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], isSpriteLoaded: boolean, loadVectorData?: LoadVectorData, brightness?: number) {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, isSpriteLoaded: boolean, loadVectorData?: LoadVectorData, brightness?: number) {
         this.actor = actor;
         this.layerIndex = layerIndex;
         this.availableImages = availableImages;
+        this.availableModels = availableModels;
         this.brightness = brightness;
         this.loading = {};
         this.loaded = {};

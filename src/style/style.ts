@@ -98,7 +98,8 @@ import type {
     SchemaSpecification,
     CameraSpecification,
     FeaturesetsSpecification,
-    IconsetSpecification
+    IconsetSpecification,
+    ModelsSpecification
 } from '../style-spec/types';
 import type {Callback} from '../types/callback';
 import type {StyleImage, StyleImageMap} from './style_image';
@@ -123,6 +124,7 @@ import type {SerializedExpression} from '../style-spec/expression/expression';
 import type {ActorMessages} from '../util/actor_messages';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {CustomSourceInterface} from '../source/custom_source';
+import type {StyleModelMap} from './style_mode';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -333,6 +335,7 @@ class Style extends Evented<MapEvents> {
     _optionsChanged: boolean;
     _layerOrderChanged: boolean;
     _availableImages: ImageId[];
+    _availableModels: StyleModelMap;
     _markersNeedUpdate: boolean;
     _brightness: number | null | undefined;
     _configDependentLayers: Set<string>;
@@ -430,6 +433,7 @@ class Style extends Evented<MapEvents> {
         this._precompileDone = false;
         this._shouldPrecompile = false;
         this._availableImages = [];
+        this._availableModels = {};
         this._order = [];
         this._markersNeedUpdate = false;
 
@@ -818,7 +822,7 @@ class Style extends Evented<MapEvents> {
             }
 
             if (this.stylesheet.models) {
-                this.modelManager.addModels(this.stylesheet.models, this.scope);
+                this.addModelURLs(this.stylesheet.models);
             }
 
             const terrain = this.stylesheet.terrain;
@@ -1857,6 +1861,12 @@ class Style extends Evented<MapEvents> {
         style.dispatcher.broadcast('setImages', {scope, images: style._availableImages});
     }
 
+    _updateWorkerModels() {
+        this._availableModels = this.modelManager.getModelURIs(this.scope);
+        const params = {scope: this.scope, models: this._availableModels};
+        this.dispatcher.broadcast('setModels', params);
+    }
+
     /**
      * Add a set of images to the style.
      * @fires Map.event:data Fires `data` with `{dataType: 'style'}` to indicate that the set of available images has changed.
@@ -1916,12 +1926,19 @@ class Style extends Evented<MapEvents> {
         return this._availableImages.slice();
     }
 
+    addModelURLs(models: ModelsSpecification): this {
+        this.modelManager.addModelURLs(models, this.scope);
+        this._updateWorkerModels();
+        this.fire(new Event('data', {dataType: 'style'}));
+        return this;
+    }
+
     addModel(id: string, url: string, options: StyleSetterOptions = {}): this {
         this._checkLoaded();
         if (this._validate(validateModel, `models.${id}`, url, null, options)) return this;
 
         this.modelManager.addModel(id, url, this.scope);
-        this._changes.setDirty();
+        this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
 
@@ -1934,6 +1951,7 @@ class Style extends Evented<MapEvents> {
             return this.fire(new ErrorEvent(new Error('No model with this ID exists.')));
         }
         this.modelManager.removeModel(id, this.scope);
+        this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
 
@@ -3806,6 +3824,7 @@ class Style extends Evented<MapEvents> {
         if (this.isRootStyle()) {
             this.imageManager.setEventedParent(null);
             this.modelManager.setEventedParent(null);
+            this.modelManager.destroy();
             this.dispatcher.remove();
         }
     }

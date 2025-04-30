@@ -21,6 +21,7 @@ import type {LUT} from "../util/lut";
 import type {ImageVariant} from '../style-spec/expression/types/image_variant';
 import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature';
 import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
+import type {StyleModelMap} from '../style/style_mode';
 
 export type BucketParameters<Layer extends TypedStyleLayer> = {
     index: number;
@@ -35,6 +36,7 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     sourceID: string;
     projection: ProjectionSpecification;
     tessellationStep: number | null | undefined;
+    styleDefinedModelURLs: StyleModelMap;
 };
 
 export type ImageDependenciesMap = Map<StringifiedImageId, Array<ImageVariant>>;
