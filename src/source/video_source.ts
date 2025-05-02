@@ -83,6 +83,7 @@ class VideoSource extends ImageSource<'video'> {
                 });
 
                 if (this.map) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.video.play();
                 }
 
@@ -119,6 +120,7 @@ class VideoSource extends ImageSource<'video'> {
      */
     play() {
         if (this.video) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.video.play();
         }
     }
@@ -155,6 +157,7 @@ class VideoSource extends ImageSource<'video'> {
         this.map = map;
         this.load();
         if (this.video) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.video.play();
             this.setCoordinates(this.coordinates);
         }

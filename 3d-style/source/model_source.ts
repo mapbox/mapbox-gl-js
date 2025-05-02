@@ -62,7 +62,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         this._options = options;
     }
 
-    load(): Promise<void> {
+    load(): void {
         const modelPromises = [];
 
         // @ts-expect-error - TS2339 - Property 'models' does not exist on type 'ModelSourceSpecification'.
@@ -83,10 +83,11 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
             modelPromises.push(modelPromise);
         }
 
-        return Promise.allSettled(modelPromises).then(() => {
+        Promise.allSettled(modelPromises).then(() => {
             this._loaded = true;
             this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
         }).catch((err) => {
+            this._loaded = true;
             this.fire(new ErrorEvent(new Error(`Could not load models: ${err.message}`)));
         });
     }
@@ -110,11 +111,8 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
 
     loadTile(tile: Tile, callback: Callback<undefined>) {}
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    serialize(): any {
-        return {
-            type: 'model'
-        };
+    serialize(): ModelSourceSpecification {
+        return this._options;
     }
 }
 

@@ -62,7 +62,7 @@ function prepareBody(response: Response, callback: (body?: Blob | ReadableStream
     if (responseConstructorSupportsReadableStream) {
         callback(response.body);
     } else {
-        response.blob().then(callback);
+        response.blob().then(callback).catch(e => warnOnce(e.message));
     }
 }
 
@@ -144,9 +144,9 @@ export function cacheGet(
 
                     // Reinsert into cache so that order of keys in the cache is the order of access.
                     // This line makes the cache a LRU instead of a FIFO cache.
-                    cache.delete(strippedURL);
+                    cache.delete(strippedURL).catch(callback);
                     if (fresh) {
-                        cache.put(strippedURL, response.clone());
+                        cache.put(strippedURL, response.clone()).catch(callback);
                     }
 
                     callback(null, response, fresh);
@@ -189,10 +189,11 @@ export function enforceCacheSizeLimit(limit: number) {
         .then(cache => {
             cache.keys().then(keys => {
                 for (let i = 0; i < keys.length - limit; i++) {
-                    cache.delete(keys[i]);
+                    cache.delete(keys[i]).catch(e => warnOnce(e.message));
                 }
-            });
-        });
+            }).catch(e => warnOnce(e.message));
+        })
+        .catch(e => warnOnce(e.message));
 }
 
 export function clearTileCache(callback?: (err?: Error | null) => void) {
@@ -201,7 +202,7 @@ export function clearTileCache(callback?: (err?: Error | null) => void) {
 
     const promise = caches.delete(CACHE_NAME);
     if (callback) {
-        promise.catch(callback).then(() => callback());
+        promise.then(() => callback()).catch(callback);
     }
 }
 

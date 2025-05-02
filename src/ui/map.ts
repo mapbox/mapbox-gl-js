@@ -3118,7 +3118,9 @@ export class Map extends Camera {
      * }, 'basemap');
      */
     addImport(importSpecification: ImportSpecification, beforeId?: string | null): this {
-        this.style.addImport(importSpecification, beforeId);
+        this.style.addImport(importSpecification, beforeId)
+            .catch((e) => this.fire(new ErrorEvent(new Error('Failed to add import', e))));
+
         return this;
     }
 

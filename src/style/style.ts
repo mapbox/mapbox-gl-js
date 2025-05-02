@@ -854,10 +854,15 @@ class Style extends Evented<MapEvents> {
             const isRootStyle = this.isRootStyle();
 
             if (json.imports) {
-                this._loadImports(json.imports, validate).then(() => {
-                    this._reloadImports();
-                    this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
-                });
+                this._loadImports(json.imports, validate)
+                    .then(() => {
+                        this._reloadImports();
+                        this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
+                    })
+                    .catch((e) => {
+                        this.fire(new ErrorEvent(new Error('Failed to load imports', e)));
+                        this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
+                    });
             } else {
                 this._reloadImports();
                 this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
@@ -1839,7 +1844,9 @@ class Style extends Evented<MapEvents> {
         });
 
         if (onFinish) {
-            Promise.all(changesPromises).then(onFinish);
+            Promise.all(changesPromises)
+                .then(onFinish)
+                .catch(onFinish);
         }
 
         this.stylesheet = nextState;
@@ -3998,7 +4005,7 @@ class Style extends Evented<MapEvents> {
 
     // Fragments and merging
 
-    addImport(importSpec: ImportSpecification, beforeId?: string | null): Promise<unknown> | void {
+    addImport(importSpec: ImportSpecification, beforeId?: string | null): Promise<void> {
         this._checkLoaded();
 
         const imports = this.stylesheet.imports = this.stylesheet.imports || [];

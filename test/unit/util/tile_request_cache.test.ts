@@ -73,8 +73,8 @@ describe('tile_request_cache', () => {
         // eslint-disable-next-line @typescript-eslint/require-await
         fakeCache.match = vi.fn().mockImplementation(async (url) => (url === cachedRequest.url ? cachedResponse : undefined)
         );
-        fakeCache.delete = vi.fn();
-        fakeCache.put = vi.fn();
+        fakeCache.delete = vi.fn(() => Promise.resolve());
+        fakeCache.put = vi.fn(() => Promise.resolve());
 
         window.caches.open = vi.fn().mockImplementation(() => Promise.resolve(fakeCache));
 

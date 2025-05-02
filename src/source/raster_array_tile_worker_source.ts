@@ -65,7 +65,9 @@ class RasterArrayWorkerTile {
                 decodingTasks.push(decodingTask);
             }
 
-            Promise.allSettled(decodingTasks).then(() => callback(null, mrt));
+            Promise.allSettled(decodingTasks)
+                .then(() => callback(null, mrt))
+                .catch(error => callback(error));
         } catch (error) {
             callback(error);
         }

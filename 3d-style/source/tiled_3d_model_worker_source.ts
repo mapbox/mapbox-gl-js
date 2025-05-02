@@ -58,7 +58,7 @@ class Tiled3dWorkerTile {
         layerIndex: StyleLayerIndex,
         params: WorkerSourceTiled3dModelRequest,
         callback: WorkerSourceVectorTileCallback,
-    ): Promise<void> {
+    ): void {
         this.status = 'parsing';
         const tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
         const buckets: Tiled3dModelBucket[] = [];
@@ -67,7 +67,7 @@ class Tiled3dWorkerTile {
         featureIndex.bucketLayerIDs = [];
         featureIndex.is3DTile = true;
 
-        return load3DTile(data)
+        load3DTile(data)
             .then(gltf => {
                 if (!gltf) return callback(new Error('Could not parse tile'));
                 const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
@@ -148,7 +148,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
                 return callback();
             }
 
-            const WorkerSourceVectorTileCallback = (err?: Error | null, result?: WorkerSourceVectorTileResult | null) => {
+            const workerSourceVectorTileCallback = (err?: Error | null, result?: WorkerSourceVectorTileResult | null) => {
                 workerTile.status = 'done';
                 this.loaded = this.loaded || {};
                 this.loaded[uid] = workerTile;
@@ -157,7 +157,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
                 else callback(null, result);
             };
 
-            workerTile.parse(data, this.layerIndex, params, WorkerSourceVectorTileCallback);
+            workerTile.parse(data, this.layerIndex, params, workerSourceVectorTileCallback);
         });
     }
 
