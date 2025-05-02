@@ -24,6 +24,9 @@ out highp vec2 v_pos;
 
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern
+#ifdef FILL_PATTERN_TRANSITION
+#pragma mapbox: define mediump vec4 pattern_b
+#endif
 #pragma mapbox: define lowp float pixel_ratio
 #pragma mapbox: define highp float z_offset
 
@@ -32,6 +35,9 @@ void main() {
     #pragma mapbox: initialize mediump vec4 pattern
     #pragma mapbox: initialize lowp float pixel_ratio
     #pragma mapbox: initialize highp float z_offset
+    #ifdef FILL_PATTERN_TRANSITION
+    #pragma mapbox: initialize mediump vec4 pattern_b
+    #endif
 
     vec2 pattern_tl = pattern.xy;
     vec2 pattern_br = pattern.zw;

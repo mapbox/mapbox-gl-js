@@ -2002,13 +2002,13 @@
         "parapet": {
           "doc": "Use parapet roof for the procedurally generated buildings."
         },
-        "mansard": {     
+        "mansard": {
           "doc": "Use mansard roof for the procedurally generated buildings."
         },
-        "skillion": {      
+        "skillion": {
           "doc": "Use skillion roof for the procedurally generated buildings."
         },
-        "pyramidal": {    
+        "pyramidal": {
           "doc": "Use pyramidal roof for the procedurally generated buildings."
         }
       },
@@ -6583,6 +6583,35 @@
       },
       "property-type": "data-driven"
     },
+    "fill-pattern-cross-fade": {
+      "type": "number",
+      "property-type": "data-driven",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state",
+          "measure-light"
+        ]
+      },
+      "requires": [
+        "line-pattern"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.12.0"
+        },
+        "data-driven styling": {
+          "js": "3.12.0"
+        }
+      },
+      "doc": "Controls the transition progress between the image variants of fill-pattern. Zero means the first variant is used, one is the second, and in between they are blended together.",
+      "transition": true
+    },
     "fill-emissive-strength": {
       "type": "number",
       "default": 0,
@@ -6824,6 +6853,35 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "fill-extrusion-pattern-cross-fade": {
+      "type": "number",
+      "property-type": "data-driven",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state",
+          "measure-light"
+        ]
+      },
+      "requires": [
+        "line-pattern"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.12.0"
+        },
+        "data-driven styling": {
+          "js": "3.12.0"
+        }
+      },
+      "doc": "Controls the transition progress between the image variants of fill-extrusion-pattern. Zero means the first variant is used, one is the second, and in between they are blended together.",
+      "transition": true
     },
     "fill-extrusion-height": {
       "type": "number",
@@ -7842,6 +7900,35 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "line-pattern-cross-fade": {
+      "type": "number",
+      "property-type": "data-driven",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "feature",
+          "feature-state",
+          "measure-light"
+        ]
+      },
+      "requires": [
+        "line-pattern"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.12.0"
+        },
+        "data-driven styling": {
+          "js": "3.12.0"
+        }
+      },
+      "doc": "Controls the transition progress between the image variants of line-pattern. Zero means the first variant is used, one is the second, and in between they are blended together.",
+      "transition": true
     },
     "line-gradient": {
       "type": "color",

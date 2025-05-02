@@ -348,7 +348,7 @@ class LineBucket implements Bucket {
             lineAtlas.addDash(dashArray, cap);
 
             // save positions for paint array
-            feature.patterns[layer.id] = lineAtlas.getKey(dashArray, cap);
+            feature.patterns[layer.id] = [lineAtlas.getKey(dashArray, cap)];
         }
 
     }
