@@ -26,178 +26,18 @@
 <script src='../dist/mapbox-gl-dev.js'></script>
 <script src='../debug/access_token_generated.js'></script>
 <script type="module">
-const style = await fetch('https://api.mapbox.com/styles/v1/mapbox/standard?access_token=' + mapboxgl.accessToken).then(res => res.json());
-
-style.iconsets = {
-    landmarks: {
-        type: 'source',
-        source: 'mapbox-landmarks'
-    }
-};
-
-style.sources = {
-    ...style.sources,
-    'landmarks-poi': {
-        type: 'vector',
-        url: 'mapbox://mapbox-geodata.landmarks-poi-staging',
-    },
-    'mapbox-landmarks': {
-        type: 'raster-array',
-        url: 'mapbox://mapbox.mapbox-landmark-icons-v1',
-    }
-};
-
-style.layers = [
-    ...style.layers,
-    {
-        "id": "landmark-icon",
-        "type": "symbol",
-        "source": "landmarks-poi",
-        "source-layer": "landmarks-poi",
-        "minzoom": 10,
-        "maxzoom": 17,
-        "filter": [
-            "all",
-            ["has", "local_rank"],
-            ["<=", ["get", "local_rank"], 1],
-            [
-                "step",
-                ["zoom"],
-                ["==", ["geometry-type"], "Point"],
-                10,
-                [">=", ["get", "local_rank"], 0.9],
-                11,
-                [">=", ["get", "local_rank"], 0.8],
-                12,
-                [">=", ["get", "local_rank"], 0.7],
-                13,
-                [">=", ["get", "local_rank"], 0.5],
-                13.5,
-                [">=", ["get", "local_rank"], 0.3],
-                14,
-                [">=", ["get", "local_rank"], 0.1]
-            ],
-            [
-                "case",
-                ["<=", ["pitch"], 45],
-                true,
-                ["all", ["<=", ["distance-from-center"], 2], [">", ["pitch"], 45]],
-                true,
-                false
-            ]
-        ],
-        "paint": {
-            "symbol-z-offset": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                14,
-                0,
-                15,
-                [
-                    "case",
-                    ["config", "show3dObjects"],
-                    ["+", ["to-number", ["get", "mapbox:debug:model_height"]], 20],
-                    0
-                ]
-            ],
-            "icon-image-cross-fade": [
-                "interpolate",
-                ["linear"],
-                ["measure-light", "brightness"],
-                0.25,
-                0,
-                0.3,
-                1
-            ],
-            "icon-opacity": ["interpolate", ["linear"], ["zoom"], 15.7, 1, 16, 0],
-            "icon-emissive-strength": [
-                "match",
-                ["config", "theme"],
-                "monochrome",
-                [
-                    "interpolate",
-                    ["linear"],
-                    ["measure-light", "brightness"],
-                    0.25,
-                    0.5,
-                    0.3,
-                    1
-                ],
-                1
-            ],
-            "text-color": [
-                "match",
-                ["config", "theme"],
-                "monochrome",
-                [
-                    "interpolate",
-                    ["linear"],
-                    ["measure-light", "brightness"],
-                    0.25,
-                    "hsl(0, 0%, 40%)",
-                    0.3,
-                    "hsl(0, 0%, 35%)"
-                ],
-                [
-                    "interpolate",
-                    ["linear"],
-                    ["measure-light", "brightness"],
-                    0.28,
-                    "hsl(240, 15%, 75%)",
-                    0.3,
-                    "hsl(0, 0%, 35%)"
-                ]
-            ],
-            "text-halo-color": [
-                "interpolate",
-                ["linear"],
-                ["measure-light", "brightness"],
-                0.25,
-                "hsla(0, 0%, 0%, 1)",
-                0.3,
-                "hsla(0, 0%, 100%, 1)"
-            ],
-            "text-halo-width": 1,
-            "text-opacity": ["interpolate", ["linear"], ["zoom"], 15.7, 1, 16, 0]
-        },
-        "layout": {
-            "text-field": ["to-string", ["get", "short_name_en"]],
-            "icon-allow-overlap": false,
-            "icon-padding": 0,
-            "symbol-sort-key": ["-", 1, ["get", "local_rank"]],
-            "text-font": ["DIN Pro Medium"],
-            "icon-image": [
-                "image",
-                ["concat", "landmark-icons", "/", ["get", "icon_name"], "-dark"],
-                {
-                    "iconset": {
-                        "id": "landmarks"
-                    }
-                },
-                ["concat", "landmark-icons", "/", ["get", "icon_name"]],
-                {
-                    "iconset": {
-                        "id": "landmarks"
-                    }
-                }
-            ],
-            "icon-size": ["interpolate", ["linear"], ["zoom"], 13.8, 0.8, 14, 1],
-            "symbol-placement": "point",
-            "text-size": ["interpolate", ["linear"], ["zoom"], 13.8, 12, 14, 14],
-            "text-padding": 10,
-            "text-anchor": "top",
-            "text-offset": [0, 2]
-        }
-    },
-];
 
 const map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 11,
     center: [0, 51.5],
     hash: true,
-    style
+    style: 'mapbox://styles/mapbox/standard',
+    config: {
+        basemap: {
+            showLandmarkIcons: true
+        }
+    }
 });
 
 </script>

@@ -2198,7 +2198,7 @@ test('Style#addImage', async () => {
     vi.spyOn(style.dispatcher, 'broadcast');
 
     const imageId = ImageId.from('image');
-    style.addImage(imageId, style.scope, {});
+    style.addImage(imageId, {});
 
     expect(style._changes.isDirty()).toEqual(true);
 
@@ -2217,7 +2217,7 @@ test('Style#addImage', async () => {
     );
 
     // Adding an image with the same name should fire an error
-    style.addImage(imageId, style.scope, {});
+    style.addImage(imageId, {});
 
     expect(errorSpy).toHaveBeenCalledTimes(1);
     expect(errorSpy).toHaveBeenLastCalledWith(
@@ -2241,7 +2241,7 @@ test('Style#addImages', async () => {
     const imageId2 = ImageId.from('image2');
     styleImageMap.set(imageId1, {});
     styleImageMap.set(imageId2, {});
-    style.addImages(styleImageMap, style.scope);
+    style.addImages(styleImageMap);
 
     expect(style._changes.isDirty()).toEqual(true);
 
@@ -2266,21 +2266,21 @@ test('Style#updateImage', async () => {
     await waitFor(style, 'style.load');
 
     const imageId = ImageId.from('image');
-    style.addImage(imageId, style.scope, {width: 1, height: 1, data: new Uint8Array(4)});
+    style.addImage(imageId, {width: 1, height: 1, data: new Uint8Array(4)});
     style.update({}); // reset style changes
 
     vi.spyOn(style, 'fire');
     vi.spyOn(style.dispatcher, 'broadcast');
 
     // Basic update does not trigger update in Workers
-    style.updateImage(imageId, style.scope, {width: 1, height: 1, data: new Uint8Array(4)});
+    style.updateImage(imageId, {width: 1, height: 1, data: new Uint8Array(4)});
 
     expect(style._changes.isDirty()).toEqual(false);
     expect(style.dispatcher.broadcast).toHaveBeenCalledTimes(0);
     expect(style.fire).toHaveBeenCalledTimes(0);
 
     // Performing symbol layout must trigger update in Workers
-    style.updateImage(imageId, style.scope, {width: 1, height: 1, data: new Uint8Array(4)}, true);
+    style.updateImage(imageId, {width: 1, height: 1, data: new Uint8Array(4)}, true);
 
     expect(style._changes.isDirty()).toEqual(true);
     expect(style.dispatcher.broadcast).toHaveBeenCalledTimes(1);
@@ -2304,13 +2304,13 @@ test('Style#removeImage', async () => {
     await waitFor(style, 'style.load');
 
     const imageId = ImageId.from('image');
-    style.addImage(imageId, style.scope, {});
+    style.addImage(imageId, {});
     style.update({}); // reset style changes
 
     vi.spyOn(style, 'fire');
     vi.spyOn(style.dispatcher, 'broadcast');
 
-    style.removeImage(imageId, style.scope);
+    style.removeImage(imageId);
 
     expect(style._changes.isDirty()).toEqual(true);
     expect(style.dispatcher.broadcast).toHaveBeenCalledTimes(1);
@@ -2366,7 +2366,7 @@ test('Style#_updateTilesForChangedImages', async () => {
     expect(tile.setDependencies).toHaveBeenCalledWith('icons', [imageIdStr]);
     expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(true);
 
-    style.addImage(imageId, style.scope, {});
+    style.addImage(imageId, {});
     style.update({});
 
     expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(2);

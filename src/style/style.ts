@@ -1221,10 +1221,10 @@ class Style extends Evented<MapEvents> {
                     return;
                 }
 
-                if (this.getImage(styleLutName, this.scope)) {
-                    this.removeImage(styleLutName, this.scope);
+                if (this.getImage(styleLutName)) {
+                    this.removeImage(styleLutName);
                 }
-                this.addImage(styleLutName, this.scope, {data: new RGBAImage({width, height}, data), pixelRatio: 1, sdf: false, usvg: false, version: 0});
+                this.addImage(styleLutName, {data: new RGBAImage({width, height}, data), pixelRatio: 1, sdf: false, usvg: false, version: 0});
 
                 const image = this.imageManager.getImage(styleLutName, this.scope);
                 if (!image) {
@@ -1294,7 +1294,7 @@ class Style extends Evented<MapEvents> {
                 for (const id in images) {
                     styleImageMap.set(ImageId.from(id), images[id]);
                 }
-                this.addImages(styleImageMap, this.scope);
+                this.addImages(styleImageMap);
             }
 
             this.imageManager.setLoaded(true, this.scope);
@@ -1359,7 +1359,7 @@ class Style extends Evented<MapEvents> {
                 for (const id in images) {
                     styleImageMap.set(ImageId.from(id), images[id]);
                 }
-                this.addImages(styleImageMap, this.scope);
+                this.addImages(styleImageMap);
             }
 
             this.imageManager.setLoaded(true, this.scope);
@@ -1763,7 +1763,10 @@ class Style extends Evented<MapEvents> {
         const pendingImageProviders = this.imageManager.getPendingImageProviders();
         for (const imageProvider of pendingImageProviders) {
             const images = imageProvider.resolvePendingRequests();
-            this.addImages(images, imageProvider.scope);
+            const fragmentStyle = this.getFragmentStyle(imageProvider.scope);
+            assert(fragmentStyle, 'Fragment style not found for image provider');
+            if (!fragmentStyle) continue;
+            fragmentStyle.addImages(images);
         }
     }
 
@@ -1853,12 +1856,11 @@ class Style extends Evented<MapEvents> {
 
     /**
      * Broadcast the current set of available images to the Workers.
+     * Note that this is a scoped method, so it will only update the images for the given scope.
      */
-    _updateWorkerImages(scope: string) {
-        const style = this.getFragmentStyle(scope);
-        if (!style) return;
-        style._availableImages = style.imageManager.listImages(scope);
-        style.dispatcher.broadcast('setImages', {scope, images: style._availableImages});
+    _updateWorkerImages() {
+        this._availableImages = this.imageManager.listImages(this.scope);
+        this.dispatcher.broadcast('setImages', {scope: this.scope, images: this._availableImages});
     }
 
     _updateWorkerModels() {
@@ -1872,51 +1874,51 @@ class Style extends Evented<MapEvents> {
      * @fires Map.event:data Fires `data` with `{dataType: 'style'}` to indicate that the set of available images has changed.
      * @returns {Style}
      */
-    addImages(images: StyleImageMap<ImageId>, scope: string): this {
+    addImages(images: StyleImageMap<ImageId>): this {
         for (const [id, image] of images.entries()) {
-            if (this.getImage(id, scope)) {
+            if (this.getImage(id)) {
                 return this.fire(new ErrorEvent(new Error(`An image with the name "${id.name}" already exists.`)));
             }
-            this.imageManager.addImage(id, scope, image);
-            this._changes.updateImage(id, scope);
+            this.imageManager.addImage(id, this.scope, image);
+            this._changes.updateImage(id, this.scope);
         }
 
-        this._updateWorkerImages(scope);
+        this._updateWorkerImages();
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
 
-    addImage(id: ImageId, scope: string, image: StyleImage): this {
-        if (this.getImage(id, scope)) {
+    addImage(id: ImageId, image: StyleImage): this {
+        if (this.getImage(id)) {
             return this.fire(new ErrorEvent(new Error(`An image with the name "${id.name}" already exists.`)));
         }
-        this.imageManager.addImage(id, scope, image);
-        this._changes.updateImage(id, scope);
-        this._updateWorkerImages(scope);
+        this.imageManager.addImage(id, this.scope, image);
+        this._changes.updateImage(id, this.scope);
+        this._updateWorkerImages();
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
 
-    updateImage(id: ImageId, scope: string, image: StyleImage, performSymbolLayout = false) {
-        this.imageManager.updateImage(id, scope, image);
+    updateImage(id: ImageId, image: StyleImage, performSymbolLayout = false) {
+        this.imageManager.updateImage(id, this.scope, image);
         if (performSymbolLayout) {
-            this._changes.updateImage(id, scope);
-            this._updateWorkerImages(scope);
+            this._changes.updateImage(id, this.scope);
+            this._updateWorkerImages();
             this.fire(new Event('data', {dataType: 'style'}));
         }
     }
 
-    getImage(id: ImageId, scope: string): StyleImage | null | undefined {
-        return this.imageManager.getImage(id, scope);
+    getImage(id: ImageId): StyleImage | null | undefined {
+        return this.imageManager.getImage(id, this.scope);
     }
 
-    removeImage(id: ImageId, scope: string): this {
-        if (!this.getImage(id, scope)) {
+    removeImage(id: ImageId): this {
+        if (!this.getImage(id)) {
             return this.fire(new ErrorEvent(new Error('No image with this name exists.')));
         }
-        this.imageManager.removeImage(id, scope);
-        this._changes.updateImage(id, scope);
-        this._updateWorkerImages(scope);
+        this.imageManager.removeImage(id, this.scope);
+        this._changes.updateImage(id, this.scope);
+        this._updateWorkerImages();
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
@@ -2220,16 +2222,17 @@ class Style extends Evented<MapEvents> {
     }
 
     /**
-     * Returns the fragment style associated with the provided fragmentId.
+     * Returns nested fragment style associated with the provided fragmentId.
      * If no fragmentId is provided, returns itself.
      */
     getFragmentStyle(fragmentId?: string): Style | undefined {
-        if (!fragmentId) return this;
+        if (fragmentId == null || (fragmentId === '' && this.isRootStyle())) return this;
 
         if (isFQID(fragmentId)) {
             const scope = getScopeFromFQID(fragmentId);
             const fragment = this.fragments.find(({id}) => id === scope);
-            if (!fragment) throw new Error(`Style import '${fragmentId}' not found`);
+            assert(fragment, `Fragment with id ${scope} not found in the style.`);
+            if (!fragment) return undefined;
             const name = getNameFromFQID(fragmentId);
             return fragment.style.getFragmentStyle(name);
         } else {

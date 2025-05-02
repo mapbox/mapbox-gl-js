@@ -3056,7 +3056,7 @@ test('Style#_updateTilesForChangedImages', async () => {
     expect(tile.setDependencies).toHaveBeenCalledWith('icons', [imageIdStr]);
     expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(true);
 
-    style.addImage(imageId, 'basemap', {});
+    style.getFragmentStyle('basemap').addImage(imageId, {});
     style.update({});
 
     expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(2);
@@ -3084,4 +3084,47 @@ test('Style#getFeaturesetDescriptors', async () => {
 
     expect(style.getFeaturesetDescriptors()).toEqual([]);
     expect(style.getFeaturesetDescriptors('basemap')).toEqual([{featuresetId: 'poi', importId: 'basemap'}, {featuresetId: 'buildings', importId: 'basemap'}]);
+});
+
+test('Style#getFragmentStyle', async () => {
+    const map = new StubMap();
+    const style = new Style(map);
+
+    // Load a style with imports
+    const initialStyle = createStyleJSON({
+        imports: [{
+            id: 'basemap', url: '', data: createStyleJSON({
+                imports: [{
+                    id: 'basemap', url: '', data: createStyleJSON()
+                }]
+            })
+        }]
+    });
+
+    style.loadJSON(initialStyle);
+    await waitFor(style, 'style.load');
+
+    // Style should return itself when fragmentId is `undefined`
+    expect(style.getFragmentStyle()).toBe(style);
+
+    // Root style should return itself when fragmentId is empty string
+    expect(style.getFragmentStyle('')).toEqual(style);
+
+    // Style should return the fragment with ID 'basemap'
+    const basemapFragment1 = style.getFragmentStyle('basemap');
+    expect(basemapFragment1).not.toEqual(style);
+    expect(basemapFragment1.scope).toEqual('basemap');
+
+    // Fragment should return itself when fragmentId is `undefined`
+    expect(basemapFragment1.getFragmentStyle()).toBe(basemapFragment1);
+
+    // Fragment style should not return the fragment with ID ''
+    expect(basemapFragment1.getFragmentStyle('')).toBeUndefined();
+
+    const basemapFragment2 = basemapFragment1.getFragmentStyle('basemap');
+    expect(basemapFragment2).not.toEqual(basemapFragment1);
+    expect(basemapFragment2.scope).toEqual(makeFQID('basemap', 'basemap'));
+
+    // Fragment should return itself when fragmentId is `undefined`
+    expect(basemapFragment2.getFragmentStyle()).toBe(basemapFragment2);
 });
