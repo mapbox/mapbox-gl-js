@@ -776,7 +776,8 @@ class Tile {
             for (const {x, y} of boundsLine) {
                 boundsVertices.emplaceBack(x, y, 0, 0);
             }
-            const indices = earcut(boundsVertices.int16, undefined, 4);
+            const indices = earcut(boundsVertices.int16.subarray(0, boundsVertices.length * 4), undefined, 4);
+
             for (let i = 0; i < indices.length; i += 3) {
                 boundsIndices.emplaceBack(indices[i], indices[i + 1], indices[i + 2]);
             }
