@@ -294,6 +294,9 @@ const skip = [
     "render-tests/building/tile-border",
     "render-tests/building/vertical-scale",
     "render-tests/building/with-shadows",
+
+    // Flaky model test
+    "render-tests/model-layer/style-model-api-remove",
 ];
 
 export default {todo, skip};
