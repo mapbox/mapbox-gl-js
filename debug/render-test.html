@@ -90,7 +90,12 @@
         container.style.width = width + 'px';
         container.style.height = height + 'px';
 
-        const transformRequest = url => ({url: url.replace('local://', 'http://localhost:9966/test/integration/')});
+        const transformRequest = url => ({url:
+            url
+                .replace('local://mapbox-gl-styles/', 'http://localhost:9966/node_modules/mapbox-gl-styles/')
+                .replace('local://mvt-fixtures/', 'http://localhost:9966/node_modules/@mapbox/mvt-fixtures/')
+                .replace('local://', 'http://localhost:9966/test/integration/')
+        });
 
         const map = window.map = new mapboxgl.Map({
             container,
