@@ -1,6 +1,6 @@
 >0.2%,
 not dead,
 not op_mini all,
-not chrome < 51,
-not safari < 10,
-not android < 51
+not chrome < 56,
+not safari < 15,
+not android < 56
