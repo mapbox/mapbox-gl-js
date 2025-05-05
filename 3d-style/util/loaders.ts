@@ -24,10 +24,7 @@ let meshoptUrl: string | null | undefined;
 let meshopt: any;
 
 export function getDracoUrl(): string {
-// @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
-    if (isWorker() && self.worker && self.worker.dracoUrl) {
-        // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    if (isWorker(self) && self.worker.dracoUrl) {
         return self.worker.dracoUrl;
     }
 
@@ -59,7 +56,7 @@ function waitForDraco() {
 
 export function getMeshoptUrl(): string {
 // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
-    if (isWorker() && self.worker && self.worker.meshoptUrl) {
+    if (isWorker(self) && self.worker.meshoptUrl) {
         // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return self.worker.meshoptUrl;

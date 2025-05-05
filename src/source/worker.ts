@@ -12,6 +12,7 @@ import {PerformanceUtils} from '../util/performance';
 import {Event} from '../util/evented';
 import {getProjection} from '../geo/projection/index';
 import {ImageRasterizer} from '../render/image_rasterizer';
+import {isWorker} from '../util/util';
 
 import type Projection from '../geo/projection/projection';
 import type {ImageId} from '../style-spec/expression/types/image_id';
@@ -397,11 +398,6 @@ export default class MapWorker {
     }
 }
 
-// @ts-expect-error - TS2304
-if (typeof WorkerGlobalScope !== 'undefined' &&
-    typeof self !== 'undefined' &&
-    // @ts-expect-error - TS2304
-    self instanceof WorkerGlobalScope) {
-    // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2345 - Argument of type 'Window & typeof globalThis' is not assignable to parameter of type 'WorkerGlobalScopeInterface'.
+if (isWorker(self)) {
     self.worker = new MapWorker(self);
 }

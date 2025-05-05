@@ -129,7 +129,7 @@ export const PerformanceUtils = {
         });
 
         return {
-            scope: isWorker() ? 'Worker' : 'Window',
+            scope: isWorker(self) ? 'Worker' : 'Window',
             timeOrigin: performance.timeOrigin,
             entries
         };

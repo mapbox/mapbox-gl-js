@@ -6,8 +6,8 @@ import deepEqual from '../style-spec/util/deep_equal';
 
 import type {vec4} from 'gl-matrix';
 import type {UnionToIntersection} from 'utility-types';
-import type {Callback} from '../types/callback';
 import type {Range} from '../../3d-style/elevation/elevation_feature';
+import type {Callback} from '../types/callback';
 
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
@@ -626,16 +626,30 @@ export function cartesianPositionToSpherical(x: number, y: number, z: number): [
     return [radial, azimuthal, polar];
 }
 
-/* global WorkerGlobalScope */
 /**
  *  Returns true if run in the web-worker context.
  *
  * @private
  * @returns {boolean}
  */
-export function isWorker(): boolean {
-    // @ts-expect-error - TS2304
-    return typeof WorkerGlobalScope !== 'undefined' && typeof self !== 'undefined' && self instanceof WorkerGlobalScope;
+export function isWorker(scope?: unknown): scope is Worker {
+    if (typeof self === 'undefined' && scope === undefined) {
+        return false;
+    }
+
+    // Check if WorkerGlobalScope isn't available
+    // This is a global that's only present in browser worker environments
+    // @ts-expect-error - TS2304: Cannot find name 'WorkerGlobalScope'
+    if (typeof WorkerGlobalScope === 'undefined') {
+        return false;
+    }
+
+    // Use provided scope or global self
+    const contextToCheck = scope !== undefined ? scope : self;
+
+    // Final check if context is a WorkerGlobalScope
+    // @ts-expect-error - TS2304: Cannot find name 'WorkerGlobalScope'
+    return contextToCheck instanceof WorkerGlobalScope;
 }
 
 /**

@@ -103,7 +103,7 @@ export class AJAXError extends Error {
 export const getReferrer: () => string = isWorker() ?
 // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    () => self.worker && self.worker.referrer :
+    () => self.worker.referrer :
     () => (location.protocol === 'blob:' ? parent : self).location.href;
 
 // Determines whether a URL is a file:// URL. This is obviously the case if it begins
@@ -251,11 +251,8 @@ export const makeRequest = function (requestParameters: RequestParameters, callb
         if (self.fetch && self.Request && self.AbortController && Request.prototype.hasOwnProperty('signal')) {
             return makeFetchRequest(requestParameters, callback);
         }
-        // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
-        if (isWorker() && self.worker && self.worker.actor) {
+        if (isWorker(self) && self.worker.actor) {
             const queueOnMainThread = true;
-            // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return self.worker.actor.send('getResource', requestParameters, callback, undefined, queueOnMainThread);
         }
     }

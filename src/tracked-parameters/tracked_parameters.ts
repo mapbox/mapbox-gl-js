@@ -7,7 +7,7 @@ import {setGlobal} from './tracked_parameters_base';
 import type {Map as MapboxMap} from '../ui/map';
 import type {ITrackedParameters, Description} from './tracked_parameters_base';
 
-if (!isWorker()) {
+if (!isWorker(self)) {
     const style = document.createElement('style');
     style.innerHTML = `
         .tp-fldv_t {
