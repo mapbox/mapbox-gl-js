@@ -116,7 +116,7 @@
     "tape": "^5.9.0",
     "tape-filter": "^1.0.4",
     "testem": "^3.15.2",
-    "tsx": "^4.19.3",
+    "tsx": "^4.19.4",
     "tweakpane": "^4.0.5",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.0",
