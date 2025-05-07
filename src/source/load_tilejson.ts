@@ -100,7 +100,7 @@ export default function (
             const result: TileJSON = pick(
                 // explicit source options take precedence over TileJSON
                 extend({}, tileJSON, options),
-                ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding', 'vector_layers', 'raster_layers', 'worldview_options', 'worldview_default', 'worldview']
+                ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'extra_bounds', 'scheme', 'tileSize', 'encoding', 'vector_layers', 'raster_layers', 'worldview_options', 'worldview_default', 'worldview']
             );
 
             result.tiles = requestManager.canonicalizeTileset(result, options.url);

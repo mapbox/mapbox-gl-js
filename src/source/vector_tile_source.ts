@@ -72,7 +72,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     map: Map;
     bounds?: [number, number, number, number] | null;
     tiles: Array<string>;
-    tileBounds: TileBounds;
+    tileBounds?: TileBounds;
     reparseOverscaled?: boolean;
     isTileClipped?: boolean;
     _tileJSONRequest?: Cancelable | null;
@@ -153,7 +153,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                     }
                 }
 
-                if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
+                this.tileBounds = TileBounds.fromTileJSON(tileJSON);
                 postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
 
                 // `content` is included here to prevent a race condition where `Style#updateSources` is called

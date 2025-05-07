@@ -36,20 +36,19 @@ function getSourceCount(source: SourceSpecification): number {
 
 function getAllowedKeyErrors(obj: object, keys: string[], path?: string | null): Array<ValidationError> {
     const allowed = new Set(keys);
-    const errors = [];
+    const errors: ValidationError[] = [];
     Object.keys(obj).forEach(k => {
         if (!allowed.has(k)) {
             const prop = path ? `${path}.${k}` : null;
             errors.push(new ValidationError(prop, obj[k], `Unsupported property "${k}"`));
         }
     });
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }
 
 const acceptedSourceTypes = new Set<SourceSpecification['type']>(['vector', 'raster', 'raster-dem', 'raster-array', 'model', 'batched-model']);
 function getSourceErrors(source: SourceSpecification, i: number): Array<ValidationError> {
-    const errors = [];
+    const errors: ValidationError[] = [];
 
     /*
      * Inlined sources are not supported by the Mapbox Styles API, so only
@@ -76,16 +75,14 @@ function getSourceErrors(source: SourceSpecification, i: number): Array<Validati
         errors.push(new ValidationError(`sources[${i}].url`, (source as {url?: string}).url, 'Expected a valid Mapbox tileset url'));
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }
 
 function getMaxSourcesErrors(sourcesCount: number): Array<ValidationError> {
-    const errors = [];
+    const errors: ValidationError[] = [];
     if (sourcesCount > MAX_SOURCES_IN_STYLE) {
         errors.push(new ValidationError('sources', null, `Styles must contain ${MAX_SOURCES_IN_STYLE} or fewer sources`));
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }
 

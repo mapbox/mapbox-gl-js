@@ -63,7 +63,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     rasterLayerIds?: Array<string>;
 
     bounds: [number, number, number, number] | null | undefined;
-    tileBounds: TileBounds;
+    tileBounds?: TileBounds;
     roundZoom: boolean | undefined;
     reparseOverscaled: boolean | undefined;
     dispatcher: Dispatcher;
@@ -112,8 +112,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
                     this.rasterLayerIds = this.rasterLayers.map(layer => layer.id);
                 }
 
-                if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
-
+                this.tileBounds = TileBounds.fromTileJSON(tileJSON);
                 postTurnstileEvent(tileJSON.tiles);
 
                 // `content` is included here to prevent a race condition where `Style#updateSources` is called

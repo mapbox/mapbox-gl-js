@@ -52,6 +52,62 @@
     },
     "missing-url": {
       "type": "vector"
+    },
+    "valid-bounds": {
+      "type": "vector",
+      "url": "http://example.com",
+      "bounds": [-180, -85.051129, 180, 85.051129]
+    },
+    "invalid-bounds-too-few": {
+      "type": "vector",
+      "url": "http://example.com",
+      "bounds": [-180, -85.051129, 180]
+    },
+    "invalid-bounds-too-many": {
+      "type": "vector",
+      "url": "http://example.com",
+      "bounds": [-180, -85.051129, 180, 85.051129, 0]
+    },
+    "invalid-bounds-values": {
+      "type": "vector",
+      "url": "http://example.com",
+      "bounds": [-180, -85.051129, "180", 85.051129]
+    },
+    "valid-extra-bounds": {
+      "type": "vector",
+      "url": "http://example.com",
+      "extra_bounds": [
+        [-125, 24, -66, 49],
+        [-74, -33, -34, 5]
+      ]
+    },
+    "invalid-extra-bounds-empty": {
+      "type": "vector",
+      "url": "http://example.com",
+      "extra_bounds": []
+    },
+    "invalid-extra-bounds-format": {
+      "type": "vector",
+      "url": "http://example.com",
+      "extra_bounds": [
+        [-125, 24, -66]
+      ]
+    },
+    "invalid-extra-bounds-values": {
+      "type": "vector",
+      "url": "http://example.com",
+      "extra_bounds": [
+        [-125, 24, -66, "49"]
+      ]
+    },
+    "valid-both-bounds": {
+      "type": "vector",
+      "url": "http://example.com",
+      "bounds": [-180, -85.051129, 180, 85.051129],
+      "extra_bounds": [
+        [-125, 24, -66, 49],
+        [-74, -33, -34, 5]
+      ]
     }
   },
   "layers": []

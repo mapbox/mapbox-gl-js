@@ -26,7 +26,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
     }
 
     const type = unbundle(value.type) as string;
-    let errors = [];
+    let errors: ValidationError[] = [];
 
     if (['vector', 'raster', 'raster-dem', 'raster-array'].includes(type)) {
         if (!value.url && !value.tiles) {
@@ -47,9 +47,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
             styleSpec,
             objectElementValidators
         }));
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
-
     case 'geojson':
         errors = validateObject({
             key,
@@ -59,6 +57,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
             styleSpec,
             objectElementValidators
         });
+
         if (value.cluster) {
             for (const prop in value.clusterProperties) {
                 const [operator, mapExpr] = value.clusterProperties[prop];
@@ -76,9 +75,8 @@ export default function validateSource(options: ValidationOptions): Array<Valida
                 }));
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return errors;
 
+        return errors;
     case 'video':
         return validateObject({
             key,
@@ -113,12 +111,11 @@ export default function validateSource(options: ValidationOptions): Array<Valida
 
 function getSourceTypeValues(styleSpec: StyleReference) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return styleSpec.source.reduce((memo, source) => {
+    return styleSpec.source.reduce((memo: string[], source: string) => {
         const sourceType = styleSpec[source];
         if (sourceType.type.type === 'enum') {
             memo = memo.concat(Object.keys(sourceType.type.values));
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return memo;
     }, []);
 }
@@ -130,7 +127,7 @@ function validatePromoteId({
     if (getType(value) === 'string') {
         return validateString({key, value});
     } else if (Array.isArray(value)) {
-        const errors = [];
+        const errors: ValidationError[] = [];
         const unbundledValue = deepUnbundle(value);
         const expression = createExpression(unbundledValue);
         if (expression.result === 'error') {
@@ -146,14 +143,13 @@ function validatePromoteId({
             errors.push(new ValidationError(`${key}`, null, 'promoteId expression should be only feature dependent'));
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else {
-        const errors = [];
+        const errors: ValidationError[] = [];
         for (const prop in value) {
             errors.push(...validatePromoteId({key: `${key}.${prop}`, value: value[prop]}));
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
         return errors;
     }
 }

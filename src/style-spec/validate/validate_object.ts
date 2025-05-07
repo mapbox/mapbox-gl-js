@@ -7,8 +7,7 @@ import type {LayerSpecification} from '../types';
 
 type Options = ValidationOptions & {
     layer?: LayerSpecification;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    objectElementValidators?: any;
+    objectElementValidators?: object;
 };
 
 export default function validateObject(options: Options): Array<ValidationError> {
@@ -18,7 +17,7 @@ export default function validateObject(options: Options): Array<ValidationError>
     const elementValidators = options.objectElementValidators || {};
     const style = options.style;
     const styleSpec = options.styleSpec;
-    let errors = [];
+    let errors: ValidationError[] = [];
 
     const type = getType(object);
     if (type !== 'object') {
@@ -67,6 +66,5 @@ export default function validateObject(options: Options): Array<ValidationError>
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }
