@@ -6625,7 +6625,7 @@
     },
     "fill-pattern-cross-fade": {
       "type": "number",
-      "property-type": "data-driven",
+      "property-type": "data-constant",
       "default": 0.0,
       "minimum": 0,
       "maximum": 1,
@@ -6633,8 +6633,6 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature",
-          "feature-state",
           "measure-light"
         ]
       },
@@ -6643,9 +6641,6 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "3.12.0"
-        },
-        "data-driven styling": {
           "js": "3.12.0"
         }
       },
@@ -6896,7 +6891,7 @@
     },
     "fill-extrusion-pattern-cross-fade": {
       "type": "number",
-      "property-type": "data-driven",
+      "property-type": "data-constant",
       "default": 0.0,
       "minimum": 0,
       "maximum": 1,
@@ -6904,8 +6899,6 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature",
-          "feature-state",
           "measure-light"
         ]
       },
@@ -6914,9 +6907,6 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "3.12.0"
-        },
-        "data-driven styling": {
           "js": "3.12.0"
         }
       },
@@ -7943,7 +7933,7 @@
     },
     "line-pattern-cross-fade": {
       "type": "number",
-      "property-type": "data-driven",
+      "property-type": "data-constant",
       "default": 0.0,
       "minimum": 0,
       "maximum": 1,
@@ -7951,8 +7941,6 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature",
-          "feature-state",
           "measure-light"
         ]
       },
@@ -7961,9 +7949,6 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "3.12.0"
-        },
-        "data-driven styling": {
           "js": "3.12.0"
         }
       },
@@ -9024,7 +9009,7 @@
     },
     "icon-image-cross-fade": {
       "type": "number",
-      "property-type": "data-driven",
+      "property-type": "data-constant",
       "default": 0.0,
       "minimum": 0,
       "maximum": 1,
@@ -9032,8 +9017,6 @@
         "interpolated": true,
         "parameters": [
           "zoom",
-          "feature",
-          "feature-state",
           "measure-light"
         ]
       },
@@ -9042,11 +9025,6 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "3.0.0",
-          "android": "11.0.0",
-          "ios": "11.0.0"
-        },
-        "data-driven styling": {
           "js": "3.0.0",
           "android": "11.0.0",
           "ios": "11.0.0"

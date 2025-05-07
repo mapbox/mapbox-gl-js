@@ -293,7 +293,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
     const gl = painter.context.gl;
 
     const patternProperty = layer.paint.get('fill-pattern');
-    const patternTransition = layer.paint.get('fill-pattern-cross-fade').constantOr(0);
+    const patternTransition = layer.paint.get('fill-pattern-cross-fade');
     const constantPattern = patternProperty.constantOr(null);
 
     let activeElevationType = elevationType;

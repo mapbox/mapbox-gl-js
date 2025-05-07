@@ -95,7 +95,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const image = patternProperty.constantOr((1 as any));
-    const patternTransition = layer.paint.get('line-pattern-cross-fade').constantOr(0);
+    const patternTransition = layer.paint.get('line-pattern-cross-fade');
     const constantPattern = patternProperty.constantOr(null);
 
     const lineOpacity = layer.paint.get('line-opacity').constantOr(1.0);

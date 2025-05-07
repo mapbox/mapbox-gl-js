@@ -128,7 +128,7 @@ export type PaintProps = {
     "icon-halo-blur": DataDrivenProperty<number>;
     "icon-translate": DataConstantProperty<[number, number]>;
     "icon-translate-anchor": DataConstantProperty<"map" | "viewport">;
-    "icon-image-cross-fade": DataDrivenProperty<number>;
+    "icon-image-cross-fade": DataConstantProperty<number>;
     "text-opacity": DataDrivenProperty<number>;
     "text-occlusion-opacity": DataDrivenProperty<number>;
     "text-color": DataDrivenProperty<Color>;
@@ -160,7 +160,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "icon-halo-blur": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-halo-blur"]),
     "icon-translate": new DataConstantProperty(styleSpec["paint_symbol"]["icon-translate"]),
     "icon-translate-anchor": new DataConstantProperty(styleSpec["paint_symbol"]["icon-translate-anchor"]),
-    "icon-image-cross-fade": new DataDrivenProperty(styleSpec["paint_symbol"]["icon-image-cross-fade"]),
+    "icon-image-cross-fade": new DataConstantProperty(styleSpec["paint_symbol"]["icon-image-cross-fade"]),
     "text-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["text-opacity"]),
     "text-occlusion-opacity": new DataDrivenProperty(styleSpec["paint_symbol"]["text-occlusion-opacity"]),
     "text-color": new DataDrivenProperty(styleSpec["paint_symbol"]["text-color"], { runtimeType: ColorType, getOverride: (o) => o.textColor, hasOverride: (o) => !!o.textColor }),

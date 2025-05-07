@@ -402,7 +402,7 @@ function drawLayerSymbols(
 
             const projectedPosOnLabelSpace = alongLine || updateTextFitIcon;
 
-            const transitionProgress = layer.paint.get('icon-image-cross-fade').constantOr(0.0);
+            const transitionProgress = layer.paint.get('icon-image-cross-fade');
             if (painter.terrainRenderModeElevated() && iconPitchWithMap) {
                 baseDefines.push('PITCH_WITH_MAP_TERRAIN');
             }

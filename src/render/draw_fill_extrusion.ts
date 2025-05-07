@@ -274,7 +274,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const gl = context.gl;
     const tr = painter.transform;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
-    const patternTransition = layer.paint.get('fill-extrusion-pattern-cross-fade').constantOr(0);
+    const patternTransition = layer.paint.get('fill-extrusion-pattern-cross-fade');
     const constantPattern = patternProperty.constantOr(null);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
