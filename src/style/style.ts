@@ -55,7 +55,7 @@ import {
 import PauseablePlacement from './pauseable_placement';
 import CrossTileSymbolIndex from '../symbol/cross_tile_symbol_index';
 import {validateCustomStyleLayer} from './style_layer/custom_style_layer';
-import {isFQID, makeFQID, getNameFromFQID, getScopeFromFQID} from '../util/fqid';
+import {isFQID, makeFQID, getNameFromFQID, getInnerScopeFromFQID, getOuterScopeFromFQID} from '../util/fqid';
 import {shadowDirectionFromProperties} from '../../3d-style/render/shadow_renderer';
 import ModelManager from '../../3d-style/render/model_manager';
 import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform';
@@ -2236,7 +2236,7 @@ class Style extends Evented<MapEvents> {
         if (fragmentId == null || (fragmentId === '' && this.isRootStyle())) return this;
 
         if (isFQID(fragmentId)) {
-            const scope = getScopeFromFQID(fragmentId);
+            const scope = getInnerScopeFromFQID(fragmentId);
             const fragment = this.fragments.find(({id}) => id === scope);
             assert(fragment, `Fragment with id ${scope} not found in the style.`);
             if (!fragment) return undefined;
@@ -3211,13 +3211,12 @@ class Style extends Evented<MapEvents> {
         const renderedFeatures = this._queryRenderedFeatures(queryGeometry, queries, transform);
         const sortedFeatures = this._flattenAndSortRenderedFeatures(renderedFeatures);
 
-        const features = [];
+        const features: GeoJSONFeature[] = [];
         for (const feature of sortedFeatures) {
-            const scope = getScopeFromFQID(feature.layer.id);
+            const scope = getOuterScopeFromFQID(feature.layer.id);
             if (scope === this.scope) features.push(feature);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return features;
     }
 
