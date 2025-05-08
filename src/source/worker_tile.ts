@@ -300,7 +300,8 @@ class WorkerTile {
                                 this.tileID.canonical,
                                 this.tileZoom,
                                 this.scaleFactor,
-                                this.pixelRatio);
+                                this.pixelRatio,
+                                iconRasterizationTasks);
                     }
                 }
 

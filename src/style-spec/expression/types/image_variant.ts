@@ -72,8 +72,8 @@ export class ImageVariant {
         return new ImageVariant({name, iconsetId}, {params, transform: new DOMMatrix([a, b, c, d, e, f])});
     }
 
-    scaleSelf(factor: number): this {
-        this.options.transform.scaleSelf(factor);
+    scaleSelf(factor: number, yFactor?: number): this {
+        this.options.transform.scaleSelf(factor, yFactor);
         return this;
     }
 }

@@ -912,3 +912,19 @@ function fitIconToText(
 
     return {imagePrimary: image, imageSecondary: undefined, top, right, bottom, left, collisionPadding};
 }
+
+export function isFullyStretchableX(icon: PositionedIcon) {
+    const imagePrimary = icon.imagePrimary;
+    return !imagePrimary.stretchX;
+}
+
+export function isFullyStretchableY(icon: PositionedIcon) {
+    const imagePrimary = icon.imagePrimary;
+    return !imagePrimary.stretchY;
+}
+
+export function getPositionedIconSize(icon: PositionedIcon) {
+    const width = icon.right - icon.left;
+    const height = icon.bottom - icon.top;
+    return {width, height};
+}

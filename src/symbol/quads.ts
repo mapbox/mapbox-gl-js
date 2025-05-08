@@ -76,7 +76,7 @@ export function getIconQuads(
     hasIconTextFit: boolean,
     iconScale: number = 1,
 ): Array<SymbolQuad> {
-    const quads = [];
+    const quads: Array<SymbolQuad> = [];
 
     const image = shapedIcon.imagePrimary;
     const pixelRatio = image.pixelRatio;
@@ -115,7 +115,7 @@ export function getIconQuads(
         fixedContentHeight = content[3] - content[1] - stretchContentHeight;
     }
 
-    const makeBox = (left: Size, top: Size, right: Size, bottom: Size) => {
+    const makeBox = (left: Size, top: Size, right: Size, bottom: Size): SymbolQuad => {
 
         const leftEm = getEmOffset(left.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left * iconScale);
         const leftPx = getPxOffset(left.fixed - fixedOffsetX, fixedContentWidth, left.stretch, stretchWidth);
@@ -197,7 +197,6 @@ export function getIconQuads(
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return quads;
 }
 
