@@ -75,8 +75,9 @@ export class QueryGeometry {
         } else {
             const tl = Point.convert(geometry[0]);
             const br = Point.convert(geometry[1]) as Point;
+            const center = tl.add(br)._div(2);
             screenGeometry = [tl, br];
-            aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p));
+            aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p)) && transform.isPointAboveHorizon(center);
         }
 
         return new QueryGeometry(screenGeometry, transform.getCameraPoint(), aboveHorizon, transform);
