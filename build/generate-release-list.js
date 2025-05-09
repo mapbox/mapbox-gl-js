@@ -1,5 +1,5 @@
-import {Octokit} from '@octokit/rest';
 import fs from 'fs';
+import {Octokit} from '@octokit/rest';
 
 const list = {};
 
