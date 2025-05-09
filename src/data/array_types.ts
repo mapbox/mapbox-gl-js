@@ -1390,7 +1390,6 @@ export class CollisionBoxArray extends StructArrayLayout5i4f1i1ul2ui40 {
      * @private
      */
     get(index: number): CollisionBoxStruct {
-        assert(!this.isTransferred);
         assert(index >= 0);
         assert(index < this.length);
         return new CollisionBoxStruct(this, index);
@@ -1442,7 +1441,6 @@ export class PlacedSymbolArray extends StructArrayLayout3i2f2ui3ul3ui2f3ub1ul1i1
      * @private
      */
     get(index: number): PlacedSymbolStruct {
-        assert(!this.isTransferred);
         assert(index >= 0);
         assert(index < this.length);
         return new PlacedSymbolStruct(this, index);
@@ -1504,7 +1502,6 @@ export class SymbolInstanceArray extends StructArrayLayout2f9i15ui1ul4f1ub1ui80 
      * @private
      */
     get(index: number): SymbolInstanceStruct {
-        assert(!this.isTransferred);
         assert(index >= 0);
         assert(index < this.length);
         return new SymbolInstanceStruct(this, index);
@@ -1554,7 +1551,6 @@ export class FeatureIndexArray extends StructArrayLayout1ul3ui12 {
      * @private
      */
     get(index: number): FeatureIndexStruct {
-        assert(!this.isTransferred);
         assert(index >= 0);
         assert(index < this.length);
         return new FeatureIndexStruct(this, index);
@@ -1594,7 +1590,6 @@ export class FillExtrusionWallArray extends StructArrayLayout3i6 {
      * @private
      */
     get(index: number): FillExtrusionWallStruct {
-        assert(!this.isTransferred);
         assert(index >= 0);
         assert(index < this.length);
         return new FillExtrusionWallStruct(this, index);

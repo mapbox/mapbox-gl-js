@@ -89,7 +89,6 @@ if (useComponentGetters) {
      * @private
      */
     get(index: number): <%=StructTypeClass%> {
-        assert(!this.isTransferred);
         assert(index >= 0);
         assert(index < this.length);
         return new <%=StructTypeClass%>(this, index);

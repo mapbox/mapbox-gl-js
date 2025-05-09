@@ -571,13 +571,11 @@ class Tiled3dModelBucket implements Bucket {
 
         this.replacementUpdateTime = source.updateTime;
         const activeReplacements = source.getReplacementRegionsForTile(coord.toUnwrapped());
-        const nodesInfo = this.getNodesInfo();
 
-        for (let i = 0; i < this.nodesInfo.length; i++) {
-            const node = nodesInfo[i].node;
-
+        for (const nodeInfo of this.getNodesInfo()) {
+            const footprint = nodeInfo.node.footprint;
             // Node is visible if its footprint passes the replacement check
-            nodesInfo[i].hiddenByReplacement = !!node.footprint && !activeReplacements.find(region => region.footprint === node.footprint);
+            nodeInfo.hiddenByReplacement = !!footprint && !activeReplacements.find(region => region.footprint === footprint);
         }
     }
 
@@ -587,15 +585,13 @@ class Tiled3dModelBucket implements Bucket {
         hidden: boolean;
         verticalScale: number;
     } | null | undefined {
-        const nodesInfo = this.getNodesInfo();
         const candidates = [];
 
         const tmpVertex = [0, 0, 0];
 
         const nodeInverse = mat4.identity([] as unknown as mat4);
 
-        for (let i = 0; i < this.nodesInfo.length; i++) {
-            const nodeInfo = nodesInfo[i];
+        for (const nodeInfo of this.getNodesInfo()) {
             assert(nodeInfo.node.meshes.length > 0);
             const mesh = nodeInfo.node.meshes[0];
             const meshAabb = mesh.transformedAabb;

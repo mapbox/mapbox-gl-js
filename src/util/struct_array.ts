@@ -99,7 +99,6 @@ export type SerializedStructArray = {
 class StructArray implements IStructArrayLayout {
     capacity: number;
     length: number;
-    isTransferred: boolean;
     arrayBuffer: ArrayBuffer;
     int8: Int8Array;
     uint8: Uint8Array;
@@ -114,7 +113,6 @@ class StructArray implements IStructArrayLayout {
     bytesPerElement: number;
 
     constructor() {
-        this.isTransferred = false;
         this.capacity = -1;
         this.resize(0);
     }
@@ -126,12 +124,9 @@ class StructArray implements IStructArrayLayout {
      * @private
      */
     static serialize(array: StructArray, transferables?: Set<Transferable>): SerializedStructArray {
-        assert(!array.isTransferred);
-
         array._trim();
 
         if (transferables) {
-            array.isTransferred = true;
             transferables.add(array.arrayBuffer);
         }
 
@@ -175,7 +170,6 @@ class StructArray implements IStructArrayLayout {
      * @param {number} n The new size of the array.
      */
     resize(n: number) {
-        assert(!this.isTransferred);
         this.reserve(n);
         this.length = n;
     }

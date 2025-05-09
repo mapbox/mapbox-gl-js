@@ -175,7 +175,7 @@ function tileToLngLat(id: CanonicalTileID, position: LngLat, pointX: number, poi
 export function loadMatchingModelFeature(bucket: Tiled3dModelBucket, featureIndex: number, tilespaceGeometry: TilespaceQueryGeometry, transform: Transform): {feature: EvaluationFeature, intersectionZ: number, position: LngLat} | undefined {
     const nodeInfo = bucket.getNodesInfo()[featureIndex];
 
-    if (nodeInfo.hiddenByReplacement || !nodeInfo.node.meshes) return;
+    if (!nodeInfo || nodeInfo.hiddenByReplacement || !nodeInfo.node.meshes) return;
 
     let intersectionZ = Number.MAX_VALUE;
 

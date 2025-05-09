@@ -1,0 +1,79 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00025,
+      "width": 256,
+      "height": 256
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.2
+      }
+    }
+  ],
+  "sources": {
+    "file-system-tiles": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx/{x}-{y}-{z}.glb"
+      ]
+    }
+  },
+  "pitch": 0,
+  "zoom": 17.85,
+  "bearing": 0,
+  "center": [
+    11.56162,
+    48.17686
+  ],
+  "layers": [
+    {
+      "id": "bg",
+      "type": "background",
+      "paint": {
+        "background-color": "#000"
+      }
+    },
+    {
+      "id": "model-test1",
+      "source": "file-system-tiles",
+      "type": "model",
+      "paint": {
+        "model-color": "rgba(238, 78, 139, .75)",
+        "model-color-mix-intensity": 1,
+        "model-opacity": 0.5
+      },
+      "minzoom": 0,
+      "maxzoom": 22,
+      "filter": ["!", true]
+    },
+    {
+      "id": "model-test2",
+      "source": "file-system-tiles",
+      "type": "model",
+      "paint": {
+        "model-color": "rgb(91, 255, 142)",
+        "model-color-mix-intensity": 1,
+        "model-opacity": 0.5
+      },
+      "minzoom": 0,
+      "maxzoom": 22,
+      "filter": true
+    }
+  ]
+}
