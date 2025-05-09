@@ -2186,7 +2186,7 @@ class Style extends Evented<MapEvents> {
             return 0.2126 * r + 0.7152 * g + 0.0722 * b;
         };
 
-        const directionalColor = directional.properties.get('color').toRenderColor(null).toArray01();
+        const directionalColor = directional.properties.get('color').toNonPremultipliedRenderColor(null).toArray01();
         const directionalIntensity = directional.properties.get('intensity');
         const direction = directional.properties.get('direction');
 
@@ -2195,7 +2195,7 @@ class Style extends Evented<MapEvents> {
 
         const directionalBrightness = relativeLuminance(directionalColor) * directionalIntensity * polarIntensity;
 
-        const ambientColor = ambient.properties.get('color').toRenderColor(null).toArray01();
+        const ambientColor = ambient.properties.get('color').toNonPremultipliedRenderColor(null).toArray01();
         const ambientIntensity = ambient.properties.get('intensity');
 
         const ambientBrightness = relativeLuminance(ambientColor) * ambientIntensity;

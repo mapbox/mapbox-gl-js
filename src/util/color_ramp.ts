@@ -2,8 +2,8 @@ import {RGBAImage} from './image';
 import {isPowerOfTwo} from './util';
 import assert from 'assert';
 
-import type Color from '../style-spec/util/color';
 import type {StylePropertyExpression, GlobalProperties} from '../style-spec/expression/index';
+import type {PremultipliedRenderColor} from '../style-spec/util/color';
 
 export type ColorRampParams = {
     expression: StylePropertyExpression;
@@ -29,14 +29,13 @@ export function renderColorRamp(params: ColorRampParams): RGBAImage {
 
     const renderPixel = (stride: number, index: number, progress: number) => {
         evaluationGlobals[params.evaluationKey] = progress;
-        const pxColor: Color | null | undefined = params.expression.evaluate(evaluationGlobals);
+        const color = params.expression.evaluate(evaluationGlobals);
+        const pxColor: PremultipliedRenderColor | null | undefined = color ? color.toNonPremultipliedRenderColor(null) : null;
         if (!pxColor) return;
 
-        // the colors are being unpremultiplied because Color uses
-        // premultiplied values, and the Texture class expects unpremultiplied ones
-        image.data[stride + index + 0] = Math.floor(pxColor.r * 255 / pxColor.a);
-        image.data[stride + index + 1] = Math.floor(pxColor.g * 255 / pxColor.a);
-        image.data[stride + index + 2] = Math.floor(pxColor.b * 255 / pxColor.a);
+        image.data[stride + index + 0] = Math.floor(pxColor.r * 255);
+        image.data[stride + index + 1] = Math.floor(pxColor.g * 255);
+        image.data[stride + index + 2] = Math.floor(pxColor.b * 255);
         image.data[stride + index + 3] = Math.floor(pxColor.a * 255);
     };
 

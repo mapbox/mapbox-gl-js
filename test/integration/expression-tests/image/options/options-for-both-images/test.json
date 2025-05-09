@@ -55,9 +55,9 @@
       },
       {
         "primaryId": {"name": "poi_circle", "iconsetId": "landmarks"},
-        "primaryOptions": {"params": {"fill_color": {"r":0.5,"g":0,"b":0,"a":0.5}}},
+        "primaryOptions": {"params": {"fill_color": {"r":1,"g":0,"b":0,"a":0.5}}},
         "secondaryId": {"name": "poi_circle", "iconsetId": "alternative_landmarks"},
-        "secondaryOptions": {"params": {"fill_color": {"r":0,"g":0,"b":0,"a":0}}},
+        "secondaryOptions": {"params": {"fill_color": {"r":0,"g":1,"b":1,"a":0}}},
         "available": false
       }
     ],

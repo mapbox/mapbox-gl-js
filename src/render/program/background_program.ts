@@ -14,7 +14,7 @@ import type {UniformValues} from '../uniform_binding';
 import type Context from '../../gl/context';
 import type {OverscaledTileID} from '../../source/tile_id';
 import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
-import type {RenderColor} from "../../style-spec/util/color";
+import type {NonPremultipliedRenderColor} from "../../style-spec/util/color";
 import type {ImagePosition} from "../image_atlas";
 
 export type BackgroundUniformsType = {
@@ -64,7 +64,7 @@ const backgroundUniformValues = (
     matrix: mat4,
     emissiveStrength: number,
     opacity: number,
-    color: RenderColor,
+    color: NonPremultipliedRenderColor,
 ): UniformValues<BackgroundUniformsType> => ({
     'u_matrix': matrix as Float32Array,
     'u_emissive_strength': emissiveStrength,

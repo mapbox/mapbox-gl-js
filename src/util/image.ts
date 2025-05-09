@@ -114,8 +114,8 @@ function copyImage<T extends RGBAImage | AlphaImage>(
                 const dstPixelOffset = dstOffset + i * channels;
 
                 const alpha = srcData[srcByteOffset + 3];
-                const color = new Color(srcData[srcByteOffset + 0] / 255 * alpha, srcData[srcByteOffset + 1] / 255 * alpha, srcData[srcByteOffset + 2] / 255 * alpha, alpha);
-                const shifted = color.toRenderColor(lut).toArray();
+                const color = new Color(srcData[srcByteOffset + 0] / 255, srcData[srcByteOffset + 1] / 255, srcData[srcByteOffset + 2] / 255, alpha);
+                const shifted = color.toNonPremultipliedRenderColor(lut).toArray();
 
                 dstData[dstPixelOffset + 0] = shifted[0];
                 dstData[dstPixelOffset + 1] = shifted[1];

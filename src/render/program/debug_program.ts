@@ -3,7 +3,7 @@ import {UniformColor, UniformMatrix4f, Uniform1i, Uniform1f} from '../uniform_bi
 import type {mat4} from 'gl-matrix';
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';
-import type Color from '../../style-spec/util/color';
+import type {PremultipliedRenderColor} from '../../style-spec/util/color';
 
 export type DebugUniformsType = {
     ['u_color']: UniformColor;
@@ -19,9 +19,9 @@ const debugUniforms = (context: Context): DebugUniformsType => ({
     'u_overlay_scale': new Uniform1f(context),
 });
 
-const debugUniformValues = (matrix: mat4, color: Color, scaleRatio: number = 1): UniformValues<DebugUniformsType> => ({
+const debugUniformValues = (matrix: mat4, color: PremultipliedRenderColor, scaleRatio: number = 1): UniformValues<DebugUniformsType> => ({
     'u_matrix': matrix as Float32Array,
-    'u_color': color.toRenderColor(null),
+    'u_color': color,
     'u_overlay': 0,
     'u_overlay_scale': scaleRatio
 });

@@ -220,7 +220,7 @@ const fillExtrusionUniformValues = (
         vec3.transformMat3(lightPos, lightPos, lightMat);
     }
 
-    const lightColor = light.properties.get('color');
+    const lightColor = light.properties.get('color').toPremultipliedRenderColor(null);
     const tr = painter.transform;
 
     const uniformValues = {

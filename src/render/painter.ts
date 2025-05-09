@@ -1089,14 +1089,14 @@ class Painter {
                 if (!shouldRenderAtmosphere) {
 
                     const ignoreLutColor = fog.properties.get('color-use-theme') === 'none';
-                    const fogColor = fog.properties.get('color').toRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
+                    const fogColor = fog.properties.get('color').toNonPremultipliedRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...fogColor);
                 }
 
                 if (shouldRenderAtmosphere) {
                     const ignoreLutColor = fog.properties.get('space-color-use-theme') === 'none';
-                    const spaceColor = fog.properties.get('space-color').toRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
+                    const spaceColor = fog.properties.get('space-color').toNonPremultipliedRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...spaceColor);
                 }

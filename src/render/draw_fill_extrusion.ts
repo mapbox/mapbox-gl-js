@@ -146,7 +146,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
             const floodLightIgnoreLut = layer.paint.get('fill-extrusion-flood-light-color-use-theme').constantOr("default") === 'none';
 
-            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(floodLightIgnoreLut ? null : layer.lut).toArray01().slice(0, 3);
+            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toNonPremultipliedRenderColor(floodLightIgnoreLut ? null : layer.lut).toArray01().slice(0, 3);
 
             const aoEnabled = aoIntensity > 0 && aoRadius > 0;
 
@@ -294,7 +294,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
     const floodLightColorUseTheme = layer.paint.get('fill-extrusion-flood-light-color-use-theme').constantOr('default') === 'none';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(floodLightColorUseTheme ? null : layer.lut).toArray01().slice(0, 3) as any);
+    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toNonPremultipliedRenderColor(floodLightColorUseTheme ? null : layer.lut).toArray01().slice(0, 3) as any);
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
     const wallMode = layer.paint.get('fill-extrusion-line-width').constantOr(1.0) !== 0.0;

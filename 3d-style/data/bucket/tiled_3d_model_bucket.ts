@@ -313,7 +313,7 @@ class Tiled3dModelBucket implements Bucket {
                         evaluationFeature.properties['part'] = part;
                     }
 
-                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, state, canonical).toRenderColor(null);
+                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, state, canonical).toPremultipliedRenderColor(null);
 
                     const colorMixIntensity = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, state, canonical);
                     nodeInfo.evaluatedColor[i] = [color.r, color.g, color.b, colorMixIntensity];

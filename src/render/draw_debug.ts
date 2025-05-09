@@ -109,7 +109,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const debugSegments = tile._tileDebugSegments || painter.debugSegments;
 
     program.draw(painter, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        debugUniformValues(posMatrix, color), id,
+        debugUniformValues(posMatrix, color.toPremultipliedRenderColor(null)), id,
         debugBuffer, debugIndexBuffer, debugSegments,
         null, null, null, [tile._globeTileDebugBorderBuffer]);
 
@@ -133,7 +133,7 @@ function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: Oversc
     const debugTextSegments = tile._tileDebugTextSegments || painter.debugSegments;
 
     program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
-        debugUniformValues(posMatrix, Color.transparent, scaleRatio), id,
+        debugUniformValues(posMatrix, Color.transparent.toPremultipliedRenderColor(null), scaleRatio), id,
         debugTextBuffer, debugTextIndexBuffer, debugTextSegments,
         null, null, null, [tile._globeTileDebugTextBuffer]);
 }
@@ -193,7 +193,7 @@ function drawTileQueryGeometry(painter: Painter, sourceCache: SourceCache, coord
         const segments = queryViz.segments;
         if (vertexBuffer != null && indexBuffer != null && segments != null) {
             program.draw(painter, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                debugUniformValues(posMatrix, queryViz.color), id,
+                debugUniformValues(posMatrix, queryViz.color.toPremultipliedRenderColor(null)), id,
                 vertexBuffer, indexBuffer, segments);
         }
     }
@@ -205,7 +205,7 @@ function drawTileQueryGeometry(painter: Painter, sourceCache: SourceCache, coord
         const segments = boundsViz.segments;
         if (vertexBuffer != null && indexBuffer != null && segments != null) {
             program.draw(painter, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-                debugUniformValues(posMatrix, boundsViz.color), id,
+                debugUniformValues(posMatrix, boundsViz.color.toPremultipliedRenderColor(null)), id,
                 vertexBuffer, indexBuffer, segments);
         }
     }

@@ -190,7 +190,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         painter,
 
         opacity,
-        pbr.baseColorFactor.toRenderColor(null),
+        pbr.baseColorFactor,
         material.emissiveFactor,
         pbr.metallicFactor,
         pbr.roughnessFactor,
@@ -695,7 +695,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
                     painter,
 
                     layerOpacity,
-                    pbr.baseColorFactor.toRenderColor(null),
+                    pbr.baseColorFactor,
                     material.emissiveFactor,
                     pbr.metallicFactor,
                     pbr.roughnessFactor,
@@ -1061,7 +1061,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             new Float32Array(node.matrix),
                             painter,
                             sortedNode.opacity,
-                            pbr.baseColorFactor.toRenderColor(null),
+                            pbr.baseColorFactor,
                             material.emissiveFactor,
                             pbr.metallicFactor,
                             pbr.roughnessFactor,

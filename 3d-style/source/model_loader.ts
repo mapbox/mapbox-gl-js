@@ -82,7 +82,7 @@ function convertMaterial(materialDesc: MaterialDescription, textures: Array<Mode
             metallicRoughnessTexture: metallicRoughnessTexture ? textures[metallicRoughnessTexture.index] : undefined
         },
         doubleSided,
-        emissiveFactor,
+        emissiveFactor: new Color(...emissiveFactor),
         alphaMode,
         alphaCutoff,
         normalTexture: normalTexture ? textures[normalTexture.index] : undefined,
@@ -654,7 +654,7 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
     }
     const material = {} as Material;
     material.defined = true;
-    material.emissiveFactor = [0, 0, 0];
+    material.emissiveFactor = Color.black;
     const pbrMetallicRoughness = {} as PbrMetallicRoughness;
     pbrMetallicRoughness.baseColorFactor = Color.white;
     material.pbrMetallicRoughness = pbrMetallicRoughness;

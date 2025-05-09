@@ -20,7 +20,7 @@ class ColorReplacements {
 
         for (const [key, value] of Object.entries(params)) {
             if (variablesMap.has(key)) {
-                replacements.set(variablesMap.get(key).toStringPremultipliedAlpha(), value);
+                replacements.set(variablesMap.get(key).toString(), value);
             } else {
                 console.warn(`Ignoring unknown image variable "${key}"`);
             }
@@ -32,7 +32,7 @@ class ColorReplacements {
 
 function getStyleColor(iconColor: Color, opacity: number = 255, colorReplacements: Map<string, Color>) {
     const alpha = opacity / 255;
-    const serializedColor = iconColor.toStringPremultipliedAlpha();
+    const serializedColor = iconColor.toString();
     const color = colorReplacements.has(serializedColor) ? colorReplacements.get(serializedColor).clone() : iconColor.clone();
 
     color.a *= alpha;

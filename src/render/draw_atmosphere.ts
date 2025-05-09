@@ -82,7 +82,7 @@ class Atmosphere {
 
             this.atmosphereBuffer = new AtmosphereBuffer(context);
 
-            // Part of internal stlye spec, not exposed to gl-js
+            // Part of internal style spec, not exposed to gl-js
             const sizeRange = this.params.sizeRange;
             const intensityRange = this.params.intensityRange;
 
@@ -139,13 +139,13 @@ class Atmosphere {
 
         const fogLUT = painter.style.getLut(fog.scope);
         const colorIgnoreLut = fog.properties.get('color-use-theme') === 'none';
-        const fogColor = fog.properties.get('color').toRenderColor(colorIgnoreLut ? null : fogLUT).toArray01();
+        const fogColor = fog.properties.get('color').toNonPremultipliedRenderColor(colorIgnoreLut ? null : fogLUT).toArray01();
 
         const hignoreLutIgnoreLut = fog.properties.get('high-color-use-theme') === 'none';
-        const highColor = fog.properties.get('high-color').toRenderColor(hignoreLutIgnoreLut ? null : fogLUT).toArray01();
+        const highColor = fog.properties.get('high-color').toNonPremultipliedRenderColor(hignoreLutIgnoreLut ? null : fogLUT).toArray01();
 
         const spaceColorIgnoreLut = fog.properties.get('space-color-use-theme') === 'none';
-        const spaceColor = fog.properties.get('space-color').toRenderColor(spaceColorIgnoreLut ? null : fogLUT).toArray01PremultipliedAlpha();
+        const spaceColor = fog.properties.get('space-color').toNonPremultipliedRenderColor(spaceColorIgnoreLut ? null : fogLUT).toArray01();
 
         // https://www.desmos.com/calculator/oanvvpr36d
         // Ensure horizon blend is 0-exclusive to prevent division by 0 in the shader

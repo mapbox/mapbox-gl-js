@@ -74,7 +74,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         const uniformValues: UniformValues<BackgroundUniformsType | BackgroundPatternUniformsType> = image ?
             backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
-            backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(ignoreLut ? null : layer.lut));
+            backgroundUniformValues(matrix, emissiveStrength, opacity, color.toPremultipliedRenderColor(ignoreLut ? null : layer.lut));
 
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, painter.viewportBuffer,
@@ -94,7 +94,8 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         const uniformValues: UniformValues<BackgroundUniformsType | BackgroundPatternUniformsType> = image ?
             backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
-            backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(ignoreLut ? null : layer.lut));
+
+            backgroundUniformValues(matrix, emissiveStrength, opacity, color.toPremultipliedRenderColor(ignoreLut ? null : layer.lut));
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
 

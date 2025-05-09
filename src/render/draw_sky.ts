@@ -116,8 +116,9 @@ function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<Skyb
         mat3.fromMat4(mat3.create(), faceRotate) as Float32Array,
         sunDirection,
         sunIntensity,
-        atmosphereColor,
-        atmosphereHaloColor);
+        atmosphereColor.toPremultipliedRenderColor(null),
+        atmosphereHaloColor.toPremultipliedRenderColor(null)
+    );
 
     const glFace = gl.TEXTURE_CUBE_MAP_POSITIVE_X + i;
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, glFace, layer.skyboxTexture, 0);

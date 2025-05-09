@@ -631,9 +631,9 @@ export function calculateGroundShadowFactor(
     const groundNormal: vec3 = [0.0, 0.0, 1.0];
     const dirDirectionalFactor = Math.max(vec3.dot(groundNormal, directionVec), 0.0);
     const ambStrength: vec3 = [0, 0, 0];
-    vec3.scale(ambStrength, ambientColor.toRenderColor(ambientColorIgnoreLut ? null : style.getLut(directionalLight.scope)).toArray01Linear().slice(0, 3) as vec3, ambientIntensity);
+    vec3.scale(ambStrength, ambientColor.toPremultipliedRenderColor(ambientColorIgnoreLut ? null : style.getLut(directionalLight.scope)).toArray01Linear().slice(0, 3) as vec3, ambientIntensity);
     const dirStrength: vec3 = [0, 0, 0];
-    vec3.scale(dirStrength, dirColor.toRenderColor(dirColorIgnoreLut ? null : style.getLut(ambientLight.scope)).toArray01Linear().slice(0, 3) as vec3, dirDirectionalFactor * dirIntensity);
+    vec3.scale(dirStrength, dirColor.toPremultipliedRenderColor(dirColorIgnoreLut ? null : style.getLut(ambientLight.scope)).toArray01Linear().slice(0, 3) as vec3, dirDirectionalFactor * dirIntensity);
 
     // Multiplier X to get from lit surface color L to shadowed surface color S
     // X = A / (A + D)

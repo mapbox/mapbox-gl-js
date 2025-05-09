@@ -101,7 +101,7 @@ function rgba(ctx: EvaluationContext, [r, g, b, a]: Expression[]) {
     const alpha = a ? a.evaluate(ctx) : 1;
     const error = validateRGBA(r, g, b, alpha);
     if (error) throw new RuntimeError(error);
-    return new Color(r as unknown as number / 255 * alpha, g as unknown as number / 255 * alpha, b as unknown as number / 255 * alpha, alpha);
+    return new Color(r as unknown as number / 255, g as unknown as number / 255, b as unknown as number / 255, alpha);
 }
 
 function hsla(ctx: EvaluationContext, [h, s, l, a]: Expression[]) {
@@ -187,7 +187,7 @@ CompoundExpression.register(expressions, {
         [ColorType],
         (ctx, [v]) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return v.evaluate(ctx).toRenderColor(null).toArray();
+            return v.evaluate(ctx).toNonPremultipliedRenderColor(null).toArray();
         }
     ],
     'to-hsla': [
@@ -195,7 +195,7 @@ CompoundExpression.register(expressions, {
         [ColorType],
         (ctx, [v]) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return v.evaluate(ctx).toRenderColor(null).toHslaArray();
+            return v.evaluate(ctx).toNonPremultipliedRenderColor(null).toHslaArray();
         }
     ],
     'rgb': [

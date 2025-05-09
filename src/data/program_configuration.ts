@@ -36,7 +36,7 @@ import type {FormattedSection} from '../style-spec/expression/types/formatted';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {IUniform} from '../render/uniform_binding';
 import type {LUT} from "../util/lut";
-import type {RenderColor} from "../style-spec/util/color";
+import type {PremultipliedRenderColor} from "../style-spec/util/color";
 import type {ImageId} from '../style-spec/expression/types/image_id';
 
 export type BinderUniform = {
@@ -51,7 +51,7 @@ export type ProgramConfigurationContext = {
     lut: LUT | null;
 };
 
-function packColor(color: RenderColor): [number, number] {
+function packColor(color: PremultipliedRenderColor): [number, number] {
     return [
         packUint8ToFloat(255 * color.r, 255 * color.g),
         packUint8ToFloat(255 * color.b, 255 * color.a)
@@ -155,7 +155,7 @@ class ConstantBinder implements UniformBinder {
         if (value instanceof Color) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const lut = this.lutExpression && (this.lutExpression as any).value === 'none' ? null : this.context.lut;
-            uniform.set(program, uniformName, value.toRenderColor(lut));
+            uniform.set(program, uniformName, value.toPremultipliedRenderColor(lut));
         } else {
             uniform.set(program, uniformName, value);
         }
@@ -264,7 +264,7 @@ class SourceExpressionBinder implements AttributeBinder {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _setPaintValue(start: number, end: number, value: any, lut: LUT) {
         if (this.type === 'color') {
-            const color = packColor(value.toRenderColor(lut));
+            const color = packColor(value.toPremultipliedRenderColor(lut));
             for (let i = start; i < end; i++) {
                 this.paintVertexArray.emplace(i, color[0], color[1]);
             }
@@ -346,8 +346,8 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _setPaintValue(start: number, end: number, min: any, max: any, lut: LUT) {
         if (this.type === 'color') {
-            const minColor = packColor(min.toRenderColor(lut));
-            const maxColor = packColor(min.toRenderColor(lut));
+            const minColor = packColor(min.toPremultipliedRenderColor(lut));
+            const maxColor = packColor(min.toPremultipliedRenderColor(lut));
             for (let i = start; i < end; i++) {
                 this.paintVertexArray.emplace(i, minColor[0], minColor[1], maxColor[0], maxColor[1]);
             }

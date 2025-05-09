@@ -60,7 +60,7 @@ export const fogUniformValues = (
     const tr = painter.transform;
 
     const ignoreLUT = fog.properties.get('color-use-theme') === 'none';
-    const fogColor = fog.properties.get('color').toRenderColor(ignoreLUT ? null : painter.style.getLut(fog.scope)).toArray01();
+    const fogColor = fog.properties.get('color').toNonPremultipliedRenderColor(ignoreLUT ? null : painter.style.getLut(fog.scope)).toArray01();
     fogColor[3] = fogOpacity; // Update Alpha
     const temporalOffset = (painter.frameCounter / 1000.0) % 1;
 

@@ -267,7 +267,7 @@ class Context {
 
         if (color) {
             mask |= gl.COLOR_BUFFER_BIT;
-            this.clearColor.set(color);
+            this.clearColor.set(color.toNonPremultipliedRenderColor(null));
             if (colorMask) {
                 this.colorMask.set(colorMask);
             } else {

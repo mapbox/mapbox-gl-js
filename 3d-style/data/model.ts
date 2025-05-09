@@ -63,7 +63,7 @@ export type Material = {
     occlusionTexture: ModelTexture | null | undefined;
     emissionTexture: ModelTexture | null | undefined;
     pbrMetallicRoughness: PbrMetallicRoughness;
-    emissiveFactor: [number, number, number];
+    emissiveFactor: Color;
     alphaMode: string;
     alphaCutoff: number;
     doubleSided: boolean;

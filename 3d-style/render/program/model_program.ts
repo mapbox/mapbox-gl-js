@@ -14,7 +14,6 @@ import type {UniformValues} from '../../../src/render/uniform_binding';
 import type Context from '../../../src/gl/context';
 import type Painter from '../../../src/render/painter';
 import type {Material} from '../../data/model';
-import type {RenderColor} from "../../../src/style-spec/util/color";
 
 export type ModelUniformsType = {
     ['u_matrix']: UniformMatrix4f;
@@ -86,8 +85,8 @@ const modelUniformValues = (
     nodeMatrix: mat4,
     painter: Painter,
     opacity: number,
-    baseColorFactor: RenderColor,
-    emissiveFactor: [number, number, number],
+    baseColorFactor: Color,
+    emissiveFactor: Color,
     metallicFactor: number,
     roughnessFactor: number,
     material: Material,
@@ -109,13 +108,13 @@ const modelUniformValues = (
 
     const alphaMask = material.alphaMode === 'MASK';
 
-    const lightColor = light.properties.get('color').toRenderColor(null);
+    const lightColor = light.properties.get('color').toNonPremultipliedRenderColor(null);
 
     const aoIntensity = layer.paint.get('model-ambient-occlusion-intensity');
 
-    const colorMix = layer.paint.get('model-color').constantOr(Color.white).toRenderColor(null);
+    const colorMix = layer.paint.get('model-color').constantOr(Color.white).toNonPremultipliedRenderColor(null);
 
-    const colorMixIntensity = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
+    colorMix.a = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
 
     const uniformValues = {
         'u_matrix': matrix as Float32Array,
@@ -130,8 +129,8 @@ const modelUniformValues = (
         'u_baseTextureIsAlpha': 0,
         'u_alphaMask': +alphaMask,
         'u_alphaCutoff': material.alphaCutoff,
-        'u_baseColorFactor': [baseColorFactor.r, baseColorFactor.g, baseColorFactor.b, baseColorFactor.a] as [number, number, number, number],
-        'u_emissiveFactor': [emissiveFactor[0], emissiveFactor[1], emissiveFactor[2], 1.0] as [number, number, number, number],
+        'u_baseColorFactor': baseColorFactor.toNonPremultipliedRenderColor(null).toArray01(),
+        'u_emissiveFactor': emissiveFactor.toNonPremultipliedRenderColor(null).toArray01(),
         'u_metallicFactor': metallicFactor,
         'u_roughnessFactor': roughnessFactor,
         'u_baseColorTexture': TextureSlots.BaseColor,
@@ -140,7 +139,7 @@ const modelUniformValues = (
         'u_occlusionTexture': TextureSlots.Occlusion,
         'u_emissionTexture': TextureSlots.Emission,
         'u_lutTexture': TextureSlots.LUT,
-        'u_color_mix': [colorMix.r, colorMix.g, colorMix.b, colorMixIntensity] as [number, number, number, number],
+        'u_color_mix': colorMix.toArray01(),
         'u_aoIntensity': aoIntensity,
         'u_emissive_strength': emissiveStrength,
         'u_occlusionTextureTransform': occlusionTextureTransform ? occlusionTextureTransform : [0, 0, 0, 0] as [number, number, number, number]

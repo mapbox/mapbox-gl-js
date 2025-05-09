@@ -1,4 +1,4 @@
-import Color from '../style-spec/util/color';
+import Color, {type NonPremultipliedRenderColor} from '../style-spec/util/color';
 import assert from 'assert';
 
 import type Context from './context';
@@ -56,12 +56,12 @@ class BaseValue<T> implements Value<T> {
     }
 }
 
-export class ClearColor extends BaseValue<Color> {
-    override getDefault(): Color {
-        return Color.transparent;
+export class ClearColor extends BaseValue<NonPremultipliedRenderColor> {
+    override getDefault(): NonPremultipliedRenderColor {
+        return Color.transparent.toNonPremultipliedRenderColor(null);
     }
 
-    override set(v: Color) {
+    override set(v: NonPremultipliedRenderColor) {
         const c = this.current;
         if (v.r === c.r && v.g === c.g && v.b === c.b && v.a === c.a && !this.dirty) return;
         this.gl.clearColor(v.r, v.g, v.b, v.a);
@@ -268,12 +268,12 @@ export class BlendFunc extends BaseValue<BlendFuncType> {
     }
 }
 
-export class BlendColor extends BaseValue<Color> {
-    override getDefault(): Color {
-        return Color.transparent;
+export class BlendColor extends BaseValue<NonPremultipliedRenderColor> {
+    override getDefault(): NonPremultipliedRenderColor {
+        return Color.transparent.toNonPremultipliedRenderColor(null);
     }
 
-    override set(v: Color) {
+    override set(v: NonPremultipliedRenderColor) {
         const c = this.current;
         if (v.r === c.r && v.g === c.g && v.b === c.b && v.a === c.a && !this.dirty) return;
         this.gl.blendColor(v.r, v.g, v.b, v.a);

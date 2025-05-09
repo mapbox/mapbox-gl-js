@@ -1,7 +1,7 @@
 import Color from '../style-spec/util/color';
 
 import type Context from '../gl/context';
-import type {RenderColor} from "../style-spec/util/color";
+import type {PremultipliedRenderColor} from "../style-spec/util/color";
 
 export type UniformValues<Us> = {
     [Key in keyof Us]: Us[Key] extends IUniform<infer V> ? V : never;
@@ -116,13 +116,13 @@ class Uniform4f extends Uniform<[number, number, number, number]> implements IUn
     }
 }
 
-class UniformColor extends Uniform<RenderColor> implements IUniform<RenderColor> {
+class UniformColor extends Uniform<PremultipliedRenderColor> implements IUniform<PremultipliedRenderColor> {
     constructor(context: Context) {
         super(context);
-        this.current = Color.transparent.toRenderColor(null);
+        this.current = Color.transparent.toPremultipliedRenderColor(null);
     }
 
-    override set(program: WebGLProgram, name: string, v: RenderColor): void {
+    override set(program: WebGLProgram, name: string, v: PremultipliedRenderColor): void {
         if (!this.fetchUniformLocation(program, name)) return;
         if (v.r !== this.current.r || v.g !== this.current.g ||
             v.b !== this.current.b || v.a !== this.current.a) {
