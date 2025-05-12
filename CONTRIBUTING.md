@@ -9,14 +9,16 @@ Install the Xcode Command Line Tools Package
 xcode-select --install
 ```
 
-Install [node.js](https://nodejs.org/) version 20
-```bash
-brew install node@20
-```
+Install [nvm](https://github.com/nvm-sh/nvm) following the instructions [here](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script)
 
 Clone the repository
 ```bash
 git clone git@github.com:mapbox/mapbox-gl-js.git
+```
+
+Install the node version defined in `.nvmrc`
+```bash
+nvm install
 ```
 
 Install node module dependencies
@@ -26,16 +28,22 @@ npm install
 
 ### Linux
 
-Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) version 20, [GNU Make](http://www.gnu.org/software/make/), and libglew-dev
+Install [git](https://git-scm.com/), [GNU Make](http://www.gnu.org/software/make/), and libglew-dev
 ```bash
 sudo apt-get update
-curl -sL https://deb.nodesource.com/setup_20.x | sudo bash -
-sudo apt-get install build-essential git nodejs libglew-dev libxi-dev
+sudo apt-get install build-essential git libglew-dev libxi-dev
 ```
+
+Install [nvm](https://github.com/nvm-sh/nvm) following the instructions [here](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script)
 
 Clone the repository
 ```bash
 git clone git@github.com:mapbox/mapbox-gl-js.git
+```
+
+Install the node version defined in `.nvmrc`
+```bash
+nvm install
 ```
 
 Install node module dependencies
@@ -45,11 +53,16 @@ npm install
 
 ### Windows
 
-Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) version 20, [npm and node-gyp](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules).
+Install [git](https://git-scm.com/), [npm and node-gyp](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules) and [nvm](https://github.com/nvm-sh/nvm) 
 
 Clone the repository
 ```bash
 git clone git@github.com:mapbox/mapbox-gl-js.git
+```
+
+Install the node version defined in `.nvmrc`
+```bash
+nvm install
 ```
 
 Install node module dependencies
