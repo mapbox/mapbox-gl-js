@@ -11,37 +11,21 @@ import type {
 
 type PatternStyleLayers = Array<LineStyleLayer> | Array<FillStyleLayer> | Array<FillExtrusionStyleLayer>;
 
-type AddPatternResult = {
-    primary: string | null;
-    secondary: string | null;
-}
-
-function addPattern(pattern: string | ResolvedImage, patterns: ImageDependenciesMap, pixelRatio: number = 1): AddPatternResult {
+function addPattern(pattern: string | ResolvedImage, patterns: ImageDependenciesMap, pixelRatio: number = 1): string | null {
     if (!pattern) {
         return null;
     }
 
     const patternPrimary = typeof pattern === 'string' ? ResolvedImage.from(pattern).getPrimary() : pattern.getPrimary();
-    const patternSecondary = typeof pattern === 'string' ? null : pattern.getSecondary();
+    const patternId = patternPrimary.id.toString();
 
-    for (const pattern of [patternPrimary, patternSecondary]) {
-        if (!pattern) {
-            continue;
-        }
-
-        const id = pattern.id.toString();
-        if (!patterns.has(id)) {
-            patterns.set(id, []);
-        }
-
-        pattern.scaleSelf(pixelRatio);
-        patterns.get(id).push(pattern);
+    if (!patterns.has(patternId)) {
+        patterns.set(patternId, []);
     }
 
-    return {
-        primary: patternPrimary.toString(),
-        secondary: patternSecondary ? patternSecondary.toString() : null
-    };
+    patternPrimary.scaleSelf(pixelRatio);
+    patterns.get(patternId).push(patternPrimary);
+    return patternPrimary.toString();
 }
 
 export function hasPattern(type: string, layers: PatternStyleLayers, pixelRatio: number, options: PopulateParameters): boolean {
@@ -84,20 +68,11 @@ export function addPatternDependencies(
             let pattern = patternPropertyValue.evaluate({zoom}, patternFeature, {}, options.availableImages);
             pattern = pattern && pattern.name ? pattern.name : pattern;
 
-            const patternResult = addPattern(pattern, patterns, pixelRatio);
-
-            if (!patternResult) {
-                continue;
-            }
-
-            const {
-                primary: primarySerialized,
-                secondary: secondarySerialized
-            } = patternResult;
+            const patternSerialized: string | null = addPattern(pattern, patterns, pixelRatio);
 
             // save for layout
-            if (primarySerialized) {
-                patternFeature.patterns[layer.id] = [primarySerialized, secondarySerialized].filter(Boolean);
+            if (patternSerialized) {
+                patternFeature.patterns[layer.id] = patternSerialized;
             }
         }
     }

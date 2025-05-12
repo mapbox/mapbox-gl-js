@@ -13,10 +13,6 @@ uniform lowp vec4 u_trim_color;
 
 uniform sampler2D u_image;
 
-#ifdef LINE_PATTERN_TRANSITION
-uniform float u_pattern_transition;
-#endif
-
 in vec2 v_normal;
 in vec2 v_width2;
 in highp float v_linesofar;
@@ -48,18 +44,12 @@ in highp float v_depth;
 uniform float u_emissive_strength;
 
 #pragma mapbox: define mediump vec4 pattern
-#ifdef LINE_PATTERN_TRANSITION
-#pragma mapbox: define mediump vec4 pattern_b
-#endif
 #pragma mapbox: define mediump float pixel_ratio
 #pragma mapbox: define mediump float blur
 #pragma mapbox: define mediump float opacity
 
 void main() {
     #pragma mapbox: initialize mediump vec4 pattern
-    #ifdef LINE_PATTERN_TRANSITION
-    #pragma mapbox: initialize mediump vec4 pattern_b
-    #endif
     #pragma mapbox: initialize mediump float pixel_ratio
     #pragma mapbox: initialize mediump float blur
     #pragma mapbox: initialize mediump float opacity
@@ -92,14 +82,6 @@ void main() {
     highp vec2 pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(x, y));
     highp vec2 lod_pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(pattern_x, y));
     vec4 color = textureLodCustom(u_image, pos, lod_pos);
-
-#ifdef LINE_PATTERN_TRANSITION
-    vec2 pattern_b_tl = pattern_b.xy;
-    vec2 pattern_b_br = pattern_b.zw;
-    highp vec2 pos_b = mix(pattern_b_tl * texel_size - texel_size, pattern_b_br * texel_size + texel_size, vec2(x, y));
-    vec4 color_b = textureLodCustom(u_image, pos_b, lod_pos);
-    color = color * (1.0 - u_pattern_transition) + color_b * u_pattern_transition;
-#endif
 
 #ifdef RENDER_LINE_TRIM_OFFSET
     highp float trim_start = u_trim_offset[0];

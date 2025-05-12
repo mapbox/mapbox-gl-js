@@ -142,7 +142,7 @@ import {fillLayoutAttributes, fillLayoutAttributesExt, intersectionsAttributes, 
 import {lineLayoutAttributes, lineZOffsetAttributes} from '../src/data/bucket/line_attributes';
 import lineAttributesExt from '../src/data/bucket/line_attributes_ext';
 import lineAttributesPattern from '../src/data/bucket/line_attributes_pattern';
-import {patternAttributes} from '../src/data/bucket/pattern_attributes';
+import patternAttributes from '../src/data/bucket/pattern_attributes';
 import dashAttributes from '../src/data/bucket/dash_attributes';
 import skyboxAttributes from '../src/render/skybox_attributes';
 import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes, wallAttributes} from '../src/data/bucket/fill_extrusion_attributes';

@@ -5,7 +5,7 @@ import {register} from '../util/web_worker_transfer';
 import {PossiblyEvaluatedPropertyValue} from '../style/properties';
 import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray, DashLayoutArray} from './array_types';
 import {clamp} from '../util/util';
-import {patternAttributes, patternTransitionAttributes} from './bucket/pattern_attributes';
+import patternAttributes from './bucket/pattern_attributes';
 import dashAttributes from './bucket/dash_attributes';
 import EvaluationParameters from '../style/evaluation_parameters';
 import FeaturePositionMap from './feature_position_map';
@@ -173,45 +173,31 @@ class PatternConstantBinder implements UniformBinder {
     uniformNames: Array<string>;
     pattern: Array<number> | null | undefined;
     pixelRatio: number;
-    patternTransition: Array<number> | null | undefined;
     context: ProgramConfigurationContext;
     lutExpression: PossiblyEvaluatedValue<string>;
 
     constructor(value: unknown, names: Array<string>) {
         this.uniformNames = names.map(name => `u_${name}`);
         this.pattern = null;
-        this.patternTransition = null;
         this.pixelRatio = 1;
     }
 
-    setConstantPatternPositions(primaryPosTo: SpritePosition, secondaryPosTo?: SpritePosition) {
-        this.pixelRatio = primaryPosTo.pixelRatio || 1;
-        this.pattern = primaryPosTo.tl.concat(primaryPosTo.br);
-        this.patternTransition = secondaryPosTo ? secondaryPosTo.tl.concat(secondaryPosTo.br) : this.pattern;
+    setConstantPatternPositions(posTo: SpritePosition) {
+        this.pixelRatio = posTo.pixelRatio || 1;
+        this.pattern = posTo.tl.concat(posTo.br);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setUniform(program: WebGLProgram, uniform: IUniform<any>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<unknown>, uniformName: string) {
-        let pos: unknown = null;
-
-        if (uniformName === 'u_pattern' || uniformName === 'u_dash') {
-            pos = this.pattern;
-        }
-
-        if (uniformName === 'u_pattern_b') {
-            pos = this.patternTransition;
-        }
-
-        if (uniformName === 'u_pixel_ratio') {
-            pos = this.pixelRatio;
-        }
-
+        const pos =
+            uniformName === 'u_pattern' || uniformName === 'u_dash' ? this.pattern :
+            uniformName === 'u_pixel_ratio' ? this.pixelRatio : null;
         if (pos) uniform.set(program, uniformName, pos);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getBinding(context: Context, name: string): IUniform<any> {
-        return name === 'u_pattern' || name === 'u_pattern_b' || name === 'u_dash' ?
+        return name === 'u_pattern' || name === 'u_dash' ?
             new Uniform4f(context) :
             new Uniform1f(context);
     }
@@ -404,20 +390,16 @@ class PatternCompositeBinder implements AttributeBinder {
     paintVertexBuffer: VertexBuffer | null | undefined;
     paintVertexAttributes: Array<StructArrayMember>;
 
-    paintTransitionVertexArray: PatternLayoutArray;
-    paintTransitionVertexBuffer: VertexBuffer | null | undefined;
-
     constructor(expression: CompositeExpression, names: Array<string>, type: string, PaintVertexArray: Class<StructArray>, layerId: string) {
         this.expression = expression;
         this.layerId = layerId;
 
         this.paintVertexAttributes = (type === 'array' ? dashAttributes : patternAttributes).members;
         for (let i = 0; i < names.length; ++i) {
-            assert(!this.paintVertexAttributes[i] || `a_${names[i]}` === this.paintVertexAttributes[i].name);
+            assert(`a_${names[i]}` === this.paintVertexAttributes[i].name);
         }
 
         this.paintVertexArray = new PaintVertexArray();
-        this.paintTransitionVertexArray = new PatternLayoutArray();
     }
 
     populatePaintArray(length: number, feature: Feature, imagePositions: SpritePositions, _availableImages: ImageId[]) {
@@ -430,44 +412,26 @@ class PatternCompositeBinder implements AttributeBinder {
         this._setPaintValues(start, end, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
-    _setPaintValues(start: number, end: number, patterns: string[] | null | undefined, positions: SpritePositions) {
+    _setPaintValues(start: number, end: number, patterns: string | null | undefined, positions: SpritePositions) {
         if (!positions || !patterns) return;
 
-        const primaryPos = positions[patterns[0]];
-        const secondaryPos = positions[patterns[1]];
-        if (!primaryPos) return;
+        const pos = positions[patterns];
+        if (!pos) return;
 
-        if (primaryPos) {
-            const {tl, br, pixelRatio} = primaryPos;
-            for (let i = start; i < end; i++) {
-                this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], pixelRatio);
-            }
+        const {tl, br, pixelRatio} = pos;
+        for (let i = start; i < end; i++) {
+            this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], (pixelRatio));
         }
-
-        if (secondaryPos) {
-            this.paintTransitionVertexArray.resize(this.paintVertexArray.length);
-            const {tl, br, pixelRatio} = secondaryPos;
-            for (let i = start; i < end; i++) {
-                this.paintTransitionVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], pixelRatio);
-            }
-        }
-
     }
 
     upload(context: Context) {
-        const isDynamicDraw = this.expression.isStateDependent || !this.expression.isLightConstant;
         if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
-            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, isDynamicDraw);
-        }
-
-        if (this.paintTransitionVertexArray && this.paintTransitionVertexArray.length) {
-            this.paintTransitionVertexBuffer = context.createVertexBuffer(this.paintTransitionVertexArray, patternTransitionAttributes.members, isDynamicDraw);
+            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent || !this.expression.isLightConstant);
         }
     }
 
     destroy() {
         if (this.paintVertexBuffer) this.paintVertexBuffer.destroy();
-        if (this.paintTransitionVertexBuffer) this.paintTransitionVertexBuffer.destroy();
     }
 }
 
@@ -570,22 +534,12 @@ export default class ProgramConfiguration {
         }
     }
 
-    setConstantPatternPositions(primaryPosTo: SpritePosition, secondaryPosTo?: SpritePosition) {
+    setConstantPatternPositions(posTo: SpritePosition) {
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof PatternConstantBinder)
-                binder.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
+                binder.setConstantPatternPositions(posTo);
         }
-    }
-
-    getPatternTransitionVertexBuffer(property: string) {
-        const binder = this.binders[property];
-
-        if (binder instanceof PatternCompositeBinder) {
-            return binder.paintTransitionVertexBuffer;
-        }
-
-        return null;
     }
 
     updatePaintArrays(
@@ -660,12 +614,6 @@ export default class ProgramConfiguration {
                     result.push(binder.paintVertexAttributes[i].name);
                 }
             }
-
-            if (binder instanceof PatternCompositeBinder) {
-                for (let i = 0; i < patternTransitionAttributes.members.length; i++) {
-                    result.push(patternTransitionAttributes.members[i].name);
-                }
-            }
         }
         return result;
     }
@@ -728,10 +676,6 @@ export default class ProgramConfiguration {
                 binder instanceof CompositeExpressionBinder ||
                 binder instanceof PatternCompositeBinder) && binder.paintVertexBuffer) {
                 this._buffers.push(binder.paintVertexBuffer);
-            }
-
-            if (binder instanceof PatternCompositeBinder && binder.paintTransitionVertexBuffer) {
-                this._buffers.push(binder.paintTransitionVertexBuffer);
             }
         }
     }
@@ -834,9 +778,9 @@ const attributeNameExceptions: Record<string, string[]> = {
     'icon-halo-width': ['halo_width'],
     'symbol-z-offset': ['z_offset'],
     'line-gap-width': ['gapwidth'],
-    'line-pattern': ['pattern', 'pixel_ratio', 'pattern_b'],
-    'fill-pattern': ['pattern', 'pixel_ratio', 'pattern_b'],
-    'fill-extrusion-pattern': ['pattern', 'pixel_ratio', 'pattern_b'],
+    'line-pattern': ['pattern', 'pixel_ratio'],
+    'fill-pattern': ['pattern', 'pixel_ratio'],
+    'fill-extrusion-pattern': ['pattern', 'pixel_ratio'],
     'line-dasharray': ['dash'],
     'fill-bridge-guard-rail-color': ['structure_color'],
     'fill-tunnel-structure-color': ['structure_color']

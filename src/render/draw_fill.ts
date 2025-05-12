@@ -311,8 +311,6 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
     const gl = painter.context.gl;
 
     const patternProperty = layer.paint.get('fill-pattern');
-    const patternTransition = layer.paint.get('fill-pattern-cross-fade');
-    const constantPattern = patternProperty.constantOr(null);
 
     let activeElevationType = elevationType;
     if (elevationType === 'road' && (!elevatedGeometry || terrainEnabled)) {
@@ -373,6 +371,8 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
                 dynamicDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
             }
 
+            const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
+
             if (image) {
                 painter.context.activeTexture.set(gl.TEXTURE0);
                 if (tile.imageAtlasTexture) {
@@ -381,25 +381,13 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
                 programConfiguration.updatePaintBuffers();
             }
 
-            let transitionableConstantPattern = false;
+            const constantPattern = patternProperty.constantOr(null);
             if (constantPattern && tile.imageAtlas) {
                 const atlas = tile.imageAtlas;
-                const pattern = ResolvedImage.from(constantPattern);
-                const primaryPatternImage = pattern.getPrimary().scaleSelf(browser.devicePixelRatio).toString();
-                const secondaryPatternImageVariant = pattern.getSecondary();
-                const primaryPosTo = atlas.patternPositions.get(primaryPatternImage);
-                const secondaryPosTo = secondaryPatternImageVariant ? atlas.patternPositions.get(secondaryPatternImageVariant.scaleSelf(browser.devicePixelRatio).toString()) : null;
-
-                transitionableConstantPattern = !!primaryPosTo && !!secondaryPosTo;
-
-                if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
+                const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(browser.devicePixelRatio).toString();
+                const posTo = atlas.patternPositions.get(patternImage);
+                if (posTo) programConfiguration.setConstantPatternPositions(posTo);
             }
-
-            if (patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('fill-pattern'))) {
-                dynamicDefines.push('FILL_PATTERN_TRANSITION');
-            }
-
-            const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
 
             const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
                 layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
@@ -414,7 +402,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
                 indexBuffer = bufferData.indexBuffer;
                 segments = bufferData.triangleSegments;
                 uniformValues = image ?
-                    fillPatternUniformValues(tileMatrix, emissiveStrength, painter, tile, groundShadowFactor, patternTransition) :
+                    fillPatternUniformValues(tileMatrix, emissiveStrength, painter, tile, groundShadowFactor) :
                     fillUniformValues(tileMatrix, emissiveStrength, groundShadowFactor);
             } else {
                 indexBuffer = bufferData.lineIndexBuffer;
@@ -422,7 +410,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
                 const drawingBufferSize: [number, number] =
                     (painter.terrain && painter.terrain.renderingToTexture) ? painter.terrain.drapeBufferSize : [gl.drawingBufferWidth, gl.drawingBufferHeight];
                 uniformValues = (programName === 'fillOutlinePattern' && image) ?
-                    fillOutlinePatternUniformValues(tileMatrix, emissiveStrength, painter, tile, drawingBufferSize, groundShadowFactor, patternTransition) :
+                    fillOutlinePatternUniformValues(tileMatrix, emissiveStrength, painter, tile, drawingBufferSize, groundShadowFactor) :
                     fillOutlineUniformValues(tileMatrix, emissiveStrength, drawingBufferSize, groundShadowFactor);
             }
 

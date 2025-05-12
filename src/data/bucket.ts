@@ -69,8 +69,7 @@ export type BucketFeature = {
     properties: Record<PropertyKey, unknown>;
     type: 0 | 1 | 2 | 3;
     id?: string | number | null;
-    // Array<[primaryId, secondaryIs]>
-    readonly patterns: Record<string, string[]>;
+    readonly patterns: Record<string, string>;
     sortKey?: number;
 };
 

@@ -41,7 +41,7 @@ export interface Feature {
     readonly type: 0 | 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
     readonly id?: string | number | null;
     readonly properties: Record<PropertyKey, unknown>;
-    readonly patterns?: Record<PropertyKey, string[]>;
+    readonly patterns?: Record<PropertyKey, string>;
     readonly geometry?: Array<Array<Point>>;
 }
 

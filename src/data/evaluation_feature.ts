@@ -12,8 +12,7 @@ export type EvaluationFeature = {
         [_: string]: any;
     };
     readonly patterns?: {
-        // Array<[primaryId, secondaryIs]>
-        [_: string]: string[];
+        [_: string]: string;
     };
     geometry: Array<Array<Point>>;
 };

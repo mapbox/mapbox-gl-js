@@ -37,7 +37,6 @@ export type FillPatternUniformsType = {
     ['u_pixel_coord_lower']: Uniform2f;
     ['u_tile_units_to_pixels']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
-    ['u_pattern_transition']: Uniform1f;
 };
 
 export type FillOutlinePatternUniformsType = {
@@ -51,7 +50,6 @@ export type FillOutlinePatternUniformsType = {
     ['u_pixel_coord_lower']: Uniform2f;
     ['u_tile_units_to_pixels']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
-    ['u_pattern_transition']: Uniform1f;
 };
 
 export type ElevatedStructuresDepthUniformsType = {
@@ -72,7 +70,7 @@ export type ElevatedStructuresDepthReconstructUniformsType = {
     ['u_reset_depth']: Uniform1f;
 };
 
-export type FillDefinesType = 'ELEVATED_ROADS' | 'DEPTH_RECONSTRUCTION' | 'FILL_PATTERN_TRANSITION';
+export type FillDefinesType = 'ELEVATED_ROADS' | 'DEPTH_RECONSTRUCTION';
 
 const fillUniforms = (context: Context): FillUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -89,7 +87,6 @@ const fillPatternUniforms = (context: Context): FillPatternUniformsType => ({
     'u_pixel_coord_lower': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
-    'u_pattern_transition': new Uniform1f(context)
 });
 
 const fillOutlineUniforms = (context: Context): FillOutlineUniformsType => ({
@@ -109,7 +106,6 @@ const fillOutlinePatternUniforms = (context: Context): FillOutlinePatternUniform
     'u_pixel_coord_lower': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
-    'u_pattern_transition': new Uniform1f(context)
 });
 
 const elevatedStructuresDepthUniforms = (context: Context): ElevatedStructuresDepthUniformsType => ({
@@ -141,11 +137,10 @@ const fillPatternUniformValues = (
     emissiveStrength: number,
     painter: Painter,
     tile: Tile,
-    groundShadowFactor: [number, number, number],
-    patternTransition: number = 0
+    groundShadowFactor: [number, number, number]
 ): UniformValues<FillPatternUniformsType> => extend(
     fillUniformValues(matrix, emissiveStrength, groundShadowFactor),
-    patternUniformValues(painter, tile, patternTransition)
+    patternUniformValues(painter, tile)
 );
 
 const fillOutlineUniformValues = (
@@ -166,10 +161,9 @@ const fillOutlinePatternUniformValues = (
     painter: Painter,
     tile: Tile,
     drawingBufferSize: [number, number],
-    groundShadowFactor: [number, number, number],
-    patternTransision: number = 0
+    groundShadowFactor: [number, number, number]
 ): UniformValues<FillOutlinePatternUniformsType> => extend(
-    fillPatternUniformValues(matrix, emissiveStrength, painter, tile, groundShadowFactor, patternTransision),
+    fillPatternUniformValues(matrix, emissiveStrength, painter, tile, groundShadowFactor),
     {
         'u_world': drawingBufferSize
     }

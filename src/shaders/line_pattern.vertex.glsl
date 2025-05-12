@@ -81,9 +81,6 @@ out highp float v_depth;
 #pragma mapbox: define mediump float width
 #pragma mapbox: define mediump float floorwidth
 #pragma mapbox: define mediump vec4 pattern
-#ifdef LINE_PATTERN_TRANSITION
-#pragma mapbox: define mediump vec4 pattern_b
-#endif
 #pragma mapbox: define mediump float pixel_ratio
 
 void main() {
@@ -94,9 +91,6 @@ void main() {
     #pragma mapbox: initialize mediump float width
     #pragma mapbox: initialize mediump float floorwidth
     #pragma mapbox: initialize mediump vec4 pattern
-    #ifdef LINE_PATTERN_TRANSITION
-    #pragma mapbox: initialize mediump vec4 pattern_b
-    #endif
     #pragma mapbox: initialize mediump float pixel_ratio
 
     float a_z_offset;
