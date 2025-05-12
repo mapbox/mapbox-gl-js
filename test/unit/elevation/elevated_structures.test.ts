@@ -41,7 +41,7 @@ describe('ElevatedStructures', () => {
         const feature = new ElevationFeature(0, bounds, undefined, vertices, edges, 1.0);
 
         // Compute portals
-        const structures = new ElevatedStructures(new CanonicalTileID(0, 0, 0));
+        const structures = new ElevatedStructures(new CanonicalTileID(0, 0, 0), [], 0, null);
 
         structures.addPortalCandidates(0, leftRamp, false, feature, 0);
         structures.addPortalCandidates(1, middleRamp, true, feature, 0);

@@ -19,7 +19,11 @@ out highp vec4 v_pos_light_view_1;
 out float v_depth;
 #endif
 
+#pragma mapbox: define highp vec4 structure_color
+
 void main() {
+    #pragma mapbox: initialize highp vec4 structure_color
+
     v_normal = a_pos_normal_3 / 16384.0;
     v_height = a_height;
 

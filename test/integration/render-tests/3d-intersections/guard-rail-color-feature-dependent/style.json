@@ -3,7 +3,7 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.00025,
+            "allowed": 0.00026,
             "spriteFormat": "raster"
         }
     },

@@ -3,17 +3,17 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.00027,
+            "allowed": 0.00025,
             "spriteFormat": "raster"
         }
     },
     "center": [
-        -122.1646,
-        37.443
+        -122.3929255,
+        37.6140185
     ],
-    "zoom": 20.29,
-    "pitch": 56.89,
-    "bearing": 13.09,
+    "zoom": 20,
+    "pitch": 60,
+    "bearing": 42.3,
     "sources": {
         "hd-roads": {
             "type": "vector",
@@ -46,7 +46,7 @@
                     ]
                 ],
                 "color": "hsl(0, 0%, 100%)",
-                "intensity": 0.8
+                "intensity": 0.2
             }
         }
     ],
@@ -56,6 +56,31 @@
             "type": "background",
             "paint": {
                 "background-color": "rgb(234, 243, 240)"
+            }
+        },
+        {
+            "id": "fake-road-shade",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "road",
+                        "bridge"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "paint": {
+                "fill-color": "rgb(214, 221, 219)"
             }
         },
         {
@@ -82,7 +107,12 @@
                 "fill-elevation-reference": "hd-road-base"
             },
             "paint": {
-                "fill-tunnel-structure-color": "red",
+                "fill-tunnel-structure-color":                      
+                    ["case", 
+                    ["==", ["%", ["id"], 3], 0], "yellow", 
+                    ["==", ["%", ["id"], 3], 1], "blue", 
+                    ["==", ["%", ["id"], 3], 2], "green", 
+                    "purple"],
                 "fill-color": [
                     "interpolate",
                     [
@@ -95,8 +125,7 @@
                     "hsl(212, 25%, 80%)",
                     18,
                     "hsl(212, 25%, 71%)"
-                ],
-                "fill-emissive-strength": 0.8
+                ]
             }
         },
         {
@@ -123,6 +152,7 @@
                 "fill-elevation-reference": "hd-road-base"
             },
             "paint": {
+                "fill-bridge-guard-rail-color": "red",
                 "fill-color": [
                     "interpolate",
                     [

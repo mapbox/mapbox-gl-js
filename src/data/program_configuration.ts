@@ -684,6 +684,8 @@ export default class ProgramConfiguration {
     }
 
     getPaintVertexBuffers(): Array<VertexBuffer> {
+        // _buffers will be undefined here if updatePaintBuffers hasn't been called on the main thread yet
+        assert(this._buffers);
         return this._buffers;
     }
 
@@ -835,7 +837,9 @@ const attributeNameExceptions: Record<string, string[]> = {
     'line-pattern': ['pattern', 'pixel_ratio', 'pattern_b'],
     'fill-pattern': ['pattern', 'pixel_ratio', 'pattern_b'],
     'fill-extrusion-pattern': ['pattern', 'pixel_ratio', 'pattern_b'],
-    'line-dasharray': ['dash']
+    'line-dasharray': ['dash'],
+    'fill-bridge-guard-rail-color': ['structure_color'],
+    'fill-tunnel-structure-color': ['structure_color']
 };
 
 function paintAttributeNames(property: string, type: string): string[] {

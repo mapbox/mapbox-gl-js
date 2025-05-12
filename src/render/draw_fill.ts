@@ -18,9 +18,9 @@ import ColorMode from '../gl/color_mode';
 import {vec3} from 'gl-matrix';
 import EXTENT from '../style-spec/data/extent';
 import {altitudeFromMercatorZ} from '../geo/mercator_coordinate';
-import {radToDeg} from '../util/util';
+import {radToDeg, easeIn} from '../util/util';
 import {OrthographicPitchTranstionValue} from '../geo/transform';
-import {easeIn, number as lerp} from '../style-spec/util/interpolate';
+import {number as lerp} from '../style-spec/util/interpolate';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
 
 import type Painter from './painter';
@@ -37,6 +37,7 @@ import type {DepthPrePass} from './painter';
 import type MercatorCoordinate from '../geo/mercator_coordinate';
 import type {UniformValues} from './uniform_binding';
 import type SegmentVector from '../data/segment';
+import type ProgramConfiguration from '../data/program_configuration';
 import type {
     FillUniformsType,
     FillPatternUniformsType,
@@ -246,46 +247,63 @@ function drawElevatedStructures(params: DrawFillParams) {
         }
     }
 
-    for (const coord of coords) {
-        const tile = sourceCache.getTile(coord);
-        const bucket = tile.getBucket(layer) as FillBucket;
-        if (!bucket) continue;
+    const draw = (drawBridges: boolean) => {
+        for (const coord of coords) {
+            const tile = sourceCache.getTile(coord);
+            const bucket = tile.getBucket(layer) as FillBucket;
+            if (!bucket) continue;
 
-        const elevatedStructures = bucket.elevatedStructures;
-        if (!elevatedStructures || !elevatedStructures.renderableSegments ||
-            elevatedStructures.renderableSegments.segments[0].primitiveLength === 0) {
-            continue;
+            const elevatedStructures = bucket.elevatedStructures;
+            if (!elevatedStructures) continue;
+
+            let renderableSegments: SegmentVector;
+            let programConfiguration: ProgramConfiguration;
+            if (drawBridges) {
+                renderableSegments = elevatedStructures.renderableBridgeSegments;
+                programConfiguration = elevatedStructures.bridgeProgramConfigurations.get(layer.id);
+            } else {
+                renderableSegments = elevatedStructures.renderableTunnelSegments;
+                programConfiguration = elevatedStructures.tunnelProgramConfigurations.get(layer.id);
+            }
+
+            if (!renderableSegments || renderableSegments.segments[0].primitiveLength === 0) continue;
+
+            assert(elevatedStructures.vertexBuffer && elevatedStructures.vertexBufferNormal && elevatedStructures.indexBuffer);
+
+            programConfiguration.updatePaintBuffers();
+
+            painter.prepareDrawTile();
+
+            const affectedByFog = painter.isTileAffectedByFog(coord);
+
+            const dynamicDefines: DynamicDefinesType[] = [];
+            if (renderWithShadows) {
+                dynamicDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+            }
+            const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
+
+            const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
+                layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
+
+            if (renderWithShadows) {
+                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
+            }
+
+            const uniformValues = elevatedStructuresUniformValues(tileMatrix, groundShadowFactor);
+
+            painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
+
+            program.draw(painter, gl.TRIANGLES, depthMode,
+                StencilMode.disabled, colorMode, CullFaceMode.backCCW, uniformValues,
+                layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, renderableSegments,
+                layer.paint, painter.transform.zoom, programConfiguration, [elevatedStructures.vertexBufferNormal]);
         }
+    };
 
-        assert(elevatedStructures.vertexBuffer && elevatedStructures.vertexBufferNormal && elevatedStructures.indexBuffer);
-
-        painter.prepareDrawTile();
-
-        const programConfiguration = bucket.bufferData.programConfigurations.get(layer.id);
-        const affectedByFog = painter.isTileAffectedByFog(coord);
-
-        const dynamicDefines: DynamicDefinesType[] = [];
-        if (renderWithShadows) {
-            dynamicDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
-        }
-        const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
-
-        const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
-            layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
-
-        if (renderWithShadows) {
-            shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
-        }
-
-        const uniformValues = elevatedStructuresUniformValues(tileMatrix, groundShadowFactor);
-
-        painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
-
-        program.draw(painter, gl.TRIANGLES, depthMode,
-            StencilMode.disabled, colorMode, CullFaceMode.backCCW, uniformValues,
-            layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.renderableSegments,
-            layer.paint, painter.transform.zoom, programConfiguration, [elevatedStructures.vertexBufferNormal]);
-    }
+    // Draw bridge structures
+    draw(true);
+    // Draw tunnel structures
+    draw(false);
 }
 
 function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stencilModeOverride?: StencilMode) {

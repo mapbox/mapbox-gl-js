@@ -1822,11 +1822,13 @@
       "sdk-support": {
         "basic functionality": {
             "android": "11.11.0",
-            "ios": "11.11.0"
+            "ios": "11.11.0",
+            "js": "3.14.0"
         },
         "data-driven styling": {
           "android": "11.11.0",
-          "ios": "11.11.0"
+          "ios": "11.11.0",
+          "js": "3.14.0"
         }
       },
       "expression": {
@@ -6707,11 +6709,13 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.11.0",
-          "ios": "11.11.0"
+          "ios": "11.11.0",
+          "js": "3.14.0"
         },
         "data-driven styling": {
           "android": "11.11.0",
-          "ios": "11.11.0"
+          "ios": "11.11.0",
+          "js": "3.14.0"
         }
       },
       "expression": {
@@ -6734,11 +6738,13 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.11.0",
-          "ios": "11.11.0"
+          "ios": "11.11.0",
+          "js": "3.14.0"
         },
         "data-driven styling": {
           "android": "11.11.0",
-          "ios": "11.11.0"
+          "ios": "11.11.0",
+          "js": "3.14.0"
         }
       },
       "expression": {

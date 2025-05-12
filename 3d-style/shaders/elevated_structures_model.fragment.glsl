@@ -11,8 +11,12 @@ in highp vec4 v_pos_light_view_1;
 in float v_depth;
 #endif
 
+#pragma mapbox: define highp vec4 structure_color
+
 void main() {
-    vec3 color = vec3(241.0 / 255.0, 236.0 / 255.0, 225.0 / 255.0);
+    #pragma mapbox: initialize highp vec4 structure_color
+    vec3 color = structure_color.xyz;
+
 #ifdef LIGHTING_3D_MODE
     vec3 normal = normalize(v_normal);
 

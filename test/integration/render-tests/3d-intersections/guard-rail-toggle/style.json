@@ -143,7 +143,8 @@
                 ]
             ],
             "layout": {
-                "fill-elevation-reference": "hd-road-base"
+                "fill-elevation-reference": "hd-road-base",
+                "fill-construct-bridge-guard-rail": false
             },
             "paint": {
                 "fill-color": [
@@ -158,8 +159,7 @@
                     "hsl(212, 25%, 80%)",
                     18,
                     "hsl(212, 25%, 71%)"
-                ],
-                "fill-construct-bridge-guard-rail": false
+                ]
             }
         },
         {

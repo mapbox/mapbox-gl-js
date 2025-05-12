@@ -420,7 +420,9 @@ class WorkerTile {
             // for elevation queries.
             for (const bucket of Object.values(buckets)) {
                 if (bucket instanceof FillBucket) {
-                    bucket.setEvaluatedPortalGraph(evaluatedPortals);
+                    const vtLayer = data.layers[sourceLayerCoder.decode(bucket.sourceLayerIndex)];
+                    assert(vtLayer);
+                    bucket.setEvaluatedPortalGraph(evaluatedPortals, vtLayer, this.tileID.canonical, options.availableImages, options.brightness);
                 }
             }
         }

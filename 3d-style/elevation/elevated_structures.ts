@@ -9,6 +9,7 @@ import {FillIntersectionsLayoutArray, FillIntersectionsNormalLayoutArray, Triang
 import {intersectionNormalAttributes, intersectionsAttributes} from '../../src/data/bucket/fill_attributes';
 import SegmentVector from '../../src/data/segment';
 import {number as lerp} from '../../src/style-spec/util/interpolate';
+import {ProgramConfigurationSet} from '../../src/data/program_configuration';
 
 import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type IndexBuffer from '../../src/gl/index_buffer';
@@ -16,6 +17,13 @@ import type {CanonicalTileID} from '../../src/source/tile_id';
 import type {ElevationFeature, Range} from './elevation_feature';
 import type {Segment} from '../../src/data/segment';
 import type Context from '../../src/gl/context';
+import type FillStyleLayer from '../../src/style/style_layer/fill_style_layer';
+import type {VectorTileLayer} from '@mapbox/vector-tile';
+import type {ImageId} from '../../src/style-spec/expression/types/image_id';
+import type {LUT} from '../../src/util/lut';
+import type {FeatureStates} from '../../src/source/source_state';
+import type {SpritePositions} from '../../src/util/image';
+import type {TypedStyleLayer} from '../../src/style/style_layer/typed_style_layer';
 import type {Bounds} from '../../src/style-spec/util/geometry_util';
 
 const TUNNEL_ENTERANCE_HEIGHT = 4.0; // meters
@@ -29,6 +37,11 @@ interface VertexConnection {
     from?: number;
     to?: number;
 }
+
+export interface FeatureInfo {
+    guardRailEnabled: boolean;
+    featureIndex: number;
+}
 interface Edge {
     polygonIdx: number;
     a: number;
@@ -37,11 +50,19 @@ interface Edge {
     portalHash: bigint;
     isTunnel: boolean;
     type: ElevationPortalType;
+    // Track the information of the geometryfeature that the edge is originated from,
+    // used for later populate the vertex vectors of the paint property binders
+    featureInfo: FeatureInfo;
 }
 
 interface VertexEdgeHashes {
     prev: bigint;
     next: bigint;
+}
+
+export interface FeatureSection {
+    featureIndex: number;
+    vertexStart: number;
 }
 
 class MeshBuilder {
@@ -135,6 +156,14 @@ class MeshBuilder {
         this.addTriangles([a, b, c, c, d, a]);
     }
 
+    getVertexCount(): number {
+        return this.outPositions.length;
+    }
+
+    clearVertexLookup(): void {
+        this.vertexLookup.clear();
+    }
+
     private getBits(val: number): bigint {
         this.view.setFloat32(0, val);
         return BigInt(this.view.getUint32(0));
@@ -156,11 +185,21 @@ export class ElevatedStructures {
 
     maskSegments: SegmentVector | undefined;
     depthSegments: SegmentVector | undefined;
-    renderableSegments: SegmentVector | undefined;
+    renderableBridgeSegments: SegmentVector | undefined;
+    renderableTunnelSegments: SegmentVector | undefined;
     shadowCasterSegments: SegmentVector | undefined;
 
     unevaluatedPortals = new ElevationPortalGraph();
     portalPolygons = new ElevationPolygons();
+
+    // Tracks the rail/tunnel mesh same-feature vertex sections
+    // (within ElevatedStructure::vertexPositions).
+    // To be used for later populating the PaintPropertyBinder vertex vector
+    bridgeFeatureSections: FeatureSection[] = [];
+    tunnelFeatureSections: FeatureSection[] = [];
+
+    bridgeProgramConfigurations: ProgramConfigurationSet<FillStyleLayer>;
+    tunnelProgramConfigurations: ProgramConfigurationSet<FillStyleLayer>;
 
     private vertexHashLookup: Map<number, VertexEdgeHashes> = new Map();
 
@@ -176,8 +215,10 @@ export class ElevatedStructures {
     private vertexNormals = new FillIntersectionsNormalLayoutArray();
     private indexArray = new TriangleIndexArray();
 
-    constructor(tileID: CanonicalTileID) {
+    constructor(tileID: CanonicalTileID, layers: FillStyleLayer[], zoom: number, lut: LUT | null) {
         this.tileToMeters = tileToMeter(tileID);
+        this.bridgeProgramConfigurations = new ProgramConfigurationSet(layers, {zoom, lut}, (name: string) => name !== 'fill-tunnel-structure-color');
+        this.tunnelProgramConfigurations = new ProgramConfigurationSet(layers, {zoom, lut}, (name: string) => name !== 'fill-bridge-guard-rail-color');
     }
 
     addVertices(vertices: Point[], heights: number[]): number {
@@ -209,7 +250,7 @@ export class ElevatedStructures {
         }
     }
 
-    addRenderableRing(polygonIdx: number, vertexOffset: number, count: number, isTunnel: boolean, area: Bounds) {
+    addRenderableRing(polygonIdx: number, vertexOffset: number, count: number, isTunnel: boolean, area: Bounds, featureInfo: FeatureInfo) {
         assert(vertexOffset + count <= this.unevalVertices.length);
 
         const corners = [
@@ -254,7 +295,7 @@ export class ElevatedStructures {
                 portalHash = lookup != null ? lookup.prev : edgeHash;
             }
 
-            this.unevalEdges.push({polygonIdx, a: ai, b: bi, hash: edgeHash, portalHash, isTunnel, type: 'unevaluated'});
+            this.unevalEdges.push({polygonIdx, a: ai, b: bi, hash: edgeHash, portalHash, isTunnel, type: 'unevaluated', featureInfo});
         }
     }
 
@@ -326,11 +367,12 @@ export class ElevatedStructures {
         // The main idea is to store everything (3D structures and road polygons) as a single mesh and sort
         // triangles into adjacent segments in memory that are renderable separately.
         //
-        //                memory: [---bridge_structures---|---tunnel_structures---|---non_tunnel_roads---|---tunnel_roads---|---tunnel_roofs---]
-        //          mask segment:                         [----------------------------------------------]
-        //   renderables segment: [-----------------------------------------------]
-        //         depth segment: [-----------------------------------------------------------------------------------------]
-        // shadow caster segment: [------------------------------------------------------------------------------------------------------------]
+        //                    memory: [---bridge_structures---|---tunnel_structures---|---non_tunnel_roads---|---tunnel_roads---|---tunnel_roofs---]
+        //              mask segment:                         [----------------------------------------------]
+        // bridge renderable segment: [----------------------]
+        // tunnel renderable segment:                         [----------------------]
+        //             depth segment: [-----------------------------------------------------------------------------------------]
+        //     shadow caster segment: [------------------------------------------------------------------------------------------------------------]
         assert(this.vertexPositions.length === 0 && this.vertexNormals.length === 0 && this.indexArray.length === 0);
 
         const beginSegment = () => ({vertexOffset: 0, primitiveOffset: this.indexArray.length} as Segment);
@@ -343,7 +385,7 @@ export class ElevatedStructures {
 
         const shadowCasterSegment = beginSegment();
         const depthSegment = beginSegment();
-        const renderableSegment = beginSegment();
+        const renderableBridgeSegment = beginSegment();
 
         const partition = (edges: Edge[], type: ElevationPortalType): number => {
             edges.sort((a, b) => {
@@ -364,6 +406,8 @@ export class ElevatedStructures {
                 builder, this.unevalVertices, this.unevalHeights, this.unevalEdges, {min: 0, max: wallEndIdx}, this.tileToMeters);
         }
 
+        endSegment(renderableBridgeSegment);
+        const renderableTunnelSegment = beginSegment();
         const maskSegment = beginSegment();
 
         if (this.unevalEdges.length > 0) {
@@ -376,7 +420,7 @@ export class ElevatedStructures {
                 builder, this.unevalVertices, this.unevalHeights, this.unevalEdges, {min: 0, max: wallEndIdx}, {min: wallEndIdx, max: tunnelEndIdx});
         }
 
-        endSegment(renderableSegment);
+        endSegment(renderableTunnelSegment);
 
         // Generate triangles for non-tunnel roads
         builder.addTriangles(this.unevalTriangles, this.unevalVertices, this.unevalHeights);
@@ -392,10 +436,16 @@ export class ElevatedStructures {
 
         this.maskSegments = SegmentVector.simpleSegment(0, maskSegment.primitiveOffset, 0, maskSegment.primitiveLength);
         this.depthSegments = SegmentVector.simpleSegment(0, depthSegment.primitiveOffset, 0, depthSegment.primitiveLength);
-        this.renderableSegments = SegmentVector.simpleSegment(0, renderableSegment.primitiveOffset, 0, renderableSegment.primitiveLength);
+        this.renderableBridgeSegments = SegmentVector.simpleSegment(0, renderableBridgeSegment.primitiveOffset, 0, renderableBridgeSegment.primitiveLength);
+        this.renderableTunnelSegments = SegmentVector.simpleSegment(0, renderableTunnelSegment.primitiveOffset, 0, renderableTunnelSegment.primitiveLength);
         this.shadowCasterSegments = SegmentVector.simpleSegment(0, shadowCasterSegment.primitiveOffset, 0, shadowCasterSegment.primitiveLength);
 
         assert(this.vertexPositions.length === this.vertexNormals.length);
+    }
+
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
+        this.bridgeProgramConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
+        this.tunnelProgramConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
     }
 
     upload(context: Context) {
@@ -406,6 +456,9 @@ export class ElevatedStructures {
         this.vertexBuffer = context.createVertexBuffer(this.vertexPositions, intersectionsAttributes.members);
         this.vertexBufferNormal = context.createVertexBuffer(this.vertexNormals, intersectionNormalAttributes.members);
         this.indexBuffer = context.createIndexBuffer(this.indexArray);
+
+        this.bridgeProgramConfigurations.upload(context);
+        this.tunnelProgramConfigurations.upload(context);
     }
 
     destroy() {
@@ -418,9 +471,31 @@ export class ElevatedStructures {
         if (this.maskSegments) {
             this.maskSegments.destroy();
             this.depthSegments.destroy();
-            this.renderableSegments.destroy();
+            this.renderableBridgeSegments.destroy();
+            this.renderableTunnelSegments.destroy();
             this.shadowCasterSegments.destroy();
         }
+
+        this.bridgeProgramConfigurations.destroy();
+        this.tunnelProgramConfigurations.destroy();
+    }
+
+    populatePaintArrays(vtLayer: VectorTileLayer, canonical: CanonicalTileID, availableImages: ImageId[], brightness: number) {
+        const populate = (programConfigurations: ProgramConfigurationSet<FillStyleLayer>, sections: FeatureSection[]) => {
+            for (let i = 0; i < sections.length - 1; i++) {
+                const featureIndex = sections[i].featureIndex;
+                const length = sections[i + 1].vertexStart;
+                assert(Number.isFinite(featureIndex));
+
+                const feature = vtLayer.feature(featureIndex);
+                assert(feature);
+
+                programConfigurations.populatePaintArrays(length, feature, featureIndex, {}, availableImages, canonical, brightness);
+            }
+        };
+
+        populate(this.bridgeProgramConfigurations, this.bridgeFeatureSections);
+        populate(this.tunnelProgramConfigurations, this.tunnelFeatureSections);
     }
 
     private computeVertexConnections(vertices: Point[], heights: number[], edges: Edge[], startEdge: number, endEdge: number): Map<number, VertexConnection> {
@@ -461,6 +536,7 @@ export class ElevatedStructures {
     }
 
     private constructBridgeStructures(builder: MeshBuilder, vertices: Point[], heights: number[], edges: Edge[], edgeRange: Range, tileToMeters: number) {
+        builder.clearVertexLookup();
         // Compute connectivity graph for vertices in order to find
         // forward and normal vectors for the geometry
         const vertexConnectivity = this.computeVertexConnections(vertices, heights, edges, edgeRange.min, edgeRange.max);
@@ -501,9 +577,17 @@ export class ElevatedStructures {
             return len > 0.0 ? vec3.scale(fwd, fwd, 1.0 / len) : undefined;
         };
 
+        let lastFeatureIndex = Number.POSITIVE_INFINITY;
+
+        // Sort the edges according to the feature index, since this makes less fragmentation of vertex binder
+        // and facilitates more reusing of vertices during mesh construction.
+        this.sortSubarray<Edge>(edges, edgeRange.min, edgeRange.max, (a: Edge, b: Edge) => a.featureInfo.featureIndex - b.featureInfo.featureIndex);
+
         // Generate bridge "guard rails"
         for (let i = edgeRange.min; i < edgeRange.max; i++) {
             const edge = edges[i];
+            if (!edge.featureInfo.guardRailEnabled) continue;
+
             const bridgeEdge = this.prepareEdgePoints(vertices, heights, edge, (a, b) => a > b);
 
             if (bridgeEdge == null) continue;
@@ -545,6 +629,8 @@ export class ElevatedStructures {
                 vb
             ];
 
+            lastFeatureIndex = this.addFeatureSection(edge.featureInfo.featureIndex, lastFeatureIndex, this.bridgeFeatureSections, builder);
+
             // Outer side
             const [ao0, ao1] = builder.addVertices(aLeft, tileToMeters, aVertices[0], aVertices[1]);
             const [bo0, bo1] = builder.addVertices(bLeft, tileToMeters, bVertices[0], bVertices[1]);
@@ -563,10 +649,24 @@ export class ElevatedStructures {
 
             builder.addTriangles([ai0, ai1, bi0, ai1, bi1, bi0]);
         }
+
+        this.bridgeFeatureSections.push({featureIndex: Number.POSITIVE_INFINITY, vertexStart: builder.getVertexCount()});
+
+        assert(this.bridgeFeatureSections.every((sec, i) => {
+            return i === 0 || this.bridgeFeatureSections[i - 1].vertexStart <= sec.vertexStart;
+        }));
     }
 
     private constructTunnelStructures(builder: MeshBuilder, vertices: Point[], heights: number[], edges: Edge[], wallRange: Range, entranceRange: Range) {
+        builder.clearVertexLookup();
         const tunnelEntranceHeight = TUNNEL_ENTERANCE_HEIGHT;
+        let lastFeatureIndex = Number.POSITIVE_INFINITY;
+
+        // Sort the edges according to the feature index, since this makes less fragmentation of vertex binder
+        // and facilitates more reusing of vertices during mesh construction.
+        const sortFn = (a: Edge, b: Edge) => a.featureInfo.featureIndex - b.featureInfo.featureIndex;
+        this.sortSubarray<Edge>(edges, wallRange.min, wallRange.max, sortFn);
+        this.sortSubarray<Edge>(edges, entranceRange.min, entranceRange.max, sortFn);
 
         const normalize = (v: vec3) => vec3.normalize(v, v);
         // Generate underground walls
@@ -577,6 +677,8 @@ export class ElevatedStructures {
 
             const [a, b] = tunnelEdge;
             const norm = normalize(vec3.fromValues(b.coord.y - a.coord.y, -(b.coord.x - a.coord.x), 0.0));
+
+            lastFeatureIndex = this.addFeatureSection(edges[i].featureInfo.featureIndex, lastFeatureIndex, this.tunnelFeatureSections, builder);
 
             builder.addQuad([
                 a,
@@ -594,6 +696,8 @@ export class ElevatedStructures {
             const b = vertices[edge.b];
             const norm = normalize(vec3.fromValues(b.y - a.y, -(b.x - a.x), 0.0));
 
+            lastFeatureIndex = this.addFeatureSection(edge.featureInfo.featureIndex, lastFeatureIndex, this.tunnelFeatureSections, builder);
+
             // 2 quads == double sided
             builder.addQuad([
                 {coord: b, height: 0.0},
@@ -609,6 +713,12 @@ export class ElevatedStructures {
                 {coord: a, height: heights[edge.a] + tunnelEntranceHeight}
             ], norm);
         }
+
+        this.tunnelFeatureSections.push({featureIndex: Number.POSITIVE_INFINITY, vertexStart: builder.getVertexCount()});
+
+        assert(this.tunnelFeatureSections.every((sec, i) => {
+            return i === 0 || this.tunnelFeatureSections[i - 1].vertexStart <= sec.vertexStart;
+        }));
     }
 
     private prepareEdgePoints(vertices: Point[], heights: number[], edge: Edge, comp: (a: number, b: number) => boolean): [ElevatedPoint, ElevatedPoint] | undefined {
@@ -716,6 +826,22 @@ export class ElevatedStructures {
 
     private isOnBorder(a: number, b: number): boolean {
         return (a <= 0 && b <= 0) || (a >= EXTENT && b >= EXTENT);
+    }
+
+    private addFeatureSection(featureIndex: number, lastFeatureIndex: number, sections: FeatureSection[], builder: MeshBuilder): number {
+        if (featureIndex !== lastFeatureIndex) {
+            lastFeatureIndex = featureIndex;
+            sections.push({featureIndex, vertexStart: builder.getVertexCount()});
+            builder.clearVertexLookup();
+        }
+
+        return lastFeatureIndex;
+    }
+
+    private sortSubarray<T>(array: Array<T>, start: number, end: number, fn: (a: T, b: T) => number) {
+        const sub = array.slice(start, end);
+        sub.sort(fn);
+        array.splice(start, sub.length, ...sub);
     }
 
     static computeEdgeHash(pa: Point, pb: Point): bigint {

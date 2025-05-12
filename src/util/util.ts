@@ -898,4 +898,8 @@ export function mapRange(range: Range, from: Range, to: Range): Range {
     return {min: mapRangeValue(range.min, from, to), max: mapRangeValue(range.max, from, to)};
 }
 
+export function easeIn(x: number) {
+    return x * x * x * x * x;
+}
+
 export {deepEqual};
