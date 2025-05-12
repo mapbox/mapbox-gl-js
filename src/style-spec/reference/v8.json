@@ -1883,7 +1883,8 @@
       "sdk-support": {
         "basic functionality": {
           "android": "11.11.0",
-          "ios": "11.11.0"
+          "ios": "11.11.0",
+          "js": "3.14.0"
         }
       },
       "expression": {

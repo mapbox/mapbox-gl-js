@@ -1638,6 +1638,7 @@ export {
     StructArrayLayout3i6 as PosGlobeExtArray,
     StructArrayLayout4i8 as RasterBoundsArray,
     StructArrayLayout2i4 as CircleLayoutArray,
+    StructArrayLayout1f4 as CircleExtLayoutArray,
     StructArrayLayout2i4 as FillLayoutArray,
     StructArrayLayout1f4 as FillExtLayoutArray,
     StructArrayLayout2i1f8 as FillIntersectionsLayoutArray,

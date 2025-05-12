@@ -91,6 +91,12 @@ class CircleStyleLayer extends StyleLayer {
         };
     }
 
+    override is3D(terrainEnabled?: boolean): boolean {
+        if (terrainEnabled) return false;
+
+        return !!this.layout && this.layout.get('circle-elevation-reference') !== 'none';
+    }
+
     override hasElevation(): boolean {
         return this.layout && this.layout.get('circle-elevation-reference') !== 'none';
     }
