@@ -1,4 +1,8 @@
 
+/**
+ * NOTE: When skipping a GL JS test, it also needs to be skipped in Native at projects/gl-native/metrics/ignores/platform-all.json
+ */
+
 const todo = [
     // "https://github.com/mapbox/mapbox-gl-js/issues/2716
     "query-tests/regressions/mapbox-gl-js#4494",
