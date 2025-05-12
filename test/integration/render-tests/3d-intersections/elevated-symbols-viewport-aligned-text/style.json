@@ -3,7 +3,7 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.0003,
+            "allowed": 0.00025,
             "spriteFormat": "raster"
         }
     },
@@ -25,6 +25,7 @@
         }
     },
     "sprite": "local://sprites/3d_intersections",
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
     "lights": [
         {
             "id": "ambient",
@@ -482,118 +483,31 @@
             ],
             "layout": {
                 "symbol-elevation-reference": "hd-road-markup",
-                "icon-rotate": [
-                    "to-number",
-                    [
-                        "get",
-                        "angle"
-                    ]
+                "text-field": "42",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
                 ],
-                "icon-padding": 0,
-                "icon-size": [
+                "text-allow-overlap": true,
+                "text-pitch-alignment": "viewport",
+                "text-rotation-alignment": "viewport",
+                "text-size": [
                     "interpolate",
                     [
                         "exponential",
-                        1.2
+                        1.5
                     ],
                     [
                         "zoom"
                     ],
-                    17,
-                    0.04,
-                    18,
-                    0.04,
-                    22,
-                    1
-                ],
-                "icon-rotation-alignment": "viewport",
-                "icon-allow-overlap": true,
-                "icon-image": [
-                    "match",
-                    [
-                        "get",
-                        "type"
-                    ],
-                    "straight",
-                    "straight",
-                    [
-                        "straight_right",
-                        "right_straight"
-                    ],
-                    "straight_right",
-                    [
-                        "straight_left",
-                        "left_straight"
-                    ],
-                    "straight_left",
-                    "right",
-                    "right",
-                    "merge_to_right",
-                    "merge_to_right",
-                    "slight_right",
-                    "slight_right",
-                    "sharp_right_right",
-                    "sharp_right_right",
-                    "right_slight_right_straight",
-                    "right_slight_right_straight",
-                    "right_slight_left_straight",
-                    "right_slight_left_straight",
-                    "left_right",
-                    "left_and_right",
-                    "slight_left_right",
-                    "slight_left_right",
-                    "left",
-                    "left",
-                    "merge_to_left",
-                    "merge_to_left",
-                    "merge_to_left_bold",
-                    "merge_to_left_bold",
-                    "slight_left",
-                    "slight_left",
-                    "slight_left_left",
-                    "slight_left_left",
-                    "left_slight_left_straight",
-                    "left_slight_left_straight",
-                    "road_arrow_u_turn",
-                    "road_arrow_u_turn",
-                    "dashed_straight",
-                    "dashed_straight",
-                    "dashed_straight_right",
-                    "dashed_straight_right",
-                    "dashed_straight_left",
-                    "dashed_straight_left",
-                    "dashed_right",
-                    "dashed_right",
-                    "dashed_slight_right",
-                    "dashed_slight_right",
-                    "dashed_slight_right_right",
-                    "dashed_slight_right_right",
-                    "dashed_slight_right_left",
-                    "dashed_slight_right_left",
-                    "dashed_right_slight_right_straight",
-                    "dashed_right_slight_right_straight",
-                    "dashed_left",
-                    "dashed_left",
-                    "dashed_left_right",
-                    "dashed_left_and_right",
-                    "dashed_slight_left",
-                    "dashed_slight_left",
-                    "dashed_slight_left_left",
-                    "dashed_slight_left_left",
-                    "dashed_slight_left_right",
-                    "dashed_slight_left_right",
-                    "dashed_left_slight_left_straight",
-                    "dashed_left_slight_left_straight",
-                    "dashed_road_arrow_u_turn",
-                    "dashed_road_arrow_u_turn",
-                    "straight_left_without_1_arrow",
-                    "straight_left_without_1_arrow",
-                    [
-                        "straight_slight_left"
-                    ],
-                    "straight_slight_left",
-                    ""
+                    17.0,
+                    10.0,
+                    22.0,
+                    100.0
                 ]
+            },
+            "paint": {
+                "text-color": "white"
             }
         },
         {
@@ -632,118 +546,31 @@
             ],
             "layout": {
                 "symbol-elevation-reference": "hd-road-markup",
-                "icon-rotate": [
-                    "to-number",
-                    [
-                        "get",
-                        "angle"
-                    ]
+                "text-field": "42",
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
                 ],
-                "icon-padding": 0,
-                "icon-rotation-alignment": "viewport",
-                "icon-allow-overlap": true,
-                "icon-size": [
+                "text-allow-overlap": true,
+                "text-pitch-alignment": "viewport",
+                "text-rotation-alignment": "viewport",
+                "text-size": [
                     "interpolate",
                     [
                         "exponential",
-                        1.2
+                        1.5
                     ],
                     [
                         "zoom"
                     ],
-                    17,
-                    0.04,
-                    18,
-                    0.04,
-                    22,
-                    1
-                ],
-                "icon-image": [
-                    "match",
-                    [
-                        "get",
-                        "type"
-                    ],
-                    "straight",
-                    "straight",
-                    [
-                        "straight_right",
-                        "right_straight"
-                    ],
-                    "straight_right",
-                    [
-                        "straight_left",
-                        "left_straight"
-                    ],
-                    "straight_left",
-                    "right",
-                    "right",
-                    "merge_to_right",
-                    "merge_to_right",
-                    "slight_right",
-                    "slight_right",
-                    "sharp_right_right",
-                    "sharp_right_right",
-                    "right_slight_right_straight",
-                    "right_slight_right_straight",
-                    "right_slight_left_straight",
-                    "right_slight_left_straight",
-                    "left_right",
-                    "left_and_right",
-                    "slight_left_right",
-                    "slight_left_right",
-                    "left",
-                    "left",
-                    "merge_to_left",
-                    "merge_to_left",
-                    "merge_to_left_bold",
-                    "merge_to_left_bold",
-                    "slight_left",
-                    "slight_left",
-                    "slight_left_left",
-                    "slight_left_left",
-                    "left_slight_left_straight",
-                    "left_slight_left_straight",
-                    "road_arrow_u_turn",
-                    "road_arrow_u_turn",
-                    "dashed_straight",
-                    "dashed_straight",
-                    "dashed_straight_right",
-                    "dashed_straight_right",
-                    "dashed_straight_left",
-                    "dashed_straight_left",
-                    "dashed_right",
-                    "dashed_right",
-                    "dashed_slight_right",
-                    "dashed_slight_right",
-                    "dashed_slight_right_right",
-                    "dashed_slight_right_right",
-                    "dashed_slight_right_left",
-                    "dashed_slight_right_left",
-                    "dashed_right_slight_right_straight",
-                    "dashed_right_slight_right_straight",
-                    "dashed_left",
-                    "dashed_left",
-                    "dashed_left_right",
-                    "dashed_left_and_right",
-                    "dashed_slight_left",
-                    "dashed_slight_left",
-                    "dashed_slight_left_left",
-                    "dashed_slight_left_left",
-                    "dashed_slight_left_right",
-                    "dashed_slight_left_right",
-                    "dashed_left_slight_left_straight",
-                    "dashed_left_slight_left_straight",
-                    "dashed_road_arrow_u_turn",
-                    "dashed_road_arrow_u_turn",
-                    "straight_left_without_1_arrow",
-                    "straight_left_without_1_arrow",
-                    [
-                        "straight_slight_left"
-                    ],
-                    "straight_slight_left",
-                    ""
+                    17.0,
+                    10.0,
+                    22.0,
+                    100.0
                 ]
+            },
+            "paint": {
+                "text-color": "white"
             }
         }
     ]

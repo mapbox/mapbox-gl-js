@@ -867,12 +867,12 @@ export class Placement {
             seenCrossTileIDs.add(crossTileID);
         };
 
+        const tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
         if (bucket.elevationType === 'offset' && this.buildingIndex) {
-            const tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
             this.buildingIndex.updateZOffset(bucket, tileID);
         }
         if (bucket.elevationType === 'road') {
-            bucket.updateRoadElevation();
+            bucket.updateRoadElevation(tileID.canonical);
         }
         bucket.updateZOffset();
 
@@ -1017,7 +1017,7 @@ export class Placement {
                     this.buildingIndex.updateZOffset(symbolBucket, tile.tileID);
                 }
                 if (symbolBucket.elevationType === 'road') {
-                    symbolBucket.updateRoadElevation();
+                    symbolBucket.updateRoadElevation(tile.tileID.canonical);
                 }
                 symbolBucket.updateZOffset();
             }

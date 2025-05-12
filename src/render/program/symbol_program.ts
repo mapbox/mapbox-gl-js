@@ -45,6 +45,7 @@ export type SymbolUniformsType = {
     ['u_scale_factor']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
     ['u_inv_matrix']: UniformMatrix4f;
+    ['u_normal_scale']: Uniform1f;
 };
 
 export type SymbolDefinesType =
@@ -91,6 +92,7 @@ const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_scale_factor': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
     'u_inv_matrix': new UniformMatrix4f(context),
+    'u_normal_scale': new Uniform1f(context)
 });
 
 const identityMatrix = mat4.create();
@@ -116,6 +118,7 @@ const symbolUniformValues = (
     upVector: [number, number, number],
     projection: Projection,
     groundShadowFactor: [number, number, number],
+    normalScale: number,
     colorAdjustmentMatrix?: mat4 | null,
     transition?: number | null,
     scaleFactor?: number | null
@@ -157,6 +160,7 @@ const symbolUniformValues = (
         'u_scale_factor': scaleFactor ? scaleFactor : 1.0,
         'u_ground_shadow_factor': groundShadowFactor,
         'u_inv_matrix': mat4.invert(mat4.create(), labelPlaneMatrix) as Float32Array,
+        'u_normal_scale': normalScale
     };
 
     if (projection.name === 'globe') {

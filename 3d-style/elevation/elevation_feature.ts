@@ -8,6 +8,7 @@ import {clamp, smoothstep} from "../../src/util/util";
 import {MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ID} from "./elevation_constants";
 import EXTENT from "../../src/style-spec/data/extent";
 import Point from "@mapbox/point-geometry";
+import {number as interpolate} from '../../src/style-spec/util/interpolate';
 
 import type {VectorTileLayer} from "@mapbox/vector-tile";
 import type {CanonicalTileID} from "../../src/source/tile_id";
@@ -167,8 +168,26 @@ export class ElevationFeature {
         const aIdx = this.edges[idx].a;
         const bIdx = this.edges[idx].b;
 
-        const lerp = (x: number, y: number, t: number) => { return (1 - t) * x + t * y; };
-        return lerp(this.vertices[aIdx].height, this.vertices[bIdx].height, t);
+        return interpolate(this.vertices[aIdx].height, this.vertices[bIdx].height, t);
+    }
+
+    computeSlopeNormal(point: Point, metersToTile: number): vec3 {
+        const closestEdge = this.getClosestEdge(point);
+
+        if (!closestEdge) return vec3.fromValues(0, 0, 1);
+
+        const edgeIdx = closestEdge[0];
+        const edge = this.edges[edgeIdx];
+        const a = this.vertices[edge.a];
+        const b = this.vertices[edge.b];
+
+        const vec = this.edgeProps[edgeIdx].vec;
+        const edgeVec = vec3.fromValues(vec[0], vec[1], (b.height - a.height) * metersToTile);
+        const norm = vec3.fromValues(edgeVec[1], -edgeVec[0], 0.0);
+        vec3.cross(norm, norm, edgeVec);
+        const len = vec3.length(norm);
+
+        return len > 0.0 ? vec3.scale(norm, norm, 1.0 / len) : vec3.fromValues(0, 0, 1);
     }
 
     // Safe area describes original tile boundaries of the elevation curve scaled to the current zoom level.

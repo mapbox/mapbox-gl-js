@@ -192,7 +192,8 @@ import {
     symbolInstance,
     glyphOffset,
     lineVertex,
-    zOffsetAttributes
+    zOffsetAttributes,
+    orientationAttributes,
 } from '../src/data/bucket/symbol_attributes';
 
 createStructArrayType(`symbol_layout`, symbolLayoutAttributes);
@@ -211,6 +212,7 @@ createStructArrayType('symbol_instance', symbolInstance, true);
 createStructArrayType('glyph_offset', glyphOffset, true);
 createStructArrayType('symbol_line_vertex', lineVertex, true);
 createStructArrayType('z_offset_vertex', zOffsetAttributes);
+createStructArrayType('symbol_orientation', orientationAttributes);
 
 import globeAttributes from '../src/terrain/globe_attributes';
 // eslint-disable-next-line import/order

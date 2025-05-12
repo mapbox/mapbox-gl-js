@@ -6,7 +6,8 @@ import {
     collisionBoxLayout,
     dynamicLayoutAttributes,
     iconTransitioningAttributes,
-    zOffsetAttributes
+    zOffsetAttributes,
+    orientationAttributes
 } from './symbol_attributes';
 import {SymbolLayoutArray,
     SymbolGlobeExtArray,
@@ -46,10 +47,12 @@ import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../sourc
 import {resamplePred} from '../../geo/projection/resample';
 import {tileCoordToECEF} from '../../geo/projection/globe_util';
 import {getProjection} from '../../geo/projection/index';
-import {mat4, vec3} from 'gl-matrix';
+import {mat4, quat, vec3} from 'gl-matrix';
 import assert from 'assert';
 import {regionsEquals} from '../../../3d-style/source/replacement_source';
 import {clamp} from '../../util/util';
+import {tileToMeter} from '../../geo/mercator_coordinate';
+import {type CollisionBoxArray, type CollisionBox, type SymbolInstance, SymbolOrientationArray} from '../array_types';
 
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type Anchor from '../../symbol/anchor';
@@ -65,7 +68,6 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../bucket';
-import type {CollisionBoxArray, CollisionBox, SymbolInstance, StructArrayLayout1f4} from '../array_types';
 import type {StructArray, StructArrayMember} from '../../util/struct_array';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
@@ -192,6 +194,12 @@ function updateGlobeVertexNormal(array: SymbolGlobeExtArray, vertexIdx: number, 
     array.float32[offset + 2] = normZ;
 }
 
+const addOrientationVertex = (orientationArray: SymbolOrientationArray, numVertices: number, orientedXAxis: vec3, orientedYAxis: vec3) => {
+    for (let i = 0; i < numVertices; i++) {
+        orientationArray.emplaceBack(orientedXAxis[0], orientedXAxis[1], orientedXAxis[2], orientedYAxis[0], orientedYAxis[1], orientedYAxis[2]);
+    }
+};
+
 function addDynamicAttributes(dynamicLayoutVertexArray: StructArray, x: number, y: number, z: number, angle: number) {
     dynamicLayoutVertexArray.emplaceBack(x, y, z, angle);
     dynamicLayoutVertexArray.emplaceBack(x, y, z, angle);
@@ -227,6 +235,9 @@ export class SymbolBuffers {
     zOffsetVertexArray: ZOffsetVertexArray;
     zOffsetVertexBuffer: VertexBuffer;
 
+    orientationVertexArray: SymbolOrientationArray;
+    orientationVertexBuffer: VertexBuffer;
+
     iconTransitioningVertexArray: SymbolIconTransitioningArray;
     iconTransitioningVertexBuffer: VertexBuffer | null | undefined;
 
@@ -246,6 +257,7 @@ export class SymbolBuffers {
         this.iconTransitioningVertexArray = new SymbolIconTransitioningArray();
         this.globeExtVertexArray = new SymbolGlobeExtArray();
         this.zOffsetVertexArray = new ZOffsetVertexArray();
+        this.orientationVertexArray = new SymbolOrientationArray();
     }
 
     isEmpty(): boolean {
@@ -275,6 +287,10 @@ export class SymbolBuffers {
             if (!this.zOffsetVertexBuffer && (this.zOffsetVertexArray.length > 0 || !!createZOffsetBuffer)) {
                 this.zOffsetVertexBuffer = context.createVertexBuffer(this.zOffsetVertexArray, zOffsetAttributes.members, true);
             }
+            if (!this.orientationVertexBuffer && this.orientationVertexArray && this.orientationVertexArray.length > 0) {
+                this.orientationVertexBuffer = context.createVertexBuffer(this.orientationVertexArray, orientationAttributes.members, true);
+                assert(this.orientationVertexBuffer.length === this.layoutVertexBuffer.length);
+            }
             // This is a performance hack so that we can write to opacityVertexArray with uint32s
             // even though the shaders read uint8s
             this.opacityVertexBuffer.itemSize = 1;
@@ -300,6 +316,9 @@ export class SymbolBuffers {
         }
         if (this.zOffsetVertexBuffer) {
             this.zOffsetVertexBuffer.destroy();
+        }
+        if (this.orientationVertexBuffer) {
+            this.orientationVertexBuffer.destroy();
         }
     }
 }
@@ -762,7 +781,7 @@ class SymbolBucket implements Bucket {
         this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
     }
 
-    updateRoadElevation() {
+    updateRoadElevation(canonical: CanonicalTileID) {
         if (this.elevationType !== 'road' || !this.elevationFeatures) {
             return;
         }
@@ -776,20 +795,75 @@ class SymbolBucket implements Bucket {
         this.hasAnyZOffset = false;
         let dataChanged = false;
 
+        const tileToMeters = tileToMeter(canonical);
+        const metersToTile = 1.0 / tileToMeters;
+        let hasTextOrientation = false;
+        let hasIconOrientation = false;
+
         for (let s = 0; s < this.symbolInstances.length; s++) {
             const symbolInstance = this.symbolInstances.get(s);
-            if (symbolInstance.elevationFeatureIndex === 0xffff) {
-                continue;
-            }
+            const orientedXAxis = vec3.fromValues(1, 0, 0);
+            const orientedYAxis = vec3.fromValues(0, 1, 0);
+
+            const {
+                numHorizontalGlyphVertices,
+                numVerticalGlyphVertices,
+                numIconVertices,
+                numVerticalIconVertices
+            } = symbolInstance;
+
+            const hasText = numHorizontalGlyphVertices > 0 || numVerticalGlyphVertices > 0;
+            const hasIcon = numIconVertices > 0;
+
             const elevationFeature = this.elevationFeatures[symbolInstance.elevationFeatureIndex];
             if (elevationFeature) {
-                // Add 5cm offset to reduce z-fighting issues
-                const newZOffset = 0.05 + elevationFeature.pointElevation(new Point(symbolInstance.tileAnchorX, symbolInstance.tileAnchorY));
+                // Add 7.5cm offset to reduce z-fighting issues
+                const anchor = new Point(symbolInstance.tileAnchorX, symbolInstance.tileAnchorY);
+                const newZOffset = 0.075 + elevationFeature.pointElevation(anchor);
                 if (symbolInstance.zOffset !== newZOffset) {
                     dataChanged = true;
                     symbolInstance.zOffset = newZOffset;
                 }
+
+                const slopeNormal = elevationFeature.computeSlopeNormal(anchor, metersToTile);
+                const rotation = quat.rotationTo(quat.create(), vec3.fromValues(0, 0, 1), slopeNormal);
+
+                vec3.transformQuat(orientedXAxis, orientedXAxis, rotation);
+                vec3.transformQuat(orientedYAxis, orientedYAxis, rotation);
+
+                orientedXAxis[2] *= tileToMeters;
+                orientedYAxis[2] *= tileToMeters;
+
+                // Check for existence of non-default orientation data
+                if (orientedXAxis[0] !== 1.0 || orientedXAxis[1] !== 0.0 || orientedXAxis[2] !== 0.0 ||
+                    orientedYAxis[0] !== 0.0 || orientedYAxis[1] !== 1.0 || orientedYAxis[2] !== 0.0) {
+                    hasTextOrientation = hasTextOrientation || hasText;
+                    hasIconOrientation = hasIconOrientation || hasIcon;
+                }
             }
+
+            if (hasText) {
+                addOrientationVertex(this.text.orientationVertexArray, numHorizontalGlyphVertices, orientedXAxis, orientedYAxis);
+                addOrientationVertex(this.text.orientationVertexArray, numVerticalGlyphVertices, orientedXAxis, orientedYAxis);
+            }
+            if (hasIcon) {
+                const {placedIconSymbolIndex, verticalPlacedIconSymbolIndex} = symbolInstance;
+                if (placedIconSymbolIndex >= 0) {
+                    addOrientationVertex(this.icon.orientationVertexArray, numIconVertices, orientedXAxis, orientedYAxis);
+                }
+
+                if (verticalPlacedIconSymbolIndex >= 0) {
+                    addOrientationVertex(this.icon.orientationVertexArray, numVerticalIconVertices, orientedXAxis, orientedYAxis);
+                }
+            }
+        }
+
+        // If there is no orientation data, clear the vertex arrays so vertex buffers won't be created.
+        if (!hasTextOrientation) {
+            this.text.orientationVertexArray = undefined;
+        }
+        if (!hasIconOrientation) {
+            this.icon.orientationVertexArray = undefined;
         }
 
         if (dataChanged) {
@@ -801,7 +875,7 @@ class SymbolBucket implements Bucket {
     updateZOffset() {
         // z offset is expected to change less frequently than the placement opacity and, if values are the same,
         // avoid uploading arrays to buffers.
-        const addZOffsetTextVertex = (array: StructArrayLayout1f4, numVertices: number, value: number) => {
+        const addZOffsetTextVertex = (array: ZOffsetVertexArray, numVertices: number, value: number) => {
             currentTextZOffsetVertex += numVertices;
             if (currentTextZOffsetVertex > array.length) {
                 array.resize(currentTextZOffsetVertex);
@@ -810,7 +884,7 @@ class SymbolBucket implements Bucket {
                 array.emplace(i + currentTextZOffsetVertex, value);
             }
         };
-        const addZOffsetIconVertex = (array: StructArrayLayout1f4, numVertices: number, value: number) => {
+        const addZOffsetIconVertex = (array: ZOffsetVertexArray, numVertices: number, value: number) => {
             currentIconZOffsetVertex += numVertices;
             if (currentIconZOffsetVertex > array.length) {
                 array.resize(currentIconZOffsetVertex);
