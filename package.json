@@ -115,7 +115,7 @@
     "stylelint-config-standard": "^38.0.0",
     "tape": "^5.9.0",
     "tape-filter": "^1.0.4",
-    "testem": "^3.15.2",
+    "testem": "^3.16.0",
     "tsx": "^4.19.4",
     "tweakpane": "^4.0.5",
     "typescript": "^5.8.3",
