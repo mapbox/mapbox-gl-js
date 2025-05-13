@@ -357,7 +357,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
         let secondaryImage: StyleImage;
         let iconOffset: [number, number];
         let iconAnchor: SymbolAnchor;
-        let iconTextFit;
+        const iconTextFit = layout.get('icon-text-fit').evaluate(feature, {}, canonical);
         if (feature.icon && feature.icon.hasPrimary()) {
             const icons = getScaledImageVariant(feature.icon, bucket.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, bucket.zoom, feature, pixelRatio, sizes.iconScaleFactor);
             iconPrimary = icons.iconPrimary;
@@ -367,7 +367,6 @@ export function performSymbolLayout(bucket: SymbolBucket,
             if (primaryImage) {
                 iconOffset = layout.get('icon-offset').evaluate(feature, {}, canonical);
                 iconAnchor = layout.get('icon-anchor').evaluate(feature, {}, canonical);
-                iconTextFit = layout.get('icon-text-fit').evaluate(feature, {}, canonical);
                 shapedIcon = shapeIcon(
                     imagePositions.get(primaryImageSerialized),
                     iconSecondary ? imagePositions.get(iconSecondary.toString()) : undefined,

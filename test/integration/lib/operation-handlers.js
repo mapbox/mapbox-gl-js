@@ -242,6 +242,10 @@ export const operationHandlers = {
     on(map, params, doneCb) {
         map.on(params[0], () => applyOperations(map, {operations: params[1]}, params[0]));
         doneCb();
+    },
+    showCollisionBoxes(map, params, doneCb) {
+        map.showCollisionBoxes = true;
+        doneCb();
     }
 };
 
