@@ -1,6 +1,6 @@
 import assert from 'assert';
 import {typeOf} from '../values';
-import {ValueType} from '../types';
+import {typeEquals, ValueType} from '../types';
 
 import type {Type} from '../types';
 import type {Expression, SerializedExpression} from '../expression';
@@ -101,7 +101,7 @@ class Match implements Expression {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         const input = (this.input.evaluate(ctx));
-        const output = (typeOf(input) === this.inputType && this.outputs[this.cases[input]]) || this.otherwise;
+        const output = (typeEquals(typeOf(input), this.inputType) && this.outputs[this.cases[input]]) || this.otherwise;
         return output.evaluate(ctx);
     }
 
