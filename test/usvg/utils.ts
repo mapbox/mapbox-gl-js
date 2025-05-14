@@ -1,3 +1,42 @@
+export const scales = [0.5, 1, 2];
+
+export const formatScale = (s: number) => s.toFixed(1).replace('.', '_');
+export const formatName = (name: string, scale: number) => `${name}_scale_${formatScale(scale)}`;
+
+export const allowed = {
+    'painting_marker_marker-on-line': {
+        1: 0.008425
+    },
+    'painting_marker_orient=auto-on-M-L-L-Z-Z-Z': {
+        0.5: 0.0013
+    },
+    'painting_shape-rendering_inheritance': {
+        0.5: 0.0069
+    },
+    'painting_shape-rendering_on-horizontal-line': {
+        0.5: 0.0158
+    },
+    'painting_stroke-width_default': {
+        1.0: 0.0239
+    },
+    'shapes_line_simple-case': {
+        0.5: 0.0138,
+        1.0: 0.00705
+    },
+    'shapes_polygon_simple-case': {
+        0.5: 0.0085
+    },
+    'shapes_polyline_ignore-odd-points': {
+        0.5: 0.0082
+    },
+    'shapes_polyline_simple-case': {
+        0.5: 0.0082
+    },
+    'shapes_polyline_stop-processing-on-invalid-data': {
+        0.5: 0.0082
+    }
+};
+
 export const ignores = [
     // not supported in usvg_pb
     "masking_clipPath_clip-path-with-transform-on-text",
