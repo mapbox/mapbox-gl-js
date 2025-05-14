@@ -1,0 +1,98 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32
+    }
+  },
+  "sources": {},
+  "layers": [],
+  "imports": [
+    {
+      "id": "basemap1",
+      "url": "",
+      "config": {
+        "lightPreset": "night"
+      },
+      "data": {
+        "version": 8,
+        "sources": {},
+        "layers": [],
+        "schema": {
+          "lightPreset": {
+            "default": "day",
+            "type": "string",
+            "values": ["day", "night"]
+          }
+        },
+        "imports": [
+          {
+            "id": "basemap2",
+            "url": "",
+            "config": {
+              "lightPreset": "day",
+              "colorMotorways": [
+                "match",
+                ["config", "lightPreset"],
+                "night", "green",
+                "red"
+              ],
+              "colorTrunks": [
+                "match",
+                ["config", "lightPreset"],
+                "night", "green",
+                "red"
+              ]
+            },
+            "data": {
+              "version": 8,
+              "schema": {
+                "lightPreset": {
+                  "default": "day",
+                  "type": "string",
+                  "values": ["day", "night"]
+                },
+                "colorTrunks": {
+                  "default": "red",
+                  "type": "color"
+                },
+                "colorMotorways": {
+                  "default": "red",
+                  "type": "color"
+                }
+              },
+              "sources": {
+                "geojson": {
+                  "type": "geojson",
+                  "data": {
+                    "type": "LineString",
+                    "coordinates": [
+                      [-15, 0],
+                      [15, 0]
+                    ]
+                  }
+                }
+              },
+              "layers": [
+                {
+                  "id": "road",
+                  "type": "line",
+                  "source": "geojson",
+                  "paint": {
+                    "line-color": [
+                      "match",
+                      ["get", "class"],
+                      "motorway", ["config", "colorMotorways"],
+                      ["config", "colorTrunks"]
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
