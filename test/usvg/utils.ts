@@ -131,9 +131,6 @@ export const ignores = [
     "paint-servers_radialGradient_spreadMethod=reflect",
     "paint-servers_radialGradient_spreadMethod=repeat",
 
-    // Can't pass gradient transform to Canvas https://github.com/mapbox/mapbox-gl-js-internal/pull/1960#discussion_r1824278822
-    "paint-servers_radialGradient_gradientUnits=objectBoundingBox-with-percent",
-
     // orientation on the marker here is different from expected image but still correct
     // https://github.com/linebender/resvg-test-suite/issues/46#issuecomment-1741979205
     "painting_marker_orient=auto-on-M-C-C-4",
