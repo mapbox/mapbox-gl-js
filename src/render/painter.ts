@@ -31,7 +31,7 @@ import hillshade from './draw_hillshade';
 import raster, {prepare as prepareRaster} from './draw_raster';
 import rasterParticle, {prepare as prepareRasterParticle} from './draw_raster_particle';
 import background from './draw_background';
-import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug';
+import {default as drawDebug, drawDebugPadding, drawDebugQueryGeometry} from './draw_debug';
 import custom from './draw_custom';
 import sky from './draw_sky';
 import Atmosphere from './draw_atmosphere';
@@ -57,8 +57,6 @@ import type IndexBuffer from '../gl/index_buffer';
 import type ModelManager from '../../3d-style/render/model_manager';
 import type ProgramConfiguration from '../data/program_configuration';
 import type Style from '../style/style';
-import type StyleLayer from '../style/style_layer';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type Transform from '../geo/transform';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type GlyphManager from './glyph_manager';
@@ -72,6 +70,8 @@ import type {ProgramName} from './program';
 import type {ProgramUniformsType, DynamicDefinesType} from './program/program_uniforms';
 import type {Source} from '../source/source';
 import type {UniformBindings} from './uniform_binding';
+import type {CrossTileID, VariableOffset} from '../symbol/placement';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
@@ -121,7 +121,16 @@ type TileBoundsBuffers = {
 type GPUTimer = {calls: number; cpuTime: number; query: WebGLQuery};
 type GPUTimers = Record<string, GPUTimer>;
 
-const draw = {
+type DrawStyleLayer = (
+    painter: Painter,
+    sourceCache: SourceCache,
+    layer: TypedStyleLayer,
+    tileIDs: Array<OverscaledTileID>,
+    variableOffsets?: Partial<Record<CrossTileID, VariableOffset>>,
+    isInitialLoad?: boolean
+) => void;
+
+const draw: Record<string, DrawStyleLayer> = {
     symbol,
     circle,
     heatmap,
@@ -133,7 +142,6 @@ const draw = {
     'raster-particle': rasterParticle,
     background,
     sky,
-    debug,
     custom,
     model
 };
@@ -535,7 +543,7 @@ class Painter {
         }
     }
 
-    _renderTileClippingMasks(layer: StyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
+    _renderTileClippingMasks(layer: TypedStyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
         if (!sourceCache || this.currentStencilSource === sourceCache.id || !layer.isTileClipped() || !tileIDs || tileIDs.length === 0) {
             return;
         }
@@ -697,7 +705,7 @@ class Painter {
         const depthHeight = Math.ceil(this.height);
 
         const fboPrev = this.context.bindFramebuffer.get();
-        const texturePrev = gl.getParameter(gl.TEXTURE_BINDING_2D);
+        const texturePrev: WebGLTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
 
         if (!this.depthFBO || this.depthFBO.width !== depthWidth || this.depthFBO.height !== depthHeight) {
             if (this.depthFBO) {
@@ -777,7 +785,7 @@ class Painter {
             }
 
             if (layer.type === 'symbol') {
-                if ((layer as SymbolStyleLayer).hasInitialOcclusionOpacityProperties) {
+                if (layer.hasInitialOcclusionOpacityProperties) {
                     layersRequireFinalDepth = true;
                 } else {
                     layersRequireTerrainDepth = true;
@@ -844,15 +852,15 @@ class Painter {
             coordsSortedByDistance[id] = sourceCache.sortCoordinatesByDistance(coordsAscending[id]);
         }
 
-        const getLayerSource = (layer: StyleLayer) => {
+        const getLayerSource = (layer: TypedStyleLayer) => {
             const cache = this.style.getLayerSourceCache(layer);
             if (!cache || !cache.used) return null;
             return cache.getSource();
         };
 
         if (conflationSourcesInStyle || clippingActiveThisFrame || this._clippingActiveLastFrame) {
-            const conflationLayersInStyle = [];
-            const conflationLayerIndicesInStyle = [];
+            const conflationLayersInStyle: TypedStyleLayer[] = [];
+            const conflationLayerIndicesInStyle: number[] = [];
 
             let idx = 0;
             for (const layer of orderedLayers) {
@@ -870,7 +878,7 @@ class Painter {
                 // where certain features should be replaced by overlapping features from another layer with higher
                 // precedence. A special data structure 'replacementSource' is used to compute regions
                 // on visible tiles where potential overlap might occur between features of different layers.
-                const conflationSources = [];
+                const conflationSources: Array<{layer: string; cache: SourceCache; order: number; clipMask: number; clipScope: string[]}> = [];
                 for (let i = 0; i < conflationLayersInStyle.length; i++) {
                     const layer = conflationLayersInStyle[i];
                     const layerIdx = conflationLayerIndicesInStyle[i];
@@ -883,7 +891,7 @@ class Painter {
 
                     let order = ReplacementOrderLandmark;
                     let clipMask = LayerTypeMask.None;
-                    const clipScope = [];
+                    const clipScope: string[] = [];
                     let addToSources = true;
                     if (layer.type === 'clip') {
                         // Landmarks have precedence over fill extrusions regardless of order in the style.
@@ -1155,7 +1163,7 @@ class Painter {
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
 
-        function coordsForTranslucentLayer(layer: StyleLayer, sourceCache?: SourceCache) {
+        function coordsForTranslucentLayer(layer: TypedStyleLayer, sourceCache?: SourceCache) {
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
             // separate clipping masks
@@ -1348,7 +1356,7 @@ class Painter {
             });
             if (selectedSource) {
                 if (this.options.showTileBoundaries) {
-                    draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false, this.options.showParseStatus);
+                    drawDebug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false, this.options.showParseStatus);
                 }
 
                 Debug.run(() => {
@@ -1364,7 +1372,7 @@ class Painter {
         }
 
         if (this.terrain && this._debugParams.showTerrainProxyTiles) {
-            draw.debug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true, this.options.showParseStatus);
+            drawDebug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true, this.options.showParseStatus);
         }
 
         if (this.options.showPadding) {
@@ -1386,7 +1394,7 @@ class Painter {
         }
     }
 
-    prepareLayer(layer: StyleLayer) {
+    prepareLayer(layer: TypedStyleLayer) {
         this.gpuTimingStart(layer);
 
         const {unsupportedLayers} = this.transform.projection;
@@ -1401,7 +1409,7 @@ class Painter {
         this.gpuTimingEnd();
     }
 
-    renderLayer(painter: Painter, sourceCache: SourceCache | undefined, layer: StyleLayer, coords?: Array<OverscaledTileID>) {
+    renderLayer(painter: Painter, sourceCache: SourceCache | undefined, layer: TypedStyleLayer, coords?: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
         if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && layer.type !== 'model' && layer.type !== 'raster' && layer.type !== 'raster-particle' && !(coords && coords.length)) return;
 
@@ -1415,7 +1423,7 @@ class Painter {
         this.gpuTimingEnd();
     }
 
-    gpuTimingStart(layer: StyleLayer) {
+    gpuTimingStart(layer: TypedStyleLayer) {
         if (!this.options.gpuTiming) return;
         const ext = this.context.extTimerQuery;
         const gl = this.context.gl;
@@ -1471,9 +1479,7 @@ class Painter {
         return currentQueries;
     }
 
-    queryGpuTimers(gpuTimers: GPUTimers): {
-        [layerId: string]: number;
-    } {
+    queryGpuTimers(gpuTimers: GPUTimers): {[layerId: string]: number} {
         const layers: Record<string, number> = {};
         for (const layerId in gpuTimers) {
             const gpuTimer = gpuTimers[layerId];
@@ -1812,7 +1818,7 @@ class Painter {
      * Initially planned to be used for Tiled3DModelSource, 2D source that is used with ModelLayer of buildings type and
      * custom layer buildings.
      */
-    isSourceForClippingOrConflation(layer: StyleLayer, source?: Source | null): boolean {
+    isSourceForClippingOrConflation(layer: TypedStyleLayer, source?: Source | null): boolean {
         if (!layer.is3D(!!(this.terrain && this.terrain.enabled))) {
             return false;
         }

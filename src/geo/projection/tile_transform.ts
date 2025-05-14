@@ -21,8 +21,7 @@ export type TileTransform = {
     projection: Projection;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function tileTransform(id: any, projection: Projection): TileTransform {
+export default function tileTransform(id: {z: number; x: number; y: number}, projection: Projection): TileTransform {
     if (!projection.isReprojectedInTileSpace) {
         return {scale: 1 << id.z, x: id.x, y: id.y, x2: id.x + 1, y2: id.y + 1, projection};
     }

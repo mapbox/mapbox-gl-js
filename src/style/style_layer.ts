@@ -61,13 +61,15 @@ class StyleLayer extends Evented {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _unevaluatedLayout: Layout<any>;
-    readonly layout: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readonly layout: PossiblyEvaluated<any>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _transitionablePaint: Transitionable<any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _transitioningPaint: Transitioning<any>;
-    readonly paint: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readonly paint: PossiblyEvaluated<any>;
 
     _featureFilter: FeatureFilter;
     _filterCompiled: boolean;

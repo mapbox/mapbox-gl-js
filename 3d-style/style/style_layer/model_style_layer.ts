@@ -28,6 +28,8 @@ import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type {ProgramName} from '../../../src/render/program';
 
 class ModelStyleLayer extends StyleLayer {
+    override type: 'model';
+
     override _transitionablePaint: Transitionable<PaintProps>;
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;

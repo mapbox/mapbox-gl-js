@@ -85,6 +85,8 @@ const getLineFloorwidthProperty = () => {
 };
 
 class LineStyleLayer extends StyleLayer {
+    override type: 'line';
+
     override _unevaluatedLayout: Layout<LayoutProps>;
     override layout: PossiblyEvaluated<LayoutProps>;
 

@@ -111,9 +111,6 @@ export type FeatureVariant = {
  * Unlike features returned for root style featuresets, `TargetFeature` omits the `layer`, `source`, and `sourceLayer` properties if the feature belongs to import style.
  */
 export class TargetFeature extends Feature {
-    override layer;
-    override source;
-    override sourceLayer;
     override variants: never;
 
     /**

@@ -1,12 +1,12 @@
 import EXTENT from '../style-spec/data/extent';
 import KDBush from 'kdbush';
 
-import type {SymbolInstanceArray} from '../data/array_types';
-import type Projection from '../geo/projection/projection';
-import type {OverscaledTileID} from '../source/tile_id';
-import type SymbolBucket from '../data/bucket/symbol_bucket';
-import type StyleLayer from '../style/style_layer';
 import type Tile from '../source/tile';
+import type Projection from '../geo/projection/projection';
+import type SymbolBucket from '../data/bucket/symbol_bucket';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
+import type {OverscaledTileID} from '../source/tile_id';
+import type {SymbolInstanceArray} from '../data/array_types';
 
 /*
     The CrossTileSymbolIndex generally works on the assumption that
@@ -130,8 +130,7 @@ class CrossTileSymbolLayerIndex {
         if (wrapDelta !== 0) {
             for (const zoom in this.indexes) {
                 const zoomIndexes = this.indexes[zoom];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const newZoomIndex: Record<string, any> = {};
+                const newZoomIndex: Record<string, TileLayerIndex> = {};
                 for (const key in zoomIndexes) {
                     // change the tileID's wrap and add it to a new index
                     const index = zoomIndexes[key];
@@ -247,7 +246,7 @@ class CrossTileSymbolIndex {
     }
 
     addLayer(
-        styleLayer: StyleLayer,
+        styleLayer: TypedStyleLayer,
         tiles: Array<Tile>,
         lng: number,
         projection: Projection,

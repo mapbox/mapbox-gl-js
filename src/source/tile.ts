@@ -30,7 +30,7 @@ import {vec3, mat4} from 'gl-matrix';
 import type RasterParticleState from '../render/raster_particle_state';
 import type FeatureIndex from '../data/feature_index';
 import type {Bucket} from '../data/bucket';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {WorkerSourceVectorTileResult} from './worker_source';
 import type Actor from '../util/actor';
 import type DEMData from '../data/dem_data';
@@ -418,7 +418,7 @@ class Tile {
         }
     }
 
-    getBucket(layer: StyleLayer): Bucket {
+    getBucket(layer: TypedStyleLayer): Bucket {
         return this.buckets[layer.fqid];
     }
 

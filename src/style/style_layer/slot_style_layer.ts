@@ -5,6 +5,8 @@ import type {LayerSpecification} from '../../style-spec/types';
 import type {LUT} from "../../util/lut";
 
 class SlotStyleLayer extends StyleLayer {
+    override type: 'slot';
+
     constructor(layer: LayerSpecification, scope: string, _lut: LUT | null, _: unknown) {
         const properties = {
             paint: getPaintProperties()

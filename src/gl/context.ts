@@ -69,20 +69,21 @@ class Context {
     renderer: string | null | undefined;
     vendor: string | null | undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extTextureFilterAnisotropic: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extTextureFilterAnisotropicMax: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extTextureHalfFloat: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extRenderToTextureHalfFloat: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extDebugRendererInfo: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extTimerQuery: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extTextureFloatLinear: any;
+    // eslint-disable-next-line camelcase
+    extTextureFilterAnisotropic: EXT_texture_filter_anisotropic;
+    extTextureFilterAnisotropicMax: GLfloat;
+    // eslint-disable-next-line camelcase
+    extRenderToTextureHalfFloat: EXT_color_buffer_half_float;
+    // eslint-disable-next-line camelcase
+    extDebugRendererInfo: WEBGL_debug_renderer_info;
+    extTimerQuery: {
+        /* EXT_disjoint_timer_query is not yet available as a TypeScript type */
+        TIME_ELAPSED_EXT: number;
+        getQueryParameter: (query: WebGLQuery, pname: GLenum) => GLuint;
+        deleteQueryEXT: (query: WebGLQuery) => void;
+    };
+    // eslint-disable-next-line camelcase
+    extTextureFloatLinear: OES_texture_float_linear;
     options: ContextOptions;
     maxPointSize: number;
 

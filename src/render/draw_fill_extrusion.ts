@@ -46,6 +46,7 @@ import type {
     FillExtrusionDepthUniformsType,
     FillExtrusionPatternUniformsType,
 } from './program/fill_extrusion_program';
+import type SegmentVector from '../data/segment';
 
 export default draw;
 
@@ -146,7 +147,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
             const floodLightIgnoreLut = layer.paint.get('fill-extrusion-flood-light-color-use-theme').constantOr("default") === 'none';
 
-            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toNonPremultipliedRenderColor(floodLightIgnoreLut ? null : layer.lut).toArray01().slice(0, 3);
+            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toNonPremultipliedRenderColor(floodLightIgnoreLut ? null : layer.lut).toArray01().slice(0, 3) as [number, number, number];
 
             const aoEnabled = aoIntensity > 0 && aoRadius > 0;
 
@@ -354,8 +355,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const stats = layer.getLayerRenderingStats();
     for (const coord of coords) {
         const tile = source.getTile(coord);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as FillExtrusionBucket;
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
         let singleCascade = false;
@@ -474,8 +474,7 @@ function updateReplacement(painter: Painter, source: SourceCache, layer: FillExt
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number, replacementActive: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture | null) {
+function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: [number, number, number], attenuation: number, replacementActive: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture | null) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -501,8 +500,7 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     }
     const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const renderGroundEffectTile = (coord: OverscaledTileID, groundEffect: GroundEffect, segments: any, matrix: mat4, meterToTile: number) => {
+    const renderGroundEffectTile = (coord: OverscaledTileID, groundEffect: GroundEffect, segments: SegmentVector, matrix: mat4, meterToTile: number) => {
         const programConfiguration = groundEffect.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
         const program = painter.getOrCreateProgram('fillExtrusionGroundEffect', {config: programConfiguration, defines, overrideFog: affectedByFog});

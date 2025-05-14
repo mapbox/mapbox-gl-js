@@ -94,7 +94,7 @@ class Scheduler {
     }
 
     pick(): null | number {
-        let minIndex = null;
+        let minIndex: number = null;
         let minPriority = Infinity;
         for (let i = 0; i < this.taskQueue.length; i++) {
             const id = this.taskQueue[i];

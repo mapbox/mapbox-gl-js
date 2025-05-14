@@ -74,7 +74,6 @@ import type Tile from '../source/tile';
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import type Painter from '../render/painter';
-import type StyleLayer from './style_layer';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
 import type {
     ColorThemeSpecification,
@@ -125,6 +124,7 @@ import type {ActorMessages} from '../util/actor_messages';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {CustomSourceInterface} from '../source/custom_source';
 import type {StyleModelMap} from './style_mode';
+import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -302,7 +302,7 @@ class Style extends Evented<MapEvents> {
 
     // Merged layers and sources
     _mergedOrder: Array<string>;
-    _mergedLayers: Record<string, StyleLayer>;
+    _mergedLayers: Record<string, TypedStyleLayer>;
     _mergedSlots: Array<string>;
     _mergedSourceCaches: Record<string, SourceCache>;
     _mergedOtherSourceCaches: Record<string, SourceCache>;
@@ -314,7 +314,7 @@ class Style extends Evented<MapEvents> {
     _request: Cancelable | null | undefined;
     _spriteRequest: Cancelable | null | undefined;
     _layers: {
-        [_: string]: StyleLayer;
+        [_: string]: TypedStyleLayer;
     };
     _order: Array<string>;
     _drapedFirstOrder: Array<string>;
@@ -1081,9 +1081,9 @@ class Style extends Evented<MapEvents> {
     }
 
     mergeLayers() {
-        const slots: Record<string, StyleLayer[]> = {};
-        const mergedOrder: StyleLayer[] = [];
-        const mergedLayers: Record<string, StyleLayer> = {};
+        const slots: Record<string, TypedStyleLayer[]> = {};
+        const mergedOrder: TypedStyleLayer[] = [];
+        const mergedLayers: Record<string, TypedStyleLayer> = {};
 
         this._mergedSlots = [];
         this._has3DLayers = false;
@@ -1110,7 +1110,7 @@ class Style extends Evented<MapEvents> {
 
         this._mergedOrder = [];
 
-        const sort = (layers: StyleLayer[] = []) => {
+        const sort = (layers: TypedStyleLayer[] = []) => {
             for (const layer of layers) {
                 if (layer.type === 'slot') {
                     const slotName = getNameFromFQID(layer.id);
@@ -1373,7 +1373,7 @@ class Style extends Evented<MapEvents> {
         });
     }
 
-    _validateLayer(layer: StyleLayer) {
+    _validateLayer(layer: TypedStyleLayer) {
         const source = this.getOwnSource(layer.source);
         if (!source) {
             return;
@@ -1541,7 +1541,7 @@ class Style extends Evented<MapEvents> {
         return drapingEnabled ? this.order : this._mergedOrder;
     }
 
-    isLayerDraped(layer: StyleLayer): boolean {
+    isLayerDraped(layer: TypedStyleLayer): boolean {
         if (!this.terrain) return false;
         return layer.isDraped(this.getLayerSourceCache(layer));
     }
@@ -1552,7 +1552,7 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    _checkLayer(layerId: string): StyleLayer | null | undefined {
+    _checkLayer(layerId: string): TypedStyleLayer | null | undefined {
         const layer = this.getOwnLayer(layerId);
         if (!layer) {
             this.fire(new ErrorEvent(new Error(`The layer '${layerId}' does not exist in the map's style.`)));
@@ -1570,7 +1570,7 @@ class Style extends Evented<MapEvents> {
         return source;
     }
 
-    precompilePrograms(layer: StyleLayer, parameters: EvaluationParameters) {
+    precompilePrograms(layer: TypedStyleLayer, parameters: EvaluationParameters) {
         const painter = this.map.painter;
 
         if (!painter) {
@@ -2309,7 +2309,7 @@ class Style extends Evented<MapEvents> {
      * Returns the layers associated with a featureset in the style fragment.
      * If no fragmentId is provided, returns the layers associated with own featuresets.
      */
-    getFeaturesetLayers(featuresetId: string, fragmentId?: string): Array<StyleLayer> {
+    getFeaturesetLayers(featuresetId: string, fragmentId?: string): TypedStyleLayer[] {
         const style = this.getFragmentStyle(fragmentId);
         const featuresets = style.stylesheet.featuresets;
         if (!featuresets || !featuresets[featuresetId]) {
@@ -2702,9 +2702,9 @@ class Style extends Evented<MapEvents> {
      * Return the style layer object with the given `id`.
      *
      * @param {string} id ID of the desired layer.
-     * @returns {?StyleLayer} A layer, if one with the given `id` exists.
+     * @returns {TypedStyleLayer} A layer, if one with the given `id` exists.
      */
-    getOwnLayer<T extends StyleLayer>(id: string): T | undefined {
+    getOwnLayer<T extends TypedStyleLayer>(id: string): T | undefined {
         return this._layers[id] as T;
     }
 
@@ -3070,7 +3070,7 @@ class Style extends Evented<MapEvents> {
         }, (value) => value !== undefined);
     }
 
-    _updateFilteredLayers(filter: (layer: StyleLayer) => boolean) {
+    _updateFilteredLayers(filter: (layer: TypedStyleLayer) => boolean) {
         for (const layer of Object.values(this._mergedLayers)) {
             if (filter(layer)) {
                 this._updateLayer(layer);
@@ -3078,7 +3078,7 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    _updateLayer(layer: StyleLayer) {
+    _updateLayer(layer: TypedStyleLayer) {
         this._changes.updateLayer(layer);
         const sourceCache = this.getLayerSourceCache(layer);
         const fqid = makeFQID(layer.source, layer.scope);
@@ -3174,7 +3174,7 @@ class Style extends Evented<MapEvents> {
 
         const queries: Record<string, QrfQuery & {has3DLayers?: boolean}> = {};
 
-        const addLayerToQuery = (styleLayer: StyleLayer) => {
+        const addLayerToQuery = (styleLayer: TypedStyleLayer) => {
             // Skip layers that don't have features.
             if (featurelessLayerTypes.has(styleLayer.type)) return;
 
@@ -3268,7 +3268,7 @@ class Style extends Evented<MapEvents> {
     queryRenderedTargets(queryGeometry: PointLike | [PointLike, PointLike], targets: QrfTarget[], transform: Transform): Feature[] {
         const queries: Record<string, QrfQuery & {has3DLayers?: boolean}> = {};
 
-        const addLayerToQuery = (styleLayer: StyleLayer, sourceCache: SourceCache, target: QrfTarget, selector?: FeaturesetSelector) => {
+        const addLayerToQuery = (styleLayer: TypedStyleLayer, sourceCache: SourceCache, target: QrfTarget, selector?: FeaturesetSelector) => {
             assert(sourceCache, 'queryable layers must have a source');
 
             const querySourceCache = queries[sourceCache.id] = queries[sourceCache.id] || {sourceCache, layers: {}, has3DLayers: false};
@@ -4191,9 +4191,9 @@ class Style extends Evented<MapEvents> {
      * Return the style layer object with the given `id`.
      *
      * @param {string} id ID of the desired layer.
-     * @returns {?StyleLayer} A layer, if one with the given `id` exists.
+     * @returns {TypedStyleLayer} A layer, if one with the given `id` exists.
      */
-    getLayer(id: string): StyleLayer | null | undefined {
+    getLayer(id: string): TypedStyleLayer | null | undefined {
         return this._mergedLayers[id];
     }
 
@@ -4218,7 +4218,7 @@ class Style extends Evented<MapEvents> {
         return sourceCache && sourceCache.getSource();
     }
 
-    getLayerSource(layer: StyleLayer): Source | null | undefined {
+    getLayerSource(layer: TypedStyleLayer): Source | null | undefined {
         const sourceCache = this.getLayerSourceCache(layer);
         return sourceCache && sourceCache.getSource();
     }
@@ -4228,7 +4228,7 @@ class Style extends Evented<MapEvents> {
         return this._mergedOtherSourceCaches[fqid];
     }
 
-    getLayerSourceCache(layer: StyleLayer): SourceCache | undefined {
+    getLayerSourceCache(layer: TypedStyleLayer): SourceCache | undefined {
         const fqid = makeFQID(layer.source, layer.scope);
         return layer.type === 'symbol' ?
             this._mergedSymbolSourceCaches[fqid] :
@@ -4330,7 +4330,7 @@ class Style extends Evented<MapEvents> {
         return this._otherSourceCaches[source];
     }
 
-    getOwnLayerSourceCache(layer: StyleLayer): SourceCache | undefined {
+    getOwnLayerSourceCache(layer: TypedStyleLayer): SourceCache | undefined {
         return layer.type === 'symbol' ?
             this._symbolSourceCaches[layer.source] :
             this._otherSourceCaches[layer.source];
@@ -4369,7 +4369,7 @@ class Style extends Evented<MapEvents> {
         return this._hasCircleLayers;
     }
 
-    isLayerClipped(layer: StyleLayer, source?: Source | null): boolean {
+    isLayerClipped(layer: TypedStyleLayer, source?: Source | null): boolean {
         // fill-extrusions can be conflated by landmarks.
         if (!this._clipLayerPresent && layer.type !== 'fill-extrusion') return false;
         const isFillExtrusion = layer.type === 'fill-extrusion' && layer.sourceLayer === 'building';

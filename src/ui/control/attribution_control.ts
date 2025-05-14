@@ -4,6 +4,7 @@ import config from '../../util/config';
 import {getHashString} from '../hash';
 
 import type {Map, ControlPosition, IControl} from '../map';
+import type {StyleSpecification} from '../../style-spec/types';
 
 export type AttributionControlOptions = {
     compact?: boolean;
@@ -145,8 +146,7 @@ class AttributionControl implements IControl {
         let attributions: Array<string> = [];
 
         if (this._map.style.stylesheet) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const stylesheet: any = this._map.style.stylesheet;
+            const stylesheet: StyleSpecification & {id?: string; owner?: string} = this._map.style.stylesheet;
             this.styleOwner = stylesheet.owner;
             this.styleId = stylesheet.id;
         }

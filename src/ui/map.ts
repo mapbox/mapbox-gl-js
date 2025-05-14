@@ -57,7 +57,6 @@ import type {FeatureState} from '../style-spec/expression/index';
 import type {RequestParameters, AJAXError} from '../util/ajax';
 import type {RequestTransformFunction} from '../util/mapbox';
 import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
-import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
 import type {CustomLayerInterface} from '../style/style_layer/custom_style_layer';
 import type {StyleImageInterface, StyleImageMetadata} from '../style/style_image';
 import type {StyleOptions, StyleSetterOptions, AnyLayer, FeatureSelector, SourceSelector, QueryRenderedFeaturesParams, QueryRenderedFeaturesetParams} from '../style/style';
@@ -3283,7 +3282,7 @@ export class Map extends Camera {
         const layer = this.style.getOwnLayer(id);
         if (!layer) return;
 
-        if (layer.type === 'custom') return (layer as CustomStyleLayer).implementation as T;
+        if (layer.type === 'custom') return layer.implementation as T;
 
         return layer.serialize() as T;
     }
@@ -4343,7 +4342,7 @@ export class Map extends Camera {
 
         ++this._frameId;
 
-        let gpuTimer;
+        let gpuTimer: WebGLQuery;
         const extTimerQuery = this.painter.context.extTimerQuery;
         const frameStartTime = browser.now();
         const gl = this.painter.context.gl;

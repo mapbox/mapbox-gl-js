@@ -14,13 +14,13 @@ import sky from './style_layer/sky_style_layer';
 import slot from './style_layer/slot_style_layer';
 import model from '../../3d-style/style/style_layer/model_style_layer';
 
-import type {CustomLayerInterface} from './style_layer/custom_style_layer';
-import type StyleLayer from './style_layer';
-import type {LayerSpecification} from '../style-spec/types';
+import type {LUT} from '../util/lut';
 import type {ConfigOptions} from './properties';
-import type {LUT} from "../util/lut";
+import type {TypedStyleLayer, TypedStyleLayerConstructor} from './style_layer/typed_style_layer';
+import type {LayerSpecification} from '../style-spec/types';
+import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 
-const subclasses = {
+const subclasses: Record<Exclude<TypedStyleLayer['type'], 'custom'>, TypedStyleLayerConstructor> = {
     circle,
     heatmap,
     hillshade,
@@ -34,19 +34,18 @@ const subclasses = {
     sky,
     slot,
     model,
-    clip
+    clip,
 };
 
 export default function createStyleLayer(
     layer: LayerSpecification | CustomLayerInterface,
     scope: string,
-    lut: LUT | null,
+    lut?: LUT | null,
     options?: ConfigOptions | null,
-): StyleLayer | CustomStyleLayer {
+): TypedStyleLayer {
     if (layer.type === 'custom') {
         return new CustomStyleLayer(layer, scope);
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return new subclasses[layer.type](layer, scope, lut, options);
+        return new subclasses[layer.type](layer, scope, lut, options) as TypedStyleLayer;
     }
 }

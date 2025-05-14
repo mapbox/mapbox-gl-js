@@ -9,6 +9,8 @@ import type {LUT} from "../../util/lut";
 import type {ProgramName} from '../../render/program';
 
 class HillshadeStyleLayer extends StyleLayer {
+    override type: 'hillshade';
+
     override _transitionablePaint: Transitionable<PaintProps>;
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;

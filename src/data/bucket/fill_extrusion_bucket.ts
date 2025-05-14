@@ -406,8 +406,7 @@ export class GroundEffect {
         this.regionSegments[4] = new SegmentVector();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getDefaultSegment(): any {
+    getDefaultSegment(): SegmentVector {
         return this.regionSegments[4];
     }
 
@@ -519,13 +518,12 @@ export class GroundEffect {
                         segmentVector = this.regionSegments[k] = new SegmentVector();
                     }
 
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const nSegment: any = {
+                    const nSegment = {
                         vertexOffset: segment.vertexOffset,
                         primitiveOffset: segment.primitiveOffset + regionTriCountOffset,
                         vertexLength: segment.vertexLength,
                         primitiveLength: triCount
-                    };
+                    } as Segment;
                     segmentVector.get().push(nSegment);
                 }
 
@@ -562,8 +560,7 @@ export class GroundEffect {
         this.programConfigurations.upload(context);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    update(states: FeatureStates, vtLayer: VectorTileLayer, layers: any, availableImages: ImageId[], imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: ImageId[], imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null) {
         if (!this.hasData()) return;
         this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
     }
@@ -806,7 +803,7 @@ class FillExtrusionBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
         this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
         this.groundEffect.update(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
     }
@@ -1041,8 +1038,7 @@ class FillExtrusionBucket implements Bucket {
                         flattened.push(p1.x, p1.y);
 
                         if (isGlobe) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const array: any = this.layoutVertexExtArray;
+                            const array = this.layoutVertexExtArray;
                             const projectedP = projection.projectTilePoint(q.x, q.y, canonical);
                             const n = projection.upVector(canonical, q.x, q.y);
                             addGlobeExtVertex(array, projectedP, n);
@@ -1227,8 +1223,7 @@ class FillExtrusionBucket implements Bucket {
                     }
 
                     if (isGlobe) {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const array: any = this.layoutVertexExtArray;
+                        const array = this.layoutVertexExtArray;
 
                         const projectedP0 = projection.projectTilePoint(p0.x, p0.y, canonical);
                         const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);

@@ -4,7 +4,6 @@ import './feature_index';
 
 import type {CollisionBoxArray} from './array_types';
 import type Style from '../style/style';
-import type StyleLayer from '../style/style_layer';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
 import type Context from '../gl/context';
@@ -99,9 +98,8 @@ export type BucketFeature = {
 export interface Bucket {
     layerIds: Array<string>;
     hasPattern: boolean;
-    layers: StyleLayer[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stateDependentLayers: Array<any>;
+    layers: TypedStyleLayer[];
+    stateDependentLayers: Array<TypedStyleLayer>;
     readonly stateDependentLayerIds: Array<string>;
     populate: (
         features: Array<IndexedFeature>,
@@ -114,7 +112,7 @@ export interface Bucket {
         vtLayer: VectorTileLayer,
         availableImages: ImageId[],
         imagePositions: SpritePositions,
-        layers: Array<TypedStyleLayer>,
+        layers: ReadonlyArray<TypedStyleLayer>,
         isBrightnessChanged: boolean,
         brightness?: number | null,
     ) => void;

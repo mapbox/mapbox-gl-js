@@ -8,6 +8,7 @@ import type {ConfigOptions} from './properties';
 export type LayerConfigs = {
     [_: string]: LayerSpecification;
 };
+
 export type Family<Layer extends TypedStyleLayer> = Array<Layer>;
 
 class StyleLayerIndex {
@@ -48,7 +49,7 @@ class StyleLayerIndex {
         for (const layerConfig of layerConfigs) {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
-            const layer = this._layers[layerConfig.id] = (createStyleLayer(layerConfig, this.scope, null, this._options) as TypedStyleLayer);
+            const layer = this._layers[layerConfig.id] = createStyleLayer(layerConfig, this.scope, null, this._options);
             layer.compileFilter(options);
             if (this.keyCache[layerConfig.id])
                 delete this.keyCache[layerConfig.id];

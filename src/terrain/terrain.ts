@@ -38,21 +38,17 @@ import {number as interpolate} from '../style-spec/util/interpolate';
 
 import type Framebuffer from '../gl/framebuffer';
 import type Program from '../render/program';
-import type LineStyleLayer from '../style/style_layer/line_style_layer';
-import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
-import type RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import type {Callback} from '../types/callback';
 import type {Map} from '../ui/map';
 import type Painter from '../render/painter';
 import type Style from '../style/style';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type Context from '../gl/context';
 import type {UniformValues} from '../render/uniform_binding';
 import type Transform from '../geo/transform';
 import type {CanonicalTileID} from '../source/tile_id';
-import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
 import type {DebugUniformsType} from '../render/program/debug_program';
 import type {CircleUniformsType} from '../render/program/circle_program';
 import type {SymbolUniformsType} from '../render/program/symbol_program';
@@ -1118,10 +1114,10 @@ export class Terrain extends Elevation {
             const layer = this._style._mergedLayers[id];
             const isHidden = layer.isHidden(this.painter.transform.zoom);
             if (layer.type === 'hillshade') {
-                return !isHidden && (layer as HillshadeStyleLayer).shouldRedrape();
+                return !isHidden && layer.shouldRedrape();
             }
             if (layer.type === 'custom') {
-                return !isHidden && (layer as CustomStyleLayer).shouldRedrape();
+                return !isHidden && layer.shouldRedrape();
             }
             return !isHidden && layer.hasTransition();
         };
@@ -1139,8 +1135,7 @@ export class Terrain extends Elevation {
 
         if (!hasVectorSource) return;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const clearSourceCaches: Record<string, any> = {};
+        const clearSourceCaches: Record<string, boolean> = {};
         for (let i = 0; i < this._style.order.length; ++i) {
             const layer = this._style._mergedLayers[this._style.order[i]];
             const sourceCache = this._style.getLayerSourceCache(layer);
@@ -1150,7 +1145,7 @@ export class Terrain extends Elevation {
             if (isHidden || layer.type !== 'line') continue;
 
             // Check if layer has a zoom dependent "line-width" expression
-            const widthExpression = (layer as LineStyleLayer).widthExpression();
+            const widthExpression = layer.widthExpression();
             if (!(widthExpression instanceof ZoomDependentExpression)) continue;
 
             // Mark sourceCache as cleared
@@ -1189,7 +1184,7 @@ export class Terrain extends Elevation {
             if (isHidden || layer.type !== 'raster') continue;
 
             // Check if any raster tile is in a fading state
-            const fadeDuration = (layer as RasterStyleLayer).paint.get('raster-fade-duration');
+            const fadeDuration = layer.paint.get('raster-fade-duration');
             for (const proxy of this.proxyCoords) {
                 const proxiedCoords = this.proxyToSource[proxy.key][sourceCache.id];
                 const coords = (proxiedCoords as Array<OverscaledTileID>);
@@ -1354,7 +1349,7 @@ export class Terrain extends Elevation {
         this._tilesDirty = {};
     }
 
-    _setupStencil(fbo: FBO, proxiedCoords: Array<ProxiedTileID>, layer: StyleLayer, sourceCache?: SourceCache) {
+    _setupStencil(fbo: FBO, proxiedCoords: Array<ProxiedTileID>, layer: TypedStyleLayer, sourceCache?: SourceCache) {
         if (!sourceCache || !this._sourceTilesOverlap[sourceCache.id]) {
             if (this._overlapStencilType) this._overlapStencilType = false;
             return;

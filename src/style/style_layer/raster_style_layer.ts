@@ -16,6 +16,8 @@ export const COLOR_RAMP_RES = 256;
 export const COLOR_MIX_FACTOR = (Math.pow(COLOR_RAMP_RES, 2) - 1) / (255 * COLOR_RAMP_RES * (COLOR_RAMP_RES + 3));
 
 class RasterStyleLayer extends StyleLayer {
+    override type: 'raster';
+
     override _transitionablePaint: Transitionable<PaintProps>;
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;

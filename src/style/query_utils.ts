@@ -1,13 +1,13 @@
 import Point from '@mapbox/point-geometry';
 
 import type {PossiblyEvaluatedPropertyValue} from './properties';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type CircleBucket from '../data/bucket/circle_bucket';
 import type LineBucket from '../data/bucket/line_bucket';
 
 export function getMaximumPaintValue(
     property: string,
-    layer: StyleLayer,
+    layer: TypedStyleLayer,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     bucket: CircleBucket<any> | LineBucket,
 ): number {

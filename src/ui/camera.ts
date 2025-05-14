@@ -1350,9 +1350,9 @@ class Camera extends Evented<MapEvents> {
 
         const offsetAsPoint = Point.convert(options.offset);
 
-        let pointAtOffset;
-        let from;
-        let delta;
+        let pointAtOffset: Point;
+        let from: Point;
+        let delta: Point;
 
         if (tr.projection.name === 'globe') {
             // Pixel coordinates will be applied directly to translate the globe
@@ -1380,7 +1380,8 @@ class Camera extends Evented<MapEvents> {
         }
         const finalScale = tr.zoomScale(zoom - startZoom);
 
-        let around, aroundPoint;
+        let around: LngLat;
+        let aroundPoint: Point;
 
         if (options.around) {
             around = LngLat.convert(options.around);

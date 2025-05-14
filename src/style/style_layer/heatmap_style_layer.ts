@@ -25,6 +25,7 @@ import type {LUT} from "../../util/lut";
 import type {ProgramName} from '../../render/program';
 
 class HeatmapStyleLayer extends StyleLayer {
+    override type: 'heatmap';
 
     heatmapFbo: Framebuffer | null | undefined;
     colorRamp: RGBAImage;

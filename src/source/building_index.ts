@@ -1,20 +1,19 @@
 import EXTENT from '../style-spec/data/extent';
 
 import type FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
-import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
 import type {OverscaledTileID} from './tile_id';
 import type Style from '../style/style';
 import type Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket';
 import type {Bucket} from '../data/bucket';
-import type ModelStyleLayer from '../../3d-style/style/style_layer/model_style_layer';
 
 class BuildingIndex {
     style: Style;
     layers: Array<{
-        layer: StyleLayer;
+        layer: TypedStyleLayer;
         visible: boolean;
+        visibilityChanged: boolean;
     }>;
     currentBuildingBuckets: Array<{
         bucket: Bucket | null | undefined;
@@ -35,12 +34,10 @@ class BuildingIndex {
         for (const layerId in this.style._mergedLayers) {
             const layer = this.style._mergedLayers[layerId];
             if (layer.type === 'fill-extrusion') {
-                // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'visibilityChanged' does not exist in type '{ layer: StyleLayer; visible: boolean; }'.
                 this.layers.push({layer, visible, visibilityChanged});
             } else if (layer.type === 'model') {
                 const source = this.style.getLayerSource(layer);
                 if (source && source.type === 'batched-model') {
-                    // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'visibilityChanged' does not exist in type '{ layer: StyleLayer; visible: boolean; }'.
                     this.layers.push({layer, visible, visibilityChanged});
                 }
             }
@@ -54,11 +51,9 @@ class BuildingIndex {
             const layer = l.layer;
             let visible = false;
             if (layer.type === 'fill-extrusion') {
-
-                visible = !layer.isHidden(zoom) && (layer as FillExtrusionStyleLayer).paint.get('fill-extrusion-opacity') > 0.0;
+                visible = !layer.isHidden(zoom) && layer.paint.get('fill-extrusion-opacity') > 0.0;
             } else if (layer.type === 'model') {
-
-                visible = !layer.isHidden(zoom) && (layer as ModelStyleLayer).paint.get('model-opacity').constantOr(1.0) > 0.0;
+                visible = !layer.isHidden(zoom) && layer.paint.get('model-opacity').constantOr(1.0) > 0.0;
             }
             this.layersGotHidden = this.layersGotHidden || (!visible && l.visible);
             l.visible = visible;
@@ -74,8 +69,7 @@ class BuildingIndex {
 
             let verticalScale = 1;
             if (layer.type === 'fill-extrusion') {
-
-                verticalScale = l.visible ? (layer as FillExtrusionStyleLayer).paint.get('fill-extrusion-vertical-scale') : 0;
+                verticalScale = l.visible ? layer.paint.get('fill-extrusion-vertical-scale') : 0;
             }
 
             let tile = sourceCache ? sourceCache.getTile(tileID) : null;

@@ -17,6 +17,8 @@ import type {ProgramName} from '../../render/program';
 const COLOR_RAMP_RES = 256;
 
 class RasterParticleStyleLayer extends StyleLayer {
+    override type: 'raster-particle';
+
     override paint: PossiblyEvaluated<PaintProps>;
 
     // Shared rendering resources

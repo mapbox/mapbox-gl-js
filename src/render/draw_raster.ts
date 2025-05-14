@@ -35,6 +35,7 @@ import type {Source} from '../source/source';
 import type {UserManagedTexture} from './texture';
 import type {DynamicDefinesType} from '../render/program/program_uniforms';
 import type VertexBuffer from '../gl/vertex_buffer';
+import type {CrossTileID, VariableOffset} from '../symbol/placement';
 
 export default drawRaster;
 
@@ -59,8 +60,7 @@ function adjustColorMix(colorMix: [number, number, number, number]): [number, nu
     ];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, isInitialLoad: boolean) {
+function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets?: Partial<Record<CrossTileID, VariableOffset>>, isInitialLoad?: boolean) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
     const isGlobeProjection = painter.transform.projection.name === 'globe';

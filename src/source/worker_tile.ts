@@ -27,7 +27,7 @@ import type {CanonicalTileID} from './tile_id';
 import type Projection from '../geo/projection/projection';
 import type {Bucket, PopulateParameters, ImageDependenciesMap} from '../data/bucket';
 import type Actor from '../util/actor';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type {
@@ -222,9 +222,9 @@ class WorkerTile {
 
                 recalculateLayers(family, this.zoom, options.brightness, availableImages);
 
+                // @ts-expect-error: Type 'TypedStyleLayer' doesn't have a 'createBucket' method in all of its subtypes
                 const bucket: Bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,
-                    // @ts-expect-error - TS2322 - Type 'Family<TypedStyleLayer>' is not assignable to type 'ClipStyleLayer[] & ModelStyleLayer[] & SymbolStyleLayer[] & LineStyleLayer[] & HeatmapStyleLayer[] & FillExtrusionStyleLayer[] & FillStyleLayer[] & CircleStyleLayer[]'.
                     layers: family,
                     zoom: this.zoom,
                     lut: this.lut,
@@ -481,7 +481,7 @@ class WorkerTile {
     }
 }
 
-function recalculateLayers(layers: ReadonlyArray<StyleLayer>, zoom: number, brightness: number, availableImages: ImageId[]) {
+function recalculateLayers(layers: ReadonlyArray<TypedStyleLayer>, zoom: number, brightness: number, availableImages: ImageId[]) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
     const parameters = new EvaluationParameters(zoom, {brightness});
     for (const layer of layers) {

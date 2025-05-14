@@ -21,6 +21,8 @@ import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type {ProgramName} from '../../render/program';
 
 class FillStyleLayer extends StyleLayer {
+    override type: 'fill';
+
     override _unevaluatedLayout: Layout<LayoutProps>;
     override layout: PossiblyEvaluated<LayoutProps>;
 

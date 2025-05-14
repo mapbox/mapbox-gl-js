@@ -21,19 +21,14 @@ export class OcclusionQuery {
     }
 
     isResultAvailable(): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const resultReady: any =  this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT_AVAILABLE);
+        const resultReady: boolean = this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT_AVAILABLE);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return resultReady;
     }
 
     consumeResult(): number {
-        const samplesPassed = this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT);
-
+        const samplesPassed: number = this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT);
         this._isFree = true;
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return samplesPassed;
     }
 

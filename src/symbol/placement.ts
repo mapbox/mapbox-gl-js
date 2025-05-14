@@ -16,7 +16,7 @@ import {evaluateSizeForFeature, evaluateSizeForZoom} from './symbol_size';
 import type BuildingIndex from '../source/building_index';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
 import type Transform from '../geo/transform';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type Tile from '../source/tile';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type {SymbolBuffers, CollisionArrays, SingleCollisionBox} from '../data/bucket/symbol_bucket';
@@ -268,8 +268,8 @@ export class Placement {
         this.placedOrientations = {};
     }
 
-    getBucketParts(results: Array<BucketPart>, styleLayer: StyleLayer, tile: Tile, sortAcrossTiles: boolean, scaleFactor: number = 1) {
-        const symbolBucket = (tile.getBucket(styleLayer) as SymbolBucket);
+    getBucketParts(results: Array<BucketPart>, styleLayer: TypedStyleLayer, tile: Tile, sortAcrossTiles: boolean, scaleFactor: number = 1) {
+        const symbolBucket = tile.getBucket(styleLayer) as SymbolBucket;
         const bucketFeatureIndex = tile.latestFeatureIndex;
 
         if (!symbolBucket || !bucketFeatureIndex || styleLayer.fqid !== symbolBucket.layerIds[0])
@@ -1006,10 +1006,10 @@ export class Placement {
         }
     }
 
-    updateLayerOpacities(styleLayer: StyleLayer, tiles: Array<Tile>, layerIndex: number, replacementSource?: ReplacementSource | null) {
+    updateLayerOpacities(styleLayer: TypedStyleLayer, tiles: Array<Tile>, layerIndex: number, replacementSource?: ReplacementSource | null) {
         const seenCrossTileIDs = new Set();
         for (const tile of tiles) {
-            const symbolBucket = (tile.getBucket(styleLayer) as SymbolBucket);
+            const symbolBucket = tile.getBucket(styleLayer) as SymbolBucket;
             if (symbolBucket && tile.latestFeatureIndex && styleLayer.fqid === symbolBucket.layerIds[0]) {
                 // @ts-expect-error - TS2345 - Argument of type 'Set<unknown>' is not assignable to parameter of type 'Set<number>'.
                 this.updateBucketOpacities(symbolBucket, seenCrossTileIDs, tile, tile.collisionBoxArray, layerIndex, replacementSource, tile.tileID, styleLayer.scope);

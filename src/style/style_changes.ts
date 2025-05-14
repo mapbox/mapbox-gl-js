@@ -1,6 +1,6 @@
 import {ImageId} from '../style-spec/expression/types/image_id';
 
-import type StyleLayer from './style_layer';
+import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 
 /**
@@ -13,7 +13,7 @@ class StyleChanges {
     };
     _removedLayers: {
         [_: string]: {
-            [_: string]: StyleLayer;
+            [_: string]: TypedStyleLayer;
         };
     };
     _updatedPaintProps: Set<string>;
@@ -73,9 +73,9 @@ class StyleChanges {
 
     /**
      * Mark a layer as having changes and needs to be rerendered.
-     * @param {StyleLayer} layer
+     * @param {TypedStyleLayer} layer
      */
-    updateLayer(layer: StyleLayer) {
+    updateLayer(layer: TypedStyleLayer) {
         const scope = layer.scope;
         this._updatedLayers[scope] = this._updatedLayers[scope] || new Set();
         this._updatedLayers[scope].add(layer.id);
@@ -84,9 +84,9 @@ class StyleChanges {
 
     /**
      * Mark a layer as having been removed and needing to be cleaned up.
-     * @param {StyleLayer} layer
+     * @param {TypedStyleLayer} layer
      */
-    removeLayer(layer: StyleLayer) {
+    removeLayer(layer: TypedStyleLayer) {
         const scope = layer.scope;
         this._removedLayers[scope] = this._removedLayers[scope] || {};
         this._updatedLayers[scope] = this._updatedLayers[scope] || new Set();
@@ -100,18 +100,18 @@ class StyleChanges {
 
     /**
      * Returns StyleLayer if layer needs to be removed.
-     * @param {StyleLayer} layer
+     * @param {TypedStyleLayer} layer
      */
-    getRemovedLayer(layer: StyleLayer): StyleLayer | null | undefined {
+    getRemovedLayer(layer: TypedStyleLayer): TypedStyleLayer | null | undefined {
         if (!this._removedLayers[layer.scope]) return null;
         return this._removedLayers[layer.scope][layer.id];
     }
 
     /**
      * Eliminate layer from the list of layers that need to be removed.
-     * @param {StyleLayer} layer
+     * @param {TypedStyleLayer} layer
      */
-    discardLayerRemoval(layer: StyleLayer) {
+    discardLayerRemoval(layer: TypedStyleLayer) {
         if (!this._removedLayers[layer.scope]) return;
         delete this._removedLayers[layer.scope][layer.id];
     }
@@ -148,9 +148,9 @@ class StyleChanges {
 
     /**
      * Mark a layer as having a changed paint properties.
-     * @param {StyleLayer} layer
+     * @param {TypedStyleLayer} layer
      */
-    updatePaintProperties(layer: StyleLayer) {
+    updatePaintProperties(layer: TypedStyleLayer) {
         this._updatedPaintProps.add(layer.fqid);
         this.setDirty();
     }

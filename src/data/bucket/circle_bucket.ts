@@ -20,6 +20,7 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../bucket';
+import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 import type CircleStyleLayer from '../../style/style_layer/circle_style_layer';
 import type HeatmapStyleLayer from '../../style/style_layer/heatmap_style_layer';
 import type Context from '../../gl/context';
@@ -33,7 +34,6 @@ import type Projection from '../../geo/projection/projection';
 import type {vec3} from 'gl-matrix';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
-import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 import type {ImageId} from '../../style-spec/expression/types/image_id';
 
 /**
@@ -49,7 +49,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
     overscaling: number;
     layerIds: Array<string>;
     layers: Array<Layer>;
-    stateDependentLayers: Array<Layer>;
+    stateDependentLayers: Array<CircleStyleLayer>;
     stateDependentLayerIds: Array<string>;
 
     layoutVertexArray: CircleLayoutArray;
@@ -103,7 +103,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
 
         // Heatmap layers are handled in this bucket and have no evaluated properties, so we check our access
         if (styleLayer.type === 'circle') {
-            circleSortKey = (styleLayer as CircleStyleLayer).layout.get('circle-sort-key');
+            circleSortKey = styleLayer.layout.get('circle-sort-key');
         }
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
@@ -160,7 +160,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
         this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
     }
 

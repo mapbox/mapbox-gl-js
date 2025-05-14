@@ -20,7 +20,7 @@ import EvaluationContext from '../style-spec/expression/evaluation_context';
 
 import type {OverscaledTileID} from '../source/tile_id';
 import type Point from '@mapbox/point-geometry';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {QrfQuery, QrfTarget, QueryResult} from '../source/query_features';
 import type Transform from '../geo/transform';
 import type {PromoteIdSpecification, LayerSpecification} from '../style-spec/types';
@@ -49,7 +49,7 @@ type FeatureIndices = FeatureIndexStruct | {
     layoutVertexArrayOffset: number;
 };
 
-type IntersectionTest = (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: FeatureState, layoutVertexArrayOffset: number) => boolean | number;
+type IntersectionTest = (feature: VectorTileFeature, styleLayer: TypedStyleLayer, featureState: FeatureState, layoutVertexArrayOffset: number) => boolean | number;
 
 class FeatureIndex {
     tileID: OverscaledTileID;
@@ -165,7 +165,7 @@ class FeatureIndex {
                 continue;
             }
 
-            const intersectionTest = (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: FeatureState, layoutVertexArrayOffset: number = 0) => {
+            const intersectionTest = (feature: VectorTileFeature, styleLayer: TypedStyleLayer, featureState: FeatureState, layoutVertexArrayOffset: number = 0) => {
                 if (!featureGeometry) {
                     featureGeometry = loadGeometry(feature, this.tileID.canonical, tileTransform);
                 }

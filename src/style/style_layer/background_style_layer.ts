@@ -9,6 +9,8 @@ import type {LUT} from "../../util/lut";
 import type {ProgramName} from '../../render/program';
 
 class BackgroundStyleLayer extends StyleLayer {
+    override type: 'background';
+
     override _transitionablePaint: Transitionable<PaintProps>;
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;

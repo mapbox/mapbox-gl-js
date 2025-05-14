@@ -29,6 +29,8 @@ function getCelestialDirection(azimuth: number, altitude: number, leftHanded: bo
 }
 
 class SkyLayer extends StyleLayer {
+    override type: 'sky';
+
     override _transitionablePaint: Transitionable<PaintProps>;
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;

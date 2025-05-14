@@ -2,7 +2,6 @@ import assert from 'assert';
 
 import type Point from '@mapbox/point-geometry';
 import type SourceCache from './source_cache';
-import type StyleLayer from '../style/style_layer';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
 import type {ImageId} from '../style-spec/expression/types/image_id';
@@ -11,6 +10,7 @@ import type {FeatureFilter} from '../style-spec/feature_filter/index';
 import type {RetainedQueryData} from '../symbol/placement';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
 import type {StyleExpression} from '../style-spec/expression/index';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {FilterSpecification} from '../style-spec/types';
 
 /**
@@ -28,7 +28,7 @@ export type QrfLayers = Record<string, QrfLayer>;
 
 export type QrfLayer = {
     targets?: QrfTarget[];
-    styleLayer: StyleLayer;
+    styleLayer: TypedStyleLayer;
 };
 
 export type QrfTarget = {

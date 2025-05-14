@@ -139,8 +139,7 @@ class LineBucket implements Bucket {
     gradients: {
         [key: string]: GradientTexture;
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stateDependentLayers: Array<any>;
+    stateDependentLayers: Array<LineStyleLayer>;
     stateDependentLayerIds: Array<string>;
     patternFeatures: Array<BucketFeature>;
     lineClipsArray: Array<LineClips>;
@@ -353,7 +352,7 @@ class LineBucket implements Bucket {
 
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: Array<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
         this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
     }
 

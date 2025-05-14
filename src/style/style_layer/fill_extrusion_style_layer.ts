@@ -23,6 +23,8 @@ import type {LUT} from "../../../src/util/lut";
 import type {ProgramName} from '../../../src/render/program';
 
 class FillExtrusionStyleLayer extends StyleLayer {
+    override type: 'fill-extrusion';
+
     override _transitionablePaint: Transitionable<PaintProps>;
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;

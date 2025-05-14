@@ -224,6 +224,7 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface): Val
 }
 
 class CustomStyleLayer extends StyleLayer {
+    override type: 'custom';
 
     implementation: CustomLayerInterface;
 

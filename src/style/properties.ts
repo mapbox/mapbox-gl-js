@@ -568,9 +568,7 @@ type PossiblyEvaluatedPropertyValues<Properties> = {
  * given layer type.
  * @private
  */
-export class PossiblyEvaluated<Props extends {
-    [Prop in keyof Props]: Props[Prop]
-}> {
+export class PossiblyEvaluated<Props extends {[Prop in keyof Props]: Props[Prop]}> {
     _properties: Properties<Props>;
     _values: PossiblyEvaluatedPropertyValues<Props>;
 

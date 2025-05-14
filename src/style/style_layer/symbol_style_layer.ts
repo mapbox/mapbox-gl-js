@@ -62,6 +62,8 @@ const getProperties = () => {
 };
 
 class SymbolStyleLayer extends StyleLayer {
+    override type: 'symbol';
+
     override _unevaluatedLayout: Layout<LayoutProps>;
     override layout: PossiblyEvaluated<LayoutProps>;
 
