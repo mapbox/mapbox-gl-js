@@ -40,7 +40,7 @@ class Coercion implements Expression {
         if (args.length < 2)
             return context.error(`Expected at least one argument.`);
 
-        const name: string = (args[0] as any);
+        const name = args[0] as string;
         const parsed = [];
         let type: Type | ArrayType = NullType;
         if (name === 'to-array') {
@@ -93,6 +93,7 @@ class Coercion implements Expression {
         return new Coercion(type, parsed);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         if (this.type.kind === 'boolean') {
             return Boolean(this.args[0].evaluate(ctx));
@@ -136,6 +137,7 @@ class Coercion implements Expression {
         } else if (this.type.kind === 'resolvedImage') {
             return ResolvedImage.build(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'array') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return this.args.map(arg => { return arg.evaluate(ctx); });
         } else {
             return valueToString(this.args[0].evaluate(ctx));

@@ -88,7 +88,7 @@ class Fog extends Evented {
     }
 
     get(): FogSpecification {
-        return this._transitionable.serialize() as any;
+        return this._transitionable.serialize() as FogSpecification;
     }
 
     set(fog?: FogSpecification, configOptions?: ConfigOptions | null, options: StyleSetterOptions = {}) {
@@ -161,8 +161,7 @@ class Fog extends Evented {
                 flatPoint = farPoint;
             } else {
                 const nearPoint = frustum.points[pointIdx - 4];
-                // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec3'.
-                flatPoint = vecInterpolate((nearPoint as any), (farPoint as any), nearPoint[2] / (nearPoint[2] - farPoint[2]));
+                flatPoint = vecInterpolate(nearPoint as number[], farPoint as number[], nearPoint[2] / (nearPoint[2] - farPoint[2])) as vec3;
             }
 
             if (getFogOpacityAtMercCoord(this.state, flatPoint[0], flatPoint[1], 0, this._transform) >= FOG_OPACITY_THRESHOLD) {
@@ -191,6 +190,7 @@ class Fog extends Evented {
     }
 
     _validate(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         validate: any,
         value: unknown,
         options?: {

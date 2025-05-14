@@ -14,6 +14,7 @@ import type SkyLayer from '../style/style_layer/sky_style_layer';
 import type Program from './program';
 import type SourceCache from '../source/source_cache';
 import type Painter from './painter';
+import type {SkyboxCaptureUniformsType} from '../render/program/skybox_capture_program';
 
 export default drawSky;
 
@@ -103,7 +104,7 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
 
-function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<any>, faceRotate: mat4, sunDirection: [number, number, number], i: number) {
+function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<SkyboxCaptureUniformsType>, faceRotate: mat4, sunDirection: [number, number, number], i: number) {
     const context = painter.context;
     const gl = context.gl;
 

@@ -46,10 +46,10 @@ export type HandlerResult = {
     // the point to not move when changing the camera in mercator coordinates
     aroundCoord?: MercatorCoordinate | null;
     // A method that can fire a one-off easing by directly changing the map's camera.
-    cameraAnimation?: (map: Map) => any;
+    cameraAnimation?: (map: Map) => void;
     // The last three properties are needed by only one handler: scrollzoom.
     // The DOM event to be used as the `originalEvent` on any camera change events.
-    originalEvent?: any;
+    originalEvent?: MouseEvent | TouchEvent | WheelEvent | KeyboardEvent | null;
     // Makes the manager trigger a frame, allowing the handler to return multiple results over time (see scrollzoom).
     needsRenderFrame?: boolean;
     // The camera changes won't get recorded for inertial zooming.

@@ -7,9 +7,9 @@
 class ThrottledInvoker {
     _channel: MessageChannel | null | undefined;
     _triggered: boolean;
-    _callback: any;
+    _callback: () => void;
 
-    constructor(callback: any) {
+    constructor(callback: () => void) {
         this._callback = callback;
         this._triggered = false;
         if (typeof MessageChannel !== 'undefined') {

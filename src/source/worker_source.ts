@@ -17,17 +17,19 @@ import type {PromoteIdSpecification} from '../style-spec/types';
 import type Projection from '../geo/projection/projection';
 import type {LUT} from '../util/lut';
 import type {Callback} from '../types/callback';
-import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
+import type {TDecodingResult} from '../data/mrt/types';
 import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
-import type {RasterizedImageMap, ImageRasterizationWorkerTasks} from '../render/image_manager';
+import type {RasterizedImageMap} from '../render/image_manager';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
+import type {StyleModelMap} from '../style/style_mode';
 
 /**
  * The parameters passed to the {@link MapWorker#getWorkerSource}.
  */
 export type WorkerSourceRequest = {
     type: string; // The source type must be a string, because we can register new source types dynamically.
+    uid: number;
     source: string;
     scope: string;
 };
@@ -38,8 +40,7 @@ export type WorkerSourceRequest = {
  * {@link WorkerSource#removeTile}.
  */
 export type WorkerSourceTileRequest = WorkerSourceRequest & {
-    uid: number;
-    tileID: OverscaledTileID;
+    tileID?: OverscaledTileID;
     request?: RequestParameters;
     projection?: Projection;
 };
@@ -138,21 +139,6 @@ export type WorkerSourceRasterArrayTileRequest = WorkerSourceTileRequest & {
     band?: string | number;
 };
 
-export type WorkerSourceRasterArrayDecodingParameters = WorkerSourceTileRequest & {
-    buffer: ArrayBuffer;
-    task: TProcessingBatch;
-};
-
-export type WorkerSourceImageRaserizeParameters = {
-    scope: string;
-    tasks: ImageRasterizationWorkerTasks;
-};
-
-export type WorkerSourceRemoveRasterizedImagesParameters = {
-    scope: string;
-    imageIds: ImageId[];
-};
-
 export type WorkerSourceVectorTileCallback = Callback<WorkerSourceVectorTileResult>;
 export type WorkerSourceDEMTileCallback = Callback<DEMData>;
 export type WorkerSourceRasterArrayTileCallback = ResponseCallback<MapboxRasterTile>;
@@ -179,6 +165,7 @@ export type WorkerSourceImageRaserizeCallback = Callback<RasterizedImageMap>;
  */
 export interface WorkerSource {
     availableImages?: ImageId[];
+    availableModels?: StyleModelMap;
 
     /**
      * Loads a tile from the given params and parse it into buckets ready to send
@@ -212,6 +199,7 @@ export interface WorkerSourceConstructor {
         actor?: Actor,
         layerIndex?: StyleLayerIndex,
         availableImages?: ImageId[],
+        availableModels?: StyleModelMap,
         isSpriteLoaded?: boolean,
         loadData?: (params: {source: string; scope: string}, callback: Callback<unknown>) => () => void | undefined,
         brightness?: number

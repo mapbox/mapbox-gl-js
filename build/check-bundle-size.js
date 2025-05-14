@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
-import { Octokit } from "@octokit/rest";
+import {Octokit} from "@octokit/rest";
 import prettyBytes from 'pretty-bytes';
 import fs from 'fs';
 import {execSync} from 'child_process';
 import zlib from 'zlib';
 
-process.on('unhandledRejection', error => {
+process.on('unhandledRejection', (/** @type {Error} */ error) => {
     // don't log `error` directly, because errors from child_process.execSync
     // contain an (undocumented) `envPairs` with environment variable values
     console.log(error.message || 'Error');
-    process.exit(1)
+    process.exit(1);
 });
 
 const FILES = [
@@ -32,6 +32,7 @@ const repo = 'mapbox-gl-js';
     });
 
     //get current sizes
+    /** @type {Array<[string, {size: number, gzipSize: number}]>} */
     const currentSizes = FILES.map(([label, filePath]) => [label, getSize(filePath)]);
     console.log(currentSizes);
 
@@ -43,6 +44,7 @@ const repo = 'mapbox-gl-js';
             return github.pulls.get({
                 owner,
                 repo,
+                // eslint-disable-next-line camelcase
                 pull_number: number
             }).then(({data}) => {
                 const base = data.base.ref;
@@ -78,7 +80,7 @@ const repo = 'mapbox-gl-js';
             if (run) {
                 const match = run.output.summary.match(/`[^`]+` is (\d+) bytes \([^\)]+\) uncompressed, (\d+) bytes \([^\)]+\) gzipped\./);
                 if (match) {
-                    const prior = { size: +match[1], gzipSize: +match[2] };
+                    const prior = {size: +match[1], gzipSize: +match[2]};
                     console.log(`Prior size was ${prettyBytes(prior.size)}, gzipped ${prior.gzipSize}.`);
                     return prior;
                 }
@@ -91,10 +93,15 @@ const repo = 'mapbox-gl-js';
     const mergeBase = await getMergeBase();
 
     // Generate a github check for each filetype
-    for(let check_idx=0; check_idx<FILES.length; check_idx++){
+    // eslint-disable-next-line camelcase
+    for (let check_idx = 0; check_idx < FILES.length; check_idx++) {
+        // eslint-disable-next-line camelcase
         const [label, file] = FILES[check_idx];
         const name = `Size - ${label}`;
+        /** @type {{size: number, gzipSize: number}} */
+        // eslint-disable-next-line camelcase
         const size = currentSizes[check_idx][1];
+        // eslint-disable-next-line no-await-in-loop
         const priorSize = await getPriorSize(mergeBase, name);
         console.log('priorSize: ', label, priorSize);
 
@@ -109,16 +116,20 @@ const repo = 'mapbox-gl-js';
         console.log(`Title: ${title}`);
         console.log(`Summary: ${summary}`);
 
+        // eslint-disable-next-line no-await-in-loop
         await github.checks.create({
             owner,
             repo,
             name,
+            // eslint-disable-next-line camelcase
             head_branch: process.env['CIRCLE_BRANCH'],
+            // eslint-disable-next-line camelcase
             head_sha: process.env['CIRCLE_SHA1'],
             status: 'completed',
             conclusion: 'success',
+            // eslint-disable-next-line camelcase
             completed_at: new Date().toISOString(),
-            output: { title, summary }
+            output: {title, summary}
         });
     }
 })();

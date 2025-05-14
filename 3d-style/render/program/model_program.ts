@@ -72,7 +72,7 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_lutTexture': new Uniform1i(context),
     'u_color_mix': new Uniform4f(context),
     'u_aoIntensity': new Uniform1f(context),
-    'u_emissive_strength' : new Uniform1f(context),
+    'u_emissive_strength': new Uniform1f(context),
     'u_occlusionTextureTransform': new Uniform4f(context)
 
 });

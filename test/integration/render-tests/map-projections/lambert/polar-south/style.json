@@ -10,7 +10,7 @@
         ["wait"],
         ["setProjection", {
           "name": "lambertConformalConic",
-          "center": [-40, 0],
+          "center": [5, 0],
           "parallels": [-90, -90]
         }],
         ["wait"]

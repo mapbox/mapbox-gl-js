@@ -231,20 +231,20 @@ class Frustum {
     frustumEdges: Array<vec3>;
 
     constructor(points_?: FrustumPoints | null, planes_?: FrustumPlanes | null) {
-        this.points = points_ || (new Array(8).fill([0, 0, 0]) as any);
-        this.planes = planes_ || (new Array(6).fill([0, 0, 0, 0]) as any);
-        this.bounds = Aabb.fromPoints((this.points as any));
+        this.points = points_ || (new Array(8).fill([0, 0, 0]) as FrustumPoints);
+        this.planes = planes_ || (new Array(6).fill([0, 0, 0, 0]) as FrustumPlanes);
+        this.bounds = Aabb.fromPoints(this.points);
         this.projections = [];
 
         // Precompute a set of separating axis candidates for precise intersection tests.
         // These axes are computed as follows: (edges of aabb) x (edges of frustum)
         this.frustumEdges = [
-            vec3.sub([] as any, this.points[NEAR_BR], this.points[NEAR_BL]),
-            vec3.sub([] as any, this.points[NEAR_TL], this.points[NEAR_BL]),
-            vec3.sub([] as any, this.points[FAR_TL], this.points[NEAR_TL]),
-            vec3.sub([] as any, this.points[FAR_TR], this.points[NEAR_TR]),
-            vec3.sub([] as any, this.points[FAR_BR], this.points[NEAR_BR]),
-            vec3.sub([] as any, this.points[FAR_BL], this.points[NEAR_BL])
+            vec3.sub([] as unknown as vec3, this.points[NEAR_BR], this.points[NEAR_BL]),
+            vec3.sub([] as unknown as vec3, this.points[NEAR_TL], this.points[NEAR_BL]),
+            vec3.sub([] as unknown as vec3, this.points[FAR_TL], this.points[NEAR_TL]),
+            vec3.sub([] as unknown as vec3, this.points[FAR_TR], this.points[NEAR_TR]),
+            vec3.sub([] as unknown as vec3, this.points[FAR_BR], this.points[NEAR_BR]),
+            vec3.sub([] as unknown as vec3, this.points[FAR_BL], this.points[NEAR_BL]),
         ];
 
         for (const edge of this.frustumEdges) {
@@ -255,12 +255,12 @@ class Frustum {
 
             this.projections.push({
                 axis: axis0,
-                projection: projectPoints((this.points as any), this.points[0], axis0)
+                projection: projectPoints(this.points, this.points[0], axis0)
             });
 
             this.projections.push({
                 axis: axis1,
-                projection: projectPoints((this.points as any), this.points[0], axis1)
+                projection: projectPoints(this.points, this.points[0], axis1)
             });
         }
     }
@@ -268,12 +268,12 @@ class Frustum {
     static fromInvProjectionMatrix(invProj: mat4, worldSize: number, zoom: number, zInMeters: boolean): Frustum {
         const clipSpaceCorners = [
             [-1, 1, -1, 1],
-            [ 1, 1, -1, 1],
-            [ 1, -1, -1, 1],
+            [1, 1, -1, 1],
+            [1, -1, -1, 1],
             [-1, -1, -1, 1],
             [-1, 1, 1, 1],
-            [ 1, 1, 1, 1],
-            [ 1, -1, 1, 1],
+            [1, 1, 1, 1],
+            [1, -1, 1, 1],
             [-1, -1, 1, 1]
         ] as vec4[];
 
@@ -331,15 +331,15 @@ class Frustum {
 
         for (const edge of edges) {
             for (const frustumEdge of this.frustumEdges) {
-                const axis = vec3.cross([] as any, edge, frustumEdge);
+                const axis = vec3.cross([] as unknown as vec3, edge, frustumEdge);
                 const len  = vec3.length(axis);
                 if (len === 0) {
                     continue;
                 }
 
                 vec3.scale(axis, axis, 1 / len);
-                const projA = projectPoints((this.points as any), this.points[0], axis);
-                const projB = projectPoints((vertices as any), this.points[0], axis);
+                const projA = projectPoints(this.points, this.points[0], axis);
+                const projB = projectPoints(vertices, this.points[0], axis);
 
                 if (projA[0] > projB[1] || projB[0] > projA[1]) {
                     return 0;
@@ -429,7 +429,7 @@ class Aabb {
     constructor(min_: vec3, max_: vec3) {
         this.min = min_;
         this.max = max_;
-        this.center = vec3.scale([] as any, vec3.add([] as any, this.min, this.max), 0.5);
+        this.center = vec3.scale([] as unknown as vec3, vec3.add([] as unknown as vec3, this.min, this.max), 0.5);
     }
 
     quadrant(index: number): Aabb {

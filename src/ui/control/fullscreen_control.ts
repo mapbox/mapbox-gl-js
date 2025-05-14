@@ -3,6 +3,15 @@ import {bindAll, warnOnce} from '../../util/util';
 
 import type {Map, IControl} from '../map';
 
+type WebkitDocument = Document & {
+    webkitFullscreenElement?: Element;
+    webkitCancelFullScreen?: () => void;
+};
+
+type WebkitFullscreenElement = Element & {
+    webkitRequestFullscreen?: () => void;
+};
+
 export type FullscreenControlOptions = {
     container?: HTMLElement | null;
 };
@@ -63,14 +72,14 @@ class FullscreenControl implements IControl {
 
     onRemove() {
         this._controlContainer.remove();
-        this._map = (null as any);
+        this._map = null;
         document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
 
     _checkFullscreenSupport(): boolean {
         return !!(
             document.fullscreenEnabled ||
-            (document as any).webkitFullscreenEnabled
+            (document as {webkitFullscreenEnabled?: boolean}).webkitFullscreenEnabled
         );
     }
 
@@ -100,7 +109,7 @@ class FullscreenControl implements IControl {
     _changeIcon() {
         const fullscreenElement =
             document.fullscreenElement ||
-            (document as any).webkitFullscreenElement;
+            (document as WebkitDocument).webkitFullscreenElement;
 
         if ((fullscreenElement === this._container) !== this._fullscreen) {
             this._fullscreen = !this._fullscreen;
@@ -113,14 +122,16 @@ class FullscreenControl implements IControl {
     _onClickFullscreen() {
         if (this._isFullscreen()) {
             if (document.exitFullscreen) {
-                (document as any).exitFullscreen();
-            } else if ((document as any).webkitCancelFullScreen) {
-                (document as any).webkitCancelFullScreen();
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                document.exitFullscreen();
+            } else if ((document as WebkitDocument).webkitCancelFullScreen) {
+                (document as WebkitDocument).webkitCancelFullScreen();
             }
         } else if (this._container.requestFullscreen) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._container.requestFullscreen();
-        } else if ((this._container as any).webkitRequestFullscreen) {
-            (this._container as any).webkitRequestFullscreen();
+        } else if ((this._container as WebkitFullscreenElement).webkitRequestFullscreen) {
+            (this._container as WebkitFullscreenElement).webkitRequestFullscreen();
         }
     }
 }

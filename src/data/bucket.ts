@@ -4,6 +4,7 @@ import './feature_index';
 
 import type {CollisionBoxArray} from './array_types';
 import type Style from '../style/style';
+import type StyleLayer from '../style/style_layer';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type FeatureIndex from './feature_index';
 import type Context from '../gl/context';
@@ -20,6 +21,7 @@ import type {LUT} from "../util/lut";
 import type {ImageVariant} from '../style-spec/expression/types/image_variant';
 import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature';
 import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
+import type {StyleModelMap} from '../style/style_mode';
 
 export type BucketParameters<Layer extends TypedStyleLayer> = {
     index: number;
@@ -34,6 +36,7 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     sourceID: string;
     projection: ProjectionSpecification;
     tessellationStep: number | null | undefined;
+    styleDefinedModelURLs: StyleModelMap;
 };
 
 export type ImageDependenciesMap = Map<StringifiedImageId, Array<ImageVariant>>;
@@ -63,10 +66,11 @@ export type BucketFeature = {
     index: number;
     sourceLayerIndex: number;
     geometry: Array<Array<Point>>;
-    properties: any;
+    properties: Record<PropertyKey, unknown>;
     type: 0 | 1 | 2 | 3;
-    id?: any;
-    readonly patterns: Record<string, string>;
+    id?: string | number | null;
+    // Array<[primaryId, secondaryIs]>
+    readonly patterns: Record<string, string[]>;
     sortKey?: number;
 };
 
@@ -96,8 +100,9 @@ export type BucketFeature = {
 export interface Bucket {
     layerIds: Array<string>;
     hasPattern: boolean;
-    readonly layers: Array<any>;
-    readonly stateDependentLayers: Array<any>;
+    layers: StyleLayer[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    stateDependentLayers: Array<any>;
     readonly stateDependentLayerIds: Array<string>;
     populate: (
         features: Array<IndexedFeature>,
@@ -146,10 +151,9 @@ export function deserialize(input: Array<Bucket>, style: Style): Record<string, 
 
         // look up StyleLayer objects from layer ids (since we don't
         // want to waste time serializing/copying them from the worker)
-        // @ts-expect-error - layers is a readonly property
         bucket.layers = layers;
         if (bucket.stateDependentLayerIds) {
-            (bucket as any).stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
+            bucket.stateDependentLayers = bucket.stateDependentLayerIds.map((lId) => layers.filter((l) => l.id === lId)[0]);
         }
         for (const layer of layers) {
             output[layer.fqid] = bucket;

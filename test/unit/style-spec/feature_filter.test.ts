@@ -1,7 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, beforeEach, expect, vi} from '../../util/vitest';
 import {default as createFilter, isExpressionFilter, isDynamicFilter, extractStaticFilter} from '../../../src/style-spec/feature_filter/index';
-
 import convertFilter from '../../../src/style-spec/feature_filter/convert';
 import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../../../src/geo/mercator_coordinate';
@@ -75,7 +75,7 @@ describe('filter', () => {
         };
         const withinFilter =  createFilter(['within', {'type': 'Polygon', 'coordinates': [[[0, 0], [5, 0], [5, 5], [0, 5], [0, 0]]]}]);
         expect(withinFilter.needGeometry).toEqual(true);
-        const canonical = {z: 3, x: 3, y:3};
+        const canonical = {z: 3, x: 3, y: 3};
         expect(
             withinFilter.filter({zoom: 3}, {type: 1, geometry: [[getPointFromLngLat(2, 2, canonical)]]}, canonical)
         ).toEqual(true);
@@ -107,8 +107,8 @@ describe('filter', () => {
                 ["<", ["pitch"], 60], ["<", ["get", "filter_rank"], 2],
                 [">", ["get", "filter_rank"], 4],
             ],
-            ["all", ["<", ["get", "filter_rank"], 2 ], [ "<", ["pitch"], 60]],
-            ["any", ["<", ["get", "filter_rank"], 2 ], [ "<", ["pitch"], 60]],
+            ["all", ["<", ["get", "filter_rank"], 2], ["<", ["pitch"], 60]],
+            ["any", ["<", ["get", "filter_rank"], 2], ["<", ["pitch"], 60]],
             ["<", ["pitch"], 60],
             ["all",
                 [
@@ -567,14 +567,14 @@ describe('filter', () => {
                     {
                         dynamic: ["match",
                             ["pitch"],
-                            [10, 20, 30], [ "<", ["get", "filterrank"], 2],
-                            [70, 80], [ ">", ["get", "filterrank"], 5],
-                            ["all", [ ">", ["get", "filterrank"], 2], [ "<", ["get", "filterrank"], 5]]
+                            [10, 20, 30], ["<", ["get", "filterrank"], 2],
+                            [70, 80], [">", ["get", "filterrank"], 5],
+                            ["all", [">", ["get", "filterrank"], 2], ["<", ["get", "filterrank"], 5]]
                         ],
                         static: ["any",
-                            [ "<", ["get", "filterrank"], 2],
-                            [ ">", ["get", "filterrank"], 5],
-                            ["all", [ ">", ["get", "filterrank"], 2], [ "<", ["get", "filterrank"], 5]]
+                            ["<", ["get", "filterrank"], 2],
+                            [">", ["get", "filterrank"], 5],
+                            ["all", [">", ["get", "filterrank"], 2], ["<", ["get", "filterrank"], 5]]
                         ]
                     },
                     {

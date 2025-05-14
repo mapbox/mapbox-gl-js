@@ -3,10 +3,9 @@ import path from 'path';
 import fs from 'fs';
 import isBuiltin from 'is-builtin-module';
 import {rollup} from 'rollup';
-
 import {test} from 'tape';
 import rollupConfig from '../../src/style-spec/rollup.config.js';
-
+// eslint-disable-next-line import/order
 import {createRequire} from 'module';
 const require = createRequire(import.meta.url);
 
@@ -15,7 +14,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const styleSpecDirectory = path.join(__dirname, '../../src/style-spec');
 
-const styleSpecPackage = JSON.parse(fs.readFileSync(path.join(styleSpecDirectory, 'package.json')));
+const styleSpecPackage = JSON.parse(fs.readFileSync(path.join(styleSpecDirectory, 'package.json')).toString());
 // import styleSpecPackage from '../../src/style-spec/package.json';
 
 test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
@@ -25,6 +24,7 @@ test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
         rollup({
             input: `${styleSpecDirectory}/style-spec.ts`,
             plugins: [{
+                name: 'check-dependencies',
                 resolveId: (id, importer) => {
                     if (isBuiltin(id) || /node_modules/.test(id) || /node_modules/.test(importer)) {
                         return null;
@@ -41,7 +41,6 @@ test('@mapbox/mapbox-gl-style-spec npm package', (t) => {
                     }
 
                     t.ok(styleSpecPackage.dependencies[id], `External dependency ${id} (imported from ${importer}) declared in style-spec's package.json`);
-                    return false;
                 }
             }].concat(rollupConfig[0].plugins)
         }).then(() => {

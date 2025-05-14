@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {
     describe,
@@ -97,7 +98,7 @@ describe('RasterTileSource', () => {
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
-                    loadVectorData () {},
+                    loadVectorData() {},
                     setExpiryData() {}
                 };
                 source.loadTile(tile, () => {

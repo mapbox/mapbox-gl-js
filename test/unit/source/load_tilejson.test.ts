@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {vi, describe, test, expect, doneAsync, assert} from '../../util/vitest';
 import {mockFetch} from '../../util/network';
@@ -428,7 +429,7 @@ describe('LoadTileJson#variants', () => {
             "tiles": ["http://dataset1"],
             "variants": [
                 {
-                    "capabilities" : "capabilities should be an array"
+                    "capabilities": "capabilities should be an array"
                 }
             ]
         };
@@ -440,7 +441,7 @@ describe('LoadTileJson#variants', () => {
         await wait;
     });
 
-    test('tiles should be replaced if capabilities.length == 1 and capabilities[0] == "meshopt" ', async() => {
+    test('tiles should be replaced if capabilities.length == 1 and capabilities[0] == "meshopt" ', async () => {
         const {withAsync, wait} = doneAsync();
         const options = {
             url: "/source.json"
@@ -450,7 +451,7 @@ describe('LoadTileJson#variants', () => {
             "tiles": ["http://dataset1"],
             "variants": [
                 {
-                    "capabilities" : ["meshopt"],
+                    "capabilities": ["meshopt"],
                     "tiles": ["http://dataset2"]
                 }
             ]
@@ -480,11 +481,11 @@ describe('LoadTileJson#variants', () => {
             "tiles": ["http://dataset1"],
             "variants": [
                 {
-                    "capabilities" : ["customcapability"],
+                    "capabilities": ["customcapability"],
                     "tiles": ["http://dataset2"]
                 },
                 {
-                    "capabilities" : ["meshopt"],
+                    "capabilities": ["meshopt"],
                     "tiles": ["http://dataset3"]
                 }
             ]
@@ -514,12 +515,12 @@ describe('LoadTileJson#variants', () => {
             "minzoom": 1,
             "variants": [
                 {
-                    "capabilities" : ["customcapability"],
+                    "capabilities": ["customcapability"],
                     "tiles": ["http://dataset2"]
                 },
                 {
                     "minzoom": 14,
-                    "capabilities" : ["meshopt"],
+                    "capabilities": ["meshopt"],
                     "tiles": ["http://dataset3"]
                 }
             ]

@@ -11,12 +11,12 @@ import {mulberry32} from '../style-spec/util/random';
 import {snowLayout} from "./snow_attributes";
 import {PrecipitationRevealParams} from './precipitation_reveal_params';
 import {createTpBindings} from './vignette';
-import {type VignetteParams} from './vignette';
 import {boxWrap, generateUniformDistributedPointsInsideCube, lerpClamp, PrecipitationBase} from './common';
 import {Debug} from '../util/debug';
 
-import type Painter from '../render/painter';
 import type {vec2, vec4} from 'gl-matrix';
+import type Painter from '../render/painter';
+import type {VignetteParams} from './vignette';
 
 export class Snow extends PrecipitationBase {
     _revealParams: PrecipitationRevealParams;
@@ -211,6 +211,7 @@ export class Snow extends PrecipitationBase {
 
         painter.uploadCommonUniforms(context, program);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const drawParticlesBox = (boxSize: number, sizeScale: number, dp: any) => {
             const camPos = boxWrap(this._movement.getPosition(), boxSize);
 

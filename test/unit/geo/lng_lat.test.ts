@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import LngLat from '../../../src/geo/lng_lat';
@@ -6,15 +7,12 @@ describe('LngLat', () => {
     test('#constructor', () => {
         expect(new LngLat(0, 0) instanceof LngLat).toBeTruthy();
         expect(() => {
-            /*eslint no-new: 0*/
             new LngLat('foo', 0);
         }).toThrowError("Invalid LngLat object: (foo, 0)");
         expect(() => {
-            /*eslint no-new: 0*/
             new LngLat(0, -91);
         }).toThrowError('Invalid LngLat latitude value: must be between -90 and 90');
         expect(() => {
-            /*eslint no-new: 0*/
             new LngLat(0, 91);
         }).toThrowError('Invalid LngLat latitude value: must be between -90 and 90');
     });

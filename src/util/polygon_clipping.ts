@@ -1,24 +1,8 @@
 import assert from 'assert';
+import * as martinez from 'martinez-polygon-clipping';
 import Point from '@mapbox/point-geometry';
-import {number as interpolate} from '../style-spec/util/interpolate';
 
-export class Point3D extends Point {
-    z: number;
-
-    constructor(x: number, y: number, z: number) {
-        super(x, y);
-        this.z = z;
-    }
-}
-
-export class Point4D extends Point3D {
-    w: number; // used for line progress and interpolated on clipping
-
-    constructor(x: number, y: number, z: number, w: number) {
-        super(x, y, z);
-        this.w = w;
-    }
-}
+import type {EdgeIterator} from '../../3d-style/elevation/elevation_feature';
 
 export type ClippedPolygon = {
     polygon: Array<Array<Point>>;
@@ -89,20 +73,23 @@ function clipPolygon(polygons: PolygonArray, clipAxis1: number, clipAxis2: numbe
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return polygonsClipped;
 }
 
-export function subdividePolygons(
+export function gridSubdivision(
     polygons: PolygonArray,
     bounds: [Point, Point],
     gridSizeX: number,
     gridSizeY: number,
     padding: number | null | undefined = 0.0,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     splitFn: any,
 ): Array<ClippedPolygon> {
     const outPolygons = [];
 
     if (!polygons.length || !gridSizeX || !gridSizeY) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return outPolygons;
     }
 
@@ -133,6 +120,7 @@ export function subdividePolygons(
     split = clipPolygon(split, bounds[0].x - padding, bounds[1].x + padding, 0);
 
     if (!split.length) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return outPolygons;
     }
 
@@ -168,12 +156,11 @@ export function subdividePolygons(
 
             const bbMax = new Point(bbMaxX, bbMaxY);
 
-            const lclipBounds = [bboxMin, bbMax];
+            const lclipBounds: [Point, Point] = [bboxMin, bbMax];
 
             if (splits.length > depth + 1) {
                 stack.push({polygons: lclip, bounds: lclipBounds, depth: depth + 1});
             } else {
-                // @ts-expect-error - TS2345 - Argument of type 'any[]' is not assignable to parameter of type '[Point, Point]'.
                 addResult(lclip, lclipBounds);
             }
         }
@@ -195,38 +182,71 @@ export function subdividePolygons(
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return outPolygons;
 }
 
-function clipFirst(a: Point, b: Point, axis: string, clip: number): void {
-    const axis1 = axis === 'x' ? 'y' : 'x';
-    const ratio = (clip - a[axis]) / (b[axis] - a[axis]);
-    a[axis1] = a[axis1] + (b[axis1] - a[axis1]) * ratio;
-    a[axis] = clip;
-    if (a.hasOwnProperty('z')) {
-        a['z'] = interpolate(a['z'], b['z'], ratio);
-    }
-    if (a.hasOwnProperty('w')) {
-        a['w'] = interpolate(a['w'], b['w'], ratio);
-    }
+export function clip(subjectPolygon: Point[][], clipRing: Point[]): Point[][][] {
+    const geom = toMultiPolygon(subjectPolygon);
+    const clipGeom = toMultiPolygon([clipRing]);
+
+    const polygons = martinez.intersection(geom, clipGeom) as martinez.MultiPolygon;
+    if (polygons == null) return [];
+
+    return fromMultiPolygon(polygons);
 }
 
-export function clipLine(p0: Point, p1: Point, boundsMin: number, boundsMax: number): void {
-    const clipAxis1 = boundsMin;
-    const clipAxis2 = boundsMax;
-    for (const axis of ["x", "y"]) {
-        let a = p0;
-        let b = p1;
-        if (a[axis] >= b[axis]) {
-            a = p1;
-            b = p0;
-        }
+export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: EdgeIterator): Point[][][] {
+    // Perform clipping temporarily in a 32bit space where few unit wide polygons are just
+    // lines when scaled back to 16bit.
+    const scale = 1 << 16;
 
-        if (a[axis] < clipAxis1 && b[axis] > clipAxis1) {
-            clipFirst(a, b, axis, clipAxis1);
-        }
-        if (a[axis] < clipAxis2 && b[axis] > clipAxis2) {
-            clipFirst(b, a, axis, clipAxis2);
-        }
+    let polygons = toMultiPolygon(subjectPolygon, scale);
+
+    // Split the polygon using edges from the iterator
+    for (; subdivisionEdges.valid(); subdivisionEdges.next()) {
+        const [a, b] = subdivisionEdges.get();
+
+        const ax = a.x * scale;
+        const ay = a.y * scale;
+        const bx = b.x * scale;
+        const by = b.y * scale;
+
+        const dx = bx - ax;
+        const dy = by - ay;
+        const len = Math.hypot(dx, dy);
+
+        // Expand the polygon towards the perpendicular vector by few units
+        const shiftX = Math.trunc(dy / len * 3.0);
+        const shiftY = -Math.trunc(dx / len * 3.0);
+
+        const clipLine: martinez.Polygon = [
+            [
+                [ax, ay],
+                [bx, by],
+                [bx + shiftX, by + shiftY],
+                [ax + shiftX, ay + shiftY],
+                [ax, ay]
+            ]
+        ];
+
+        polygons = martinez.diff(polygons, clipLine) as martinez.MultiPolygon;
     }
+
+    return fromMultiPolygon(polygons, 1 / scale);
+}
+
+function toMultiPolygon(polygon: Point[][], scale: number = 1.0): martinez.MultiPolygon {
+    return [polygon.map(ring => ring.map(p => [p.x * scale, p.y * scale]))];
+}
+
+function fromMultiPolygon(geometry: martinez.MultiPolygon, scale: number = 1.0): Point[][][] {
+    return geometry.map(poly => poly.map((ring, index) => {
+        const r = ring.map(p => new Point(p[0] * scale, p[1] * scale).round());
+        if (index > 0) {
+            // Reverse holes
+            r.reverse();
+        }
+        return r;
+    }));
 }

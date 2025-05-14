@@ -54,6 +54,7 @@ class IndexOf implements Expression {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         const needle = (this.needle.evaluate(ctx));
         const haystack = (this.haystack.evaluate(ctx));

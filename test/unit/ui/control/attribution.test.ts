@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, waitFor, createMap as globalCreateMap, doneAsync} from '../../../util/vitest';
 import config from '../../../../src/util/config';

@@ -8,15 +8,18 @@
 
 /* eslint-disable camelcase */
 /* eslint-disable eqeqeq */
-/* eslint-disable no-unused-expressions */
 /* eslint-disable no-var */
 /* eslint-disable object-shorthand */
-/* eslint-disable operator-linebreak */
 /* eslint-disable prefer-arrow-callback */
 /* eslint-disable prefer-const */
 /* eslint-disable prefer-template */
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
+
 import mapboxgl from "mapbox-gl";
+
 import type {IControl} from "mapbox-gl";
 
 // These examples adapted from Mapbox's examples (https://www.mapbox.com/mapbox-gl-js/examples)
@@ -207,9 +210,9 @@ map.on("load", function () {
                 "circle-color": layer[1],
                 "circle-radius": 18,
             },
-            filter: i == 0
-                ? [">=", "point_count", layer[0]]
-                : ["all", [">=", "point_count", layer[0]], ["<", "point_count", layers[i - 1][0]]],
+            filter: i == 0 ?
+                [">=", "point_count", layer[0]] :
+                ["all", [">=", "point_count", layer[0]], ["<", "point_count", layers[i - 1][0]]],
         });
     });
 
@@ -948,7 +951,7 @@ mercatorcoordinate.meterInMercatorCoordinateUnits() satisfies number;
  */
 
 expectType<mapboxgl.TransformRequestFunction>((url: string) => ({url}));
-expectType<mapboxgl.TransformRequestFunction>((url: string, resourceType: mapboxgl.ResourceType) => ({
+expectType<mapboxgl.TransformRequestFunction>((url: string, resourceType?: mapboxgl.ResourceType) => ({
     url,
     credentials: "same-origin",
     headers: {"Accept-Encoding": "compress"},

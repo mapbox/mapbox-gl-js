@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, waitFor, vi} from '../../util/vitest';
 import SourceCache from '../../../src/source/source_cache';
@@ -34,6 +35,7 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
                     expires: sourceOptions.expires
                 });
             }
+            // eslint-disable-next-line @typescript-eslint/no-implied-eval
             setTimeout(callback, 0);
         }
         loaded() {
@@ -399,7 +401,7 @@ describe('SourceCache / Source lifecycle', () => {
         transform.resize(511, 511);
         transform.zoom = 0;
         const {sourceCache, eventedParent} = createSourceCache({
-            loadTile (tile, callback) {
+            loadTile(tile, callback) {
                 callback("error");
             }
         });
@@ -449,7 +451,7 @@ describe('SourceCache / Source lifecycle', () => {
         transform.zoom = 1;
 
         const {sourceCache, eventedParent} = createSourceCache({
-            loadTile (tile, callback) {
+            loadTile(tile, callback) {
                 // this transform will try to load the four tiles at z1 and a single z0 tile
                 // we only expect _reloadTile to be called with the 'loaded' z0 tile
                 tile.state = tile.tileID.canonical.z === 1 ? 'errored' : 'loaded';
@@ -1134,9 +1136,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
 
         expect(retained).toEqual({
             // parent of ideal tile 0/0/0
-            '0' : new OverscaledTileID(0, 0, 0, 0, 0),
+            '0': new OverscaledTileID(0, 0, 0, 0, 0),
             // ideal tile id 1/0/1
-            '1040' : new OverscaledTileID(1, 0, 1, 0, 1)
+            '1040': new OverscaledTileID(1, 0, 1, 0, 1)
         });
 
         addTileSpy.mockClear();
@@ -1149,7 +1151,7 @@ describe('SourceCache#_updateRetainedTiles', () => {
         expect(getTileSpy).not.toHaveBeenCalled();
         expect(retainedLoaded).toEqual({
             // only ideal tile retained
-            '1040' : new OverscaledTileID(1, 0, 1, 0, 1)
+            '1040': new OverscaledTileID(1, 0, 1, 0, 1)
         });
 
         addTileSpy.mockRestore();
@@ -1202,9 +1204,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
         expect(retained).toEqual({
             // parent of ideal tile (0, 0, 0) (only partially covered by loaded child
             // tiles, so we still need to load the parent)
-            '0' : new OverscaledTileID(0, 0, 0, 0, 0),
+            '0': new OverscaledTileID(0, 0, 0, 0, 0),
             // ideal tile id (1, 0, 0)
-            '16' : new OverscaledTileID(1, 0, 1, 0, 0),
+            '16': new OverscaledTileID(1, 0, 1, 0, 0),
             // loaded child tile (2, 0, 0)
             '32': new OverscaledTileID(2, 0, 2, 0, 0)
         });
@@ -1217,9 +1219,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
         expect(retained).toEqual({
             // parent of ideal tile (0, 0, 0) (only partially covered by loaded child
             // tiles, so we still need to load the parent)
-            '0' : new OverscaledTileID(0, 0, 0, 0, 0),
+            '0': new OverscaledTileID(0, 0, 0, 0, 0),
             // ideal tile id (1, 0, 0)
-            '16' : new OverscaledTileID(1, 0, 1, 0, 0)
+            '16': new OverscaledTileID(1, 0, 1, 0, 0)
         });
     });
 
@@ -1245,7 +1247,7 @@ describe('SourceCache#_updateRetainedTiles', () => {
 
         expect(retained).toEqual({
             // ideal tile id (2, 0, 0)
-            '32' : new OverscaledTileID(2, 0, 2, 0, 0)
+            '32': new OverscaledTileID(2, 0, 2, 0, 0)
         });
 
         getTileSpy.mockRestore();
@@ -1274,7 +1276,7 @@ describe('SourceCache#_updateRetainedTiles', () => {
 
         expect(retained).toEqual({
             // ideal tile id (2, 0, 0)
-            '32' : new OverscaledTileID(2, 0, 2, 0, 0)
+            '32': new OverscaledTileID(2, 0, 2, 0, 0)
         });
 
         getTileSpy.mockRestore();
@@ -1430,7 +1432,7 @@ describe('SourceCache#tilesIn', () => {
 
                     expect(tiles[0].tile.tileID.key).toEqual(16);
                     expect(tiles[0].tile.tileSize).toEqual(512);
-                    expect(round(tiles[0].bufferedTilespaceBounds)).toStrictEqual({min: {x: 4080, y: 4034}, max: {x:8192, y: 8162}});
+                    expect(round(tiles[0].bufferedTilespaceBounds)).toStrictEqual({min: {x: 4080, y: 4034}, max: {x: 8192, y: 8162}});
 
                     expect(tiles[1].tile.tileID.key).toEqual(528);
                     expect(tiles[1].tile.tileSize).toEqual(512);
@@ -1481,7 +1483,7 @@ describe('SourceCache#tilesIn', () => {
 
                     expect(tiles[0].tile.tileID.key).toEqual(17);
                     expect(tiles[0].tile.tileSize).toEqual(1024);
-                    expect(round(tiles[0].bufferedTilespaceBounds)).toStrictEqual({min: {x: 4088, y: 4042}, max: {x:8192, y: 8154}});
+                    expect(round(tiles[0].bufferedTilespaceBounds)).toStrictEqual({min: {x: 4088, y: 4042}, max: {x: 8192, y: 8154}});
 
                     expect(tiles[1].tile.tileID.key).toEqual(529);
                     expect(tiles[1].tile.tileSize).toEqual(1024);
@@ -1768,7 +1770,7 @@ describe('SourceCache loads tiles recursively', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             maxzoom: 14,
-            loadTile (tile, callback) {
+            loadTile(tile, callback) {
                 if (tile.tileID.canonical.z > maxAvailableZoom) {
                     setTimeout(() => callback({status: 404}), 0);
                 } else {
@@ -1832,7 +1834,7 @@ describe('SourceCache loads tiles recursively', () => {
         transform.zoom = 1;
 
         const {sourceCache, eventedParent} = createSourceCache({
-            loadTile (tile, callback) {
+            loadTile(tile, callback) {
                 setTimeout(() => callback({status: 404}), 0);
             }
         });
@@ -1894,7 +1896,7 @@ describe('SourceCache#_preloadTiles', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             reparseOverscaled: true,
-            loadTile (tile, callback) {
+            loadTile(tile, callback) {
                 expect(tile.tileID.key).toEqual(expected.shift());
                 tile.state = 'loaded';
                 callback(null);
@@ -1921,7 +1923,7 @@ describe('SourceCache#_preloadTiles', () => {
         transform.zoom = 0;
 
         const {sourceCache} = createSourceCache({
-            loadTile (tile) {
+            loadTile(tile) {
                 expect(sourceCache._sourceLoaded).toBeTruthy();
                 expect(tile.tileID.key).toEqual(new OverscaledTileID(0, 0, 0, 0, 0).key);
             }

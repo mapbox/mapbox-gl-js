@@ -53,6 +53,7 @@ export type PaintProps = {
     "line-blur": DataDrivenProperty<number>;
     "line-dasharray": DataDrivenProperty<Array<number | null | undefined>>;
     "line-pattern": DataDrivenProperty<ResolvedImage | null | undefined>;
+    "line-pattern-cross-fade": DataConstantProperty<number>;
     "line-gradient": ColorRampProperty;
     "line-trim-offset": DataConstantProperty<[number, number]>;
     "line-trim-fade-range": DataConstantProperty<[number, number]>;
@@ -79,6 +80,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "line-blur": new DataDrivenProperty(styleSpec["paint_line"]["line-blur"]),
     "line-dasharray": new DataDrivenProperty(styleSpec["paint_line"]["line-dasharray"]),
     "line-pattern": new DataDrivenProperty(styleSpec["paint_line"]["line-pattern"]),
+    "line-pattern-cross-fade": new DataConstantProperty(styleSpec["paint_line"]["line-pattern-cross-fade"]),
     "line-gradient": new ColorRampProperty(styleSpec["paint_line"]["line-gradient"]),
     "line-trim-offset": new DataConstantProperty(styleSpec["paint_line"]["line-trim-offset"]),
     "line-trim-fade-range": new DataConstantProperty(styleSpec["paint_line"]["line-trim-fade-range"]),

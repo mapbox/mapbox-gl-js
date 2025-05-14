@@ -29,9 +29,10 @@ export type PatternUniformsType = {
     ['u_tile_units_to_pixels']: Uniform1f;
     ['u_pixel_coord_upper']: Uniform2f;
     ['u_pixel_coord_lower']: Uniform2f;
+    ['u_pattern_transition']: Uniform1f;
 };
 
-function patternUniformValues(painter: Painter, tile: Tile): UniformValues<PatternUniformsType> {
+function patternUniformValues(painter: Painter, tile: Tile, patternTransition: number = 0): UniformValues<PatternUniformsType> {
 
     const numTiles = Math.pow(2, tile.tileID.overscaledZ);
     const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom) / numTiles;
@@ -45,7 +46,8 @@ function patternUniformValues(painter: Painter, tile: Tile): UniformValues<Patte
         'u_tile_units_to_pixels': 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom),
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
         'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],
-        'u_pixel_coord_lower': [pixelX & 0xFFFF, pixelY & 0xFFFF]
+        'u_pixel_coord_lower': [pixelX & 0xFFFF, pixelY & 0xFFFF],
+        'u_pattern_transition': patternTransition,
     };
 }
 
@@ -71,10 +73,10 @@ function bgPatternUniformValues(
 
     return {
         'u_image': 0,
-        'u_pattern_tl': (patternPosition as any).tl,
-        'u_pattern_br': (patternPosition as any).br,
+        'u_pattern_tl': patternPosition.tl,
+        'u_pattern_br': patternPosition.br,
         'u_texsize': [width, height],
-        'u_pattern_size': (patternPosition as any).displaySize,
+        'u_pattern_size': patternPosition.displaySize,
         'u_pattern_units_to_pixels': isViewport ? [painter.transform.width, -1.0 * painter.transform.height] : [1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom), 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom)],
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
         'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],

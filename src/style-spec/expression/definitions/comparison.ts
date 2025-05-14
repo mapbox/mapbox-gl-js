@@ -26,18 +26,30 @@ function isComparableType(op: ComparisonOperator, type: Type) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function eq(ctx: EvaluationContext, a: any, b: any): boolean { return a === b; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function neq(ctx: EvaluationContext, a: any, b: any): boolean { return a !== b; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function lt(ctx: EvaluationContext, a: any, b: any): boolean { return a < b; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function gt(ctx: EvaluationContext, a: any, b: any): boolean { return a > b; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function lteq(ctx: EvaluationContext, a: any, b: any): boolean { return a <= b; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function gteq(ctx: EvaluationContext, a: any, b: any): boolean { return a >= b; }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function eqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) === 0; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function neqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return !eqCollate(ctx, a, b, c); }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ltCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) < 0; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function gtCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) > 0; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function lteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) <= 0; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function gteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) >= 0; }
 
 /**
@@ -59,7 +71,9 @@ function gteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { 
  */
 function makeComparison(
     op: ComparisonOperator,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compareBasic: (arg1: EvaluationContext, arg2?: any, arg3?: any) => boolean,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compareWithCollator: (arg1: EvaluationContext, arg2?: any, arg3?: any, arg4?: any) => boolean,
 ): ExpressionRegistration {
     const isOrderComparison = op !== '==' && op !== '!=';
@@ -83,7 +97,7 @@ function makeComparison(
             if (args.length !== 3 && args.length !== 4)
                 return context.error(`Expected two or three arguments.`);
 
-            const op: ComparisonOperator = (args[0] as any);
+            const op = args[0] as ComparisonOperator;
 
             let lhs = context.parse(args[1], 1, ValueType);
             if (!lhs) return null;

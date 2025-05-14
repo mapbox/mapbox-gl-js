@@ -1,6 +1,6 @@
 import {isExpressionFilter} from './index';
 
-import type {FilterSpecification} from '../types';
+import type {FilterSpecification, ExpressionSpecification} from '../types';
 
 type ExpectedTypes = {
     [_: string]: 'string' | 'number' | 'boolean';
@@ -80,17 +80,19 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
         op === '<=' ||
         op === '>='
     ) {
-        const [, property, value] = (filter as any);
+        const [, property, value] = filter;
         converted = convertComparisonOp(property, value, op, expectedTypes);
     } else if (op === 'any') {
-        const children = (filter as any).slice(1).map(f => {
+        const children = filter.slice(1).map(f => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const types: Record<string, any> = {};
             const child = _convertFilter(f, types);
             const typechecks = runtimeTypeChecks(types);
             return typechecks === true ? child : ['case', typechecks, child, false];
-        });
+        }) as ExpressionSpecification;
         return ['any'].concat(children);
     } else if (op === 'all') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const children: any[] = (filter).slice(1).map(f => _convertFilter(f, expectedTypes));
         return children.length > 1 ? ['all'].concat(children) : [].concat(...children);
     } else if (op === 'none') {
@@ -125,13 +127,16 @@ function runtimeTypeChecks(expectedTypes: ExpectedTypes) {
         conditions.push(['==', ['typeof', get], expectedTypes[property]]);
     }
     if (conditions.length === 0) return true;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (conditions.length === 1) return conditions[0];
     return ['all'].concat(conditions);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertComparisonOp(property: string, value: any, op: string, expectedTypes?: ExpectedTypes | null) {
     let get;
     if (property === '$type') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [op, ['geometry-type'], value];
     } else if (property === '$id') {
         get = ['id'];
@@ -140,7 +145,7 @@ function convertComparisonOp(property: string, value: any, op: string, expectedT
     }
 
     if (expectedTypes && value !== null) {
-        const type = ((typeof value) as any);
+        const type = typeof value as 'string' | 'number' | 'boolean';
         expectedTypes[property] = type;
     }
 
@@ -158,10 +163,11 @@ function convertComparisonOp(property: string, value: any, op: string, expectedT
         ];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return [op, get, value];
 }
 
-function convertInOp(property: string, values: Array<any>, negate: boolean = false) {
+function convertInOp(property: string, values: Array<unknown>, negate: boolean = false) {
     if (values.length === 0) return negate;
 
     let get: string[];
@@ -193,6 +199,7 @@ function convertInOp(property: string, values: Array<any>, negate: boolean = fal
     }
 
     return [negate ? 'all' : 'any'].concat(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         values.map(v => [negate ? '!=' : '==', get, v]) as any[]
     );
 }

@@ -1,5 +1,6 @@
 import {fillExtrusionDepthUniforms, fillExtrusionUniforms, fillExtrusionPatternUniforms, fillExtrusionGroundEffectUniforms} from './fill_extrusion_program';
-import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms, type FillDefinesType, elevatedStructuresUniforms, elevatedStructuresDepthReconstructUniforms} from './fill_program';
+import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms, elevatedStructuresDepthUniforms, elevatedStructuresUniforms, elevatedStructuresDepthReconstructUniforms} from './fill_program';
+import {buildingUniforms, buildingDepthUniforms} from '../../../3d-style/render/program/building_program';
 import {circleUniforms} from './circle_program';
 import {collisionUniforms, collisionCircleUniforms} from './collision_program';
 import {debugUniforms} from './debug_program';
@@ -32,6 +33,8 @@ import type {RasterParticleDefinesType} from './raster_particle_program';
 import type {RasterDefinesType} from './raster_program';
 import type {CircleDefinesType} from './circle_program';
 import type {ModelDefinesType} from '../../../3d-style/render/program/model_program';
+import type {FillDefinesType} from './fill_program';
+import type {FillExtrusionDefinesType} from './fill_extrusion_program';
 
 export type FogDefinesType = ['FOG', 'FOG_DITHERING'];
 export type TerrainDepthAccessDefinesType = 'DEPTH_D24' | 'DEPTH_OCCLUSION';
@@ -58,6 +61,7 @@ export type DynamicDefinesType =
     | SymbolDefinesType
     | LineDefinesType
     | FillDefinesType
+    | FillExtrusionDefinesType
     | HeatmapDefinesType
     | GlobeDefinesType
     | RasterDefinesType
@@ -76,6 +80,9 @@ export const programUniforms = {
     fillPattern: fillPatternUniforms,
     fillOutline: fillOutlineUniforms,
     fillOutlinePattern: fillOutlinePatternUniforms,
+    building: buildingUniforms,
+    buildingDepth: buildingDepthUniforms,
+    elevatedStructuresDepth: elevatedStructuresDepthUniforms,
     elevatedStructures: elevatedStructuresUniforms,
     elevatedStructuresDepthReconstruct: elevatedStructuresDepthReconstructUniforms,
     circle: circleUniforms,
@@ -112,3 +119,7 @@ export const programUniforms = {
     vignette: vignetteUniforms,
     occlusion: occlusionUniforms
 } as const;
+
+export type ProgramUniformsType = {
+    [K in keyof typeof programUniforms]: ReturnType<typeof programUniforms[K]>;
+};

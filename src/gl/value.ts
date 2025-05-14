@@ -450,11 +450,14 @@ export class BindElementBuffer extends BaseValue<WebGLBuffer | null | undefined>
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class BindVertexArrayOES extends BaseValue<any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override getDefault(): any {
         return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override set(v: any) {
         if (!this.gl || (v === this.current && !this.dirty)) return;
         this.gl.bindVertexArray(v);
@@ -485,7 +488,7 @@ export class PixelStoreUnpackPremultiplyAlpha extends BaseValue<boolean> {
     override set(v: boolean): void {
         if (v === this.current && !this.dirty) return;
         const gl = this.gl;
-        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, (v as any));
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, v);
         this.current = v;
         this.dirty = false;
     }
@@ -499,7 +502,7 @@ export class PixelStoreUnpackFlipY extends BaseValue<boolean> {
     override set(v: boolean): void {
         if (v === this.current && !this.dirty) return;
         const gl = this.gl;
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, (v as any));
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, v);
         this.current = v;
         this.dirty = false;
     }

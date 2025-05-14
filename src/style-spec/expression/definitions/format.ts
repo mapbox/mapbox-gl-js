@@ -47,7 +47,7 @@ export default class FormatExpression implements Expression {
         const sections: Array<FormattedSectionExpression> = [];
         let nextTokenMayBeObject = false;
         for (let i = 1; i <= args.length - 1; ++i) {
-            const arg = (args[i] as any);
+            const arg = args[i];
 
             if (nextTokenMayBeObject && typeof arg === "object" && !Array.isArray(arg)) {
                 nextTokenMayBeObject = false;

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {
     describe,
@@ -57,7 +58,7 @@ describe('ImageSource', () => {
     });
 
     test('constructor', () => {
-        const source = createSource({url : '/image.png'});
+        const source = createSource({url: '/image.png'});
 
         expect(source.minzoom).toEqual(0);
         expect(source.maxzoom).toEqual(22);
@@ -69,7 +70,7 @@ describe('ImageSource', () => {
         mockFetch({
             '/image.png': async () => new Response(await getPNGResponse())
         });
-        const source = createSource({url : '/image.png'});
+        const source = createSource({url: '/image.png'});
         source.on('dataloading', withAsync((e, doneRef) => {
             expect(e.dataType).toEqual('source');
             doneRef.resolve();
@@ -82,7 +83,7 @@ describe('ImageSource', () => {
         mockFetch({
             '/image.png': async () => new Response(await getPNGResponse())
         });
-        const source = createSource({url : '/image.png'});
+        const source = createSource({url: '/image.png'});
         const map = new StubMap();
         const spy = vi.spyOn(map._requestManager, 'transformRequest');
         source.onAdd(map);
@@ -96,7 +97,7 @@ describe('ImageSource', () => {
             '/image.png': async () => new Response(await getPNGResponse()),
             '/image2.png': async () => new Response(await getPNGResponse())
         });
-        const source = createSource({url : '/image.png'});
+        const source = createSource({url: '/image.png'});
         const map = new StubMap();
         const spy = vi.spyOn(map._requestManager, 'transformRequest');
         source.onAdd(map);
@@ -113,7 +114,7 @@ describe('ImageSource', () => {
         mockFetch({
             '/image.png': async () => new Response(await getPNGResponse())
         });
-        const source = createSource({url : '/image.png'});
+        const source = createSource({url: '/image.png'});
         const map = new StubMap();
         source.onAdd(map);
         const beforeSerialized = source.serialize();
@@ -129,7 +130,7 @@ describe('ImageSource', () => {
             '/image.png': async () => new Response(await getPNGResponse()),
             '/image2.png': async () => new Response(await getPNGResponse())
         });
-        const source = createSource({url : '/image.png'});
+        const source = createSource({url: '/image.png'});
         const map = new StubMap();
         source.onAdd(map);
         const beforeSerialized = source.serialize();
@@ -154,7 +155,7 @@ describe('ImageSource', () => {
         mockFetch({
             '/image.png': async () => new Response(await getPNGResponse())
         });
-        const source = createSource({url : '/image.png'});
+        const source = createSource({url: '/image.png'});
         source.on('data', withAsync((e, doneRef) => {
             if (e.dataType === 'source' && e.sourceDataType === 'content') {
                 expect(typeof source.tileID == 'object').toBeTruthy();
@@ -170,7 +171,7 @@ describe('ImageSource', () => {
         mockFetch({
             '/image.png': async () => new Response(await getPNGResponse())
         });
-        const source = createSource({url : '/image.png'});
+        const source = createSource({url: '/image.png'});
         source.on('data', withAsync((e, doneRef) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                 doneRef.resolve();
@@ -197,7 +198,7 @@ describe('ImageSource', () => {
             '/image.png': async () => new Response(await getPNGResponse()),
             '/image2.png': async () => new Response(await getPNGResponse())
         });
-        const source = createSource({url : '/image.png'});
+        const source = createSource({url: '/image.png'});
         source.tiles[0] = new OverscaledTileID(0, 0, 0, 0, 0);
         const map = new StubMap();
         const coordinates = [[0, 0], [-1, 0], [-1, -1], [0, -1]];
@@ -231,9 +232,9 @@ describe('ImageSource', () => {
     test('reloading image retains loaded status', async () => {
         mockFetch({
             '/image.png': async () => new Response(await getPNGResponse()),
-            '/image2.png': async() => new Response(await getPNGResponse())
+            '/image2.png': async () => new Response(await getPNGResponse())
         });
-        const source = createSource({url : '/image.png'});
+        const source = createSource({url: '/image.png'});
         const map = new StubMap();
         const coordinates = [[0, 0], [-1, 0], [-1, -1], [0, -1]];
         source.onAdd(map);
@@ -295,7 +296,7 @@ describe('ImageSource', () => {
             '/image.png': async () => new Response(await getPNGResponse()),
             '/image2.png': async () => new Response(await getPNGResponse())
         });
-        const source = createSource({url : '/notfound.png'});
+        const source = createSource({url: '/notfound.png'});
         const map = new StubMap();
         const spy = vi.spyOn(map._requestManager, 'transformRequest');
         source.onAdd(map);

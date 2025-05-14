@@ -76,7 +76,7 @@ export function getIconQuads(
     hasIconTextFit: boolean,
     iconScale: number = 1,
 ): Array<SymbolQuad> {
-    const quads = [];
+    const quads: Array<SymbolQuad> = [];
 
     const image = shapedIcon.imagePrimary;
     const pixelRatio = image.pixelRatio;
@@ -115,7 +115,7 @@ export function getIconQuads(
         fixedContentHeight = content[3] - content[1] - stretchContentHeight;
     }
 
-    const makeBox = (left: Size, top: Size, right: Size, bottom: Size) => {
+    const makeBox = (left: Size, top: Size, right: Size, bottom: Size): SymbolQuad => {
 
         const leftEm = getEmOffset(left.stretch - stretchOffsetX, stretchContentWidth, iconWidth, shapedIcon.left * iconScale);
         const leftPx = getPxOffset(left.fixed - fixedOffsetX, fixedContentWidth, left.stretch, stretchWidth);
@@ -275,6 +275,7 @@ export function getGlyphQuads(
     allowVerticalPlacement: boolean,
 ): Array<SymbolQuad> {
     const quads = [];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (shaping.positionedLines.length === 0) return quads;
 
     const textRotate = layer.layout.get('text-rotate').evaluate(feature, {}) * Math.PI / 180;
@@ -330,7 +331,7 @@ export function getGlyphQuads(
                 [0, 0];
 
             let builtInOffset = [0, 0];
-            let verticalizedLabelOffset = [0, 0];
+            let verticalizedLabelOffset: [number, number] = [0, 0];
             let useRotateOffset = false;
             if (!alongLine) {
                 if (rotateVerticalGlyph) {
@@ -379,7 +380,6 @@ export function getGlyphQuads(
                 const yShift = (positionedGlyph.y - currentOffset);
                 const center = new Point(-halfAdvance, halfAdvance - yShift);
                 const verticalRotation = -Math.PI / 2;
-                // @ts-expect-error - TS2556 - A spread argument must either have a tuple type or be passed to a rest parameter.
                 const verticalOffsetCorrection = new Point(...verticalizedLabelOffset);
                 // Relative position before rotation
                 // tl ----- tr
@@ -456,5 +456,6 @@ export function getGlyphQuads(
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return quads;
 }

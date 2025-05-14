@@ -5,14 +5,13 @@ import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 
 import type Actor from '../util/actor';
 import type {Callback} from '../types/callback';
+import type {ActorMessages} from '../util/actor_messages';
 import type {OverscaledTileID} from './tile_id';
 import type {
     WorkerSource,
     WorkerSourceTileRequest,
     WorkerSourceRasterArrayTileRequest,
     WorkerSourceRasterArrayTileCallback,
-    WorkerSourceRasterArrayDecodingParameters,
-    WorkerSourceRasterArrayDecodingCallback
 } from './worker_source';
 
 MapboxRasterTile.setPbf(Pbf);
@@ -66,7 +65,9 @@ class RasterArrayWorkerTile {
                 decodingTasks.push(decodingTask);
             }
 
-            Promise.allSettled(decodingTasks).then(() => callback(null, mrt));
+            Promise.allSettled(decodingTasks)
+                .then(() => callback(null, mrt))
+                .catch(error => callback(error));
         } catch (error) {
             callback(error);
         }
@@ -133,8 +134,8 @@ class RasterArrayTileWorkerSource implements WorkerSource {
         callback();
     }
 
-    decodeRasterArray({task, buffer}: WorkerSourceRasterArrayDecodingParameters, callback: WorkerSourceRasterArrayDecodingCallback) {
-        MapboxRasterTile.performDecoding(buffer, task)
+    decodeRasterArray(params: ActorMessages['decodeRasterArray']['params'], callback: ActorMessages['decodeRasterArray']['callback']) {
+        MapboxRasterTile.performDecoding(params.buffer, params.task)
             .then(result => callback(null, result))
             .catch(error => callback(error));
     }

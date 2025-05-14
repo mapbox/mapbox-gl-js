@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 export function window(target) {
     if (target.ownerDocument) {
@@ -48,7 +49,7 @@ events.dblclick = function (target, options) {
     };
 });
 
-[ 'mouseup', 'mousedown', 'mouseover', 'mousemove', 'mouseout' ].forEach((event) => {
+['mouseup', 'mousedown', 'mouseover', 'mousemove', 'mouseout'].forEach((event) => {
     events[event] = function (target, options) {
         options = Object.assign({bubbles: true}, options);
         const MouseEvent = window(target).MouseEvent;
@@ -56,7 +57,7 @@ events.dblclick = function (target, options) {
     };
 });
 
-[ 'wheel', 'mousewheel' ].forEach((event) => {
+['wheel', 'mousewheel'].forEach((event) => {
     events[event] = function (target, options) {
         options = Object.assign({bubbles: true}, options);
         const WheelEvent = window(target).WheelEvent;
@@ -81,7 +82,7 @@ export function constructTouch(target, options) {
     });
 }
 
-[ 'touchstart', 'touchend', 'touchmove', 'touchcancel' ].forEach((event) => {
+['touchstart', 'touchend', 'touchmove', 'touchcancel'].forEach((event) => {
     events[event] = function (target, options) {
         const touch = constructTouch(target, {
             clientX: 0,

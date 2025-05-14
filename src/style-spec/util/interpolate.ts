@@ -19,6 +19,6 @@ export function array(from: Array<number>, to: Array<number>, t: number): Array<
     });
 }
 
-export function easeIn (x: number) {
+export function easeIn(x: number) {
     return x * x * x * x * x;
 }

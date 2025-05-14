@@ -15,10 +15,11 @@ import type {RGBAImage} from '../../util/image';
 import type SkyboxGeometry from '../../render/skybox_geometry';
 import type {Position} from '../../util/util';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean): [number, number, number] {
     const up: [number, number, number] = [0, 0, 1];
-    const rotation = quat.identity([] as any);
+    const rotation = quat.identity([] as unknown as quat);
 
     quat.rotateY(rotation, rotation, leftHanded ? -degToRad(azimuth) + Math.PI : degToRad(azimuth));
     quat.rotateX(rotation, rotation, -degToRad(altitude));
@@ -121,7 +122,7 @@ class SkyLayer extends StyleLayer {
         return true;
     }
 
-    override getProgramIds(): string[] | null {
+    override getProgramIds(): ProgramName[] | null {
         const type = this.paint.get('sky-type');
         if (type === 'atmosphere') {
             return ['skyboxCapture', 'skybox'];

@@ -53,7 +53,19 @@ import type {UniformValues} from '../render/uniform_binding';
 import type Transform from '../geo/transform';
 import type {CanonicalTileID} from '../source/tile_id';
 import type HillshadeStyleLayer from '../style/style_layer/hillshade_style_layer';
+import type {DebugUniformsType} from '../render/program/debug_program';
+import type {CircleUniformsType} from '../render/program/circle_program';
+import type {SymbolUniformsType} from '../render/program/symbol_program';
 import type {SourceSpecification} from '../style-spec/types';
+import type {HeatmapUniformsType} from '../render/program/heatmap_program';
+import type {LineUniformsType, LinePatternUniformsType} from '../render/program/line_program';
+import type {CollisionUniformsType} from '../render/program/collision_program';
+import type {GlobeRasterUniformsType} from './globe_raster_program';
+import type {TerrainRasterUniformsType} from './terrain_raster_program';
+import type {
+    FillExtrusionDepthUniformsType,
+    FillExtrusionPatternUniformsType
+} from '../render/program/fill_extrusion_program';
 
 const GRID_DIM = 128;
 
@@ -64,6 +76,32 @@ type RenderBatch = {
     start: number;
     end: number;
 };
+
+type ElevationDrawOptions = {
+    useDepthForOcclusion?: boolean;
+    useMeterToDem?: boolean;
+    labelPlaneMatrixInv?: mat4 | null;
+    morphing?: {
+        srcDemTile: Tile;
+        dstDemTile: Tile;
+        phase: number;
+    };
+    useDenormalizedUpVectorScale?: boolean;
+};
+
+type ElevationUniformsType =
+    | CircleUniformsType
+    | CollisionUniformsType
+    | DebugUniformsType
+    | FillExtrusionDepthUniformsType
+    | FillExtrusionPatternUniformsType
+    | GlobeRasterUniformsType
+    | GlobeUniformsType
+    | HeatmapUniformsType
+    | LinePatternUniformsType
+    | LineUniformsType
+    | SymbolUniformsType
+    | TerrainRasterUniformsType;
 
 class MockSourceCache extends SourceCache {
     constructor(map: Map) {
@@ -133,6 +171,7 @@ class ProxySourceCache extends SourceCache {
 
         const incoming: {
             [key: string]: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } = idealTileIDs.reduce<Record<string, any>>((acc, tileID) => {
             acc[tileID.key] = '';
             if (!this._tiles[tileID.key]) {
@@ -412,7 +451,7 @@ export class Terrain extends Elevation {
             return terrainStyle.getExaggeration(transform.zoom);
         }
         const previousAltitude = this._previousCameraAltitude;
-        const altitude = (transform.getFreeCameraOptions().position as any).z / transform.pixelsPerMeter * transform.worldSize;
+        const altitude = transform.getFreeCameraOptions().position.z / transform.pixelsPerMeter * transform.worldSize;
         this._previousCameraAltitude = altitude;
         // 2 meters as threshold for constant sea elevation movement.
         const altitudeDelta = previousAltitude != null ? (altitude - previousAltitude) : Number.MAX_VALUE;
@@ -424,7 +463,7 @@ export class Terrain extends Elevation {
         const cameraZoom = transform.zoom;
 
         assert(this._style.terrain);
-        const terrainStyle = (this._style.terrain as any);
+        const terrainStyle = this._style.terrain;
 
         if (!this._previousUpdateTimestamp) {
             // covers also 0 (timestamp in render tests is 0).
@@ -491,6 +530,7 @@ export class Terrain extends Elevation {
         return demScale * proxyTileSize;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _onStyleDataEvent(event: any) {
         if (event.coord && event.dataType === 'source') {
             this._clearRenderCacheForTile(event.sourceCacheId, event.coord);
@@ -619,6 +659,7 @@ export class Terrain extends Elevation {
         this.renderingToTexture = false;
 
         // Gather all dem tiles that are assigned to proxy tiles
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const visibleKeys: Record<string, any> = {};
         this._visibleDemTiles = [];
 
@@ -715,18 +756,7 @@ export class Terrain extends Elevation {
     // useDepthForOcclusion: Pre-rendered depth texture is used for occlusion
     // useMeterToDem: u_meter_to_dem uniform is not used for all terrain programs,
     // optimization to avoid unnecessary computation and upload.
-    setupElevationDraw(tile: Tile, program: Program<any>,
-        options?: {
-            useDepthForOcclusion?: boolean;
-            useMeterToDem?: boolean;
-            labelPlaneMatrixInv?: mat4 | null;
-            morphing?: {
-                srcDemTile: Tile;
-                dstDemTile: Tile;
-                phase: number;
-            };
-            useDenormalizedUpVectorScale?: boolean;
-        }) {
+    setupElevationDraw(tile: Tile, program: Program<ElevationUniformsType>, options?: ElevationDrawOptions) {
         const context = this.painter.context;
         const gl = context.gl;
         const uniforms = defaultTerrainUniforms();
@@ -750,6 +780,7 @@ export class Terrain extends Elevation {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const filteringForDemTile = (tile: any) => {
             if (!tile || !tile.demTexture) {
                 return gl.NEAREST;
@@ -807,11 +838,11 @@ export class Terrain extends Elevation {
     ): UniformValues<GlobeUniformsType> {
         const projection = tr.projection;
         return {
-            'u_tile_tl_up': (projection.upVector(id, 0, 0) as any),
-            'u_tile_tr_up': (projection.upVector(id, EXTENT, 0) as any),
-            'u_tile_br_up': (projection.upVector(id, EXTENT, EXTENT) as any),
-            'u_tile_bl_up': (projection.upVector(id, 0, EXTENT) as any),
-            'u_tile_up_scale': (useDenormalizedUpVectorScale ? globeMetersToEcef(1) : projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile as any)
+            'u_tile_tl_up': projection.upVector(id, 0, 0),
+            'u_tile_tr_up': projection.upVector(id, EXTENT, 0),
+            'u_tile_br_up': projection.upVector(id, EXTENT, EXTENT),
+            'u_tile_bl_up': projection.upVector(id, 0, EXTENT),
+            'u_tile_up_scale': useDenormalizedUpVectorScale ? globeMetersToEcef(1) : projection.upVectorScale(id, tr.center.lat, tr.worldSize).metersToTile
         };
     }
 
@@ -976,7 +1007,7 @@ export class Terrain extends Elevation {
         // The maximum DEM error in meters to be conservative (SRTM).
         const maxDEMError = 30.0;
         this._visibleDemTiles.filter(tile => tile.dem).forEach(tile => {
-            const minMaxTree = (tile.dem as any).tree;
+            const minMaxTree = tile.dem.tree;
             min = Math.min(min, minMaxTree.minimums[0]);
         });
         return min === 0.0 ? min : (min - maxDEMError) * this._exaggeration;
@@ -1000,7 +1031,7 @@ export class Terrain extends Elevation {
             const maxx = (x + 1) / tiles;
             const miny = y / tiles;
             const maxy = (y + 1) / tiles;
-            const tree = (tile.dem as any).tree;
+            const tree = tile.dem.tree;
 
             return {
                 minx, miny, maxx, maxy,
@@ -1021,7 +1052,7 @@ export class Terrain extends Elevation {
 
             // Perform more accurate raycast against the dem tree. First intersection is the closest on
             // as all tiles are sorted from closest to furthest
-            const tree = (obj.tile.dem as any).tree;
+            const tree = obj.tile.dem.tree;
             const t = tree.raycast(obj.minx, obj.miny, obj.maxx, obj.maxy, pos, dir, exaggeration);
 
             if (t != null)
@@ -1108,6 +1139,7 @@ export class Terrain extends Elevation {
 
         if (!hasVectorSource) return;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const clearSourceCaches: Record<string, any> = {};
         for (let i = 0; i < this._style.order.length; ++i) {
             const layer = this._style._mergedLayers[this._style.order[i]];
@@ -1146,6 +1178,7 @@ export class Terrain extends Elevation {
 
         if (!hasRasterSource) return;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const clearSourceCaches: Record<string, any> = {};
         for (let i = 0; i < this._style.order.length; ++i) {
             const layer = this._style._mergedLayers[this._style.order[i]];
@@ -1276,8 +1309,7 @@ export class Terrain extends Elevation {
                     const tiles = current[source];
                     const prevTiles = prev[source];
                     if (!prevTiles || prevTiles.length !== tiles.length ||
-                        tiles.some((t, index) =>
-                            (t !== prevTiles[index] ||
+                        tiles.some((t, index) => (t !== prevTiles[index] ||
                             (dirty[source] && dirty[source].hasOwnProperty(t.key)
                             )))
                     ) {
@@ -1420,7 +1452,7 @@ export class Terrain extends Elevation {
         const camera = transform._camera.position;
         const mercatorZScale = mercatorZfromAltitude(1, transform.center.lat);
         const p: [number, number, number, number] = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
-        const dir = vec3.subtract([] as any, far.slice(0, 3) as vec3, p as unknown as vec3);
+        const dir = vec3.subtract([] as unknown as vec3, far.slice(0, 3) as vec3, p as unknown as vec3);
         vec3.normalize(dir, dir);
 
         const exaggeration = this._exaggeration;
@@ -1786,7 +1818,7 @@ export function defaultTerrainUniforms(): UniformValues<TerrainUniformsType> {
         'u_depth': 3,
         'u_depth_size_inv': [0, 0],
         'u_depth_range_unpack': [0, 1],
-        'u_occluder_half_size':16,
+        'u_occluder_half_size': 16,
         'u_occlusion_depth_offset': -0.0001,
         'u_exaggeration': 0,
     };

@@ -2,6 +2,7 @@ import refProperties from './util/ref_properties';
 
 import type {LayerSpecification} from './types';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function stringify(obj: any) {
     if (typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'string' || obj === undefined || obj === null)
         return JSON.stringify(obj);
@@ -31,12 +32,13 @@ function getKey(layer: LayerSpecification) {
         if (layer.type === 'model' && (k === 'minzoom' || k === 'maxzoom')) {
             continue;
         } else {
-            key += `/${stringify((layer as any)[k])}`;
+            key += `/${stringify(layer[k])}`;
         }
     }
     return key;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function containsKey(obj: any, key: string) {
     function recursiveSearch(item) {
         if (typeof item === 'string' && item === key) {
@@ -77,6 +79,7 @@ export default function groupByLayout(
         [id: string]: string;
     },
 ): Array<Array<LayerSpecification>> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const groups: Record<string, any> = {};
 
     for (let i = 0; i < layers.length; i++) {
@@ -84,13 +87,18 @@ export default function groupByLayout(
         let k = cachedKeys && cachedKeys[layer.id];
 
         if (!k) {
-            k =  getKey(layer);
-            // The usage of "line-progress" inside "line-width" makes the property act like a layout property.
-            // We need to split it from the group to avoid conflicts in the bucket creation.
-            if (layer.type === 'line' && layer["paint"]) {
-                const lineWidth = layer["paint"]['line-width'];
-                if (containsKey(lineWidth, 'line-progress')) {
-                    k += `/${stringify(layer["paint"]['line-width'])}`;
+            // Do not group symbol layers together, as their paint properties affect placement
+            if (layer.type === 'symbol') {
+                k = layer.id;
+            } else {
+                k =  getKey(layer);
+                // The usage of "line-progress" inside "line-width" makes the property act like a layout property.
+                // We need to split it from the group to avoid conflicts in the bucket creation.
+                if (layer.type === 'line' && layer["paint"]) {
+                    const lineWidth = layer["paint"]['line-width'];
+                    if (containsKey(lineWidth, 'line-progress')) {
+                        k += `/${stringify(layer["paint"]['line-width'])}`;
+                    }
                 }
             }
         }
@@ -112,5 +120,6 @@ export default function groupByLayout(
         result.push(groups[k]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return result;
 }

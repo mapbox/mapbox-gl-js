@@ -6,7 +6,7 @@ import {CanonicalTileID} from '../../../src/source/tile_id';
 import {vec2} from 'gl-matrix';
 import {ElevationFeature, type Vertex, type Edge} from '../../../3d-style/elevation/elevation_feature';
 
-import type {Bounds} from '../../../3d-style/elevation/elevation_feature_parser';
+import type {Bounds} from '../../../src/style-spec/util/geometry_util';
 
 describe('ElevatedStructures', () => {
     test('#getUnevaluatedPortals', () => {

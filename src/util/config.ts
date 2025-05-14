@@ -25,7 +25,7 @@ type Config = {
 
 const config: Config = {
     API_URL: 'https://api.mapbox.com',
-    get API_URL_REGEX () {
+    get API_URL_REGEX() {
         return /^((https?:)?\/\/)?([^\/]+\.)?mapbox\.c(n|om)(\/|\?|$)/i;
     },
     get API_TILEJSON_REGEX() {
@@ -58,7 +58,7 @@ const config: Config = {
             } else {
                 return null;
             }
-        } catch (e: any) {
+        } catch (e) {
             return null;
         }
     },

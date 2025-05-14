@@ -27,7 +27,7 @@ class AtInterpolated implements Expression {
 
         if (!index || !input) return null;
 
-        const t: ArrayType = (input.type as any);
+        const t = input.type as ArrayType;
         return new AtInterpolated(t.itemType, index, input);
     }
 

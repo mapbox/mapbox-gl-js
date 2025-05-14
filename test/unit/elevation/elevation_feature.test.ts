@@ -2,17 +2,18 @@
 import {describe, test, expect} from '../../util/vitest';
 import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
-import {ElevationFeature, ElevationFeatures, type Edge, type Range, type Vertex} from '../../../3d-style/elevation/elevation_feature';
+import {EdgeIterator, ElevationFeature, ElevationFeatures, type Edge, type Range, type Vertex} from '../../../3d-style/elevation/elevation_feature';
 // @ts-expect-error: Cannot find module
 import vectorTileStubZ14 from '../../fixtures/elevation/14-8717-5683.mvt?arraybuffer';
 // @ts-expect-error: Cannot find module
 import vectorTileStubZ17 from '../../fixtures/elevation/17-69826-45367.mvt?arraybuffer';
 import {vec2} from "gl-matrix";
 import {CanonicalTileID} from '../../../src/source/tile_id';
-import {HD_ELEVATION_SOURCE_LAYER} from '../../../3d-style/elevation/elevation_constants';
+import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../../../3d-style/elevation/elevation_constants';
 import Point from '@mapbox/point-geometry';
 
-import type {Bounds} from '../../../3d-style/elevation/elevation_feature_parser';
+import type {BucketFeature} from '../../../src/data/bucket';
+import type {Bounds} from '../../../src/style-spec/util/geometry_util';
 
 interface ConstantFeature {
     id: number;
@@ -284,6 +285,96 @@ describe('ElevationFeature', () => {
             expect(feature.heightRange.min).toBeCloseTo(expected.minHeight, 6);
             expect(feature.heightRange.max).toBeCloseTo(expected.maxHeight, 6);
             expect(feature.edges).toMatchObject(expected.edges);
+        }
+    });
+
+    test('#edgeIterator', () => {
+        const vertices: Vertex[] = [
+            {position: vec2.fromValues(0.0, 0.0), height: 0.0, extent: 1.0},
+            {position: vec2.fromValues(40.0, 0.0), height: -1.0, extent: 1.0},
+            {position: vec2.fromValues(40.0, 40.0), height: -3.0, extent: 2.0},
+            {position: vec2.fromValues(0.0, 40.0), height: -4.0, extent: 3.0}
+        ];
+
+        const edges: Edge[] = [
+            {a: 0, b: 1}, {a: 1, b: 2}, {a: 2, b: 3}
+        ];
+
+        const safeArea: Bounds = {
+            min: new Point(0, 0),
+            max: new Point(32, 32)
+        };
+
+        const feature = new ElevationFeature(0, safeArea, null, vertices, edges, 1.0);
+        const iterator = new EdgeIterator(feature, 20.0);
+
+        {
+            expect(iterator.valid()).toBeTruthy();
+            const [a, b] = iterator.get();
+
+            // Expect extra padding of 1 meter, hence (extent + 1) * metersToTile = 40.0
+            expect(a).toMatchObject(new Point(0, -40));
+            expect(b).toMatchObject(new Point(0, 40));
+        }
+
+        {
+            iterator.next();
+            expect(iterator.valid()).toBeTruthy();
+            const [a, b] = iterator.get();
+
+            // 490 + 0.707 * 40, 0 - 0.707 * 40, etc.
+            expect(a).toMatchObject(new Point(68, -28));
+            expect(b).toMatchObject(new Point(11, 28));
+        }
+
+        {
+            iterator.next();
+            expect(iterator.valid()).toBeTruthy();
+            const [a, b] = iterator.get();
+
+            expect(a).toMatchObject(new Point(82, 82));
+            expect(b).toMatchObject(new Point(-2, -2));
+        }
+
+        {
+            iterator.next();
+            expect(iterator.valid()).toBeTruthy();
+            const [a, b] = iterator.get();
+
+            expect(a).toMatchObject(new Point(0, 120));
+            expect(b).toMatchObject(new Point(0, -40));
+        }
+
+        iterator.next();
+        expect(iterator.valid()).toBeFalsy();
+    });
+
+    test('#getElevationFeature', () => {
+        const feature = {};
+        feature['properties'] = {};
+
+        const ids = [{id: 1}, {id: 2}, {id: 3}];
+
+        {
+            const actual = ElevationFeatures.getElevationFeature(feature as BucketFeature, []);
+            expect(actual).toBeUndefined();
+        }
+
+        {
+            const actual = ElevationFeatures.getElevationFeature(feature as BucketFeature, ids as ElevationFeature[]);
+            expect(actual).toBeUndefined();
+        }
+
+        {
+            feature['properties'][PROPERTY_ELEVATION_ID] = 4;
+            const actual = ElevationFeatures.getElevationFeature(feature as BucketFeature, ids as ElevationFeature[]);
+            expect(actual).toBeUndefined();
+        }
+
+        {
+            feature['properties'][PROPERTY_ELEVATION_ID] = 2;
+            const actual = ElevationFeatures.getElevationFeature(feature as BucketFeature, ids as ElevationFeature[]);
+            expect(actual).toMatchObject({id: 2});
         }
     });
 });

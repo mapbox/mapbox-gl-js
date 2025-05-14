@@ -6,9 +6,9 @@ const list = {};
 const octokit = new Octokit();
 
 octokit.paginate(octokit.repos.listReleases.endpoint({
-        owner: 'mapbox',
-        repo: 'mapbox-gl-js'
-    }))
+    owner: 'mapbox',
+    repo: 'mapbox-gl-js'
+}))
     .then(releases => {
         releases.filter(release => release.tag_name.match(/^v\d+\.\d+\.\d+(-\w+)?/)).forEach(release => {
             list[release.tag_name] = {
@@ -17,6 +17,6 @@ octokit.paginate(octokit.repos.listReleases.endpoint({
             };
         });
 
-        fs.writeFileSync('dist/versions.json', JSON.stringify(list, null, 4) + '\n');
-        fs.writeFileSync('dist/versions.jsonp', 'const mapboxglVersions = ' + JSON.stringify(list, null, 4) + ';\n');
+        fs.writeFileSync('dist/versions.json', `${JSON.stringify(list, null, 4)}\n`);
+        fs.writeFileSync('dist/versions.jsonp', `const mapboxglVersions = ${JSON.stringify(list, null, 4)};\n`);
     });

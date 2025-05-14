@@ -18,6 +18,7 @@
     "target": "es2022",
     "useDefineForClassFields": false,
     "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "lib": [
       "ESNext",
       "DOM",
@@ -32,16 +33,23 @@
   },
   "include": [
     "./src/**/*",
-    "./test/unit/**/*",
-    "./test/usvg/**/*",
-    "./test/util/**/*",
+    "./test/**/*",
+    "./build/**/*",
+    "./3d-style/**/*",
     "./*.config.*"
   ],
   "exclude": [
     "./dist",
-    "./build",
+    "./debug",
+    "./rollup",
     "./node_modules",
     "./src/style-spec/bin",
-    "./src/style-spec/dist"
+    "./src/style-spec/dist",
+    "./test/release/**/*",
+    "./test/integration/**/*",
+    "./test/build/typings/**/*",
+    "./test/build/transpilation/**/*",
+    "./test/build/style-spec.test.js",
+    "./test/build/browserify-test-fixture.js"
   ]
 }

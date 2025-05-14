@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 /* eslint-disable camelcase */
 
 import esbuild from 'rollup-plugin-esbuild';
@@ -11,6 +10,7 @@ import terser from '@rollup/plugin-terser';
 import strip from '@rollup/plugin-strip';
 import replace from '@rollup/plugin-replace';
 import {createFilter} from '@rollup/pluginutils';
+import browserslistToEsbuild from 'browserslist-to-esbuild';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 
 // Common set of plugins/transformations shared across different rollup
@@ -19,9 +19,7 @@ import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 export const plugins = ({mode, minified, production, test, bench, keepClassNames}) => [
     minifyStyleSpec(),
     esbuild({
-        // We target `esnext` and disable minification so esbuild
-        // doesn't transform the code, which we'll minify later with the terser
-        target: 'esnext',
+        target: browserslistToEsbuild(),
         minify: false,
         sourceMap: true,
         define: {
@@ -34,7 +32,7 @@ export const plugins = ({mode, minified, production, test, bench, keepClassNames
     (production && !bench) ? strip({
         sourceMap: true,
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*'],
-        include:['**/*.ts']
+        include: ['**/*.ts']
     }) : false,
     production || bench ? unassert({include: ['*.js', '**/*.js', '*.ts', '**/*.ts']}) : false,
     test ? replace({
@@ -56,8 +54,7 @@ export const plugins = ({mode, minified, production, test, bench, keepClassNames
     }) : false,
     resolve({
         browser: true,
-        preferBuiltins: false,
-        mainFields: ['browser', 'main']
+        preferBuiltins: false
     }),
     commonjs({
         // global keyword handling causes Webpack compatibility issues, so we disabled it:

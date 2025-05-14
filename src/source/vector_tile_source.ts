@@ -49,7 +49,7 @@ import type {AJAXError} from '../util/ajax';
  * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
  * @see [Example: Add a third party vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/third-party/)
  */
-class VectorTileSource extends Evented<SourceEvents> implements ISource {
+class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'> {
     type: 'vector';
     id: string;
     scope: string;
@@ -58,8 +58,8 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
     url: string;
     scheme: string;
     tileSize: number;
-    minTileCacheSize?: number | null;
-    maxTileCacheSize?: number | null;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     roundZoom?: boolean;
     attribution?: string;
     // eslint-disable-next-line camelcase
@@ -72,7 +72,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
     map: Map;
     bounds?: [number, number, number, number] | null;
     tiles: Array<string>;
-    tileBounds: TileBounds;
+    tileBounds?: TileBounds;
     reparseOverscaled?: boolean;
     isTileClipped?: boolean;
     _tileJSONRequest?: Cancelable | null;
@@ -153,7 +153,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
                     }
                 }
 
-                if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
+                this.tileBounds = TileBounds.fromTileJSON(tileJSON);
                 postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
 
                 // `content` is included here to prevent a race condition where `Style#updateSources` is called

@@ -3,7 +3,7 @@ import validateString from './validate_string';
 
 import type {ValidationOptions} from './validate';
 
-export default function(options: ValidationOptions): Array<ValidationError> {
+export default function (options: ValidationOptions): Array<ValidationError> {
     const value = options.value;
     const key = options.key;
 

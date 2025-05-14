@@ -163,7 +163,7 @@ class BoxZoomHandler implements Handler {
 
         if (this._box) {
             this._box.remove();
-            this._box = (null as any);
+            this._box = null;
         }
 
         DOM.enableDrag();

@@ -12,9 +12,14 @@ import {hasPattern, addPatternDependencies} from './pattern_bucket_features';
 import loadGeometry from '../load_geometry';
 import toEvaluationFeature from '../evaluation_feature';
 import EvaluationParameters from '../../style/evaluation_parameters';
-import {ElevationFeatureSampler, type ElevationFeature, type Range} from '../../../3d-style/elevation/elevation_feature';
-import {MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ID, PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL} from '../../../3d-style/elevation/elevation_constants';
+import {EdgeIterator, ElevationFeatures, ElevationFeatureSampler, type ElevationFeature, type Range} from '../../../3d-style/elevation/elevation_feature';
+import {ELEVATION_CLIP_MARGIN, MARKUP_ELEVATION_BIAS, PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL} from '../../../3d-style/elevation/elevation_constants';
 import {ElevatedStructures} from '../../../3d-style/elevation/elevated_structures';
+import Point from '@mapbox/point-geometry';
+import {tileToMeter} from '../../geo/mercator_coordinate';
+import {clip, polygonSubdivision} from '../../util/polygon_clipping';
+import EXTENT from '../../style-spec/data/extent';
+import {computeBounds} from '../../style-spec/util/geometry_util';
 
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
 import type {
@@ -35,7 +40,6 @@ import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
-import type Point from '@mapbox/point-geometry';
 import type {ElevationPolygons, ElevationPortalGraph} from '../../../3d-style/elevation/elevation_graph';
 import type {ImageId} from '../../style-spec/expression/types/image_id';
 
@@ -297,9 +301,12 @@ class FillBucket implements Bucket {
 
         // Layers using vector sources should always use the precomputed elevation.
         // In case of geojson sources the elevation snapshot will be used instead
-        const tiledElevation = this.getElevationFeature(feature, elevationFeatures);
+        const tiledElevation = ElevationFeatures.getElevationFeature(feature, elevationFeatures);
         if (tiledElevation) {
-            elevatedGeometry.push({polygons, elevationFeature: tiledElevation, elevationTileID: canonical});
+            const clipped = this.clipPolygonsToTile(polygons, ELEVATION_CLIP_MARGIN);
+            if (clipped.length > 0) {
+                elevatedGeometry.push({polygons: clipped, elevationFeature: tiledElevation, elevationTileID: canonical});
+            }
         } else {
             // No elevation data available at all
             this.addGeometry(polygons, this.bufferData);
@@ -332,6 +339,10 @@ class FillBucket implements Bucket {
                     }
                 }
 
+                if (elevated.elevationFeature.constantHeight == null) {
+                    elevated.polygons = this.prepareElevatedPolygons(elevated.polygons, elevated.elevationFeature, elevated.elevationTileID);
+                }
+
                 const elevationSampler = new ElevationFeatureSampler(canonical, elevated.elevationTileID);
 
                 if (this.elevationMode === 'hd-road-base') {
@@ -345,11 +356,11 @@ class FillBucket implements Bucket {
     }
 
     private addElevatedGeometry(polygons: Point[][][], elevationSampler: ElevationFeatureSampler, elevation: ElevationFeature, bias: number, index: number) {
-        const elevationParams = <ElevationParams>{elevation, elevationSampler, bias, index};
+        const elevationParams: ElevationParams = {elevation, elevationSampler, bias, index};
         const [min, max] = this.addGeometry(polygons, this.elevationBufferData, elevationParams);
 
         if (this.elevationBufferData.heightRange == null) {
-            this.elevationBufferData.heightRange = <Range>{min, max};
+            this.elevationBufferData.heightRange = {min, max} as Range;
         } else {
             this.elevationBufferData.heightRange.min = Math.min(this.elevationBufferData.heightRange.min, min);
             this.elevationBufferData.heightRange.max = Math.max(this.elevationBufferData.heightRange.max, max);
@@ -449,7 +460,7 @@ class FillBucket implements Bucket {
                     triangleIndex + indices[i + 2]);
             }
 
-            if (elevationParams && this.elevationMode === 'hd-road-base') {
+            if (indices.length > 0 && elevationParams && this.elevationMode === 'hd-road-base') {
                 const isTunnel = elevationParams.elevation.isTunnel();
                 const safeArea = elevationParams.elevation.safeArea;
                 const vOffset = this.elevatedStructures.addVertices(points, heights);
@@ -475,13 +486,56 @@ class FillBucket implements Bucket {
         return [min, max];
     }
 
-    private getElevationFeature(feature: BucketFeature, elevationFeatures?: ElevationFeature[]): ElevationFeature | undefined {
-        if (!elevationFeatures) return undefined;
+    private prepareElevatedPolygons(polygons: Point[][][], elevation: ElevationFeature, tileID: CanonicalTileID): Point[][][] {
+        // Subdivide the polygon along the assigned elevation curve
+        const metersToTile = 1.0 / tileToMeter(tileID);
+        const clippedPolygons: Point[][][] = [];
 
-        const value = +feature.properties[PROPERTY_ELEVATION_ID];
-        if (value == null) return undefined;
+        for (const poly of polygons) {
+            const clippedPoly = polygonSubdivision(poly, new EdgeIterator(elevation, metersToTile));
+            clippedPolygons.push(...clippedPoly);
+        }
 
-        return elevationFeatures.find(f => f.id === value);
+        return clippedPolygons;
+    }
+
+    private clipPolygonsToTile(polygons: Point[][][], margin: number): Point[][][] {
+        const minX = -margin;
+        const minY = -margin;
+        const maxX = EXTENT + margin;
+        const maxY = EXTENT + margin;
+
+        // Find polygons potentially intersecting with boundaries and hence requiring clipping
+        let clipIdx = 0;
+        const noClippingGroup: Point[][][] = [];
+        const clippingGroup: Point[][][] = [];
+
+        for (; clipIdx < polygons.length; clipIdx++) {
+            const polygon = polygons[clipIdx];
+            assert(polygon.length > 0);
+
+            const bounds = computeBounds(polygon);
+            const noClipping = bounds.min.x >= minX && bounds.max.x <= maxX && bounds.min.y >= minY && bounds.max.y <= maxY;
+            const dst = noClipping ? noClippingGroup : clippingGroup;
+            dst.push(polygon);
+        }
+
+        if (noClippingGroup.length === polygons.length) return polygons;
+
+        const clipPoly = [
+            new Point(minX, minY),
+            new Point(maxX, minY),
+            new Point(maxX, maxY),
+            new Point(minX, maxY),
+            new Point(minX, minY)
+        ];
+
+        const clippedPolygons = noClippingGroup;
+        for (const poly of clippingGroup) {
+            clippedPolygons.push(...clip(poly, clipPoly));
+        }
+
+        return clippedPolygons;
     }
 }
 

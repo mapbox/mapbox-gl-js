@@ -10,6 +10,8 @@ export const PROPERTY_ELEVATION_ROAD_BASE_Z_LEVEL = 'level';
 // Hard coded source layer name for HD road elevation data.
 export const HD_ELEVATION_SOURCE_LAYER = 'hd_road_elevation';
 
+export const ELEVATION_CLIP_MARGIN = 1;
+
 export const MARKUP_ELEVATION_BIAS = 0.05;
 
 export type ElevationType = 'none' | 'road' | 'offset';

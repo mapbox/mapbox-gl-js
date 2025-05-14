@@ -3,7 +3,6 @@ import * as diff from 'diff';
 import fs from 'fs';
 import harness from './harness.js';
 import compactStringify from 'json-stringify-pretty-compact';
-
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -84,8 +83,9 @@ function deepEqual(a, b) {
  * deal with implementation-specific test exclusions and fudge-factors.
  * @param {Object} options
  * @param {Array<string>} [options.tests] - Array of test names to run; tests not in the array will be skipped.
- * @param {Array<string>} [options.ignores] - Object with todo and skip arrays containing test names to ignore.
- * @param {} runExpressionTest - A function that runs a single expression test fixture.
+ * @param {{ todo: string[]; skip: string[]; }} [options.ignores] - Object with todo and skip arrays containing test names to ignore.
+ * @param {string} [options.fixtureFilename]
+ * @param {Function} runExpressionTest - A function that runs a single expression test fixture.
  * @returns {undefined} Terminates the process when testing is complete.
  */
 export function run(implementation, options, runExpressionTest) {
@@ -105,7 +105,7 @@ export function run(implementation, options, runExpressionTest) {
 
                 delete fixture.metadata;
 
-                fs.writeFile(path.join(dir, 'test.json'), `${stringify(fixture, null, 2)}\n`, done);
+                fs.writeFile(path.join(dir, 'test.json'), `${stringify(fixture)}\n`, done);
                 return;
             }
 

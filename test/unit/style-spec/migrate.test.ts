@@ -1,10 +1,9 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect} from '../../util/vitest';
 import validate from '../../../src/style-spec/validate_style';
 import v8 from '../../../src/style-spec/reference/v8.json';
 import migrate from '../../../src/style-spec/migrate';
-
-/* eslint-disable import/namespace */
 import * as spec from '../../../src/style-spec/style-spec';
 
 test('does not migrate from version 5', () => {
@@ -106,7 +105,7 @@ test('converts categorical function on resolvedImage type to valid expression', 
     }, spec.latest.$version);
     expect(migrated.layers[0].layout['icon-image']).toEqual([
         "match",
-        ["get", "type" ],
+        ["get", "type"],
         "park",
         "some-icon",
         ""

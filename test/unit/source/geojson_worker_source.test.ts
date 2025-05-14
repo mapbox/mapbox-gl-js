@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
 import GeoJSONWorkerSource from '../../../src/source/geojson_worker_source';
@@ -18,10 +19,10 @@ describe('reloadTile', () => {
             }
         ];
         const layerIndex = new StyleLayerIndex(layers);
-        const source = new GeoJSONWorkerSource(actor, layerIndex, [], true);
+        const source = new GeoJSONWorkerSource(actor, layerIndex, [], [], true);
         const originalLoadVectorData = source.loadVectorData;
         let loadVectorCallCount = 0;
-        source.loadVectorData = function(params, callback) {
+        source.loadVectorData = function (params, callback) {
             loadVectorCallCount++;
             return originalLoadVectorData.call(this, params, callback);
         };
@@ -123,20 +124,20 @@ describe('resourceTiming', () => {
             secureConnectionStart: 0
         };
 
-        vi.spyOn(perf, 'getEntriesByName').mockImplementation(() => { return [ exampleResourceTiming ]; });
+        vi.spyOn(perf, 'getEntriesByName').mockImplementation(() => { return [exampleResourceTiming]; });
 
         const layerIndex = new StyleLayerIndex(layers);
-        const source = new GeoJSONWorkerSource(actor, layerIndex, [], true, (params, callback) => { return callback(null, geoJson); });
+        const source = new GeoJSONWorkerSource(actor, layerIndex, [], [], true, (params, callback) => { return callback(null, geoJson); });
 
         source.loadData({source: 'testSource', request: {url: 'http://localhost/nonexistent', collectResourceTiming: true}}, (err, result) => {
             expect(err).toEqual(null);
-            expect(result.resourceTiming.testSource).toStrictEqual([ exampleResourceTiming ]); // got expected resource timing
+            expect(result.resourceTiming.testSource).toStrictEqual([exampleResourceTiming]); // got expected resource timing
         });
     });
 
     test('loadData - data', () => {
         const layerIndex = new StyleLayerIndex(layers);
-        const source = new GeoJSONWorkerSource(actor, layerIndex, [], true);
+        const source = new GeoJSONWorkerSource(actor, layerIndex, [], [], true);
 
         source.loadData({source: 'testSource', data: JSON.stringify(geoJson)}, (err, result) => {
             expect(err).toEqual(null);

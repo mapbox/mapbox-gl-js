@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, waitFor, vi, createMap} from '../../../util/vitest';
 import {getPNGResponse} from '../../../util/network';
@@ -30,7 +31,7 @@ describe('Map#properties', () => {
             });
 
             await waitFor(map, "style.load");
-            map.style.dispatcher.broadcast = function(key, value) {
+            map.style.dispatcher.broadcast = function (key, value) {
                 expect(key).toEqual('updateLayers');
                 expect(value.layers.map((layer) => { return layer.id; })).toEqual(['symbol']);
             };

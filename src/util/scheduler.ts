@@ -43,7 +43,7 @@ class Scheduler {
 
         if (priority === 0) {
             // Process tasks with priority 0 immediately. Do not yield to the event loop.
-            const m = isWorker() ? PerformanceUtils.beginMeasure('workerTask') : undefined;
+            const m = isWorker(self) ? PerformanceUtils.beginMeasure('workerTask') : undefined;
             try {
                 fn();
             } finally {
@@ -64,7 +64,7 @@ class Scheduler {
     }
 
     process() {
-        const m = isWorker() ? PerformanceUtils.beginMeasure('workerTask') : undefined;
+        const m = isWorker(self) ? PerformanceUtils.beginMeasure('workerTask') : undefined;
         try {
             this.taskQueue = this.taskQueue.filter(id => !!this.tasks[id]);
 

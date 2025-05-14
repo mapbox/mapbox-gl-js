@@ -42,7 +42,6 @@ import type {VideoSourceSpecification} from '../style-spec/types';
  * @see [Example: Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
 class VideoSource extends ImageSource<'video'> {
-    override type: 'video';
     override options: VideoSourceSpecification;
     urls: Array<string>;
     video: HTMLVideoElement;
@@ -84,6 +83,7 @@ class VideoSource extends ImageSource<'video'> {
                 });
 
                 if (this.map) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.video.play();
                 }
 
@@ -120,6 +120,7 @@ class VideoSource extends ImageSource<'video'> {
      */
     play() {
         if (this.video) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.video.play();
         }
     }
@@ -156,6 +157,7 @@ class VideoSource extends ImageSource<'video'> {
         this.map = map;
         this.load();
         if (this.video) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.video.play();
             this.setCoordinates(this.coordinates);
         }

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, beforeEach, afterEach, expect, vi, equalWithPrecision} from '../../util/vitest';
 import {getRequestBody} from '../../util/network';
@@ -28,7 +29,7 @@ function withFixedDate(now, fn) {
 restore();
 
 function restore() {
-    window.useFakeXMLHttpRequest = function() {
+    window.useFakeXMLHttpRequest = function () {
         const spy = vi.spyOn(window, 'fetch').mockImplementation(() => {
             return Promise.resolve(new window.Response());
         });
@@ -648,13 +649,13 @@ describe("mapbox", () => {
                 prevLocalStorage = window.localStorage;
                 vi.stubGlobal('localStorage', {
                     data: {},
-                    setItem (id, val) {
+                    setItem(id, val) {
                         this.data[id] = String(val);
                     },
-                    getItem (id) {
+                    getItem(id) {
                         return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
                     },
-                    removeItem (id) {
+                    removeItem(id) {
                         if (this.hasOwnProperty(id)) delete this[id];
                     }
                 });
@@ -768,6 +769,7 @@ describe("mapbox", () => {
                 event.postTurnstileEvent(mapboxTileURLs);
 
                 await new Promise((resolve) => {
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
                     setTimeout(async () => {
                         const req = window.server.requests[0];
                         const reqBody = JSON.parse(await req.requestBody)[0];
@@ -844,6 +846,7 @@ describe("mapbox", () => {
                 req.respond(200);
 
                 await new Promise(resolve => {
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
                     setTimeout(async () => {
                         req = window.server.requests[1];
                         const reqBody = JSON.parse(await req.requestBody)[0];
@@ -947,13 +950,13 @@ describe("mapbox", () => {
             beforeEach(() => {
                 vi.stubGlobal('localStorage', {
                     data: {},
-                    setItem (id, val) {
+                    setItem(id, val) {
                         this.data[id] = String(val);
                     },
-                    getItem (id) {
+                    getItem(id) {
                         return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
                     },
-                    removeItem (id) {
+                    removeItem(id) {
                         if (this.hasOwnProperty(id)) delete this[id];
                     }
                 });
@@ -1094,6 +1097,7 @@ describe("mapbox", () => {
                 let req = window.server.requests[0];
 
                 await new Promise((resolve) => {
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
                     setTimeout(async () => {
                         req = window.server.requests[1];
 

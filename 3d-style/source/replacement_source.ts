@@ -132,7 +132,7 @@ class ReplacementSource {
 
                     for (const id of source.cache.getVisibleCoordinates()) {
                         const tile = source.cache.getTile(id);
-                        const bucket: Bucket | null | undefined = (tile.buckets[source.layer] as any);
+                        const bucket: Bucket | null | undefined = tile.buckets[source.layer];
                         if (bucket) {
                             bucket.updateFootprints(id.toUnwrapped(), footprints);
                         }

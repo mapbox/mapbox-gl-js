@@ -1,6 +1,6 @@
 /* eslint-env browser */
 /* global tape:readonly, mapboxgl:readonly */
-/* eslint-disable import/no-unresolved */
+
 // query-fixtures.json is automatically generated before this file gets built
 // refer testem.js#before_tests()
 import fixtures from '../dist/query-fixtures.json';
@@ -163,7 +163,7 @@ async function runTest(t) {
 
     } catch (e) {
         t.error(e);
-        updateHTML({name: t.name, status:'failed', jsonDiff: e.message});
+        updateHTML({name: t.name, status: 'failed', jsonDiff: e.message});
     }
     t.end();
 }

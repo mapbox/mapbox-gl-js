@@ -7,7 +7,7 @@ import {setGlobal} from './tracked_parameters_base';
 import type {Map as MapboxMap} from '../ui/map';
 import type {ITrackedParameters, Description} from './tracked_parameters_base';
 
-if (!isWorker()) {
+if (!isWorker(self)) {
     const style = document.createElement('style');
     style.innerHTML = `
         .tp-fldv_t {
@@ -45,6 +45,7 @@ if (!isWorker()) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function deserialize(serialized: string): any {
     return [eval][0](`(${serialized})`);
 }
@@ -52,6 +53,7 @@ function deserialize(serialized: string): any {
 // Serializable folder state
 class FolderState {
     isFolded: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     current: any;
 
     constructor() {
@@ -94,11 +96,12 @@ function mergePaneParams(dest: PaneState, src: PaneState) {
 }
 
 function deSerializePaneParams(input?: string | null): PaneState {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let obj: Record<string, any> = {};
     if (input) {
         try {
             obj = deserialize(input);
-        } catch (err: any) {
+        } catch (err) {
             console.log(`Tracked parameters deserialization error: ${err}`);
         }
     }
@@ -133,13 +136,17 @@ function deSerializePaneParams(input?: string | null): PaneState {
 
 // Reference to actual object and default values
 class ParameterInfo {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     containerObject: any;
     parameterName: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     defaultValue: any;
     noSave: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tpBinding: any;
     label: string;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(object: any, parameterName: string, defaultValue: any, noSave: boolean, tpBinding: any) {
         this.containerObject = object;
         this.parameterName = parameterName;
@@ -156,6 +163,7 @@ export class TrackedParameters implements ITrackedParameters {
     _container: HTMLElement;
 
     // All TweakPane scopes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _folders: Map<string, any>;
 
     // For (de)serialization
@@ -171,6 +179,7 @@ export class TrackedParameters implements ITrackedParameters {
 
     constructor(map: MapboxMap) {
         this._map = map;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this._folders = new Map<string, any>();
 
         const id = map._getMapId();
@@ -300,10 +309,12 @@ export class TrackedParameters implements ITrackedParameters {
         };
         // @ts-expect-error - TS2349 - This expression is not callable.
         window.showSaveFilePicker(opts).then((fileHandle) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return fileHandle.createWritable();
         }).then((writable) => {
             const serialized = serialize(this._paneState);
             return Promise.all([writable, writable.write(serialized)]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }).then(([writable, _]: [any, any]) => {
             writable.close();
         }).catch((err) => {
@@ -327,8 +338,10 @@ export class TrackedParameters implements ITrackedParameters {
         };
         // @ts-expect-error - TS2551 - Property 'showOpenFilePicker' does not exist on type 'Window & typeof globalThis & Record<"showSaveFilePicker", unknown>'. Did you mean 'showSaveFilePicker'?
         window.showOpenFilePicker(opts).then((fileHandles) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return fileHandles[0].getFile();
         }).then((file) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return file.text();
         }).then((fileData) => {
             const loadedPaneState = deSerializePaneParams(fileData);
@@ -433,12 +446,14 @@ export class TrackedParameters implements ITrackedParameters {
     }
 
     createFoldersChainAndSelectScope(scope: Array<string>): {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         currentScope: any;
         fullScopeName: string;
     } {
         assert(scope.length >= 1);
 
         // Iterate/create panes
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let currentScope: any = this._folders.get("_");
         let fullScopeName = "_";
         for (let i = 0; i < scope.length; ++i) {
@@ -460,7 +475,7 @@ export class TrackedParameters implements ITrackedParameters {
                     this._paneState.folders.set(fullScopeName, folderObj);
                 }
 
-                const folderObj: FolderState = (this._paneState.folders.get(fullScopeName) as any);
+                const folderObj: FolderState = this._paneState.folders.get(fullScopeName);
                 currentScope.expanded = !folderObj.isFolded;
 
                 currentScope.on('fold', (ev) => {
@@ -474,10 +489,11 @@ export class TrackedParameters implements ITrackedParameters {
         return {currentScope, fullScopeName};
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerParameter(containerObject: any, scope: Array<string>, name: string, description?: Description, changeValueCallback?: any) {
         const {currentScope, fullScopeName} = this.createFoldersChainAndSelectScope(scope);
 
-        const folderStateObj: FolderState = (this._paneState.folders.get(fullScopeName) as any);
+        const folderStateObj: FolderState = this._paneState.folders.get(fullScopeName);
 
         // Full parameter name with scope prefix
         const fullParameterName = `${fullScopeName}|${name}`;
@@ -515,6 +531,7 @@ export class TrackedParameters implements ITrackedParameters {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerButton(scope: Array<string>, buttonTitle: string, onClick: any) {
         const {currentScope} = this.createFoldersChainAndSelectScope(scope);
 
@@ -525,6 +542,7 @@ export class TrackedParameters implements ITrackedParameters {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerBinding(containerObject: any, scope: Array<string>, name: string, description?: Description) {
         const {currentScope} = this.createFoldersChainAndSelectScope(scope);
 
@@ -534,6 +552,7 @@ export class TrackedParameters implements ITrackedParameters {
             }
 
             if ("label" in description) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return description.label;
             }
 

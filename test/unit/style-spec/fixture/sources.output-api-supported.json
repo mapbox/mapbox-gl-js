@@ -44,6 +44,22 @@
     "line": 53
   },
   {
+    "message": "sources.invalid-bounds-too-few.bounds: array length 4 expected, length 3 found",
+    "line": 64
+  },
+  {
+    "message": "sources.invalid-bounds-too-many.bounds: array length 4 expected, length 5 found",
+    "line": 69
+  },
+  {
+    "message": "sources.invalid-bounds-values.bounds[2]: number expected, string found",
+    "line": 74
+  },
+  {
+    "message": "sources.invalid-extra-bounds-values.extra_bounds[0]: Expected number but found string.",
+    "line": 100
+  },
+  {
     "message": "sources[0].type: Expected one of [vector, raster, raster-dem, raster-array, model, batched-model]"
   },
   {
@@ -149,5 +165,81 @@
   },
   {
     "message": "sources[9].url: Expected a valid Mapbox tileset url"
+  },
+  {
+    "message": "source.bounds: Unsupported property \"bounds\"",
+    "line": 59
+  },
+  {
+    "message": "sources[10].url: Expected a valid Mapbox tileset url",
+    "line": 58
+  },
+  {
+    "message": "source.bounds: Unsupported property \"bounds\"",
+    "line": 64
+  },
+  {
+    "message": "sources[11].url: Expected a valid Mapbox tileset url",
+    "line": 63
+  },
+  {
+    "message": "source.bounds: Unsupported property \"bounds\"",
+    "line": 69
+  },
+  {
+    "message": "sources[12].url: Expected a valid Mapbox tileset url",
+    "line": 68
+  },
+  {
+    "message": "source.bounds: Unsupported property \"bounds\"",
+    "line": 74
+  },
+  {
+    "message": "sources[13].url: Expected a valid Mapbox tileset url",
+    "line": 73
+  },
+  {
+    "message": "source.extra_bounds: Unsupported property \"extra_bounds\"",
+    "line": 79
+  },
+  {
+    "message": "sources[14].url: Expected a valid Mapbox tileset url",
+    "line": 78
+  },
+  {
+    "message": "source.extra_bounds: Unsupported property \"extra_bounds\"",
+    "line": 87
+  },
+  {
+    "message": "sources[15].url: Expected a valid Mapbox tileset url",
+    "line": 86
+  },
+  {
+    "message": "source.extra_bounds: Unsupported property \"extra_bounds\"",
+    "line": 92
+  },
+  {
+    "message": "sources[16].url: Expected a valid Mapbox tileset url",
+    "line": 91
+  },
+  {
+    "message": "source.extra_bounds: Unsupported property \"extra_bounds\"",
+    "line": 99
+  },
+  {
+    "message": "sources[17].url: Expected a valid Mapbox tileset url",
+    "line": 98
+  },
+  {
+    "message": "source.bounds: Unsupported property \"bounds\"",
+    "line": 106
+  },
+  {
+    "message": "source.extra_bounds: Unsupported property \"extra_bounds\"",
+    "line": 107
+  },
+  {
+    "message": "sources[18].url: Expected a valid Mapbox tileset url",
+    "line": 105
   }
 ]

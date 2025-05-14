@@ -17,6 +17,7 @@ export type TileJSON = {
     minzoom?: number;
     maxzoom?: number;
     bounds?: [number, number, number, number];
+    extra_bounds?: Array<[number, number, number, number]>;
     center?: [number, number, number];
     vector_layers?: Array<SourceVectorLayer>;
     raster_layers?: Array<SourceRasterLayer>;

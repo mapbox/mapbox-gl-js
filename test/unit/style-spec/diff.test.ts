@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect} from '../../util/vitest';
 import diffStyles from '../../../src/style-spec/diff';
@@ -89,7 +90,7 @@ test('diff', () => {
     }, {
         layers: [{id: 'a', filter: ['==', 'foo', 'baz']}]
     })).toEqual([
-        {command: 'setFilter', args: ['a', [ '==', 'foo', 'baz' ] ]}
+        {command: 'setFilter', args: ['a', ['==', 'foo', 'baz']]}
     ]);
 
     expect(diffStyles({
@@ -330,9 +331,9 @@ test('diff', () => {
     ]);
 
     expect(diffStyles({
-        layers: [ {id: 'a', source: 'source-one'} ]
+        layers: [{id: 'a', source: 'source-one'}]
     }, {
-        layers: [ {id: 'a', source: 'source-two'} ]
+        layers: [{id: 'a', source: 'source-two'}]
     })).toEqual([
         {command: 'removeLayer', args: ['a']},
         {command: 'addLayer', args: [{id: 'a', source: 'source-two'}, undefined]}

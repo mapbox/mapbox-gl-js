@@ -429,6 +429,7 @@ export type MapSourceDataEvent = {
     sourceDataType?: 'metadata' | 'content' | 'visibility' | 'error';
     tile?: Tile;
     coord?: Tile['tileID'];
+    resourceTiming?: PerformanceResourceTiming[]
 };
 
 /**

@@ -2,12 +2,11 @@ import {test} from 'tape';
 import fs from 'fs';
 import path from 'path';
 import browserify from 'browserify';
-
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
-const reference = JSON.parse(fs.readFileSync(path.join(__dirname, '../../src/style-spec/reference/v8.json')));
-const {scripts} = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json')));
+const reference = JSON.parse(fs.readFileSync(path.join(__dirname, '../../src/style-spec/reference/v8.json')).toString());
+const {scripts} = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json')).toString());
 
 const minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 

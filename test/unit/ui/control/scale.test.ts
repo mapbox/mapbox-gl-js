@@ -1,4 +1,5 @@
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, createMap} from '../../../util/vitest';
 import ScaleControl from '../../../../src/ui/control/scale_control';
@@ -103,7 +104,7 @@ test('ScaleControl should support different projections', () => {
 
 test('ScaleControl should work in legacy safari', () => {
     const realNumberFormat = Intl.NumberFormat;
-    Intl.NumberFormat = function(arg, options) {
+    Intl.NumberFormat = function (arg, options) {
         if (options && options.style === 'unit') {
             throw new Error('not supported');
         }

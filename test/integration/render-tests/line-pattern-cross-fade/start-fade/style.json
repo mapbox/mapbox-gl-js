@@ -1,0 +1,66 @@
+
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 64,
+      "allowed": 0.00514
+    }
+  },
+  "zoom": 0,
+  "sprite": "local://sprites/standard",
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "trunk"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  10,
+                  0
+                ],
+                [
+                  -10,
+                  0
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "a",
+      "paint": {
+        "line-width": 20,
+        "line-pattern-cross-fade": [
+          "interpolate",
+          ["linear"], ["zoom"],
+          0, 0,
+          5, 1
+        ],
+        "line-pattern": ["image", "golf-dark", "bicycle-dark"]
+      }
+    }
+  ]
+}

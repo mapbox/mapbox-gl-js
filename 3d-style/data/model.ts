@@ -119,9 +119,9 @@ export type ModelNode = {
 };
 
 export const ModelTraits = {
-    CoordinateSpaceTile : 1,
-    CoordinateSpaceYUp : 2, // not used yet.
-    HasMapboxMeshFeatures : 1 << 2,
+    CoordinateSpaceTile: 1,
+    CoordinateSpaceYUp: 2, // not used yet.
+    HasMapboxMeshFeatures: 1 << 2,
     HasMeshoptCompression: 1 << 3
 } as const;
 
@@ -188,14 +188,14 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
             if (state.elevation) {
                 elevation = state.elevation.getAtPointOrZero(new MercatorCoordinate(projectedPoint.x / worldSize, projectedPoint.y / worldSize), 0.0);
             }
-            const mercProjPos = vec4.transformMat4([] as any, [projectedPoint.x, projectedPoint.y, elevation, 1.0], state.projMatrix);
+            const mercProjPos = vec4.transformMat4([] as unknown as vec4, [projectedPoint.x, projectedPoint.y, elevation, 1.0], state.projMatrix);
             const mercProjectionScale = mercProjPos[3] / state.cameraToCenterDistance;
             const viewMetersPerPixel = getMetersPerPixelAtLatitude(state.center.lat, zoom);
             scaleXY = mercProjectionScale;
             scaleZ = mercProjectionScale * viewMetersPerPixel;
         } else if (state.projection.name === 'globe') {
             const globeMatrix = convertModelMatrixForGlobe(matrix, state);
-            const worldViewProjection = mat4.multiply([] as any, state.projMatrix, globeMatrix);
+            const worldViewProjection = mat4.multiply([] as unknown as mat4, state.projMatrix, globeMatrix);
             const globeProjPos =  [0, 0, 0, 1];
             vec4.transformMat4(globeProjPos as [number, number, number, number], globeProjPos as [number, number, number, number], worldViewProjection);
             const globeProjectionScale = globeProjPos[3] / state.cameraToCenterDistance;
@@ -243,7 +243,7 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
         if (followTerrainSlope && state.elevation) {
             elevate = positionModelOnTerrain(rotateOnTerrain, state, model.aabb, matrix, position);
             const rotationOnTerrain = mat4.fromQuat([] as unknown as mat4, rotateOnTerrain);
-            const appendRotation = mat4.multiply([] as any, rotationOnTerrain, rotationScaleYZFlip);
+            const appendRotation = mat4.multiply([] as unknown as mat4, rotationOnTerrain, rotationScaleYZFlip);
             mat4.multiply(matrix, modelMatrixBeforeRotationScaleYZFlip, appendRotation);
         } else {
             elevate = state.elevation.getAtPointOrZero(new MercatorCoordinate(projectedPoint.x / worldSize, projectedPoint.y / worldSize), 0.0);
@@ -292,7 +292,7 @@ export default class Model {
     }
 
     computeBoundsAndApplyParent() {
-        const localMatrix =  mat4.identity([] as any);
+        const localMatrix = mat4.identity([] as unknown as mat4);
         for (const node of this.nodes) {
             this._applyTransformations(node, localMatrix);
         }
@@ -330,7 +330,7 @@ export function uploadTexture(texture: ModelTexture, context: Context, useSingle
         const useMipmap = texture.sampler.minFilter >= context.gl.NEAREST_MIPMAP_NEAREST;
         texture.gfxTexture = new Texture(context, texture.image, textureFormat, {useMipmap});
         texture.uploaded = true;
-        texture.image = (null as any);
+        texture.image = null;
     }
 }
 

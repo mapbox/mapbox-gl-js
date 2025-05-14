@@ -39,13 +39,9 @@ import type {ImageId} from './types/image_id';
 
 export interface Feature {
     readonly type: 0 | 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
-    readonly id?: number | null;
-    readonly properties: {
-        [_: string]: any;
-    };
-    readonly patterns?: {
-        [_: string]: string;
-    };
+    readonly id?: string | number | null;
+    readonly properties: Record<PropertyKey, unknown>;
+    readonly patterns?: Record<PropertyKey, string[]>;
     readonly geometry?: Array<Array<Point>>;
 }
 
@@ -93,6 +89,7 @@ export class StyleExpression {
         formattedSection?: FormattedSection,
         featureTileCoord?: Point,
         featureDistanceData?: FeatureDistanceData,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature;
@@ -115,6 +112,7 @@ export class StyleExpression {
         formattedSection?: FormattedSection,
         featureTileCoord?: Point,
         featureDistanceData?: FeatureDistanceData,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
@@ -135,7 +133,7 @@ export class StyleExpression {
                 throw new RuntimeError(`Expected value to be one of ${Object.keys(this._enumValues).map(v => JSON.stringify(v)).join(', ')}, but found ${JSON.stringify(val)} instead.`);
             }
             return val;
-        } catch (e: any) {
+        } catch (e) {
             if (!this._warningHistory[e.message]) {
                 this._warningHistory[e.message] = true;
                 if (typeof console !== 'undefined') {
@@ -205,6 +203,7 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
@@ -216,6 +215,7 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
@@ -250,6 +250,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         return this._styleExpression.evaluateWithoutErrorHandling(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
@@ -261,6 +262,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
     }
@@ -283,6 +285,7 @@ export type ConstantExpression = {
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) => any;
 };
 
@@ -299,6 +302,7 @@ export type SourceExpression = {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) => any;
 };
 
@@ -312,6 +316,7 @@ export type CameraExpression = {
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) => any;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;
     zoomStops: Array<number>;
@@ -331,6 +336,7 @@ export interface CompositeExpression {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) => any;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;
     zoomStops: Array<number>;
@@ -340,6 +346,7 @@ export interface CompositeExpression {
 export type StylePropertyExpression = ConstantExpression | SourceExpression | CameraExpression | CompositeExpression;
 
 export function createPropertyExpression(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expression: any,
     propertySpec: StylePropertySpecification,
     scope?: string | null,
@@ -347,6 +354,7 @@ export function createPropertyExpression(
 ): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, scope, options);
     if (expression.result === 'error') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return expression;
     }
 
@@ -402,6 +410,7 @@ export class StylePropertyFunction<T> {
     _specification: StylePropertySpecification;
 
     kind: EvaluationKind;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate: (globals: GlobalProperties, feature?: Feature) => any;
     interpolationFactor: (input: number, lower: number, upper: number) => number | null | undefined;
     zoomStops: Array<number> | null | undefined;
@@ -439,7 +448,7 @@ export function normalizePropertyExpression<T>(
     options?: ConfigOptions | null,
 ): StylePropertyExpression {
     if (isFunction(value)) {
-        return new StylePropertyFunction(value, specification) as any;
+        return new StylePropertyFunction(value, specification) as unknown as StylePropertyExpression;
 
     } else if (isExpression(value) || (Array.isArray(value) && value.length > 0)) {
         const expression = createPropertyExpression(value, specification, scope, options);
@@ -450,7 +459,7 @@ export function normalizePropertyExpression<T>(
         return expression.value;
 
     } else {
-        let constant: any = value;
+        let constant = value as Color;
         if (typeof value === 'string' && specification.type === 'color') {
             constant = Color.parse(value);
         }
@@ -498,6 +507,7 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
         }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return result;
 }
 

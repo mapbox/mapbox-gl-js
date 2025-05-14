@@ -147,6 +147,7 @@ function getLngLatPoints(coordinates: Array<Point>, canonical: CanonicalTileID) 
     for (let i = 0; i < coordinates.length; ++i) {
         coords.push(getLngLatPoint(coordinates[i], canonical));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return coords;
 }
 
@@ -275,6 +276,7 @@ function polygonToPolygonDistance(polygon1: Array<Array<[number, number]>>, poly
     return dist;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateQueue(distQueue: any, miniDist: number, ruler: CheapRuler, pointSet1: Array<[number, number]>, pointSet2: Array<[number, number]>, r1: IndexRange | null, r2: IndexRange | null) {
     if (r1 === null || r2 === null) return;
     const tempDist = bboxToBBoxDistance(getBBox(pointSet1, r1), getBBox(pointSet2, r2), ruler);
@@ -527,19 +529,19 @@ class Distance implements Expression {
             return context.error(`'distance' expression requires either one argument, but found ' ${args.length - 1} instead.`);
         }
         if (isValue(args[1])) {
-            const geojson = (args[1] as any);
+            const geojson = args[1] as GeoJSON.GeoJSON;
             if (geojson.type === 'FeatureCollection') {
                 for (let i = 0; i < geojson.features.length; ++i) {
                     if (isTypeValid(geojson.features[i].geometry.type)) {
-                        return new Distance(geojson, geojson.features[i].geometry);
+                        return new Distance(geojson, geojson.features[i].geometry as DistanceGeometry);
                     }
                 }
             } else if (geojson.type === 'Feature') {
                 if (isTypeValid(geojson.geometry.type)) {
-                    return new Distance(geojson, geojson.geometry);
+                    return new Distance(geojson, geojson.geometry as DistanceGeometry);
                 }
             } else if (isTypeValid(geojson.type)) {
-                return new Distance(geojson, geojson);
+                return new Distance(geojson, geojson as DistanceGeometry);
             }
         }
         return context.error(

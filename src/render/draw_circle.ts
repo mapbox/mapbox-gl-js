@@ -23,7 +23,7 @@ export default drawCircles;
 
 type TileRenderState = {
     programConfiguration: ProgramConfiguration;
-    program: Program<any>;
+    program: Program<CircleUniformsType>;
     layoutVertexBuffer: VertexBuffer;
     globeExtVertexBuffer: VertexBuffer | null | undefined;
     indexBuffer: IndexBuffer;
@@ -70,7 +70,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const coord = coords[i];
 
         const tile = sourceCache.getTile(coord);
-        const bucket: CircleBucket<any> | null | undefined = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as CircleBucket;
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
         const programConfiguration = bucket.programConfigurations.get(layer.id);
@@ -107,7 +107,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             for (const segment of oldSegments) {
                 segmentsRenderStates.push({
                     segments: new SegmentVector([segment]),
-                    sortKey: (segment.sortKey),
+                    sortKey: segment.sortKey,
                     state
                 });
             }

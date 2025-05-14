@@ -21,6 +21,7 @@ import type {Evented} from '../util/evented';
 import type {Callback} from '../types/callback';
 import type {MapEvents} from '../ui/events';
 import type {SourceSpecification} from '../style-spec/types';
+import type {CustomSourceInterface} from '../source/custom_source';
 
 export type {Source};
 
@@ -68,8 +69,8 @@ export type SourceVectorLayer = {
  * @property {boolean} roundZoom `true` if zoom levels are rounded to the nearest integer in the source data, `false`
  * if they are floor-ed to the nearest integer.
  */
-export interface ISource extends Evented<SourceEvents> {
-    readonly type: string;
+export interface ISource<T = Source['type']> extends Evented<SourceEvents> {
+    readonly type: T;
     id: string;
     scope: string;
     minzoom: number;
@@ -81,29 +82,23 @@ export interface ISource extends Evented<SourceEvents> {
     mapbox_logo?: boolean;
     tileID?: CanonicalTileID;
     reparseOverscaled?: boolean;
-    minTileCacheSize?: number | null | undefined;
-    maxTileCacheSize?: number | null | undefined;
-    language?: string | null | undefined;
-    worldview?: string | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
+    language?: string;
+    worldview?: string;
     readonly usedInConflation?: boolean;
     vectorLayers?: Array<SourceVectorLayer>;
     vectorLayerIds?: Array<string>;
     rasterLayers?: Array<SourceRasterLayer>;
     rasterLayerIds?: Array<string>;
-    hasTransition: () => boolean;
-    loaded: () => boolean;
+    readonly hasTransition: () => boolean;
+    readonly loaded: () => boolean;
     readonly onAdd?: (map: Map) => void;
     readonly onRemove?: (map: Map) => void;
-    loadTile: (
-        tile: Tile,
-        callback: Callback<undefined>,
-        tileWorkers?: {
-            [key: string]: Actor;
-        },
-    ) => void;
+    readonly loadTile: (tile: Tile, callback: Callback<unknown>) => void;
     readonly hasTile?: (tileID: OverscaledTileID) => boolean;
-    readonly abortTile?: (tile: Tile, callback?: Callback<undefined>) => void;
-    readonly unloadTile?: (tile: Tile, callback?: Callback<undefined>) => void;
+    readonly abortTile?: (tile: Tile, callback?: Callback<unknown>) => void;
+    readonly unloadTile?: (tile: Tile, callback?: Callback<unknown>) => void;
     readonly reload?: () => void;
     /**
      * @returns A plain (stringifiable) JS object representing the current state of the source.
@@ -111,7 +106,7 @@ export interface ISource extends Evented<SourceEvents> {
      * equivalent to this one.
      * @private
      */
-    serialize: () => SourceSpecification | {type: 'custom', [key: string]: unknown};
+    readonly serialize: () => SourceSpecification | {type: 'custom', [key: string]: unknown};
     readonly prepare?: () => void;
     readonly afterUpdate?: () => void;
     readonly _clear?: () => void;
@@ -122,7 +117,7 @@ type SourceStatics = {
      * An optional URL to a script which, when run by a Worker, registers a {@link WorkerSource}
      * implementation for this Source type by calling `self.registerWorkerSource(workerSource: WorkerSource)`.
      */
-    workerSourceURL?: URL;
+    workerSourceURL?: string;
 };
 
 export type SourceClass = Class<ISource> & SourceStatics;
@@ -153,9 +148,9 @@ export type SourceType = keyof typeof sourceTypes;
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
-export const create = function(
+export const create = function (
     id: string,
-    specification: SourceSpecification,
+    specification: SourceSpecification | CustomSourceInterface<unknown>,
     dispatcher: Dispatcher,
     eventedParent: Evented,
 ): Source {
@@ -169,7 +164,8 @@ export const create = function(
     return source;
 };
 
-export const getType = function(name: string): Class<ISource> {
+export const getType = function (name: string): Class<ISource> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return sourceTypes[name];
 };
 

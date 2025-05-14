@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {Map} from '../../src/ui/map';
 import {extend} from '../../src/util/util';

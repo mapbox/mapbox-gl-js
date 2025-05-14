@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id';
@@ -5,19 +6,15 @@ import {CanonicalTileID, OverscaledTileID} from '../../../src/source/tile_id';
 describe('CanonicalTileID', () => {
     test('#constructor', () => {
         expect(() => {
-            /*eslint no-new: 0*/
             new CanonicalTileID(-1, 0, 0);
         }).toThrowError();
         expect(() => {
-            /*eslint no-new: 0*/
             new CanonicalTileID(26, 0, 0);
         }).toThrowError();
         expect(() => {
-            /*eslint no-new: 0*/
             new CanonicalTileID(2, 4, 0);
         }).toThrowError();
         expect(() => {
-            /*eslint no-new: 0*/
             new CanonicalTileID(2, 0, 4);
         }).toThrowError();
     });
@@ -61,7 +58,6 @@ describe('OverscaledTileID', () => {
     test('#constructor', () => {
         expect(new OverscaledTileID(0, 0, 0, 0, 0) instanceof OverscaledTileID).toBeTruthy();
         expect(() => {
-            /*eslint no-new: 0*/
             new OverscaledTileID(7, 0, 8, 0, 0);
         }).toThrowError();
     });

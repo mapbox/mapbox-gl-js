@@ -28,7 +28,23 @@ import type {UniformValues} from '../../src/render/uniform_binding';
 import type {LightProps as Directional} from '../style/directional_light_properties';
 import type {LightProps as Ambient} from '../style/ambient_light_properties';
 import type {ShadowUniformsType} from '../render/shadow_uniforms';
+import type {GroundShadowUniformsType} from '../render/program/ground_shadow_program';
+import type {ModelUniformsType, ModelDepthUniformsType} from '../render/program/model_program';
+import type {SymbolUniformsType} from '../../src/render/program/symbol_program';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms';
+import type {
+    FillExtrusionDepthUniformsType,
+    FillExtrusionPatternUniformsType
+} from '../../src/render/program/fill_extrusion_program';
+
+type ShadowsUniformsType =
+    | ShadowUniformsType
+    | GroundShadowUniformsType
+    | SymbolUniformsType
+    | ModelUniformsType
+    | ModelDepthUniformsType
+    | FillExtrusionDepthUniformsType
+    | FillExtrusionPatternUniformsType;
 
 type ShadowCascade = {
     framebuffer: Framebuffer;
@@ -81,8 +97,8 @@ class ShadowReceivers {
             this.receivers[tileId.key] = new ShadowReceiver(aabb, null);
         }
     }
+
     clear() {
-        // @ts-expect-error - TS2741 - Property 'number' is missing in type '{}' but required in type '{ number: ShadowReceiver; }'.
         this.receivers = {};
     }
 
@@ -93,11 +109,11 @@ class ShadowReceivers {
     // Returns the number of cascades that need to be rendered based on visibility on screen.
     // Cascades that need to be rendered always include the first cascade.
     computeRequiredCascades(frustum: Frustum, worldSize: number, cascades: Array<ShadowCascade>): number {
-        const frustumAabb = Aabb.fromPoints((frustum.points as any));
+        const frustumAabb = Aabb.fromPoints(frustum.points);
         let lastCascade = 0;
 
         for (const receiverKey in this.receivers) {
-            const receiver = (this.receivers[receiverKey] as ShadowReceiver | null | undefined);
+            const receiver = this.receivers[receiverKey];
             if (!receiver) continue;
 
             if (!frustumAabb.intersectsAabb(receiver.aabb)) continue;
@@ -131,9 +147,7 @@ class ShadowReceivers {
         return lastCascade + 1;
     }
 
-    receivers: {
-        number: ShadowReceiver;
-    };
+    receivers: Record<number, ShadowReceiver>;
 }
 
 export class ShadowRenderer {
@@ -247,7 +261,7 @@ export class ShadowRenderer {
             const elevation = transform.elevation;
             const range = [10000, -10000];
             elevation.visibleDemTiles.filter(tile => tile.dem).forEach(tile => {
-                const minMaxTree = (tile.dem as any).tree;
+                const minMaxTree = tile.dem.tree;
                 range[0] = Math.min(range[0], minMaxTree.minimums[0]);
                 range[1] = Math.max(range[1], minMaxTree.maximums[0]);
             });
@@ -435,7 +449,7 @@ export class ShadowRenderer {
         return Float32Array.from(matrix);
     }
 
-    setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<any>, normalOffsetMode?: ShadowNormalOffsetMode | null, tileOverscaledZ: number = 0) {
+    setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<ShadowsUniformsType>, normalOffsetMode?: ShadowNormalOffsetMode | null, tileOverscaledZ: number = 0) {
         if (!this.enabled) {
             return;
         }
@@ -477,7 +491,7 @@ export class ShadowRenderer {
         program.setShadowUniformValues(context, uniforms);
     }
 
-    setupShadowsFromMatrix(worldMatrix: mat4, program: Program<any>, normalOffset: boolean = false) {
+    setupShadowsFromMatrix(worldMatrix: mat4, program: Program<ShadowUniformsType | ModelUniformsType>, normalOffset: boolean = false) {
         if (!this.enabled) {
             return;
         }
@@ -519,8 +533,7 @@ export class ShadowRenderer {
 
     computeSimplifiedTileShadowVolume(id: UnwrappedTileID, height: number, worldSize: number, lightDir: vec3): TileShadowVolume {
         if (lightDir[2] >= 0.0) {
-            // @ts-expect-error - TS2739 - Type '{}' is missing the following properties from type 'TileShadowVolume': vertices, planes
-            return {};
+            return {} as TileShadowVolume;
         }
         const corners = tileAabb(id, height, worldSize).getCorners();
         const t = height / -lightDir[2];
@@ -539,13 +552,12 @@ export class ShadowRenderer {
             vec3.add(corners[2], corners[2], [0.0, lightDir[1] * t, 0.0]);
             vec3.add(corners[3], corners[3], [0.0, lightDir[1] * t, 0.0]);
         }
-        // @ts-expect-error - TS2739 - Type '{}' is missing the following properties from type 'TileShadowVolume': vertices, planes
-        const tileShadowVolume: TileShadowVolume = {};
+        const tileShadowVolume = {} as TileShadowVolume;
         tileShadowVolume.vertices = corners;
         tileShadowVolume.planes = [computePlane(corners[1], corners[0], corners[4]), // top
             computePlane(corners[2], corners[1], corners[5]), // right
             computePlane(corners[3], corners[2], corners[6]), // bottom
-            computePlane(corners[0], corners[3], corners[7]) ];
+            computePlane(corners[0], corners[3], corners[7])];
         return tileShadowVolume;
     }
 
@@ -570,10 +582,10 @@ function tileAabb(id: UnwrappedTileID, height: number, worldSize: number): Aabb 
 }
 
 function computePlane(a: vec3, b: vec3, c: vec3): vec4 {
-    const bc = vec3.sub([] as any, c, b);
-    const ba = vec3.sub([] as any, a, b);
+    const bc = vec3.sub([] as unknown as vec3, c, b);
+    const ba = vec3.sub([] as unknown as vec3, a, b);
 
-    const normal = vec3.cross([] as any, bc, ba);
+    const normal = vec3.cross([] as unknown as vec3, bc, ba);
     const len = vec3.length(normal);
 
     if (len === 0) {
@@ -675,7 +687,7 @@ function createLightMatrix(
     let sphereRadius = radius * wsInverse;
 
     // Transform frustum bounds to mercator space
-    const frustumPointToMercator = function(point: vec3): vec3 {
+    const frustumPointToMercator = function (point: vec3): vec3 {
         point[0] /= scale;
         point[1] /= scale;
         point[2] = mercatorZfromAltitude(point[2], transform._center.lat);

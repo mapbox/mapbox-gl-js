@@ -6,6 +6,10 @@ uniform vec2 u_texsize;
 
 uniform sampler2D u_image;
 
+#ifdef FILL_PATTERN_TRANSITION
+uniform float u_pattern_transition;
+#endif
+
 in highp vec2 v_pos;
 
 uniform float u_emissive_strength;
@@ -20,10 +24,16 @@ in highp float v_depth;
 
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern
+#ifdef FILL_PATTERN_TRANSITION
+#pragma mapbox: define mediump vec4 pattern_b
+#endif
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump vec4 pattern
+    #ifdef FILL_PATTERN_TRANSITION
+    #pragma mapbox: initialize mediump vec4 pattern_b
+    #endif
 
     vec2 pattern_tl = pattern.xy;
     vec2 pattern_br = pattern.zw;
@@ -32,6 +42,14 @@ void main() {
     highp vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
     highp vec2 lod_pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, v_pos);
     vec4 out_color = textureLodCustom(u_image, pos, lod_pos);
+
+#ifdef FILL_PATTERN_TRANSITION
+    vec2 pattern_b_tl = pattern_b.xy;
+    vec2 pattern_b_br = pattern_b.zw;
+    highp vec2 pos_b = mix(pattern_b_tl / u_texsize, pattern_b_br / u_texsize, imagecoord);
+    vec4 color_b = textureLodCustom(u_image, pos_b, lod_pos);
+    out_color = out_color * (1.0 - u_pattern_transition) + color_b * u_pattern_transition;
+#endif
 
 #ifdef LIGHTING_3D_MODE
     out_color = apply_lighting_with_emission_ground(out_color, u_emissive_strength);

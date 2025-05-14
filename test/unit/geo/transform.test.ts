@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import Point from '@mapbox/point-geometry';
@@ -292,7 +293,7 @@ describe('transform', () => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
+            assertDueNorth({x: 0.5, y: 0.5, z: 0}, coord);
         });
 
         test('high pitch', () => {
@@ -304,7 +305,7 @@ describe('transform', () => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
+            assertDueNorth({x: 0.5, y: 0.5, z: 0}, coord);
         });
 
         test('medium pitch', () => {
@@ -316,7 +317,7 @@ describe('transform', () => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
+            assertDueNorth({x: 0.5, y: 0.5, z: 0}, coord);
         });
     });
 
@@ -341,7 +342,7 @@ describe('transform', () => {
             expect(transform.locationPoint(bounds.getSouthWest()).y.toFixed(10)).toBe(transform.height.toFixed(10));
 
             expect(toFixed(bounds.toArray())).toStrictEqual(
-                toFixed([[ -56.6312307639145, 62.350646608460806 ], [ 56.63123076391412, 85.0511287798 ]])
+                toFixed([[-56.6312307639145, 62.350646608460806], [56.63123076391412, 85.0511287798]])
             );
         });
         test('Looking at South Pole', () => {
@@ -361,7 +362,7 @@ describe('transform', () => {
             expect(transform.locationPoint(bounds.getNorthWest()).y.toFixed(10)).toBe(transform.height.toFixed(10));
 
             expect(toFixed(bounds.toArray())).toStrictEqual(
-                toFixed([[ -56.6312307639145, -85.0511287798], [ 56.63123076391412, -62.350646608460806]])
+                toFixed([[-56.6312307639145, -85.0511287798], [56.63123076391412, -62.350646608460806]])
             );
         });
 
@@ -653,6 +654,26 @@ describe('transform', () => {
                 new OverscaledTileID(14, 0, 14, 2632, 6337),
                 new OverscaledTileID(14, 0, 14, 2631, 6337),
                 new OverscaledTileID(14, 0, 14, 2633, 6337)
+            ]);
+        });
+
+        test('Extend tile coverage for roads', () => {
+            transform.resize(512, 512);
+            transform.center = new LngLat(-122.156884, 37.709877);
+            transform.zoom = 18;
+            transform.pitch = 79;
+            transform.bearing = 0;
+
+            const visibleTiles = transform.coveringTiles({tileSize: 512, minzoom: 14, maxzoom: 14, roundZoom: true, calculateQuadrantVisibility: false});
+
+            expect(visibleTiles).toStrictEqual([
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6336))
+            ]);
+
+            const tileExtension = transform.extendTileCover(visibleTiles, 14, transform._camera.forward());
+
+            expect(tileExtension).toStrictEqual([
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6337))
             ]);
         });
     });
@@ -1329,7 +1350,7 @@ describe('transform', () => {
         transform.zoom = 10;
         transform.center = {lng: 0, lat: 0};
         transform.pitch = 90;
-        transform.padding = {top:0, bottom:0, left:0, right:0};
+        transform.padding = {top: 0, bottom: 0, left: 0, right: 0};
         transform._horizonShift = 0.0;
         const eq = (a, b, eps = 0.000001) => {
             return Math.abs(a - b) < eps;
@@ -1339,11 +1360,11 @@ describe('transform', () => {
         expect(eq(transform.horizonLineFromTop(), 400.0)).toBeTruthy();
 
         // Padding from top, horizon line should go down
-        transform.padding = {top:300, bottom:0, left:0, right:0};
+        transform.padding = {top: 300, bottom: 0, left: 0, right: 0};
         expect(eq(transform.horizonLineFromTop(), 550.0)).toBeTruthy();
 
         // Padding from bottom, horizon line should go up
-        transform.padding = {top:0, bottom:300, left:0, right:0};
+        transform.padding = {top: 0, bottom: 300, left: 0, right: 0};
         expect(eq(transform.horizonLineFromTop(), 250.0)).toBeTruthy();
     });
 
@@ -1464,9 +1485,9 @@ describe('transform', () => {
     describe('freeCamera', () => {
         const rotatedFrame = (quaternion) => {
             return {
-                up: vec3.transformQuat([] as any, [0, -1, 0], quaternion),
-                forward: vec3.transformQuat([] as any, [0, 0, -1], quaternion),
-                right: vec3.transformQuat([] as any, [1, 0, 0], quaternion)
+                up: vec3.transformQuat([] as unknown as vec3, [0, -1, 0], quaternion),
+                forward: vec3.transformQuat([] as unknown as vec3, [0, 0, -1], quaternion),
+                right: vec3.transformQuat([] as unknown as vec3, [1, 0, 0], quaternion)
             };
         };
 
@@ -1615,7 +1636,7 @@ describe('transform', () => {
 
             // Place the camera to an arbitrary position looking away from the map
             options.position = new MercatorCoordinate(-100.0, -10000.0, 1000.0);
-            options.orientation = quat.rotateX([] as any, [0, 0, 0, 1], -45.0 * Math.PI / 180.0);
+            options.orientation = quat.rotateX([] as unknown as quat, [0, 0, 0, 1], -45.0 * Math.PI / 180.0);
             transform.setFreeCameraOptions(options);
 
             expect(fixedPoint(transform.point, 5)).toEqual(new Point(50, 50));
@@ -1639,8 +1660,8 @@ describe('transform', () => {
             transform.resize(100, 100);
             let options = new FreeCameraOptions();
 
-            const orientationWithoutRoll = quat.rotateX([] as any, [0, 0, 0, 1], -Math.PI / 4);
-            const orientationWithRoll = quat.rotateZ([] as any, orientationWithoutRoll, Math.PI / 4);
+            const orientationWithoutRoll = quat.rotateX([] as unknown as quat, [0, 0, 0, 1], -Math.PI / 4);
+            const orientationWithRoll = quat.rotateZ([] as unknown as quat, orientationWithoutRoll, Math.PI / 4);
 
             options.orientation = orientationWithRoll;
             transform.setFreeCameraOptions(options);

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {
     describe,
@@ -27,6 +28,16 @@ test('Marker uses a default marker element with an appropriate offset', () => {
     const marker = new Marker();
     expect(marker.getElement()).toBeTruthy();
     expect(marker.getOffset().equals(new Point(0, -14))).toBeTruthy();
+});
+
+test('Marker retain default options for passed undefined', () => {
+    const marker = new Marker({
+        rotation: undefined,
+        altitude: undefined,
+    });
+
+    expect(marker.getRotation()).toEqual(0);
+    expect(marker.getAltitude()).toEqual(0);
 });
 
 test('Marker uses a default marker element with custom color', () => {

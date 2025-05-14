@@ -10,10 +10,10 @@ import type Framebuffer from '../gl/framebuffer';
 import type {Callback} from '../types/callback';
 import type {Cancelable} from '../types/cancelable';
 import type {TextureImage} from '../render/texture';
+import type {TDecodingResult} from '../data/mrt/types';
 import type {OverscaledTileID} from './tile_id';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
-import type {MapboxRasterLayer} from '../data/mrt/mrt.esm.js';
-import type {WorkerSourceRasterArrayDecodingParameters} from './worker_source';
+import type {MapboxRasterLayer, MRTDecodingBatch} from '../data/mrt/mrt.esm.js';
 
 MapboxRasterTile.setPbf(Pbf);
 
@@ -31,7 +31,7 @@ export type TextureDescriptor = {
 const FIRST_TRY_HEADER_LENGTH = 16384;
 const MRT_DECODED_BAND_CACHE_SIZE = 30;
 
-class RasterArrayTile extends Tile {
+class RasterArrayTile extends Tile implements Tile {
     override texture: Texture | null | undefined;
     entireBuffer: ArrayBuffer | null | undefined;
     requestParams: RequestParameters | null | undefined;
@@ -165,9 +165,9 @@ class RasterArrayTile extends Tile {
         }
 
         // eslint-disable-next-line prefer-const
-        let task;
+        let task: MRTDecodingBatch;
 
-        const onDataDecoded = (err?: Error | null, result?: ArrayBuffer | null) => {
+        const onDataDecoded = (err?: Error | null, result?: TDecodingResult[]) => {
             task.complete(err, result);
             if (err) {
                 callback(err);
@@ -181,7 +181,7 @@ class RasterArrayTile extends Tile {
         const onDataLoaded = (err?: Error | null, buffer?: ArrayBuffer | null) => {
             if (err) return callback(err);
 
-            const params: WorkerSourceRasterArrayDecodingParameters = {
+            const params = {
                 type: 'raster-array',
                 source: this.source,
                 scope: this.scope,

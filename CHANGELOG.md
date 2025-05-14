@@ -1,3 +1,29 @@
+## 3.12.0
+
+### Features and improvements ✨
+
+- Add _experimental_ support for rendering 3D road intersections.
+- Add shadow rendering support for elevated lines.
+- Add `wrapTileId` property to `CustomLayerInterface` to control whether tile IDs are wrapped across world copies during rendering.
+- Add `line-pattern-cross-fade`, `fill-pattern-cross-fade`, and `fill-extrusion-pattern-cross-fade` properties for smooth transitions between pattern images.
+- Add support for `extra_bounds` in TileJSON for more fine-grained control over tile requests, particularly when dealing with sparse data coverage.
+- Improve performance by lazy loading 3D models.
+- Slightly improve JS bundle sizes.
+- Various TypeScript types improvements.
+
+### Bug fixes 🐞
+
+- Fixed an issue where calling `setData` on symbol layers could cause flickering.
+- Expose `CustomSourceInterface` TypeScript type that was missing in the public interface.
+- Fix some edge cases related to rendering of elevated structures.
+- Relax `line-gradient` validation to work not only on GeoJSON, but also on vector tile sources if they have `mapbox_clip_start` and `mapbox_clip_end` properties precomputed.
+- Fix `styleimagemissing` event not firing in certain scenarios.
+
+## 3.11.1
+
+- Improve icon loading performance, in particular for landmark icons.
+- Fix `undefined` passed in `Marker` options not falling back to default values.
+
 ## 3.11.0
 
 ### Breaking changes ⚠️

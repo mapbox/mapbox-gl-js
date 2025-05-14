@@ -9,6 +9,7 @@ import {
 } from './program/line_program';
 import browser from '../util/browser';
 import {clamp, nextPowerOfTwo, warnOnce} from '../util/util';
+import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
 import {renderColorRamp} from '../util/color_ramp';
 import EXTENT from '../style-spec/data/extent';
 import ResolvedImage from '../style-spec/expression/types/resolved_image';
@@ -19,8 +20,10 @@ import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type LineStyleLayer from '../style/style_layer/line_style_layer';
 import type LineBucket from '../data/bucket/line_bucket';
+import type {UniformValues} from './uniform_binding';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {DynamicDefinesType} from './program/program_uniforms';
+import type {LineUniformsType, LinePatternUniformsType} from './program/line_program';
 
 export function prepare(layer: LineStyleLayer, sourceCache: SourceCache, painter: Painter) {
     layer.hasElevatedBuckets = false;
@@ -38,7 +41,7 @@ export function prepare(layer: LineStyleLayer, sourceCache: SourceCache, painter
             const tile = sourceCache.getTile(coord);
             const bucket: LineBucket | undefined = tile.getBucket(layer) as LineBucket;
             if (!bucket) continue;
-            if (bucket.hasZOffset) {
+            if (bucket.elevationType !== 'none') {
                 layer.hasElevatedBuckets = true;
             } else {
                 layer.hasNonElevatedBuckets = true;
@@ -63,6 +66,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const elevationReference = layer.layout.get('line-elevation-reference');
     const unitInMeters = layer.layout.get('line-width-unit') === 'meters';
     const elevationFromSea = elevationReference === 'sea';
+    const terrainEnabled = !!(painter.terrain && painter.terrain.enabled);
 
     const context = painter.context;
     const gl = context.gl;
@@ -80,16 +84,18 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     const dasharrayProperty = layer.paint.get('line-dasharray');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dasharray = dasharrayProperty.constantOr((1 as any));
     const capProperty = layer.layout.get('line-cap');
 
     const constantDash = dasharrayProperty.constantOr(null);
 
-    const constantCap = capProperty.constantOr((null as any));
+    const constantCap = capProperty.constantOr(null);
     const patternProperty = layer.paint.get('line-pattern');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const image = patternProperty.constantOr((1 as any));
-
+    const patternTransition = layer.paint.get('line-pattern-cross-fade');
     const constantPattern = patternProperty.constantOr(null);
 
     const lineOpacity = layer.paint.get('line-opacity').constantOr(1.0);
@@ -123,30 +129,60 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         definesValues.push("VARIABLE_LINE_WIDTH");
     }
 
-    const renderTiles = (coords: OverscaledTileID[], defines: DynamicDefinesType[], depthMode: DepthMode, stencilMode3D: StencilMode, elevated: boolean, firstPass: boolean) => {
+    const renderTiles = (coords: OverscaledTileID[], baseDefines: DynamicDefinesType[], depthMode: DepthMode, stencilMode3D: StencilMode, elevated: boolean, firstPass: boolean) => {
         for (const coord of coords) {
             const tile = sourceCache.getTile(coord);
             if (image && !tile.patternsLoaded()) continue;
 
-            const bucket: LineBucket | null | undefined = (tile.getBucket(layer) as any);
+            const bucket = tile.getBucket(layer) as LineBucket;
             if (!bucket) continue;
-            if ((bucket.hasZOffset && !elevated) || (!bucket.hasZOffset && elevated)) continue;
+            if ((bucket.elevationType !== 'none' && !elevated) || (bucket.elevationType === 'none' && elevated)) continue;
 
             painter.prepareDrawTile();
 
+            const defines = [...baseDefines];
+            const renderElevatedRoads = bucket.elevationType === 'road';
+            const shadowRenderer = painter.shadowRenderer;
+            const renderWithShadows = renderElevatedRoads && !!shadowRenderer && shadowRenderer.enabled;
+            let groundShadowFactor: [number, number, number] = [0, 0, 0];
+            if (renderWithShadows) {
+                const directionalLight = painter.style.directionalLight;
+                const ambientLight = painter.style.ambientLight;
+                if (directionalLight && ambientLight) {
+                    groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
+                }
+                defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+            }
+
             const programConfiguration = bucket.programConfigurations.get(layer.id);
+
+            let transitionableConstantPattern = false;
+            if (constantPattern && tile.imageAtlas) {
+                const pattern = ResolvedImage.from(constantPattern);
+                const primaryPatternImage = pattern.getPrimary().scaleSelf(pixelRatio).toString();
+                const primaryPosTo = tile.imageAtlas.patternPositions.get(primaryPatternImage);
+                const secondaryPatternImageVariant = pattern.getSecondary();
+                const secondaryPosTo = secondaryPatternImageVariant ? tile.imageAtlas.patternPositions.get(secondaryPatternImageVariant.scaleSelf(pixelRatio).toString()) : null;
+
+                transitionableConstantPattern = !!primaryPosTo && !!secondaryPosTo;
+
+                if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
+            }
+
+            if (patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('line-pattern'))) {
+                defines.push('LINE_PATTERN_TRANSITION');
+            }
+
             const affectedByFog = painter.isTileAffectedByFog(coord);
             const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines, overrideFog: affectedByFog, overrideRtt: elevated ? false : undefined});
-
-            if (constantPattern && tile.imageAtlas) {
-                const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(pixelRatio).toString();
-                const posTo = tile.imageAtlas.patternPositions.get(patternImage);
-                if (posTo) programConfiguration.setConstantPatternPositions(posTo);
-            }
 
             if (!image && constantDash && constantCap && tile.lineAtlas) {
                 const posTo = tile.lineAtlas.getDash(constantDash, constantCap);
                 if (posTo) programConfiguration.setConstantPatternPositions(posTo);
+            }
+
+            if (renderWithShadows) {
+                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
             }
 
             let [trimStart, trimEnd] = layer.paint.get('line-trim-offset');
@@ -171,9 +207,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const matrix = isDraping ? coord.projMatrix : null;
             const lineWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, painter.transform.zoom) : 1.0;
             const lineFloorWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, Math.floor(painter.transform.zoom)) : 1.0;
-            const uniformValues = image ?
-                linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd]) :
-                lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd]);
+            const uniformValues: UniformValues<LineUniformsType | LinePatternUniformsType> = image ?
+                linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor, patternTransition) :
+                lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor);
 
             if (gradient) {
                 const layerGradient = bucket.gradients[layer.id];
@@ -279,13 +315,15 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         }
     };
 
+    let depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
+    const depthModeFor3D = new DepthMode(painter.depthOcclusion ? gl.GREATER : gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
+
     if (layer.hasNonElevatedBuckets) {
         const terrainEnabledImmediateMode = !isDraping && painter.terrain;
         if (occlusionOpacity !== 0 && terrainEnabledImmediateMode) {
             warnOnce(`Occlusion opacity for layer ${layer.id} is supported on terrain only if the layer has line-z-offset enabled.`);
         } else {
             if (!terrainEnabledImmediateMode) {
-                const depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly);
                 const stencilMode3D = StencilMode.disabled;
                 renderTiles(coords, definesValues, depthMode, stencilMode3D, false, true);
             } else {
@@ -298,17 +336,24 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     }
 
     if (layer.hasElevatedBuckets) {
-        definesValues.push("ELEVATED");
-        if (hasCrossSlope) {
-            definesValues.push(crossSlopeHorizontal ? "CROSS_SLOPE_HORIZONTAL" : "CROSS_SLOPE_VERTICAL");
-        }
-        if (elevationFromSea) {
-            definesValues.push('ELEVATION_REFERENCE_SEA');
+        if (elevationReference === 'hd-road-markup') {
+            if (!terrainEnabled) {
+                depthMode = depthModeFor3D;
+                definesValues.push('ELEVATED_ROADS');
+            }
+        } else {
+            definesValues.push("ELEVATED");
+            depthMode = depthModeFor3D;
+            if (hasCrossSlope) {
+                definesValues.push(crossSlopeHorizontal ? "CROSS_SLOPE_HORIZONTAL" : "CROSS_SLOPE_VERTICAL");
+            }
+            if (elevationFromSea) {
+                definesValues.push('ELEVATION_REFERENCE_SEA');
+            }
         }
 
         // No need for tile clipping, a single pass only even for transparent lines.
         const stencilMode3D = useStencilMaskRenderPass ? painter.stencilModeFor3D() : StencilMode.disabled;
-        const depthMode = new DepthMode(painter.depthOcclusion ? gl.GREATER : gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
         painter.forceTerrainMode = true;
         renderTiles(coords, definesValues, depthMode, stencilMode3D, true, true);
         if (useStencilMaskRenderPass) {

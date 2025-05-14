@@ -35,7 +35,7 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
 import type SourceCache from '../source/source_cache';
 import type Painter from './painter';
-import type {DynamicDefinesType} from "./program/program_uniforms";
+import type {DynamicDefinesType} from './program/program_uniforms';
 
 export default drawRasterParticle;
 
@@ -44,6 +44,7 @@ const RASTER_PARTICLE_TEXTURE_UNIT = 1;
 const RASTER_COLOR_TEXTURE_UNIT = 2;
 const SPEED_MAX_VALUE = 0.15;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function drawRasterParticle(painter: Painter, sourceCache: SourceCache, layer: RasterParticleStyleLayer, tileIDs: Array<OverscaledTileID>, _: any, isInitialLoad: boolean) {
     if (painter.renderPass === 'offscreen') {
         renderParticlesToTexture(painter, sourceCache, layer, tileIDs);
@@ -59,7 +60,7 @@ function createPositionRGBAData(textureDimension: number): Uint8Array {
     const numParticles = textureDimension * textureDimension;
     const RGBAPositions = new Uint8Array(4 * numParticles);
     // Hash function from https://www.shadertoy.com/view/XlGcRh
-    const esgtsa = function(s: number): number {
+    const esgtsa = function (s: number): number {
         s |= 0;
         s = Math.imul(s ^ 2747636419, 2654435769);
         s = Math.imul(s ^ (s >>> 16), 2654435769);
@@ -233,7 +234,7 @@ function getTileData(
 
     return {
         texture,
-        textureOffset: [ buffer / (tileSize + 2 * buffer), tileSize / (tileSize + 2 * buffer)],
+        textureOffset: [buffer / (tileSize + 2 * buffer), tileSize / (tileSize + 2 * buffer)],
         tileSize,
         scalarData,
         scale: mix,
@@ -307,7 +308,7 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
     const isGlobeProjection = painter.transform.projection.name === 'globe';
     const maxSpeed = layer.paint.get('raster-particle-max-speed');
     for (const targetTile of tiles) {
-        const [targetTileID, targetTileData, targetTileState, ] = targetTile;
+        const [targetTileID, targetTileData, targetTileState,] = targetTile;
 
         context.activeTexture.set(gl.TEXTURE0 + VELOCITY_TEXTURE_UNIT);
         targetTileData.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
@@ -380,7 +381,7 @@ function updateParticles(painter: Painter, layer: RasterParticleStyleLayer, tile
     context.viewport.set([0, 0, particleFramebuffer.width, particleFramebuffer.height]);
 
     for (const tile of tiles) {
-        const [, data, state, ] = tile;
+        const [, data, state,] = tile;
 
         context.activeTexture.set(gl.TEXTURE0 + VELOCITY_TEXTURE_UNIT);
         data.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);

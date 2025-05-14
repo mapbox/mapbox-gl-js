@@ -32,6 +32,7 @@ import type {GridIndex} from '../types/grid-index';
 import type {FeatureState, StyleExpression} from '../style-spec/expression/index';
 import type {FeatureVariant} from '../util/vectortile_to_geojson';
 import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {PossiblyEvaluatedPropertyValue} from '../style/properties';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array;
@@ -488,11 +489,13 @@ register(FeatureIndex, 'FeatureIndex', {omit: ['rawTileData', 'sourceLayerCoder'
 
 export default FeatureIndex;
 
-function evaluateProperties(serializedProperties: unknown, styleLayerProperties: unknown, feature: VectorTileFeature, featureState: FeatureState, availableImages: ImageId[]) {
-    return mapObject(serializedProperties, (property, key) => {
-        const prop = styleLayerProperties instanceof PossiblyEvaluated ? styleLayerProperties.get(key) : null;
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'. | TS2339 - Property 'evaluate' does not exist on type 'unknown'.
-        return prop && prop.evaluate ? prop.evaluate(feature, featureState, availableImages) : prop;
+function evaluateProperties(serializedProperties: Record<PropertyKey, unknown>, styleLayerProperties: unknown, feature: VectorTileFeature, featureState: FeatureState, availableImages: ImageId[]) {
+    return mapObject(serializedProperties, (_, key) => {
+        const prop = styleLayerProperties instanceof PossiblyEvaluated ?
+            styleLayerProperties.get(key) as PossiblyEvaluatedPropertyValue<unknown> :
+            null;
+
+        return prop && prop.evaluate ? prop.evaluate(feature, featureState, undefined, availableImages) : prop;
     });
 }
 

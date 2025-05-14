@@ -15,10 +15,10 @@ import {PrecipitationRevealParams} from './precipitation_reveal_params.js';
 import {createTpBindings} from './vignette';
 import {PrecipitationBase, boxWrap, generateUniformDistributedPointsInsideCube, lerpClamp} from './common';
 import {Debug} from '../util/debug';
-import {type VignetteParams} from './vignette';
 
 import type {vec4} from 'gl-matrix';
 import type Painter from '../render/painter';
+import type {VignetteParams} from './vignette';
 
 export class Rain extends PrecipitationBase {
     screenTexture: Texture | null | undefined;

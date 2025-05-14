@@ -209,6 +209,5 @@ export {
     UniformMatrix4f
 };
 
-export type UniformBindings = {
-    [_: string]: IUniform<any>;
-};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type UniformBindings = Record<string, IUniform<any>>;

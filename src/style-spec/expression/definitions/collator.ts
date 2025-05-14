@@ -24,7 +24,7 @@ export default class CollatorExpression implements Expression {
         // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`Expected one argument.`);
 
-        const options = (args[1] as any);
+        const options = args[1];
         if (typeof options !== "object" || Array.isArray(options))
         // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`Collator options argument must be an object.`);
@@ -69,6 +69,7 @@ export default class CollatorExpression implements Expression {
     }
 
     serialize(): SerializedExpression {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options: Record<string, any> = {};
         options['case-sensitive'] = this.caseSensitive.serialize();
         options['diacritic-sensitive'] = this.diacriticSensitive.serialize();

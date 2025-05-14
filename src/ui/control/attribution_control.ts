@@ -94,8 +94,8 @@ class AttributionControl implements IControl {
         this._map.off('moveend', this._updateEditLink);
         this._map.off('resize', this._updateCompact);
 
-        this._map = (undefined as any);
-        this._attribHTML = (undefined as any);
+        this._map = undefined;
+        this._attribHTML = undefined;
     }
 
     _toggleAttribution() {
@@ -132,6 +132,7 @@ class AttributionControl implements IControl {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _updateData(e: any) {
         if (e && (e.sourceDataType === 'metadata' || e.sourceDataType === 'visibility' || e.dataType === 'style')) {
             this._updateAttributions();
@@ -144,6 +145,7 @@ class AttributionControl implements IControl {
         let attributions: Array<string> = [];
 
         if (this._map.style.stylesheet) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const stylesheet: any = this._map.style.stylesheet;
             this.styleOwner = stylesheet.owner;
             this.styleId = stylesheet.id;

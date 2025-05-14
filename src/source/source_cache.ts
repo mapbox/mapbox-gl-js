@@ -45,10 +45,10 @@ class SourceCache extends Evented {
     _tiles: Partial<Record<string | number, Tile>>;
     _prevLng: number | undefined;
     _cache: TileCache;
-    _timers: Partial<Record<any, number>>;
-    _cacheTimers: Partial<Record<any, number>>;
-    _minTileCacheSize: number | null | undefined;
-    _maxTileCacheSize: number | null | undefined;
+    _timers: Partial<Record<number, number>>;
+    _cacheTimers: Partial<Record<number, number>>;
+    _minTileCacheSize?: number;
+    _maxTileCacheSize?: number;
     _paused: boolean;
     _isRaster: boolean;
     _shouldReloadOnResume: boolean;
@@ -506,7 +506,7 @@ class SourceCache extends Evented {
      * @param {tileSize} tileSize If needed to get lower resolution ideal cover,
      * override source.tileSize used in tile cover calculation.
      */
-    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean, directionalLight?: vec3) {
+    update(transform: Transform, tileSize?: number, updateForTerrain?: boolean, directionalLight?: vec3, elevatedLayers?: boolean) {
         this.transform = transform;
         if (!this._sourceLoaded || this._paused || this.transform.freezeTileCoverage) { return; }
         assert(!(updateForTerrain && !this.usedForTerrain));
@@ -585,8 +585,7 @@ class SourceCache extends Evented {
             }
         }
 
-        if (idealTileIDs.length > 0 && this.castsShadows &&
-            directionalLight && this.transform.projection.name !== 'globe' &&
+        if (idealTileIDs.length > 0 && this.transform.projection.name !== 'globe' &&
             !this.usedForTerrain && !isRasterType(this._source.type)) {
             // compute desired max zoom level
             const coveringZoom = transform.coveringZoomLevel({
@@ -600,7 +599,12 @@ class SourceCache extends Evented {
                 for (const id of batchedModelTileIDs) {
                     idealTileIDs.push(id);
                 }
-            } else {
+            } else if (elevatedLayers) {
+                const batchedModelTileIDs = transform.extendTileCover(idealTileIDs, idealZoom, this.transform._camera.forward());
+                for (const id of batchedModelTileIDs) {
+                    idealTileIDs.push(id);
+                }
+            } else if (this.castsShadows && directionalLight) {
                 // find shadowCasterTiles
                 const shadowCasterTileIDs = transform.extendTileCover(idealTileIDs, idealZoom, directionalLight);
                 for (const id of shadowCasterTileIDs) {
@@ -617,7 +621,7 @@ class SourceCache extends Evented {
 
         if (isRasterType(this._source.type) && idealTileIDs.length !== 0) {
             const parentsForFading: Partial<Record<string | number, OverscaledTileID>> = {};
-            const fadingTiles: Record<string, any> = {};
+            const fadingTiles: Record<string, OverscaledTileID> = {};
             const ids = Object.keys(retain);
             for (const id of ids) {
                 const tileID = retain[id];
@@ -672,7 +676,7 @@ class SourceCache extends Evented {
         }
 
         // Remove the tiles we don't need anymore.
-        const remove = keysDifference((this._tiles as any), (retain as any));
+        const remove = keysDifference(this._tiles, retain);
         for (const tileID of remove) {
             const tile = this._tiles[tileID];
             if (tile.hasSymbolBuckets && !tile.holdingForFade()) {
@@ -709,7 +713,7 @@ class SourceCache extends Evented {
         const minCoveringZoom = Math.max(maxZoom - SourceCache.maxOverzooming, this._source.minzoom);
         const maxCoveringZoom = Math.max(maxZoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
-        const missingTiles: Record<string, any> = {};
+        const missingTiles: Record<string, OverscaledTileID> = {};
         for (const tileID of idealTileIDs) {
             const tile = this._addTile(tileID);
 
@@ -861,9 +865,6 @@ class SourceCache extends Evented {
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
-        // Impossible, but silence flow.
-        if (!tile) return null as any;
-
         tile.uses++;
         this._tiles[tileID.key] = tile;
         if (!cached) this._source.fire(new Event('dataloading', {tile, coord: tile.tileID, dataType: 'source'}));
@@ -954,6 +955,7 @@ class SourceCache extends Evented {
         const tileResults = [];
 
         const transform = this.transform;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         if (!transform) return tileResults;
 
         const isGlobe = transform.projection.name === 'globe';
@@ -1006,6 +1008,7 @@ class SourceCache extends Evented {
                 }
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return tileResults;
     }
 
@@ -1130,7 +1133,7 @@ class SourceCache extends Evented {
      * @private
      * @returns {Object} Returns `this` | Promise.
      */
-    _preloadTiles(transform: Transform | Array<Transform>, callback: Callback<any>) {
+    _preloadTiles(transform: Transform | Array<Transform>, callback: Callback<Tile[]>) {
         if (!this._sourceLoaded) {
             const waitUntilSourceLoaded = () => {
                 if (!this._sourceLoaded) return;

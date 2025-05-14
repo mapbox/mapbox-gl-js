@@ -1,4 +1,5 @@
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 export function fixedNum(n, precision) {
     if (precision === undefined) precision = 10;

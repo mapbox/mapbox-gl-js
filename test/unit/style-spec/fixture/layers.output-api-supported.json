@@ -56,7 +56,7 @@
     "line": 83
   },
   {
-    "message": "layers[12].type: expected one of [fill, line, symbol, circle, heatmap, fill-extrusion, raster, raster-particle, hillshade, model, background, sky, slot, clip], \"invalid\" found",
+    "message": "layers[12].type: expected one of [fill, line, symbol, circle, heatmap, fill-extrusion, building, raster, raster-particle, hillshade, model, background, sky, slot, clip], \"invalid\" found",
     "line": 90
   },
   {
@@ -64,11 +64,7 @@
     "line": 100
   },
   {
-    "message": "layers[15]: layer \"line-gradient-bad\" specifies a line-gradient, which requires a GeoJSON source with `lineMetrics` enabled.",
-    "line": 112
-  },
-  {
-    "message": "layers[16]: layer \"line-gradient-missing-lineMetrics\" specifies a line-gradient, which requires a GeoJSON source with `lineMetrics` enabled.",
+    "message": "layers[16]: layer \"line-gradient-missing-lineMetrics\" specifies a line-gradient, which requires the GeoJSON source to have `lineMetrics` enabled.",
     "line": 126
   },
   {

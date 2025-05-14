@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import SymbolBucket from '../../src/data/bucket/symbol_bucket';
 import SymbolStyleLayer from '../../src/style/style_layer/symbol_style_layer';

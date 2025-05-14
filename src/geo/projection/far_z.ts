@@ -49,7 +49,7 @@ export function farthestPixelDistanceOnSphere(tr: Transform, pixelsPerMeter: num
 
     const camera = tr._camera;
     const forward = tr._camera.forward();
-    const cameraPosition = vec3.add([] as any, vec3.scale([] as any, forward, -cameraDistance), [0, 0, centerPixelAltitude]);
+    const cameraPosition = vec3.add([] as unknown as vec3, vec3.scale([] as unknown as vec3, forward, -cameraDistance), [0, 0, centerPixelAltitude]);
 
     const globeRadius = tr.worldSize / (2.0 * Math.PI);
     const globeCenter: vec3 = [0, 0, -globeRadius];
@@ -57,9 +57,9 @@ export function farthestPixelDistanceOnSphere(tr: Transform, pixelsPerMeter: num
     const aspectRatio = tr.width / tr.height;
     const tanFovAboveCenter = Math.tan(tr.fovAboveCenter);
 
-    const up = vec3.scale([] as any, camera.up(), tanFovAboveCenter);
-    const right = vec3.scale([] as any, camera.right(), tanFovAboveCenter * aspectRatio);
-    const dir = vec3.normalize([] as any, vec3.add([] as any, vec3.add([] as any, forward, up), right));
+    const up = vec3.scale([] as unknown as vec3, camera.up(), tanFovAboveCenter);
+    const right = vec3.scale([] as unknown as vec3, camera.right(), tanFovAboveCenter * aspectRatio);
+    const dir = vec3.normalize([] as unknown as vec3, vec3.add([] as unknown as vec3, vec3.add([] as unknown as vec3, forward, up), right));
 
     const pointOnGlobe = [] as unknown as vec3;
     const ray = new Ray(cameraPosition, dir);

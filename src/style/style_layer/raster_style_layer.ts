@@ -10,6 +10,7 @@ import type {LayerSpecification} from '../../style-spec/types';
 import type Texture from '../../render/texture';
 import type SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 export const COLOR_RAMP_RES = 256;
 export const COLOR_MIX_FACTOR = (Math.pow(COLOR_RAMP_RES, 2) - 1) / (255 * COLOR_RAMP_RES * (COLOR_RAMP_RES + 3));
@@ -39,7 +40,7 @@ class RasterStyleLayer extends StyleLayer {
         this._curRampRange = [NaN, NaN];
     }
 
-    override getProgramIds(): Array<string> {
+    override getProgramIds(): ProgramName[] {
         return ['raster'];
     }
 

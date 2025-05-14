@@ -20,13 +20,17 @@ import type {LoadVectorDataCallback} from './load_vector_tile';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {Callback} from '../types/callback';
 import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {StyleModelMap} from '../style/style_mode';
 
 export type GeoJSONWorkerOptions = {
     source: string;
     scope: string;
     cluster: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     superclusterOptions?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     geojsonVtOptions?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clusterProperties?: any;
     filter?: Array<unknown>;
     dynamic?: boolean;
@@ -38,15 +42,16 @@ export type LoadGeoJSONParameters = GeoJSONWorkerOptions & {
     append?: boolean;
 };
 
-export type ResourceTiming = Record<string, Array<PerformanceResourceTiming>>;
+type FeatureCollectionOrFeature = GeoJSON.FeatureCollection | GeoJSON.Feature;
 
-export type LoadGeoJSONResult = {
-    resourceTiming?: ResourceTiming;
-};
+type ResourceTiming = Record<string, PerformanceResourceTiming[]>;
+
+export type LoadGeoJSONResult = FeatureCollectionOrFeature & {resourceTiming?: ResourceTiming};
 
 export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<LoadGeoJSONResult>) => void;
 
 export interface GeoJSONIndex {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getTile: (z: number, x: number, y: number) => any;
     // supercluster methods
     getClusterExpansionZoom?: (clusterId: number) => number;
@@ -105,8 +110,8 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * See {@link GeoJSONWorkerSource#loadGeoJSON}.
      * @private
      */
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], isSpriteLoaded: boolean, loadGeoJSON?: LoadGeoJSON | null, brightness?: number | null) {
-        super(actor, layerIndex, availableImages, isSpriteLoaded, loadGeoJSONTile, brightness);
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, isSpriteLoaded: boolean, loadGeoJSON?: LoadGeoJSON | null, brightness?: number | null) {
+        super(actor, layerIndex, availableImages, availableModels, isSpriteLoaded, loadGeoJSONTile, brightness);
         if (loadGeoJSON) {
             this.loadGeoJSON = loadGeoJSON;
         }
@@ -128,11 +133,11 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      *
      * @private
      */
-    loadData(params: LoadGeoJSONParameters, callback: ResponseCallback<LoadGeoJSONResult>): void {
+    loadData(params: LoadGeoJSONParameters, callback: ResponseCallback<{resourceTiming?: ResourceTiming}>): void {
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;
 
-        this.loadGeoJSON(params, (err?: Error, data?: GeoJSON.FeatureCollection | GeoJSON.Feature) => {
+        this.loadGeoJSON(params, (err?: Error, data?: FeatureCollectionOrFeature) => {
             if (err || !data) {
                 return callback(err);
 
@@ -172,11 +177,11 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                         params.dynamic ? this._dynamicIndex :
                         geojsonvt(data, params.geojsonVtOptions);
 
-                } catch (err: any) {
+                } catch (err) {
                     return callback(err);
                 }
 
-                const result: LoadGeoJSONResult = {};
+                const result: {resourceTiming?: ResourceTiming} = {};
                 if (perf) {
                     const resourceTimingData = getPerformanceMeasurement(requestParam);
                     // it's necessary to eval the result of getEntriesByName() here via parse/stringify
@@ -225,7 +230,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
      * @private
      */
-    loadGeoJSON(params: LoadGeoJSONParameters, callback: ResponseCallback<any>): void {
+    loadGeoJSON(params: LoadGeoJSONParameters, callback: ResponseCallback<FeatureCollectionOrFeature>): void {
         // Because of same origin issues, urls must either include an explicit
         // origin or absolute path.
         // ie: /foo/bar.json or http://example.com/bar.json
@@ -235,7 +240,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         } else if (typeof params.data === 'string') {
             try {
                 return callback(null, JSON.parse(params.data));
-            } catch (e: any) {
+            } catch (e) {
                 return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
             }
         } else {
@@ -248,7 +253,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }, callback: Callback<number>) {
         try {
             callback(null, this._geoJSONIndex.getClusterExpansionZoom(params.clusterId));
-        } catch (e: any) {
+        } catch (e) {
             callback(e);
         }
     }
@@ -258,7 +263,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }, callback: Callback<Array<GeoJSON.Feature>>) {
         try {
             callback(null, this._geoJSONIndex.getChildren(params.clusterId));
-        } catch (e: any) {
+        } catch (e) {
             callback(e);
         }
     }
@@ -270,7 +275,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }, callback: Callback<Array<GeoJSON.Feature>>) {
         try {
             callback(null, this._geoJSONIndex.getLeaves(params.clusterId, params.limit, params.offset));
-        } catch (e: any) {
+        } catch (e) {
             callback(e);
         }
     }
@@ -280,9 +285,12 @@ function getSuperclusterOptions({
     superclusterOptions,
     clusterProperties,
 }: LoadGeoJSONParameters) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (!clusterProperties || !superclusterOptions) return superclusterOptions;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapExpressions: Record<string, any> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const reduceExpressions: Record<string, any> = {};
     const globals = {accumulated: null, zoom: 0};
     const feature = {properties: null};
@@ -304,6 +312,7 @@ function getSuperclusterOptions({
 
     superclusterOptions.map = (pointProperties) => {
         feature.properties = pointProperties;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const properties: Record<string, any> = {};
         for (const key of propertyNames) {
             properties[key] = mapExpressions[key].evaluate(globals, feature);
@@ -318,6 +327,7 @@ function getSuperclusterOptions({
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return superclusterOptions;
 }
 

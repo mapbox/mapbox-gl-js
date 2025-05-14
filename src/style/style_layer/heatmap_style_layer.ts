@@ -22,6 +22,7 @@ import type CircleBucket from '../../data/bucket/circle_bucket';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 class HeatmapStyleLayer extends StyleLayer {
 
@@ -72,6 +73,7 @@ class HeatmapStyleLayer extends StyleLayer {
     }
 
     override queryRadius(bucket: Bucket): number {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getMaximumPaintValue('heatmap-radius', this, (bucket as CircleBucket<any>));
     }
 
@@ -95,7 +97,7 @@ class HeatmapStyleLayer extends StyleLayer {
         return this.paint.get('heatmap-opacity') !== 0 && this.visibility !== 'none';
     }
 
-    override getProgramIds(): Array<string> {
+    override getProgramIds(): ProgramName[] {
         return ['heatmap', 'heatmapTexture'];
     }
 

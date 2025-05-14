@@ -75,8 +75,9 @@ export class QueryGeometry {
         } else {
             const tl = Point.convert(geometry[0]);
             const br = Point.convert(geometry[1]) as Point;
+            const center = tl.add(br)._div(2);
             screenGeometry = [tl, br];
-            aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p));
+            aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p)) && transform.isPointAboveHorizon(center);
         }
 
         return new QueryGeometry(screenGeometry, transform.getCameraPoint(), aboveHorizon, transform);
@@ -408,7 +409,7 @@ export function unwrapQueryPolygon(polygon: Point[], tr: Transform): {
 // Finding projection of these kind of polygons is more involving as projecting just the corners will
 // produce a degenerate (self-intersecting, non-continuous, etc.) polygon in mercator coordinates
 export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): CachedPolygon | null | undefined {
-    const matrix = mat4.multiply([] as any, tr.pixelMatrix, tr.globeMatrix);
+    const matrix = mat4.multiply([] as unknown as mat4, tr.pixelMatrix, tr.globeMatrix);
 
     // Transform north and south pole coordinates to the screen to see if they're
     // inside the query polygon

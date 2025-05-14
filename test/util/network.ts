@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {vi} from './vitest';
 
@@ -6,9 +7,9 @@ const canvasElement = Object.assign(window.document.createElement('canvas'), {
     height: 1
 });
 
-export function mockFetch(config: Record<string, (req: Request) => Promise<Response<any>>>) {
+export function mockFetch(config: Record<string, (req: Request) => Promise<Response<unknown>>>) {
     return vi.spyOn(window, 'fetch').mockImplementation(
-        async (req: Request): Promise<Response<any>> => {
+        async (req: Request): Promise<Response<unknown>> => {
             const responseKey = Object.keys(config).find(key => new RegExp(key).test(req.url));
             const response = config[responseKey];
 
@@ -16,7 +17,7 @@ export function mockFetch(config: Record<string, (req: Request) => Promise<Respo
                 throw new Error(`No response for ${req.url}, available responses: ${Object.keys(config).join(', ')}`);
             }
 
-            return await response(req) as any;
+            return await response(req);
         }
     );
 }

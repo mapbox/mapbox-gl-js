@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
 import Protobuf from 'pbf';
@@ -12,7 +13,6 @@ import CrossTileSymbolIndex from '../../../src/symbol/cross_tile_symbol_index';
 import FeatureIndex from '../../../src/data/feature_index';
 import {createSymbolBucket} from '../../util/create_symbol_layer';
 import {getProjection} from '../../../src/geo/projection/index';
-// eslint-disable-next-line import/no-unresolved
 import vectorStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 import glyphData from '../../fixtures/fontstack-glyphs.json';
 
@@ -28,7 +28,7 @@ transform.height = 100;
 transform.cameraToCenterDistance = 100;
 
 const stacks = {'Test': glyphData};
-const glyphPositions = {'Test' : {}};
+const glyphPositions = {'Test': {}};
 const glyphPositonMap = glyphPositions['Test'];
 for (const id in glyphData.glyphs) {
     glyphPositonMap[id] = glyphData.glyphs[id].rect;
@@ -96,7 +96,7 @@ test('SymbolBucket integer overflow', () => {
 
     bucket.populate([{feature}], options);
     const fakeRect = {w: 10, h: 10};
-    const bucketData = performSymbolLayout(bucket, stacks, {'Test':  {97: fakeRect, 98: fakeRect, 99: fakeRect, 100: fakeRect, 101: fakeRect, 102: fakeRect}}, null, null, null, null, null, null, projection);
+    const bucketData = performSymbolLayout(bucket, stacks, {'Test': {97: fakeRect, 98: fakeRect, 99: fakeRect, 100: fakeRect, 101: fakeRect, 102: fakeRect}}, null, null, null, null, null, null, projection);
     postRasterizationSymbolLayout(bucket, bucketData, null, null, null, null, projection, null, null, {});
 
     expect(console.warn).toHaveBeenCalledTimes(1);

@@ -36,7 +36,7 @@ export default class WorkerPool {
             this.workers.forEach((w) => {
                 w.terminate();
             });
-            this.workers = (null as any);
+            this.workers = null;
         }
     }
 

@@ -63,7 +63,7 @@ if (typeof Object.freeze == 'function') {
  */
 export type RequestParameters = {
     url: string;
-    headers?: any;
+    headers?: Record<string, string>;
     method?: 'GET' | 'POST' | 'PUT';
     body?: string;
     type?: 'string' | 'json' | 'arrayBuffer';
@@ -102,7 +102,8 @@ export class AJAXError extends Error {
 // and we will set an empty referrer. Otherwise, we're using the document's URL.
 export const getReferrer: () => string = isWorker() ?
 // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
-    () => self.worker && self.worker.referrer :
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    () => self.worker.referrer :
     () => (location.protocol === 'blob:' ? parent : self).location.href;
 
 // Determines whether a URL is a file:// URL. This is obviously the case if it begins
@@ -110,7 +111,7 @@ export const getReferrer: () => string = isWorker() ?
 // via a file:// URL.
 const isFileURL = (url: string) => /^file:/.test(url) || (/^file:/.test(getReferrer()) && !/^\w+:/.test(url));
 
-function makeFetchRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+function makeFetchRequest(requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
     const controller = new AbortController();
     const request = new Request(requestParameters.url, {
         method: requestParameters.method || 'GET',
@@ -202,7 +203,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
     }};
 }
 
-function makeXMLHttpRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+function makeXMLHttpRequest(requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
     const xhr: XMLHttpRequest = new XMLHttpRequest();
     xhr.open(requestParameters.method || 'GET', requestParameters.url, true);
     if (requestParameters.type === 'arrayBuffer') {
@@ -226,7 +227,7 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
                 // We're manually parsing JSON here to get better error messages.
                 try {
                     data = JSON.parse(xhr.response);
-                } catch (err: any) {
+                } catch (err) {
                     return callback(err);
                 }
             }
@@ -239,7 +240,7 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
     return {cancel: () => xhr.abort()};
 }
 
-export const makeRequest = function(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+export const makeRequest = function (requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
     // We're trying to use the Fetch API if possible. However, in some situations we can't use it:
     // - Safari exposes AbortController, but it doesn't work actually abort any requests in
     //   older versions (see https://bugs.webkit.org/show_bug.cgi?id=174980#c2). In this case,
@@ -250,32 +251,30 @@ export const makeRequest = function(requestParameters: RequestParameters, callba
         if (self.fetch && self.Request && self.AbortController && Request.prototype.hasOwnProperty('signal')) {
             return makeFetchRequest(requestParameters, callback);
         }
-        // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
-        if (isWorker() && self.worker && self.worker.actor) {
+        if (isWorker(self) && self.worker.actor) {
             const queueOnMainThread = true;
-            // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
             return self.worker.actor.send('getResource', requestParameters, callback, undefined, queueOnMainThread);
         }
     }
     return makeXMLHttpRequest(requestParameters, callback);
 };
 
-export const getJSON = function(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+export const getJSON = function (requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
     return makeRequest(extend(requestParameters, {type: 'json'}), callback);
 };
 
-export const getArrayBuffer = function(
+export const getArrayBuffer = function (
     requestParameters: RequestParameters,
     callback: ResponseCallback<ArrayBuffer>,
 ): Cancelable {
     return makeRequest(extend(requestParameters, {type: 'arrayBuffer'}), callback);
 };
 
-export const postData = function(requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
+export const postData = function (requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
     return makeRequest(extend(requestParameters, {method: 'POST'}), callback);
 };
 
-export const getData = function(requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
+export const getData = function (requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
     return makeRequest(extend(requestParameters, {method: 'GET'}), callback);
 };
 
@@ -319,7 +318,7 @@ export const resetImageRequestQueue = () => {
 };
 resetImageRequestQueue();
 
-export const getImage = function(
+export const getImage = function (
     requestParameters: RequestParameters,
     callback: ResponseCallback<HTMLImageElement | ImageBitmap>,
 ): Cancelable {
@@ -327,7 +326,7 @@ export const getImage = function(
         if (!requestParameters.headers) {
             requestParameters.headers = {};
         }
-        requestParameters.headers.accept = 'image/webp,*/*';
+        requestParameters.headers['accept'] = 'image/webp,*/*';
     }
 
     // limit concurrent image loads to help with raster sources performance on big screens
@@ -383,10 +382,10 @@ export const getImage = function(
     };
 };
 
-export const getVideo = function(urls: Array<string>, callback: Callback<HTMLVideoElement>): Cancelable {
+export const getVideo = function (urls: Array<string>, callback: Callback<HTMLVideoElement>): Cancelable {
     const video: HTMLVideoElement = document.createElement('video');
     video.muted = true;
-    video.onloadstart = function() {
+    video.onloadstart = function () {
         callback(null, video);
     };
     for (let i = 0; i < urls.length; i++) {

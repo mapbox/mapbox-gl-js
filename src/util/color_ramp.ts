@@ -3,14 +3,14 @@ import {isPowerOfTwo} from './util';
 import assert from 'assert';
 
 import type Color from '../style-spec/util/color';
-import type {StylePropertyExpression} from '../style-spec/expression/index';
+import type {StylePropertyExpression, GlobalProperties} from '../style-spec/expression/index';
 
 export type ColorRampParams = {
     expression: StylePropertyExpression;
     evaluationKey: string;
     resolution?: number;
     image?: RGBAImage;
-    clips?: Array<any>;
+    clips?: Array<{start: number, end: number}>;
 };
 
 /**
@@ -20,7 +20,7 @@ export type ColorRampParams = {
  * @private
  */
 export function renderColorRamp(params: ColorRampParams): RGBAImage {
-    const evaluationGlobals: Record<string, any> = {};
+    const evaluationGlobals = {} as GlobalProperties;
     const width = params.resolution || 256;
     const height = params.clips ? params.clips.length : 1;
     const image = params.image || new RGBAImage({width, height});
@@ -29,7 +29,7 @@ export function renderColorRamp(params: ColorRampParams): RGBAImage {
 
     const renderPixel = (stride: number, index: number, progress: number) => {
         evaluationGlobals[params.evaluationKey] = progress;
-        const pxColor: Color | null | undefined = params.expression.evaluate((evaluationGlobals as any));
+        const pxColor: Color | null | undefined = params.expression.evaluate(evaluationGlobals);
         if (!pxColor) return;
 
         // the colors are being unpremultiplied because Color uses

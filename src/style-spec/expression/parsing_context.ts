@@ -157,7 +157,7 @@ class ParsingContext {
                     const ec = new EvaluationContext(this._scope, this.options);
                     try {
                         parsed = new Literal(parsed.type, parsed.evaluate(ec));
-                    } catch (e: any) {
+                    } catch (e) {
                         this.error(e.message);
                         return null;
                     }

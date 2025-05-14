@@ -21,6 +21,7 @@ export default function (style) {
     }
 
     if (styleIDs.length < 2)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return style;
 
     styleIDs.forEach((id) => {
@@ -48,5 +49,6 @@ export default function (style) {
         }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return style;
 }

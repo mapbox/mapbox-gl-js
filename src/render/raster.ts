@@ -1,6 +1,8 @@
 function computeRasterColorMix(
     colorRampRes: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [mixR, mixG, mixB, mixA]: [any, any, any, any],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [min, max]: [any, any],
 ): [number, number, number, number] {
     if (min === max) return [0, 0, 0, 0];
@@ -30,6 +32,7 @@ function computeRasterColorMix(
     ];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function computeRasterColorOffset(colorRampRes: number, offset: number, [min, max]: [any, any]): number {
     if (min === max) return 0;
 

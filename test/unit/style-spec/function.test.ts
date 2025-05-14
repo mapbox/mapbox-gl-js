@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, equalWithPrecision} from '../../util/vitest';
 import {createFunction} from '../../../src/style-spec/function/index';

@@ -68,10 +68,10 @@ class Atmosphere {
         this.params = new StarsParams();
         this.updateNeeded = true;
 
-        painter.tp.registerParameter(this.params, ["Stars"], "starsCount", {min:100, max: 16000, step:1}, () => { this.updateNeeded = true; });
-        painter.tp.registerParameter(this.params, ["Stars"], "sizeMultiplier", {min:0.01, max: 2.0, step:0.01});
-        painter.tp.registerParameter(this.params, ["Stars"], "sizeRange", {min:0.0, max: 200.0, step:1}, () => { this.updateNeeded = true; });
-        painter.tp.registerParameter(this.params, ["Stars"], "intensityRange", {min:0.0, max: 200.0, step:1}, () => { this.updateNeeded = true; });
+        painter.tp.registerParameter(this.params, ["Stars"], "starsCount", {min: 100, max: 16000, step: 1}, () => { this.updateNeeded = true; });
+        painter.tp.registerParameter(this.params, ["Stars"], "sizeMultiplier", {min: 0.01, max: 2.0, step: 0.01});
+        painter.tp.registerParameter(this.params, ["Stars"], "sizeRange", {min: 0.0, max: 200.0, step: 1}, () => { this.updateNeeded = true; });
+        painter.tp.registerParameter(this.params, ["Stars"], "intensityRange", {min: 0.0, max: 200.0, step: 1}, () => { this.updateNeeded = true; });
     }
 
     update(painter: Painter) {
@@ -95,7 +95,7 @@ class Atmosphere {
             let base = 0;
             for (let i = 0; i < stars.length; ++i) {
 
-                const star = vec3.scale([] as any, stars[i], 200.0);
+                const star = vec3.scale([] as unknown as vec3, stars[i], 200.0);
 
                 const size = Math.max(0, 1.0 + 0.01 * sizeRange * (-0.5 + 1.0 * sRand()));
                 const intensity = Math.max(0, 1.0 + 0.01 * intensityRange * (-0.5 + 1.0 * sRand()));

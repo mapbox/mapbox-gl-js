@@ -8,7 +8,7 @@ function eachLayer(style, callback) {
     }
 }
 
-export default function(style) {
+export default function (style) {
     style.version = 9;
 
     // remove user-specified refs
@@ -23,5 +23,6 @@ export default function(style) {
         }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return style;
 }

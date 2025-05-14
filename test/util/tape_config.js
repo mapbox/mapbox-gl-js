@@ -3,11 +3,14 @@
 /* global Testem */
 // This file sets up tape with the add-ons we need,
 // this file also acts as the entrypoint for browserify.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const tape = require('tape');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, import/order
 const browserWriteFile = require('../util/browser_write_file.js');
 
 //Add test filtering ability
 const filter = getQueryVariable('filter') || '.*';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const test = require('tape-filter')(tape, filter);
 
 module.exports = test;
@@ -26,7 +29,7 @@ function getQueryVariable(variable) {
 
 // Testem object is available globally in the browser test page.
 // Tape outputs via `console.log` and is intercepted by testem using this function
-Testem.handleConsoleMessage = function(msg) {
+Testem.handleConsoleMessage = function (msg) {
     // Send output over ws to testem server
 // @ts-expect-error - TS2339 - Property 'emit' does not exist on type 'typeof Testem'.
     Testem.emit('tap', msg);
@@ -38,7 +41,7 @@ Testem.handleConsoleMessage = function(msg) {
 // @ts-expect-error - TS2339 - Property 'afterTests' does not exist on type 'typeof Testem'.
 Testem.afterTests((config, data, cb) => {
     browserWriteFile(
-// @ts-expect-error - TS2339 - Property '_suiteName' does not exist on type 'Window & typeof globalThis'.
+        // @ts-expect-error - TS2339 - Property '_suiteName' does not exist on type 'Window & typeof globalThis'.
         `test/integration/${window._suiteName}/index.html`,
         window.btoa(document.documentElement.outerHTML),
         () => cb()

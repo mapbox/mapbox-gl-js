@@ -251,6 +251,7 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
     if (start < text.length) {
         lines.push(input.substring(start, text.length));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return lines;
 }
 
@@ -346,16 +347,16 @@ const whitespace: {
 const breakable: {
     [_: number]: boolean;
 } = {
-    [0x0a]:   true, // newline
-    [0x20]:   true, // space
-    [0x26]:   true, // ampersand
-    [0x28]:   true, // left parenthesis
-    [0x29]:   true, // right parenthesis
-    [0x2b]:   true, // plus sign
-    [0x2d]:   true, // hyphen-minus
-    [0x2f]:   true, // solidus
-    [0xad]:   true, // soft hyphen
-    [0xb7]:   true, // middle dot
+    [0x0a]: true, // newline
+    [0x20]: true, // space
+    [0x26]: true, // ampersand
+    [0x28]: true, // left parenthesis
+    [0x29]: true, // right parenthesis
+    [0x2b]: true, // plus sign
+    [0x2d]: true, // hyphen-minus
+    [0x2f]: true, // solidus
+    [0xad]: true, // soft hyphen
+    [0xb7]: true, // middle dot
     [0x200b]: true, // zero-width space
     [0x2010]: true, // hyphen
     [0x2013]: true, // en dash
@@ -819,6 +820,14 @@ function align(positionedLines: Array<PositionedLine>,
     }
 }
 
+export function isPositionedIcon(icon: unknown): icon is PositionedIcon {
+    return icon["imagePrimary"] !== undefined &&
+        icon["top"] !== undefined &&
+        icon["bottom"] !== undefined &&
+        icon["left"] !== undefined &&
+        icon["right"] !== undefined;
+}
+
 export type PositionedIcon = {
     imagePrimary: ImagePosition;
     imageSecondary: ImagePosition | null | undefined;
@@ -902,4 +911,20 @@ function fitIconToText(
     }
 
     return {imagePrimary: image, imageSecondary: undefined, top, right, bottom, left, collisionPadding};
+}
+
+export function isFullyStretchableX(icon: PositionedIcon) {
+    const imagePrimary = icon.imagePrimary;
+    return !imagePrimary.stretchX;
+}
+
+export function isFullyStretchableY(icon: PositionedIcon) {
+    const imagePrimary = icon.imagePrimary;
+    return !imagePrimary.stretchY;
+}
+
+export function getPositionedIconSize(icon: PositionedIcon) {
+    const width = icon.right - icon.left;
+    const height = icon.bottom - icon.top;
+    return {width, height};
 }

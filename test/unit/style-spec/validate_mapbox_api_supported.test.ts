@@ -1,8 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import validateMapboxApiSupported from '../../../src/style-spec/validate_mapbox_api_supported';
 import reference from '../../../src/style-spec/reference/latest';
-// eslint-disable-next-line import/no-unresolved
 import {fixtures} from 'virtual:style-spec/fixtures';
 import badColorStyleSpecFixture from './fixture/bad-color.input.json';
 

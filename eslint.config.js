@@ -12,7 +12,15 @@ const __dirname = path.dirname(__filename);
 const gitignorePath = path.resolve(__dirname, '.gitignore');
 
 export default tseslint.config(
-    globalIgnores(['dist/**/*', 'src/style-spec/bin/*']),
+    globalIgnores([
+        './debug/**/*',
+        './rollup/**/*',
+        './src/style-spec/bin',
+        './src/style-spec/dist',
+        './test/build/typings/**/*',
+        './test/build/transpilation/**/*',
+    ]),
+
     includeIgnoreFile(gitignorePath),
 
     ...config,
@@ -144,15 +152,12 @@ export default tseslint.config(
         rules: {
             '@typescript-eslint/unbound-method': 'off',
             '@typescript-eslint/no-unsafe-call': 'off',
-            '@typescript-eslint/no-explicit-any': 'off',
-            '@typescript-eslint/no-unsafe-return': 'off',
             '@typescript-eslint/no-unsafe-argument': 'off',
             '@typescript-eslint/no-unsafe-assignment': 'off',
             '@typescript-eslint/no-loss-of-precision': 'off',
             '@typescript-eslint/no-unsafe-member-access': 'off',
             '@typescript-eslint/only-throw-error': 'off',
             '@typescript-eslint/method-signature-style': 'error',
-            '@typescript-eslint/no-floating-promises': 'off',
             '@typescript-eslint/consistent-type-exports': 'error',
             '@typescript-eslint/consistent-type-imports': 'error',
             '@typescript-eslint/restrict-template-expressions': ['off', {
@@ -212,16 +217,11 @@ export default tseslint.config(
     // Stylistic rules
     {
         rules: {
-            '@stylistic/js/array-bracket-spacing': 'off',
+            '@stylistic/js/no-confusing-arrow': ['error', {onlyOneSimpleParam: true}],
+
             '@stylistic/js/arrow-parens': 'off',
-            '@stylistic/js/brace-style': 'off',
-            '@stylistic/js/computed-property-spacing': 'off',
-            '@stylistic/js/implicit-arrow-linebreak': 'off',
             '@stylistic/js/indent': 'off',
-            '@stylistic/js/key-spacing': 'off',
-            '@stylistic/js/no-confusing-arrow': 'off',
             '@stylistic/js/quotes': 'off',
-            '@stylistic/js/space-before-function-paren': 'off',
         }
     },
 
@@ -290,5 +290,33 @@ export default tseslint.config(
             'jsdoc/require-returns': 'error',
             'jsdoc/tag-lines': ['error', 'any', {startLines: 1}],
         },
+    },
+
+    // Disable `no-restricted-syntax` for test/, build/, and config files
+    {
+        files: [
+            'test/**',
+            'build/**',
+            'rollup.*'
+        ],
+
+        rules: {
+            'no-restricted-syntax': 'off',
+            '@typescript-eslint/no-explicit-any': 'off',
+            '@typescript-eslint/no-unsafe-return': 'off',
+            '@typescript-eslint/no-floating-promises': 'off',
+        }
+    },
+
+    // Disable type-aware linting for files that are not migrated to TypeScript
+    {
+        files: [
+            './test/release/**/*',
+            './test/integration/**/*',
+            './test/build/style-spec.test.js',
+            './test/build/browserify-test-fixture.js'
+        ],
+
+        extends: [tseslint.configs.disableTypeChecked],
     },
 );

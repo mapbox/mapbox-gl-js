@@ -15,6 +15,7 @@ import type {TextureImage} from '../render/texture';
 
 type DataType = 'raster';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isRaster(data: any): boolean {
     return data instanceof ImageData ||
         data instanceof HTMLCanvasElement ||
@@ -130,45 +131,24 @@ function isRaster(data: any): boolean {
  * @returns {Promise<TextureImage | undefined | null>} The promise that resolves to the tile image data as an `HTMLCanvasElement`, `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`.
  * If `loadTile` resolves to `undefined`, a map will render an overscaled parent tile in the tile’s space. If `loadTile` resolves to `null`, a map will render nothing in the tile’s space.
  */
-export interface CustomSourceInterface<T> extends Evented {
+export interface CustomSourceInterface<T> {
     id: string;
     type: 'custom';
-    dataType: DataType | null | undefined;
-    minzoom: number | null | undefined;
-    maxzoom: number | null | undefined;
-    scheme: string | null | undefined;
-    tileSize: number | null | undefined;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
-    attribution: string | null | undefined;
-    mapbox_logo: boolean | undefined;
-    bounds: [number, number, number, number] | null | undefined;
-    hasTile: (
-        tileID: {
-            z: number;
-            x: number;
-            y: number;
-        },
-    ) => boolean | null | undefined;
-    loadTile: (
-        tileID: {
-            z: number;
-            x: number;
-            y: number;
-        },
-        options: {
-            signal: AbortSignal;
-        },
-    ) => Promise<T | null | undefined>;
-    unloadTile: (
-        tileID: {
-            z: number;
-            x: number;
-            y: number;
-        },
-    ) => void | null | undefined;
-    onAdd: (map: Map) => void | null | undefined;
-    onRemove: (map: Map) => void | null | undefined;
+    dataType?: DataType | null;
+    minzoom?: number | null;
+    maxzoom?: number | null;
+    scheme?: string | null;
+    tileSize?: number | null;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
+    attribution?: string | null;
+    mapbox_logo?: boolean;
+    bounds?: [number, number, number, number] | null;
+    hasTile?: (tileID: {z: number; x: number; y: number}) => boolean | null;
+    loadTile: (tileID: {z: number; x: number; y: number}, options: {signal: AbortSignal}) => Promise<T | null | undefined>;
+    unloadTile?: (tileID: {z: number; x: number; y: number}) => void | null;
+    onAdd?: (map: Map) => void | null;
+    onRemove?: (map: Map) => void | null;
 }
 
 class CustomSource<T> extends Evented<SourceEvents> implements ISource {
@@ -189,8 +169,8 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
 
     roundZoom: boolean | undefined;
     tileBounds: TileBounds | null | undefined;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     reparseOverscaled: boolean | undefined;
 
     map: Map;
@@ -321,7 +301,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
             // A map will render nothing in the tile’s space.
             if (data === null) {
                 const emptyImage = {width: this.tileSize, height: this.tileSize, data: null};
-                this.loadTileData(tile, (emptyImage as any));
+                this.loadTileData(tile, emptyImage);
                 tile.state = 'loaded';
                 return callback(null);
             }
@@ -339,7 +319,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
 
     loadTileData(tile: Tile, data: T): void {
         // Only raster data supported at the moment
-        tile.setTexture((data as any), this.map.painter);
+        tile.setTexture(data as TextureImage, this.map.painter);
     }
 
     unloadTile(tile: Tile, callback?: Callback<undefined>): void {

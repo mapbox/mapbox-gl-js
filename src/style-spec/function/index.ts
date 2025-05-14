@@ -17,6 +17,7 @@ export function isFunction(value) {
 }
 
 function identityFunction(x) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return x;
 }
 
@@ -32,6 +33,7 @@ export function createFunction(parameters, propertySpec) {
 
         if (parameters.stops) {
             parameters.stops = parameters.stops.map((stop) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return [stop[0], Color.parse(stop[1])];
             });
         }
@@ -73,6 +75,7 @@ export function createFunction(parameters, propertySpec) {
     }
 
     if (zoomAndFeatureDependent) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const featureFunctions: Record<string, any> = {};
         const zoomStops = [];
         for (let s = 0; s < parameters.stops.length; s++) {
@@ -101,8 +104,10 @@ export function createFunction(parameters, propertySpec) {
             kind: 'composite',
             interpolationType,
             interpolationFactor: Interpolate.interpolationFactor.bind(undefined, interpolationType),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             zoomStops: featureFunctionStops.map(s => s[0]),
             evaluate({zoom}, properties) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return evaluateExponentialFunction({
                     stops: featureFunctionStops,
                     base: parameters.base
@@ -116,7 +121,9 @@ export function createFunction(parameters, propertySpec) {
             kind: 'camera',
             interpolationType,
             interpolationFactor: Interpolate.interpolationFactor.bind(undefined, interpolationType),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             zoomStops: parameters.stops.map(s => s[0]),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             evaluate: ({zoom}) => innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType)
         };
     } else {
@@ -125,8 +132,10 @@ export function createFunction(parameters, propertySpec) {
             evaluate(_, feature) {
                 const value = feature && feature.properties ? feature.properties[parameters.property] : undefined;
                 if (value === undefined) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return coalesce(parameters.default, propertySpec.default);
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return innerFun(parameters, propertySpec, value, hashedStops, categoricalKeyType);
             }
         };
@@ -134,26 +143,36 @@ export function createFunction(parameters, propertySpec) {
 }
 
 function coalesce(a, b, c) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (a !== undefined) return a;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (b !== undefined) return b;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (c !== undefined) return c;
 }
 
 function evaluateCategoricalFunction(parameters, propertySpec, input, hashedStops, keyType) {
     const evaluated = typeof input === keyType ? hashedStops[input] : undefined; // Enforce strict typing on input
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return coalesce(evaluated, parameters.default, propertySpec.default);
 }
 
 function evaluateIntervalFunction(parameters, propertySpec, input) {
     // Edge cases
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (getType(input) !== 'number') return coalesce(parameters.default, propertySpec.default);
     const n = parameters.stops.length;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (n === 1) return parameters.stops[0][1];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     const index = findStopLessThanOrEqualTo(parameters.stops.map((stop) => stop[0]), input);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return parameters.stops[index][1];
 }
 
@@ -161,12 +180,17 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
     const base = parameters.base !== undefined ? parameters.base : 1;
 
     // Edge cases
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (getType(input) !== 'number') return coalesce(parameters.default, propertySpec.default);
     const n = parameters.stops.length;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (n === 1) return parameters.stops[0][1];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     const index = findStopLessThanOrEqualTo(parameters.stops.map((stop) => stop[0]), input);
     const t = interpolationFactor(
         input, base,
@@ -179,6 +203,7 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 
     if (parameters.colorSpace && parameters.colorSpace !== 'rgb') {
         const colorspace = colorSpaces[parameters.colorSpace];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         interp = (a, b) => colorspace.reverse(colorspace.interpolate(colorspace.forward(a), colorspace.forward(b), t));
     }
 
@@ -191,11 +216,13 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
                 if (evaluatedLower === undefined || evaluatedUpper === undefined) {
                     return undefined;
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return interp(evaluatedLower, evaluatedUpper, t);
             }
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return interp(outputLower, outputUpper, t);
 }
 
@@ -209,6 +236,7 @@ function evaluateIdentityFunction(parameters, propertySpec, input) {
     } else if (getType(input) !== propertySpec.type && (propertySpec.type !== 'enum' || !propertySpec.values[input])) {
         input = undefined;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return coalesce(input, parameters.default, propertySpec.default);
 }
 

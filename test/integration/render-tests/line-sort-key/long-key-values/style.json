@@ -1,0 +1,38 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "properties": {"key": 100000000, "color": "blue"}, "geometry": {"type": "LineString", "coordinates": [[-20,  10], [ 20,  10]]}},
+          {"type": "Feature", "properties": {"key": 100000003, "color": "pink"}, "geometry": {"type": "LineString", "coordinates": [[ 10, -20], [ 10,  20]]}},
+          {"type": "Feature", "properties": {"key": 100000001, "color":  "red"}, "geometry": {"type": "LineString", "coordinates": [[-10, -20], [-10,  20]]}},
+          {"type": "Feature", "properties": {"key": 100000002, "color": "grey"}, "geometry": {"type": "LineString", "coordinates": [[-20, -10], [ 20, -10]]}}
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/rect",
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-sort-key": ["get", "key"]
+      },
+      "paint": {
+        "line-color": ["get", "color"],
+        "line-width": 5
+      }
+    }
+  ]
+}

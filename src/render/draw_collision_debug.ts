@@ -41,7 +41,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
         const tile = sourceCache.getTile(coord);
-        const bucket: SymbolBucket | null | undefined = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as SymbolBucket;
         if (!bucket) continue;
 
         const tileMatrix = getCollisionDebugTileProjectionMatrix(coord, bucket, tr);

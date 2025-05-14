@@ -1,7 +1,6 @@
 import CollisionIndex from './collision_index';
 import EXTENT from '../style-spec/data/extent';
 import ONE_EM from './one_em';
-import * as symbolSize from './symbol_size';
 import * as projection from './projection';
 import {getAnchorJustification, evaluateVariableOffset} from './symbol_layout';
 import {getAnchorAlignment, WritingMode} from './shaping';
@@ -12,6 +11,7 @@ import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projecti
 import {clamp, warnOnce} from '../util/util';
 import {transformPointToTile, pointInFootprint, skipClipping} from '../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
+import {evaluateSizeForFeature, evaluateSizeForZoom} from './symbol_size';
 
 import type BuildingIndex from '../source/building_index';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
@@ -194,7 +194,9 @@ export type VariableOffset = {
 
 type TileLayerParameters = {
     bucket: SymbolBucket;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     layout: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     paint: any;
     posMatrix: mat4;
     textLabelPlaneMatrix: mat4;
@@ -203,8 +205,11 @@ type TileLayerParameters = {
     textPixelRatio: number;
     holdingForFade: boolean;
     collisionBoxArray: CollisionBoxArray | null | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     partiallyEvaluatedTextSize: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     collisionGroup: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     latestFeatureIndex: any;
 };
 
@@ -236,6 +241,7 @@ export class Placement {
     collisionGroups: CollisionGroups;
     prevPlacement: Placement | null | undefined;
     zoomAtLastRecencyCheck: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     collisionCircleArrays: Partial<Record<any, CollisionCircleArray>>;
     buildingIndex: BuildingIndex | null | undefined;
 
@@ -310,7 +316,7 @@ export class Placement {
                 symbolBucket.getProjection(),
                 pixelsToTiles);
 
-            labelToScreenMatrix = mat4.multiply([] as any, this.transform.labelPlaneMatrix, glMatrix);
+            labelToScreenMatrix = mat4.multiply([] as unknown as mat4, this.transform.labelPlaneMatrix, glMatrix);
         }
 
         let clippingData = null;
@@ -351,8 +357,8 @@ export class Placement {
             textPixelRatio,
             holdingForFade: tile.holdingForFade(),
             collisionBoxArray,
-            partiallyEvaluatedTextSize: symbolSize.evaluateSizeForZoom(symbolBucket.textSizeData, this.transform.zoom, textScaleFactor),
-            partiallyEvaluatedIconSize: symbolSize.evaluateSizeForZoom(symbolBucket.iconSizeData, this.transform.zoom, iconScaleFactor),
+            partiallyEvaluatedTextSize: evaluateSizeForZoom(symbolBucket.textSizeData, this.transform.zoom, textScaleFactor),
+            partiallyEvaluatedIconSize: evaluateSizeForZoom(symbolBucket.iconSizeData, this.transform.zoom, iconScaleFactor),
             collisionGroup: this.collisionGroups.get(symbolBucket.sourceID),
             latestFeatureIndex: tile.latestFeatureIndex
         };
@@ -388,7 +394,9 @@ export class Placement {
         bucket: SymbolBucket,
         orientation: Orientation,
         iconBox: SingleCollisionBox | null | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         textSize: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         iconSize: any,
     ): {
         shift: Point;
@@ -396,8 +404,7 @@ export class Placement {
     } | null | undefined {
 
         const {textOffset0, textOffset1, crossTileID} = symbolInstance;
-        const textOffset = [textOffset0, textOffset1];
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
+        const textOffset: [number, number] = [textOffset0, textOffset1];
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textScale);
 
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
@@ -424,7 +431,6 @@ export class Placement {
             }
             assert(crossTileID !== 0);
             this.variableOffsets[crossTileID] = {
-                // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number]'.
                 textOffset,
                 width,
                 height,
@@ -443,6 +449,7 @@ export class Placement {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     placeLayerBucketPart(bucketPart: any, seenCrossTileIDs: Set<number>, showCollisionBoxes: boolean, updateCollisionBoxIfNecessary: boolean, scaleFactor: number = 1) {
 
         const {
@@ -738,7 +745,7 @@ export class Placement {
             if (symbolInstance.useRuntimeCollisionCircles) {
                 const placedSymbolIndex = symbolInstance.centerJustifiedTextSymbolIndex >= 0 ? symbolInstance.centerJustifiedTextSymbolIndex : symbolInstance.verticalPlacedTextSymbolIndex;
                 const placedSymbol = bucket.text.placedSymbolArray.get(placedSymbolIndex);
-                const fontSize = symbolSize.evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
+                const fontSize = evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
 
                 const textPixelPadding = layout.get('text-padding');
                 // Convert circle collision height into pixels

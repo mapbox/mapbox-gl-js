@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, waitFor, vi} from '../../util/vitest';
 import {mockFetch} from '../../util/network';
@@ -1819,6 +1820,7 @@ describe('Terrain', () => {
 
         // Using terrain from the root style
         style.loadJSON(rootWithTerrain);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.load', resolve));
         expect(style.terrain.scope).toEqual(style.scope);
         expect(style.getTerrain()).toEqual({source: 'mapbox-dem', exaggeration: 2});
@@ -2548,8 +2550,7 @@ test('Style#setGeoJSONSourceData', async () => {
     style.loadJSON(initialStyle);
 
     await waitFor(style, 'style.load');
-    expect(() =>
-        style.setGeoJSONSourceData(makeFQID('mapbox', 'streets'), {type: 'FeatureCollection', features: []})).toThrowError(/There is no source with this ID/);
+    expect(() => style.setGeoJSONSourceData(makeFQID('mapbox', 'streets'), {type: 'FeatureCollection', features: []})).toThrowError(/There is no source with this ID/);
 });
 
 describe('Style#setConfigProperty', () => {
@@ -2582,7 +2583,7 @@ describe('Style#setConfigProperty', () => {
 
         expect(style.getConfigProperty('standard', 'showBackground')).toEqual(false);
 
-        style.dispatcher.broadcast = function(key, value) {
+        style.dispatcher.broadcast = function (key, value) {
             expect(key).toEqual('updateLayers');
             expect(value.scope).toEqual('standard');
             expect(value.removedIds).toEqual([]);
@@ -2635,6 +2636,7 @@ describe('Style#setState', () => {
         const initialStyle = createStyleJSON();
         style.loadJSON(initialStyle);
 
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2642,6 +2644,7 @@ describe('Style#setState', () => {
         });
 
         style.setState(nextStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.import.load', resolve));
 
         expect(style.serialize()).toEqual(nextStyle);
@@ -2657,6 +2660,7 @@ describe('Style#setState', () => {
         });
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2664,6 +2668,7 @@ describe('Style#setState', () => {
         });
 
         style.setState(nextStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.import.load', resolve));
 
         expect(style.serialize()).toEqual(nextStyle);
@@ -2679,6 +2684,7 @@ describe('Style#setState', () => {
         });
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2686,6 +2692,7 @@ describe('Style#setState', () => {
         });
 
         style.setState(nextStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.import.load', resolve));
 
         expect(style.serialize()).toEqual(nextStyle);
@@ -2699,6 +2706,7 @@ describe('Style#setState', () => {
         });
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => style.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2720,6 +2728,7 @@ describe('Style#setState', () => {
         })}]});
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => style.on('style.load', resolve));
 
         expect(style.ambientLight).toBeTruthy();
@@ -2755,6 +2764,7 @@ describe('Style#setState', () => {
         const initialStyle = createStyleJSON({imports: [{id: 'a', url: '', data: fragmentStyle}]});
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => style.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2784,6 +2794,7 @@ describe('Style#setState', () => {
         });
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2791,13 +2802,14 @@ describe('Style#setState', () => {
         });
 
         style.setState(nextStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.import.load', resolve));
 
         expect(style.serialize()).toEqual(nextStyle);
     });
 
     /**
-     * @not For some reason in browser we not set loaded after style.load event
+     * For some reason in browser we not set loaded after style.load event
      */
     test.skip('Updates fragment URL', async () => {
         const map = new StubMap();
@@ -2855,6 +2867,7 @@ describe('Style#setState', () => {
         });
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => style.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2888,6 +2901,7 @@ describe('Style#setState', () => {
 
         style.loadJSON(initialStyle);
 
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => style.on('style.load', resolve));
 
         expect(style.order).toEqual([
@@ -3042,7 +3056,7 @@ test('Style#_updateTilesForChangedImages', async () => {
     expect(tile.setDependencies).toHaveBeenCalledWith('icons', [imageIdStr]);
     expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(true);
 
-    style.addImage(imageId, {});
+    style.getFragmentStyle('basemap').addImage(imageId, {});
     style.update({});
 
     expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(2);
@@ -3070,4 +3084,47 @@ test('Style#getFeaturesetDescriptors', async () => {
 
     expect(style.getFeaturesetDescriptors()).toEqual([]);
     expect(style.getFeaturesetDescriptors('basemap')).toEqual([{featuresetId: 'poi', importId: 'basemap'}, {featuresetId: 'buildings', importId: 'basemap'}]);
+});
+
+test('Style#getFragmentStyle', async () => {
+    const map = new StubMap();
+    const style = new Style(map);
+
+    // Load a style with imports
+    const initialStyle = createStyleJSON({
+        imports: [{
+            id: 'basemap', url: '', data: createStyleJSON({
+                imports: [{
+                    id: 'basemap', url: '', data: createStyleJSON()
+                }]
+            })
+        }]
+    });
+
+    style.loadJSON(initialStyle);
+    await waitFor(style, 'style.load');
+
+    // Style should return itself when fragmentId is `undefined`
+    expect(style.getFragmentStyle()).toBe(style);
+
+    // Root style should return itself when fragmentId is empty string
+    expect(style.getFragmentStyle('')).toEqual(style);
+
+    // Style should return the fragment with ID 'basemap'
+    const basemapFragment1 = style.getFragmentStyle('basemap');
+    expect(basemapFragment1).not.toEqual(style);
+    expect(basemapFragment1.scope).toEqual('basemap');
+
+    // Fragment should return itself when fragmentId is `undefined`
+    expect(basemapFragment1.getFragmentStyle()).toBe(basemapFragment1);
+
+    // Fragment style should not return the fragment with ID ''
+    expect(basemapFragment1.getFragmentStyle('')).toBeUndefined();
+
+    const basemapFragment2 = basemapFragment1.getFragmentStyle('basemap');
+    expect(basemapFragment2).not.toEqual(basemapFragment1);
+    expect(basemapFragment2.scope).toEqual(makeFQID('basemap', 'basemap'));
+
+    // Fragment should return itself when fragmentId is `undefined`
+    expect(basemapFragment2.getFragmentStyle()).toBe(basemapFragment2);
 });

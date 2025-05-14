@@ -43,7 +43,7 @@ import type {
  * @see [Example: Add a raster tile source](https://docs.mapbox.com/mapbox-gl-js/example/map-tiles/)
  * @see [Example: Add a WMS source](https://docs.mapbox.com/mapbox-gl-js/example/wms/)
  */
-class RasterTileSource<T extends 'raster' | 'raster-dem' | 'raster-array' = 'raster'> extends Evented<SourceEvents> implements ISource {
+class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements ISource<T> {
     type: T;
     id: string;
     scope: string;
@@ -55,15 +55,15 @@ class RasterTileSource<T extends 'raster' | 'raster-dem' | 'raster-array' = 'ras
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
     tileSize: number;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     vectorLayers?: never;
     vectorLayerIds?: never;
     rasterLayers?: Array<SourceRasterLayer>;
     rasterLayerIds?: Array<string>;
 
     bounds: [number, number, number, number] | null | undefined;
-    tileBounds: TileBounds;
+    tileBounds?: TileBounds;
     roundZoom: boolean | undefined;
     reparseOverscaled: boolean | undefined;
     dispatcher: Dispatcher;
@@ -112,8 +112,7 @@ class RasterTileSource<T extends 'raster' | 'raster-dem' | 'raster-array' = 'ras
                     this.rasterLayerIds = this.rasterLayers.map(layer => layer.id);
                 }
 
-                if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
-
+                this.tileBounds = TileBounds.fromTileJSON(tileJSON);
                 postTurnstileEvent(tileJSON.tiles);
 
                 // `content` is included here to prevent a race condition where `Style#updateSources` is called

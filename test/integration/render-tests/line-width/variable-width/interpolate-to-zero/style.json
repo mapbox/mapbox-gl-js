@@ -1,5 +1,10 @@
 {
     "version": 8,
+    "metadata": {
+        "test": {
+          "allowed": 0.0005
+        }
+      },
     "center": [
         -122.483482,
         37.833174

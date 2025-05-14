@@ -139,7 +139,7 @@ export const operationHandlers = {
         waitForRender(map, () => true, doneCb);
     },
     updateFakeCanvas(map, params, doneCb) {
-        const updateFakeCanvas = async function() {
+        const updateFakeCanvas = async function () {
             const canvasSource = map.getSource(params[0]);
             canvasSource.play();
             // update before pause should be rendered
@@ -238,10 +238,14 @@ export const operationHandlers = {
     updateGeoJSONData(map, [sourceId, data], doneCb) {
         map.getSource(sourceId).updateData(data);
         doneCb();
+    },
+    on(map, params, doneCb) {
+        map.on(params[0], () => applyOperations(map, {operations: params[1]}, params[0]));
+        doneCb();
     }
 };
 
-export async function applyOperations(map, {operations}) {
+export async function applyOperations(map, {operations}, currentTestName) {
     if (!operations) return Promise.resolve();
 
     return new Promise((resolve, reject) => {
@@ -257,7 +261,7 @@ export async function applyOperations(map, {operations}) {
             handleOperation(map, operations, ++lastOpIndex, scheduleNextOperation);
         };
         map.once('error', (e) => {
-            reject(new Error(`Error occured during ${JSON.stringify(currentOperation)}. ${e.error.stack}`));
+            reject(new Error(`${currentTestName}: Error occured during ${JSON.stringify(currentOperation)}. ${e.error.stack}`));
         });
         scheduleNextOperation(-1);
     });
@@ -283,7 +287,7 @@ function updateCanvas(imagePath) {
 
 function waitForRender(map, conditional, doneCb) {
     let frameCt = 0;
-    const wait = function() {
+    const wait = function () {
         if (conditional() && frameCt >= MIN_FRAMES) {
             doneCb();
         } else {

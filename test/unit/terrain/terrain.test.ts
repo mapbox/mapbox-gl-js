@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {
     describe,
@@ -30,7 +31,6 @@ import browser from '../../../src/util/browser';
 import * as DOM from '../../../src/util/dom';
 import {Map, AVERAGE_ELEVATION_SAMPLING_INTERVAL, AVERAGE_ELEVATION_EASE_TIME} from '../../../src/ui/map';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock';
-// eslint-disable-next-line import/no-unresolved
 import vectorStub from '../../util/fixtures/10/301/384.pbf?arraybuffer';
 
 function createStyle() {
@@ -128,7 +128,7 @@ describe('Elevation', () => {
         let map: any;
 
         beforeAll(async () => {
-            map = createMap({zoom: 15.1, center:[11.594417, 48.095821]});
+            map = createMap({zoom: 15.1, center: [11.594417, 48.095821]});
             await waitFor(map, 'style.load');
             setMockElevationTerrain(map, zeroDem, 512, 11);
             await waitFor(map, 'render');
@@ -181,6 +181,7 @@ describe('Elevation', () => {
         let map: any, cache: any, dx: any, coord: any;
 
         beforeEach(async () => {
+            // eslint-disable-next-line @typescript-eslint/require-await
             vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
                 return new window.Response(vectorStub);
             });
@@ -620,6 +621,7 @@ describe('Elevation', () => {
         let map: any, tr: any;
         beforeEach(async () => {
             const {withAsync, wait} = doneAsync();
+            // eslint-disable-next-line @typescript-eslint/require-await
             vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
                 return new window.Response(vectorStub);
             });
@@ -813,6 +815,7 @@ describe('Drag pan ortho', () => {
     };
 
     beforeEach(async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
             return new window.Response(vectorStub);
         });
@@ -907,6 +910,7 @@ describe('Negative Elevation', () => {
     let map: any, cache: any;
 
     beforeAll(async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
             return new window.Response(vectorStub);
         });
@@ -1134,6 +1138,7 @@ describe('Render cache efficiency', () => {
         beforeEach(async () => {
             // Stub console.warn to prevent test fail
             vi.spyOn(console, 'warn').mockImplementation(() => {});
+            // eslint-disable-next-line @typescript-eslint/require-await
             vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
                 return new window.Response(vectorStub);
             });
@@ -1276,6 +1281,7 @@ describe('Render cache efficiency', () => {
         beforeEach(async () => {
             // Stub console.warn to prevent test fail
             vi.spyOn(console, 'warn').mockImplementation(() => {});
+            // eslint-disable-next-line @typescript-eslint/require-await
             vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
                 return new window.Response(vectorStub);
             });
@@ -1452,6 +1458,7 @@ describe('Marker interaction and raycast', () => {
         let terrainTop: any, terrainTopLngLat: any;
 
         beforeAll(async () => {
+            // eslint-disable-next-line @typescript-eslint/require-await
             vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
                 return new window.Response(vectorStub);
             });
@@ -1552,6 +1559,7 @@ describe('Marker interaction and raycast', () => {
 
 describe('terrain getBounds', () => {
     test('should has correct coordinates of center', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
             return new window.Response(vectorStub);
         });
@@ -1648,14 +1656,14 @@ describe('terrain getBounds', () => {
         expect(map.transform.elevation).toBeTruthy();
         const bounds = map.getBounds();
         expect(bounds.getNorth().toFixed(6)).toBe(MAX_MERCATOR_LATITUDE.toFixed(6));
-        expect(toFixed(bounds.toArray())).toStrictEqual(toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]]));
+        expect(toFixed(bounds.toArray())).toStrictEqual(toFixed([[-23.3484820899, 77.6464759596], [23.3484820899, 85.0511287798]]));
 
         map.setBearing(180);
         map.setCenter({lng: 0, lat: -90});
 
         const sBounds = map.getBounds();
         expect(sBounds.getSouth().toFixed(6)).toBe((-MAX_MERCATOR_LATITUDE).toFixed(6));
-        expect(toFixed(sBounds.toArray())).toStrictEqual(toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]]));
+        expect(toFixed(sBounds.toArray())).toStrictEqual(toFixed([[-23.3484820899, -85.0511287798], [23.3484820899, -77.6464759596]]));
     });
 
     test("Does not break with no visible DEM tiles (#10610)", async () => {
@@ -1689,6 +1697,7 @@ describe('terrain getBounds', () => {
 });
 
 test('terrain recursively loads parent tiles on 404', async () => {
+    // eslint-disable-next-line @typescript-eslint/require-await
     vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
         return new window.Response(vectorStub);
     });
@@ -1752,9 +1761,11 @@ test('terrain recursively loads parent tiles on 404', async () => {
 
 describe('#hasCanvasFingerprintNoise', () => {
     test('Dynamic terrain', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
             return new window.Response(vectorStub);
         });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
         vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
 
@@ -1777,9 +1788,11 @@ describe('#hasCanvasFingerprintNoise', () => {
     });
 
     test('Terrain in Style', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
             return new window.Response(vectorStub);
         });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
         vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
 
@@ -1808,9 +1821,11 @@ describe('#hasCanvasFingerprintNoise', () => {
     });
 
     test('Terrain in Style fragment', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
             return new window.Response(vectorStub);
         });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
         vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
 

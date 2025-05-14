@@ -7,9 +7,10 @@ import {
     fillPatternUniformValues,
     fillOutlineUniformValues,
     fillOutlinePatternUniformValues,
+    elevatedStructuresDepthUniformValues,
     elevatedStructuresUniformValues,
     elevatedStructuresDepthReconstructUniformValues,
-    type ElevatedStructuresDepthReconstructUniformsType} from './program/fill_program';
+} from './program/fill_program';
 import StencilMode from '../gl/stencil_mode';
 import browser from '../util/browser';
 import assert from 'assert';
@@ -19,7 +20,8 @@ import EXTENT from '../style-spec/data/extent';
 import {altitudeFromMercatorZ} from '../geo/mercator_coordinate';
 import {radToDeg} from '../util/util';
 import {OrthographicPitchTranstionValue} from '../geo/transform';
-import {easeIn, number as lerp} from '../../src/style-spec/util/interpolate';
+import {easeIn, number as lerp} from '../style-spec/util/interpolate';
+import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -30,11 +32,16 @@ import type {DynamicDefinesType} from './program/program_uniforms';
 import type VertexBuffer from '../gl/vertex_buffer';
 import type {ElevationType} from '../../3d-style/elevation/elevation_constants';
 import type Transform from '../geo/transform';
+import type Program from './program';
 import type {DepthPrePass} from './painter';
 import type MercatorCoordinate from '../geo/mercator_coordinate';
 import type {UniformValues} from './uniform_binding';
 import type SegmentVector from '../data/segment';
-import type Program from './program';
+import type {
+    FillUniformsType,
+    FillPatternUniformsType,
+    ElevatedStructuresDepthReconstructUniformsType,
+} from './program/fill_program';
 
 export default drawFill;
 
@@ -46,7 +53,7 @@ interface DrawFillParams {
     colorMode: ColorMode;
     elevationType: ElevationType;
     terrainEnabled: boolean;
-    pass: 'opaque' | 'translucent';
+    pass: 'opaque' | 'translucent' | 'shadow';
 }
 
 function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<OverscaledTileID>) {
@@ -63,6 +70,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 
     const pattern = layer.paint.get('fill-pattern');
     const pass = painter.opaquePassEnabledForLayer() &&
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (!pattern.constantOr((1 as any)) &&
         color.constantOr(Color.transparent).a === 1 &&
         opacity.constantOr(0) === 1) ? 'opaque' : 'translucent';
@@ -77,9 +85,16 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 
     const terrainEnabled = !!(painter.terrain && painter.terrain.enabled);
 
-    const drawFillParams = <DrawFillParams>{
+    const drawFillParams: DrawFillParams = {
         painter, sourceCache, layer, coords, colorMode, elevationType, terrainEnabled, pass
     };
+
+    if (painter.renderPass === 'shadow') {
+        if (painter.shadowRenderer && elevationType === 'road' && !terrainEnabled) {
+            drawShadows(drawFillParams);
+        }
+        return;
+    }
 
     // Draw offset elevation
     if (elevationType === 'offset') {
@@ -178,7 +193,7 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache, lay
         let uniformValues: UniformValues<ElevatedStructuresDepthReconstructUniformsType>;
         let depthMode: DepthMode;
         let segments: SegmentVector;
-        let program: Program<any>;
+        let program: Program<ElevatedStructuresDepthReconstructUniformsType>;
 
         if (pass === 'initialize') {
             // Depth reconstruction is required only for underground models. Use a slight margin
@@ -219,7 +234,17 @@ function drawElevatedStructures(params: DrawFillParams) {
     const gl = painter.context.gl;
 
     const programName = 'elevatedStructures';
+    const shadowRenderer = params.painter.shadowRenderer;
+    const renderWithShadows = !!shadowRenderer && shadowRenderer.enabled;
     const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
+    let groundShadowFactor: [number, number, number] = [0, 0, 0];
+    if (renderWithShadows) {
+        const directionalLight = painter.style.directionalLight;
+        const ambientLight = painter.style.ambientLight;
+        if (directionalLight && ambientLight) {
+            groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
+        }
+    }
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -239,13 +264,20 @@ function drawElevatedStructures(params: DrawFillParams) {
         const programConfiguration = bucket.bufferData.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
 
-        const dynamicDefines: DynamicDefinesType[] = ['NORMAL_OFFSET'];
+        const dynamicDefines: DynamicDefinesType[] = [];
+        if (renderWithShadows) {
+            dynamicDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+        }
         const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
 
         const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
-        const uniformValues = elevatedStructuresUniformValues(tileMatrix);
+        if (renderWithShadows) {
+            shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
+        }
+
+        const uniformValues = elevatedStructuresUniformValues(tileMatrix, groundShadowFactor);
 
         painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
 
@@ -254,7 +286,6 @@ function drawElevatedStructures(params: DrawFillParams) {
             layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.renderableSegments,
             layer.paint, painter.transform.zoom, programConfiguration, [elevatedStructures.vertexBufferNormal]);
     }
-
 }
 
 function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stencilModeOverride?: StencilMode) {
@@ -262,6 +293,8 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
     const gl = painter.context.gl;
 
     const patternProperty = layer.paint.get('fill-pattern');
+    const patternTransition = layer.paint.get('fill-pattern-cross-fade');
+    const constantPattern = patternProperty.constantOr(null);
 
     let activeElevationType = elevationType;
     if (elevationType === 'road' && (!elevatedGeometry || terrainEnabled)) {
@@ -269,12 +302,26 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
     }
 
     const renderElevatedRoads = activeElevationType === 'road';
-    const depthModeFor3D = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
+    const shadowRenderer = params.painter.shadowRenderer;
+    const renderWithShadows = renderElevatedRoads && !!shadowRenderer && shadowRenderer.enabled;
+    const depthModeFor3D = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
+    let groundShadowFactor: [number, number, number] = [0, 0, 0];
+    if (renderWithShadows) {
+        const directionalLight = painter.style.directionalLight;
+        const ambientLight = painter.style.ambientLight;
+        if (directionalLight && ambientLight) {
+            groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
+        }
+    }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const image = patternProperty && patternProperty.constantOr((1 as any));
 
     const draw = (depthMode: DepthMode, isOutline: boolean) => {
-        let drawMode, programName, uniformValues, indexBuffer, segments;
+        let programName: 'fillPattern' | 'fill' | 'fillOutlinePattern' | 'fillOutline';
+        let uniformValues: UniformValues<FillUniformsType | FillPatternUniformsType>;
+
+        let drawMode, indexBuffer, segments;
         if (!isOutline) {
             programName = image ? 'fillPattern' : 'fill';
             drawMode = gl.TRIANGLES;
@@ -287,7 +334,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
             const tile = sourceCache.getTile(coord);
             if (image && !tile.patternsLoaded()) continue;
 
-            const bucket: FillBucket | null | undefined = (tile.getBucket(layer) as any);
+            const bucket = tile.getBucket(layer) as FillBucket;
             if (!bucket) continue;
 
             const bufferData = elevatedGeometry ? bucket.elevationBufferData : bucket.bufferData;
@@ -304,8 +351,9 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
                 dynamicDefines.push('ELEVATED_ROADS');
                 dynamicBuffers.push(bufferData.elevatedLayoutVertexBuffer);
             }
-
-            const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
+            if (renderWithShadows) {
+                dynamicDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+            }
 
             if (image) {
                 painter.context.activeTexture.set(gl.TEXTURE0);
@@ -315,16 +363,32 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
                 programConfiguration.updatePaintBuffers();
             }
 
-            const constantPattern = patternProperty.constantOr(null);
+            let transitionableConstantPattern = false;
             if (constantPattern && tile.imageAtlas) {
                 const atlas = tile.imageAtlas;
-                const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(browser.devicePixelRatio).toString();
-                const posTo = atlas.patternPositions.get(patternImage);
-                if (posTo) programConfiguration.setConstantPatternPositions(posTo);
+                const pattern = ResolvedImage.from(constantPattern);
+                const primaryPatternImage = pattern.getPrimary().scaleSelf(browser.devicePixelRatio).toString();
+                const secondaryPatternImageVariant = pattern.getSecondary();
+                const primaryPosTo = atlas.patternPositions.get(primaryPatternImage);
+                const secondaryPosTo = secondaryPatternImageVariant ? atlas.patternPositions.get(secondaryPatternImageVariant.scaleSelf(browser.devicePixelRatio).toString()) : null;
+
+                transitionableConstantPattern = !!primaryPosTo && !!secondaryPosTo;
+
+                if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
             }
+
+            if (patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('fill-pattern'))) {
+                dynamicDefines.push('FILL_PATTERN_TRANSITION');
+            }
+
+            const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog, defines: dynamicDefines});
 
             const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
                 layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
+
+            if (renderWithShadows) {
+                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
+            }
 
             const emissiveStrength = layer.paint.get('fill-emissive-strength');
 
@@ -332,21 +396,26 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
                 indexBuffer = bufferData.indexBuffer;
                 segments = bufferData.triangleSegments;
                 uniformValues = image ?
-                    fillPatternUniformValues(tileMatrix, emissiveStrength, painter, tile) :
-                    fillUniformValues(tileMatrix, emissiveStrength);
+                    fillPatternUniformValues(tileMatrix, emissiveStrength, painter, tile, groundShadowFactor, patternTransition) :
+                    fillUniformValues(tileMatrix, emissiveStrength, groundShadowFactor);
             } else {
                 indexBuffer = bufferData.lineIndexBuffer;
                 segments = bufferData.lineSegments;
                 const drawingBufferSize: [number, number] =
                     (painter.terrain && painter.terrain.renderingToTexture) ? painter.terrain.drapeBufferSize : [gl.drawingBufferWidth, gl.drawingBufferHeight];
                 uniformValues = (programName === 'fillOutlinePattern' && image) ?
-                    fillOutlinePatternUniformValues(tileMatrix, emissiveStrength, painter, tile, drawingBufferSize) :
-                    fillOutlineUniformValues(tileMatrix, emissiveStrength, drawingBufferSize);
+                    fillOutlinePatternUniformValues(tileMatrix, emissiveStrength, painter, tile, drawingBufferSize, groundShadowFactor, patternTransition) :
+                    fillOutlineUniformValues(tileMatrix, emissiveStrength, drawingBufferSize, groundShadowFactor);
             }
 
             painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
 
-            program.draw(painter, drawMode, activeElevationType !== 'none' ? depthModeFor3D : depthMode,
+            let activeDepthMode = depthMode;
+            if ((elevationType === 'road' && !terrainEnabled) || elevationType === 'offset') {
+                activeDepthMode = depthModeFor3D;
+            }
+
+            program.draw(painter, drawMode, activeDepthMode,
                 stencilModeOverride ? stencilModeOverride : painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
                 layer.id, bufferData.layoutVertexBuffer, indexBuffer, segments,
                 layer.paint, painter.transform.zoom, programConfiguration, dynamicBuffers);
@@ -370,5 +439,51 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
         // the (non-antialiased) fill.
         const depthMode = painter.depthModeForSublayer(layer.getPaintProperty('fill-outline-color') ? 2 : 0, DepthMode.ReadOnly);
         draw(depthMode, true);
+    }
+}
+
+function drawShadows(params: DrawFillParams) {
+    assert(!params.terrainEnabled);
+    assert(params.painter.renderPass === 'shadow');
+    assert(params.painter.shadowRenderer);
+
+    const {painter, sourceCache, layer, coords} = params;
+    const gl = painter.context.gl;
+
+    const shadowRenderer = params.painter.shadowRenderer;
+    const programName = 'elevatedStructuresDepth';
+
+    for (const coord of coords) {
+        const tile = sourceCache.getTile(coord);
+        const bucket = tile.getBucket(layer) as FillBucket;
+        if (!bucket) continue;
+
+        const elevatedStructures = bucket.elevatedStructures;
+        if (!elevatedStructures) {
+            continue;
+        }
+        if (!elevatedStructures.shadowCasterSegments || elevatedStructures.shadowCasterSegments.segments[0].primitiveLength === 0) {
+            continue;
+        }
+
+        assert(elevatedStructures.vertexBuffer && elevatedStructures.indexBuffer);
+
+        painter.prepareDrawTile();
+
+        const programConfiguration = bucket.bufferData.programConfigurations.get(layer.id);
+        const affectedByFog = painter.isTileAffectedByFog(coord);
+
+        const program = painter.getOrCreateProgram(programName, {config: programConfiguration, overrideFog: affectedByFog});
+
+        const tileMatrix = shadowRenderer.calculateShadowPassMatrixFromTile(tile.tileID.toUnwrapped());
+
+        painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
+
+        const uniformValues = elevatedStructuresDepthUniformValues(tileMatrix, 0.001);
+
+        program.draw(painter, gl.TRIANGLES, shadowRenderer.getShadowPassDepthMode(),
+            StencilMode.disabled, shadowRenderer.getShadowPassColorMode(), CullFaceMode.disabled, uniformValues,
+            layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.shadowCasterSegments,
+            layer.paint, painter.transform.zoom, programConfiguration);
     }
 }

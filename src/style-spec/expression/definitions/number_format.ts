@@ -29,17 +29,15 @@ export default class NumberFormat implements Expression {
         this.maxFractionDigits = maxFractionDigits;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | void {
         if (args.length !== 3)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`Expected two arguments.`);
 
         const number = context.parse(args[1], 1, NumberType);
         if (!number) return null;
 
-        const options = (args[2] as any);
+        const options = args[2];
         if (typeof options !== "object" || Array.isArray(options))
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`NumberFormat options argument must be an object.`);
 
         let locale = null;
@@ -113,6 +111,7 @@ export default class NumberFormat implements Expression {
     }
 
     serialize(): SerializedExpression {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options: Record<string, any> = {};
         if (this.locale) {
             options['locale'] = this.locale.serialize();

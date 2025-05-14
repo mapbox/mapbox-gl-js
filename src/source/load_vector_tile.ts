@@ -9,7 +9,9 @@ import type Scheduler from '../util/scheduler';
 export type LoadVectorTileResult = {
     rawData: ArrayBuffer;
     vectorTile?: VectorTile;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expires?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cacheControl?: any;
     resourceTiming?: Array<PerformanceResourceTiming>;
 };
@@ -26,6 +28,7 @@ export type AbortVectorData = () => void;
 export type LoadVectorData = (params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback) => AbortVectorData | undefined;
 export class DedupedRequest {
     entries: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
     };
     scheduler: Scheduler | null | undefined;
@@ -35,6 +38,7 @@ export class DedupedRequest {
         this.scheduler = scheduler;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     request(key: string, metadata: any, request: any, callback: LoadVectorDataCallback): () => void {
         const entry = this.entries[key] = this.entries[key] || {callbacks: []};
 

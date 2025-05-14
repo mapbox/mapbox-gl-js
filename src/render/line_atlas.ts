@@ -85,6 +85,7 @@ class LineAtlas {
             ranges.push({left, right, isDash, zeroLength: dashLength === 0});
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return ranges;
     }
 

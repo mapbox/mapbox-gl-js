@@ -11,10 +11,19 @@ import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type Actor from '../util/actor';
 import type {Callback} from '../types/callback';
+import type {Cancelable} from '../types/cancelable';
+import type {RequestParameters} from '../util/ajax';
+import type {MapSourceDataEvent} from '../ui/events';
 import type {GeoJSONWorkerOptions, LoadGeoJSONResult} from './geojson_worker_source';
 import type {GeoJSONSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
-import type {Cancelable} from '../types/cancelable';
 import type {WorkerSourceVectorTileRequest, WorkerSourceVectorTileResult} from './worker_source';
+
+export type LoadGeoJSONRequest = GeoJSONWorkerOptions & {
+    data?: string;
+    scope?: string;
+    append?: boolean;
+    request?: RequestParameters;
+};
 
 /**
  * A source containing GeoJSON.
@@ -69,8 +78,8 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     attribution: string | undefined;
     promoteId: PromoteIdSpecification | null | undefined;
     // eslint-disable-next-line camelcase
@@ -125,7 +134,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         this.actor = dispatcher.getActor();
         this.setEventedParent(eventedParent);
 
-        this._data = (options.data as any);
+        this._data = options.data;
         this._options = extend({}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
@@ -379,12 +388,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this._loaded = false;
-        const options = extend({append}, this.workerOptions) as GeoJSONWorkerOptions & {
-            data?: string
-            scope?: string;
-            append?: boolean;
-            request?: ReturnType<typeof this.map._requestManager.transformRequest>;
-        };
+        const options: LoadGeoJSONRequest = extend({append}, this.workerOptions);
 
         options.scope = this.scope;
         const data = this._data;
@@ -408,7 +412,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             } else {
                 // although GeoJSON sources contain no metadata, we fire this event at first
                 // to let the SourceCache know its ok to start requesting tiles.
-                const data: any = {dataType: 'source', sourceDataType: this._metadataFired ? 'content' : 'metadata'};
+                const data: MapSourceDataEvent = {dataType: 'source', sourceDataType: this._metadataFired ? 'content' : 'metadata'};
                 if (this._collectResourceTiming && result && result.resourceTiming && result.resourceTiming[this.id]) {
                     data.resourceTiming = result.resourceTiming[this.id];
                 }
@@ -457,6 +461,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             showCollisionBoxes: this.map.showCollisionBoxes,
             promoteId: this.promoteId,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
+            extraShadowCaster: tile.isExtraShadowCaster,
             scaleFactor: this.map.getScaleFactor(),
             partial
         };

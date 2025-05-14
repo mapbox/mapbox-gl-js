@@ -93,7 +93,7 @@ Grid.serialize = function serialize(grid: GridIndex, transferables?: Set<Transfe
 };
 
 Grid.deserialize = function deserialize(serialized: SerializedGrid): GridIndex {
-    return new Grid(serialized.buffer);
+    return new Grid(serialized.buffer) as GridIndex;
 };
 
 Object.defineProperty(Grid, 'name', {value: 'Grid'});
@@ -121,12 +121,12 @@ for (const name in expressions) {
     if (!registry[(expressions[name])._classRegistryKey]) register(expressions[name], `Expression${name}`);
 }
 
-function isArrayBuffer(val: any): val is ArrayBuffer {
+function isArrayBuffer(val: unknown): val is ArrayBuffer {
     return val && typeof ArrayBuffer !== 'undefined' &&
            (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
 }
 
-function isImageBitmap(val: any): val is ImageBitmap {
+function isImageBitmap(val: unknown): val is ImageBitmap {
     return self.ImageBitmap && val instanceof ImageBitmap;
 }
 
@@ -190,7 +190,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
     if (input instanceof Map) {
         const properties = {'$name': 'Map', entries: []} satisfies SerializedObject;
         for (const [key, value] of input.entries()) {
-            properties.entries.push(serialize(key), serialize(value));
+            properties.entries.push(serialize(key), serialize(value, transferables));
         }
         return properties;
     }
@@ -247,7 +247,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
             }
         } else {
             // make sure statically serialized object survives transfer of $name property
-            assert(!transferables || !transferables.has((properties as any)));
+            assert(!transferables || !transferables.has(properties as unknown as Transferable));
         }
 
         if (properties['$name']) {

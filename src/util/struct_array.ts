@@ -40,7 +40,7 @@ class Struct {
      * @private
      */
     constructor(structArray: StructArray, index: number) {
-        (this as any)._structArray = structArray;
+        this._structArray = structArray;
         this._pos1 = index * this.size;
         this._pos2 = this._pos1 / 2;
         this._pos4 = this._pos1 / 4;
@@ -142,14 +142,12 @@ class StructArray implements IStructArrayLayout {
     }
 
     static deserialize(input: SerializedStructArray): StructArray {
-        const structArray: {
-            [_: string]: any;
-        } = Object.create(this.prototype);
+        const structArray: StructArray = Object.create(this.prototype);
         structArray.arrayBuffer = input.arrayBuffer;
         structArray.length = input.length;
         structArray.capacity = input.arrayBuffer.byteLength / structArray.bytesPerElement;
         structArray._refreshViews();
-        return structArray as StructArray;
+        return structArray;
     }
 
     /**
@@ -215,7 +213,7 @@ class StructArray implements IStructArrayLayout {
 
     destroy() {
         this.int8 = this.uint8 = this.int16 = this.uint16 = this.int32 = this.uint32 = this.float32 = null;
-        this.arrayBuffer = (null as any);
+        this.arrayBuffer = null;
     }
 }
 

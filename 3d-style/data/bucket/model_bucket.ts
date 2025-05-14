@@ -13,9 +13,10 @@ import {instanceAttributes} from '../model_attributes';
 import {regionsEquals, transformPointToTile, pointInFootprint, skipClipping} from '../../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import {isValidUrl} from '../../../src/style-spec/validate/validate_model';
+import {type FeatureState} from '../../../src/style-spec/expression/index';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
-import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import type {ReplacementSource, Region} from '../../../3d-style/source/replacement_source';
 import type Point from '@mapbox/point-geometry';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type {mat4} from 'gl-matrix';
@@ -29,7 +30,6 @@ import type {
 } from '../../../src/data/bucket';
 import type Context from '../../../src/gl/context';
 import type VertexBuffer from '../../../src/gl/vertex_buffer';
-import type {FeatureState} from '../../../src/style-spec/expression/index';
 import type {FeatureStates} from '../../../src/source/source_state';
 import type {SpritePositions} from '../../../src/util/image';
 import type {ProjectionSpecification} from '../../../src/style-spec/types';
@@ -37,6 +37,7 @@ import type {TileTransform} from '../../../src/geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {ImageId} from '../../../src/style-spec/expression/types/image_id';
+import type {StyleModelMap} from '../../../src/style/style_mode';
 
 class ModelFeature {
     feature: EvaluationFeature;
@@ -113,8 +114,9 @@ class ModelBucket implements Bucket {
     modelUris: Array<string>;
     modelsRequested: boolean;
 
-    activeReplacements: Array<any>;
+    activeReplacements: Array<Region>;
     replacementUpdateTime: number;
+    styleDefinedModelURLs: StyleModelMap;
 
     constructor(options: BucketParameters<ModelStyleLayer>) {
         this.zoom = options.zoom;
@@ -145,6 +147,7 @@ class ModelBucket implements Bucket {
         this.modelsRequested = false;
         this.activeReplacements = [];
         this.replacementUpdateTime = 0;
+        this.styleDefinedModelURLs = options.styleDefinedModelURLs;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
@@ -165,7 +168,7 @@ class ModelBucket implements Bucket {
                 continue;
 
             const bucketFeature: BucketFeature = {
-                id: featureId,
+                id: featureId as number,
                 sourceLayerIndex,
                 index,
                 geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
@@ -328,9 +331,9 @@ class ModelBucket implements Bucket {
             }
         }
         const modelManager = this.layers[0].modelManager;
-        if (modelManager && this.modelUris) {
+        if (modelManager && this.modelUris && this.modelsRequested) {
             for (const modelUri of this.modelUris) {
-                modelManager.removeModel(modelUri, "");
+                modelManager.removeModel(modelUri, "", true);
             }
         }
     }
@@ -345,17 +348,21 @@ class ModelBucket implements Bucket {
         assert(modelIdProperty);
 
         const modelId = modelIdProperty.evaluate(evaluationFeature, {}, this.canonical);
-
         if (!modelId) {
             warnOnce(`modelId is not evaluated for layer ${layer.id} and it is not going to get rendered.`);
             return modelId;
         }
         // check if it's a valid model (absolute) URL
-        // otherwise it is considered as a style defined model, and hence we don't need to
-        // load it here.
         if (isValidUrl(modelId, false)) {
             if (!this.modelUris.includes(modelId)) {
                 this.modelUris.push(modelId);
+            }
+        } else {
+            // Check if it's a style model
+            if (this.styleDefinedModelURLs[modelId] !== undefined) {
+                if (!this.modelUris.includes(modelId)) {
+                    this.modelUris.push(modelId);
+                }
             }
         }
         if (!this.instancesPerModel[modelId]) {

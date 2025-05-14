@@ -25,10 +25,9 @@ export default function validateSource(options: ValidationOptions): Array<Valida
         return [new ValidationError(key, value, '"type" is required')];
     }
 
-    const type = unbundle(value.type);
-    let errors = [];
+    const type = unbundle(value.type) as string;
+    let errors: ValidationError[] = [];
 
-    // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string'.
     if (['vector', 'raster', 'raster-dem', 'raster-array'].includes(type)) {
         if (!value.url && !value.tiles) {
             errors.push(new ValidationWarning(key, value, 'Either "url" or "tiles" is required.'));
@@ -49,7 +48,6 @@ export default function validateSource(options: ValidationOptions): Array<Valida
             objectElementValidators
         }));
         return errors;
-
     case 'geojson':
         errors = validateObject({
             key,
@@ -59,6 +57,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
             styleSpec,
             objectElementValidators
         });
+
         if (value.cluster) {
             for (const prop in value.clusterProperties) {
                 const [operator, mapExpr] = value.clusterProperties[prop];
@@ -76,8 +75,8 @@ export default function validateSource(options: ValidationOptions): Array<Valida
                 }));
             }
         }
-        return errors;
 
+        return errors;
     case 'video':
         return validateObject({
             key,
@@ -111,8 +110,8 @@ export default function validateSource(options: ValidationOptions): Array<Valida
 }
 
 function getSourceTypeValues(styleSpec: StyleReference) {
-// @ts-expect-error - TS2347 - Untyped function calls may not accept type arguments.
-    return styleSpec.source.reduce<Array<any>>((memo, source) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return styleSpec.source.reduce((memo: string[], source: string) => {
         const sourceType = styleSpec[source];
         if (sourceType.type.type === 'enum') {
             memo = memo.concat(Object.keys(sourceType.type.values));
@@ -128,7 +127,7 @@ function validatePromoteId({
     if (getType(value) === 'string') {
         return validateString({key, value});
     } else if (Array.isArray(value)) {
-        const errors = [];
+        const errors: ValidationError[] = [];
         const unbundledValue = deepUnbundle(value);
         const expression = createExpression(unbundledValue);
         if (expression.result === 'error') {
@@ -146,10 +145,11 @@ function validatePromoteId({
 
         return errors;
     } else {
-        const errors = [];
+        const errors: ValidationError[] = [];
         for (const prop in value) {
             errors.push(...validatePromoteId({key: `${key}.${prop}`, value: value[prop]}));
         }
+
         return errors;
     }
 }

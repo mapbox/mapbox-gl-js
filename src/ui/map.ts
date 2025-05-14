@@ -54,7 +54,7 @@ import type {Evented} from '../util/evented';
 import type {MapEventType, MapEventOf} from './events';
 import type {PointLike} from '../types/point-like';
 import type {FeatureState} from '../style-spec/expression/index';
-import type {RequestParameters} from '../util/ajax';
+import type {RequestParameters, AJAXError} from '../util/ajax';
 import type {RequestTransformFunction} from '../util/mapbox';
 import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
 import type CustomStyleLayer from '../style/style_layer/custom_style_layer';
@@ -105,6 +105,7 @@ import type {Interaction} from './interactions';
 import type {SpriteFormat} from '../render/image_manager';
 import type {PitchRotateKey} from './handler_manager';
 import type {CanvasSourceOptions} from '../source/canvas_source';
+import type {CustomSourceInterface} from '../source/custom_source';
 
 export type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
 
@@ -437,7 +438,6 @@ export class Map extends Camera {
     style: Style;
     indoor: IndoorManager;
     painter: Painter;
-    handlers?: HandlerManager;
 
     _container: HTMLElement;
     _missingCSSCanary: HTMLElement;
@@ -608,7 +608,6 @@ export class Map extends Camera {
         }
 
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, null, null);
-        // @ts-expect-error - TS2345 - Argument of type 'MapOptions' is not assignable to parameter of type '{ bearingSnap: number; respectPrefersReducedMotion?: boolean; }'.
         super(transform, options);
 
         this._repaint = !!options.repaint;
@@ -1315,7 +1314,7 @@ export class Map extends Camera {
         if (language === 'auto') return navigator.language;
         if (Array.isArray(language)) return language.length === 0 ?
             undefined :
-            language.map(l => l === 'auto' ? navigator.language : l);
+            language.map(l => (l === 'auto' ? navigator.language : l));
 
         return language;
     }
@@ -1445,12 +1444,11 @@ export class Map extends Camera {
         if (!projection) {
             projection = null;
         } else if (typeof projection === 'string') {
-            projection = ({name: projection} as ProjectionSpecification);
+            projection = {name: projection} as ProjectionSpecification;
         }
 
         this._useExplicitProjection = !!projection;
-        // @ts-expect-error - TS2345 - Argument of type 'string | ProjectionSpecification' is not assignable to parameter of type 'ProjectionSpecification'.
-        return this._prioritizeAndUpdateProjection(projection, this.style.projection);
+        return this._prioritizeAndUpdateProjection(projection as ProjectionSpecification, this.style.projection);
     }
 
     _updateProjectionTransition() {
@@ -1591,7 +1589,7 @@ export class Map extends Camera {
 
     _createDelegatedListener<T extends MapEventType>(type: T, targets: string[] | TargetDescriptor, listener: Listener<T>): DelegatedListener {
         const queryRenderedFeatures = (point: PointLike | [PointLike, PointLike]) => {
-            let features = [];
+            let features: Array<GeoJSONFeature | TargetFeature> = [];
 
             if (Array.isArray(targets)) {
                 const filteredLayers = targets.filter(layerId => this.getLayer(layerId));
@@ -1777,7 +1775,7 @@ export class Map extends Camera {
      */
     override on<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
     override on<T extends MapEventType | (string & {})>(type: T, targets: string | string[] | TargetDescriptor, listener: Listener<Extract<T, MapEventType>>): this;
-    override on<T extends MapEventType | (string & {})>(type: T, targets: string | string[] | TargetDescriptor | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this {
+    override on<T extends MapEventType |(string & {})>(type: T, targets: string | string[] | TargetDescriptor | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this {
         if (typeof targets === 'function' || listener === undefined) {
             return super.on(type as MapEventType, targets as Listener<MapEventType>);
         }
@@ -1843,7 +1841,7 @@ export class Map extends Camera {
     override once<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
     override once<T extends MapEventType | (string & {})>(type: T, targets: string | string[] | TargetDescriptor): Promise<MapEventOf<Extract<T, MapEventType>>>;
     override once<T extends MapEventType | (string & {})>(type: T, targets: string | string[] | TargetDescriptor, listener: Listener<Extract<T, MapEventType>>): this;
-    override once<T extends MapEventType | (string & {})>(type: T, targets?: string | string[] | TargetDescriptor | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this | Promise<MapEventOf<Extract<T, MapEventType>>> {
+    override once<T extends MapEventType |(string & {})>(type: T, targets?: string | string[] | TargetDescriptor | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this | Promise<MapEventOf<Extract<T, MapEventType>>> {
         if (typeof targets === 'function' || listener === undefined) {
             return super.once(type as MapEventType, targets as Listener<MapEventType>);
         }
@@ -1889,7 +1887,7 @@ export class Map extends Camera {
      */
     override off<T extends MapEventType | (string & {})>(type: T, listener: Listener<Extract<T, MapEventType>>): this;
     override off<T extends MapEventType | (string & {})>(type: T, targets: string | string[] | TargetDescriptor, listener: Listener<Extract<T, MapEventType>>): this;
-    override off<T extends MapEventType | (string & {})>(type: T, targets: string | string[] | TargetDescriptor | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this {
+    override off<T extends MapEventType |(string & {})>(type: T, targets: string | string[] | TargetDescriptor | Listener<Extract<T, MapEventType>>, listener?: Listener<Extract<T, MapEventType>>): this {
         if (typeof targets === 'function' || listener === undefined) {
             return super.off(type as MapEventType, targets as Listener<MapEventType>);
         }
@@ -2070,7 +2068,7 @@ export class Map extends Camera {
         }
 
         // Query for rendered features and featureset targets if both layers and featureset are provided
-        let features = [];
+        let features: Array<GeoJSONFeature | TargetFeature> = [];
         if (layersAreValid) {
             features = features.concat(this.style.queryRenderedFeatures(geometry, options as QueryRenderedFeaturesParams, this.transform));
         }
@@ -2292,20 +2290,20 @@ export class Map extends Camera {
         if (this.style && style && diffNeeded) {
             this.style._diffStyle(
                 style,
-                (e: Error | {
-                    error: string;
-                } | null, isUpdateNeeded) => {
+                (e: Error | {error: string} | string | null, isUpdateNeeded) => {
                     if (e) {
-                        // @ts-expect-error - TS2339 - Property 'message' does not exist on type 'Error | { error: string; }'. | TS2339 - Property 'error' does not exist on type 'Error | { error: string; }'.
-                        warnOnce(`Unable to perform style diff: ${String(e.message || e.error || e)}. Rebuilding the style from scratch.`);
+                        const message = typeof e === 'string' ? e :
+                            e instanceof Error ?
+                                e.message :
+                                e.error;
+
+                        warnOnce(`Unable to perform style diff: ${message}. Rebuilding the style from scratch.`);
                         this._updateStyle(style, options);
                     } else if (isUpdateNeeded) {
                         this._update(true);
                     }
                 },
-                () => {
-                    this._postStyleLoadEvent();
-                });
+                () => this._postStyleLoadEvent());
             return this;
         } else {
             this._localIdeographFontFamily = options.localIdeographFontFamily;
@@ -2314,7 +2312,7 @@ export class Map extends Camera {
         }
     }
 
-    _getUIString(key: string): string {
+    _getUIString(key: keyof typeof defaultLocale): string {
         const str = this._locale[key];
         if (str == null) {
             throw new Error(`Missing UI string '${key}'`);
@@ -2327,7 +2325,7 @@ export class Map extends Camera {
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
-            this.style = (undefined as any); // we lazy-init it so it's never undefined when accessed
+            this.style = undefined; // we lazy-init it so it's never undefined when accessed
         }
 
         if (style) {
@@ -2477,7 +2475,7 @@ export class Map extends Camera {
      * @see Example: GeoJSON source: [Add live realtime data](https://docs.mapbox.com/mapbox-gl-js/example/live-geojson/)
      * @see Example: Raster DEM source: [Add hillshading](https://docs.mapbox.com/mapbox-gl-js/example/hillshade/)
      */
-    addSource(id: string, source: SourceSpecification): this {
+    addSource(id: string, source: SourceSpecification | CustomSourceInterface<unknown>): this {
         if (!this._isValidId(id)) {
             return this;
         }
@@ -3120,7 +3118,9 @@ export class Map extends Camera {
      * }, 'basemap');
      */
     addImport(importSpecification: ImportSpecification, beforeId?: string | null): this {
-        this.style.addImport(importSpecification, beforeId);
+        this.style.addImport(importSpecification, beforeId)
+            .catch((e) => this.fire(new ErrorEvent(new Error('Failed to add import', e))));
+
         return this;
     }
 
@@ -3572,6 +3572,7 @@ export class Map extends Camera {
      * @example
      * map.getConfigProperty('basemap', 'showLabels');
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getConfigProperty(importId: string, configName: string): any {
         return this.style.getConfigProperty(importId, configName);
     }
@@ -3586,6 +3587,7 @@ export class Map extends Camera {
      * @example
      * map.setConfigProperty('basemap', 'showLabels', false);
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setConfigProperty(importId: string, configName: string, value: any): this {
         this.style.setConfigProperty(importId, configName, value);
         return this._update(true);
@@ -4195,6 +4197,7 @@ export class Map extends Camera {
         webpSupported.testSupport(gl);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _contextLost(event: any) {
         event.preventDefault();
         if (this._frame) {
@@ -4204,16 +4207,20 @@ export class Map extends Camera {
         this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _contextRestored(event: any) {
         this._setupPainter();
         this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
         this._updateTerrain();
-        this.style.reloadModels();
-        this.style.clearSources();
+        if (this.style) {
+            this.style.reloadModels();
+            this.style.clearSources();
+        }
         this._update();
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _onMapScroll(event: any): boolean | null | undefined {
         if (event.target !== this._container) return;
 
@@ -4398,6 +4405,7 @@ export class Map extends Camera {
             this._updateTerrain(); // Terrain DEM source updates here and skips update in Style#updateSources.
             averageElevationChanged = this._updateAverageElevation(frameStartTime);
             this.style.updateSources(this.transform);
+            this.style.updateImageProviders();
             // Update positions of markers and popups on enabling/disabling terrain
             if (!this.isMoving()) {
                 this._forceMarkerAndPopupUpdate();
@@ -4459,6 +4467,10 @@ export class Map extends Camera {
         // Background patterns are rasterized in a worker thread, while
         // it's still in progress we need to keep rendering
         if (this.style && this.style.imageManager.hasPatternsInFlight()) {
+            this._styleDirty = true;
+        }
+
+        if (this.style && (!this.style.modelManager.isLoaded())) {
             this._styleDirty = true;
         }
 
@@ -4658,10 +4670,10 @@ export class Map extends Camera {
     ******************************************************************************/
 
     _authenticate() {
-        getMapSessionAPI(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err) => {
+        getMapSessionAPI(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err: AJAXError) => {
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
-                if (err.message === AUTH_ERR_MSG || (err as any).status === 401) {
+                if (err.message === AUTH_ERR_MSG || err.status === 401) {
                     const gl = this.painter.context.gl;
                     storeAuthState(gl, false);
                     if (this._logoControl instanceof LogoControl) {
@@ -4792,10 +4804,10 @@ export class Map extends Camera {
         this._controlContainer.remove();
         this._missingCSSCanary.remove();
 
-        this._canvas = (undefined as any);
-        this._canvasContainer = (undefined as any);
-        this._controlContainer = (undefined as any);
-        this._missingCSSCanary = (undefined as any);
+        this._canvas = undefined;
+        this._canvasContainer = undefined;
+        this._controlContainer = undefined;
+        this._missingCSSCanary = undefined;
 
         this._container.classList.remove('mapboxgl-map');
         this._container.removeEventListener('scroll', this._onMapScroll, false);

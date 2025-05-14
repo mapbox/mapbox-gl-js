@@ -60,7 +60,6 @@ export type CanvasSourceOptions = {
  * @see [Example: Add a canvas source](https://docs.mapbox.com/mapbox-gl-js/example/canvas-source/)
  */
 class CanvasSource extends ImageSource<'canvas'> {
-    override type: 'canvas';
     override options: CanvasSourceSpecification;
     animate: boolean;
     canvas: HTMLCanvasElement;
@@ -127,12 +126,12 @@ class CanvasSource extends ImageSource<'canvas'> {
             return;
         }
 
-        this.play = function() {
+        this.play = function () {
             this._playing = true;
             this.map.triggerRepaint();
         };
 
-        this.pause = function() {
+        this.pause = function () {
             if (this._playing) {
                 this.prepare();
                 this._playing = false;
@@ -218,6 +217,7 @@ class CanvasSource extends ImageSource<'canvas'> {
         this._prepareData(context);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override serialize(): any {
         return {
             type: 'canvas',

@@ -1,9 +1,11 @@
 import assert from "assert";
 import {VectorTileFeature, type VectorTileLayer} from "@mapbox/vector-tile";
-import Point from "@mapbox/point-geometry";
 import {warnOnce} from "../../src/util/util";
 import {vec2} from "gl-matrix";
 import {PROPERTY_ELEVATION_ID} from "./elevation_constants";
+import {computeBounds, type Bounds} from "../../src/style-spec/util/geometry_util";
+
+import type Point from "@mapbox/point-geometry";
 
 export interface Vertex {
     id: number;
@@ -12,12 +14,6 @@ export interface Vertex {
     height: number;
     extent: number;
 }
-
-export interface Bounds {
-    min: Point;
-    max: Point;
-}
-
 export interface Feature {
     id: number;
     bounds: Bounds;
@@ -29,7 +25,9 @@ export interface Result {
     features: Feature[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Convert = (value: any) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Setter = (value: any) => void;
 
 class PropertyParser {
@@ -72,7 +70,7 @@ class PropertyParser {
 
     private get(name: string, required, setter: Setter, convert?: Convert): PropertyParser {
         const value = this.feature.properties.hasOwnProperty(name) ? +this.feature.properties[name] : undefined;
-        if (this._valid && value !== undefined) {
+        if (this._valid && value !== undefined && !Number.isNaN(value)) {
             if (convert) {
                 setter(convert(value));
             } else {
@@ -116,7 +114,7 @@ const schemaV100 = new VersionSchema(
         return parser.reset(feature)
             .require(PROPERTY_ELEVATION_ID, value => { out.id = value; })
             .optional('fixed_height_relative', value => { out.constantHeight = value; }, ElevationFeatureParser.decodeRelativeHeight)
-            .geometry(value => { out.bounds = value; }, ElevationFeatureParser.computeBounds)
+            .geometry(value => { out.bounds = value; }, computeBounds)
             .success();
     },
     (parser: PropertyParser, feature: VectorTileFeature, out: Vertex) => {
@@ -139,7 +137,7 @@ const schemaV101 = new VersionSchema(
         return parser.reset(feature)
             .require(PROPERTY_ELEVATION_ID, value => { out.id = value; })
             .optional('fixed_height', value => { out.constantHeight = value; }, ElevationFeatureParser.decodeMetricHeight)
-            .geometry(value => { out.bounds = value; }, ElevationFeatureParser.computeBounds)
+            .geometry(value => { out.bounds = value; }, computeBounds)
             .success();
     },
     (parser: PropertyParser, feature: VectorTileFeature, out: Vertex) => {
@@ -154,20 +152,6 @@ const schemaV101 = new VersionSchema(
 );
 
 export abstract class ElevationFeatureParser {
-    static computeBounds(points: Point[][]): Bounds {
-        const min = new Point(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-        const max = new Point(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-
-        for (const point of points[0]) {
-            if (min.x > point.x) min.x = point.x;
-            if (min.y > point.y) min.y = point.y;
-            if (max.x < point.x) max.x = point.x;
-            if (max.y < point.y) max.y = point.y;
-        }
-
-        return {min, max};
-    }
-
     static getPoint(points: Point[][]): vec2 {
         return vec2.fromValues(points[0][0].x, points[0][0].y);
     }
@@ -228,13 +212,13 @@ export abstract class ElevationFeatureParser {
 
             // Expect to find only "curve_meta" and "curve_point" features
             if (VectorTileFeature.types[feature.type] === 'Point' && type === 'curve_point') {
-                const out = <Vertex>{};
+                const out = {} as Vertex;
 
                 if (schema.parseVertex(parser, feature, out)) {
                     vertices.push(out);
                 }
             } else if (VectorTileFeature.types[feature.type] === 'Polygon' && type === 'curve_meta') {
-                const out = <Feature>{};
+                const out = {} as Feature;
 
                 if (schema.parseFeature(parser, feature, out)) {
                     features.push(out);

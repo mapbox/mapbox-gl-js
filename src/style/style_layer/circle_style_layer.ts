@@ -24,6 +24,7 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../../render/painter';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 class CircleStyleLayer extends StyleLayer {
     override _unevaluatedLayout: Layout<LayoutProps>;
@@ -46,7 +47,7 @@ class CircleStyleLayer extends StyleLayer {
     }
 
     override queryRadius(bucket: Bucket): number {
-        const circleBucket: CircleBucket<CircleStyleLayer> = (bucket as any);
+        const circleBucket = bucket as CircleBucket<CircleStyleLayer>;
         return getMaximumPaintValue('circle-radius', this, circleBucket) +
             getMaximumPaintValue('circle-stroke-width', this, circleBucket) +
 
@@ -77,7 +78,7 @@ class CircleStyleLayer extends StyleLayer {
             this.paint.get('circle-pitch-scale') === 'map', translation, size);
     }
 
-    override getProgramIds(): Array<string> {
+    override getProgramIds(): ProgramName[] {
         return ['circle'];
     }
 
@@ -88,6 +89,10 @@ class CircleStyleLayer extends StyleLayer {
             defines: definesValues,
             overrideFog: false
         };
+    }
+
+    override hasElevation(): boolean {
+        return this.layout && this.layout.get('circle-elevation-reference') !== 'none';
     }
 }
 
@@ -135,7 +140,7 @@ export function queryIntersectsCircle(
                 queryGeometry.tilespaceRays.map((r) => intersectAtHeight(r, z)) :
                 queryGeometry.queryGeometry.screenGeometry;
 
-            const projectedCenter = vec4.transformMat4([] as any, [reproj.x, reproj.y, reproj.z, 1], pixelPosMatrix);
+            const projectedCenter = vec4.transformMat4([] as unknown as vec4, [reproj.x, reproj.y, reproj.z, 1], pixelPosMatrix);
             if (!scaleWithMap && alignWithMap) {
                 size *= projectedCenter[3] / transform.cameraToCenterDistance;
             } else if (scaleWithMap && !alignWithMap) {
@@ -158,7 +163,7 @@ export function queryIntersectsCircle(
 }
 
 function projectPoint(x: number, y: number, z: number, pixelPosMatrix: Float32Array) {
-    const point = vec4.transformMat4([] as any, [x, y, z, 1], pixelPosMatrix);
+    const point = vec4.transformMat4([] as unknown as vec4, [x, y, z, 1], pixelPosMatrix);
     return new Point(point[0] / point[3], point[1] / point[3]);
 }
 

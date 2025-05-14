@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import VideoSource from '../../../src/source/video_source';
@@ -18,7 +19,7 @@ function createSource(options) {
 describe('VideoSource', () => {
     const source = createSource({
         type: 'video',
-        urls : [ "cropped.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm" ],
+        urls: ["cropped.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm"],
         coordinates: [
             [-76.54, 39.18],
             [-76.52, 39.18],
@@ -47,7 +48,7 @@ describe('VideoSource', () => {
         const source = createSource({
             type: 'video',
             video: el,
-            urls : [ "cropped.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm" ],
+            urls: ["cropped.mp4", "https://static-assets.mapbox.com/mapbox-gl-js/drone.webm"],
             coordinates: [
                 [-76.54, 39.18],
                 [-76.52, 39.18],

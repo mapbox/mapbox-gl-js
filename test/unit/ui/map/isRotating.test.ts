@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, vi, createMap} from '../../../util/vitest';
 import simulate from '../../../util/simulate_interaction';

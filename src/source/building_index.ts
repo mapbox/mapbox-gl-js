@@ -149,7 +149,7 @@ class BuildingIndex {
 
             const {tileX, tileY} = this._mapCoordToOverlappingTile(tid, x, y, tileID);
 
-            const b: FillExtrusionBucket = (bucket as any);
+            const b = bucket as FillExtrusionBucket;
             const heightData = b.getHeightAtTileCoord(tileX, tileY);
             if (!heightData || heightData.height === undefined) continue;
             if (heightData.hidden) { // read height, even if fill extrusion is hidden, until it is used for tiled 3D models.
@@ -159,6 +159,7 @@ class BuildingIndex {
             maxFillExtrusionHeight = Math.max(heightData.height * verticalScale, maxFillExtrusionHeight || 0);
         }
         if (maxFillExtrusionHeight !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return maxFillExtrusionHeight;
         }
 
@@ -171,7 +172,7 @@ class BuildingIndex {
 
             const {tileX, tileY} = this._mapCoordToOverlappingTile(tid, x, y, tileID);
 
-            const b: Tiled3dModelBucket = (bucket as any);
+            const b = bucket as Tiled3dModelBucket;
             const heightData = b.getHeightAtTileCoord(tileX, tileY);
             if (!heightData || heightData.hidden) continue;
             if (heightData.height === undefined && availableHeight !== undefined) return Math.min(heightData.maxHeight, availableHeight) * heightData.verticalScale;

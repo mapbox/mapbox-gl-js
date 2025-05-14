@@ -92,7 +92,7 @@ const BOUNDS_FEATURE = (() => {
  * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
  */
 function getPixelPosMatrix(transform: Transform, tileID: OverscaledTileID) {
-    const t = mat4.fromScaling([] as any, [transform.width * 0.5, -transform.height * 0.5, 1]);
+    const t = mat4.fromScaling([] as unknown as mat4, [transform.width * 0.5, -transform.height * 0.5, 1]);
     mat4.translate(t, t, [1, -1, 0]);
     mat4.multiply(t, t, transform.calculateProjMatrix(tileID.toUnwrapped()));
     return Float32Array.from(t);
@@ -121,14 +121,18 @@ class Tile {
     lineAtlasTexture: Texture | null | undefined;
     glyphAtlasImage: AlphaImage | null | undefined;
     glyphAtlasTexture: Texture | null | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expirationTime: any;
     expiredRequestCount: number;
     state: TileState;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     timeAdded: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fadeEndTime: any;
     collisionBoxArray: CollisionBoxArray | null | undefined;
     redoWhenDone: boolean;
     showCollisionBoxes: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     placementSource: any;
     actor: Actor | null | undefined;
     vtLayers: {
@@ -151,6 +155,7 @@ class Tile {
     hillshadeFBO: Framebuffer | null | undefined;
     demTexture: Texture | null | undefined;
     refreshedUponExpiration: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reloadCallback: any;
     resourceTiming: Array<PerformanceResourceTiming> | null | undefined;
     queryPadding: number;
@@ -635,7 +640,7 @@ class Tile {
             if (!painter.style.hasLayer(id)) continue;
 
             const bucket = this.buckets[id];
-            const bucketLayer = bucket.layers[0] as StyleLayer;
+            const bucketLayer = bucket.layers[0];
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
             const sourceLayer = vtLayers[sourceLayerId];
@@ -771,7 +776,8 @@ class Tile {
             for (const {x, y} of boundsLine) {
                 boundsVertices.emplaceBack(x, y, 0, 0);
             }
-            const indices = earcut(boundsVertices.int16, undefined, 4);
+            const indices = earcut(boundsVertices.int16.subarray(0, boundsVertices.length * 4), undefined, 4);
+
             for (let i = 0; i < indices.length; i += 3) {
                 boundsIndices.emplaceBack(indices[i], indices[i + 1], indices[i + 2]);
             }

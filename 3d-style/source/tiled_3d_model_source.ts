@@ -34,8 +34,8 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     reparseOverscaled: boolean | undefined;
     usedInConflation: boolean;
     tileSize: number;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
@@ -69,7 +69,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         this.tileSize = 512;
 
         this._options = options;
-        this.tiles = (this._options.tiles as any);
+        this.tiles = this._options.tiles;
         this.maxzoom = options.maxzoom || 19;
         this.minzoom = options.minzoom || 0;
         this.roundZoom = true;
@@ -139,7 +139,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     }
 
     loadTile(tile: Tile, callback: Callback<undefined>) {
-        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url((this.tiles as any), this.scheme));
+        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme));
         const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
         const params: WorkerSourceTiled3dModelRequest = {
             request,
@@ -168,7 +168,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         } else {
             // If the tile has already been parsed we may just need to reevaluate
             if (tile.buckets) {
-                const buckets: Tiled3dModelBucket[] = (Object.values(tile.buckets) as any[]);
+                const buckets = Object.values(tile.buckets) as Tiled3dModelBucket[];
                 for (const bucket of buckets) {
                     bucket.dirty = true;
                 }

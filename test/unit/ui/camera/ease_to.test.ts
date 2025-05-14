@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {assertTransitionTime, createCamera} from './utils';
 import {describe, test, expect, vi} from '../../../util/vitest';
@@ -206,6 +207,7 @@ describe('camera', () => {
             }
         );
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('does not emit zoom events if not zooming', async () => {
             const camera = createCamera();
 
@@ -420,13 +422,13 @@ describe('camera', () => {
         test('retain or not padding based on provided padding option', () => {
             const camera = createCamera();
             camera.easeTo({center: [100, 0], duration: 0, padding: {top: 100}});
-            expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+            expect(camera.getPadding()).toEqual({top: 100, bottom: 0, left: 0, right: 0});
 
             camera.easeTo({center: [120, 0], duration: 0, padding: {top: 200}, retainPadding: false});
-            expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+            expect(camera.getPadding()).toEqual({top: 100, bottom: 0, left: 0, right: 0});
 
             camera.easeTo({center: [80, 0], duration: 0, padding: {top: 300}, retainPadding: true});
-            expect(camera.getPadding()).toEqual({top:300, bottom:0, left:0, right:0});
+            expect(camera.getPadding()).toEqual({top: 300, bottom: 0, left: 0, right: 0});
         });
 
         describe('Globe', () => {
@@ -435,7 +437,7 @@ describe('camera', () => {
                 camera.transform.zoom = 4;
                 camera.transform.setProjection({name: 'globe'});
 
-                camera.easeTo({center: [90, 10], duration:0});
+                camera.easeTo({center: [90, 10], duration: 0});
                 expect(camera.getCenter()).toEqual({lng: 90, lat: 10});
             });
 
@@ -475,9 +477,9 @@ describe('camera', () => {
                 const camera = createCamera();
                 camera.transform.setProjection({name: 'globe'});
 
-                camera.easeTo({center: [90, 0], duration:0, padding:{top: 100}});
+                camera.easeTo({center: [90, 0], duration: 0, padding: {top: 100}});
                 expect(camera.getCenter()).toEqual({lng: 90, lat: 0});
-                expect(camera.getPadding()).toEqual({top:100, bottom:0, left:0, right:0});
+                expect(camera.getPadding()).toEqual({top: 100, bottom: 0, left: 0, right: 0});
             });
 
             test('pans with specified offset and bearing', () => {

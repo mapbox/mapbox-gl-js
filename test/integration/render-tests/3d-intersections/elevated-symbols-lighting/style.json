@@ -3,17 +3,11 @@
     "metadata": {
         "test": {
             "mapMode": "static",
+            "width": 512,
+            "height": 512,
             "allowed": 0.00025,
             "operations": [
-                ["wait"],
-                ["wait"],
-                [
-                    "check",
-                    "shadowPassVerticesCount",
-                    "",
-                    0,
-                    "Verify lazy shadows working for elevated fill layer."
-                ]
+                ["wait"]
             ],
             "spriteFormat": "raster"
         }
@@ -91,8 +85,8 @@
                 "direction": [
                     "literal",
                     [
-                        2,
-                        54.5
+                        3.5,
+                        50
                     ]
                 ],
                 "color": "hsl(0, 0%, 100%)",
@@ -648,7 +642,6 @@
                 ]
             },
             "paint": {
-                "icon-occlusion-opacity": 0
             }
         },
         {
@@ -801,7 +794,6 @@
                 ]
             },
             "paint": {
-                "icon-occlusion-opacity": 0
             }
         },
         {

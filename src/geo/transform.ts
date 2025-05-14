@@ -68,14 +68,16 @@ const lerpMatrix = (out: mat4, a: mat4, b: mat4, value: number) => {
     return out;
 };
 
-const enum QuadrantVisibility {
-    None = 0,
-    TopLeft = 1,
-    TopRight = 2,
-    BottomLeft = 4,
-    BottomRight = 8,
-    All = 15
-}
+const QuadrantVisibility = {
+    None: 0,
+    TopLeft: 1,
+    TopRight: 2,
+    BottomLeft: 4,
+    BottomRight: 8,
+    All: 15
+} as const;
+
+type QuadrantMask = typeof QuadrantVisibility[keyof typeof QuadrantVisibility];
 
 /**
  * A single transform, generally used for a single tile to be
@@ -852,18 +854,18 @@ class Transform {
     }
 
     /**
-     * Extends tile coverage to include potential neighboring tiles using either light direction or quadrant visibility information.
+     * Extends tile coverage to include potential neighboring tiles using either a direction vector or quadrant visibility information.
      * @param {Array<OverscaledTileID>} coveringTiles tile cover that is extended
      * @param {number} maxZoom maximum zoom level
-     * @param {vec3} lightDir direction of the light (unit vector), if undefined quadrant visibility information is used
+     * @param {vec3} direction direction unit vector, if undefined quadrant visibility information is used
      * @returns {Array<OverscaledTileID>} a set of extension tiles
      */
-    extendTileCover(coveringTiles: Array<OverscaledTileID>, maxZoom: number, lightDir?: vec3): Array<OverscaledTileID> {
+    extendTileCover(coveringTiles: Array<OverscaledTileID>, maxZoom: number, direction?: vec3): Array<OverscaledTileID> {
         let out: OverscaledTileID[] = [];
-        const extendShadows = lightDir !== undefined;
-        const extendQuadrants = !extendShadows;
+        const extendDirection = direction != null;
+        const extendQuadrants = !extendDirection;
         if (extendQuadrants && this.zoom < maxZoom) return out;
-        if (extendShadows && lightDir[0] === 0.0 && lightDir[1] === 0.0) return out;
+        if (extendDirection && direction[0] === 0.0 && direction[1] === 0.0) return out;
 
         const addedTiles = new Set<number>();
         const addTileId = (overscaledZ: number, wrap: number, z: number, x: number, y: number) => {
@@ -897,29 +899,29 @@ class Transform {
             const leftTileX = xMinInsideRange ? tileId.x - 1 : tiles - 1;
             const rightTileX = xMaxInsideRange ? tileId.x + 1 : 0;
 
-            if (extendShadows) {
-                if (lightDir[0] < 0.0) {
+            if (extendDirection) {
+                if (direction[0] < 0.0) {
                     addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y);
-                    if (lightDir[1] < 0.0 && yMaxInsideRange) {
+                    if (direction[1] < 0.0 && yMaxInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
                         addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y + 1);
                     }
-                    if (lightDir[1] > 0.0 && yMinInsideRange) {
+                    if (direction[1] > 0.0 && yMinInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);
                         addTileId(overscaledZ, rightWrap, tileId.z, rightTileX, tileId.y - 1);
                     }
-                } else if (lightDir[0] > 0.0) {
+                } else if (direction[0] > 0.0) {
                     addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y);
-                    if (lightDir[1] < 0.0 && yMaxInsideRange) {
+                    if (direction[1] < 0.0 && yMaxInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
                         addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y + 1);
                     }
-                    if (lightDir[1] > 0.0 && yMinInsideRange) {
+                    if (direction[1] > 0.0 && yMinInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);
                         addTileId(overscaledZ, leftWrap, tileId.z, leftTileX, tileId.y - 1);
                     }
                 } else {
-                    if (lightDir[1] < 0.0 && yMaxInsideRange) {
+                    if (direction[1] < 0.0 && yMaxInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y + 1);
                     } else if (yMinInsideRange) {
                         addTileId(overscaledZ, tileWrap, tileId.z, tileId.x, tileId.y - 1);
@@ -1117,7 +1119,7 @@ class Transform {
 
         // Do a depth-first traversal to find visible tiles and proper levels of detail
         const stack: RootTile[] = [];
-        let result = [];
+        let result: Array<{tileID: OverscaledTileID, distanceSq: number}> = [];
         const maxZoom = z;
         const overscaledZ = options.reparseOverscaled ? actualZ : z;
         const cameraHeight = (cameraAltitude - this._centerAltitude) * meterToTile; // in tile coordinates.
@@ -1318,8 +1320,7 @@ class Transform {
                     continue;
                 }
 
-                let visibility = QuadrantVisibility.None;
-                // Perform more precise intersection tests to cull the remaining < 1% false positives from the earlier test.
+                let visibility: QuadrantMask = QuadrantVisibility.None;
                 if (!fullyVisible) {
                     let intersectResult = verticalFrustumIntersect ? it.aabb.intersectsPrecise(cameraFrustum) : it.aabb.intersectsPreciseFlat(cameraFrustum);
 
@@ -2010,7 +2011,7 @@ class Transform {
         expanded: boolean = false,
     ): mat4 {
         const projMatrixKey = unwrappedTileID.key;
-        let cache;
+        let cache: Record<number, mat4>;
         if (expanded) {
             cache = this._expandedProjMatrixCache;
         } else if (aligned) {
@@ -2369,7 +2370,7 @@ class Transform {
             dx = x - Math.round(x) + angleCos * xShift + angleSin * yShift,
             dy = y - Math.round(y) + angleCos * yShift + angleSin * xShift;
         const alignedM = new Float64Array(m) as unknown as mat4;
-        mat4.translate(alignedM, alignedM, [ dx > 0.5 ? dx - 1 : dx, dy > 0.5 ? dy - 1 : dy, 0 ]);
+        mat4.translate(alignedM, alignedM, [dx > 0.5 ? dx - 1 : dx, dy > 0.5 ? dy - 1 : dy, 0]);
         this.alignedProjMatrix = alignedM;
 
         m = mat4.create();

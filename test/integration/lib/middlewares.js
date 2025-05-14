@@ -1,8 +1,7 @@
-/* eslint-disable import/no-commonjs */
+
 import fs from 'fs';
-import path from 'path';
+import path, {dirname} from 'path';
 import serveStatic from 'serve-static';
-import {dirname} from 'path';
 import {fileURLToPath} from 'url';
 import {createRequire} from 'module';
 import {localizeSourceURLs} from './localize-urls.js';
@@ -57,6 +56,7 @@ export function injectMiddlewares(app, config = {ci: false}) {
         return req.on('end', () => {
             const {filePath, data} = JSON.parse(body);
 
+            /** @type {'base64'} */
             let encoding;
             if (filePath.split('.')[1] !== 'json') {
                 encoding = 'base64';

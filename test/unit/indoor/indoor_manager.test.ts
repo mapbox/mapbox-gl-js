@@ -1,6 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import { describe, test, beforeEach, afterEach, expect, waitFor, vi, createMap } from '../../util/vitest';
-import { createStyle } from '../ui/map/util';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import {describe, test, beforeEach, afterEach, expect, waitFor, vi, createMap} from '../../util/vitest';
+import {createStyle} from '../ui/map/util';
 
 const indoorData = {
     "type": "FeatureCollection",
@@ -156,14 +158,14 @@ const indoorStyle = {
 
 describe('IndoorManager', () => {
     test('created with map', () => {
-        const map = createMap({ interactive: true, style: createStyle() });
+        const map = createMap({interactive: true, style: createStyle()});
         expect(map.indoor._map).toEqual(map);
         expect(map.indoor._queryFeatureSetId).toEqual(undefined);
         expect(map.indoor._selectedFloorplan).toEqual(undefined);
     });
 
     test('auto select floorplan on map load', async () => {
-        const map = createMap({ style: indoorStyle });
+        const map = createMap({style: indoorStyle});
         await waitFor(map.indoor, "floorplanselected");
         expect(map.indoor._queryFeatureSetId).toEqual("floorplan-detection");
         expect(map.indoor._selectedFloorplan).toBeTruthy();
@@ -171,16 +173,16 @@ describe('IndoorManager', () => {
     });
 
     test('deselect floorplan on camera move', async () => {
-        const map = createMap({ style: indoorStyle });
+        const map = createMap({style: indoorStyle});
         await waitFor(map.indoor, "floorplanselected");
         expect(map.indoor._selectedFloorplan).toBeTruthy();
-        map.flyTo({ center: [10, 50], duration: 100 });
+        map.flyTo({center: [10, 50], duration: 100});
         await waitFor(map.indoor, "floorplangone");
         expect(map.indoor._selectedFloorplan).toEqual(undefined);
     });
 
     test('select level with public api', async () => {
-        const map = createMap({ style: indoorStyle });
+        const map = createMap({style: indoorStyle});
         await waitFor(map.indoor, "floorplanselected");
         expect(map.indoor._selectedFloorplan).toBeTruthy();
         expect(map.indoor._floorplanStates).toEqual({
@@ -206,7 +208,7 @@ describe('IndoorManager', () => {
     });
 
     test('select building with public api', async () => {
-        const map = createMap({ style: indoorStyle });
+        const map = createMap({style: indoorStyle});
         await waitFor(map.indoor, "floorplanselected");
         expect(map.indoor._selectedFloorplan).toBeTruthy();
         expect(map.indoor._floorplanStates).toEqual({

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, assert, beforeEach, beforeAll, afterEach, afterAll, vi} from 'vitest';
 import {Map} from '../../src/ui/map';
@@ -33,7 +34,7 @@ export function doneAsync() {
         return async (...args) => {
             try {
                 await fn(...args, doneRef);
-            } catch (err: any) {
+            } catch (err) {
                 doneRef.reject(err);
             }
         };

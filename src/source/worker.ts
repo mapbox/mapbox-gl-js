@@ -12,26 +12,16 @@ import {PerformanceUtils} from '../util/performance';
 import {Event} from '../util/evented';
 import {getProjection} from '../geo/projection/index';
 import {ImageRasterizer} from '../render/image_rasterizer';
+import {isWorker} from '../util/util';
 
-import type {
-    WorkerSource,
-    WorkerSourceTileRequest,
-    WorkerSourceRasterArrayDecodingParameters,
-    WorkerSourceRasterArrayDecodingCallback,
-    WorkerSourceConstructor,
-    WorkerSourceImageRaserizeParameters,
-    WorkerSourceRemoveRasterizedImagesParameters,
-    WorkerSourceImageRaserizeCallback
-} from './worker_source';
-import type {Callback} from '../types/callback';
-import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types';
-import type {ConfigOptions} from '../style/properties';
-import type {RtlTextPlugin, PluginState} from './rtl_text_plugin';
 import type Projection from '../geo/projection/projection';
-import type {RasterizedImageMap} from '../render/image_manager';
-import type {SetImagesParameters} from '../style/style';
-import type {WorkerPerformanceMetrics} from '../util/performance';
 import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {TaskMetadata} from '../util/scheduler';
+import type {RtlTextPlugin} from './rtl_text_plugin';
+import type {RasterizedImageMap} from '../render/image_manager';
+import type {ActorMessage, ActorMessages} from '../util/actor_messages';
+import type {WorkerSource, WorkerSourceConstructor} from './worker_source';
+import type {StyleModelMap} from '../style/style_mode';
 
 /**
  * Source types that can instantiate a {@link WorkerSource} in {@link MapWorker}.
@@ -61,6 +51,7 @@ export default class MapWorker {
     actor: Actor;
     layerIndexes: WorkerScopeRegistry<StyleLayerIndex>;
     availableImages: WorkerScopeRegistry<ImageId[]>;
+    availableModels: WorkerScopeRegistry<StyleModelMap>;
     workerSourceTypes: Record<WorkerSourceType, WorkerSourceConstructor>;
     workerSources: WorkerSourceRegistry;
     projections: Record<string, Projection>;
@@ -74,10 +65,11 @@ export default class MapWorker {
     constructor(self: Worker) {
         PerformanceUtils.measure('workerEvaluateScript');
         this.self = self;
-        this.actor = new Actor(self, this as unknown as Worker);
+        this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
         this.availableImages = {};
+        this.availableModels = {};
         this.isSpriteLoaded = {};
         this.imageRasterizer = new ImageRasterizer();
 
@@ -113,26 +105,28 @@ export default class MapWorker {
         };
     }
 
-    clearCaches(mapId: number, unused: unknown, callback: Callback<void>) {
+    clearCaches(mapId: number, params: ActorMessages['clearCaches']['params'], callback: ActorMessages['clearCaches']['callback']) {
         delete this.layerIndexes[mapId];
         delete this.availableImages[mapId];
+        delete this.availableModels[mapId];
         delete this.workerSources[mapId];
         callback();
     }
 
-    checkIfReady(mapID: string, unused: unknown, callback: Callback<void>) {
+    checkIfReady(mapID: string, params: ActorMessages['checkIfReady']['params'], callback: ActorMessages['checkIfReady']['callback']) {
         // noop, used to check if a worker is fully set up and ready to receive messages
         callback();
     }
 
-    setReferrer(mapID: string, referrer: string) {
+    setReferrer(mapID: string, referrer: ActorMessages['setReferrer']['params']) {
         this.referrer = referrer;
     }
 
-    spriteLoaded(mapId: number, {scope, isLoaded}: {scope: string; isLoaded: boolean}) {
+    spriteLoaded(mapId: number, params: ActorMessages['spriteLoaded']['params']) {
         if (!this.isSpriteLoaded[mapId])
             this.isSpriteLoaded[mapId] = {};
 
+        const {scope, isLoaded} = params;
         this.isSpriteLoaded[mapId][scope] = isLoaded;
 
         if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
@@ -151,11 +145,12 @@ export default class MapWorker {
         }
     }
 
-    setImages(mapId: number, {scope, images}: SetImagesParameters, callback: Callback<void>) {
+    setImages(mapId: number, params: ActorMessages['setImages']['params'], callback: ActorMessages['setImages']['callback']) {
         if (!this.availableImages[mapId]) {
             this.availableImages[mapId] = {};
         }
 
+        const {scope, images} = params;
         this.availableImages[mapId][scope] = images;
 
         if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
@@ -173,61 +168,74 @@ export default class MapWorker {
         callback();
     }
 
-    setProjection(mapId: number, config: ProjectionSpecification) {
+    setModels(mapId: number, {scope, models}: ActorMessages['setModels']['params'], callback: ActorMessages['setModels']['callback']) {
+        if (!this.availableModels[mapId]) {
+            this.availableModels[mapId] = {};
+        }
+
+        this.availableModels[mapId][scope] = models;
+
+        if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
+            callback();
+            return;
+        }
+
+        for (const workerSource in this.workerSources[mapId][scope]) {
+            const ws = this.workerSources[mapId][scope][workerSource];
+            for (const source in ws) {
+                ws[source].availableModels = models;
+            }
+        }
+
+        callback();
+    }
+
+    setProjection(mapId: number, config: ActorMessages['setProjection']['params']) {
         this.projections[mapId] = getProjection(config);
     }
 
-    setBrightness(mapId: number, brightness: number | null | undefined, callback: Callback<void>) {
+    setBrightness(mapId: number, brightness: ActorMessages['setBrightness']['params'], callback: ActorMessages['setBrightness']['callback']) {
         this.brightness = brightness;
         callback();
     }
 
-    setLayers(mapId: number, params: {
-        layers: Array<LayerSpecification>;
-        scope: string;
-        options: ConfigOptions;
-    }, callback: Callback<void>) {
+    setLayers(mapId: number, params: ActorMessages['setLayers']['params'], callback: ActorMessages['setLayers']['callback']) {
         this.getLayerIndex(mapId, params.scope).replace(params.layers, params.options);
         callback();
     }
 
-    updateLayers(mapId: number, params: {
-        layers: Array<LayerSpecification>;
-        scope: string;
-        removedIds: Array<string>;
-        options: ConfigOptions;
-    }, callback: Callback<void>) {
+    updateLayers(mapId: number, params: ActorMessages['updateLayers']['params'], callback: ActorMessages['updateLayers']['callback']) {
         this.getLayerIndex(mapId, params.scope).update(params.layers, params.removedIds, params.options);
         callback();
     }
 
-    loadTile(mapId: number, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
+    loadTile(mapId: number, params: ActorMessages['loadTile']['params'], callback: ActorMessages['loadTile']['callback']) {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source, params.scope).loadTile(params, callback);
     }
 
-    decodeRasterArray(mapId: number, params: WorkerSourceRasterArrayDecodingParameters, callback: WorkerSourceRasterArrayDecodingCallback) {
+    decodeRasterArray(mapId: number, params: ActorMessages['decodeRasterArray']['params'], callback: ActorMessages['decodeRasterArray']['callback']) {
         (this.getWorkerSource(mapId, params.type, params.source, params.scope) as RasterArrayTileWorkerSource).decodeRasterArray(params, callback);
     }
 
-    reloadTile(mapId: number, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
+    reloadTile(mapId: number, params: ActorMessages['reloadTile']['params'], callback: ActorMessages['reloadTile']['callback']) {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source, params.scope).reloadTile(params, callback);
     }
 
-    abortTile(mapId: number, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
+    abortTile(mapId: number, params: ActorMessages['abortTile']['params'], callback: ActorMessages['abortTile']['callback']) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source, params.scope).abortTile(params, callback);
     }
 
-    removeTile(mapId: number, params: WorkerSourceTileRequest, callback: Callback<unknown>) {
+    removeTile(mapId: number, params: ActorMessages['removeTile']['params'], callback: ActorMessages['removeTile']['callback']) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source, params.scope).removeTile(params, callback);
     }
 
-    removeSource(mapId: number, params: WorkerSourceTileRequest, callback: Callback<void>) {
+    removeSource(mapId: number, params: ActorMessages['removeSource']['params'], callback: ActorMessages['removeSource']['callback']) {
         assert(params.type);
         assert(params.scope);
         assert(params.source);
@@ -255,7 +263,7 @@ export default class MapWorker {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    loadWorkerSource(map: string, params: {url: string}, callback: Callback<undefined>) {
+    loadWorkerSource(mapId: number, params: ActorMessages['loadWorkerSource']['params'], callback: ActorMessages['loadWorkerSource']['callback']) {
         try {
             this.self.importScripts(params.url);
             callback();
@@ -264,7 +272,7 @@ export default class MapWorker {
         }
     }
 
-    syncRTLPluginState(map: string, state: PluginState, callback: Callback<boolean>) {
+    syncRTLPluginState(mapId: number, state: ActorMessages['syncRTLPluginState']['params'], callback: ActorMessages['syncRTLPluginState']['callback']) {
         try {
             globalRTLTextPlugin.setState(state);
             const pluginURL = globalRTLTextPlugin.getPluginURL();
@@ -278,12 +286,12 @@ export default class MapWorker {
                 const error = complete ? undefined : new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`);
                 callback(error, complete);
             }
-        } catch (e: any) {
+        } catch (e) {
             callback(e.toString());
         }
     }
 
-    setDracoUrl(map: string, dracoUrl: string) {
+    setDracoUrl(mapId: number, dracoUrl: ActorMessages['setDracoUrl']['params']) {
         this.dracoUrl = dracoUrl;
     }
 
@@ -299,6 +307,20 @@ export default class MapWorker {
         }
 
         return availableImages;
+    }
+
+    getAvailableModels(mapId: number, scope: string): StyleModelMap {
+        if (!this.availableModels[mapId]) {
+            this.availableModels[mapId] = {};
+        }
+
+        let availableModels = this.availableModels[mapId][scope];
+
+        if (!availableModels) {
+            availableModels = {};
+        }
+
+        return availableModels;
     }
 
     getLayerIndex(mapId: number, scope: string): StyleLayerIndex {
@@ -333,8 +355,8 @@ export default class MapWorker {
             // use a wrapped actor so that we can attach a target mapId param
             // to any messages invoked by the WorkerSource
             const actor = {
-                send: (type: string, data: unknown, callback: any, _: any, mustQueue: boolean, metadata: any) => {
-                    this.actor.send(type, data, callback, mapId, mustQueue, metadata);
+                send: <T extends ActorMessage>(type: T, data: ActorMessages[T]['params'], callback: ActorMessages[T]['callback'], _targetMapId: number, mustQueue: boolean, metadata: TaskMetadata) => {
+                    return this.actor.send(type, data, callback, mapId, mustQueue, metadata);
                 },
                 scheduler: this.actor.scheduler
             } as Actor;
@@ -343,6 +365,7 @@ export default class MapWorker {
                 actor,
                 this.getLayerIndex(mapId, scope),
                 this.getAvailableImages(mapId, scope),
+                this.getAvailableModels(mapId, scope),
                 this.isSpriteLoaded[mapId][scope],
                 undefined,
                 this.brightness
@@ -352,7 +375,7 @@ export default class MapWorker {
         return workerSources[mapId][scope][type][source];
     }
 
-    rasterizeImages(mapId: number, params: WorkerSourceImageRaserizeParameters, callback: WorkerSourceImageRaserizeCallback) {
+    rasterizeImagesWorker(mapId: number, params: ActorMessages['rasterizeImagesWorker']['params'], callback: ActorMessages['rasterizeImagesWorker']['callback']) {
         const rasterizedImages: RasterizedImageMap = new Map();
         for (const [id, {image, imageVariant}] of params.tasks.entries()) {
             const rasterizedImage = this.imageRasterizer.rasterize(imageVariant, image, params.scope, mapId);
@@ -361,25 +384,20 @@ export default class MapWorker {
         callback(undefined, rasterizedImages);
     }
 
-    removeRasterizedImages(mapId: number, params: WorkerSourceRemoveRasterizedImagesParameters, callback: Callback<void>) {
+    removeRasterizedImages(mapId: number, params: ActorMessages['removeRasterizedImages']['params'], callback: ActorMessages['removeRasterizedImages']['callback']) {
         this.imageRasterizer.removeImagesFromCacheByIds(params.imageIds, params.scope, mapId);
         callback();
     }
 
-    enforceCacheSizeLimit(mapId: number, limit: number) {
+    enforceCacheSizeLimit(mapId: number, limit: ActorMessages['enforceCacheSizeLimit']['params']) {
         enforceCacheSizeLimit(limit);
     }
 
-    getWorkerPerformanceMetrics(mapId: number, params: any, callback: Callback<WorkerPerformanceMetrics>) {
+    getWorkerPerformanceMetrics(mapId: number, params: ActorMessages['getWorkerPerformanceMetrics']['params'], callback: ActorMessages['getWorkerPerformanceMetrics']['callback']) {
         callback(undefined, PerformanceUtils.getWorkerPerformanceMetrics());
     }
 }
 
-// @ts-expect-error - TS2304
-if (typeof WorkerGlobalScope !== 'undefined' &&
-    typeof self !== 'undefined' &&
-    // @ts-expect-error - TS2304
-    self instanceof WorkerGlobalScope) {
-    // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2345 - Argument of type 'Window & typeof globalThis' is not assignable to parameter of type 'WorkerGlobalScopeInterface'.
+if (isWorker(self)) {
     self.worker = new MapWorker(self);
 }

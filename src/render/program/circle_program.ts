@@ -93,7 +93,7 @@ const circleUniformValues = (
         values['u_zoom_transition'] = globeToMercatorTransition(transform.zoom);
         const x = mercatorCenter[0] * EXTENT;
         const y = mercatorCenter[1] * EXTENT;
-        values['u_up_dir'] = (transform.projection.upVector(new CanonicalTileID(0, 0, 0), x, y) as any);
+        values['u_up_dir'] = transform.projection.upVector(new CanonicalTileID(0, 0, 0), x, y);
     }
 
     return values;
@@ -104,6 +104,7 @@ const circleDefinesValues = (layer: CircleStyleLayer): CircleDefinesType[] => {
     if (layer.paint.get('circle-pitch-alignment') === 'map') values.push('PITCH_WITH_MAP');
     if (layer.paint.get('circle-pitch-scale') === 'map') values.push('SCALE_WITH_MAP');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return values;
 };
 

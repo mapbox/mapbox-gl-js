@@ -33,6 +33,7 @@ export default function convertFunction<T>(parameters: FunctionSpecification<T>,
     if (zoomAndFeatureDependent) {
         return convertZoomAndPropertyFunction(parameters, propertySpec, stops as Array<ZoomAndPropertyFunctionStop<T>>);
     } else if (zoomDependent) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return convertZoomFunction(parameters, propertySpec, stops as PropertyFunctionStop<T>[]);
     } else {
         return convertPropertyFunction(parameters, propertySpec, stops as PropertyFunctionStop<T>[]);
@@ -76,7 +77,9 @@ function convertZoomAndPropertyFunction<T>(
     propertySpec: StylePropertySpecification,
     stops: Array<ZoomAndPropertyFunctionStop<T>>,
 ): ExpressionSpecification {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const featureFunctionParameters: Record<string, any> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const featureFunctionStops: Record<string, any> = {};
     const zoomStops = [];
     for (let s = 0; s < stops.length; s++) {
@@ -221,6 +224,7 @@ function convertZoomFunction<T>(parameters: FunctionSpecification<T>, propertySp
 
     fixupDegenerateStepCurve(expression);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return expression;
 }
 
@@ -250,7 +254,7 @@ function getFunctionType<T>(parameters: FunctionSpecification<T>, propertySpec: 
         return parameters.type;
     } else {
         assert(propertySpec.expression);
-        return (propertySpec.expression as any).interpolated ? 'exponential' : 'interval';
+        return propertySpec.expression.interpolated ? 'exponential' : 'interval';
     }
 }
 

@@ -1,8 +1,11 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {vi, describe, test, expect, createStyleJSON, waitFor, doneAsync} from '../../../test/util/vitest';
 import Style from '../../../src/style/style';
 import {getPNGResponse, mockFetch} from '../../util/network';
 import {StubMap} from './utils';
+
+import type MapboxMap from '../../../src/ui/map';
 
 describe('Style', () => {
     describe('Sprite', () => {
@@ -15,7 +18,7 @@ describe('Style', () => {
 
                 const map = new StubMap();
                 const transformSpy = vi.spyOn(map._requestManager, 'transformRequest');
-                const style = new Style(map as any);
+                const style = new Style(map as MapboxMap);
 
                 style.loadJSON(Object.assign(createStyleJSON(), {
                     "sprite": "http://example.com/sprites/bright-v8"
@@ -39,7 +42,7 @@ describe('Style', () => {
                     'http://example.com/sprite.png': async () => new Response(await getPNGResponse())
                 });
 
-                const style = new Style(new StubMap() as any);
+                const style = new Style(new StubMap() as MapboxMap);
 
                 style.loadJSON({
                     "version": 8,

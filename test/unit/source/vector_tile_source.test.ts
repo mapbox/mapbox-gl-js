@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, waitFor, vi, doneAsync} from '../../util/vitest';
 import {mockFetch} from '../../util/network';
@@ -17,7 +18,7 @@ const wrapDispatcher = (dispatcher) => {
 };
 
 const mockDispatcher = wrapDispatcher({
-    send () {}
+    send() {}
 });
 
 function createSource(options, {transformCallback, customAccessToken} = {}) {
@@ -233,7 +234,7 @@ describe('VectorTileSource', () => {
             const tile = {
                 tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                 state: 'loading',
-                loadVectorData () {},
+                loadVectorData() {},
                 setExpiryData() {}
             };
             source.loadTile(tile, () => {});
@@ -257,7 +258,7 @@ describe('VectorTileSource', () => {
             const tile = {
                 tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                 state: 'loading',
-                loadVectorData () {},
+                loadVectorData() {},
                 setExpiryData() {}
             };
             source.loadTile(tile, () => {});
@@ -288,7 +289,7 @@ describe('VectorTileSource', () => {
                 const tile = {
                     tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                     state: 'loading',
-                    loadVectorData () {
+                    loadVectorData() {
                         this.state = 'loaded';
                         events.push('tileLoaded');
                     },
@@ -321,6 +322,34 @@ describe('VectorTileSource', () => {
         }
     });
 
+    test('respects TileJSON.extra_bounds', async () => {
+        const source = createSource({
+            minzoom: 0,
+            maxzoom: 22,
+            attribution: "Mapbox",
+            tiles: ["http://example.com/{z}/{x}/{y}.png"],
+            extra_bounds: [
+                [-18.716583, 34.608345, 48.080292, 73.128931],  // Europe/Northern Africa region
+                [122.871094, 26.431228, 158.730469, 46.800059], // East Asia region
+                [-129.550781, 19.642588, -64.335938, 53.540307] // North America region
+            ]
+        });
+        const e = await waitFor(source, "data");
+        if (e.sourceDataType === 'metadata') {
+            // Tile in South America - should be outside all bounds
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 133, 177))).toBeFalsy();
+
+            // Tile in Europe (part of extra_bounds[0])
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 136, 87))).toBeTruthy();
+
+            // Tile in East Asia (part of extra_bounds[1])
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 217, 98))).toBeTruthy();
+
+            // Tile in North America (part of extra_bounds[2])
+            expect(source.hasTile(new OverscaledTileID(8, 0, 8, 75, 96))).toBeTruthy();
+        }
+    });
+
     test('does not error on invalid bounds', async () => {
         const source = createSource({
             minzoom: 0,
@@ -332,7 +361,7 @@ describe('VectorTileSource', () => {
 
         const e = await waitFor(source, "data");
         if (e.sourceDataType === 'metadata') {
-            expect(source.tileBounds.bounds).toEqual({_sw:{lng: -47, lat: -7}, _ne:{lng: -45, lat: 90}});
+            expect(source.tileBounds.bounds).toEqual({_sw: {lng: -47, lat: -7}, _ne: {lng: -45, lat: 90}});
         }
     });
 
@@ -377,7 +406,7 @@ describe('VectorTileSource', () => {
             const tile = {
                 tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                 state: 'loading',
-                loadVectorData () {},
+                loadVectorData() {},
                 setExpiryData() {}
             };
             source.loadTile(tile, () => {});

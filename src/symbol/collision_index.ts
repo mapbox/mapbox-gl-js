@@ -1,5 +1,4 @@
 import Point from '@mapbox/point-geometry';
-import clipLine from './clip_line';
 import PathInterpolator from './path_interpolator';
 import * as intersectionTests from '../util/intersection_tests';
 import Grid from './grid_index';
@@ -9,6 +8,7 @@ import {FOG_SYMBOL_CLIPPING_THRESHOLD, getFogOpacityAtTileCoord} from '../style/
 import assert from 'assert';
 import * as symbolProjection from '../symbol/projection';
 import {degToRad} from '../util/util';
+import {clipLines} from '../util/line_clipping';
 
 import type {OverscaledTileID} from '../source/tile_id';
 import type {vec3} from 'gl-matrix';
@@ -96,6 +96,7 @@ class CollisionIndex {
         allowOverlap: boolean,
         textPixelRatio: number,
         posMatrix: mat4,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         collisionGroupPredicate?: any,
     ): PlacedCollisionBox {
         assert(!this.transform.elevation || collisionBox.elevation !== undefined);
@@ -186,6 +187,7 @@ class CollisionIndex {
         const labelPlaneFontScale = (pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio) / ONE_EM;
         const labelPlaneAnchorPoint = symbolProjection.project(anchorX, anchorY, anchorZ, labelPlaneMatrix);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const projectionCache: Record<string, any> = {};
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
@@ -245,6 +247,7 @@ class CollisionIndex {
             if (labelToScreenMatrix) {
                 assert(pitchWithMap);
                 // @ts-expect-error - TS2322 - Type 'vec4[]' is not assignable to type 'vec3[]'.
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 projectedPath = projectedPath.map(([x, y, z]: [any, any, any], index) => {
                     if (getElevation && !isGlobe) {
                         z = getElevation(index < firstLen - 1 ? first.tilePath[firstLen - 1 - index] : last.tilePath[index - firstLen + 2])[2];
@@ -285,7 +288,7 @@ class CollisionIndex {
                     if (minx < screenPlaneMin.x || maxx > screenPlaneMax.x ||
                         miny < screenPlaneMin.y || maxy > screenPlaneMax.y) {
                         // Path partially visible, clip
-                        segments = clipLine(segments, screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
+                        segments = clipLines(segments, screenPlaneMin.x, screenPlaneMin.y, screenPlaneMax.x, screenPlaneMax.y);
                     }
                 }
             }
@@ -379,7 +382,9 @@ class CollisionIndex {
         const features = this.grid.query(minX, minY, maxX, maxY)
             .concat(this.ignoredGrid.query(minX, minY, maxX, maxY));
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const seenFeatures: Record<string, any> = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result: Record<string, any> = {};
 
         for (const feature of features) {
@@ -486,7 +491,7 @@ class CollisionIndex {
     *   example transformation: clipPos = glCoordMatrix * viewportMatrix * circle_pos
     */
     getViewportMatrix(): mat4 {
-        const m = mat4.identity([] as any);
+        const m = mat4.identity([] as unknown as mat4);
         mat4.translate(m, m, [-viewportPadding, -viewportPadding, 0.0]);
         return m;
     }

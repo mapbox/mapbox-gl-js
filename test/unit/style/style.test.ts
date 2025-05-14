@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {
     describe,
@@ -360,7 +361,7 @@ test('Style#update', () => {
         style.addLayer({id: 'third', source: 'source', type: 'fill', 'source-layer': 'source-layer'});
         style.removeLayer('second');
 
-        style.dispatcher.broadcast = function(key, value) {
+        style.dispatcher.broadcast = function (key, value) {
             expect(key).toEqual('updateLayers');
             expect(value.layers.map((layer) => { return layer.id; })).toEqual(['first', 'third']);
             expect(value.removedIds).toEqual(['second']);
@@ -773,7 +774,7 @@ describe('Style#addLayer', () => {
             "type": "geojson",
             "data": {
                 "type": "Point",
-                "coordinates": [ 0, 0]
+                "coordinates": [0, 0]
             }
         };
         const layer = {id: 'inline-source-layer', type: 'circle', source};
@@ -1450,7 +1451,7 @@ describe('Style#setFilter', () => {
         const style = createStyle();
 
         await waitFor(style, "style.load");
-        style.dispatcher.broadcast = function(key, value) {
+        style.dispatcher.broadcast = function (key, value) {
             expect(key).toEqual('updateLayers');
             expect(value.layers[0].id).toEqual('symbol');
             expect(value.layers[0].filter).toEqual(['==', 'id', 1]);
@@ -1483,7 +1484,7 @@ describe('Style#setFilter', () => {
         style.setFilter('symbol', filter);
         style.update({}); // flush pending operations
 
-        style.dispatcher.broadcast = function(key, value) {
+        style.dispatcher.broadcast = function (key, value) {
             expect(key).toEqual('updateLayers');
             expect(value.layers[0].id).toEqual('symbol');
             expect(value.layers[0].filter).toEqual(['==', 'id', 2]);
@@ -1539,7 +1540,7 @@ describe('Style#setFilter', () => {
         const style = createStyle();
 
         await waitFor(style, "style.load");
-        style.dispatcher.broadcast = function(key, value) {
+        style.dispatcher.broadcast = function (key, value) {
             expect(key).toEqual('updateLayers');
             expect(value.layers[0].id).toEqual('symbol');
             expect(value.layers[0].filter).toEqual('notafilter');
@@ -1577,7 +1578,7 @@ describe('Style#setLayerZoomRange', () => {
         const style = createStyle();
 
         await waitFor(style, "style.load");
-        style.dispatcher.broadcast = function(key, value) {
+        style.dispatcher.broadcast = function (key, value) {
             expect(key).toEqual('updateLayers');
             expect(value.map((layer) => { return layer.id; })).toEqual(['symbol']);
         };
@@ -1805,7 +1806,7 @@ describe('Style#query*Features', () => {
 });
 
 describe('Style#addSourceType', () => {
-    const _types = {'existing' () {}};
+    const _types = {'existing'() {}};
 
     beforeEach(() => {
         vi.spyOn(Style, 'getSourceType').mockImplementation(name => _types[name]);

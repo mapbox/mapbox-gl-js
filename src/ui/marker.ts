@@ -33,11 +33,6 @@ export type MarkerOptions = {
 };
 
 const defaultOptions: MarkerOptions = {
-    anchor: 'center',
-    color: '#3FB1CE',
-    scale: 1,
-    draggable: false,
-    clickTolerance: 0,
     rotation: 0,
     rotationAlignment: 'auto',
     pitchAlignment: 'auto',
@@ -129,18 +124,29 @@ export default class Marker extends Evented<MarkerEvents> {
             '_clearFadeTimer'
         ], this);
 
-        options = extend({}, defaultOptions, options);
+        const {
+            anchor = 'center',
+            color = '#3FB1CE',
+            scale = 1,
+            draggable = false,
+            clickTolerance = 0,
+            rotation = defaultOptions.rotation,
+            rotationAlignment = defaultOptions.rotationAlignment,
+            pitchAlignment = defaultOptions.pitchAlignment,
+            occludedOpacity = defaultOptions.occludedOpacity,
+            altitude = defaultOptions.altitude,
+        } = options || {};
 
-        this._anchor = options.anchor;
-        this._color = options.color;
-        this._scale = options.scale;
-        this._draggable = options.draggable;
-        this._clickTolerance = options.clickTolerance;
-        this._rotation = options.rotation;
-        this._rotationAlignment = options.rotationAlignment;
-        this._pitchAlignment = options.pitchAlignment;
-        this._occludedOpacity = options.occludedOpacity;
-        this._altitude = options.altitude;
+        this._anchor = anchor;
+        this._color = color;
+        this._scale = scale;
+        this._draggable = draggable;
+        this._clickTolerance = clickTolerance;
+        this._rotation = rotation;
+        this._rotationAlignment = rotationAlignment;
+        this._pitchAlignment = pitchAlignment;
+        this._occludedOpacity = occludedOpacity;
+        this._altitude = altitude;
 
         this._state = 'inactive';
         this._isDragging = false;
@@ -448,7 +454,7 @@ export default class Marker extends Evented<MarkerEvents> {
         const targetElement = e.originalEvent.target;
         const element = this._element;
 
-        if (this._popup && (targetElement === element || element.contains((targetElement as any)))) {
+        if (this._popup && (targetElement === element || element.contains(targetElement as Node))) {
             this.togglePopup();
         }
     }
@@ -818,7 +824,7 @@ export default class Marker extends Evented<MarkerEvents> {
         const pos = this._pos;
         if (!map || !pos) return;
 
-        if (this._element.contains((e.originalEvent.target as any))) {
+        if (this._element.contains((e.originalEvent.target as Node))) {
             e.preventDefault();
 
             // We need to calculate the pixel distance between the click point

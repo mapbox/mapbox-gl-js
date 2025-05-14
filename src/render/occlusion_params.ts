@@ -10,7 +10,7 @@ export class OcclusionParams {
         this.occluderSize = 30;
         this.depthOffset = -0.0001;
 
-        tp.registerParameter(this, ["Occlusion"], "occluderSize", {min:1, max: 100, step: 1});
-        tp.registerParameter(this, ["Occlusion"], "depthOffset", {min:-0.05, max: 0, step: 0.00001});
+        tp.registerParameter(this, ["Occlusion"], "occluderSize", {min: 1, max: 100, step: 1});
+        tp.registerParameter(this, ["Occlusion"], "depthOffset", {min: -0.05, max: 0, step: 0.00001});
     }
 }

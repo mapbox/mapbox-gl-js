@@ -16,6 +16,7 @@ function makeConfigFQID(id: string, ownScope?: string | null, contextScope?: str
     return [id, ownScope, contextScope].filter(Boolean).join(FQIDSeparator);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function coerceValue(type: string, value: any): any {
     switch (type) {
     case 'string': return valueToString(value);
@@ -96,6 +97,7 @@ class Config implements Expression {
         return new Config(type, configKeyValue, configScopeValue, featureConstant);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         const fqid = makeConfigFQID(this.key, this.scope, ctx.scope);
         const config = ctx.getConfig(fqid);
@@ -121,7 +123,8 @@ class Config implements Expression {
             if (typeof result === 'number') {
                 result = clampToAllowedNumber(result, minValue, maxValue, stepValue);
             } else if (Array.isArray(result)) {
-                result = result.map((item) => typeof item === 'number' ? clampToAllowedNumber(item, minValue, maxValue, stepValue) : item);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                result = result.map((item) => (typeof item === 'number' ? clampToAllowedNumber(item, minValue, maxValue, stepValue) : item));
             }
         }
 

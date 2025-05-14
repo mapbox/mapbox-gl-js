@@ -12,6 +12,7 @@ class EvaluationParameters {
     brightness: number | undefined;
 
     // "options" may also be another EvaluationParameters to copy
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(zoom: number, options?: any) {
         this.zoom = zoom;
 

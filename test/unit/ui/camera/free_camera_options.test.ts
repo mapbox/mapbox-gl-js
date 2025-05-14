@@ -1,6 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {vec3, quat} from 'gl-matrix';
-
 import {createCamera} from './utils';
 import {describe, test, expect} from '../../../util/vitest';
 import {FreeCameraOptions} from '../../../../src/ui/free_camera';
@@ -14,9 +14,9 @@ describe('camera', () => {
 
         const rotatedFrame = (quaternion) => {
             return {
-                up: vec3.transformQuat([] as any, [0, -1, 0], quaternion),
-                forward: vec3.transformQuat([] as any, [0, 0, -1], quaternion),
-                right: vec3.transformQuat([] as any, [1, 0, 0], quaternion)
+                up: vec3.transformQuat([] as unknown as vec3, [0, -1, 0], quaternion),
+                forward: vec3.transformQuat([] as unknown as vec3, [0, 0, -1], quaternion),
+                right: vec3.transformQuat([] as unknown as vec3, [1, 0, 0], quaternion)
             };
         };
 
@@ -169,6 +169,7 @@ describe('camera', () => {
             expect(fixedVec3(frame.forward)).toEqual([-sin60, -0, -cos60]);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('emits move events', async () => {
             let started: any, moved: any, ended: any;
             const eventData = {data: 'ok'};
@@ -188,6 +189,7 @@ describe('camera', () => {
             expect(ended).toEqual('ok');
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('changing orientation emits bearing events', async () => {
             let rotatestarted: any, rotated: any, rotateended: any, pitch: any;
             const eventData = {data: 'ok'};
@@ -208,6 +210,7 @@ describe('camera', () => {
             expect(pitch).toEqual(undefined);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('changing orientation emits pitch events', async () => {
             let  pitchstarted: any, pitch: any, pitchended: any, rotated: any;
             const eventData = {data: 'ok'};
@@ -228,6 +231,7 @@ describe('camera', () => {
             expect(rotated).toEqual(undefined);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('changing altitude emits zoom events', async () => {
             let zoomstarted: any, zoom: any, zoomended: any;
             const eventData = {data: 'ok'};

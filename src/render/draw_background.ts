@@ -13,7 +13,9 @@ import {ImageId} from '../style-spec/expression/types/image_id';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type BackgroundStyleLayer from '../style/style_layer/background_style_layer';
-import type {ImagePosition} from "./image_atlas";
+import type {UniformValues} from './uniform_binding';
+import type {ImagePosition} from './image_atlas';
+import type {BackgroundUniformsType, BackgroundPatternUniformsType} from './program/background_program';
 
 export default drawBackground;
 
@@ -53,10 +55,10 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const programName = image ? 'backgroundPattern' : 'background';
 
     let tileIDs = coords;
-    let backgroundTiles;
+    let backgroundTiles: Record<number, Tile>;
     if (!tileIDs) {
         backgroundTiles = painter.getBackgroundTiles();
-        tileIDs = Object.values(backgroundTiles).map(tile => (tile as any).tileID);
+        tileIDs = Object.values(backgroundTiles).map(tile => tile.tileID);
     }
 
     if (image) {
@@ -67,10 +69,10 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     if (isViewportPitch) {
         // Set overrideRtt to ignore 3D lights
         const program = painter.getOrCreateProgram(programName, {overrideFog: false, overrideRtt: true});
-        const matrix = new Float32Array(mat4.identity([] as any));
+        const matrix = new Float32Array(mat4.identity([] as unknown as mat4));
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
-        const uniformValues = image ?
+        const uniformValues: UniformValues<BackgroundUniformsType | BackgroundPatternUniformsType> = image ?
             backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
             backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(ignoreLut ? null : layer.lut));
 
@@ -90,9 +92,8 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         const tile = sourceCache ? sourceCache.getTile(tileID) :
             backgroundTiles ? backgroundTiles[tileID.key] : new Tile(tileID, tileSize, transform.zoom, painter);
 
-        const uniformValues = image ?
+        const uniformValues: UniformValues<BackgroundUniformsType | BackgroundPatternUniformsType> = image ?
             backgroundPatternUniformValues(matrix, emissiveStrength, opacity, painter, image, layer.scope, patternPosition, isViewportPitch, {tileID, tileSize}) :
-
             backgroundUniformValues(matrix, emissiveStrength, opacity, color.toRenderColor(ignoreLut ? null : layer.lut));
 
         painter.uploadCommonUniforms(context, program, unwrappedTileID);
@@ -101,6 +102,6 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
         program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
             uniformValues, layer.id, tileBoundsBuffer,
-                tileBoundsIndexBuffer, tileBoundsSegments);
+            tileBoundsIndexBuffer, tileBoundsSegments);
     }
 }

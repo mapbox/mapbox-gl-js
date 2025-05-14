@@ -52,24 +52,26 @@ import {OcclusionParams} from './occlusion_params';
 import {Rain} from '../precipitation/draw_rain';
 import {Snow} from '../precipitation/draw_snow';
 
-// 3D-style related
-import type {Source} from '../source/source';
-import type {CutoffParams} from '../render/cutoff';
-import type Transform from '../geo/transform';
-import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
+import type ImageManager from './image_manager';
+import type IndexBuffer from '../gl/index_buffer';
+import type ModelManager from '../../3d-style/render/model_manager';
+import type ProgramConfiguration from '../data/program_configuration';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
-import type ImageManager from './image_manager';
-import type GlyphManager from './glyph_manager';
-import type ModelManager from '../../3d-style/render/model_manager';
-import type VertexBuffer from '../gl/vertex_buffer';
-import type IndexBuffer from '../gl/index_buffer';
-import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
-import type {DynamicDefinesType} from './program/program_uniforms';
-import type {ContextOptions} from '../gl/context';
-import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
-import type ProgramConfiguration from '../data/program_configuration';
+import type Transform from '../geo/transform';
+import type VertexBuffer from '../gl/vertex_buffer';
+import type GlyphManager from './glyph_manager';
+import type {ContextOptions} from '../gl/context';
+import type {CutoffParams} from '../render/cutoff';
+import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
+import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
+import type {LightsUniformsType} from '../../3d-style/render/lights';
+import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
+import type {ProgramName} from './program';
+import type {ProgramUniformsType, DynamicDefinesType} from './program/program_uniforms';
+import type {Source} from '../source/source';
+import type {UniformBindings} from './uniform_binding';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
@@ -116,9 +118,8 @@ type TileBoundsBuffers = {
     tileBoundsSegments: SegmentVector;
 };
 
-type GPUTimers = {
-    [layerId: string]: any;
-};
+type GPUTimer = {calls: number; cpuTime: number; query: WebGLQuery};
+type GPUTimers = Record<string, GPUTimer>;
 
 const draw = {
     symbol,
@@ -157,9 +158,7 @@ const depthPrepass = {
 class Painter {
     context: Context;
     transform: Transform;
-    _tileTextures: {
-        [_: number]: Array<Texture>;
-    };
+    _tileTextures: Record<number, Array<Texture>>;
     numSublayers: number;
     depthEpsilon: number;
     emptyProgramConfiguration: ProgramConfiguration;
@@ -175,9 +174,7 @@ class Painter {
     quadTriangleIndexBuffer: IndexBuffer;
     mercatorBoundsBuffer: VertexBuffer;
     mercatorBoundsSegments: SegmentVector;
-    _tileClippingMaskIDs: {
-        [_: number]: number;
-    };
+    _tileClippingMaskIDs: Record<number, number>;
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
@@ -196,12 +193,10 @@ class Painter {
     id: string;
     _showOverdrawInspector: boolean;
     _shadowMapDebug: boolean;
-    cache: {
-        [_: string]: Program<any>;
-    };
+    cache: Record<string, Program<UniformBindings>>;
     symbolFadeChange: number;
     gpuTimers: GPUTimers;
-    deferredRenderGpuTimeQueries: Array<any>;
+    deferredRenderGpuTimeQueries: WebGLQuery[];
     emptyTexture: Texture;
     identityMat: mat4;
     debugOverlayTexture: Texture;
@@ -212,12 +207,10 @@ class Painter {
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
-    _backgroundTiles: {
-        [key: number]: Tile;
-    };
+    _backgroundTiles: Record<number, Tile>;
     _atmosphere: Atmosphere | null | undefined;
-    _rain: any;
-    _snow: any;
+    _rain?: Rain;
+    _snow?: Snow;
     replacementSource: ReplacementSource;
     conflationActive: boolean;
     firstLightBeamLayer: number;
@@ -229,12 +222,8 @@ class Painter {
     renderDefaultSouthPole: boolean;
     renderElevatedRasterBackface: boolean;
     _fogVisible: boolean;
-    _cachedTileFogOpacities: {
-        [key: number]: [number, number];
-    };
-
-    _shadowRenderer: ShadowRenderer | null | undefined;
-
+    _cachedTileFogOpacities: Record<number, [number, number]>;
+    _shadowRenderer?: ShadowRenderer;
     _wireframeDebugCache: WireframeDebugCache;
 
     tp: ITrackedParameters;
@@ -244,6 +233,7 @@ class Painter {
         showTerrainProxyTiles: boolean;
         fpsWindow: number;
         continousRedraw: boolean;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         enabledLayers: any;
     };
 
@@ -284,7 +274,7 @@ class Painter {
             forceEnablePrecipitation: false,
             showTerrainProxyTiles: false,
             fpsWindow: 30,
-            continousRedraw:false,
+            continousRedraw: false,
             enabledLayers: {
             }
         };
@@ -303,17 +293,17 @@ class Painter {
 
         tp.registerParameter(this._debugParams, ["FPS"], "fpsWindow", {min: 1, max: 100, step: 1});
         tp.registerBinding(this._debugParams, ["FPS"], 'continousRedraw', {
-            readonly:true,
+            readonly: true,
             label: "continuous redraw"
         });
         tp.registerBinding(this, ["FPS"], '_averageFPS', {
-            readonly:true,
+            readonly: true,
             label: "value"
         });
         tp.registerBinding(this, ["FPS"], '_averageFPS', {
-            readonly:true,
+            readonly: true,
             label: "graph",
-            view:'graph',
+            view: 'graph',
             min: 0,
             max: 200
         });
@@ -636,6 +626,7 @@ class Painter {
             if (this.nextStencilID + stencilValues > 256) {
                 this.clearStencil();
             }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const zToStencilMode: Record<string, any> = {};
             for (let i = 0; i < stencilValues; i++) {
                 zToStencilMode[i + minTileZ] = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, i + this.nextStencilID, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
@@ -763,16 +754,15 @@ class Painter {
         const layers = this.style._mergedLayers;
 
         const drapingEnabled = !!(this.terrain && this.terrain.enabled);
-        const getLayerIds = () =>
-            this.style._getOrder(drapingEnabled).filter((id) => {
-                const layer = layers[id];
+        const getLayerIds = () => this.style._getOrder(drapingEnabled).filter((id) => {
+            const layer = layers[id];
 
-                if (layer.type in this._debugParams.enabledLayers) {
-                    return this._debugParams.enabledLayers[layer.type];
-                }
+            if (layer.type in this._debugParams.enabledLayers) {
+                return this._debugParams.enabledLayers[layer.type];
+            }
 
-                return true;
-            });
+            return true;
+        });
 
         let layerIds = getLayerIds();
 
@@ -1475,7 +1465,7 @@ class Painter {
         return currentLayerTimers;
     }
 
-    collectDeferredRenderGpuQueries(): Array<any> {
+    collectDeferredRenderGpuQueries(): WebGLQuery[] {
         const currentQueries = this.deferredRenderGpuTimeQueries;
         this.deferredRenderGpuTimeQueries = [];
         return currentQueries;
@@ -1484,19 +1474,19 @@ class Painter {
     queryGpuTimers(gpuTimers: GPUTimers): {
         [layerId: string]: number;
     } {
-        const layers: Record<string, any> = {};
+        const layers: Record<string, number> = {};
         for (const layerId in gpuTimers) {
             const gpuTimer = gpuTimers[layerId];
             const ext = this.context.extTimerQuery;
             const gl = this.context.gl;
             const gpuTime = ext.getQueryParameter(gpuTimer.query, gl.QUERY_RESULT) / (1000 * 1000);
             ext.deleteQueryEXT(gpuTimer.query);
-            layers[layerId] = (gpuTime);
+            layers[layerId] = gpuTime;
         }
         return layers;
     }
 
-    queryGpuTimeDeferredRender(gpuQueries: Array<any>): number {
+    queryGpuTimeDeferredRender(gpuQueries: WebGLQuery[]): number {
         if (!this.options.gpuTimingDeferredRender) return 0;
         const gl = this.context.gl;
 
@@ -1620,7 +1610,7 @@ class Painter {
         return defines;
     }
 
-    getOrCreateProgram(name: string, options?: CreateProgramParams): Program<any> {
+    getOrCreateProgram<T extends ProgramName>(name: T, options?: CreateProgramParams): Program<ProgramUniformsType[T]> {
         this.cache = this.cache || {};
         const defines = ((options && options.defines) || []);
         const config = options && options.config;
@@ -1632,9 +1622,10 @@ class Painter {
         const key = Program.cacheKey(shaders[name], name, allDefines, config);
 
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, name, shaders[name], config, programUniforms[name], allDefines);
+            this.cache[key] = new Program(this.context, name, shaders[name], config, programUniforms[name] as (Context) => UniformBindings, allDefines);
         }
-        return this.cache[key];
+
+        return this.cache[key] as Program<ProgramUniformsType[T]>;
     }
 
     /*
@@ -1712,7 +1703,7 @@ class Painter {
         }
     }
 
-    uploadCommonLightUniforms(context: Context, program: Program<any>) {
+    uploadCommonLightUniforms(context: Context, program: Program<LightsUniformsType>) {
         if (this.style.enable3dLights()) {
             const directionalLight = this.style.directionalLight;
             const ambientLight = this.style.ambientLight;
@@ -1724,8 +1715,8 @@ class Painter {
         }
     }
 
-    uploadCommonUniforms(context: Context, program: Program<any>, tileID?: UnwrappedTileID | null, fogMatrix?: Float32Array | null, cutoffParams?: CutoffParams | null) {
-        this.uploadCommonLightUniforms(context, program);
+    uploadCommonUniforms(context: Context, program: Program<ProgramUniformsType[ProgramName]>, tileID?: UnwrappedTileID | null, fogMatrix?: Float32Array | null, cutoffParams?: CutoffParams | null) {
+        this.uploadCommonLightUniforms(context, program as unknown as Program<LightsUniformsType>);
 
         // Fog is not enabled when rendering to texture so we
         // can safely skip uploading uniforms in that case
@@ -1859,6 +1850,7 @@ class Painter {
     }
 
     // For native compatibility depth for occlusion is kept as before
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setupDepthForOcclusion(useDepthForOcclusion: boolean, program: Program<any>, uniforms?: ReturnType<typeof defaultTerrainUniforms>) {
         const context = this.context;
         const gl = context.gl;

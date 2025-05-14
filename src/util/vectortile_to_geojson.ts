@@ -17,7 +17,7 @@ export interface GeoJSONFeature extends GeoJSON.Feature {
 class Feature implements GeoJSONFeature {
     type: 'Feature';
     id?: number | string;
-    properties: Record<any, any>;
+    properties: Record<string, string | number | boolean>;
     tile?: {z: number; x: number; y: number};
     _geometry?: GeoJSON.Geometry;
     _vectorTileFeature: VectorTileFeature;
@@ -100,7 +100,7 @@ export type TargetDescriptor =
 export type FeatureVariant = {
     target: TargetDescriptor;
     namespace?: string;
-    properties?: Record<string, unknown>;
+    properties?: Record<string, string | number | boolean>;
     uniqueFeatureID?: boolean;
 };
 

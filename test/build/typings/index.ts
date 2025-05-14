@@ -17,7 +17,7 @@ const map = new mapboxgl.Map({
     attributionControl: false,
 });
 
-const transformRequest: mapboxgl.RequestTransformFunction = (url: string, resourceTypeEnum: mapboxgl.ResourceType): mapboxgl.RequestParameters => {return {url}};
+const transformRequest: mapboxgl.RequestTransformFunction = (url: string, resourceType?: mapboxgl.ResourceType): mapboxgl.RequestParameters => {return {url}};
 
 //
 // Events
@@ -171,14 +171,16 @@ map.setConfigProperty('basemap', 'lightPreset', 'dawn');
 // Loading images
 //
 
-const image = await new Promise<ImageData>((resolve, reject) =>
-    map.loadImage('https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png', (error: Error, image: ImageData) => {
+const image = await new Promise<ImageBitmap | HTMLImageElement | ImageData | null | undefined>((resolve, reject) =>
+    map.loadImage('https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png', (error?: Error | null, image?: ImageBitmap | HTMLImageElement | ImageData | null) => {
         if (error) reject(error);
         resolve(image);
     })
 );
 
-map.addImage('custom-marker', image);
+if (image) {
+    map.addImage('custom-marker', image);
+}
 
 //
 // Adding sources
@@ -260,6 +262,22 @@ if (source) {
             break;
     }
 }
+
+class CustomSource implements mapboxgl.CustomSourceInterface<ImageBitmap> {
+    id: string;
+    type: 'custom';
+
+    constructor() {
+        this.id = 'custom-source';
+        this.type = 'custom';
+    }
+
+    async loadTile(tileID: {z: number; x: number; y: number}, options: {signal: AbortSignal}): Promise<ImageBitmap> {
+        return Promise.resolve(new ImageBitmap());
+    }
+}
+
+map.addSource('custom-source', new CustomSource());
 
 //
 // Adding layers

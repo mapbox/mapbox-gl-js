@@ -58,7 +58,7 @@ function addGlobeExtVertex(vertexArray: CircleGlobeExtArray, pos: {
  * vector that is where it points.
  * @private
  */
-class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
+class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleStyleLayer | HeatmapStyleLayer> implements Bucket {
     index: number;
     zoom: number;
     overscaling: number;
@@ -217,6 +217,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer> implement
                 if (projection) {
                     const projectedPoint = projection.projectTilePoint(x, y, canonical);
                     const normal = projection.upVector(canonical, x, y);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const array: any = this.globeExtVertexArray;
 
                     addGlobeExtVertex(array, projectedPoint, normal);

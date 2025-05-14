@@ -68,12 +68,16 @@ const VALIDATORS = {
 // - styleSpec: current full spec being evaluated.
 export type ValidationOptions = {
     key: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     valueSpec?: any;
     style: Partial<StyleSpecification>;
     styleSpec: StyleReference;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     object?: any;
     objectKey?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     objectElementValidators?: Record<string, (...args: any[]) => Array<ValidationError>>;
 };
 
@@ -83,6 +87,7 @@ export default function validate(options: ValidationOptions, arrayAsExpression: 
     const styleSpec = options.styleSpec;
 
     if (valueSpec.expression && isFunction(unbundle(value))) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return validateFunction(options);
     } else if (valueSpec.expression && isExpression(deepUnbundle(value))) {
         return validateExpression(options);
@@ -92,6 +97,7 @@ export default function validate(options: ValidationOptions, arrayAsExpression: 
             // Try to validate as an expression
             return validateExpression(options);
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return valid;
         }
     } else {

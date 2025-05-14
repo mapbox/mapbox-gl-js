@@ -12,5 +12,5 @@ export default {
         file: `test/integration/dist/integration-test.js`
     },
     plugins: plugins({test: true}),
-    external: [ 'tape', 'mapboxgl' ]
+    external: ['tape', 'mapboxgl']
 };

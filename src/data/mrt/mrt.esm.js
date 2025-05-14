@@ -899,7 +899,9 @@ class MapboxRasterLayer {
       default:
         throw new MRTError(`Invalid band \`${JSON.stringify(band)}\`. Expected string or integer.`);
     }
-    throw new MRTError(`Band not found: ${JSON.stringify(band)}`);
+
+    // If we reach here, the band was not found
+    return {blockIndex: -1, blockBandIndex: -1};
   }
 
   /**
@@ -973,6 +975,10 @@ class MapboxRasterLayer {
       blockIndex,
       blockBandIndex
     } = this.getBlockForBand(band);
+
+    if (blockIndex < 0) {
+        throw new MRTError(`Band not found: ${JSON.stringify(band)}`);
+    }
 
     /** @type {Uint8Array} */
     const blockData = this._decodedBlocks.get(blockIndex.toString());

@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import {readFile} from 'node:fs/promises';
-
 import {plugins} from './build/rollup_plugins.js';
 import banner from './build/banner.js';
 

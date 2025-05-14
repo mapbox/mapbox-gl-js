@@ -79,8 +79,8 @@ export default function validateLayer(options: Options): Array<ValidationError> 
             } else if (sourceType === 'raster-array' && !['raster', 'raster-particle'].includes(type)) {
                 errors.push(new ValidationError(key, layer.source, `raster-array source can only be used with layer type \'raster\'.`));
             } else if (type === 'line' && layer.paint && (layer.paint['line-gradient'] || layer.paint['line-trim-offset']) &&
-                    (sourceType !== 'geojson' || !(source as GeoJSONSourceSpecification).lineMetrics)) {
-                errors.push(new ValidationError(key, layer, `layer "${layer.id}" specifies a line-gradient, which requires a GeoJSON source with \`lineMetrics\` enabled.`));
+                    (sourceType === 'geojson' && !(source as GeoJSONSourceSpecification).lineMetrics)) {
+                errors.push(new ValidationError(key, layer, `layer "${layer.id}" specifies a line-gradient, which requires the GeoJSON source to have \`lineMetrics\` enabled.`));
             } else if (type === 'raster-particle' && sourceType !== 'raster-array') {
                 errors.push(new ValidationError(key, layer.source, `layer "${layer.id}" requires a \'raster-array\' source.`));
             }
@@ -146,5 +146,6 @@ export default function validateLayer(options: Options): Array<ValidationError> 
         }
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

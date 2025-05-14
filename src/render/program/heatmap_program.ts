@@ -79,7 +79,7 @@ const heatmapUniformValues = (
         values['u_zoom_transition'] = globeToMercatorTransition(transform.zoom);
         const x = mercatorCenter[0] * EXTENT;
         const y = mercatorCenter[1] * EXTENT;
-        values['u_up_dir'] = (transform.projection.upVector(new CanonicalTileID(0, 0, 0), x, y) as any);
+        values['u_up_dir'] = transform.projection.upVector(new CanonicalTileID(0, 0, 0), x, y);
     }
 
     return values;

@@ -6,6 +6,7 @@ import CompoundExpression from '../expression/compound_expression';
 
 import type {Expression} from '../expression/expression';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function validateExpression(options: any): Array<ValidationError> {
     const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(deepUnbundle(options.value), options.valueSpec);
     if (expression.result === 'error') {
@@ -14,6 +15,7 @@ export default function validateExpression(options: any): Array<ValidationError>
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const expressionObj = (expression.value as any).expression || (expression.value as any)._styleExpression.expression;
 
     if (options.expressionContext === 'property' && (options.propertyKey === 'text-font') &&
@@ -42,6 +44,7 @@ export default function validateExpression(options: any): Array<ValidationError>
     return [];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function disallowedFilterParameters(e: Expression, options: any): Array<ValidationError> {
     const disallowedParameters = new Set([
         'zoom',
@@ -70,5 +73,6 @@ export function disallowedFilterParameters(e: Expression, options: any): Array<V
         errors.push(...disallowedFilterParameters(arg, options));
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

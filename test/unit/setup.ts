@@ -1,7 +1,9 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 /* global globalThis */
 
 import {toHaveBeenCalledBefore, toHaveBeenCalledAfter} from 'jest-extended';
+// eslint-disable-next-line import/order
 import {expect} from '../util/vitest';
 
 window.devicePixelRatio = 1;

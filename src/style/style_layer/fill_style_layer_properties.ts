@@ -38,6 +38,7 @@ export type PaintProps = {
     "fill-translate": DataConstantProperty<[number, number]>;
     "fill-translate-anchor": DataConstantProperty<"map" | "viewport">;
     "fill-pattern": DataDrivenProperty<ResolvedImage | null | undefined>;
+    "fill-pattern-cross-fade": DataConstantProperty<number>;
     "fill-emissive-strength": DataConstantProperty<number>;
     "fill-z-offset": DataDrivenProperty<number>;
     "fill-bridge-guard-rail-color": DataDrivenProperty<Color>;
@@ -57,6 +58,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-translate": new DataConstantProperty(styleSpec["paint_fill"]["fill-translate"]),
     "fill-translate-anchor": new DataConstantProperty(styleSpec["paint_fill"]["fill-translate-anchor"]),
     "fill-pattern": new DataDrivenProperty(styleSpec["paint_fill"]["fill-pattern"]),
+    "fill-pattern-cross-fade": new DataConstantProperty(styleSpec["paint_fill"]["fill-pattern-cross-fade"]),
     "fill-emissive-strength": new DataConstantProperty(styleSpec["paint_fill"]["fill-emissive-strength"]),
     "fill-z-offset": new DataDrivenProperty(styleSpec["paint_fill"]["fill-z-offset"]),
     "fill-bridge-guard-rail-color": new DataDrivenProperty(styleSpec["paint_fill"]["fill-bridge-guard-rail-color"]),

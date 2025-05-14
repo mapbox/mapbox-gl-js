@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
 import {VectorTile} from '@mapbox/vector-tile';
@@ -6,13 +7,12 @@ import VectorTileWorkerSource from '../../../src/source/vector_tile_worker_sourc
 import StyleLayerIndex from '../../../src/style/style_layer_index';
 import perf from '../../../src/util/performance';
 import {getProjection} from '../../../src/geo/projection/index';
-// eslint-disable-next-line import/no-unresolved
 import rawTileData from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 const actor = {send: () => {}};
 
 test('VectorTileWorkerSource#abortTile aborts pending request', () => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], [], true);
 
     expect.assertions(3);
 
@@ -39,7 +39,7 @@ test('VectorTileWorkerSource#abortTile aborts pending request', () => {
 });
 
 test('VectorTileWorkerSource#abortTile aborts pending async request', () => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true, (params, cb) => {
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], [], true, (params, cb) => {
         setTimeout(() => {
             cb(null, {});
         }, 0);
@@ -57,7 +57,7 @@ test('VectorTileWorkerSource#abortTile aborts pending async request', () => {
 });
 
 test('VectorTileWorkerSource#removeTile removes loaded tile', () => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], [], true);
 
     expect.assertions(3);
 
@@ -77,7 +77,7 @@ test('VectorTileWorkerSource#removeTile removes loaded tile', () => {
 });
 
 test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', () => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], [], true);
     const parse = vi.fn();
 
     source.loaded = {
@@ -92,12 +92,12 @@ test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', () =>
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback);
     expect(parse).toHaveBeenCalledTimes(1);
 
-    parse.mock.calls[0][4]();
+    parse.mock.calls[0][5]();
     expect(callback).toHaveBeenCalledTimes(1);
 });
 
 test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progress', () => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], [], true);
     const parse = vi.fn();
 
     source.loaded = {
@@ -117,19 +117,19 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback2);
     expect(parse).toHaveBeenCalledTimes(1);
 
-    parse.mock.calls[0][4]();
+    parse.mock.calls[0][5]();
     expect(parse).toHaveBeenCalledTimes(2);
     expect(callback1).toHaveBeenCalledTimes(1);
     expect(callback2).not.toHaveBeenCalled();
 
-    parse.mock.calls[1][4]();
+    parse.mock.calls[1][5]();
     expect(callback1).toHaveBeenCalledTimes(1);
     expect(callback2).toHaveBeenCalledTimes(1);
 });
 
 test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', () => {
     // https://github.com/mapbox/mapbox-gl-js/issues/6308
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], [], true);
     const parse = vi.fn();
 
     source.loaded = {
@@ -150,7 +150,7 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', () =>
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback2);
     expect(parse).toHaveBeenCalledTimes(1);
 
-    parse.mock.calls[0][4]();
+    parse.mock.calls[0][5]();
     expect(parse).toHaveBeenCalledTimes(2);
     expect(callback1).toHaveBeenCalledTimes(1);
     expect(callback2).not.toHaveBeenCalled();
@@ -162,20 +162,20 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', () =>
     expect(callback2).not.toHaveBeenCalled();
     expect(callback3).not.toHaveBeenCalled();
 
-    parse.mock.calls[1][4]();
+    parse.mock.calls[1][5]();
     expect(parse).toHaveBeenCalledTimes(3);
     expect(callback1).toHaveBeenCalledTimes(1);
     expect(callback2).toHaveBeenCalledTimes(1);
     expect(callback3).not.toHaveBeenCalled();
 
-    parse.mock.calls[2][4]();
+    parse.mock.calls[2][5]();
     expect(callback1).toHaveBeenCalledTimes(1);
     expect(callback2).toHaveBeenCalledTimes(1);
     expect(callback3).toHaveBeenCalledTimes(1);
 });
 
 test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTile data but does call callback', () => {
-    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], true);
+    const source = new VectorTileWorkerSource(actor, new StyleLayerIndex(), [], [], true);
     const parse = vi.fn();
 
     source.loaded = {
@@ -230,9 +230,9 @@ test('VectorTileWorkerSource provides resource timing information', () => {
         type: 'fill'
     }]);
 
-    const source = new VectorTileWorkerSource(actor, layerIndex, [], true, loadVectorData);
+    const source = new VectorTileWorkerSource(actor, layerIndex, [], [], true, loadVectorData);
 
-    vi.spyOn(perf, 'getEntriesByName').mockImplementation(() => { return [ exampleResourceTiming ]; });
+    vi.spyOn(perf, 'getEntriesByName').mockImplementation(() => { return [exampleResourceTiming]; });
 
     source.loadTile({
         source: 'source',

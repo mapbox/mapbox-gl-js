@@ -1,4 +1,4 @@
-/* eslint-disable camelcase */
+/* eslint-disable camelcase, @stylistic/js/brace-style */
 
 import Color from "../../style-spec/util/color";
 
@@ -6,54 +6,68 @@ import type Pbf from "pbf";
 
 const defaultColor = new Color(0, 0, 0);
 
-export enum PathRule {
-    PATH_RULE_UNSPECIFIED = 0,
-    PATH_RULE_NON_ZERO = 1,
-    PATH_RULE_EVEN_ODD = 2
-}
+export const PathRule = {
+    PATH_RULE_UNSPECIFIED: 0,
+    PATH_RULE_NON_ZERO: 1,
+    PATH_RULE_EVEN_ODD: 2
+} as const;
 
-export enum LineCap {
-    LINE_CAP_UNSPECIFIED = 0,
-    LINE_CAP_BUTT = 1,
-    LINE_CAP_ROUND = 2,
-    LINE_CAP_SQUARE = 3
-}
+type PathRuleValue = typeof PathRule[keyof typeof PathRule];
 
-export enum LineJoin {
-    LINE_JOIN_UNSPECIFIED = 0,
-    LINE_JOIN_MITER = 1,
-    LINE_JOIN_MITER_CLIP = 2,
-    LINE_JOIN_ROUND = 3,
-    LINE_JOIN_BEVEL = 4
-}
+export const LineCap = {
+    LINE_CAP_UNSPECIFIED: 0,
+    LINE_CAP_BUTT: 1,
+    LINE_CAP_ROUND: 2,
+    LINE_CAP_SQUARE: 3
+} as const;
 
-export enum PaintOrder {
-    PAINT_ORDER_UNSPECIFIED = 0,
-    PAINT_ORDER_FILL_AND_STROKE = 1,
-    PAINT_ORDER_STROKE_AND_FILL = 2
-}
+type LineCapValue = typeof LineCap[keyof typeof LineCap];
 
-export enum PathCommand {
-    PATH_COMMAND_UNSPECIFIED = 0,
-    PATH_COMMAND_MOVE = 1,
-    PATH_COMMAND_LINE = 2,
-    PATH_COMMAND_QUAD = 3,
-    PATH_COMMAND_CUBIC = 4,
-    PATH_COMMAND_CLOSE = 5
-}
+export const LineJoin = {
+    LINE_JOIN_UNSPECIFIED: 0,
+    LINE_JOIN_MITER: 1,
+    LINE_JOIN_MITER_CLIP: 2,
+    LINE_JOIN_ROUND: 3,
+    LINE_JOIN_BEVEL: 4
+} as const;
 
-export enum SpreadMethod {
-    SPREAD_METHOD_UNSPECIFIED = 0,
-    SPREAD_METHOD_PAD = 1,
-    SPREAD_METHOD_REFLECT = 2,
-    SPREAD_METHOD_REPEAT = 3
-}
+type LineJoinValue = typeof LineJoin[keyof typeof LineJoin];
 
-export enum MaskType {
-    MASK_TYPE_UNSPECIFIED = 0,
-    MASK_TYPE_LUMINANCE = 1,
-    MASK_TYPE_ALPHA = 2
-}
+export const PaintOrder = {
+    PAINT_ORDER_UNSPECIFIED: 0,
+    PAINT_ORDER_FILL_AND_STROKE: 1,
+    PAINT_ORDER_STROKE_AND_FILL: 2
+} as const;
+
+type PaintOrderValue = typeof PaintOrder[keyof typeof PaintOrder];
+
+export const PathCommand = {
+    PATH_COMMAND_UNSPECIFIED: 0,
+    PATH_COMMAND_MOVE: 1,
+    PATH_COMMAND_LINE: 2,
+    PATH_COMMAND_QUAD: 3,
+    PATH_COMMAND_CUBIC: 4,
+    PATH_COMMAND_CLOSE: 5
+} as const;
+
+type PathCommandValue = typeof PathCommand[keyof typeof PathCommand];
+
+export const SpreadMethod = {
+    SPREAD_METHOD_UNSPECIFIED: 0,
+    SPREAD_METHOD_PAD: 1,
+    SPREAD_METHOD_REFLECT: 2,
+    SPREAD_METHOD_REPEAT: 3
+} as const;
+
+type SpreadMethodValue = typeof SpreadMethod[keyof typeof SpreadMethod];
+
+export const MaskType = {
+    MASK_TYPE_UNSPECIFIED: 0,
+    MASK_TYPE_LUMINANCE: 1,
+    MASK_TYPE_ALPHA: 2
+} as const;
+
+type MaskTypeValue = typeof MaskType[keyof typeof MaskType];
 
 export interface IconSet {
     icons: Icon[];
@@ -287,11 +301,11 @@ function readTransformField(tag: number, obj: Transform, pbf: Pbf) {
 export interface Path {
     fill?: Fill;
     stroke?: Stroke;
-    paint_order?: PaintOrder;
-    commands: PathCommand[];
+    paint_order?: PaintOrderValue;
+    commands: PathCommandValue[];
     step?: number;
     diffs: number[];
-    rule?: PathRule;
+    rule?: PathRuleValue;
 }
 
 export function readPath(pbf: Pbf, end?: number): Path {
@@ -301,11 +315,11 @@ export function readPath(pbf: Pbf, end?: number): Path {
 function readPathField(tag: number, obj: Path, pbf: Pbf) {
     if (tag === 1) obj.fill = readFill(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 2) obj.stroke = readStroke(pbf, pbf.readVarint() + pbf.pos);
-    else if (tag === 3) obj.paint_order = pbf.readVarint();
+    else if (tag === 3) obj.paint_order = pbf.readVarint() as PaintOrderValue;
     else if (tag === 5) pbf.readPackedVarint(obj.commands);
     else if (tag === 6) obj.step = pbf.readFloat();
     else if (tag === 7) pbf.readPackedSVarint(obj.diffs);
-    else if (tag === 8) obj.rule = pbf.readVarint();
+    else if (tag === 8) obj.rule = pbf.readVarint() as PathRuleValue;
 }
 
 export interface Fill {
@@ -336,8 +350,8 @@ export interface Stroke {
     miterlimit?: number;
     opacity?: number;
     width?: number;
-    linecap?: LineCap;
-    linejoin?: LineJoin;
+    linecap?: LineCapValue;
+    linejoin?: LineJoinValue;
     paint?: "rgb_color" | "linear_gradient_idx" | "radial_gradient_idx";
 }
 
@@ -358,13 +372,13 @@ function readStrokeField(tag: number, obj: Stroke, pbf: Pbf) {
     else if (tag === 7) obj.miterlimit = pbf.readFloat();
     else if (tag === 8) obj.opacity = pbf.readVarint();
     else if (tag === 9) obj.width = pbf.readFloat();
-    else if (tag === 10) obj.linecap = pbf.readVarint();
-    else if (tag === 11) obj.linejoin = pbf.readVarint();
+    else if (tag === 10) obj.linecap = pbf.readVarint() as LineCapValue;
+    else if (tag === 11) obj.linejoin = pbf.readVarint() as LineJoinValue;
 }
 
 export interface LinearGradient {
     transform?: Transform;
-    spread_method?: SpreadMethod;
+    spread_method?: SpreadMethodValue;
     stops: Stop[];
     x1?: number;
     y1?: number;
@@ -378,7 +392,7 @@ export function readLinearGradient(pbf: Pbf, end?: number): LinearGradient {
 
 function readLinearGradientField(tag: number, obj: LinearGradient, pbf: Pbf) {
     if (tag === 1) obj.transform = readTransform(pbf, pbf.readVarint() + pbf.pos);
-    else if (tag === 2) obj.spread_method = pbf.readVarint();
+    else if (tag === 2) obj.spread_method = pbf.readVarint() as SpreadMethodValue;
     else if (tag === 3) obj.stops.push(readStop(pbf, pbf.readVarint() + pbf.pos));
     else if (tag === 4) obj.x1 = pbf.readFloat();
     else if (tag === 5) obj.y1 = pbf.readFloat();
@@ -404,7 +418,7 @@ function readStopField(tag: number, obj: Stop, pbf: Pbf) {
 
 export interface RadialGradient {
     transform?: Transform;
-    spread_method?: SpreadMethod;
+    spread_method?: SpreadMethodValue;
     stops: Stop[];
     cx?: number;
     cy?: number;
@@ -420,7 +434,7 @@ export function readRadialGradient(pbf: Pbf, end?: number): RadialGradient {
 
 function readRadialGradientField(tag: number, obj: RadialGradient, pbf: Pbf) {
     if (tag === 1) obj.transform = readTransform(pbf, pbf.readVarint() + pbf.pos);
-    else if (tag === 2) obj.spread_method = pbf.readVarint();
+    else if (tag === 2) obj.spread_method = pbf.readVarint() as SpreadMethodValue;
     else if (tag === 3) obj.stops.push(readStop(pbf, pbf.readVarint() + pbf.pos));
     else if (tag === 4) obj.cx = pbf.readFloat();
     else if (tag === 5) obj.cy = pbf.readFloat();
@@ -451,7 +465,7 @@ export interface Mask {
     width?: number;
     top?: number;
     height?: number;
-    mask_type?: MaskType;
+    mask_type?: MaskTypeValue;
     mask_idx?: number;
     children: Node[];
 }
@@ -475,7 +489,7 @@ function readMaskField(tag: number, obj: Mask, pbf: Pbf) {
     else if (tag === 2) obj.width = obj.height = pbf.readFloat();
     else if (tag === 3) obj.top = pbf.readFloat();
     else if (tag === 4) obj.height = pbf.readFloat();
-    else if (tag === 5) obj.mask_type = pbf.readVarint();
+    else if (tag === 5) obj.mask_type = pbf.readVarint() as MaskTypeValue;
     else if (tag === 6) obj.mask_idx = pbf.readVarint();
     else if (tag === 7) obj.children.push(readNode(pbf, pbf.readVarint() + pbf.pos));
 }

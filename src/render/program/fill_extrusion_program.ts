@@ -17,6 +17,17 @@ import type {UniformValues} from '../uniform_binding';
 import type Tile from '../../source/tile';
 import type {OverscaledTileID} from '../../source/tile_id';
 
+export type FillExtrusionDefinesType =
+    | 'CLEAR_FROM_TEXTURE'
+    | 'CLEAR_SUBPASS'
+    | 'FAUX_AO'
+    | 'FLOOD_LIGHT'
+    | 'HAS_CENTROID'
+    | 'RENDER_WALL_MODE'
+    | 'SDF_SUBPASS'
+    | 'ZERO_ROOF_RADIUS'
+    | 'FILL_EXTRUSION_PATTERN_TRANSITION'
+
 const fillExtrusionAlignmentType = {
     'terrain': 0,
     'flat': 1,
@@ -82,6 +93,7 @@ export type FillExtrusionPatternUniformsType = {
     ['u_pixel_coord_lower']: Uniform2f;
     ['u_tile_units_to_pixels']: Uniform1f;
     ['u_opacity']: Uniform1f;
+    ['u_pattern_transition']: Uniform1f
 };
 export type FillExtrusionGroundEffectUniformsType = {
     ['u_matrix']: UniformMatrix4f;
@@ -120,7 +132,7 @@ const fillExtrusionUniforms = (context: Context): FillExtrusionUniformsType => (
     'u_flood_light_color': new Uniform3f(context),
     'u_vertical_scale': new Uniform1f(context),
     'u_flood_light_intensity': new Uniform1f(context),
-    'u_ground_shadow_factor': new Uniform3f(context),
+    'u_ground_shadow_factor': new Uniform3f(context)
 });
 
 const fillExtrusionDepthUniforms = (context: Context): FillExtrusionDepthUniformsType => ({
@@ -158,6 +170,7 @@ const fillExtrusionPatternUniforms = (context: Context): FillExtrusionPatternUni
     'u_pixel_coord_lower': new Uniform2f(context),
     'u_tile_units_to_pixels': new Uniform1f(context),
     'u_opacity': new Uniform1f(context),
+    'u_pattern_transition': new Uniform1f(context)
 });
 
 const fillExtrusionGroundEffectUniforms = (context: Context): FillExtrusionGroundEffectUniformsType => ({
@@ -195,7 +208,7 @@ const fillExtrusionUniformValues = (
     floodLightColor: [number, number, number],
     verticalScale: number,
     floodLightIntensity: number,
-    groundShadowFactor: [number, number, number]
+    groundShadowFactor: [number, number, number],
 ): UniformValues<FillExtrusionUniformsType> => {
     const light = painter.style.light;
     const _lp = light.properties.get('position');
@@ -240,7 +253,7 @@ const fillExtrusionUniformValues = (
         uniformValues['u_zoom_transition'] = zoomTransition;
         uniformValues['u_inv_rot_matrix'] = invMatrix as Float32Array;
         uniformValues['u_merc_center'] = mercatorCenter;
-        uniformValues['u_up_dir'] = (tr.projection.upVector(new CanonicalTileID(0, 0, 0), mercatorCenter[0] * EXTENT, mercatorCenter[1] * EXTENT) as any);
+        uniformValues['u_up_dir'] = tr.projection.upVector(new CanonicalTileID(0, 0, 0), mercatorCenter[0] * EXTENT, mercatorCenter[1] * EXTENT);
         uniformValues['u_height_lift'] = heightLift;
     }
 
@@ -276,6 +289,7 @@ const fillExtrusionPatternUniformValues = (
     invMatrix: mat4,
     floodLightColor: [number, number, number],
     verticalScale: number,
+    patternTransition: number
 ): UniformValues<FillExtrusionPatternUniformsType> => {
     const uniformValues = fillExtrusionUniformValues(
         matrix, painter, shouldUseVerticalGradient, opacity, aoIntensityRadius, edgeRadius, lineWidthScale, coord,
@@ -283,7 +297,7 @@ const fillExtrusionPatternUniformValues = (
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
     };
-    return extend(uniformValues, patternUniformValues(painter, tile), heightFactorUniform);
+    return extend(uniformValues, patternUniformValues(painter, tile, patternTransition), heightFactorUniform);
 };
 
 const fillExtrusionGroundEffectUniformValues = (

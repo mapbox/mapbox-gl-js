@@ -85,6 +85,7 @@ function getTilePolygon(coordinates: Array<Array<GeoJSON.Position>>, bbox: BBox,
         }
         polygon.push(ring);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return polygon;
 }
 
@@ -94,6 +95,7 @@ function getTilePolygons(coordinates: Array<Array<Array<GeoJSON.Position>>>, bbo
         const polygon = getTilePolygon(coordinates[i], bbox, canonical);
         polygons.push(polygon);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return polygons;
 }
 
@@ -118,6 +120,7 @@ function getTilePoints(geometry: Array<Array<Point>> | null | undefined, pointBB
     const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
     const tilePoints = [];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (!geometry) return tilePoints;
     for (const points of geometry) {
         for (const point of points) {
@@ -126,6 +129,7 @@ function getTilePoints(geometry: Array<Array<Point>> | null | undefined, pointBB
             tilePoints.push(p);
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return tilePoints;
 }
 
@@ -230,12 +234,12 @@ class Within implements Expression {
         if (args.length !== 2)
             return context.error(`'within' expression requires exactly one argument, but found ${args.length - 1} instead.`);
         if (isValue(args[1])) {
-            const geojson = (args[1] as any);
+            const geojson = args[1] as GeoJSON.GeoJSON;
             if (geojson.type === 'FeatureCollection') {
                 for (let i = 0; i < geojson.features.length; ++i) {
                     const type = geojson.features[i].geometry.type;
                     if (type === 'Polygon' || type === 'MultiPolygon') {
-                        return new Within(geojson, geojson.features[i].geometry);
+                        return new Within(geojson, geojson.features[i].geometry as GeoJSONPolygons);
                     }
                 }
             } else if (geojson.type === 'Feature') {

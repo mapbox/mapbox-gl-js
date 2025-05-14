@@ -40,7 +40,7 @@ class Step implements Expression {
 
         const stops: Stops = [];
 
-        let outputType: Type = (null as any);
+        let outputType: Type = null;
         if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
@@ -69,6 +69,7 @@ class Step implements Expression {
         return new Step(outputType, input, stops);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         const labels = this.labels;
         const outputs = this.outputs;

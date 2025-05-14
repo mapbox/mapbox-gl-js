@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, beforeEach, expect, vi} from '../../util/vitest';
 import {cacheGet, cachePut, cacheClose} from '../../../src/util/tile_request_cache';
@@ -13,7 +14,7 @@ describe('tile_request_cache', () => {
 
         let result: any;
         try {
-            result = cachePut({url:''});
+            result = cachePut({url: ''});
             expect(result).toBeFalsy();
         } catch (e: any) {
             expect.unreacheble('should not result in error');
@@ -23,7 +24,7 @@ describe('tile_request_cache', () => {
     test('cacheGet, no window.caches', () => {
         delete window.caches;
 
-        cacheGet({url:''}, (result) => {
+        cacheGet({url: ''}, (result) => {
             expect(result).toEqual(null);
         });
     });
@@ -69,11 +70,11 @@ describe('tile_request_cache', () => {
         };
 
         const fakeCache = vi.fn();
-        fakeCache.match = vi.fn().mockImplementation(async (url) =>
-            url === cachedRequest.url ? cachedResponse : undefined
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fakeCache.match = vi.fn().mockImplementation(async (url) => (url === cachedRequest.url ? cachedResponse : undefined)
         );
-        fakeCache.delete = vi.fn();
-        fakeCache.put = vi.fn();
+        fakeCache.delete = vi.fn(() => Promise.resolve());
+        fakeCache.put = vi.fn(() => Promise.resolve());
 
         window.caches.open = vi.fn().mockImplementation(() => Promise.resolve(fakeCache));
 

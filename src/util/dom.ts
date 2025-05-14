@@ -67,6 +67,7 @@ export function touchPos(el: HTMLElement, touches: TouchList): Array<Point> {
     for (let i = 0; i < touches.length; i++) {
         points.push(getScaledPoint(el, rect, touches[i]));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return points;
 }
 

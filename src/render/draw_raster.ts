@@ -59,6 +59,7 @@ function adjustColorMix(colorMix: [number, number, number, number]): [number, nu
     ];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, tileIDs: Array<OverscaledTileID>, variableOffsets: any, isInitialLoad: boolean) {
     if (painter.renderPass !== 'translucent') return;
     if (layer.paint.get('raster-opacity') === 0) return;
@@ -314,6 +315,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     painter.resetStencilClippingMasks();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, emissiveStrength: number, rasterConfig: any, cullFaceMode: CullFaceMode, stencilMode: StencilMode) {
     const source = sourceCache.getSource();
     const sharedBuffers = painter.globeSharedBuffers;

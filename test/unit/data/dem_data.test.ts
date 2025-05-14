@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
 import DEMData from '../../../src/data/dem_data';
@@ -129,7 +130,7 @@ describe('DEMData#backfillBorder', () => {
     test('DEMData is correctly serialized', () => {
         const imageData0 = createMockImage(4, 4);
         const dem0 = new DEMData(0, imageData0);
-        // eslint-disable-next-line no-unused-vars
+
         const {_modifiedForSources, _timestamp, ...serialized} = serialize(dem0);
 
         expect(serialized).toEqual({

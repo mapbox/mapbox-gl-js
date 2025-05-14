@@ -253,12 +253,14 @@ export default class DemMinMaxQuadTree {
                 const cz = sampleElevation(maxxUv, maxyUv, this.dem) * exaggeration;
                 const dz = sampleElevation(minxUv, maxyUv, this.dem) * exaggeration;
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const t0: any = triangleRayIntersect(
                     boundsMin[0], boundsMin[1], az,     // A
                     boundsMax[0], boundsMin[1], bz,     // B
                     boundsMax[0], boundsMax[1], cz,     // C
                     p, d);
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const t1: any = triangleRayIntersect(
                     boundsMax[0], boundsMax[1], cz,
                     boundsMin[0], boundsMax[1], dz,
@@ -272,7 +274,7 @@ export default class DemMinMaxQuadTree {
                 // The ray might go below the two surface triangles but hit one of the sides.
                 // This covers the case of skirt geometry between two dem tiles of different zoom level
                 if (tMin === Number.MAX_VALUE) {
-                    const hitPos = vec3.scaleAndAdd([] as any, p, d, t);
+                    const hitPos = vec3.scaleAndAdd([] as unknown as vec3, p, d, t);
                     const fracx = frac(hitPos[0], boundsMin[0], boundsMax[0]);
                     const fracy = frac(hitPos[1], boundsMin[1], boundsMax[1]);
 
@@ -382,11 +384,12 @@ export default class DemMinMaxQuadTree {
     }
 }
 
-function bilinearLerp(p00: any, p10: any, p01: any, p11: any, x: number, y: number): any {
+function bilinearLerp(p00: number, p10: number, p01: number, p11: number, x: number, y: number): number {
     return interpolate(
         interpolate(p00, p01, y),
         interpolate(p10, p11, y),
-        x);
+        x
+    );
 }
 
 // Sample elevation in normalized uv-space ([0, 0] is the top left)

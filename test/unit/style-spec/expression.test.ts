@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
 import {createPropertyExpression} from '../../../src/style-spec/expression/index';
@@ -51,7 +52,7 @@ describe('validateExpression', () => {
 
 describe('evaluate expression', () => {
     test('warns and falls back to default for invalid enum values', () => {
-        const {value} = createPropertyExpression([ 'get', 'x' ], {
+        const {value} = createPropertyExpression(['get', 'x'], {
             type: 'enum',
             values: {a: {}, b: {}, c: {}},
             default: 'a',

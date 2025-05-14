@@ -148,7 +148,7 @@ export class PrecipitationBase {
 
         const projectionMatrix = tr.starsProjMatrix;
 
-        const orientation = quat.identity([] as any);
+        const orientation = quat.identity([] as unknown as quat);
 
         quat.rotateX(orientation, orientation, degToRad(90) - tr._pitch);
         quat.rotateZ(orientation, orientation, -tr.angle);
@@ -159,9 +159,9 @@ export class PrecipitationBase {
             0, 0, 1, 0,
             0, -1, 0, 0,
             0, 0, 0, 1);
-        const swapAxes = mat4.transpose([] as any, swapAxesT);
+        const swapAxes = mat4.transpose([] as unknown as mat4, swapAxesT);
 
-        const modelviewMatrix = mat4.multiply([] as any, swapAxes, rotationMatrix);
+        const modelviewMatrix = mat4.multiply([] as unknown as mat4, swapAxes, rotationMatrix);
 
         const curTime = Date.now() / 1000;
         this._accumulatedTimeFromStart += (curTime - this._prevTime) * timeFactor;

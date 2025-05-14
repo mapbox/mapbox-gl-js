@@ -2,6 +2,7 @@ import Point from '@mapbox/point-geometry';
 import {register} from '../util/web_worker_transfer';
 
 class Anchor extends Point {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override angle: any;
     z: number;
     segment: number | undefined;

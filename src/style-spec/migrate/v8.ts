@@ -20,8 +20,10 @@ function eachPaint(layer, callback) {
 
 function resolveConstant(style, value) {
     if (typeof value === 'string' && value[0] === '@') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return resolveConstant(style, style.constants[value]);
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return value;
     }
 }
@@ -34,7 +36,7 @@ function renameProperty(obj, from, to) {
     obj[to] = obj[from]; delete obj[from];
 }
 
-export default function(style) {
+export default function (style) {
     style.version = 8;
 
     // Rename properties, reverse coordinates in source and layers
@@ -113,6 +115,7 @@ export default function(style) {
         const inputPathnameParts = inputParsed.pathname.split('/');
 
         if (inputParsed.protocol !== 'mapbox:') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return input;
 
         } else if (inputParsed.hostname === 'fontstack') {
@@ -142,22 +145,27 @@ export default function(style) {
 
     function migrateFontStack(font) {
         function splitAndTrim(string) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return string.split(',').map((s) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return s.trim();
             });
         }
 
         if (Array.isArray(font)) {
             // Assume it's a previously migrated font-array.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return font;
 
         } else if (typeof font === 'string') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return splitAndTrim(font);
 
         } else if (typeof font === 'object') {
             font.stops.forEach((stop) => {
                 stop[1] = splitAndTrim(stop[1]);
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return font;
 
         } else {
@@ -199,5 +207,6 @@ export default function(style) {
     symbolLayers.reverse();
     style.layers = style.layers.concat(symbolLayers);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return style;
 }

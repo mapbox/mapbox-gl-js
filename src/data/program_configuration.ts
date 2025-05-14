@@ -5,7 +5,7 @@ import {register} from '../util/web_worker_transfer';
 import {PossiblyEvaluatedPropertyValue} from '../style/properties';
 import {StructArrayLayout1f4, StructArrayLayout2f8, StructArrayLayout4f16, PatternLayoutArray, DashLayoutArray} from './array_types';
 import {clamp} from '../util/util';
-import patternAttributes from './bucket/pattern_attributes';
+import {patternAttributes, patternTransitionAttributes} from './bucket/pattern_attributes';
 import dashAttributes from './bucket/dash_attributes';
 import EvaluationParameters from '../style/evaluation_parameters';
 import FeaturePositionMap from './feature_position_map';
@@ -42,6 +42,7 @@ import type {ImageId} from '../style-spec/expression/types/image_id';
 export type BinderUniform = {
     name: string;
     property: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     binding: IUniform<any>;
 };
 
@@ -118,11 +119,14 @@ interface UniformBinder {
 
     setUniform: (
         program: WebGLProgram,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         uniform: IUniform<any>,
         globals: GlobalProperties,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         currentValue: PossiblyEvaluatedPropertyValue<any>,
         uniformName: string,
     ) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getBinding: (context: Context, name: string) => Partial<IUniform<any>>;
 }
 class ConstantBinder implements UniformBinder {
@@ -141,6 +145,7 @@ class ConstantBinder implements UniformBinder {
 
     setUniform(
         program: WebGLProgram,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         uniform: IUniform<any>,
         globals: GlobalProperties,
         currentValue: PossiblyEvaluatedPropertyValue<unknown>,
@@ -148,6 +153,7 @@ class ConstantBinder implements UniformBinder {
     ): void {
         const value = currentValue.constantOr(this.value);
         if (value instanceof Color) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const lut = this.lutExpression && (this.lutExpression as any).value === 'none' ? null : this.context.lut;
             uniform.set(program, uniformName, value.toRenderColor(lut));
         } else {
@@ -155,7 +161,8 @@ class ConstantBinder implements UniformBinder {
         }
     }
 
-    getBinding(context: Context, _: string): Partial<IUniform<any>> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getBinding(context: Context, _: string): IUniform<any> {
         return (this.type === 'color') ?
             new UniformColor(context) :
             new Uniform1f(context);
@@ -166,35 +173,52 @@ class PatternConstantBinder implements UniformBinder {
     uniformNames: Array<string>;
     pattern: Array<number> | null | undefined;
     pixelRatio: number;
+    patternTransition: Array<number> | null | undefined;
     context: ProgramConfigurationContext;
     lutExpression: PossiblyEvaluatedValue<string>;
 
     constructor(value: unknown, names: Array<string>) {
         this.uniformNames = names.map(name => `u_${name}`);
         this.pattern = null;
+        this.patternTransition = null;
         this.pixelRatio = 1;
     }
 
-    setConstantPatternPositions(posTo: SpritePosition) {
-        this.pixelRatio = posTo.pixelRatio || 1;
-        this.pattern = posTo.tl.concat(posTo.br);
+    setConstantPatternPositions(primaryPosTo: SpritePosition, secondaryPosTo?: SpritePosition) {
+        this.pixelRatio = primaryPosTo.pixelRatio || 1;
+        this.pattern = primaryPosTo.tl.concat(primaryPosTo.br);
+        this.patternTransition = secondaryPosTo ? secondaryPosTo.tl.concat(secondaryPosTo.br) : this.pattern;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setUniform(program: WebGLProgram, uniform: IUniform<any>, globals: GlobalProperties, currentValue: PossiblyEvaluatedPropertyValue<unknown>, uniformName: string) {
-        const pos =
-            uniformName === 'u_pattern' || uniformName === 'u_dash' ? this.pattern :
-            uniformName === 'u_pixel_ratio' ? this.pixelRatio : null;
+        let pos: unknown = null;
+
+        if (uniformName === 'u_pattern' || uniformName === 'u_dash') {
+            pos = this.pattern;
+        }
+
+        if (uniformName === 'u_pattern_b') {
+            pos = this.patternTransition;
+        }
+
+        if (uniformName === 'u_pixel_ratio') {
+            pos = this.pixelRatio;
+        }
+
         if (pos) uniform.set(program, uniformName, pos);
     }
 
-    getBinding(context: Context, name: string): Partial<IUniform<any>> {
-        return name === 'u_pattern' || name === 'u_dash' ?
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getBinding(context: Context, name: string): IUniform<any> {
+        return name === 'u_pattern' || name === 'u_pattern_b' || name === 'u_dash' ?
             new Uniform4f(context) :
             new Uniform1f(context);
     }
 }
 
 class SourceExpressionBinder implements AttributeBinder {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expression: PossiblyEvaluatedValue<any> | SourceExpression;
     type: string;
     maxValue: number;
@@ -205,6 +229,7 @@ class SourceExpressionBinder implements AttributeBinder {
     paintVertexAttributes: Array<StructArrayMember>;
     paintVertexBuffer: VertexBuffer | null | undefined;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(expression: PossiblyEvaluatedValue<any>, names: Array<string>, type: string, PaintVertexArray: Class<StructArray>) {
         this.expression = expression;
         this.type = type;
@@ -236,6 +261,7 @@ class SourceExpressionBinder implements AttributeBinder {
         this._setPaintValue(start, end, value, ignoreLut ? null : this.context.lut);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _setPaintValue(start: number, end: number, value: any, lut: LUT) {
         if (this.type === 'color') {
             const color = packColor(value.toRenderColor(lut));
@@ -317,6 +343,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this._setPaintValue(start, end, min, max, ignoreLut ? null : this.context.lut);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _setPaintValue(start: number, end: number, min: any, max: any, lut: LUT) {
         if (this.type === 'color') {
             const minColor = packColor(min.toRenderColor(lut));
@@ -350,8 +377,10 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
 
     setUniform(
         program: WebGLProgram,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         uniform: IUniform<any>,
         globals: GlobalProperties,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         _: PossiblyEvaluatedPropertyValue<any>,
         uniformName: string,
     ): void {
@@ -375,16 +404,20 @@ class PatternCompositeBinder implements AttributeBinder {
     paintVertexBuffer: VertexBuffer | null | undefined;
     paintVertexAttributes: Array<StructArrayMember>;
 
+    paintTransitionVertexArray: PatternLayoutArray;
+    paintTransitionVertexBuffer: VertexBuffer | null | undefined;
+
     constructor(expression: CompositeExpression, names: Array<string>, type: string, PaintVertexArray: Class<StructArray>, layerId: string) {
         this.expression = expression;
         this.layerId = layerId;
 
         this.paintVertexAttributes = (type === 'array' ? dashAttributes : patternAttributes).members;
         for (let i = 0; i < names.length; ++i) {
-            assert(`a_${names[i]}` === this.paintVertexAttributes[i].name);
+            assert(!this.paintVertexAttributes[i] || `a_${names[i]}` === this.paintVertexAttributes[i].name);
         }
 
         this.paintVertexArray = new PaintVertexArray();
+        this.paintTransitionVertexArray = new PatternLayoutArray();
     }
 
     populatePaintArray(length: number, feature: Feature, imagePositions: SpritePositions, _availableImages: ImageId[]) {
@@ -397,26 +430,44 @@ class PatternCompositeBinder implements AttributeBinder {
         this._setPaintValues(start, end, feature.patterns && feature.patterns[this.layerId], imagePositions);
     }
 
-    _setPaintValues(start: number, end: number, patterns: string | null | undefined, positions: SpritePositions) {
+    _setPaintValues(start: number, end: number, patterns: string[] | null | undefined, positions: SpritePositions) {
         if (!positions || !patterns) return;
 
-        const pos = positions[patterns];
-        if (!pos) return;
+        const primaryPos = positions[patterns[0]];
+        const secondaryPos = positions[patterns[1]];
+        if (!primaryPos) return;
 
-        const {tl, br, pixelRatio} = pos;
-        for (let i = start; i < end; i++) {
-            this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], (pixelRatio));
+        if (primaryPos) {
+            const {tl, br, pixelRatio} = primaryPos;
+            for (let i = start; i < end; i++) {
+                this.paintVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], pixelRatio);
+            }
         }
+
+        if (secondaryPos) {
+            this.paintTransitionVertexArray.resize(this.paintVertexArray.length);
+            const {tl, br, pixelRatio} = secondaryPos;
+            for (let i = start; i < end; i++) {
+                this.paintTransitionVertexArray.emplace(i, tl[0], tl[1], br[0], br[1], pixelRatio);
+            }
+        }
+
     }
 
     upload(context: Context) {
+        const isDynamicDraw = this.expression.isStateDependent || !this.expression.isLightConstant;
         if (this.paintVertexArray && this.paintVertexArray.arrayBuffer) {
-            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, this.expression.isStateDependent || !this.expression.isLightConstant);
+            this.paintVertexBuffer = context.createVertexBuffer(this.paintVertexArray, this.paintVertexAttributes, isDynamicDraw);
+        }
+
+        if (this.paintTransitionVertexArray && this.paintTransitionVertexArray.length) {
+            this.paintTransitionVertexBuffer = context.createVertexBuffer(this.paintTransitionVertexArray, patternTransitionAttributes.members, isDynamicDraw);
         }
     }
 
     destroy() {
         if (this.paintVertexBuffer) this.paintVertexBuffer.destroy();
+        if (this.paintTransitionVertexBuffer) this.paintTransitionVertexBuffer.destroy();
     }
 }
 
@@ -472,6 +523,7 @@ export default class ProgramConfiguration {
 
             // @ts-expect-error - TS2345: Argument of type 'string' is not assignable to parameter of type ...
             const valueUseTheme = layer.paint.get(`${property}-use-theme`);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const sourceException = (property === 'line-dasharray' && (layer.layout as any).get('line-cap').value.kind !== 'constant') || (valueUseTheme && valueUseTheme.value.kind !== 'constant');
 
             if (expression.kind === 'constant' && !sourceException) {
@@ -518,12 +570,22 @@ export default class ProgramConfiguration {
         }
     }
 
-    setConstantPatternPositions(posTo: SpritePosition) {
+    setConstantPatternPositions(primaryPosTo: SpritePosition, secondaryPosTo?: SpritePosition) {
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof PatternConstantBinder)
-                binder.setConstantPatternPositions(posTo);
+                binder.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
         }
+    }
+
+    getPatternTransitionVertexBuffer(property: string) {
+        const binder = this.binders[property];
+
+        if (binder instanceof PatternCompositeBinder) {
+            return binder.paintTransitionVertexBuffer;
+        }
+
+        return null;
     }
 
     updatePaintArrays(
@@ -545,13 +607,16 @@ export default class ProgramConfiguration {
         for (const property in this.binders) {
             const binder = this.binders[property];
             binder.context = this.context;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const isExpressionNotConst = (binder as any).expression && (binder as any).expression.kind && (binder as any).expression.kind !== 'constant';
             if ((binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ||
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                  binder instanceof PatternCompositeBinder) && isExpressionNotConst && ((binder as any).expression.isStateDependent === true || (binder as any).expression.isLightConstant === false)) {
                 //AHM: Remove after https://github.com/mapbox/mapbox-gl-js/issues/6255
                 // @ts-expect-error - TS2349 - This expression is not callable.
                 const value = layer.paint.get(property);
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (binder as any).expression = value.value;
                 for (const id of ids) {
                     const state = featureStates[id.toString()];
@@ -576,7 +641,7 @@ export default class ProgramConfiguration {
     }
 
     defines(): Array<string> {
-        const result = [];
+        const result: string[] = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof ConstantBinder || binder instanceof PatternConstantBinder) {
@@ -587,7 +652,7 @@ export default class ProgramConfiguration {
     }
 
     getBinderAttributes(): Array<string> {
-        const result = [];
+        const result: string[] = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder) {
@@ -595,12 +660,18 @@ export default class ProgramConfiguration {
                     result.push(binder.paintVertexAttributes[i].name);
                 }
             }
+
+            if (binder instanceof PatternCompositeBinder) {
+                for (let i = 0; i < patternTransitionAttributes.members.length; i++) {
+                    result.push(patternTransitionAttributes.members[i].name);
+                }
+            }
         }
         return result;
     }
 
     getBinderUniforms(): Array<string> {
-        const uniforms = [];
+        const uniforms: string[] = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof ConstantBinder || binder instanceof PatternConstantBinder || binder instanceof CompositeExpressionBinder) {
@@ -617,7 +688,7 @@ export default class ProgramConfiguration {
     }
 
     getUniforms(context: Context): Array<BinderUniform> {
-        const uniforms = [];
+        const uniforms: BinderUniform[] = [];
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof ConstantBinder || binder instanceof PatternConstantBinder || binder instanceof CompositeExpressionBinder) {
@@ -629,6 +700,7 @@ export default class ProgramConfiguration {
         return uniforms;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setUniforms<Properties extends any>(
         program: WebGLProgram,
         context: Context,
@@ -639,6 +711,7 @@ export default class ProgramConfiguration {
         // Uniform state bindings are owned by the Program, but we set them
         // from within the ProgramConfiguration's binder members.
         for (const {name, property, binding} of binderUniforms) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.binders[property] as any).setUniform(program, binding, globals, properties.get(property as keyof Properties), name);
         }
     }
@@ -653,6 +726,10 @@ export default class ProgramConfiguration {
                 binder instanceof CompositeExpressionBinder ||
                 binder instanceof PatternCompositeBinder) && binder.paintVertexBuffer) {
                 this._buffers.push(binder.paintVertexBuffer);
+            }
+
+            if (binder instanceof PatternCompositeBinder && binder.paintTransitionVertexBuffer) {
+                this._buffers.push(binder.paintTransitionVertexBuffer);
             }
         }
     }
@@ -738,7 +815,7 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
     }
 }
 
-const attributeNameExceptions = {
+const attributeNameExceptions: Record<string, string[]> = {
     'text-opacity': ['opacity'],
     'icon-opacity': ['opacity'],
     'text-occlusion-opacity': ['occlusion_opacity'],
@@ -755,13 +832,13 @@ const attributeNameExceptions = {
     'icon-halo-width': ['halo_width'],
     'symbol-z-offset': ['z_offset'],
     'line-gap-width': ['gapwidth'],
-    'line-pattern': ['pattern', 'pixel_ratio'],
-    'fill-pattern': ['pattern', 'pixel_ratio'],
-    'fill-extrusion-pattern': ['pattern', 'pixel_ratio'],
+    'line-pattern': ['pattern', 'pixel_ratio', 'pattern_b'],
+    'fill-pattern': ['pattern', 'pixel_ratio', 'pattern_b'],
+    'fill-extrusion-pattern': ['pattern', 'pixel_ratio', 'pattern_b'],
     'line-dasharray': ['dash']
 };
 
-function paintAttributeNames(property: string, type: string) {
+function paintAttributeNames(property: string, type: string): string[] {
     return attributeNameExceptions[property] || [property.replace(`${type}-`, '').replace(/-/g, '_')];
 }
 
@@ -774,7 +851,7 @@ const propertyExceptions = {
         'source': PatternLayoutArray,
         'composite': PatternLayoutArray
     },
-    'fill-extrusion-pattern':{
+    'fill-extrusion-pattern': {
         'source': PatternLayoutArray,
         'composite': PatternLayoutArray
     },
@@ -782,7 +859,7 @@ const propertyExceptions = {
         'source': DashLayoutArray,
         'composite': DashLayoutArray
     }
-};
+} as const;
 
 const defaultLayouts = {
     'color': {
@@ -793,13 +870,13 @@ const defaultLayouts = {
         'source': StructArrayLayout1f4,
         'composite': StructArrayLayout2f8
     }
-};
+} as const;
 
 type LayoutType = 'array' | 'boolean' | 'color' | 'enum' | 'number' | 'resolvedImage' | 'string';
 
-function layoutType(property: string, type: LayoutType, binderType: string): Class<StructArray> {
-    const layoutException = propertyExceptions[property];
-    return (layoutException && layoutException[binderType]) || defaultLayouts[type][binderType];
+function layoutType(property: string, type: LayoutType, binderType: 'source' | 'composite'): Class<StructArray> {
+    const layoutException = propertyExceptions[property as keyof typeof propertyExceptions];
+    return (layoutException && layoutException[binderType]) || defaultLayouts[type as keyof typeof defaultLayouts][binderType];
 }
 
 register(ConstantBinder, 'ConstantBinder');

@@ -63,14 +63,14 @@ function getInlinedTileJSON(data?: TileJSON, language?: string, worldview?: stri
 /**
  * @private
  */
-export default function(
+export default function (
     options: Options,
     requestManager: RequestManager,
     language: string | null | undefined,
     worldview: string | null | undefined,
     callback: Callback<TileJSON>,
 ): Cancelable {
-    const loaded = function(err?: Error | null, tileJSON?: Partial<TileJSON>) {
+    const loaded = function (err?: Error | null, tileJSON?: Partial<TileJSON>) {
         if (err) {
             return callback(err);
         } else if (tileJSON) {
@@ -100,7 +100,7 @@ export default function(
             const result: TileJSON = pick(
                 // explicit source options take precedence over TileJSON
                 extend({}, tileJSON, options),
-                ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding', 'vector_layers', 'raster_layers', 'worldview_options', 'worldview_default', 'worldview']
+                ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'extra_bounds', 'scheme', 'tileSize', 'encoding', 'vector_layers', 'raster_layers', 'worldview_options', 'worldview_default', 'worldview']
             );
 
             result.tiles = requestManager.canonicalizeTileset(result, options.url);

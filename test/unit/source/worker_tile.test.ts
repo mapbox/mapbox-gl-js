@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
 import WorkerTile from '../../../src/source/worker_tile';
@@ -37,7 +38,7 @@ test('WorkerTile#parse', () => {
     }]);
 
     const tile = createWorkerTile();
-    tile.parse(createWrapper(), layerIndex, [], {}, (err, result) => {
+    tile.parse(createWrapper(), layerIndex, [], [], {}, (err, result) => {
         expect(err).toBeFalsy();
         expect(result.buckets[0]).toBeTruthy();
     });
@@ -52,7 +53,7 @@ test('WorkerTile#parse skips hidden layers', () => {
     }]);
 
     const tile = createWorkerTile();
-    tile.parse(createWrapper(), layerIndex, [], {}, (err, result) => {
+    tile.parse(createWrapper(), layerIndex, [], [], {}, (err, result) => {
         expect(err).toBeFalsy();
         expect(result.buckets.length).toEqual(0);
     });
@@ -67,7 +68,7 @@ test('WorkerTile#parse skips layers without a corresponding source layer', () =>
     }]);
 
     const tile = createWorkerTile();
-    tile.parse({layers: {}}, layerIndex, [], {}, (err, result) => {
+    tile.parse({layers: {}}, layerIndex, [], [], {}, (err, result) => {
         expect(err).toBeFalsy();
         expect(result.buckets.length).toEqual(0);
     });
@@ -92,7 +93,7 @@ test('WorkerTile#parse warns once when encountering a v1 vector tile layer', () 
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const tile = createWorkerTile();
-    tile.parse(data, layerIndex, [], {}, (err) => {
+    tile.parse(data, layerIndex, [], [], {}, (err) => {
         expect(err).toBeFalsy();
         expect(console.warn.mock.calls[0][0]).toMatch(/does not use vector tile spec v2/);
     });
@@ -116,7 +117,8 @@ test('WorkerTile#parse adds $localized property and filters features based on th
         }));
 
     // no worldview
-    await new Promise((resolve) => createWorkerTile({worldview: null}).parse(vt, layerIndex, [], {}, resolve));
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => createWorkerTile({worldview: null}).parse(vt, layerIndex, [], [], {}, resolve));
     const allFeatures = bucketPopulateSpy.mock.lastCall[0];
     expect(allFeatures.length).toEqual(5);
     expect(allFeatures[0].feature.properties).toMatchObject({worldview: 'all'});
@@ -126,7 +128,8 @@ test('WorkerTile#parse adds $localized property and filters features based on th
     expect(allFeatures[4].feature.properties).toMatchObject({worldview: 'US'});
 
     // worldview: 'US'
-    await new Promise((resolve) => createWorkerTile({worldview: 'US', localizableLayerIds: new Set(['_geojsonTileLayer'])}).parse(vt, layerIndex, [], {}, resolve));
+    // eslint-disable-next-line no-promise-executor-return
+    await new Promise((resolve) => createWorkerTile({worldview: 'US', localizableLayerIds: new Set(['_geojsonTileLayer'])}).parse(vt, layerIndex, [], [], {}, resolve));
     const usFeatures = bucketPopulateSpy.mock.lastCall[0];
     expect(usFeatures.length).toEqual(3);
     expect(usFeatures[0].feature.properties).toMatchObject({worldview: 'all', '$localized': true});

@@ -55,6 +55,9 @@ out vec3 v_normal;
 #pragma mapbox: define highp float height
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump vec4 pattern
+#ifdef FILL_EXTRUSION_PATTERN_TRANSITION
+#pragma mapbox: define mediump vec4 pattern_b
+#endif
 #pragma mapbox: define highp float pixel_ratio
 #pragma mapbox: define highp float line_width
 
@@ -63,6 +66,9 @@ void main() {
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize mediump vec4 pattern
+    #ifdef FILL_EXTRUSION_PATTERN_TRANSITION
+    #pragma mapbox: initialize mediump vec4 pattern_b
+    #endif
     #pragma mapbox: initialize highp float pixel_ratio
     #pragma mapbox: initialize highp float line_width
 
@@ -181,7 +187,7 @@ void main() {
 #else
     v_lighting.rgb += clamp(NdotL * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
     v_lighting *= u_opacity;
-#endif 
+#endif
 
 #ifdef FOG
     v_fog_pos = fog_position(p);

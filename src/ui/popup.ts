@@ -676,9 +676,8 @@ export default class Popup extends Evented<PopupEvents> {
     _focusFirstElement() {
         if (!this.options.focusAfterOpen || !this._container) return;
 
-        const firstFocusable = this._container.querySelector(focusQuerySelector);
+        const firstFocusable: HTMLElement = this._container.querySelector(focusQuerySelector);
 
-        // @ts-expect-error - TS2339 - Property 'focus' does not exist on type 'Element'.
         if (firstFocusable) firstFocusable.focus();
     }
 

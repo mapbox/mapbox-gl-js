@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {vi, describe, test, expect} from '../../util/vitest';
 import {getPNGResponse} from '../../util/network';
@@ -13,6 +14,7 @@ import webpSupported from '../../../src/util/webp_supported';
 
 describe('ajax', () => {
     test('getArrayBuffer, 404', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
             return new window.Response('', {
                 status: 404
@@ -20,7 +22,7 @@ describe('ajax', () => {
         });
 
         await new Promise(resolve => {
-            getArrayBuffer({url:''}, (error) => {
+            getArrayBuffer({url: ''}, (error) => {
                 expect(error.status).toEqual(404);
                 resolve();
             });
@@ -28,6 +30,7 @@ describe('ajax', () => {
     });
 
     test('getJSON', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
             return new window.Response('{"foo": "bar"}', {
                 status: 200,
@@ -38,7 +41,7 @@ describe('ajax', () => {
         });
 
         await new Promise(resolve => {
-            getJSON({url:''}, (error, body) => {
+            getJSON({url: ''}, (error, body) => {
                 expect(error).toBeFalsy();
                 expect(body).toEqual({foo: 'bar'});
                 resolve();
@@ -47,6 +50,7 @@ describe('ajax', () => {
     });
 
     test('getJSON, invalid syntax', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
             return new window.Response('how do i even', {
                 status: 200,
@@ -57,7 +61,7 @@ describe('ajax', () => {
         });
 
         await new Promise(resolve => {
-            getJSON({url:''}, (error) => {
+            getJSON({url: ''}, (error) => {
                 expect(error).toBeTruthy();
                 resolve();
             });
@@ -65,6 +69,7 @@ describe('ajax', () => {
     });
 
     test('getJSON, 404', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
             return new window.Response('', {
                 status: 404
@@ -72,7 +77,7 @@ describe('ajax', () => {
         });
 
         await new Promise(resolve => {
-            getJSON({url:''}, (error) => {
+            getJSON({url: ''}, (error) => {
                 expect(error.status).toEqual(404);
                 resolve();
             });
@@ -80,6 +85,7 @@ describe('ajax', () => {
     });
 
     test('getJSON, 401: non-Mapbox domain', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
             return new window.Response('', {
                 status: 401,
@@ -88,7 +94,7 @@ describe('ajax', () => {
         });
 
         await new Promise(resolve => {
-            getJSON({url:''}, (error) => {
+            getJSON({url: ''}, (error) => {
                 expect(error.status).toEqual(401);
                 expect(error.message).toEqual("Unauthorized");
                 resolve();
@@ -97,6 +103,7 @@ describe('ajax', () => {
     });
 
     test('getJSON, 401: Mapbox domain', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
             return new window.Response('', {
                 status: 401,
@@ -105,7 +112,7 @@ describe('ajax', () => {
         });
 
         await new Promise(resolve => {
-            getJSON({url:'api.mapbox.com'}, (error) => {
+            getJSON({url: 'api.mapbox.com'}, (error) => {
                 expect(error.status).toEqual(401);
                 expect(error.message).toEqual(
                     "Unauthorized: you may have provided an invalid Mapbox access token. See https://docs.mapbox.com/api/overview/#access-tokens-and-token-scopes"
@@ -116,6 +123,7 @@ describe('ajax', () => {
     });
 
     test('postData, 204(no content): no error', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
             return new window.Response(null, {
                 status: 204
@@ -123,7 +131,7 @@ describe('ajax', () => {
         });
 
         await new Promise(resolve => {
-            postData({url:'api.mapbox.com'}, (error) => {
+            postData({url: 'api.mapbox.com'}, (error) => {
                 expect(error).toEqual(null);
                 resolve();
             });

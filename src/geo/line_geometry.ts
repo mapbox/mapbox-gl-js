@@ -65,7 +65,7 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
     for (let i = first; i < len; i++) {
 
         nextVertex = i === len - 1 ?
-            (isPolygon ? vertices[first + 1] : (undefined as any)) : // if it's a polygon, treat the last vertex like the first
+            (isPolygon ? vertices[first + 1] : undefined) : // if it's a polygon, treat the last vertex like the first
             vertices[i + 1]; // just the next vertex
 
         // if two consecutive vertices exist, skip the current one
@@ -200,9 +200,9 @@ const tileCorners = [
     new Point(0, EXTENT)];
 
 // Removes connection lines outside of the tile bounds if they don't intersect with the original tile
-export function dropBufferConnectionLines(polygon: Array<Point>, isPolygon: boolean) {
-    const lineSegments = [];
-    let lineSegment = [];
+export function dropBufferConnectionLines(polygon: Array<Point>, isPolygon: boolean): Array<Point[]> {
+    const lineSegments: Array<Point[]> = [];
+    let lineSegment: Point[] = [];
     if (!isPolygon || polygon.length < 2) {
         return [polygon];
     } else if (polygon.length === 2) {

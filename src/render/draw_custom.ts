@@ -4,7 +4,6 @@ import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import {warnOnce} from '../util/util';
 import {globeToMercatorTransition} from './../geo/projection/globe_util';
-import MercatorCoordinate from '../geo/mercator_coordinate';
 import assert from 'assert';
 
 import type Painter from './painter';
@@ -49,14 +48,24 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
             const renderToTile = implementation.renderToTile;
             if (renderToTile) {
                 const c = coords[0].canonical;
-                const unwrapped = new MercatorCoordinate(c.x + coords[0].wrap * (1 << c.z), c.y, c.z);
+                const renderCoords = {
+                    /*
+                     * We intentionally baked wrap into x coordinate before and
+                     * we need to keep backward-compatibility.
+                     *
+                     * https://github.com/mapbox/mapbox-gl-js/pull/12182/commits/8b9071f751b9ed9ae4389dce7fb2e30aae984f9d
+                     */
+                    x: c.x + coords[0].wrap * (implementation.wrapTileId ? 0 : (1 << c.z)),
+                    y: c.y,
+                    z: c.z
+                };
 
                 context.setDepthMode(DepthMode.disabled);
                 context.setStencilMode(StencilMode.disabled);
                 context.setColorMode(painter.colorModeForRenderPass());
                 painter.setCustomLayerDefaults();
 
-                renderToTile.call(implementation, context.gl, unwrapped);
+                renderToTile.call(implementation, context.gl, renderCoords);
                 context.setDirty();
                 painter.setBaseState();
             }

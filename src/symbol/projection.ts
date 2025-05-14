@@ -1,10 +1,10 @@
 import Point from '@mapbox/point-geometry';
 import {mat2, mat4, vec3, vec4} from 'gl-matrix';
-import * as symbolSize from './symbol_size';
 import {addDynamicAttributes, updateGlobeVertexNormal} from '../data/bucket/symbol_bucket';
 import {WritingMode} from '../symbol/shaping';
 import {calculateGlobeLabelMatrix} from '../geo/projection/globe_util';
 import {degToRad} from '../util/util';
+import {evaluateSizeForFeature, evaluateSizeForZoom} from './symbol_size';
 
 import type {CanonicalTileID, OverscaledTileID} from '../source/tile_id';
 import type Projection from '../geo/projection/projection';
@@ -255,7 +255,7 @@ function updateLineLabels(bucket: SymbolBucket,
 
     const tr = painter.transform;
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
-    const partiallyEvaluatedSize = symbolSize.evaluateSizeForZoom(sizeData, painter.transform.zoom);
+    const partiallyEvaluatedSize = evaluateSizeForZoom(sizeData, painter.transform.zoom);
     const isGlobe = tr.projection.name === 'globe';
 
     const clippingBuffer: [number, number] = [256 / painter.width * 2 + 1, 256 / painter.height * 2 + 1];
@@ -322,7 +322,7 @@ function updateLineLabels(bucket: SymbolBucket,
         const cameraToAnchorDistance = anchorPos[3];
         const perspectiveRatio = getPerspectiveRatio(painter.transform.getCameraToCenterDistance(tr.projection), cameraToAnchorDistance);
 
-        const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
+        const fontSize = evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
 
         const labelPlaneAnchorPoint = project(x, y, z, labelPlaneMatrix) as [number, number, number, number];

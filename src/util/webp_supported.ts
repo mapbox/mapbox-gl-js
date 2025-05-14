@@ -17,12 +17,12 @@ const window = typeof self !== 'undefined' ? self : {} as Window;
 
 if (window.document) {
     webpImgTest = window.document.createElement('img');
-    webpImgTest.onload = function() {
+    webpImgTest.onload = function () {
         if (glForTesting) testWebpTextureUpload(glForTesting);
         glForTesting = null;
         webpImgTestOnloadComplete = true;
     };
-    webpImgTest.onerror = function() {
+    webpImgTest.onerror = function () {
         webpCheckComplete = true;
         glForTesting = null;
     };
@@ -60,7 +60,7 @@ function testWebpTextureUpload(gl: WebGL2RenderingContext) {
         if (gl.isContextLost()) return;
 
         exported.supported = true;
-    } catch (e: any) {
+    } catch (e) {
         // Catch "Unspecified Error." in Edge 18.
     }
 

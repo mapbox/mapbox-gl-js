@@ -65,9 +65,9 @@ export function globePointCoordinate(tr: Transform, x: number, y: number, clampT
     // to the surface of the sphere, i.e. find a tangent vector that originates from the camera position
     const m = tr.globeMatrix;
     const globeCenter: vec3 = [m[12], m[13], m[14]];
-    const p0toCenter = vec3.sub([] as any, globeCenter, point0);
+    const p0toCenter = vec3.sub([] as unknown as vec3, globeCenter, point0);
     const p0toCenterDist = vec3.length(p0toCenter);
-    const centerDir = vec3.normalize([] as any, p0toCenter);
+    const centerDir = vec3.normalize([] as unknown as vec3, p0toCenter);
     const radius = tr.worldSize / (2.0 * Math.PI);
     const cosAngle = vec3.dot(centerDir, dir);
 
@@ -337,7 +337,7 @@ export function aabbForTileOnGlobe(
             interpolateVec3(corners[i], mercatorCorners[i], phase);
         }
         // Calculate the midpoint of the closest edge midpoint in Mercator
-        const mercatorMidpoint = vec3.add([] as any, mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
+        const mercatorMidpoint = vec3.add([] as unknown as vec3, mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
         vec3.scale(mercatorMidpoint, mercatorMidpoint, .5);
         // Interpolate globe extremum toward Mercator midpoint
         interpolateVec3(arcExtremum, mercatorMidpoint, phase);
@@ -468,7 +468,7 @@ const tempMatrix = new Float64Array(16) as unknown as mat4;
 export function globeNormalizeECEF(bounds: Aabb): mat4 {
     const scale = globeECEFNormalizationScale(bounds);
     const m = mat4.fromScaling(tempMatrix, [scale, scale, scale]);
-    return mat4.translate(m, m, vec3.negate([] as any, bounds.min));
+    return mat4.translate(m, m, vec3.negate([] as unknown as vec3, bounds.min));
 }
 
 export function globeDenormalizeECEF(bounds: Aabb): mat4 {
@@ -626,16 +626,16 @@ function cameraPositionInECEF(tr: Transform): vec3 {
 
     // Set axis to East-West line tangent to sphere at pivot
     const south = vec3.fromValues(0, 1, 0);
-    let axis = vec3.cross([] as any, south, centerToPivot);
+    let axis = vec3.cross([] as unknown as vec3, south, centerToPivot);
 
     // Rotate axis around pivot by bearing
-    const rotation = mat4.fromRotation([] as any, -tr.angle, centerToPivot);
+    const rotation = mat4.fromRotation([] as unknown as mat4, -tr.angle, centerToPivot);
     axis = vec3.transformMat4(axis, axis, rotation);
 
     // Rotate camera around axis by pitch
     mat4.fromRotation(rotation, -tr._pitch, axis);
 
-    const pivotToCamera = vec3.normalize([] as any, centerToPivot);
+    const pivotToCamera = vec3.normalize([] as unknown as vec3, centerToPivot);
     vec3.scale(pivotToCamera, pivotToCamera, globeMetersToEcef(tr.cameraToCenterDistance / tr.pixelsPerMeter));
     vec3.transformMat4(pivotToCamera, pivotToCamera, rotation);
 

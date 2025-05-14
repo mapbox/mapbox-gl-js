@@ -157,7 +157,7 @@ class Texture {
     destroy() {
         const {gl} = this.context;
         gl.deleteTexture(this.texture);
-        this.texture = (null as any);
+        this.texture = null;
     }
 }
 
@@ -217,7 +217,7 @@ export class Texture3D {
     destroy() {
         const {gl} = this.context;
         gl.deleteTexture(this.texture);
-        this.texture = (null as any);
+        this.texture = null;
     }
 }
 

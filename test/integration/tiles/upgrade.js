@@ -1,7 +1,10 @@
-/* eslint-disable import/unambiguous, import/no-commonjs */
+/* eslint-disable import/no-commonjs */
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const mapnik = require('mapnik');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require('fs');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const queue = require('d3-queue').queue;
 
 function upgrade(z, x, y, path, callback) {
