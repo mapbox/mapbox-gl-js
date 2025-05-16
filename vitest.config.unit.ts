@@ -34,8 +34,8 @@ export default mergeConfig(baseConfig, defineConfig({
         reporters: process.env.CI ? [
             ['html', {outputFile: './test/unit/vitest/index.html'}],
             ['junit', {outputFile: './test/unit/test-results.xml'}],
-            ['basic']
-        ] : ['basic'],
+            ['default', {summary: false}]
+        ] : [['default', {summary: false}]],
     },
     plugins: [
         styleSpecFixtures()

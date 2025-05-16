@@ -181,7 +181,9 @@ describe('ScrollZoomHandler', () => {
         });
 
         test('Should keep maxZoom level during pitch', async () => {
-            vi.useFakeTimers();
+            vi.useFakeTimers({
+                toFake: ['performance'],
+            });
 
             const map = createMap({
                 interactive: true,
@@ -360,7 +362,8 @@ describe('ScrollZoomHandler', () => {
      */
     // eslint-disable-next-line @typescript-eslint/require-await
     test.skip('emits one movestart event and one moveend event while zooming', async () => {
-        vi.useFakeTimers(now);
+        vi.stubGlobal('performance', {now: () => now});
+
         const map = createMap({
             interactive: true
         });
@@ -408,7 +411,7 @@ describe('ScrollZoomHandler', () => {
      * @note Flacky
      */
     test.skip('emits one zoomstart event and one zoomend event while zooming', async () => {
-        vi.useFakeTimers(now);
+        vi.stubGlobal('performance', {now: () => now});
         const map = createMap({
             interactive: true
         });

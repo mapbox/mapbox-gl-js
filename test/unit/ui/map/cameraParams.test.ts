@@ -592,7 +592,6 @@ describe('Map#cameraParams', () => {
 
     describe('#snapToNorth', () => {
         test('snaps when less than < 7 degrees', async () => {
-            // t.setTimeout(10000);
             const map = createMap();
             await waitFor(map, "load");
             map.setBearing(6);
@@ -603,7 +602,6 @@ describe('Map#cameraParams', () => {
         });
 
         test('does not snap when > 7 degrees', async () => {
-            // t.setTimeout(2000);
             const map = createMap();
             await waitFor(map, "load");
             map.setBearing(8);
@@ -614,7 +612,6 @@ describe('Map#cameraParams', () => {
         });
 
         test('snaps when < bearingSnap', async () => {
-            // t.setTimeout(2000);
             const map = createMap({"bearingSnap": 12});
             await waitFor(map, "load");
             map.setBearing(11);
@@ -625,7 +622,6 @@ describe('Map#cameraParams', () => {
         });
 
         test('does not snap when > bearingSnap', async () => {
-            // t.setTimeout(2000);
             const map = createMap({"bearingSnap": 10});
             await waitFor(map, "load");
             map.setBearing(11);

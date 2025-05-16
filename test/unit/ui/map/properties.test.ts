@@ -5,7 +5,6 @@ import {getPNGResponse} from '../../../util/network';
 
 describe('Map#properties', () => {
     describe('#setLayoutProperty', () => {
-        // t.setTimeout(2000);
         test('sets property', async () => {
             const map = createMap({
                 style: {
@@ -275,7 +274,6 @@ describe('Map#properties', () => {
     });
 
     describe('#setPaintProperty', () => {
-        // t.setTimeout(2000);
         test('sets property', async () => {
             const map = createMap({
                 style: {

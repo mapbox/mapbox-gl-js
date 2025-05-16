@@ -80,9 +80,9 @@ describe('uSVG', async () => {
                     failed.push(name);
                 });
 
-                onTestFinished(({state}) => {
-                    if (state === 'pass') {
-                        passed.push(name);
+                onTestFinished(({task}) => {
+                    if (task.result.state === 'pass') {
+                        passed.push(icon.name);
                     }
                 });
 
