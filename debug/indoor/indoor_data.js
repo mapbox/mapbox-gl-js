@@ -303,4 +303,3 @@ const indoorData = {
         }
     ]
 };
-

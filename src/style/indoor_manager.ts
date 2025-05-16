@@ -135,11 +135,6 @@ class IndoorManager extends Evented<IndoorEvents> {
     // The parsed indoor-data field of the active floorplan
     _indoorData = undefined;
 
-    // The selected level of the floorplan. If undefined, the map should show the overview of the area.
-    // Note: currently only one level can be active per floorplan,
-    // but this could be extended for multi-level selection in future use-cases.
-    _selectedLevel: SelectedLevel = undefined;
-
     // Tracker of the previously selected floorplan elements
     // which is used to restore selections when leaving and returning to the area.
     _floorplanStates: { [ID: string]: FloorplanState } = {};
@@ -213,18 +208,23 @@ class IndoorManager extends Evented<IndoorEvents> {
             return;
         }
 
-        // Prevent queries on low zoom levels
-        if (this._map.transform.zoom < 13.0) {
-            return;
-        }
-
-        // Deselect floorplan if the camera moves far enough
-        if (this._indoorData && !isPointInCircle([this._map.getCenter().lng, this._map.getCenter().lat], this._indoorData.circumCircle)) {
+        const clearFloorplanData = () => {
             this._indoorData = undefined;
             this._selectedFloorplan = undefined;
             this._map.setConfigProperty(this._scope, "mbx-indoor-underground", false);
             this._map.setConfigProperty(this._scope, "mbx-indoor-active-floorplans", ["literal", []]);
             this.fire(new Event('floorplangone'));
+        };
+
+        // Prevent queries on low zoom levels
+        if (this._map.transform.zoom < 13.0) {
+            clearFloorplanData();
+            return;
+        }
+
+        // Deselect floorplan if the camera moves far enough
+        if (this._indoorData && !isPointInCircle([this._map.getCenter().lng, this._map.getCenter().lat], this._indoorData.circumCircle)) {
+            clearFloorplanData();
         }
 
         const queryParams = {
@@ -259,20 +259,12 @@ class IndoorManager extends Evented<IndoorEvents> {
 
         this._map.setConfigProperty(this._scope, "mbx-indoor-active-floorplans", this._indoorData.floorplanIDs);
 
-        let selectedLevelIdForFloorplan;
-        if (this._selectedLevel) {
-            // Check if the current selected level is in the floorplan
-            for (const level of this._indoorData.levels) {
-                if (level.id === this._selectedLevel.id) {
-                    selectedLevelIdForFloorplan = level.id;
-                }
-            }
-        }
+        const selectedLevelMatch = this._indoorData.levels.find(level => level.id === selectedLevelId);
 
         this.fire(new Event('floorplanselected', {
             buildings: this._indoorData.buildings,
             levels: this._indoorData.levels,
-            selectedLevelId: selectedLevelIdForFloorplan
+            selectedLevelId: selectedLevelMatch ? selectedLevelMatch.id : undefined
         }));
 
         if (selectedBuildingId) {
@@ -283,10 +275,8 @@ class IndoorManager extends Evented<IndoorEvents> {
             this._buildingSelected(this._indoorData.buildings[0], false);
         }
 
-        if (selectedLevelId) {
-            // Restore previous selection
-            const defaultLevel = this._indoorData.levels.find(l => l.id === selectedLevelId);
-            this._updateLevels(defaultLevel, withUserInput);
+        if (selectedLevelMatch) {
+            this._updateLevels(selectedLevelMatch, withUserInput);
         } else if (withUserInput) {
             // Activate default level
             if (this._indoorData["default-levels"].length > 0) {
@@ -317,34 +307,37 @@ class IndoorManager extends Evented<IndoorEvents> {
 
     _levelSelected(id) {
         if (id === 'overview') {
-            this._updateLevels(undefined, true);
-        } else {
-            const selectedLevel = this._indoorData.levels.find(l => l.id === id);
-            this._updateLevels(selectedLevel, true);
-        }
-
-        this.fire(new Event('levelselected', {
-            levelId: id === 'overview' ? undefined : id
-        }));
-    }
-
-    _updateLevels(selectedLevel: SelectedLevel | undefined, animated: boolean) {
-        if (!selectedLevel) {
-            // Deselect
-            this._map.setConfigProperty(this._scope, "mbx-indoor-loaded-levels", ["literal", []]);
-            this._map.setConfigProperty(this._scope, "mbx-indoor-underground", false);
-            this._floorplanStates[this._indoorData.id].selectedLevel = undefined;
-
-            if (animated && this._indoorData.extent) {
-                this._map.fitBounds(this._indoorData.extent, {
-                    pitch: this._map.getPitch(),
-                    bearing: this._map.getBearing()
-                });
-            }
+            this._deselectLevels(true);
+            this.fire(new Event('levelselected', {levelId: undefined}));
             return;
         }
 
-        this._selectedLevel = selectedLevel;
+        const selectedLevel = this._indoorData.levels.find(l => l.id === id);
+        if (selectedLevel) {
+            this._updateLevels(selectedLevel, true);
+            this.fire(new Event('levelselected', {levelId: selectedLevel.id}));
+        } else {
+            console.warn(`IndoorManager: Level with ID ${id} not found in the current floorplan.`);
+        }
+    }
+
+    _deselectLevels(animated: boolean) {
+        this._map.setConfigProperty(this._scope, "mbx-indoor-loaded-levels", ["literal", []]);
+        this._map.setConfigProperty(this._scope, "mbx-indoor-underground", false);
+        this._floorplanStates[this._indoorData.id].selectedLevel = undefined;
+
+        if (animated && this._indoorData.extent) {
+            this._map.fitBounds(this._indoorData.extent, {
+                pitch: this._map.getPitch(),
+                bearing: this._map.getBearing()
+            });
+        }
+    }
+
+    _updateLevels(selectedLevel: SelectedLevel, animated: boolean) {
+        if (!selectedLevel) {
+            throw new Error("selectedLevel cannot be null or undefined");
+        }
 
         function getIdFromFloorString(input) {
             const floorIndex = input.indexOf('/floor/');
@@ -358,7 +351,7 @@ class IndoorManager extends Evented<IndoorEvents> {
             return idEnd === -1 ? input.slice(idStart) : input.slice(idStart, idEnd);
         }
 
-        this._floorplanStates[this._indoorData.id].selectedLevel = selectedLevel ? selectedLevel.id : undefined;
+        this._floorplanStates[this._indoorData.id].selectedLevel = selectedLevel.id;
 
         const levelkeys = [];
         const levelHeight = {};
@@ -369,18 +362,14 @@ class IndoorManager extends Evented<IndoorEvents> {
             levelkeys.push(level.id);
             levelHeight[level.id] = level.height;
             levelBase[level.id] = level.base;
-            if (selectedLevel) {
-                if (this.mergeFloors) {
-                    const selectedFloor = getIdFromFloorString(selectedLevel.id);
-                    const targetFloor = getIdFromFloorString(level.id);
-                    levelSelected[level.id] = targetFloor === selectedFloor ? "true" : "false";
-                } else {
-                    levelSelected[level.id] = level.id === selectedLevel.id ? "true" : "false";
-                }
-                levelOverlapped[level.id] = level.base < selectedLevel.base ? "true" : "false";
+            if (this.mergeFloors) {
+                const selectedFloor = getIdFromFloorString(selectedLevel.id);
+                const targetFloor = getIdFromFloorString(level.id);
+                levelSelected[level.id] = targetFloor === selectedFloor ? "true" : "false";
             } else {
-                levelOverlapped[level.id] = true;
+                levelSelected[level.id] = level.id === selectedLevel.id ? "true" : "false";
             }
+            levelOverlapped[level.id] = level.base < selectedLevel.base ? "true" : "false";
         }
 
         // Note: This could be optimized by only updating the changed configurations
@@ -390,27 +379,25 @@ class IndoorManager extends Evented<IndoorEvents> {
         this._map.setConfigProperty(this._scope, "mbx-indoor-level-selected", ["literal", levelSelected]);
         this._map.setConfigProperty(this._scope, "mbx-indoor-level-overlapped", ["literal", levelOverlapped]);
 
-        if (selectedLevel) {
-            this._map.setConfigProperty(this._scope, "mbx-indoor-underground", !!selectedLevel.isUnderground);
-            if (animated && selectedLevel.extent) {
-                const cameraPlacement = this._map.cameraForBounds(selectedLevel.extent, {
+        this._map.setConfigProperty(this._scope, "mbx-indoor-underground", !!selectedLevel.isUnderground);
+        if (animated && selectedLevel.extent) {
+            const cameraPlacement = this._map.cameraForBounds(selectedLevel.extent, {
+                pitch: this._map.getPitch(),
+                bearing: this._map.getBearing()
+            });
+            const currentZoom = this._map.getZoom();
+            const zoomDiff = cameraPlacement.zoom ? Math.abs(currentZoom - cameraPlacement.zoom) : 0.0;
+            if (zoomDiff >= 1.0) {
+                this._map.fitBounds(selectedLevel.extent, {
                     pitch: this._map.getPitch(),
                     bearing: this._map.getBearing()
                 });
-                const currentZoom = this._map.getZoom();
-                const zoomDiff = cameraPlacement.zoom ? Math.abs(currentZoom - cameraPlacement.zoom) : 0.0;
-                if (zoomDiff >= 1.0) {
-                    this._map.fitBounds(selectedLevel.extent, {
-                        pitch: this._map.getPitch(),
-                        bearing: this._map.getBearing()
-                    });
-                } else {
-                    this._map.fitBounds(selectedLevel.extent, {
-                        pitch: this._map.getPitch(),
-                        bearing: this._map.getBearing(),
-                        zoom: currentZoom
-                    });
-                }
+            } else {
+                this._map.fitBounds(selectedLevel.extent, {
+                    pitch: this._map.getPitch(),
+                    bearing: this._map.getBearing(),
+                    zoom: currentZoom
+                });
             }
         }
     }
