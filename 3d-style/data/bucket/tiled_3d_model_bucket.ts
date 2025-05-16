@@ -80,6 +80,7 @@ export class Tiled3dModelFeature {
     feature: EvaluationFeature;
     evaluatedColor: Array<vec4>;
     evaluatedRMEA: Array<vec4>;
+    evaluatedTranslation: [number, number, number];
     evaluatedScale: [number, number, number];
     hiddenByReplacement: boolean;
     hasTranslucentParts: boolean;
@@ -98,6 +99,7 @@ export class Tiled3dModelFeature {
             [1, 0, 0, 1],   // lamp
             [1, 0, 0, 1]];  // logo
         this.hiddenByReplacement = false;
+        this.evaluatedTranslation = [0, 0, 0];
         this.evaluatedScale = [1, 1, 1];
         this.evaluatedColor = [];
         this.emissionHeightBasedParams = [];
@@ -280,7 +282,7 @@ class Tiled3dModelBucket implements Bucket {
         return false;
     }
 
-    evaluateScale(painter: Painter, layer: ModelStyleLayer) {
+    evaluateTransform(painter: Painter, layer: ModelStyleLayer) {
         if (painter.transform.zoom === this.zoom) return;
         this.zoom = painter.transform.zoom;
         const nodesInfo = this.getNodesInfo();
@@ -288,6 +290,7 @@ class Tiled3dModelBucket implements Bucket {
         for (const nodeInfo of nodesInfo) {
             const evaluationFeature = nodeInfo.feature;
 
+            nodeInfo.evaluatedTranslation = layer.paint.get('model-translation').evaluate(evaluationFeature, {}, canonical);
             nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical);
         }
     }
@@ -339,6 +342,7 @@ class Tiled3dModelBucket implements Bucket {
                 nodeInfo.evaluatedRMEA[0][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical);
             }
 
+            nodeInfo.evaluatedTranslation = layer.paint.get('model-translation').evaluate(evaluationFeature, state, canonical);
             nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, state, canonical);
             if (!this.updatePbrBuffer(nodeInfo.node)) {
                 this.needsUpload = true;

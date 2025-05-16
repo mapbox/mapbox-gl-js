@@ -6,7 +6,7 @@ import ColorMode from '../../src/gl/color_mode';
 import DepthMode from '../../src/gl/depth_mode';
 import CullFaceMode from '../../src/gl/cull_face_mode';
 import {mat4, vec3, vec4} from 'gl-matrix';
-import {getMetersPerPixelAtLatitude, mercatorZfromAltitude} from '../../src/geo/mercator_coordinate';
+import {getMetersPerPixelAtLatitude, mercatorZfromAltitude, tileToMeter} from '../../src/geo/mercator_coordinate';
 import TextureSlots from './texture_slots';
 import {convertModelMatrixForGlobe} from '../util/model_util';
 import {clamp, warnOnce} from '../../src/util/util';
@@ -756,8 +756,7 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
         bucket.setFilter(layer.filter);
         // Conflation
         if (painter.conflationActive) bucket.updateReplacement(coord, painter.replacementSource);
-        // evaluate scale
-        bucket.evaluateScale(painter, layer);
+        bucket.evaluateTransform(painter, layer);
         // Compute elevation
         if (painter.terrain && exaggeration > 0) {
             bucket.elevationUpdate(painter.terrain, exaggeration, coord, layer.source);
@@ -884,13 +883,15 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 }
 
                 const tileModelMatrix = [...tileMatrix] as mat4;
+                const tileUnitsPerMeter = 1.0 / tileToMeter(coord.canonical);
 
                 const anchorX = node.anchor ? node.anchor[0] : 0;
                 const anchorY = node.anchor ? node.anchor[1] : 0;
 
-                mat4.translate(tileModelMatrix, tileModelMatrix, [anchorX * (scale[0] - 1),
-                    anchorY * (scale[1] - 1),
-                    elevation]);
+                mat4.translate(tileModelMatrix, tileModelMatrix, [
+                    anchorX * (scale[0] - 1) + nodeInfo.evaluatedTranslation[0] * tileUnitsPerMeter,
+                    anchorY * (scale[1] - 1) + nodeInfo.evaluatedTranslation[1] * tileUnitsPerMeter,
+                    elevation + nodeInfo.evaluatedTranslation[2]]);
                 if (!vec3.exactEquals(scale, DefaultModelScale)) {
                     mat4.scale(tileModelMatrix, tileModelMatrix, scale);
                 }
