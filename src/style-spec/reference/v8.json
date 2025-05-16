@@ -6642,6 +6642,29 @@
       },
       "property-type": "data-driven"
     },
+    "fill-pattern-cross-fade": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "requires": [
+        "line-pattern"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.12.0"
+        }
+      },
+      "doc": "Controls the transition progress between the image variants of fill-pattern. Zero means the first variant is used, one is the second, and in between they are blended together. Both images should be the same size and have the same type (either raster or vector)."
+    },
     "fill-emissive-strength": {
       "type": "number",
       "default": 0,
@@ -6890,6 +6913,29 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "fill-extrusion-pattern-cross-fade": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "requires": [
+        "line-pattern"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.12.0"
+        }
+      },
+      "doc": "Controls the transition progress between the image variants of fill-extrusion-pattern. Zero means the first variant is used, one is the second, and in between they are blended together. Both images should be the same size and have the same type (either raster or vector)."
     },
     "fill-extrusion-height": {
       "type": "number",
@@ -7912,6 +7958,29 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "line-pattern-cross-fade": {
+      "type": "number",
+      "property-type": "data-constant",
+      "default": 0.0,
+      "minimum": 0,
+      "maximum": 1,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "requires": [
+        "line-pattern"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.12.0"
+        }
+      },
+      "doc": "Controls the transition progress between the image variants of line-pattern. Zero means the first variant is used, one is the second, and in between they are blended together. Both images should be the same size and have the same type (either raster or vector)."
     },
     "line-gradient": {
       "type": "color",
@@ -8996,8 +9065,7 @@
           "ios": "11.0.0"
         }
       },
-      "doc": "Controls the transition progress between the image variants of icon-image. Zero means the first variant is used, one is the second, and in between they are blended together.",
-      "transition": true
+      "doc": "Controls the transition progress between the image variants of icon-image. Zero means the first variant is used, one is the second, and in between they are blended together. . Both images should be the same size and have the same type (either raster or vector)."
     },
     "text-opacity": {
       "type": "number",

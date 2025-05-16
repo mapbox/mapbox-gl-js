@@ -456,6 +456,25 @@ export function getScaledImageVariant(icon: ResolvedImage, iconSizeData: SizeDat
     return {iconPrimary, iconSecondary};
 }
 
+export function checkCrossFadeImagePositions(primary: ImageVariant, secondary: ImageVariant, iconPositions: ImagePositionMap) {
+    if (!secondary) return;
+    const primaryPosition = iconPositions.get(primary.toString());
+    const secondaryPosition = iconPositions.get(secondary.toString());
+
+    if (!secondaryPosition) {
+        return;
+    }
+
+    if (primaryPosition.paddedRect.w !== secondaryPosition.paddedRect.w ||
+        primaryPosition.paddedRect.h !== secondaryPosition.paddedRect.h) {
+        warnOnce(`Mismatch in icon variant sizes: ${primary.toString()} and ${secondary.toString()}`);
+    }
+
+    if (primaryPosition.usvg !== secondaryPosition.usvg) {
+        warnOnce(`Mismatch in icon variant image types: ${primary.id} and ${secondary.id}`);
+    }
+}
+
 export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: SymbolBucketData, showCollisionBoxes: boolean,
     availableImages: ImageId[], canonical: CanonicalTileID, tileZoom: number, projection: Projection, brightness: number | null, imageMap: StyleImageMap<StringifiedImageVariant>, imageAtlas: ImageAtlas) {
 
@@ -470,6 +489,7 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
         reconcileImagePosition(shapedIcon, imageAtlas.iconPositions, iconPrimary, iconSecondary);
         reconcileImagePosition(verticallyShapedIcon, imageAtlas.iconPositions, iconPrimary, iconSecondary);
         reconcileTextImagePositions(shapedTextOrientations, imageAtlas.iconPositions);
+        checkCrossFadeImagePositions(iconPrimary, iconSecondary, imageAtlas.iconPositions);
 
         if (shapedText || shapedIcon) {
             addFeature(bucket, feature, shapedTextOrientations, shapedIcon, verticallyShapedIcon, imageMap, sizes, layoutTextSize,

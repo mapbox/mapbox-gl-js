@@ -95,6 +95,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const image = patternProperty.constantOr((1 as any));
+    const patternTransition = layer.paint.get('line-pattern-cross-fade');
     const constantPattern = patternProperty.constantOr(null);
 
     const lineOpacity = layer.paint.get('line-opacity').constantOr(1.0);
@@ -154,14 +155,26 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             }
 
             const programConfiguration = bucket.programConfigurations.get(layer.id);
+
+            let transitionableConstantPattern = false;
+            if (constantPattern && tile.imageAtlas) {
+                const pattern = ResolvedImage.from(constantPattern);
+                const primaryPatternImage = pattern.getPrimary().scaleSelf(pixelRatio).toString();
+                const primaryPosTo = tile.imageAtlas.patternPositions.get(primaryPatternImage);
+                const secondaryPatternImageVariant = pattern.getSecondary();
+                const secondaryPosTo = secondaryPatternImageVariant ? tile.imageAtlas.patternPositions.get(secondaryPatternImageVariant.scaleSelf(pixelRatio).toString()) : null;
+
+                transitionableConstantPattern = !!primaryPosTo && !!secondaryPosTo;
+
+                if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
+            }
+
+            if (patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('line-pattern'))) {
+                defines.push('LINE_PATTERN_TRANSITION');
+            }
+
             const affectedByFog = painter.isTileAffectedByFog(coord);
             const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines, overrideFog: affectedByFog, overrideRtt: elevated ? false : undefined});
-
-            if (constantPattern && tile.imageAtlas) {
-                const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(pixelRatio).toString();
-                const posTo = tile.imageAtlas.patternPositions.get(patternImage);
-                if (posTo) programConfiguration.setConstantPatternPositions(posTo);
-            }
 
             if (!image && constantDash && constantCap && tile.lineAtlas) {
                 const posTo = tile.lineAtlas.getDash(constantDash, constantCap);
@@ -195,7 +208,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const lineWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, painter.transform.zoom) : 1.0;
             const lineFloorWidthScale = unitInMeters ? (1.0 / bucket.tileToMeter) / pixelsToTileUnits(tile, 1, Math.floor(painter.transform.zoom)) : 1.0;
             const uniformValues: UniformValues<LineUniformsType | LinePatternUniformsType> = image ?
-                linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor) :
+                linePatternUniformValues(painter, tile, layer, matrix, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor, patternTransition) :
                 lineUniformValues(painter, tile, layer, matrix, bucket.lineClipsArray.length, pixelRatio, lineWidthScale, lineFloorWidthScale, [trimStart, trimEnd], groundShadowFactor);
 
             if (gradient) {

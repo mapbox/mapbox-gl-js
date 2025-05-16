@@ -5,6 +5,10 @@ uniform vec2 u_texsize;
 
 uniform sampler2D u_image;
 
+#ifdef FILL_EXTRUSION_PATTERN_TRANSITION
+uniform float u_pattern_transition;
+#endif
+
 #ifdef FAUX_AO
 uniform lowp vec2 u_ao;
 in vec3 v_ao;
@@ -22,12 +26,18 @@ uniform lowp float u_opacity;
 #pragma mapbox: define highp float base
 #pragma mapbox: define highp float height
 #pragma mapbox: define mediump vec4 pattern
+#ifdef FILL_EXTRUSION_PATTERN_TRANSITION
+#pragma mapbox: define mediump vec4 pattern_b
+#endif
 #pragma mapbox: define highp float pixel_ratio
 
 void main() {
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize mediump vec4 pattern
+    #ifdef FILL_EXTRUSION_PATTERN_TRANSITION
+    #pragma mapbox: initialize mediump vec4 pattern_b
+    #endif
     #pragma mapbox: initialize highp float pixel_ratio
 
     vec2 pattern_tl = pattern.xy;
@@ -37,6 +47,14 @@ void main() {
     highp vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
     highp vec2 lod_pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, v_pos);
     vec4 out_color = textureLodCustom(u_image, pos, lod_pos);
+
+#ifdef FILL_EXTRUSION_PATTERN_TRANSITION
+    vec2 pattern_b_tl = pattern_b.xy;
+    vec2 pattern_b_br = pattern_b.zw;
+    highp vec2 pos_b = mix(pattern_b_tl / u_texsize, pattern_b_br / u_texsize, imagecoord);
+    vec4 color_b = textureLodCustom(u_image, pos_b, lod_pos);
+    out_color = out_color * (1.0 - u_pattern_transition) + color_b * u_pattern_transition;
+#endif
 
 #ifdef LIGHTING_3D_MODE
     out_color = apply_lighting(out_color, normalize(v_normal)) * u_opacity;

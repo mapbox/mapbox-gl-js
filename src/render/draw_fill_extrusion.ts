@@ -275,6 +275,8 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const gl = context.gl;
     const tr = painter.transform;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
+    const patternTransition = layer.paint.get('fill-extrusion-pattern-cross-fade');
+    const constantPattern = patternProperty.constantOr(null);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const image = patternProperty.constantOr((1 as any));
@@ -365,6 +367,25 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
         const affectedByFog = painter.isTileAffectedByFog(coord);
         const programConfiguration = bucket.programConfigurations.get(layer.id);
+
+        let transitionableConstantPattern = false;
+        if (constantPattern && tile.imageAtlas) {
+            const atlas = tile.imageAtlas;
+            const pattern = ResolvedImage.from(constantPattern);
+            const primaryPatternImage = pattern.getPrimary().scaleSelf(browser.devicePixelRatio).toString();
+            const secondaryPatternImageVariant = pattern.getSecondary();
+            const primaryPosTo = atlas.patternPositions.get(primaryPatternImage);
+            const secondaryPosTo = secondaryPatternImageVariant ? atlas.patternPositions.get(secondaryPatternImageVariant.scaleSelf(browser.devicePixelRatio).toString()) : null;
+
+            transitionableConstantPattern = !!primaryPosTo && !!secondaryPosTo;
+
+            if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
+        }
+
+        if (patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('fill-extrusion-pattern'))) {
+            baseDefines.push('FILL_EXTRUSION_PATTERN_TRANSITION');
+        }
+
         const program = painter.getOrCreateProgram(programName,
             {config: programConfiguration, defines: singleCascade ? singleCascadeDefines : baseDefines, overrideFog: affectedByFog});
 
@@ -390,14 +411,6 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             programConfiguration.updatePaintBuffers();
         }
 
-        const constantPattern = patternProperty.constantOr(null);
-        if (constantPattern && tile.imageAtlas) {
-            const atlas = tile.imageAtlas;
-            const patternImage = ResolvedImage.from(constantPattern).getPrimary().scaleSelf(browser.devicePixelRatio);
-            const posTo = atlas.patternPositions.get(patternImage.toString());
-            if (posTo) programConfiguration.setConstantPatternPositions(posTo);
-        }
-
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const lineWidthScale = 1.0 / bucket.tileToMeter;
         let uniformValues: UniformValues<FillExtrusionDepthUniformsType | FillExtrusionPatternUniformsType>;
@@ -419,7 +432,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
             if (image) {
                 uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
-                    tile, heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
+                    tile, heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, patternTransition);
             } else {
                 uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
                     heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor);

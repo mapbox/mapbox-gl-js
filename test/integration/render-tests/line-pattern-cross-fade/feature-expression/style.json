@@ -1,0 +1,107 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128,
+      "allowed": 0.0023
+    }
+  },
+  "zoom": 2,
+  "sprite": "local://sprites/standard",
+  "sources": {
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "street"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  10,
+                  -5
+                ],
+                [
+                  -10,
+                  -5
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "path"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  0
+                ],
+                [
+                  10,
+                  0
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "class": "street"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -10,
+                  5
+                ],
+                [
+                  10,
+                  5
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "a",
+      "paint": {
+        "line-width": 10,
+        "line-pattern-cross-fade": [
+          "interpolate",
+          ["linear"], ["zoom"],
+          0, 0,
+          4, 1
+        ],
+        "line-pattern": [
+          "image",
+          ["case", ["==", ["get", "class"], "street"], "information", "car"],
+          "bicycle-dark"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "allowed": 0.00098
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "buffer": 0,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 20
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -0.0004,
+                    0
+                  ],
+                  [
+                    -0.0002,
+                    0.0002
+                  ],
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    -0.0002,
+                    -0.0002
+                  ],
+                  [
+                    -0.0004,
+                    0
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "property": 20
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0,
+                    -0.0002
+                  ],
+                  [
+                    0,
+                    0.0002
+                  ],
+                  [
+                    0.0003,
+                    0.0002
+                  ],
+                  [
+                    0.0003,
+                    -0.0002
+                  ],
+                  [
+                    0,
+                    -0.0002
+                  ]
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/standard",
+  "pitch": 60,
+  "zoom": 18,
+  "layers": [
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson",
+      "paint": {
+        "fill-extrusion-pattern-cross-fade": [
+          "interpolate",
+          ["linear"], ["zoom"],
+          16, 0,
+          20, 1
+        ],
+        "fill-extrusion-pattern": ["image", "golf-dark", "bicycle-dark"],
+        "fill-extrusion-height": 10
+      }
+    }
+  ]
+}

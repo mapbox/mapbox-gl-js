@@ -26,12 +26,18 @@ out highp vec2 v_pos_world;
 
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern
+#ifdef FILL_PATTERN_TRANSITION
+#pragma mapbox: define mediump vec4 pattern_b
+#endif
 #pragma mapbox: define lowp float pixel_ratio
 #pragma mapbox: define highp float z_offset
 
 void main() {
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump vec4 pattern
+    #ifdef FILL_PATTERN_TRANSITION
+    #pragma mapbox: initialize mediump vec4 pattern_b
+    #endif
     #pragma mapbox: initialize lowp float pixel_ratio
     #pragma mapbox: initialize highp float z_offset
 

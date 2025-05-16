@@ -32,6 +32,7 @@ export type PaintProps = {
     "fill-extrusion-translate": DataConstantProperty<[number, number]>;
     "fill-extrusion-translate-anchor": DataConstantProperty<"map" | "viewport">;
     "fill-extrusion-pattern": DataDrivenProperty<ResolvedImage | null | undefined>;
+    "fill-extrusion-pattern-cross-fade": DataConstantProperty<number>;
     "fill-extrusion-height": DataDrivenProperty<number>;
     "fill-extrusion-base": DataDrivenProperty<number>;
     "fill-extrusion-height-alignment": DataConstantProperty<"terrain" | "flat">;
@@ -64,6 +65,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "fill-extrusion-translate": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-translate"]),
     "fill-extrusion-translate-anchor": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-translate-anchor"]),
     "fill-extrusion-pattern": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-pattern"]),
+    "fill-extrusion-pattern-cross-fade": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-pattern-cross-fade"]),
     "fill-extrusion-height": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-height"]),
     "fill-extrusion-base": new DataDrivenProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-base"]),
     "fill-extrusion-height-alignment": new DataConstantProperty(styleSpec["paint_fill-extrusion"]["fill-extrusion-height-alignment"]),

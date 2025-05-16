@@ -39,6 +39,7 @@ export class ImagePosition implements SpritePosition {
     content: [number, number, number, number] | null | undefined;
     padding: number;
     sdf: boolean;
+    usvg: boolean;
     scale: ImagePositionScale;
 
     static getImagePositionScale(imageVariant: ImageVariant | undefined, usvg: boolean, pixelRatio: number): ImagePositionScale {
@@ -75,6 +76,7 @@ export class ImagePosition implements SpritePosition {
         this.version = version;
         this.padding = padding;
         this.sdf = sdf;
+        this.usvg = usvg;
         this.scale = ImagePosition.getImagePositionScale(imageVariant, usvg, pixelRatio);
     }
 
