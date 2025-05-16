@@ -97,7 +97,7 @@ function tsObjectDeclaration(key, properties, overrides = {}) {
 function tsObject(properties, indent, overrides = {}) {
     return `{
 ${Object.keys(properties)
-        .map(k => {
+        .flatMap(k => {
             let property = `    ${indent}${tsProperty(k, properties[k], overrides[k])}`;
 
             if (properties[k].experimental) {
@@ -105,24 +105,19 @@ ${Object.keys(properties)
                 property = [experimentalTag, property].join('\n');
             }
 
-            if (properties[k].type === 'color') {
-
-                if (properties[k].transition) {
-                    // eslint-disable-next-line no-useless-concat
-                    const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification` + `,\n    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
-                    return [property, propertyTransition].join(',\n');
-                } else {
-                    const propertyUseTheme = `    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
-                    return [property, propertyUseTheme].join(',\n');
-                }
-            }
+            const result = [property];
 
             if (properties[k].transition) {
                 const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification`;
-                return [property, propertyTransition].join(',\n');
-            } else {
-                return property;
+                result.push(propertyTransition);
             }
+
+            if (properties[k]['use-theme']) {
+                const propertyUseTheme = `    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
+                result.push(propertyUseTheme);
+            }
+
+            return result;
         })
         .join(',\n')}
 ${indent}}`;

@@ -82,6 +82,7 @@ function validSchema(k, name, obj, ref, version, kind) {
         'required',
         'optional',
         'transition',
+        'use-theme',
         'type',
         'value',
         'units',

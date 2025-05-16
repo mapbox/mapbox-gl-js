@@ -502,6 +502,7 @@
           "zoom"
         ]
       },
+      "use-theme": true,
       "transition": true,
       "doc": "Color of the directional light.",
       "sdk-support": {
@@ -604,6 +605,7 @@
           "zoom"
         ]
       },
+      "use-theme": true,
       "transition": true,
       "doc": "Color of the ambient light.",
       "sdk-support": {
@@ -708,6 +710,7 @@
           "zoom"
         ]
       },
+      "use-theme": true,
       "transition": true,
       "doc": "Color tint for lighting extruded geometries.",
       "sdk-support": {
@@ -5393,6 +5396,7 @@
         ],
         "relaxZoomRestriction": true
       },
+      "use-theme": true,
       "transition": true,
       "doc": "The color of the atmosphere region immediately below the horizon and within the `range` and above the horizon and within `horizon-blend`. Using opacity is recommended only for smoothly transitioning fog on/off as anything less than 100% opacity results in more tiles loaded and drawn.",
       "sdk-support": {
@@ -5415,6 +5419,7 @@
         ],
         "relaxZoomRestriction": true
       },
+      "use-theme": true,
       "transition": true,
       "doc": "The color of the atmosphere region above the horizon, `high-color` extends further above the horizon than the `color` property and its spread can be controlled with `horizon-blend`. The opacity can be set to `0` to remove the high atmosphere color contribution.",
       "sdk-support": {
@@ -5428,7 +5433,6 @@
     "space-color": {
       "type": "color",
       "property-type": "data-constant",
-
       "default":
       [
         "interpolate",
@@ -5451,6 +5455,7 @@
         ],
         "relaxZoomRestriction": true
       },
+      "use-theme": true,
       "transition": true,
       "doc": "The color of the region above the horizon and after the end of the `horizon-blend` contribution. The opacity can be set to `0` to have a transparent background.",
       "sdk-support": {
@@ -5633,6 +5638,7 @@
         ],
         "relaxZoomRestriction": true
       },
+      "use-theme": true,
       "transition": true,
       "doc": "Snow particles color.",
       "sdk-support": {
@@ -5714,6 +5720,7 @@
         ],
         "relaxZoomRestriction": true
       },
+      "use-theme": true,
       "transition": true,
       "doc": "Snow vignette screen-space corners tint color.",
       "sdk-support": {
@@ -5889,6 +5896,7 @@
         ],
         "relaxZoomRestriction": true
       },
+      "use-theme": true,
       "transition": true,
       "doc": "Individual rain particle dorplets color.",
       "sdk-support": {
@@ -5986,6 +5994,7 @@
         ],
         "relaxZoomRestriction": true
       },
+      "use-theme": true,
       "transition": true,
       "doc": "Rain vignette screen-space corners tint color.",
       "sdk-support": {
@@ -6249,6 +6258,7 @@
           "zoom"
         ]
       },
+      "use-theme": true,
       "transition": true,
       "doc": "Color tint for lighting extruded geometries.",
       "sdk-support": {
@@ -6485,6 +6495,7 @@
       "type": "color",
       "default": "#000000",
       "doc": "The color of the filled part of this layer. This color can be specified as `rgba` with an alpha component and the color's opacity will not affect the opacity of the 1px stroke, if it is used.",
+      "use-theme": true,
       "transition": true,
       "requires": [
         {
@@ -6517,6 +6528,7 @@
     "fill-outline-color": {
       "type": "color",
       "doc": "The outline color of the fill. Matches the value of `fill-color` if unspecified.",
+      "use-theme": true,
       "transition": true,
       "requires": [
         {
@@ -6686,6 +6698,7 @@
       "doc": "The color of bridge guard rail.",
       "experimental": true,
       "private": true,
+      "use-theme": true,
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -6713,6 +6726,7 @@
       "type": "color",
       "default": "rgba(241, 236, 225, 255)",
       "doc": "The color of tunnel structures (tunnel entrance and tunnel walls).",
+      "use-theme": true,
       "transition": true,
       "experimental": true,
       "private": true,
@@ -6766,6 +6780,7 @@
       "type": "color",
       "default": "#000000",
       "doc": "The base color of the extruded fill. The extrusion's surfaces will be shaded differently based on this color in combination with the root `light` settings. If this color is specified as `rgba` with an alpha component, the alpha component will be ignored; use `fill-extrusion-opacity` to set layer opacity.",
+      "use-theme": true,
       "transition": true,
       "requires": [
         {
@@ -7139,6 +7154,7 @@
       "requires": [
         "lights"
       ],
+      "use-theme": true,
       "transition": true,
       "expression": {
         "interpolated": true,
@@ -7559,6 +7575,8 @@
       "doc": "Color buildings. This can be styled using different building parts (e.g. windows, wall, roof, etc.). This won't be used if `building-roof-shape` has a value `flat`.",
       "experimental": true,
       "private": true,
+      "use-theme": true,
+      "transition": false,
       "sdk-support": {
         "basic functionality": {
         },
@@ -7633,6 +7651,7 @@
       "type": "color",
       "doc": "The color with which the line will be drawn.",
       "default": "#000000",
+      "use-theme": true,
       "transition": true,
       "requires": [
         {
@@ -7914,6 +7933,7 @@
         1,
         "red"
       ],
+      "use-theme": true,
       "transition": false,
       "requires": [
         {
@@ -8008,6 +8028,7 @@
       "doc": "The color to be used for rendering the trimmed line section that is defined by the `line-trim-offset` property.",
       "experimental": true,
       "default": "transparent",
+      "use-theme": true,
       "transition": true,
       "requires": [
         "line-trim-offset",
@@ -8094,6 +8115,7 @@
       "private": true,
       "doc": "The color of the line border. If line-border-width is greater than zero and the alpha value of this color is 0 (default), the color for the border will be selected automatically based on the line color.",
       "default": "rgba(0, 0, 0, 0)",
+      "use-theme": true,
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -8175,6 +8197,7 @@
       "type": "color",
       "default": "#000000",
       "doc": "The fill color of the circle.",
+      "use-theme": true,
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -8401,6 +8424,7 @@
       "type": "color",
       "default": "#000000",
       "doc": "The stroke color of the circle.",
+      "use-theme": true,
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -8587,6 +8611,7 @@
         "red"
       ],
       "doc": "Defines the color of each pixel based on its density value in a heatmap. Should be an expression that uses `[\"heatmap-density\"]` as input.",
+      "use-theme": true,
       "transition": false,
       "sdk-support": {
         "basic functionality": {
@@ -8761,6 +8786,7 @@
     "icon-color": {
       "type": "color",
       "default": "#000000",
+      "use-theme": true,
       "transition": true,
       "doc": "The color of the icon. This can only be used with [SDF icons](/help/troubleshooting/using-recolorable-images-in-mapbox-maps/).",
       "requires": [
@@ -8792,6 +8818,7 @@
     "icon-halo-color": {
       "type": "color",
       "default": "rgba(0, 0, 0, 0)",
+      "use-theme": true,
       "transition": true,
       "doc": "The color of the icon's halo. Icon halos can only be used with [SDF icons](/help/troubleshooting/using-recolorable-images-in-mapbox-maps/).",
       "requires": [
@@ -9042,6 +9069,7 @@
       "type": "color",
       "doc": "The color with which the text will be drawn.",
       "default": "#000000",
+      "use-theme": true,
       "transition": true,
       "overridable": true,
       "requires": [
@@ -9073,6 +9101,7 @@
     "text-halo-color": {
       "type": "color",
       "default": "rgba(0, 0, 0, 0)",
+      "use-theme": true,
       "transition": true,
       "doc": "The color of the text's halo, which helps it stand out from backgrounds.",
       "requires": [
@@ -9358,6 +9387,7 @@
     "raster-color": {
       "type": "color",
       "doc": "Defines a color map by which to colorize a raster layer, parameterized by the `[\"raster-value\"]` expression and evaluated at 256 uniformly spaced steps over the range specified by `raster-color-range`.",
+      "use-theme": true,
       "transition": false,
       "sdk-support": {
         "basic functionality": {
@@ -9702,6 +9732,7 @@
     "raster-particle-color": {
       "type": "color",
       "doc": "Defines a color map by which to colorize a raster particle layer, parameterized by the `[\"raster-particle-speed\"]` expression and evaluated at 256 uniformly spaced steps over the range specified by `raster-particle-max-speed`.",
+      "use-theme": true,
       "transition": false,
       "sdk-support": {
         "basic functionality": {
@@ -9892,6 +9923,7 @@
       "type": "color",
       "default": "#000000",
       "doc": "The shading color of areas that face away from the light source.",
+      "use-theme": true,
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -9913,6 +9945,7 @@
       "type": "color",
       "default": "#FFFFFF",
       "doc": "The shading color of areas that faces towards the light source.",
+      "use-theme": true,
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -9934,6 +9967,7 @@
       "type": "color",
       "default": "#000000",
       "doc": "The shading color used to accentuate rugged terrain like sharp cliffs and gorges.",
+      "use-theme": true,
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -10009,6 +10043,7 @@
       "type": "color",
       "default": "#000000",
       "doc": "The color with which the background will be drawn.",
+      "use-theme": true,
       "transition": true,
       "requires": [
         {
@@ -10252,6 +10287,7 @@
         "white"
       ],
       "doc": "Defines a radial color gradient with which to color the sky. The color values can be interpolated with an expression using `sky-radial-progress`. The range [0, 1] for the interpolant covers a radial distance (in degrees) of [0, `sky-gradient-radius`] centered at the position specified by `sky-gradient-center`.",
+      "use-theme": true,
       "transition": false,
       "requires": [
         {
@@ -10278,6 +10314,7 @@
       "type": "color",
       "default": "white",
       "doc": "A color applied to the atmosphere sun halo. The alpha channel describes how strongly the sun halo is represented in an atmosphere sky layer.",
+      "use-theme": true,
       "transition": false,
       "requires": [
         {
@@ -10297,6 +10334,7 @@
       "type": "color",
       "default": "white",
       "doc": "A color used to tweak the main atmospheric scattering coefficients. Using white applies the default coefficients giving the natural blue color to the atmosphere. This color affects how heavily the corresponding wavelength is represented during scattering. The alpha channel describes the density of the atmosphere, with 1 maximum density and 0 no density.",
+      "use-theme": true,
       "transition": false,
       "requires": [
         {
@@ -10459,6 +10497,7 @@
           "ios": "11.0.0"
         }
       },
+      "use-theme": true,
       "transition": true
     },
     "model-color-mix-intensity": {
