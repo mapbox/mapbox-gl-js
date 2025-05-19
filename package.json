@@ -76,7 +76,7 @@
     "cross-env": "^7.0.3",
     "cssnano": "^7.0.7",
     "d3-queue": "^3.0.7",
-    "diff": "^8.0.0",
+    "diff": "^8.0.1",
     "dts-bundle-generator": "^9.5.1",
     "ejs": "^3.1.10",
     "envify": "^4.1.0",
