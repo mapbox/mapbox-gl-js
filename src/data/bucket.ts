@@ -36,6 +36,7 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     projection: ProjectionSpecification;
     tessellationStep: number | null | undefined;
     styleDefinedModelURLs: StyleModelMap;
+    worldview: string | undefined;
 };
 
 export type ImageDependenciesMap = Map<StringifiedImageId, Array<ImageVariant>>;
@@ -102,6 +103,7 @@ export interface Bucket {
     layers: TypedStyleLayer[];
     stateDependentLayers: Array<TypedStyleLayer>;
     readonly stateDependentLayerIds: Array<string>;
+    readonly worldview: string | undefined;
     populate: (
         features: Array<IndexedFeature>,
         options: PopulateParameters,
@@ -115,7 +117,7 @@ export interface Bucket {
         imagePositions: SpritePositions,
         layers: ReadonlyArray<TypedStyleLayer>,
         isBrightnessChanged: boolean,
-        brightness?: number | null,
+        brightness?: number | null
     ) => void;
     isEmpty: () => boolean;
     upload: (context: Context) => void;

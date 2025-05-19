@@ -37,6 +37,8 @@ class ClipBucket implements Bucket {
 
     footprints: Array<Footprint>;
 
+    worldview: string;
+
     constructor(options: BucketParameters<ClipStyleLayer>) {
         this.zoom = options.zoom;
         this.layers = options.layers;
@@ -46,6 +48,8 @@ class ClipBucket implements Bucket {
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.footprints = [];
+
+        this.worldview = options.worldview;
     }
 
     updateFootprints(id: UnwrappedTileID, footprints: Array<TileFootprint>) {
@@ -64,7 +68,7 @@ class ClipBucket implements Bucket {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
+            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview}), evaluationFeature, canonical))
                 continue;
 
             const bucketFeature: BucketFeature = {

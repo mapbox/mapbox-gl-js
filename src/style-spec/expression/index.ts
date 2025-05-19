@@ -60,6 +60,7 @@ export interface GlobalProperties {
     readonly isSupportedScript?: (_: string) => boolean;
     accumulated?: Value;
     brightness?: number;
+    worldview?: string;
 }
 
 export class StyleExpression {

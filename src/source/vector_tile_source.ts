@@ -273,13 +273,13 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             extraShadowCaster: tile.isExtraShadowCaster,
             tessellationStep: this.map._tessellationStep,
             scaleFactor: this.map.getScaleFactor(),
+            worldview: this.map.getWorldview() || this.worldviewDefault
         };
 
         // If we request a Mapbox URL, use the `worldview` param in the WorkerTile
         // to filter out features in the localizable layers
         // that are not visible in the current worldview.
         if (this.hasWorldviews && isMapboxURL(tileUrl)) {
-            params.worldview = this.map.getWorldview() || this.worldviewDefault;
             params.localizableLayerIds = this.localizableLayerIds;
         }
 

@@ -443,9 +443,9 @@ export class ElevatedStructures {
         assert(this.vertexPositions.length === this.vertexNormals.length);
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
-        this.bridgeProgramConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
-        this.tunnelProgramConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null, worldview?: string) {
+        this.bridgeProgramConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, worldview);
+        this.tunnelProgramConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, worldview);
     }
 
     upload(context: Context) {
@@ -480,7 +480,7 @@ export class ElevatedStructures {
         this.tunnelProgramConfigurations.destroy();
     }
 
-    populatePaintArrays(vtLayer: VectorTileLayer, canonical: CanonicalTileID, availableImages: ImageId[], brightness: number) {
+    populatePaintArrays(vtLayer: VectorTileLayer, canonical: CanonicalTileID, availableImages: ImageId[], brightness: number, worldview: string | undefined) {
         const populate = (programConfigurations: ProgramConfigurationSet<FillStyleLayer>, sections: FeatureSection[]) => {
             for (let i = 0; i < sections.length - 1; i++) {
                 const featureIndex = sections[i].featureIndex;
@@ -490,7 +490,7 @@ export class ElevatedStructures {
                 const feature = vtLayer.feature(featureIndex);
                 assert(feature);
 
-                programConfigurations.populatePaintArrays(length, feature, featureIndex, {}, availableImages, canonical, brightness);
+                programConfigurations.populatePaintArrays(length, feature, featureIndex, {}, availableImages, canonical, brightness, undefined, worldview);
             }
         };
 

@@ -173,6 +173,8 @@ class LineBucket implements Bucket {
     elevationType: ElevationType = 'none';
     heightRange: Range | undefined;
 
+    worldview: string;
+
     constructor(options: BucketParameters<LineStyleLayer>) {
         this.zoom = options.zoom;
         this.evaluationGlobals.zoom = this.zoom;
@@ -204,6 +206,8 @@ class LineBucket implements Bucket {
         // should be enough since line elevation over terrain samples neighboring points.
         // options.tessellationStep override is used for testing only.
         this.tessellationStep = options.tessellationStep ? options.tessellationStep : (EXTENT / 64);
+
+        this.worldview = options.worldview;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
@@ -239,7 +243,7 @@ class LineBucket implements Bucket {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
+            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview}), evaluationFeature, canonical))
                 continue;
 
             const sortKey = lineSortKey ?
@@ -352,8 +356,8 @@ class LineBucket implements Bucket {
 
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
-        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null, worldview?: string) {
+        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, worldview);
     }
 
     addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], _: TileTransform, brightness?: number | null) {
@@ -457,7 +461,7 @@ class LineBucket implements Bucket {
             }
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness, undefined, this.worldview);
     }
 
     private computeSegNextDir(info: LineInfo, line: Point[]) {

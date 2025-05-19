@@ -264,7 +264,9 @@ class Painter {
 
     scaleFactor: number;
 
-    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, tp: ITrackedParameters) {
+    worldview: string;
+
+    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, tp: ITrackedParameters, worldview: string | undefined) {
         this.context = new Context(gl, contextCreateOptions);
 
         this.transform = transform;
@@ -353,6 +355,8 @@ class Painter {
         this._clippingActiveLastFrame = false;
 
         this.scaleFactor = scaleFactor;
+
+        this.worldview = worldview;
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {
@@ -1803,7 +1807,7 @@ class Painter {
         const tileSize = 512;
         const tileIDs = this.transform.coveringTiles({tileSize});
         for (const tileID of tileIDs) {
-            newTiles[tileID.key] = oldTiles[tileID.key] || new Tile(tileID, tileSize, this.transform.tileZoom, this);
+            newTiles[tileID.key] = oldTiles[tileID.key] || new Tile(tileID, tileSize, this.transform.tileZoom, this, undefined, this.worldview);
         }
         return newTiles;
     }

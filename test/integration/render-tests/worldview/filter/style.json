@@ -1,0 +1,39 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "worldview": "AD",
+        "width": 50,
+        "height": 50
+      }
+    },
+    "center": [-1.426798, 53.943034],
+    "zoom": 20,
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {"type": "Feature", "properties": {"country": "AD", "color": "yellow"}, "geometry": {"type": "Point", "coordinates": [-1.426798, 53.943034]}},
+                    {"type": "Feature", "properties": {"country": "ES", "color": "red"}, "geometry": {"type": "Point", "coordinates": [-1.426798, 53.943034]}}
+                ]
+              },
+            "maxzoom": 20
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+        "id": "test",
+        "type": "circle",
+        "source": "geojson",
+        "filter": ["==", ["get", "country"], ["worldview"]],
+        "paint": {
+            "circle-color": ["get", "color"],
+            "circle-radius": 10,
+            "circle-opacity": 0.5
+        }
+        }
+    ]
+}

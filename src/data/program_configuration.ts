@@ -98,6 +98,7 @@ interface AttributeBinder {
         canonical?: CanonicalTileID,
         brightness?: number | null,
         formattedSection?: FormattedSection,
+        worldview?: string
     ) => void;
     updatePaintArray: (
         start: number,
@@ -107,6 +108,7 @@ interface AttributeBinder {
         availableImages: ImageId[],
         imagePositions: SpritePositions,
         brightness: number,
+        worldview: string | undefined,
     ) => void;
     upload: (arg1: Context) => void;
     destroy: () => void;
@@ -243,20 +245,20 @@ class SourceExpressionBinder implements AttributeBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
+    populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection, worldview?: string) {
         const start = this.paintVertexArray.length;
         assert(Array.isArray(availableImages));
 
-        const value = (this.expression.kind === 'composite' || this.expression.kind === 'source') ? this.expression.evaluate(new EvaluationParameters(0, {brightness}), feature, {}, canonical, availableImages, formattedSection) : this.expression.kind === 'constant' && this.expression.value;
-        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness}), feature, {}, canonical, availableImages, formattedSection) : this.lutExpression.value) === 'none' : false;
+        const value = (this.expression.kind === 'composite' || this.expression.kind === 'source') ? this.expression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection) : this.expression.kind === 'constant' && this.expression.value;
+        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection) : this.lutExpression.value) === 'none' : false;
 
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, value, ignoreLut ? null : this.context.lut);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], spritePositions: SpritePositions, brightness: number) {
-        const value = (this.expression.kind === 'composite' || this.expression.kind === 'source') ? this.expression.evaluate({zoom: 0, brightness}, feature, featureState, undefined, availableImages) : this.expression.kind === 'constant' && this.expression.value;
-        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness}), feature, featureState, undefined, availableImages) : this.lutExpression.value) === 'none' : false;
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], spritePositions: SpritePositions, brightness: number, worldview: string | undefined) {
+        const value = (this.expression.kind === 'composite' || this.expression.kind === 'source') ? this.expression.evaluate({zoom: 0, brightness, worldview}, feature, featureState, undefined, availableImages) : this.expression.kind === 'constant' && this.expression.value;
+        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, featureState, undefined, availableImages) : this.lutExpression.value) === 'none' : false;
 
         this._setPaintValue(start, end, value, ignoreLut ? null : this.context.lut);
     }
@@ -325,20 +327,20 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
         this.paintVertexArray = new PaintVertexArray();
     }
 
-    populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
-        const min = this.expression.evaluate(new EvaluationParameters(this.context.zoom, {brightness}), feature, {}, canonical, availableImages, formattedSection);
-        const max = this.expression.evaluate(new EvaluationParameters(this.context.zoom + 1, {brightness}), feature, {}, canonical, availableImages, formattedSection);
-        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness}), feature, {}, canonical, availableImages, formattedSection) : this.lutExpression.value) === 'none' : false;
+    populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection, worldview?: string) {
+        const min = this.expression.evaluate(new EvaluationParameters(this.context.zoom, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection);
+        const max = this.expression.evaluate(new EvaluationParameters(this.context.zoom + 1, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection);
+        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection) : this.lutExpression.value) === 'none' : false;
 
         const start = this.paintVertexArray.length;
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, min, max, ignoreLut ? null : this.context.lut);
     }
 
-    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], spritePositions: SpritePositions, brightness: number) {
-        const min = this.expression.evaluate({zoom: this.context.zoom, brightness}, feature, featureState, undefined, availableImages);
-        const max = this.expression.evaluate({zoom: this.context.zoom + 1, brightness}, feature, featureState, undefined, availableImages);
-        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness}), feature, featureState, undefined, availableImages) : this.lutExpression.value) === 'none' : false;
+    updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], spritePositions: SpritePositions, brightness: number, worldview: string) {
+        const min = this.expression.evaluate({zoom: this.context.zoom, brightness, worldview}, feature, featureState, undefined, availableImages);
+        const max = this.expression.evaluate({zoom: this.context.zoom + 1, brightness, worldview}, feature, featureState, undefined, availableImages);
+        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, featureState, undefined, availableImages) : this.lutExpression.value) === 'none' : false;
 
         this._setPaintValue(start, end, min, max, ignoreLut ? null : this.context.lut);
     }
@@ -562,12 +564,12 @@ export default class ProgramConfiguration {
         return binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder ? binder.maxValue : 0;
     }
 
-    populatePaintArrays(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
+    populatePaintArrays(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection, worldview?: string) {
         for (const property in this.binders) {
             const binder = this.binders[property];
             binder.context = this.context;
             if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder)
-                (binder as AttributeBinder).populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, brightness, formattedSection);
+                (binder as AttributeBinder).populatePaintArray(newLength, feature, imagePositions, availableImages, canonical, brightness, formattedSection, worldview);
         }
     }
 
@@ -599,6 +601,7 @@ export default class ProgramConfiguration {
         imagePositions: SpritePositions,
         isBrightnessChanged: boolean,
         brightness: number,
+        worldview: string | undefined
     ): boolean {
         let dirty: boolean = false;
         const keys = Object.keys(featureStates);
@@ -623,7 +626,7 @@ export default class ProgramConfiguration {
                     const state = featureStates[id.toString()];
                     featureMap.eachPosition(id, (index, start, end) => {
                         const feature = vtLayer.feature(index);
-                        (binder as AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness);
+                        (binder as AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness, worldview);
                     });
                 }
                 if (!featureStateUpdate) {
@@ -631,7 +634,7 @@ export default class ProgramConfiguration {
                         const state = featureStates[id.toString()];
                         featureMapWithoutIds.eachPosition(id, (index, start, end) => {
                             const feature = vtLayer.feature(index);
-                            (binder as AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness);
+                            (binder as AttributeBinder).updatePaintArray(start, end, feature, state, availableImages, imagePositions, brightness, worldview);
                         });
                     }
                 }
@@ -777,9 +780,9 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
         this._idlessCounter = 0;
     }
 
-    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: SpritePositions, availableImages: ImageId[], canonical: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection) {
+    populatePaintArrays(length: number, feature: Feature, index: number, imagePositions: SpritePositions, availableImages: ImageId[], canonical: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection, worldview?: string) {
         for (const key in this.programConfigurations) {
-            this.programConfigurations[key].populatePaintArrays(length, feature, imagePositions, availableImages, canonical, brightness, formattedSection);
+            this.programConfigurations[key].populatePaintArrays(length, feature, imagePositions, availableImages, canonical, brightness, formattedSection, worldview);
         }
 
         if (feature.id !== undefined) {
@@ -793,9 +796,9 @@ export class ProgramConfigurationSet<Layer extends TypedStyleLayer> {
         this.needsUpload = true;
     }
 
-    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: ImageId[], imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null) {
+    updatePaintArrays(featureStates: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: ImageId[], imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null, worldview?: string) {
         for (const layer of layers) {
-            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, this._featureMapWithoutIds, vtLayer, layer, availableImages, imagePositions, isBrightnessChanged, brightness || 0) || this.needsUpload;
+            this.needsUpload = this.programConfigurations[layer.id].updatePaintArrays(featureStates, this._featureMap, this._featureMapWithoutIds, vtLayer, layer, availableImages, imagePositions, isBrightnessChanged, brightness || 0, worldview) || this.needsUpload;
         }
     }
 

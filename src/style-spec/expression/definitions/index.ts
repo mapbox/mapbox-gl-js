@@ -260,6 +260,11 @@ CompoundExpression.register(expressions, {
         [],
         (ctx) => ctx.geometryType()
     ],
+    'worldview': [
+        StringType,
+        [],
+        (ctx) => ctx.globals.worldview || ""
+    ],
     'id': [
         ValueType,
         [],

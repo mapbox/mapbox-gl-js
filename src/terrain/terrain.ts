@@ -171,7 +171,7 @@ class ProxySourceCache extends SourceCache {
         } = idealTileIDs.reduce<Record<string, any>>((acc, tileID) => {
             acc[tileID.key] = '';
             if (!this._tiles[tileID.key]) {
-                const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), transform.tileZoom);
+                const tile = new Tile(tileID, this._source.tileSize * tileID.overscaleFactor(), transform.tileZoom, undefined, undefined, this._source.worldview);
                 tile.state = 'loaded';
                 this._tiles[tileID.key] = tile;
             }

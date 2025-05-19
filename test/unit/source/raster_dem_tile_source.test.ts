@@ -19,7 +19,8 @@ function createSource(options, transformCallback) {
     source.onAdd({
         transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
         _getMapId: () => 1,
-        _requestManager: new RequestManager(transformCallback)
+        _requestManager: new RequestManager(transformCallback),
+        getWorldview: () => undefined
     });
 
     source.on('error', (e) => {

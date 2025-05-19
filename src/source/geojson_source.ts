@@ -463,7 +463,8 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
             extraShadowCaster: tile.isExtraShadowCaster,
             scaleFactor: this.map.getScaleFactor(),
-            partial
+            partial,
+            worldview: this.map.getWorldview()
         };
 
         tile.request = this.actor.send(message, params, (err, data: WorkerSourceVectorTileResult) => {

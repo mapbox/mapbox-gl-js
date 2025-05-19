@@ -40,6 +40,7 @@ type QueryParameters = {
     tilespaceGeometry: TilespaceQueryGeometry;
     tileTransform: TileTransform;
     availableImages: ImageId[];
+    worldview: string | undefined;
 };
 
 type FeatureIndices = FeatureIndexStruct | {
@@ -130,7 +131,7 @@ class FeatureIndex {
 
     // Finds non-symbol features in this tile at a particular position.
     query(query: QrfQuery, params: QueryParameters): QueryResult {
-        const {tilespaceGeometry, transform, tileTransform, pixelPosMatrix, availableImages} = params;
+        const {tilespaceGeometry, transform, tileTransform, pixelPosMatrix, availableImages, worldview} = params;
 
         this.loadVTLayers();
         this.serializedLayersCache.clear();
@@ -161,7 +162,7 @@ class FeatureIndex {
             let featureGeometry = null;
 
             if (this.is3DTile) {
-                this.loadMatchingModelFeature(result, match, query, tilespaceGeometry, transform);
+                this.loadMatchingModelFeature(result, match, query, tilespaceGeometry, transform, worldview);
                 continue;
             }
 
@@ -178,6 +179,7 @@ class FeatureIndex {
                 match,
                 query,
                 availableImages,
+                worldview,
                 intersectionTest
             );
         }
@@ -190,6 +192,7 @@ class FeatureIndex {
         featureIndexData: FeatureIndices,
         query: QrfQuery,
         availableImages: ImageId[],
+        worldview: string | undefined,
         intersectionTest?: IntersectionTest
     ): void {
         const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
@@ -252,10 +255,10 @@ class FeatureIndex {
                     feature.properties = geojsonFeature.properties;
                     if (filter.needGeometry) {
                         const evaluationFeature = toEvaluationFeature(feature, true);
-                        if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
+                        if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), evaluationFeature, this.tileID.canonical)) {
                             continue;
                         }
-                    } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
+                    } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature)) {
                         continue;
                     }
                 }
@@ -281,6 +284,7 @@ class FeatureIndex {
         query: QrfQuery,
         tilespaceGeometry: TilespaceQueryGeometry,
         transform: Transform,
+        worldview: string | undefined,
     ): void {
         // 3D tile is a single bucket tile.
         const layerId = this.bucketLayerIDs[0][0];
@@ -334,10 +338,10 @@ class FeatureIndex {
             if (filter) {
                 feature.properties = geojsonFeature.properties;
                 if (filter.needGeometry) {
-                    if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature, this.tileID.canonical)) {
+                    if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature, this.tileID.canonical)) {
                         continue;
                     }
-                } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
+                } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature)) {
                     continue;
                 }
             }
@@ -414,13 +418,14 @@ class FeatureIndex {
         sourceLayerIndex: number,
         query: QrfQuery,
         availableImages: ImageId[],
+        worldview: string | undefined
     ): QueryResult {
         const result: QueryResult = {};
         this.loadVTLayers();
 
         for (const symbolFeatureIndex of symbolFeatureIndexes) {
             const featureIndexData = {bucketIndex, sourceLayerIndex, featureIndex: symbolFeatureIndex, layoutVertexArrayOffset: 0};
-            this.loadMatchingFeature(result, featureIndexData, query, availableImages);
+            this.loadMatchingFeature(result, featureIndexData, query, availableImages, worldview);
         }
 
         return result;

@@ -4768,6 +4768,16 @@
           }
         }
       },
+      "worldview": {
+        "doc": "Returns the current worldview being used.",
+        "group": "Lookup",
+        "experimental": true,
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.13.0"
+          }
+        }
+      },
       "id": {
         "doc": "Returns the feature's id, if it has one.",
         "group": "Feature data",

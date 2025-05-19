@@ -1,0 +1,21 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "worldview": "AD",
+        "width": 50,
+        "height": 50
+      }
+    },
+    "sources": {},
+    "layers": [
+      {
+        "id": "background",
+        "type": "background",
+        "paint": {
+          "background-color": ["match",["worldview"], "AD", "#FFFF00", "#FF0000"]
+        }
+      }
+    ]
+  }
+  

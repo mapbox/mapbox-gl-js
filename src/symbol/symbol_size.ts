@@ -46,7 +46,8 @@ export function getRasterizedIconSize(
     unevaluatedIconSize: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>,
     canonical: CanonicalTileID,
     zoom: number,
-    feature: SymbolFeature
+    feature: SymbolFeature,
+    worldview: string | undefined
 ) {
     if (sizeData.kind === 'camera') {
         return sizeData.maxSize;
@@ -54,16 +55,16 @@ export function getRasterizedIconSize(
 
     if (sizeData.kind === 'composite') {
         const maxZoomSize = unevaluatedIconSize
-            .possiblyEvaluate(new EvaluationParameters(sizeData.maxZoom), canonical)
+            .possiblyEvaluate(new EvaluationParameters(sizeData.maxZoom, {worldview}), canonical)
             .evaluate(feature, {}, canonical);
         const minZoomSize = unevaluatedIconSize
-            .possiblyEvaluate(new EvaluationParameters(sizeData.minZoom), canonical)
+            .possiblyEvaluate(new EvaluationParameters(sizeData.minZoom, {worldview}), canonical)
             .evaluate(feature, {}, canonical);
 
         return Math.max(maxZoomSize, minZoomSize);
     }
 
-    return unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(zoom)).evaluate(feature, {}, canonical);
+    return unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(zoom, {worldview})).evaluate(feature, {}, canonical);
 }
 
 // For {text,icon}-size, get the bucket-level data that will be needed by
@@ -71,11 +72,12 @@ export function getRasterizedIconSize(
 export function getSizeData(
     tileZoom: number,
     value: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>,
+    worldview: string | undefined
 ): SizeData {
     const {expression} = value;
 
     if (expression.kind === 'constant') {
-        const layoutSize = expression.evaluate(new EvaluationParameters(tileZoom + 1));
+        const layoutSize = expression.evaluate(new EvaluationParameters(tileZoom + 1, {worldview}));
         return {kind: 'constant', layoutSize};
 
     } else if (expression.kind === 'source') {
@@ -104,8 +106,8 @@ export function getSizeData(
 
         // for camera functions, also save off the function values
         // evaluated at the covering zoom levels
-        const minSize = expression.evaluate(new EvaluationParameters(minZoom));
-        const maxSize = expression.evaluate(new EvaluationParameters(maxZoom));
+        const minSize = expression.evaluate(new EvaluationParameters(minZoom, {worldview}));
+        const maxSize = expression.evaluate(new EvaluationParameters(maxZoom, {worldview}));
 
         return {kind: 'camera', minZoom, maxZoom, minSize, maxSize, interpolationType};
     }

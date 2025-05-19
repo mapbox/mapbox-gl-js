@@ -183,12 +183,14 @@ class Tile {
     _globeTileDebugTextBuffer: VertexBuffer | null | undefined;
     _lastUpdatedBrightness: number | null | undefined;
 
+    worldview: string | undefined;
+
     /**
      * @param {OverscaledTileID} tileID
      * @param size
      * @private
      */
-    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter?: Painter | null, isRaster?: boolean) {
+    constructor(tileID: OverscaledTileID, size: number, tileZoom: number, painter?: Painter | null, isRaster?: boolean, worldview?: string) {
         this.tileID = tileID;
         this.uid = uniqueId();
         this.uses = 0;
@@ -216,6 +218,8 @@ class Tile {
         if (painter && painter.transform) {
             this.projection = painter.transform.projection;
         }
+
+        this.worldview = worldview;
     }
 
     registerFadeDuration(duration: number) {
@@ -507,7 +511,8 @@ class Tile {
                 pixelPosMatrix,
                 transform,
                 availableImages,
-                tileTransform: this.tileTransform
+                tileTransform: this.tileTransform,
+                worldview: this.worldview
             }
         );
     }
@@ -535,9 +540,9 @@ class Tile {
             const feature = layer.feature(i);
             if (filter.needGeometry) {
                 const evaluationFeature = toEvaluationFeature(feature, true);
-                if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical))
+                if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview: this.worldview}), evaluationFeature, this.tileID.canonical))
                     continue;
-            } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
+            } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview: this.worldview}), feature)) {
                 continue;
             }
             const id = featureIndex.getId(feature, sourceLayer);

@@ -103,6 +103,7 @@ class WorkerTile {
         this.extraShadowCaster = !!params.extraShadowCaster;
         this.tessellationStep = params.tessellationStep;
         this.scaleFactor = params.scaleFactor;
+        this.worldview = params.worldview;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, actor: Actor, callback: WorkerSourceVectorTileCallback) {
@@ -220,7 +221,7 @@ class WorkerTile {
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.visibility === 'none') continue;
 
-                recalculateLayers(family, this.zoom, options.brightness, availableImages);
+                recalculateLayers(family, this.zoom, options.brightness, availableImages, this.worldview);
 
                 // @ts-expect-error: Type 'TypedStyleLayer' doesn't have a 'createBucket' method in all of its subtypes
                 const bucket: Bucket = buckets[layer.id] = layer.createBucket({
@@ -236,7 +237,8 @@ class WorkerTile {
                     sourceID: this.source,
                     projection: this.projection.spec,
                     tessellationStep: this.tessellationStep,
-                    styleDefinedModelURLs: availableModels
+                    styleDefinedModelURLs: availableModels,
+                    worldview: this.worldview
                 });
 
                 assert(this.tileTransform.projection.name === this.projection.name);
@@ -290,7 +292,7 @@ class WorkerTile {
                 for (const key in buckets) {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
-                        recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages);
+                        recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview);
                         symbolLayoutData[key] =
                         performSymbolLayout(bucket,
                                 glyphMap,
@@ -301,7 +303,8 @@ class WorkerTile {
                                 this.tileZoom,
                                 this.scaleFactor,
                                 this.pixelRatio,
-                                iconRasterizationTasks);
+                                iconRasterizationTasks,
+                                this.worldview);
                     }
                 }
 
@@ -329,7 +332,7 @@ class WorkerTile {
                     (bucket instanceof LineBucket ||
                         bucket instanceof FillBucket ||
                         bucket instanceof FillExtrusionBucket)) {
-                    recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages);
+                    recalculateLayers(bucket.layers, this.zoom, options.brightness, availableImages, this.worldview);
                     const imagePositions: SpritePositions = Object.fromEntries(imageAtlas.patternPositions);
                     bucket.addFeatures(options, this.tileID.canonical, imagePositions, availableImages, this.tileTransform, this.brightness);
                 }
@@ -481,9 +484,9 @@ class WorkerTile {
     }
 }
 
-function recalculateLayers(layers: ReadonlyArray<TypedStyleLayer>, zoom: number, brightness: number, availableImages: ImageId[]) {
+function recalculateLayers(layers: ReadonlyArray<TypedStyleLayer>, zoom: number, brightness: number, availableImages: ImageId[], worldview: string | undefined) {
     // Layers are shared and may have been used by a WorkerTile with a different zoom.
-    const parameters = new EvaluationParameters(zoom, {brightness});
+    const parameters = new EvaluationParameters(zoom, {brightness, worldview});
     for (const layer of layers) {
         layer.recalculate(parameters, availableImages);
     }

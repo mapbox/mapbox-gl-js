@@ -24,7 +24,9 @@ class Terrain extends Evented {
     properties: PossiblyEvaluated<Props>;
     drapeRenderMode: number;
 
-    constructor(terrainOptions: TerrainSpecification, drapeRenderMode: number, scope: string, configOptions?: ConfigOptions | null) {
+    worldview: string | undefined;
+
+    constructor(terrainOptions: TerrainSpecification, drapeRenderMode: number, scope: string, configOptions?: ConfigOptions | null, worldview?: string) {
         super();
         this.scope = scope;
         this._transitionable = new Transitionable(new Properties({
@@ -35,6 +37,8 @@ class Terrain extends Evented {
         this._transitionable.setTransitionOrValue(terrainOptions, configOptions);
         this._transitioning = this._transitionable.untransitioned();
         this.drapeRenderMode = drapeRenderMode;
+
+        this.worldview = worldview;
     }
 
     get(): TerrainSpecification {
@@ -60,7 +64,7 @@ class Terrain extends Evented {
 
     getExaggeration(atZoom: number): number {
 
-        return this._transitioning.possiblyEvaluate(new EvaluationParameters(atZoom)).get('exaggeration');
+        return this._transitioning.possiblyEvaluate(new EvaluationParameters(atZoom, {worldview: this.worldview})).get('exaggeration');
     }
 
     // For dynamic terrain, this is the zoom range when the terrain flattening (disabling) starts
@@ -88,7 +92,7 @@ class Terrain extends Evented {
         let theLastExaggeration = 1.0;
         const zeroExaggerationCutoff = 0.01; // ~0 exaggeration
         for (const zoom of expression.zoomStops) {
-            theLastExaggeration = expression.evaluate(new EvaluationParameters(zoom));
+            theLastExaggeration = expression.evaluate(new EvaluationParameters(zoom, {worldview: this.worldview}));
             if (theLastExaggeration > zeroExaggerationCutoff) {
                 zoomBeforeDrop = zoom;
                 fullyDisabledZoom = -1;

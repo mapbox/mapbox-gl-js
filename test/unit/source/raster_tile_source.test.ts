@@ -19,7 +19,8 @@ function createSource(options, transformCallback) {
             clearSource: () => {},
             getLut: () => { return null; },
             getBrightness: () => { return 0.0; },
-        }
+        },
+        getWorldview: () => undefined
     });
 
     source.on('error', (e) => {

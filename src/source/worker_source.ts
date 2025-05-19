@@ -202,6 +202,7 @@ export interface WorkerSourceConstructor {
         availableModels?: StyleModelMap,
         isSpriteLoaded?: boolean,
         loadData?: (params: {source: string; scope: string}, callback: Callback<unknown>) => () => void | undefined,
-        brightness?: number
+        brightness?: number,
+        worldview?: string
     ): WorkerSource;
 }

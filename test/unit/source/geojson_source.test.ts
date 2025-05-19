@@ -251,7 +251,8 @@ describe('GeoJSONSource#update', () => {
         source.onAdd({
             getScaleFactor() {
                 return 1;
-            }
+            },
+            getWorldview: () => undefined
         });
 
         await new Promise(resolve => {
@@ -286,7 +287,8 @@ describe('GeoJSONSource#update', () => {
                 transform: {},
                 getScaleFactor() {
                     return 1;
-                }
+                },
+                getWorldview: () => undefined
             });
 
             source.on('data', (e) => {
@@ -304,7 +306,8 @@ describe('GeoJSONSource#serialize', () => {
     const mapStub = {
         _requestManager: {
             transformRequest: (url) => { return {url}; }
-        }
+        },
+        getWorldview: () => undefined
     };
     test('serialize source with inline data', () => {
         const source = new GeoJSONSource('id', {data: hawkHill}, mockDispatcher);

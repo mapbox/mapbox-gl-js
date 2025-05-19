@@ -85,6 +85,7 @@ class ModelBucket implements Bucket {
     stateDependentLayers: Array<ModelStyleLayer>;
     stateDependentLayerIds: Array<string>;
     hasPattern: boolean;
+    worldview: string | undefined;
 
     instancesPerModel: Record<string, PerModelAttributes>;
 
@@ -125,6 +126,7 @@ class ModelBucket implements Bucket {
         this.layerIds = this.layers.map(layer => layer.fqid);
         this.projection = options.projection;
         this.index = options.index;
+        this.worldview = options.worldview;
 
         this.hasZoomDependentProperties = this.layers[0].isZoomDependent();
 
@@ -164,7 +166,7 @@ class ModelBucket implements Bucket {
                 (feature.properties && feature.properties.hasOwnProperty("id")) ? feature.properties["id"] : undefined;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
+            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview}), evaluationFeature, canonical))
                 continue;
 
             const bucketFeature: BucketFeature = {

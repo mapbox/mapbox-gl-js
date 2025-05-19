@@ -61,6 +61,7 @@ export default class MapWorker {
     dracoUrl: string | null | undefined;
     brightness: number | null | undefined;
     imageRasterizer: ImageRasterizer;
+    worldview: string | undefined;
 
     constructor(self: Worker) {
         PerformanceUtils.measure('workerEvaluateScript');
@@ -196,6 +197,11 @@ export default class MapWorker {
 
     setBrightness(mapId: number, brightness: ActorMessages['setBrightness']['params'], callback: ActorMessages['setBrightness']['callback']) {
         this.brightness = brightness;
+        callback();
+    }
+
+    setWorldview(mapId: number, worldview: ActorMessages['setWorldview']['params'], callback: ActorMessages['setWorldview']['callback']) {
+        this.worldview = worldview;
         callback();
     }
 
@@ -368,7 +374,8 @@ export default class MapWorker {
                 this.getAvailableModels(mapId, scope),
                 this.isSpriteLoaded[mapId][scope],
                 undefined,
-                this.brightness
+                this.brightness,
+                this.worldview
             );
         }
 

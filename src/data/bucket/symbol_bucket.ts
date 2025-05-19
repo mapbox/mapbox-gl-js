@@ -476,6 +476,8 @@ class SymbolBucket implements Bucket {
     activeReplacements: Array<Region>;
     replacementUpdateTime: number;
 
+    worldview: string;
+
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
         this.zoom = options.zoom;
@@ -499,9 +501,11 @@ class SymbolBucket implements Bucket {
         const layer = this.layers[0];
         const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
 
-        this.textSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['text-size']);
+        this.worldview = options.worldview;
 
-        this.iconSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['icon-size']);
+        this.textSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['text-size'], this.worldview);
+
+        this.iconSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['icon-size'], this.worldview);
 
         const layout = this.layers[0].layout;
         const sortKey = layout.get('symbol-sort-key');
@@ -533,6 +537,7 @@ class SymbolBucket implements Bucket {
 
         this.activeReplacements = [];
         this.replacementUpdateTime = 0;
+
     }
 
     createArrays() {
@@ -617,7 +622,7 @@ class SymbolBucket implements Bucket {
         const icons = options.iconDependencies;
         const stacks = options.glyphDependencies;
         const availableImages = options.availableImages;
-        const globalProperties = new EvaluationParameters(this.zoom);
+        const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview});
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
 
@@ -704,7 +709,7 @@ class SymbolBucket implements Bucket {
             if (icon) {
                 const layer = this.layers[0];
                 const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
-                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor);
+                const {iconPrimary, iconSecondary} = getScaledImageVariant(icon, this.iconSizeData, unevaluatedLayoutValues['icon-size'], canonical, this.zoom, symbolFeature, this.pixelRatio, iconScaleFactor, this.worldview);
                 const iconPrimaryId = iconPrimary.id.toString();
                 if (icons.has(iconPrimaryId)) {
                     icons.get(iconPrimaryId).push(iconPrimary);
@@ -777,8 +782,8 @@ class SymbolBucket implements Bucket {
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
-        this.text.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
-        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
+        this.text.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, this.worldview);
+        this.icon.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, this.worldview);
     }
 
     updateRoadElevation(canonical: CanonicalTileID) {
@@ -1063,7 +1068,7 @@ class SymbolBucket implements Bucket {
             this.glyphOffsetArray.emplaceBack(glyphOffset[0]);
 
             if (i === quads.length - 1 || sectionIndex !== quads[i + 1].sectionIndex) {
-                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, brightness, sections && sections[sectionIndex]);
+                arrays.programConfigurations.populatePaintArrays(layoutVertexArray.length, feature, feature.index, {}, availableImages, canonical, brightness, sections && sections[sectionIndex], this.worldview);
             }
         }
 

@@ -133,6 +133,7 @@ export function queryRenderedSymbols(
     availableImages: ImageId[],
     collisionIndex: CollisionIndex,
     retainedQueryData: Record<number, RetainedQueryData>,
+    worldview
 ): QueryResult {
     const result: QueryResult = {};
     const renderedSymbols = collisionIndex.queryRenderedSymbols(queryGeometry);
@@ -148,7 +149,8 @@ export function queryRenderedSymbols(
             queryData.bucketIndex,
             queryData.sourceLayerIndex,
             query,
-            availableImages
+            availableImages,
+            worldview
         );
 
         for (const layerID in bucketSymbols) {

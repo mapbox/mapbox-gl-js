@@ -1,0 +1,60 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "worldview": "AD",
+        "width": 50,
+        "height": 50
+      }
+    },
+    "center": [
+    -113.26903,
+    35.9654
+  ],
+  "zoom": 11,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -113.27384948730469,
+              35.962
+            ],
+            [
+              -113.26421051269531,
+              35.962
+            ],
+            [
+              -113.26421051269531,
+              35.97
+            ],
+            [
+              -113.27384948730469,
+              35.97
+            ],
+            [
+              -113.27384948730469,
+              35.962
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-color": ["match", ["worldview"], "AD", "#FFFF00", "#FF0000"],
+        "line-opacity": ["match", ["worldview"], "AD", 1, 0.5],
+        "line-width": ["match", ["worldview"], "AD", 5, 1]
+      }
+    }
+  ]
+}
+  

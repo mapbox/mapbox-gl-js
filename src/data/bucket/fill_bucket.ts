@@ -79,8 +79,8 @@ class FillBufferData {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
-        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null, worldview?: string) {
+        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, worldview);
     }
 
     isEmpty(): boolean {
@@ -119,8 +119,8 @@ class FillBufferData {
         this.lineSegments.destroy();
     }
 
-    populatePaintArrays(feature: BucketFeature, index: number, imagePositions: SpritePositions, availableImages: ImageId[], canonical: CanonicalTileID, brightness?: number | null) {
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
+    populatePaintArrays(feature: BucketFeature, index: number, imagePositions: SpritePositions, availableImages: ImageId[], canonical: CanonicalTileID, brightness?: number | null, worldview?: string) {
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness, undefined, worldview);
     }
 }
 
@@ -157,6 +157,8 @@ class FillBucket implements Bucket {
 
     sourceLayerIndex: number;
 
+    worldview: string;
+
     constructor(options: BucketParameters<FillStyleLayer>) {
         this.zoom = options.zoom;
         this.pixelRatio = options.pixelRatio;
@@ -177,6 +179,8 @@ class FillBucket implements Bucket {
         this.elevationMode = this.layers[0].layout.get('fill-elevation-reference');
 
         this.sourceLayerIndex = options.sourceLayerIndex;
+
+        this.worldview = options.worldview;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
@@ -191,7 +195,7 @@ class FillBucket implements Bucket {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
+            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview}), evaluationFeature, canonical))
                 continue;
 
             const sortKey = fillSortKey ?
@@ -238,10 +242,10 @@ class FillBucket implements Bucket {
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
-        this.bufferData.update(states, vtLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
-        this.elevationBufferData.update(states, vtLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
+        this.bufferData.update(states, vtLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness, this.worldview);
+        this.elevationBufferData.update(states, vtLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness, this.worldview);
         if (this.elevatedStructures) {
-            this.elevatedStructures.update(states, vtLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
+            this.elevatedStructures.update(states, vtLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness, this.worldview);
         }
     }
 
@@ -283,8 +287,8 @@ class FillBucket implements Bucket {
         } else {
             this.addGeometry(polygons, this.bufferData);
         }
-        this.bufferData.populatePaintArrays(feature, index, imagePositions, availableImages, canonical, brightness);
-        this.elevationBufferData.populatePaintArrays(feature, index, imagePositions, availableImages, canonical, brightness);
+        this.bufferData.populatePaintArrays(feature, index, imagePositions, availableImages, canonical, brightness, this.worldview);
+        this.elevationBufferData.populatePaintArrays(feature, index, imagePositions, availableImages, canonical, brightness, this.worldview);
     }
 
     getUnevaluatedPortalGraph(): ElevationPortalGraph | undefined {
@@ -298,7 +302,7 @@ class FillBucket implements Bucket {
     setEvaluatedPortalGraph(graph: ElevationPortalGraph, vtLayer: VectorTileLayer, canonical: CanonicalTileID, availableImages: ImageId[], brightness: number) {
         if (this.elevatedStructures) {
             this.elevatedStructures.construct(graph);
-            this.elevatedStructures.populatePaintArrays(vtLayer, canonical, availableImages, brightness);
+            this.elevatedStructures.populatePaintArrays(vtLayer, canonical, availableImages, brightness, this.worldview);
         }
     }
 

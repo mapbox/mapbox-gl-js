@@ -54,7 +54,8 @@ class LineFloorwidthProperty extends DataDrivenProperty<number> {
         parameters = new EvaluationParameters(Math.floor(parameters.zoom), {
             now: parameters.now,
             fadeDuration: parameters.fadeDuration,
-            transition: parameters.transition
+            transition: parameters.transition,
+            worldview: parameters.worldview
         });
         return super.possiblyEvaluate(value, parameters);
     }

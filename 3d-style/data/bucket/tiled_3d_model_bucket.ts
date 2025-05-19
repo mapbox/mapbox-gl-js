@@ -150,6 +150,7 @@ class Tiled3dModelBucket implements Bucket {
     needsUpload: boolean;
     states: FeatureStates;
     filter: FeatureFilter | null;
+    worldview: string | undefined;
     constructor(
         layers: Array<ModelStyleLayer>,
         nodes: Array<ModelNode>,
@@ -158,6 +159,7 @@ class Tiled3dModelBucket implements Bucket {
         hasMeshoptCompression: boolean,
         brightness: number | null | undefined,
         featureIndex: FeatureIndex,
+        worldview: string | undefined,
     ) {
         this.id = id;
         this.layers = layers;
@@ -178,6 +180,7 @@ class Tiled3dModelBucket implements Bucket {
         this.replacementUpdateTime = 0;
         this.elevationReadFromZ = 0xff; // Re-read if underlying DEM zoom changes.
         this.brightness = brightness;
+        this.worldview = worldview;
         this.dirty = true;
         this.needsUpload = false;
         this.filter = null;
@@ -549,7 +552,7 @@ class Tiled3dModelBucket implements Bucket {
     getNodesInfo(): Array<Tiled3dModelFeature> {
         if (this.filter) {
             return this.nodesInfo.filter((node) => {
-                return this.filter.filter(new EvaluationParameters(this.id.overscaledZ), node.feature, this.id.canonical);
+                return this.filter.filter(new EvaluationParameters(this.id.overscaledZ, {worldview: this.worldview}), node.feature, this.id.canonical);
             });
         }
         return this.nodesInfo;

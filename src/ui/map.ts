@@ -1389,6 +1389,7 @@ export class Map extends Camera {
         if (!this.style || worldview === this._worldview) return this;
 
         this._worldview = worldview;
+        this._styleDirty = true;
         this.style.reloadSources();
 
         return this;
@@ -4186,7 +4187,7 @@ export class Map extends Camera {
 
         storeAuthState(gl, true);
 
-        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._scaleFactor, this._tp);
+        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._scaleFactor, this._tp, this._worldview);
         this.on('data', (event) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);
@@ -4383,7 +4384,8 @@ export class Map extends Camera {
                 now,
                 fadeDuration,
                 pitch,
-                transition: this.style.transition
+                transition: this.style.transition,
+                worldview: this._worldview
             });
 
             this.style.update(parameters);

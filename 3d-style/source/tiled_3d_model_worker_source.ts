@@ -38,8 +38,9 @@ class Tiled3dWorkerTile {
     status: 'parsing' | 'done';
     reloadCallback: WorkerSourceVectorTileCallback | null | undefined;
     brightness: number | null | undefined;
+    worldview: string | undefined;
 
-    constructor(params: WorkerSourceTiled3dModelRequest, brightness?: number | null) {
+    constructor(params: WorkerSourceTiled3dModelRequest, brightness?: number | null, worldview?: string) {
         this.tileID = new OverscaledTileID(params.tileID.overscaledZ, params.tileID.wrap, params.tileID.canonical.z, params.tileID.canonical.x, params.tileID.canonical.y);
         this.tileZoom = params.tileZoom;
         this.uid = params.uid;
@@ -51,6 +52,7 @@ class Tiled3dWorkerTile {
         this.overscaling = this.tileID.overscaleFactor();
         this.projection = params.projection;
         this.brightness = brightness;
+        this.worldview = worldview;
     }
 
     parse(
@@ -75,13 +77,13 @@ class Tiled3dWorkerTile {
                                             (gltf.json.asset.extras && gltf.json.asset.extras['MAPBOX_mesh_features']);
                 const hasMeshoptCompression = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression');
 
-                const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness});
+                const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness, worldview: this.worldview});
                 for (const sourceLayerId in layerFamilies) {
                     for (const family of layerFamilies[sourceLayerId]) {
                         const layer = family[0] as ModelStyleLayer;
                         featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
                         layer.recalculate(parameters, []);
-                        const bucket = new Tiled3dModelBucket(family as Array<ModelStyleLayer>, nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex);
+                        const bucket = new Tiled3dModelBucket(family as Array<ModelStyleLayer>, nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex, this.worldview);
                         // Upload to GPU without waiting for evaluation if we are in diffuse path
                         if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
                         buckets.push(bucket);
@@ -114,8 +116,9 @@ class Tiled3dModelWorkerSource implements WorkerSource {
     loading: Record<number, Tiled3dWorkerTile>;
     loaded: Record<number, Tiled3dWorkerTile>;
     brightness?: number;
+    worldview: string | undefined;
 
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, isSpriteLoaded: boolean, loadVectorData?: LoadVectorData, brightness?: number) {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, isSpriteLoaded: boolean, loadVectorData?: LoadVectorData, brightness?: number, worldview?: string) {
         this.actor = actor;
         this.layerIndex = layerIndex;
         this.availableImages = availableImages;
@@ -123,6 +126,8 @@ class Tiled3dModelWorkerSource implements WorkerSource {
         this.brightness = brightness;
         this.loading = {};
         this.loaded = {};
+
+        this.worldview = worldview;
     }
 
     /**
@@ -131,7 +136,7 @@ class Tiled3dModelWorkerSource implements WorkerSource {
      */
     loadTile(params: WorkerSourceTiled3dModelRequest, callback: WorkerSourceVectorTileCallback) {
         const uid = params.uid;
-        const workerTile = this.loading[uid] = new Tiled3dWorkerTile(params, this.brightness);
+        const workerTile = this.loading[uid] = new Tiled3dWorkerTile(params, this.brightness, this.worldview);
         getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null) => {
             const aborted = !this.loading[uid];
             delete this.loading[uid];

@@ -129,6 +129,11 @@ export type ActorMessages = {
         callback: ActorCallback<void>;
     };
 
+    'setWorldview': {
+        params: string;
+        callback: ActorCallback<void>;
+    };
+
     'setDracoUrl': {
         params: string;
         callback: ActorCallback<void>;

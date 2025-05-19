@@ -355,6 +355,8 @@ class Style extends Evented<MapEvents> {
     _hasCircleLayers: boolean;
     _hasSymbolLayers: boolean;
 
+    _worldview: string | undefined;
+
     // exposed to allow stubbing by unit tests
     static getSourceType: typeof getSourceType;
     static setSourceType: typeof setSourceType;
@@ -1628,6 +1630,11 @@ class Style extends Evented<MapEvents> {
             this.dispatcher.broadcast('setBrightness', brightness);
         }
 
+        if (parameters.worldview !== this._worldview) {
+            this._worldview = parameters.worldview;
+            this.dispatcher.broadcast('setWorldview', this._worldview);
+        }
+
         const changed = this._changes.isDirty();
         let layersUpdated = false;
         if (this._changes.isDirty()) {
@@ -2156,7 +2163,8 @@ class Style extends Evented<MapEvents> {
             }
         }
 
-        const evaluationParameters = new EvaluationParameters(this.z || 0, transitionParameters);
+        const evaluationParametersOptions = Object.assign(transitionParameters, {worldview: this.map.getWorldview()});
+        const evaluationParameters = new EvaluationParameters(this.z || 0, evaluationParametersOptions);
 
         if (this.ambientLight) {
             this.ambientLight.recalculate(evaluationParameters);
@@ -3354,6 +3362,7 @@ class Style extends Evented<MapEvents> {
                     this._availableImages,
                     this.placement.collisionIndex,
                     this.placement.retainedQueryData,
+                    this.map.getWorldview()
                 );
 
                 if (Object.keys(queryResult).length) queryResults.push(queryResult);
@@ -3742,7 +3751,7 @@ class Style extends Evented<MapEvents> {
     }
 
     _createTerrain(terrainOptions: TerrainSpecification, drapeRenderMode: number) {
-        const terrain = this.terrain = new Terrain(terrainOptions, drapeRenderMode, this.scope, this.options);
+        const terrain = this.terrain = new Terrain(terrainOptions, drapeRenderMode, this.scope, this.options, this.map.getWorldview());
 
         // We need to update the stylesheet only for the elevated mode,
         // i.e., mock terrain shouldn't be propagated to the stylesheet
