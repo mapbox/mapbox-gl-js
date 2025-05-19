@@ -27,6 +27,7 @@ import heatmap from './draw_heatmap';
 import line, {prepare as prepareLine} from './draw_line';
 import fill, {drawDepthPrepass as fillDepthPrepass} from './draw_fill';
 import fillExtrusion from './draw_fill_extrusion';
+import building from '../../3d-style/render/draw_building';
 import hillshade from './draw_hillshade';
 import raster, {prepare as prepareRaster} from './draw_raster';
 import rasterParticle, {prepare as prepareRasterParticle} from './draw_raster_particle';
@@ -137,6 +138,7 @@ const draw: Record<string, DrawStyleLayer> = {
     line,
     fill,
     'fill-extrusion': fillExtrusion,
+    building,
     hillshade,
     raster,
     'raster-particle': rasterParticle,
@@ -289,7 +291,7 @@ class Painter {
             }
         };
 
-        const layerTypes = ["fill", "line", "symbol", "circle", "heatmap", "fill-extrusion", "raster", "raster-particle", "hillshade", "model", "background", "sky"];
+        const layerTypes = ["fill", "line", "symbol", "circle", "heatmap", "fill-extrusion", "building", "raster", "raster-particle", "hillshade", "model", "background", "sky"];
 
         for (const layerType of layerTypes) {
             this._debugParams.enabledLayers[layerType] = true;

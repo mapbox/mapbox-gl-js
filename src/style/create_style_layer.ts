@@ -4,6 +4,7 @@ import hillshade from './style_layer/hillshade_style_layer';
 import fill from './style_layer/fill_style_layer';
 import clip from './style_layer/clip_style_layer';
 import fillExtrusion from './style_layer/fill_extrusion_style_layer';
+import building from '../../3d-style/style/style_layer/building_style_layer';
 import line from './style_layer/line_style_layer';
 import symbol from './style_layer/symbol_style_layer';
 import background from './style_layer/background_style_layer';
@@ -26,6 +27,7 @@ const subclasses: Record<Exclude<TypedStyleLayer['type'], 'custom'>, TypedStyleL
     hillshade,
     fill,
     'fill-extrusion': fillExtrusion,
+    building,
     line,
     symbol,
     background,
@@ -46,6 +48,6 @@ export default function createStyleLayer(
     if (layer.type === 'custom') {
         return new CustomStyleLayer(layer, scope);
     } else {
-        return new subclasses[layer.type](layer, scope, lut, options) as TypedStyleLayer;
+        return new subclasses[layer.type](layer, scope, lut, options);
     }
 }

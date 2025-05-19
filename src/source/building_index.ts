@@ -7,6 +7,7 @@ import type {OverscaledTileID} from './tile_id';
 import type Style from '../style/style';
 import type Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket';
 import type {Bucket} from '../data/bucket';
+import type BuildingBucket from '../../3d-style/data/bucket/building_bucket';
 
 class BuildingIndex {
     style: Style;
@@ -33,7 +34,7 @@ class BuildingIndex {
         const visible = false, visibilityChanged = false;
         for (const layerId in this.style._mergedLayers) {
             const layer = this.style._mergedLayers[layerId];
-            if (layer.type === 'fill-extrusion') {
+            if (layer.type === 'fill-extrusion' || layer.type === 'building') {
                 this.layers.push({layer, visible, visibilityChanged});
             } else if (layer.type === 'model') {
                 const source = this.style.getLayerSource(layer);
@@ -52,6 +53,8 @@ class BuildingIndex {
             let visible = false;
             if (layer.type === 'fill-extrusion') {
                 visible = !layer.isHidden(zoom) && layer.paint.get('fill-extrusion-opacity') > 0.0;
+            } else if (layer.type === 'building') {
+                visible = !layer.isHidden(zoom) && layer.paint.get('building-opacity') > 0.0;
             } else if (layer.type === 'model') {
                 visible = !layer.isHidden(zoom) && layer.paint.get('model-opacity').constantOr(1.0) > 0.0;
             }
@@ -70,6 +73,8 @@ class BuildingIndex {
             let verticalScale = 1;
             if (layer.type === 'fill-extrusion') {
                 verticalScale = l.visible ? layer.paint.get('fill-extrusion-vertical-scale') : 0;
+            } else if (layer.type === 'building') {
+                verticalScale = l.visible ? layer.paint.get('building-vertical-scale') : 0;
             }
 
             let tile = sourceCache ? sourceCache.getTile(tileID) : null;
@@ -121,7 +126,7 @@ class BuildingIndex {
         let tileY = y;
         const tileID = targetTileID;
         if (tid.canonical.z !== tileID.canonical.z) {
-            const id =  tileID.canonical;
+            const id = tileID.canonical;
             const zDiff = 1. / (1 << (tid.canonical.z - id.z));
             tileX = ((x + tid.canonical.x * EXTENT) * zDiff - id.x * EXTENT) | 0;
             tileY = ((y + tid.canonical.y * EXTENT) * zDiff - id.y * EXTENT) | 0;
@@ -137,13 +142,13 @@ class BuildingIndex {
         for (let i = 0; i < this.layers.length; ++i) {
             const l = this.layers[i];
             const layer = l.layer;
-            if (layer.type !== 'fill-extrusion') continue;
+            if (layer.type !== 'fill-extrusion' && layer.type !== 'building') continue;
             const {bucket, tileID, verticalScale} = this.currentBuildingBuckets[i];
             if (!bucket) continue;
 
             const {tileX, tileY} = this._mapCoordToOverlappingTile(tid, x, y, tileID);
 
-            const b = bucket as FillExtrusionBucket;
+            const b = bucket as FillExtrusionBucket | BuildingBucket;
             const heightData = b.getHeightAtTileCoord(tileX, tileY);
             if (!heightData || heightData.height === undefined) continue;
             if (heightData.hidden) { // read height, even if fill extrusion is hidden, until it is used for tiled 3D models.

@@ -1,4 +1,5 @@
 import type BackgroundStyleLayer from './background_style_layer';
+import type BuildingStyleLayer from '../../../3d-style/style/style_layer/building_style_layer';
 import type CircleStyleLayer from './circle_style_layer';
 import type ClipStyleLayer from './clip_style_layer';
 import type CustomStyleLayer from './custom_style_layer';
@@ -26,6 +27,7 @@ export type TypedStyleLayerConstructor = new (
 
 export type TypedStyleLayer =
     | BackgroundStyleLayer
+    | BuildingStyleLayer
     | CircleStyleLayer
     | ClipStyleLayer
     | CustomStyleLayer

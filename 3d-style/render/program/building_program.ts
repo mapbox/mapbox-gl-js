@@ -10,6 +10,8 @@ export type BuildingUniformsType = {
     ['u_opacity']: Uniform1f;
 };
 
+export type BuildingDefinesType = 'DEBUG_SHOW_NORMALS' | 'HAS_ATTRIBUTE_a_part_color_emissive';
+
 const buildingUniforms = (context: Context): BuildingUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_normal_matrix': new UniformMatrix4f(context),
@@ -26,15 +28,15 @@ const buildingUniformValues = (matrix: mat4, normalMatrix: mat4): UniformValues<
     return uniformValues;
 };
 
-export type ProceduralBuildingDepthUniformsType = {
+export type BuildingDepthUniformsType = {
     ['u_matrix']: UniformMatrix4f;
 };
 
-const buildingDepthUniforms = (context: Context): ProceduralBuildingDepthUniformsType => ({
+const buildingDepthUniforms = (context: Context): BuildingDepthUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
 });
 
-const buildingDepthUniformValues = (matrix: mat4): UniformValues<ProceduralBuildingDepthUniformsType> => {
+const buildingDepthUniformValues = (matrix: mat4): UniformValues<BuildingDepthUniformsType> => {
     const uniformValues = {
         'u_matrix': matrix as Float32Array,
     };

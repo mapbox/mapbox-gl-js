@@ -36,6 +36,7 @@ import type {
     FillExtrusionDepthUniformsType,
     FillExtrusionPatternUniformsType
 } from '../../src/render/program/fill_extrusion_program';
+import type {BuildingUniformsType} from './program/building_program';
 
 type ShadowsUniformsType =
     | ShadowUniformsType
@@ -44,7 +45,8 @@ type ShadowsUniformsType =
     | ModelUniformsType
     | ModelDepthUniformsType
     | FillExtrusionDepthUniformsType
-    | FillExtrusionPatternUniformsType;
+    | FillExtrusionPatternUniformsType
+    | BuildingUniformsType;
 
 type ShadowCascade = {
     framebuffer: Framebuffer;
@@ -491,7 +493,7 @@ export class ShadowRenderer {
         program.setShadowUniformValues(context, uniforms);
     }
 
-    setupShadowsFromMatrix(worldMatrix: mat4, program: Program<ShadowUniformsType | ModelUniformsType>, normalOffset: boolean = false) {
+    setupShadowsFromMatrix(worldMatrix: mat4, program: Program<ShadowUniformsType | ModelUniformsType | BuildingUniformsType>, normalOffset: boolean = false) {
         if (!this.enabled) {
             return;
         }

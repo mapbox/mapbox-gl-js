@@ -1,6 +1,6 @@
 import {fillExtrusionDepthUniforms, fillExtrusionUniforms, fillExtrusionPatternUniforms, fillExtrusionGroundEffectUniforms} from './fill_extrusion_program';
 import {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms, elevatedStructuresDepthUniforms, elevatedStructuresUniforms, elevatedStructuresDepthReconstructUniforms} from './fill_program';
-import {buildingUniforms, buildingDepthUniforms} from '../../../3d-style/render/program/building_program';
+import {buildingUniforms, buildingDepthUniforms, type BuildingDefinesType} from '../../../3d-style/render/program/building_program';
 import {circleUniforms} from './circle_program';
 import {collisionUniforms, collisionCircleUniforms} from './collision_program';
 import {debugUniforms} from './debug_program';
@@ -69,7 +69,8 @@ export type DynamicDefinesType =
     | FogDefinesType
     | HillshadeDefinesType
     | TerrainDepthAccessDefinesType
-    | ModelDefinesType;
+    | ModelDefinesType
+    | BuildingDefinesType;
 
 export const programUniforms = {
     fillExtrusion: fillExtrusionUniforms,

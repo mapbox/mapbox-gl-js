@@ -4380,11 +4380,12 @@ class Style extends Evented<MapEvents> {
 
     isLayerClipped(layer: TypedStyleLayer, source?: Source | null): boolean {
         // fill-extrusions can be conflated by landmarks.
-        if (!this._clipLayerPresent && layer.type !== 'fill-extrusion') return false;
+        if (!this._clipLayerPresent && layer.type !== 'fill-extrusion' && layer.type !== 'building') return false;
         const isFillExtrusion = layer.type === 'fill-extrusion' && layer.sourceLayer === 'building';
+        const isBuilding = layer.type === 'building';
 
         if (layer.is3D(!!this.terrain)) {
-            if (isFillExtrusion || (!!source && source.type === 'batched-model')) return true;
+            if (isFillExtrusion || isBuilding || (!!source && source.type === 'batched-model')) return true;
             if (layer.type === 'model') {
                 return true;
             }
