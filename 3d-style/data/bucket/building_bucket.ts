@@ -23,11 +23,13 @@ class BuildingBucket implements Bucket {
     stateDependentLayers: Array<BuildingStyleLayer>;
     stateDependentLayerIds: Array<string>;
     hasPattern: boolean;
+    worldview: string;
 
     constructor(options: BucketParameters<BuildingStyleLayer>) {
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.fqid);
         this.hasPattern = false;
+        this.worldview = options.worldview;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
