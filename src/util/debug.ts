@@ -19,7 +19,6 @@ export const Debug: {
     aabbCorners: Array<vec3>;
     extend: (...args: unknown[]) => void;
     run: (...args: unknown[]) => void;
-    logToElement: (...args: unknown[]) => void;
     drawAabbs: (...args: unknown[]) => void;
     clearAabbs: (...args: unknown[]) => void;
     _drawBox: (...args: unknown[]) => void;
@@ -34,15 +33,6 @@ export const Debug: {
 
     run(fn: () => unknown) {
         fn();
-    },
-
-    logToElement(message: string, overwrite: boolean = false, id: string = "log") {
-        const el = document.getElementById(id);
-        if (el) {
-            if (overwrite) el.innerHTML = '';
-            el.innerHTML += `<br>${message}`;
-        }
-
     },
 
     debugCanvas: null,
