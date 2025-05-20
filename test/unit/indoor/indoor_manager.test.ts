@@ -188,6 +188,7 @@ describe('IndoorManager', () => {
         expect(map.indoor._floorplanStates).toEqual({
             "7451233234": {
                 "selectedBuilding": "43246546456",
+                "selectedLevel": "demo-level-235234234" // default level
             }
         });
         map.indoor.selectLevel("demo-level-634123123");
@@ -213,13 +214,15 @@ describe('IndoorManager', () => {
         expect(map.indoor._selectedFloorplan).toBeTruthy();
         expect(map.indoor._floorplanStates).toEqual({
             "7451233234": {
-                "selectedBuilding": "43246546456"
+                "selectedBuilding": "43246546456",
+                "selectedLevel": "demo-level-235234234" // default level
             }
         });
         map.indoor.selectBuilding("234634543534");
         expect(map.indoor._floorplanStates).toEqual({
             "7451233234": {
-                "selectedBuilding": "234634543534"
+                "selectedBuilding": "234634543534",
+                "selectedLevel": "demo-level-235234234"
             }
         });
     });

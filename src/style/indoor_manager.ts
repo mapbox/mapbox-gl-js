@@ -149,7 +149,7 @@ class IndoorManager extends Evented<IndoorEvents> {
         ], this);
 
         this._map = map;
-        this._checkFloorplanVisible(true);
+        this._checkFloorplanVisible();
         this._map.on('load', this._onLoad);
         this._map.on('move', this._onMove);
     }
@@ -193,14 +193,14 @@ class IndoorManager extends Evented<IndoorEvents> {
             });
         }
 
-        this._checkFloorplanVisible(true);
+        this._checkFloorplanVisible();
     }
 
     _onMove() {
-        this._checkFloorplanVisible(false);
+        this._checkFloorplanVisible();
     }
 
-    _checkFloorplanVisible(queryWholeScreen) {
+    _checkFloorplanVisible() {
         if (!this._queryFeatureSetId) {
             return;
         }
@@ -233,55 +233,57 @@ class IndoorManager extends Evented<IndoorEvents> {
                 importId: this._scope
             }
         };
-        const centerPoint = new Point(this._map.transform.width / 2.0, this._map.transform.height / 2.0);
-        const wholeScreen: [PointLike, PointLike] = [new Point(0, 0), new Point(this._map.transform.width, this._map.transform.height)];
-        const features = queryWholeScreen ?  this._map.queryRenderedFeatures(wholeScreen, queryParams) : this._map.queryRenderedFeatures(centerPoint, queryParams);
+        const width = this._map.transform.width;
+        const height = this._map.transform.height;
+        const partialWidth = width * (2 / 3);
+        const partialHeight = height * (2 / 3);
+        const offsetX = 0.5 * (width - partialWidth);
+        const offsetY = 0.5 * (height - partialHeight);
+        const partialScreen: [PointLike, PointLike] = [
+            new Point(offsetX, offsetY),
+            new Point(offsetX + partialWidth, offsetY + partialHeight)
+        ];
+        const features = this._map.queryRenderedFeatures(partialScreen, queryParams);
         // Note: Currently the first returned feature is automatically selected. This logic could be expanded to select the floorplan closest to the map's center.
         if (features.length > 0) {
             if (!this._selectedFloorplan || features[0].properties.id !== this._selectedFloorplan.properties.id) {
                 this._selectedFloorplan = features[0];
-                this._floorplanSelected(false);
+                this._floorplanSelected();
             }
         }
     }
 
-    _floorplanSelected(withUserInput: boolean) {
+    _floorplanSelected() {
         this._indoorData = JSON.parse(this._selectedFloorplan.properties["indoor-data"]);
         this._indoorData.id = this._selectedFloorplan.properties.id;
         this._indoorData.circumCircle = getCircumcircle(this._indoorData.extent);
-
-        if (!this._floorplanStates[this._indoorData.id]) {
-            this._floorplanStates[this._indoorData.id] = {};
-        }
-        // IDs to restore
-        const selectedBuildingId = this._floorplanStates[this._indoorData.id].selectedBuilding;
-        const selectedLevelId = this._floorplanStates[this._indoorData.id].selectedLevel;
-
+        this._floorplanStates[this._indoorData.id] = this._floorplanStates[this._indoorData.id] || {};
         this._map.setConfigProperty(this._scope, "mbx-indoor-active-floorplans", this._indoorData.floorplanIDs);
 
+        // Select building - previously selected, or first building
+        const selectedBuildingId = this._floorplanStates[this._indoorData.id].selectedBuilding;
+        const building = selectedBuildingId ?
+            this._indoorData.buildings.find(e => e.id === selectedBuildingId) :
+            (this._indoorData.buildings.length > 0 ? this._indoorData.buildings[0] : null);
+        // Select level - previously selected, default level, or none for overview
+        const selectedLevelId = this._floorplanStates[this._indoorData.id].selectedLevel;
         const selectedLevelMatch = this._indoorData.levels.find(level => level.id === selectedLevelId);
+        const levelId = selectedLevelMatch ? selectedLevelMatch.id :
+            (this._indoorData["default-levels"].length > 0 ? this._indoorData["default-levels"][0] : null);
 
+        // Fire 'floorplanselected' event before any of the building and level selection events
         this.fire(new Event('floorplanselected', {
             buildings: this._indoorData.buildings,
             levels: this._indoorData.levels,
-            selectedLevelId: selectedLevelMatch ? selectedLevelMatch.id : undefined
+            selectedLevelId: levelId
         }));
 
-        if (selectedBuildingId) {
-            // Restore previous selection
-            const building = this._indoorData.buildings.find(e => e.id === selectedBuildingId);
-            this._buildingSelected(building, false);
-        } else if (this._indoorData.buildings.length > 0) {
-            this._buildingSelected(this._indoorData.buildings[0], false);
-        }
+        if (building) this._buildingSelected(building, false);
 
-        if (selectedLevelMatch) {
-            this._updateLevels(selectedLevelMatch, withUserInput);
-        } else if (withUserInput) {
-            // Activate default level
-            if (this._indoorData["default-levels"].length > 0) {
-                this.selectLevel(this._indoorData["default-levels"][0]);
-            }
+        if (levelId) {
+            this._levelSelected(levelId);
+        } else {
+            this._showOverview();
         }
     }
 
@@ -307,7 +309,7 @@ class IndoorManager extends Evented<IndoorEvents> {
 
     _levelSelected(id) {
         if (id === 'overview') {
-            this._deselectLevels(true);
+            this._showOverview();
             this.fire(new Event('levelselected', {levelId: undefined}));
             return;
         }
@@ -321,12 +323,12 @@ class IndoorManager extends Evented<IndoorEvents> {
         }
     }
 
-    _deselectLevels(animated: boolean) {
+    _showOverview() {
         this._map.setConfigProperty(this._scope, "mbx-indoor-loaded-levels", ["literal", []]);
         this._map.setConfigProperty(this._scope, "mbx-indoor-underground", false);
         this._floorplanStates[this._indoorData.id].selectedLevel = undefined;
 
-        if (animated && this._indoorData.extent) {
+        if (this._indoorData.extent) {
             this._map.fitBounds(this._indoorData.extent, {
                 pitch: this._map.getPitch(),
                 bearing: this._map.getBearing()
@@ -419,7 +421,7 @@ class IndoorManager extends Evented<IndoorEvents> {
                 const indoorData = JSON.parse(feature.properties['indoor-data'] as string);
                 if (indoorData.floorplanIDs.includes(floorplanId)) {
                     this._selectedFloorplan = feature;
-                    this._floorplanSelected(true);
+                    this._floorplanSelected();
                     break;
                 }
             }
