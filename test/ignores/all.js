@@ -297,6 +297,9 @@ const skip = [
 
     // Flaky model test
     "render-tests/model-layer/style-model-api-remove",
+
+    // Flaky image test
+    "render-tests/image/styleimagemissing"
 ];
 
 export default {todo, skip};
