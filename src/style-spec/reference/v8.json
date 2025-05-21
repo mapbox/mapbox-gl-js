@@ -6670,7 +6670,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "3.12.0"
+          "js": "3.12.0",
+          "android": "11.14.0",
+          "ios": "11.14.0"
         }
       },
       "doc": "Controls the transition progress between the image variants of fill-pattern. Zero means the first variant is used, one is the second, and in between they are blended together. Both images should be the same size and have the same type (either raster or vector)."
@@ -6942,7 +6944,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "3.12.0"
+          "js": "3.12.0",
+          "android": "11.14.0",
+          "ios": "11.14.0"
         }
       },
       "doc": "Controls the transition progress between the image variants of fill-extrusion-pattern. Zero means the first variant is used, one is the second, and in between they are blended together. Both images should be the same size and have the same type (either raster or vector)."
@@ -7987,7 +7991,9 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "3.12.0"
+          "js": "3.12.0",
+          "android": "11.14.0",
+          "ios": "11.14.0"
         }
       },
       "doc": "Controls the transition progress between the image variants of line-pattern. Zero means the first variant is used, one is the second, and in between they are blended together. Both images should be the same size and have the same type (either raster or vector)."
