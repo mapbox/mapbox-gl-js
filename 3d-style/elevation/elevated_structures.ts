@@ -676,7 +676,9 @@ export class ElevatedStructures {
             if (tunnelEdge == null) continue;
 
             const [a, b] = tunnelEdge;
-            const norm = normalize(vec3.fromValues(b.coord.y - a.coord.y, -(b.coord.x - a.coord.x), 0.0));
+            // For tunnel walls, the normal dir points to the inside of the road polygon (left dir points to outside of the
+            // road polygon)
+            const norm = normalize(vec3.fromValues(-(b.coord.y - a.coord.y), b.coord.x - a.coord.x, 0.0));
 
             lastFeatureIndex = this.addFeatureSection(edges[i].featureInfo.featureIndex, lastFeatureIndex, this.tunnelFeatureSections, builder);
 
@@ -692,9 +694,17 @@ export class ElevatedStructures {
         for (let i = entranceRange.min; i < entranceRange.max; i++) {
             const edge = edges[i];
 
+            // If the edge is tunnel, it is an edge of tunnel polygon, invert to get the overlapped edge of non-tunnel
+            // polygon
+            if (edge.isTunnel) {
+                [edge.a, edge.b] = [edge.b, edge.a];
+            }
+
             const a = vertices[edge.a];
             const b = vertices[edge.b];
-            const norm = normalize(vec3.fromValues(b.y - a.y, -(b.x - a.x), 0.0));
+            // For tunnel walls, the normal dir points to the inside of the road polygon (left dir points to outside of the
+            // road polygon)
+            const norm = normalize(vec3.fromValues(-(b.y - a.y), b.x - a.x, 0.0));
 
             lastFeatureIndex = this.addFeatureSection(edge.featureInfo.featureIndex, lastFeatureIndex, this.tunnelFeatureSections, builder);
 

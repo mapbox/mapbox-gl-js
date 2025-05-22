@@ -262,20 +262,7 @@ const skip = [
 
     // 3D intersections gl-js port
     // https://mapbox.atlassian.net/browse/MAPS3D-1659
-    "render-tests/3d-intersections/elevated-circles",
-    "render-tests/3d-intersections/elevated-geojson-fill",
-    "render-tests/3d-intersections/elevated-geojson-line-trim-offset",
-    "render-tests/3d-intersections/elevated-geojson-line-wide",
-    "render-tests/3d-intersections/elevated-geojson-line",
     "render-tests/3d-intersections/elevated-wireframe",
-    "render-tests/3d-intersections/road-markups-clipping",
-    "render-tests/3d-intersections/zLevel/sf-progress",
-    "render-tests/3d-intersections/zLevel/tokyo-nosplit-portals-same-id",
-    "render-tests/3d-intersections/zLevel/tokyo-simplified-line-progress",
-    "render-tests/3d-intersections/no-cross-beams",
-    "render-tests/3d-intersections/ortho-camera",
-    "render-tests/3d-intersections/road-extend-tilecover",
-    "render-tests/3d-intersections/max-zoom-mismatch",
 
     // Procedural buildings gl-js port
     // https://mapbox.atlassian.net/browse/MAPS3D-1664

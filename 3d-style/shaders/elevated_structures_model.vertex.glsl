@@ -34,7 +34,7 @@ void main() {
     vec3 shd_pos0 = pos;
     vec3 shd_pos1 = pos;
 #ifdef NORMAL_OFFSET
-    vec3 offset = shadow_normal_offset(v_normal);
+    vec3 offset = shadow_normal_offset(vec3(-v_normal.xy, v_normal.z));
     shd_pos0 += offset * shadow_normal_offset_multiplier0();
     shd_pos1 += offset * shadow_normal_offset_multiplier1();
 #endif
