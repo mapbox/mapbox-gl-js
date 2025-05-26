@@ -160,9 +160,12 @@
                 
                     for (let i = 0; i < eventData.buildings.length; i++) {
                         const building = eventData.buildings[i];
+                        if (!building || !building.name) continue;
+                        
                         const buildingOption = this._createElement('optgroup', 'mapboxgl-ctrl-indoor-level-selector-building', this._levelSelector);
                         buildingOption.setAttribute('label', building.name);
-                        // Get matching levels and sort them
+
+                        // Get matching levels and sort them in respect to floor order with assumption that each level height is 3.
                         const buildingLevels = building.levels.map(levelId => levels.find(l => l.id === levelId)).sort((a, b) => a.sortOrder - b.sortOrder).reverse();
                         for (const level of buildingLevels) {
                             const levelOption = this._createElement('option', 'mapboxgl-ctrl-indoor-level-selector-level', buildingOption);
@@ -176,6 +179,8 @@
                 } else {
                     for (let i = 0; i < eventData.buildings.length; i++) {
                         const building = eventData.buildings[i];
+                        if (!building || !building.name) continue;
+                        
                         const buildingOption = this._createElement('option', 'mapboxgl-ctrl-indoor-building-selector-building', this._buildingSelector);
                         buildingOption.innerText = building.name;
                         buildingOption.setAttribute('value', `${building.id}`);
@@ -215,7 +220,10 @@
                 }
                 Array.from(this._levelSelector.children).forEach(c => c.remove());
 
-                const levelsForBuilding = eventData.levels.sort((a, b) => a.sortOrder - b.sortOrder).reverse();
+                // Calculate floor levels and sort levels
+                const levelsWithFloor = eventData.levels.map(level => ({
+                    ...level,
+                })).sort((a, b) => a.levelOrder - b.levelOrder);
 
                 let addOption = (id, name, checked) => {
                     const levelSelectorRow = this._createElement('label', 'mapboxgl-ctrl-indoor-level-selector-row', this._levelSelector);
@@ -232,11 +240,19 @@
                     levelLabel.innerText =  name;
                 };
 
-                addOption('overview', "Overview", true);
+                const groundFloor = levelsWithFloor.find(level => level.levelOrder === 0);                
+                addOption('overview', "Overview", false);
 
-                for (let i = 0; i < levelsForBuilding.length; i++) {
-                    const level = levelsForBuilding[i];
-                    addOption(level.id, level.name, false);
+                for (let i = 0; i < levelsWithFloor.length; i++) {
+                    const level = levelsWithFloor[i];
+                    // Select the ground floor by default, or the first level if no ground floor exists
+                    const isDefault = (groundFloor && level.id === groundFloor.id) || (!groundFloor && i === 0);
+                    const displayName = `${level.name} (${level.levelOrder})`;
+                    addOption(level.id, displayName, isDefault);
+                    
+                    if (isDefault) {
+                        this._map.indoor.selectLevel(level.id);
+                    }
                 }
 
                 if (this._buildingSelector && eventData.buildingId) {

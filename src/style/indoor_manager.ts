@@ -36,7 +36,7 @@ type IndoorEvents = {
 }
 
 function getCircumcircle(rectangle) {
-    const [[topLeftX, topLeftY], [bottomRightX, bottomRightY]] = rectangle;
+    const [topLeftX, topLeftY, bottomRightX, bottomRightY] = rectangle;
 
     const dx = (bottomRightX - topLeftX + 360) % 360;
     const wrappedDx = dx > 180 ? 360 - dx : dx;
@@ -108,11 +108,10 @@ type FloorplanState = {
     selectedLevel?: string;
 };
 
-type SelectedLevel = {
+type FloorplanLevel = {
     id: string;
-    base: string;
+    levelOrder: number;
     extent: [[number, number], [number, number]];
-    isUnderground: boolean;
 }
 
 class IndoorManager extends Evented<IndoorEvents> {
@@ -258,18 +257,22 @@ class IndoorManager extends Evented<IndoorEvents> {
         this._indoorData.id = this._selectedFloorplan.properties.id;
         this._indoorData.circumCircle = getCircumcircle(this._indoorData.extent);
         this._floorplanStates[this._indoorData.id] = this._floorplanStates[this._indoorData.id] || {};
-        this._map.setConfigProperty(this._scope, "mbx-indoor-active-floorplans", this._indoorData.floorplanIDs);
+        this._map.setConfigProperty(this._scope, "mbx-indoor-active-floorplans", ["literal", [this._indoorData.id]]);
 
         // Select building - previously selected, or first building
         const selectedBuildingId = this._floorplanStates[this._indoorData.id].selectedBuilding;
         const building = selectedBuildingId ?
             this._indoorData.buildings.find(e => e.id === selectedBuildingId) :
             (this._indoorData.buildings.length > 0 ? this._indoorData.buildings[0] : null);
-        // Select level - previously selected, default level, or none for overview
+        // Select level - previously selected, or default level which will be the zero floor level
         const selectedLevelId = this._floorplanStates[this._indoorData.id].selectedLevel;
         const selectedLevelMatch = this._indoorData.levels.find(level => level.id === selectedLevelId);
-        const levelId = selectedLevelMatch ? selectedLevelMatch.id :
-            (this._indoorData["default-levels"].length > 0 ? this._indoorData["default-levels"][0] : null);
+        // If the selected level is not found, select the zero floor level. TODO: Not very optimal.
+        const zeroFloorLevel: FloorplanLevel | undefined = this._indoorData.levels.find((level: FloorplanLevel) => {
+            if (!building || !building.levels) return false;
+            return Number(level.levelOrder) === 0 && (building.levels as string[]).includes(level.id);
+        });
+        const levelId = selectedLevelMatch ? selectedLevelMatch.id : (zeroFloorLevel ? zeroFloorLevel.id : undefined);
 
         // Fire 'floorplanselected' event before any of the building and level selection events
         this.fire(new Event('floorplanselected', {
@@ -288,6 +291,11 @@ class IndoorManager extends Evented<IndoorEvents> {
     }
 
     _buildingSelected(selectedBuilding, animated) {
+        if (!selectedBuilding || !selectedBuilding.name) {
+            console.warn('IndoorManager: Building or building name is undefined');
+            return;
+        }
+
         // Animate camera to the selected building, if the building has a pre-calculated extent
         if (animated && selectedBuilding && selectedBuilding.extent) {
             this._map.fitBounds(selectedBuilding.extent, {
@@ -336,7 +344,7 @@ class IndoorManager extends Evented<IndoorEvents> {
         }
     }
 
-    _updateLevels(selectedLevel: SelectedLevel, animated: boolean) {
+    _updateLevels(selectedLevel: FloorplanLevel, animated: boolean) {
         if (!selectedLevel) {
             throw new Error("selectedLevel cannot be null or undefined");
         }
@@ -362,8 +370,8 @@ class IndoorManager extends Evented<IndoorEvents> {
         const levelOverlapped = {};
         for (const level of this._indoorData.levels) {
             levelkeys.push(level.id);
-            levelHeight[level.id] = level.height;
-            levelBase[level.id] = level.base;
+            levelHeight[level.id] = level.levelOrder >= 0 ? Math.abs(level.levelOrder + 1) * 3 : Math.abs(level.levelOrder) * 3;
+            levelBase[level.id] = level.levelOrder >= 0 ? level.levelOrder * 3 : 0;
             if (this.mergeFloors) {
                 const selectedFloor = getIdFromFloorString(selectedLevel.id);
                 const targetFloor = getIdFromFloorString(level.id);
@@ -371,7 +379,7 @@ class IndoorManager extends Evented<IndoorEvents> {
             } else {
                 levelSelected[level.id] = level.id === selectedLevel.id ? "true" : "false";
             }
-            levelOverlapped[level.id] = level.base < selectedLevel.base ? "true" : "false";
+            levelOverlapped[level.id] = level.levelOrder < selectedLevel.levelOrder ? "true" : "false";
         }
 
         // Note: This could be optimized by only updating the changed configurations
@@ -381,7 +389,9 @@ class IndoorManager extends Evented<IndoorEvents> {
         this._map.setConfigProperty(this._scope, "mbx-indoor-level-selected", ["literal", levelSelected]);
         this._map.setConfigProperty(this._scope, "mbx-indoor-level-overlapped", ["literal", levelOverlapped]);
 
-        this._map.setConfigProperty(this._scope, "mbx-indoor-underground", !!selectedLevel.isUnderground);
+        const isUndergroundLevel = selectedLevel.levelOrder < 0;
+        this._map.setConfigProperty(this._scope, "mbx-indoor-underground", isUndergroundLevel);
+
         if (animated && selectedLevel.extent) {
             const cameraPlacement = this._map.cameraForBounds(selectedLevel.extent, {
                 pitch: this._map.getPitch(),
@@ -419,7 +429,7 @@ class IndoorManager extends Evented<IndoorEvents> {
         if (features.length > 0) {
             for (const feature of features) {
                 const indoorData = JSON.parse(feature.properties['indoor-data'] as string);
-                if (indoorData.floorplanIDs.includes(floorplanId)) {
+                if (indoorData.id === floorplanId) {
                     this._selectedFloorplan = feature;
                     this._floorplanSelected();
                     break;

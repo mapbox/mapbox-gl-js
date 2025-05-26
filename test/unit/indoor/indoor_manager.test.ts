@@ -10,12 +10,10 @@ const indoorData = {
         {
             "type": "Feature",
             "properties": {
-                "indoor": "floorplan",
+                "shape_type": "venue",
                 "id": "7451233234",
                 "indoor-data": {
                     "id": "7451233234",
-                    "default-levels": ["demo-level-235234234"],
-                    "floorplanIDs": ["7451233234"],
                     "extent": [
                         [
                             24.939551666380453,
@@ -50,21 +48,17 @@ const indoorData = {
                         {
                             "id": "demo-level-634123123",
                             "name": "Tunnel level",
-                            "isUnderground": true,
-                            "base": 0,
-                            "height": 3
+                            "levelOrder": -1,
                         },
                         {
                             "id": "demo-level-235234234",
                             "name": "Ground level",
-                            "base": 0,
-                            "height": 3
+                            "levelOrder": 0,
                         },
                         {
                             "id": "demo-level-852343423",
                             "name": "Clock tower",
-                            "base": 0,
-                            "height": 23
+                            "levelOrder": 7,
                         }
                     ]
                 }
@@ -139,7 +133,7 @@ const indoorStyle = {
                     "filter": [
                         "all",
                         ["==", ["geometry-type"], "Polygon"],
-                        ["==", ["get", "indoor"], "floorplan"]
+                        ["==", ["get", "shape_type"], "venue"]
                     ],
                     "paint": {
                         // Note: We should keep opacity above zero to enable queries of the footprint

@@ -1,26 +1,26 @@
 function getLevelHeight() {
     // Returns the top height of the feature's level
-    return ["get", ["get", "level"], ["config", "mbx-indoor-level-height"]]
+    return ["get", ["get", "floor_id"], ["config", "mbx-indoor-level-height"]]
 }
 
 function getLevelBase() {
     // Returns the base height of the feature's level
-    return ["get", ["get", "level"], ["config", "mbx-indoor-level-base"]]
+    return ["get", ["get", "floor_id"], ["config", "mbx-indoor-level-base"]]
 }
 
 function getLevelSelected() {
     // True if the current level is selected
-    return ["==", ["get", ["get", "level"], ["config", "mbx-indoor-level-selected"]], "true"]
+    return ["==", ["get", ["get", "floor_id"], ["config", "mbx-indoor-level-selected"]], "true"]
 }
 
 function getFloorplanSelected() {
     // True if the current level is selected
-    return ["in", ["get", "floorplan"], ["config", "mbx-indoor-active-floorplans"]]
+    return ["in", ["get", "venue"], ["config", "mbx-indoor-active-floorplans"]]
 }
 
 function getLevelOverlapped() {
     // True if the level is below the current selected one
-    return ["==", ["get", ["get", "level"], ["config", "mbx-indoor-level-overlapped"]], "true"]
+    return ["==", ["get", ["get", "floor_id"], ["config", "mbx-indoor-level-overlapped"]], "true"]
 }
 
 const indoorLayers = [
@@ -32,7 +32,7 @@ const indoorLayers = [
         "filter": [
             "all",
             ["==", ["geometry-type"], "Polygon"],
-            ["==", ["get", "indoor"], "floorplan"],
+            ["==", ["get", "shape_type"], "venue"],
             ["!=", 0, ["length", ["array", ["config", "mbx-indoor-loaded-levels"]]]]
         ],
         "layout": {
@@ -47,7 +47,7 @@ const indoorLayers = [
         "filter": [
             "all",
             ["==", ["geometry-type"], "Polygon"],
-            ["==", ["get", "indoor"], "floorplan"]
+            ["==", ["get", "shape_type"], "venue"]
         ],
         "paint": {
             // Note: We should keep opacity above zero to enable queries of the footprint
@@ -85,9 +85,9 @@ const indoorLayers = [
         "minzoom": 16.0,
         "filter": [
             "all",
-            ["in", ["get", "level"], ["config", "mbx-indoor-loaded-levels"]],
+            ["in", ["get", "floor_id"], ["config", "mbx-indoor-loaded-levels"]],
             ["!=", ["geometry-type"], "Point"],
-            ["==", ["get", "indoor"], "area"]
+            ["==", ["get", "shape_type"], "area"]
         ],
         "paint": {
             "fill-extrusion-opacity": 1,
@@ -109,12 +109,12 @@ const indoorLayers = [
         "minzoom": 16.0,
         "filter": [
             "all",
-            ["in", ["get", "level"], ["config", "mbx-indoor-loaded-levels"]],
+            ["in", ["get", "floor_id"], ["config", "mbx-indoor-loaded-levels"]],
             ["!=", ["geometry-type"], "Point"],
             [
                 "any",
-                ["==", ["get", "indoor"], "room"],
-                ["==", ["get", "indoor"], "area"]
+                ["==", ["get", "shape_type"], "room"],
+                ["==", ["get", "shape_type"], "area"]
             ]            
         ],
         "paint": {
@@ -136,9 +136,9 @@ const indoorLayers = [
         "minzoom": 16.0,
         "filter": [
             "all",
-            ["in", ["get", "level"], ["config", "mbx-indoor-loaded-levels"]],
+            ["in", ["get", "floor_id"], ["config", "mbx-indoor-loaded-levels"]],
             ["==", ["geometry-type"], "Polygon"],
-            ["==", ["get", "indoor"], "room"]
+            ["==", ["get", "shape_type"], "room"]
         ],
         "paint": {
             "fill-extrusion-opacity": 1,
@@ -159,8 +159,8 @@ const indoorLayers = [
         "source": "indoor-data",
         "filter": [
             "all",
-            ["in", ["get", "level"], ["config", "mbx-indoor-loaded-levels"]],
-            ["==", ["get", "indoor"], "room"]
+            ["in", ["get", "floor_id"], ["config", "mbx-indoor-loaded-levels"]],
+            ["==", ["get", "shape_type"], "room"]
         ],
         "layout": {
             "text-field": ["get", "name"],
@@ -187,8 +187,8 @@ const indoorLayers = [
         "maxzoom": 17,
         "filter": [
             "all",
-            ["==", ["get", "class"], "building"],
-            ["has", "floorplan"]
+            ["==", ["get", "shape_type"], "building"],
+            ["has", "venue"]
         ],
         "layout": {
             "text-anchor": "top",
