@@ -432,7 +432,7 @@ async function runTest(t) {
 
         updateHTML(testMetaData);
     } catch (e) {
-        t.error(e);
+        t.error(e, currentTestName);
         updateHTML({name: t.name, status: 'failed', error: e, errors});
     }
 }

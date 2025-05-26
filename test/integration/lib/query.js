@@ -41,6 +41,7 @@ function ensureTeardown(t) {
     if (ignores.todo.includes(testName)) {
         options.todo = true;
     }
+
     t.test(testName, options, runTest);
 
     //Teardown all global resources
@@ -50,7 +51,6 @@ function ensureTeardown(t) {
         delete map.painter.context.gl;
         map = null;
     }
-    t.end();
 }
 
 async function runTest(t) {
@@ -162,7 +162,7 @@ async function runTest(t) {
         if (!process.env.CI || process.env.UPDATE) browserWriteFile.postMessage(fileInfo);
 
     } catch (e) {
-        t.error(e);
+        t.error(e, currentTestName);
         updateHTML({name: t.name, status: 'failed', jsonDiff: e.message});
     }
     t.end();
