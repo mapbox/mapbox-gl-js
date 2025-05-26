@@ -444,7 +444,9 @@ export function diffImports(before: Array<ImportSpecification> | null | undefine
     // update imports
     for (const afterImport of after) {
         const beforeImport = beforeIndex[afterImport.id];
-        if (!beforeImport || isEqual(beforeImport, afterImport)) continue;
+        if (!beforeImport) continue;
+        delete beforeImport.data;
+        if (isEqual(beforeImport, afterImport)) continue;
 
         commands.push({command: operations.updateImport, args: [afterImport.id, afterImport]});
     }
