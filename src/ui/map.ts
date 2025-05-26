@@ -1472,6 +1472,7 @@ export class Map extends Camera {
         if (projectionHasChanged) {
             this.style.applyProjectionUpdate();
             this.style._forceSymbolLayerUpdate();
+            this._update(true);
         }
     }
 
