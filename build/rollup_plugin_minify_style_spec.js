@@ -1,5 +1,5 @@
 
-const removedKeys = new Set(['doc', 'example', 'sdk-support', 'requires', 'units', 'experimental', 'private', 'required']);
+const removedKeys = new Set(['$doc', 'doc', 'example', 'sdk-support', 'requires', 'units', 'experimental', 'private', 'required']);
 
 function replacer(k, v) {
     if (typeof v === 'object') {
@@ -8,7 +8,7 @@ function replacer(k, v) {
     }
     if (k === 'property-type' && v !== 'data-driven') return undefined;
     if (k === 'expression' && Object.keys(v).length === 0) return undefined;
-    if ((k === 'interpolated' || k === 'transition') && v === false) return undefined; // skip these keys with falsy values
+    if ((k === 'interpolated' || k === 'transition' || k === 'use-theme') && v === false) return undefined; // skip these keys with falsy values
     return removedKeys.has(k) ? undefined : v;
 }
 

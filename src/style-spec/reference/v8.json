@@ -10840,5 +10840,24 @@
       "type": "*",
       "doc": "A feature property name to use as the ID, or an expression to evaluate as the ID for feature state."
     }
+  },
+  "$doc": {
+    "transition": {
+      "type": "transition",
+      "doc": "Controls how a property transitions to a new value. Overrides the style's root `transition` for this property."
+    },
+    "use-theme": {
+      "type": "enum",
+      "doc": "Controls whether the associated color property is affected by the global color theme. When set to \"none\", the color theme is ignored for this property. When set to \"default\", the color theme is applied.",
+      "values": {
+        "default": {
+          "doc": "The color theme is applied to this property (default behavior)."
+        },
+        "none": {
+          "doc": "The color theme is ignored for this property."
+        }
+      },
+      "default": "default"
+    }
   }
 }
