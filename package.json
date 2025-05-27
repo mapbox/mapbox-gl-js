@@ -51,7 +51,7 @@
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.27.0",
     "@mapbox/mvt-fixtures": "^3.10.0",
-    "@octokit/rest": "^21.1.1",
+    "@octokit/rest": "^22.0.0",
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
