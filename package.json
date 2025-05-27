@@ -131,7 +131,6 @@
     "build-prod": "rollup -c --environment BUILD:production",
     "build-prod-min": "rollup -c --environment BUILD:production,MINIFY:true",
     "build-csp": "rollup -c rollup.config.csp.js",
-    "build-test-suite": "rollup -c test/integration/rollup.config.test.js",
     "build-css": "postcss -o dist/mapbox-gl.css src/css/mapbox-gl.css",
     "build-style-spec": "npm run build --workspace src/style-spec && mkdir -p dist/style-spec && cp src/style-spec/dist/* dist/style-spec",
     "build-dts": "dts-bundle-generator --no-banner --export-referenced-types=false --umd-module-name=mapboxgl -o ./dist/mapbox-gl.d.ts ./src/index.ts",
