@@ -8,7 +8,7 @@
         [
           "addImage",
           "dot",
-          "./image/dot.js"
+          "/image/dot.js"
         ],
         [
           "wait"

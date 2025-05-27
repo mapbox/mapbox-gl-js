@@ -8,7 +8,7 @@
                 [
                     "addImage",
                     "marker",
-                    "./image/line.sdf.png",
+                    "/image/line.sdf.png",
                     {
                         "sdf": true
                     }
@@ -31,7 +31,7 @@
                 [
                     "updateImage",
                     "marker",
-                    "./image/line.sdf.png",
+                    "/image/line.sdf.png",
                     {
                         "sdf": true
                     }

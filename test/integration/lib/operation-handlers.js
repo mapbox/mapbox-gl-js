@@ -1,6 +1,6 @@
-/* eslint-env browser */
-/* global mapboxgl:readonly */
 import customLayerImplementations from '../custom_layer_implementations.js';
+import {mapboxgl} from './mapboxgl.js';
+import {renderTestNow} from './constants.js';
 
 function handleOperation(map, operations, opIndex, doneCb) {
     const operation = operations[opIndex];
@@ -21,8 +21,8 @@ const MIN_FRAMES = 1;
 export const operationHandlers = {
     wait(map, params, doneCb) {
         if (params.length) {
-            window._renderTestNow += params[0];
-            mapboxgl.setNow(window._renderTestNow);
+            renderTestNow.current += params[0];
+            mapboxgl.setNow(renderTestNow.current);
         }
 
         waitForRender(map, () => map.loaded(), doneCb);
@@ -49,13 +49,13 @@ export const operationHandlers = {
 
         waitForRender(map, () => {
             if (timeIterationInterval !== 0) {
-                window._renderTestNow += timeIterationInterval;
+                renderTestNow.current += timeIterationInterval;
             } else {
                 const curTime = Date.now();
-                window._renderTestNow += curTime - prevTime;
+                renderTestNow.current += curTime - prevTime;
                 prevTime = curTime;
             }
-            mapboxgl.setNow(window._renderTestNow);
+            mapboxgl.setNow(renderTestNow.current);
             return map.frameReady();
         }, doneCb);
     },
@@ -63,9 +63,10 @@ export const operationHandlers = {
         setTimeout(doneCb, params[0]);
     },
     addImage(map, params, doneCb) {
-        params[1] = params[1].replace('./', '/test/integration/');
+        params[1] = params[1].replace('/image', '/test/integration/image');
+        params[1] = params[1].replace('/sprites', '/test/integration/sprites');
         if (params[1].endsWith('.js')) {
-            import(params[1]).then(({image}) => {
+            import(/* @vite-ignore */ params[1]).then(({image}) => {
                 map.addImage(params[0], image, params[2] || {});
                 doneCb();
             });

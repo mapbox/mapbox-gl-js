@@ -8,7 +8,7 @@
                 [
                     "addImage",
                     "marker",
-                    "./image/marker.png",
+                    "/image/marker.png",
                     {
                       "pixelRatio": 1.0
                     }

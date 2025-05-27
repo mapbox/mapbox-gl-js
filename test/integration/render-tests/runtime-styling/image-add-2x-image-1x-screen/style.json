@@ -9,7 +9,7 @@
         [
           "addImage",
           "marker",
-          "./sprites/2x.png",
+          "/sprites/2x.png",
           {
             "pixelRatio": 2
           }

@@ -29,6 +29,11 @@ function styleSpecFixtures() {
 
 export default mergeConfig(baseConfig, defineConfig({
     test: {
+        browser: {
+            instances: [
+                {browser: 'chromium'},
+            ],
+        },
         include: ['test/unit/**/*.test.ts'],
         setupFiles: ['test/unit/setup.ts'],
         reporters: process.env.CI ? [

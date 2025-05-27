@@ -17,6 +17,7 @@
     <script src='../dist/mapbox-gl-dev.js'></script>
     <script src='../debug/access_token_generated.js'></script>
     <script type='module'>
+        import {renderTestNow} from 'http://localhost:9966/test/integration/lib/constants.js';
         import {applyOperations} from 'http://localhost:9966/test/integration/lib/operation-handlers.js';
 
         async function fetchStyle() {
@@ -119,8 +120,8 @@
         map._authenticate = () => { };
 
         // override internal timing to enable precise wait operations
-        window._renderTestNow = 0;
-        mapboxgl.setNow(window._renderTestNow);
+        renderTestNow.current = 0;
+        mapboxgl.setNow(renderTestNow.current);
 
         if (options.debug) {
             map.showTileBoundaries = true;

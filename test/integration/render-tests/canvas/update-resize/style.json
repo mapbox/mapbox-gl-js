@@ -6,11 +6,11 @@
         "height": 512,
         "addFakeCanvas": {
             "id": "fake-canvas",
-            "image": "./image/1.png"
+            "image": "/image/1.png"
         },
         "operations": [
             ["wait"],
-            ["updateFakeCanvas", "canvas", "./image/0-half-size.png", "./image/0-half-size.png"]
+            ["updateFakeCanvas", "canvas", "/image/0-half-size.png", "/image/0-half-size.png"]
         ]
       }
     },
@@ -65,4 +65,3 @@
         }
     ]
   }
-  

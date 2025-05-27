@@ -180,7 +180,6 @@ class WrappedTileDraped {
         this.wrapTileId = true;
     }
 
-
     onAdd(map, gl) {
         const vertexSource = `
         attribute vec2 a_pos;
@@ -213,7 +212,8 @@ class WrappedTileDraped {
         const verts = new Float32Array([1, 1, 1, -1, -1, -1, -1, -1, -1, 1, 1, 1]);
         this.vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);    }
+        gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+    }
 
     shouldRerenderTiles() {
         return true;

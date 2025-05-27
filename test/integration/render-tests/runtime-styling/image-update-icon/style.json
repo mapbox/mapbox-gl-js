@@ -11,7 +11,7 @@
         [
           "updateImage",
           "globe_blue",
-          "./image/marker_18x18.png"
+          "/image/marker_18x18.png"
         ],
         [
           "wait"

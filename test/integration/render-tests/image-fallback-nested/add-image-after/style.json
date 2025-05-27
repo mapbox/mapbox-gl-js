@@ -46,7 +46,7 @@
           }
         ],
         ["wait"],
-        ["addImage", "rocket", "./image/rocket.png"],
+        ["addImage", "rocket", "/image/rocket.png"],
         ["wait"]
       ]
     }

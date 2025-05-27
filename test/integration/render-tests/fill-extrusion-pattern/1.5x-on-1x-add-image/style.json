@@ -12,7 +12,7 @@
         [
           "addImage",
           "pattern",
-          "./image/marker.png",
+          "/image/marker.png",
           {
             "pixelRatio": 1.5
           }

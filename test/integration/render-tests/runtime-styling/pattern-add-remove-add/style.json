@@ -8,7 +8,7 @@
         [
           "addImage",
           "marker",
-            "./sprites/dark.png"
+            "/sprites/dark.png"
         ],
         [
           "addLayer",
@@ -31,7 +31,7 @@
         [
             "addImage",
             "marker",
-          "./sprites/1x.png"
+          "/sprites/1x.png"
         ],
         [
             "wait"

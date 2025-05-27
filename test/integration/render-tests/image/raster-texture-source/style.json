@@ -11,7 +11,7 @@
         [
           "setCustomTexture",
           "customSource",
-          "./image/marker_18x18.png"
+          "/image/marker_18x18.png"
         ],
         [
           "wait"

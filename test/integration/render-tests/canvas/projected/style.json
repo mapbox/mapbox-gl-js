@@ -10,7 +10,7 @@
       ],
       "addFakeCanvas": {
           "id": "fake-canvas",
-          "image": "./image/0.png"
+          "image": "/image/0.png"
       }
     }
   },

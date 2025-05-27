@@ -8,7 +8,7 @@
         [
           "addImage",
           "marker",
-          "./image/0.png"
+          "/image/0.png"
         ],
         [
           "removeImage",
@@ -17,7 +17,7 @@
         [
           "addImage",
           "marker",
-          "./image/marker.png"
+          "/image/marker.png"
         ],
         [
           "addLayer",

@@ -15,6 +15,11 @@ const fixtures = globSync('./test/usvg/test-suite/*.png').reduce((acc, pngPath) 
 
 export default mergeConfig(baseConfig, defineConfig({
     test: {
+        browser: {
+            instances: [
+                {browser: 'chromium'},
+            ],
+        },
         retry: 0,
         include: ['./test/usvg/*.test.ts'],
         setupFiles: ['./test/usvg/setup.ts'],

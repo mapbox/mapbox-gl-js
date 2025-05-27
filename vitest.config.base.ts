@@ -21,9 +21,6 @@ export default defineConfig({
         retry: process.env.CI ? 2 : 0,
         testTimeout: 5_000,
         browser: {
-            instances: [
-                {browser: 'chromium'},
-            ],
             provider: 'playwright',
             enabled: true,
             headless: true,

@@ -9,7 +9,7 @@
         [
           "addImage",
           "rocket",
-          "./image/rocket.png"
+          "/image/rocket.png"
         ],
                 [
           "wait"
@@ -76,7 +76,7 @@
   "sources": {
     "geojson": {
       "type": "geojson",
-      "data": 
+      "data":
       {
         "type": "FeatureCollection",
         "features": [

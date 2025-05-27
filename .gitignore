@@ -14,7 +14,9 @@ coverage
 .nyc_output
 *_generated.js
 *_generated.js.map
+tests-to-run.txt
 test/**/__screenshots__/
+test/integration/**/vitest
 test/integration/**/index*.html
 test/integration/**/actual.png
 test/integration/**/actual.json

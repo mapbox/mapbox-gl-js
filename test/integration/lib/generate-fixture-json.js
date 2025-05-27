@@ -36,8 +36,9 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
             const json = parseJsonFromFile(stylePath);
 
             // Special case for style json which needs some preprocessing
-            // 7357 is testem's default port
-            localizeURLs(json, 7357);
+            // 63315 is the default vitest port
+            // https://vitest.dev/guide/browser/config.html#browser-api
+            localizeURLs(json, 63315);
 
             const testObject = {};
 
@@ -52,8 +53,7 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
                     const json = parseJsonFromFile(path.join(dirName, file));
                     //Special case for style json which needs some preprocessing
                     if (file === 'style.json') {
-                        // 7357 is testem's default port
-                        localizeURLs(json, 7357);
+                        localizeURLs(json, 63315);
                     }
                     testObject[name] = json;
                 } else if (extension === 'png') {
@@ -72,17 +72,7 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
         }
     }
 
-    const outputStr = JSON.stringify(testCases, null, 4);
-    const outputFile = `${suiteDirectory.split('-')[0]}-fixtures.json`;
-    const outputPath = path.join(outputDirectory, outputFile);
-
-    return new Promise((resolve, reject) => {
-        fs.writeFile(outputPath, outputStr, {encoding: 'utf8'}, (err) => {
-            if (err) { reject(err); }
-
-            resolve();
-        });
-    });
+    return testCases;
 }
 
 export function getAllFixtureGlobs(rootDirectory, suiteDirectory) {

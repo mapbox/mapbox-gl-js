@@ -3,16 +3,14 @@
 /* eslint-env browser */
 import template from 'lodash/template.js';
 
-const CI = process.env.CI;
-
 const generateResultHTML = template(`
-  <div class="tab">
+  <div class="tab tab_<%- r.status %>">
     <% if (r.status === 'failed') { %>
       <input type="checkbox" id="<%- r.id %>" checked>
     <% } else { %>
       <input type="checkbox" id="<%- r.id %>">
     <% } %>
-    <label class="tab-label" style="background: <%- r.color %>" for="<%- r.id %>"><p class="status-container"><span class="status"><%- r.status %></span> - <%- r.name %> - diff: <%- r.minDiff %></p></label>
+    <label class="tab-label" style="background: <%- r.color %>" for="<%- r.id %>"><p class="status-container"><span class="status"><%- r.status %></span> - <%- r.name %> <% if (r.attempt !== 0) { %>retry <%- r.attempt + 1 %><% } %> diff: <%- r.minDiff %></p></label>
     <div class="tab-content">
       <% if (r.actual) { %>
           <img title="actual" src="<%- r.actual %>">
@@ -50,16 +48,18 @@ const generateResultHTML = template(`
   </div>
 `);
 
-const pageCss = `
+export const pageCss = `
 body { font: 18px/1.2 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif; padding: 10px; background: #ecf0f1 }
 h1 { font-size: 32px; margin-bottom: 0; }
+input[id="only-failed"] { margin-top: 24px; margin-bottom: 12px; margin-right: 8px; }
+input[id="only-failed"]:checked ~ .tests > .tab:not(.tab_failed) { display: none; }
 img { margin: 0 10px 10px 0; border: 1px dotted #ccc; image-rendering: pixelated; }
-input { position: absolute; opacity: 0; z-index: -1;}
+.tab input { position: absolute; opacity: 0; z-index: -1;}
 .tests { border-top: 1px dotted #bbb; margin-top: 10px; padding-top: 15px; overflow: hidden; }
 .status-container { margin: 0; }
 .status { text-transform: uppercase; }
 .label { color: white; font-size: 18px; padding: 2px 6px 3px; border-radius: 3px; margin-right: 3px; vertical-align: bottom; display: inline-block; }
-.tab { margin-bottom: 30px; width: 100%; overflow: hidden; }
+.tab { margin-bottom: 30px; width: 100%; overflow: hidden; z-index: 100; position: relative; }
 .tab-label { display: flex; color: white; border-radius: 5px; justify-content: space-between; padding: 1em; font-weight: bold; cursor: pointer; }
 .tab-label:hover { filter: brightness(85%); }
 .tab-label::after { content: "\\276F"; width: 1em; height: 1em; text-align: center; transition: all .35s; }
@@ -96,8 +96,9 @@ export function setupHTML() {
     document.head.appendChild(style);
     style.appendChild(document.createTextNode(pageCss));
 
-    //Create a container to hold test stats
+    // Create a container to hold test stats
     const statsContainer = document.createElement('div');
+    statsContainer.id = 'stats';
 
     const failedTestContainer = document.createElement('h1');
     failedTestContainer.style.color = 'red';
@@ -131,22 +132,93 @@ export function setupHTML() {
 
     document.body.appendChild(statsContainer);
 
+    const onlyFailedCheckbox = Object.assign(document.createElement('input'), {
+        type: 'checkbox',
+        id: 'only-failed',
+        checked: true,
+    });
+
+    const onlyFailedLabel = Object.assign(document.createElement('label'), {
+        htmlFor: 'only-failed',
+        innerHTML: 'Show only failed tests',
+    });
+
+    document.body.appendChild(onlyFailedCheckbox);
+    document.body.appendChild(onlyFailedLabel);
+
     //Create a container to hold test results
     resultsContainer = document.createElement('div');
     resultsContainer.className = 'tests';
     document.body.appendChild(resultsContainer);
 }
 
+export function getStatsHTML() {
+    const statsContainer = document.getElementById('stats');
+
+    if (statsContainer) {
+        return statsContainer.innerHTML;
+    }
+
+    return '';
+}
+
+const testStatus = new Map();
+const testId = new Map();
+
 export function updateHTML(testData) {
     const status = testData.status;
-    stats[status]++;
+    if (!testStatus.has(testData.name)) {
+        stats[status]++;
+        testStatus.set(testData.name, testData.status);
+        testId.set(testData.name, 0);
+    } else if (testStatus.get(testData.name) !== status) {
+        stats[testStatus.get(testData.name)]--;
+        stats[status]++;
+        testStatus.set(testData.name, status);
+        testId.set(testData.name, testId.get(testData.name) + 1);
+    } else if (testStatus.get(testData.name) === status) {
+        testId.set(testData.name, testId.get(testData.name) + 1);
+    }
+
     counterDom[status].innerHTML = stats[status];
 
     // skip adding passing tests to report in CI mode
-    if (CI && status === 'passed') return;
+    if (import.meta.env.CI && status === 'passed') return;
 
     testData["color"] = colors[status];
-    testData["id"] = `${status}Test-${stats[status]}`;
-    const resultHTMLFrag = document.createRange().createContextualFragment(generateResultHTML({r: testData}));
+    testData["id"] = `${status}Test-${stats[status]}-${testId.get(testData.name)}`;
+    testData["attempt"] = testId.get(testData.name);
+
+    const html = generateResultHTML({r: testData});
+    const resultHTMLFrag = document.createRange().createContextualFragment(html);
+
     resultsContainer.appendChild(resultHTMLFrag);
+
+    return html;
+}
+
+export function getHTML(statsContent: string, testsContent: string) {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>GL JS | Render tests results</title>
+          <style>
+              ${pageCss}
+          </style>
+      </head>
+      <body>
+          <div id="stats">
+            ${statsContent}
+          </div>
+          <input type="checkbox" id="only-failed" checked>
+          <label for="only-failed">Show only failed tests</label>
+          <div class="tests">
+            ${testsContent}
+          </div>
+      </body>
+      </html>
+  `.trim();
 }
