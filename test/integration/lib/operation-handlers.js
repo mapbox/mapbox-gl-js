@@ -63,8 +63,8 @@ export const operationHandlers = {
         setTimeout(doneCb, params[0]);
     },
     addImage(map, params, doneCb) {
-        params[1] = params[1].replace('/image', '/test/integration/image');
-        params[1] = params[1].replace('/sprites', '/test/integration/sprites');
+        params[1] = params[1].replace('./image', '/test/integration/image');
+        params[1] = params[1].replace('./sprites', '/test/integration/sprites');
         if (params[1].endsWith('.js')) {
             import(/* @vite-ignore */ params[1]).then(({image}) => {
                 map.addImage(params[0], image, params[2] || {});
@@ -204,6 +204,8 @@ export const operationHandlers = {
         doneCb();
     },
     setCustomTexture(map, params, doneCb) {
+        params[1] = params[1].replace('./image', '/test/integration/image');
+        params[1] = params[1].replace('./sprites', '/test/integration/sprites');
         map.loadImage(params[1], (error, image) => {
             if (error) throw error;
 

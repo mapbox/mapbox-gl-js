@@ -7,7 +7,7 @@
         [
           "addImage",
           "custom-marker",
-          "/image/marker.png"
+          "./image/marker.png"
         ],
         [
           "addLayer",

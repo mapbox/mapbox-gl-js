@@ -9,7 +9,7 @@
         [
           "updateImage",
           "park",
-          "/image/marker_20x20.png"
+          "./image/marker_20x20.png"
         ],
         [
           "wait"

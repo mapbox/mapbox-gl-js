@@ -8,7 +8,7 @@
                 [
                     "addImage",
                     "marker",
-                    "/image/marker_18x18.png"
+                    "./image/marker_18x18.png"
                 ],
                 [
                     "addLayer",
@@ -25,7 +25,7 @@
                 [
                     "updateImage",
                     "marker",
-                    "/image/marker2_18x18.png"
+                    "./image/marker2_18x18.png"
                 ],
                 ["wait"]
             ]

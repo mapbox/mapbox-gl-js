@@ -9,7 +9,7 @@
         [
           "addImage",
           "marker",
-          "/sprites/1x.png"
+          "./sprites/1x.png"
         ],
         [
           "addLayer",

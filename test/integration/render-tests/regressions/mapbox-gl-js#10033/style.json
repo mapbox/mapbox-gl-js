@@ -8,17 +8,17 @@
         [
           "addImage",
           "graySquares~0",
-          "/sprites/32px-grey-square.png"
+          "./sprites/32px-grey-square.png"
         ],
         [
           "addImage",
           "graySquares~1",
-          "/sprites/64px-grey-square.png"
+          "./sprites/64px-grey-square.png"
         ],
         [
           "addImage",
           "graySquares~2",
-          "/sprites/128px-grey-square.png"
+          "./sprites/128px-grey-square.png"
         ],
         [
           "addLayer",
