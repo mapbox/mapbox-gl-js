@@ -8,12 +8,6 @@ const indoorData = {
               "shape_type": "venue",
               "indoor-data": {
                   "id": "7451233234",
-                  "extent": [
-                    24.940643079792295,
-                    60.17278546897134,
-                    24.94318666583149,
-                    60.17075143283972                      
-                  ],
                   "buildings": [
                       {
                           "name": "Central Railway Station",
@@ -23,6 +17,12 @@ const indoorData = {
                               "demo-level-235234234",
                               "demo-level-852343423"
                           ],
+                          "extent": [
+                              24.940643079792295,
+                              60.17278546897134,
+                              24.94318666583149,
+                              60.17075143283972
+                          ]
                       }
                   ],
                   "levels": [
@@ -34,12 +34,12 @@ const indoorData = {
                       {
                           "id": "demo-level-235234234",
                           "name": "Ground level",
-                          "levelOrder": 0,
+                          "levelOrder": 0
                       },
                       {
                           "id": "demo-level-852343423",
                           "name": "Clock tower",
-                          "levelOrder": 1,
+                          "levelOrder": 1
                       }
                   ]
               }

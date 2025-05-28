@@ -35,38 +35,6 @@ type IndoorEvents = {
     };
 }
 
-function getCircumcircle(rectangle) {
-    const [topLeftX, topLeftY, bottomRightX, bottomRightY] = rectangle;
-
-    const dx = (bottomRightX - topLeftX + 360) % 360;
-    const wrappedDx = dx > 180 ? 360 - dx : dx;
-    const centerX = (topLeftX + wrappedDx / 2 + 360) % 360;
-
-    const centerY = (topLeftY + bottomRightY) / 2;
-
-    const dy = bottomRightY - topLeftY;
-    const radius = Math.sqrt(wrappedDx ** 2 + dy ** 2) / 2;
-
-    return {
-        center: [centerX, centerY],
-        radius
-    };
-}
-
-function isPointInCircle(point, circle) {
-    const [px, py] = point;
-    const {center, radius} = circle;
-    const [cx, cy] = center;
-
-    const dx = Math.abs(px - cx);
-    const wrappedDx = dx > 180 ? 360 - dx : dx;
-
-    const dy = py - cy;
-
-    const distance = Math.sqrt(wrappedDx ** 2 + dy ** 2);
-    return distance <= radius;
-}
-
 const indoorSchemaExtension: SchemaSpecification = {
     // Contains an array of IDs with the active floorplans in the area
     "mbx-indoor-active-floorplans": {
@@ -220,11 +188,6 @@ class IndoorManager extends Evented<IndoorEvents> {
             return;
         }
 
-        // Deselect floorplan if the camera moves far enough
-        if (this._indoorData && !isPointInCircle([this._map.getCenter().lng, this._map.getCenter().lat], this._indoorData.circumCircle)) {
-            clearFloorplanData();
-        }
-
         const queryParams = {
             target: {
                 featuresetId: this._queryFeatureSetId,
@@ -248,13 +211,14 @@ class IndoorManager extends Evented<IndoorEvents> {
                 this._selectedFloorplan = features[0];
                 this._floorplanSelected();
             }
+        } else {
+            clearFloorplanData();
         }
     }
 
     _floorplanSelected() {
         this._indoorData = JSON.parse(this._selectedFloorplan.properties["indoor-data"]);
         this._indoorData.id = this._selectedFloorplan.properties.id;
-        this._indoorData.circumCircle = getCircumcircle(this._indoorData.extent);
         this._floorplanStates[this._indoorData.id] = this._floorplanStates[this._indoorData.id] || {};
         this._map.setConfigProperty(this._scope, "mbx-indoor-active-floorplans", ["literal", [this._indoorData.id]]);
 
@@ -288,13 +252,13 @@ class IndoorManager extends Evented<IndoorEvents> {
     }
 
     _buildingSelected(selectedBuilding, animated) {
-        if (!selectedBuilding || !selectedBuilding.name) {
-            console.warn('IndoorManager: Building or building name is undefined');
+        if (!selectedBuilding || !selectedBuilding.id) {
+            console.warn('IndoorManager: Building or building id is undefined');
             return;
         }
 
         // Animate camera to the selected building, if the building has a pre-calculated extent
-        if (animated && selectedBuilding && selectedBuilding.extent) {
+        if (animated && selectedBuilding.extent) {
             this._map.fitBounds(selectedBuilding.extent, {
                 pitch: this._map.getPitch(),
                 bearing: this._map.getBearing()
@@ -323,8 +287,8 @@ class IndoorManager extends Evented<IndoorEvents> {
     }
 
     _updateLevels(selectedLevel: FloorplanLevel, animated: boolean) {
-        if (!selectedLevel) {
-            throw new Error("selectedLevel cannot be null or undefined");
+        if (!selectedLevel || !selectedLevel.id) {
+            throw new Error("IndoorManager: Selected level or level ID is undefined");
         }
 
         function getIdFromFloorString(input) {
