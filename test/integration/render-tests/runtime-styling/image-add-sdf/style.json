@@ -8,7 +8,7 @@
         [
           "addImage",
           "line.sdf",
-          "/image/line.sdf.png",
+          "./image/line.sdf.png",
           {
             "sdf": true
           }

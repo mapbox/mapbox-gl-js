@@ -9,7 +9,7 @@
         [
           "addImage",
           "rocket",
-          "/image/rocket.png"
+          "./image/rocket.png"
         ],
                 [
           "wait"

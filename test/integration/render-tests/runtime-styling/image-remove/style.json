@@ -8,7 +8,7 @@
         [
           "addImage",
           "marker",
-          "/image/0.png"
+          "./image/0.png"
         ],
         [
           "removeImage",

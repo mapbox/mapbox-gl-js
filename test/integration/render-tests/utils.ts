@@ -99,7 +99,7 @@ async function setupLayout(options) {
 
     if (options.addFakeCanvas) {
         const {canvas, ctx} = createCanvas(options.addFakeCanvas.id);
-        const src = options.addFakeCanvas.image.replace('./', '');
+        const src = options.addFakeCanvas.image.replace('./image', '/test/integration/image');
         await drawImage(canvas, ctx, src, false);
         fakeCanvasContainer.appendChild(canvas);
     }

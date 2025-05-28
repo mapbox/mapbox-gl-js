@@ -5,7 +5,7 @@
       "height": 64,
       "width": 128,
       "operations": [
-        ["on", "styleimagemissing", [["addImage", "rocket", "/image/rocket.png"]]],
+        ["on", "styleimagemissing", [["addImage", "rocket", "./image/rocket.png"]]],
         ["addLayer", {
           "id": "test",
           "type": "symbol",
