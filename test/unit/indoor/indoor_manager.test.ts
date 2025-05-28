@@ -192,14 +192,6 @@ describe('IndoorManager', () => {
                 "selectedLevel": "demo-level-634123123"
             }
         });
-        // Overview deselects level
-        map.indoor.selectLevel("overview");
-        expect(map.indoor._floorplanStates).toEqual({
-            "7451233234": {
-                "selectedBuilding": "43246546456",
-                "selectedLevel": undefined
-            }
-        });
     });
 
     test('select building with public api', async () => {

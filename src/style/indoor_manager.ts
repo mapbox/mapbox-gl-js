@@ -111,7 +111,6 @@ type FloorplanState = {
 type FloorplanLevel = {
     id: string;
     levelOrder: number;
-    extent: [[number, number], [number, number]];
 }
 
 class IndoorManager extends Evented<IndoorEvents> {
@@ -285,8 +284,6 @@ class IndoorManager extends Evented<IndoorEvents> {
 
         if (levelId) {
             this._levelSelected(levelId);
-        } else {
-            this._showOverview();
         }
     }
 
@@ -316,31 +313,12 @@ class IndoorManager extends Evented<IndoorEvents> {
     }
 
     _levelSelected(id) {
-        if (id === 'overview') {
-            this._showOverview();
-            this.fire(new Event('levelselected', {levelId: undefined}));
-            return;
-        }
-
         const selectedLevel = this._indoorData.levels.find(l => l.id === id);
         if (selectedLevel) {
             this._updateLevels(selectedLevel, true);
             this.fire(new Event('levelselected', {levelId: selectedLevel.id}));
         } else {
             console.warn(`IndoorManager: Level with ID ${id} not found in the current floorplan.`);
-        }
-    }
-
-    _showOverview() {
-        this._map.setConfigProperty(this._scope, "mbx-indoor-loaded-levels", ["literal", []]);
-        this._map.setConfigProperty(this._scope, "mbx-indoor-underground", false);
-        this._floorplanStates[this._indoorData.id].selectedLevel = undefined;
-
-        if (this._indoorData.extent) {
-            this._map.fitBounds(this._indoorData.extent, {
-                pitch: this._map.getPitch(),
-                bearing: this._map.getBearing()
-            });
         }
     }
 
@@ -391,27 +369,6 @@ class IndoorManager extends Evented<IndoorEvents> {
 
         const isUndergroundLevel = selectedLevel.levelOrder < 0;
         this._map.setConfigProperty(this._scope, "mbx-indoor-underground", isUndergroundLevel);
-
-        if (animated && selectedLevel.extent) {
-            const cameraPlacement = this._map.cameraForBounds(selectedLevel.extent, {
-                pitch: this._map.getPitch(),
-                bearing: this._map.getBearing()
-            });
-            const currentZoom = this._map.getZoom();
-            const zoomDiff = cameraPlacement.zoom ? Math.abs(currentZoom - cameraPlacement.zoom) : 0.0;
-            if (zoomDiff >= 1.0) {
-                this._map.fitBounds(selectedLevel.extent, {
-                    pitch: this._map.getPitch(),
-                    bearing: this._map.getBearing()
-                });
-            } else {
-                this._map.fitBounds(selectedLevel.extent, {
-                    pitch: this._map.getPitch(),
-                    bearing: this._map.getBearing(),
-                    zoom: currentZoom
-                });
-            }
-        }
     }
 
     //// Public functions

@@ -153,11 +153,6 @@
 
                 if (this._flattenedLevelSelector) {
                     const levels = eventData.levels;
-                
-                    const unselectedLevel = this._createElement('option', 'mapboxgl-ctrl-indoor-level-selector-level', this._levelSelector);
-                    unselectedLevel.innerText =  "Overview";
-                    unselectedLevel.setAttribute('value', "overview");
-                
                     for (let i = 0; i < eventData.buildings.length; i++) {
                         const building = eventData.buildings[i];
                         if (!building || !building.name) continue;
@@ -241,7 +236,6 @@
                 };
 
                 const groundFloor = levelsWithFloor.find(level => level.levelOrder === 0);                
-                addOption('overview', "Overview", false);
 
                 for (let i = 0; i < levelsWithFloor.length; i++) {
                     const level = levelsWithFloor[i];
