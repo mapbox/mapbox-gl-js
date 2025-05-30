@@ -2448,7 +2448,7 @@ export class Map extends Camera {
      *
      * @param {string} id The ID of the source to add. Must not conflict with existing sources.
      * @param {Object} source The source object, conforming to the
-     * Mapbox Style Specification's [source definition](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or
+     * Mapbox Style Specification's [source definition](https://docs.mapbox.com/style-spec/reference/sources/) or
      * {@link CanvasSourceOptions}.
      * @returns {Map} Returns itself to allow for method chaining.
      * @example
