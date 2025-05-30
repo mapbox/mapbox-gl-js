@@ -8,7 +8,8 @@
             "type": "ambient",
             "properties": {
                 "color": [],
-                "intensity": "0.4"
+                "intensity": "0.4",
+                "color-use-theme": "none"
             }
         },
         {
@@ -18,7 +19,8 @@
             "intensity": "0.4",
             "direction": "[200.0, 40.0]",
             "cast-shadows": "true",
-            "shadow-intensity": "0.2"
+            "shadow-intensity": "0.2",
+            "color-use-theme": "none"
         }
     ]
 }
