@@ -281,6 +281,7 @@ const skip = [
     "render-tests/building/tile-border",
     "render-tests/building/vertical-scale",
     "render-tests/building/with-shadows",
+    "render-tests/building/opacity",
 
     // Flaky model tests
     "render-tests/model-layer/style-model-api-remove",

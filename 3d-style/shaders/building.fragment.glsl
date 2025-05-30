@@ -41,11 +41,12 @@ void main() {
     color.rgb = apply_lighting_linear(color.rgb, xy_flipped_normal, shadowed_lighting_factor);
     color.rgb = mix(color.rgb, v_color.rgb, v_color.a);
     
-    color *= u_opacity;
-
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos, v_height));
 #endif
+
+    color.rgb = linearTosRGB(color.rgb);
+    color *= u_opacity;
 
 #ifdef RENDER_CUTOFF
     color *= v_cutoff_opacity;
@@ -55,7 +56,7 @@ void main() {
     color = applyCutout(color, v_height);
 #endif
 
-    glFragColor = vec4(linearTosRGB(color.rgb), color.a);
+    glFragColor = color; 
 
 #ifdef DEBUG_SHOW_NORMALS
     color.rgb = xy_flipped_normal * 0.5 + vec3(0.5, 0.5, 0.5);
