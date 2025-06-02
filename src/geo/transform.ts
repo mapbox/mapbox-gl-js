@@ -570,7 +570,7 @@ class Transform {
         }
         const height = this.cameraToCenterDistance;
         const terrainElevation = this.pixelsPerMeter * this._centerAltitude;
-        const mercatorZ = (terrainElevation + height) / this.worldSize;
+        const mercatorZ = Math.max(0, (terrainElevation + height) / this.worldSize);
 
         // MSL (Mean Sea Level) zoom describes the distance of the camera to the sea level (altitude).
         // It is used only for manipulating the camera location. The standard zoom (this._zoom)
@@ -2211,7 +2211,7 @@ class Transform {
      * @returns {number} The zoom value.
      */
     _minZoomForBounds(): number {
-        let minZoom = Math.max(0, this.scaleZoom(this.height / (this.worldMaxY - this.worldMinY)));
+        let minZoom = Math.max(0, this.scaleZoom(Math.max(0, this.height) / (this.worldMaxY - this.worldMinY)));
         if (this.maxBounds) {
             minZoom = Math.max(minZoom, this.scaleZoom(this.width / (this.worldMaxX - this.worldMinX)));
         }
@@ -2538,7 +2538,7 @@ class Transform {
     }
 
     _zoomFromMercatorZ(z: number): number {
-        return this.scaleZoom(this.cameraToCenterDistance / (z * this.tileSize));
+        return this.scaleZoom(this.cameraToCenterDistance / (Math.max(0, z) * this.tileSize));
     }
 
     // This function is helpful to approximate true zoom given a mercator height with varying ppm.
@@ -2562,7 +2562,7 @@ class Transform {
 
             const worldSize = this.tileSize * Math.pow(2, zoomMid);
             const d = this.getCameraToCenterDistance(this.projection, zoomMid, worldSize);
-            const newZoom = this.scaleZoom(d / (mercatorZ * this.tileSize));
+            const newZoom = this.scaleZoom(d / (Math.max(0, mercatorZ) * this.tileSize));
 
             const diff = Math.abs(zoomMid - newZoom);
 

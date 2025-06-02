@@ -967,6 +967,15 @@ describe('transform', () => {
         expect(transform._seaLevelZoom).toEqual(transformBefore._seaLevelZoom);
     });
 
+    test('Zoom from negative altitude is valid', () => {
+        const transform = new Transform();
+        transform.resize(200, 200);
+
+        const zoom = transform._zoomFromMercatorZ(-100);
+
+        expect(isNaN(zoom)).toBeFalsy();
+    });
+
     test('Compute zoom from camera height', () => {
         const transform = new Transform();
         transform.resize(200, 200);
