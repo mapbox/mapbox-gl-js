@@ -62,7 +62,7 @@
     "@tweakpane/core": "^2.0.5",
     "@types/jest": "^29.5.14",
     "@types/murmurhash-js": "^1.0.6",
-    "@types/node": "^22.15.21",
+    "@types/node": "^22.15.29",
     "@types/offscreencanvas": "^2019.7.3",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
