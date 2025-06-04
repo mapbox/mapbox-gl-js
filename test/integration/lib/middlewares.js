@@ -48,7 +48,15 @@ export async function writeFile(req, res) {
 }
 
 export async function tilesets(req, res) {
-    const filePath = path.join(__dirname, '..', 'tilesets', req.url);
+    const baseDir = path.join(__dirname, '..', 'tilesets');
+    const filePath = path.resolve(baseDir, `.${req.url}`);
+
+    if (!filePath.startsWith(baseDir)) {
+        res.writeHead(403, {'Content-Type': 'text/plain'});
+        res.end('Forbidden');
+        return;
+    }
+
     const fileContent = await fs.promises.readFile(filePath, 'utf8');
     const json = JSON.parse(fileContent);
 
