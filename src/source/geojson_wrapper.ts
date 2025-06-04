@@ -103,4 +103,36 @@ class GeoJSONWrapper implements VectorTile, VectorTileLayer {
     }
 }
 
+class LayeredGeoJSONTileLayerWrapper implements VectorTileLayer {
+    name: string;
+    extent: number;
+    length: number;
+    _features: Array<Feature>;
+
+    constructor(name: string, features: Array<Feature>) {
+        this.name = name;
+        this.extent = EXTENT;
+        this.length = features.length;
+        this._features = features;
+    }
+
+    feature(i: number): VectorTileFeature {
+        return new FeatureWrapper(this._features[i]);
+    }
+}
+
+export class LayeredGeoJSONWrapper extends GeoJSONWrapper {
+    override layers: {[_: string]: VectorTileLayer};
+
+    constructor(featureLayers: {[_: string]: Array<Feature>}) {
+        super([]);
+
+        this.layers = {};
+
+        for (const key in featureLayers) {
+            this.layers[key] = new LayeredGeoJSONTileLayerWrapper(key, featureLayers[key]);
+        }
+    }
+}
+
 export default GeoJSONWrapper;

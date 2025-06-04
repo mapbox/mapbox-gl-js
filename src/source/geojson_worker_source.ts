@@ -1,6 +1,6 @@
 import {getJSON} from '../util/ajax';
 import {getPerformanceMeasurement} from '../util/performance';
-import GeoJSONWrapper from './geojson_wrapper';
+import GeoJSONWrapper, {LayeredGeoJSONWrapper} from './geojson_wrapper';
 import GeoJSONRT from './geojson_rt';
 import vtpbf from 'vt-pbf';
 import Supercluster from 'supercluster';
@@ -73,7 +73,22 @@ function loadGeoJSONTile(params: WorkerSourceVectorTileRequest, callback: LoadVe
         return;
     }
 
-    const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
+    // HACK: separate elevation features into separate layer
+    const isElevationfeature = (f) => f.tags && '3d_elevation_id' in f.tags && 'source' in f.tags && f.tags.source === 'elevation';
+    const elevationFeatures = geoJSONTile.features.filter(f => isElevationfeature(f));
+
+    let geojsonWrapper: GeoJSONWrapper;
+
+    if (elevationFeatures.length > 0) {
+        const nonElevationFeatures = geoJSONTile.features.filter(f => !isElevationfeature(f));
+
+        geojsonWrapper = new LayeredGeoJSONWrapper({
+            '_geojsonTileLayer': nonElevationFeatures,
+            'hd_road_elevation': elevationFeatures
+        });
+    } else {
+        geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
+    }
 
     // Encode the geojson-vt tile into binary vector tile form.  This
     // is a convenience that allows `FeatureIndex` to operate the same way

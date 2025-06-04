@@ -1,0 +1,488 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "mapMode": "static",
+            "allowed": 0.00025,
+            "spriteFormat": "raster"
+        }
+    },
+    "center": [
+        -121.8840253,
+        37.3258416
+    ],
+    "zoom": 19,
+    "pitch": 55,
+    "bearing": -120,
+    "sources": {
+        "hd-roads": {
+            "type": "geojson",
+            "data": "local://data/elevated-features.geojson"
+        }
+    },
+    "sprite": "local://sprites/3d_intersections",
+    "lights": [
+        {
+            "id": "ambient",
+            "type": "ambient",
+            "properties": {
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.2
+            }
+        },
+        {
+            "id": "directional",
+            "type": "directional",
+            "properties": {
+                "direction": [
+                    "literal",
+                    [
+                        180,
+                        20
+                    ]
+                ],
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.8,
+                "cast-shadows": false
+            }
+        }
+    ],
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "rgb(234, 243, 240)"
+            }
+        },
+        {
+            "id": "road-base",
+            "type": "fill",
+            "source": "hd-roads",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "road"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "source_layer"
+                    ],
+                    [
+                        "hd_road_polygon"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "fill-elevation-reference": "hd-road-base"
+            },
+            "paint": {
+                "fill-color": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    16,
+                    "hsl(212, 25%, 80%)",
+                    18,
+                    "hsl(212, 25%, 71%)"
+                ]
+            }
+        },
+        {
+            "id": "road-base-bridge",
+            "type": "fill",
+            "source": "hd-roads",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "bridge"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "source_layer"
+                    ],
+                    [
+                        "hd_road_polygon"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "fill-elevation-reference": "hd-road-base"
+            },
+            "paint": {
+                "fill-color": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    16,
+                    "hsl(212, 25%, 80%)",
+                    18,
+                    "hsl(212, 25%, 71%)"
+                ]
+            }
+        },
+        {
+            "id": "road-hatched-area",
+            "type": "fill",
+            "source": "hd-roads",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "hatched_area"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "source_layer"
+                    ],
+                    [
+                        "hd_road_polygon"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "fill-elevation-reference": "hd-road-markup"
+            },
+            "paint": {
+                "fill-opacity": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    15,
+                    0,
+                    16,
+                    1
+                ],
+                "fill-pattern": [
+                    "match",
+                    [
+                        "get",
+                        "color"
+                    ],
+                    [
+                        "yellow"
+                    ],
+                    "hatched-pattern-yellow",
+                    "hatched-pattern"
+                ]
+            }
+        },
+        {
+            "id": "solid-lines",
+            "type": "line",
+            "source": "hd-roads",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "lanes"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "line_type"
+                    ],
+                    [
+                        "solid",
+                        "solid_half_arrow",
+                        "half_arrow_solid",
+                        "arrow_solid"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "source_layer"
+                    ],
+                    [
+                        "hd_road_line"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "line-elevation-reference": "hd-road-markup"
+            },
+            "paint": {
+                "line-color": [
+                    "match",
+                    [
+                        "get",
+                        "color"
+                    ],
+                    [
+                        "yellow"
+                    ],
+                    "hsl(54, 100%, 65%)",
+                    "hsl(0, 0%, 96%)"
+                ],
+                "line-width": [
+                    "interpolate",
+                    [
+                        "exponential",
+                        1.5
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    15,
+                    0,
+                    18,
+                    1.5,
+                    19,
+                    3,
+                    22,
+                    10
+                ]
+            }
+        },
+        {
+            "id": "double-lines",
+            "type": "line",
+            "source": "hd-roads",
+            "slot": "",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "lanes"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "line_type"
+                    ],
+                    [
+                        "double"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "source_layer"
+                    ],
+                    [
+                        "hd_road_line"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "line-elevation-reference": "hd-road-markup"
+            },
+            "paint": {
+                "line-color": [
+                    "match",
+                    [
+                        "get",
+                        "color"
+                    ],
+                    [
+                        "yellow"
+                    ],
+                    "hsl(54, 100%, 65%)",
+                    "hsl(0, 0%, 96%)"
+                ],
+                "line-width": [
+                    "interpolate",
+                    [
+                        "exponential",
+                        1.5
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    15,
+                    0,
+                    18,
+                    1.5,
+                    19,
+                    3,
+                    22,
+                    10
+                ],
+                "line-gap-width": 2
+            }
+        },
+        {
+            "id": "dashed-lines",
+            "type": "line",
+            "source": "hd-roads",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "lanes"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "line_type"
+                    ],
+                    [
+                        "dashed",
+                        "arrow_dashed",
+                        "long_dashed",
+                        "short_dash",
+                        "solid_dashed"
+                    ],
+                    true,
+                    false
+                ],
+                [
+                    "match",
+                    [
+                        "get",
+                        "source_layer"
+                    ],
+                    [
+                        "hd_road_line"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "line-elevation-reference": "hd-road-markup"
+            },
+            "paint": {
+                "line-color": [
+                    "match",
+                    [
+                        "get",
+                        "color"
+                    ],
+                    [
+                        "yellow"
+                    ],
+                    "hsl(54, 100%, 65%)",
+                    "hsl(0, 0%, 96%)"
+                ],
+                "line-width": [
+                    "interpolate",
+                    [
+                        "exponential",
+                        1.5
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    15,
+                    0,
+                    18,
+                    1,
+                    19,
+                    3,
+                    22,
+                    6
+                ],
+                "line-dasharray": [
+                    "step",
+                    [
+                        "zoom"
+                    ],
+                    [
+                        "literal",
+                        [
+                            14,
+                            14
+                        ]
+                    ],
+                    20,
+                    [
+                        "literal",
+                        [
+                            18,
+                            18
+                        ]
+                    ]
+                ]
+            }
+        }
+    ]
+}
