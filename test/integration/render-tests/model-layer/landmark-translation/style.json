@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.001,
+      "allowed": 0.00122,
       "height": 512,
       "operations": [
         ["wait"]
@@ -21,7 +21,7 @@
       "type": "batched-model",
       "maxzoom": 14,
       "tiles": [
-        "local://models/landmark/diffuse/{x}-{y}-{z}.b3dm"
+        "local://models/landmark/mbx/{x}-{y}-{z}.glb"
       ]
     }
   },
