@@ -3,15 +3,15 @@ import offscreenCanvasSupported from './offscreen_canvas_supported';
 
 import type {Cancelable} from '../types/cancelable';
 
-let linkEl;
+let linkEl: HTMLAnchorElement | undefined;
 
 let reducedMotionQuery: MediaQueryList;
 
 let stubTime: number | undefined;
 
-let canvas;
+let canvas: HTMLCanvasElement | undefined;
 
-let hasCanvasFingerprintNoise;
+let hasCanvasFingerprintNoise: boolean | undefined;
 
 /**
  * @private

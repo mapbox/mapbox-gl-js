@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import chalk from 'chalk';
-
+// eslint-disable-next-line import/order
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -42,7 +42,7 @@ export default function localizeURLs(style, port) {
                 }
 
                 try {
-                    styleJSON = JSON.parse(styleJSON);
+                    styleJSON = JSON.parse(styleJSON.toString());
                 } catch (error) {
                     console.log(chalk.blue(`* Error while parsing ${op[1]}: ${error}`));
                     return;
@@ -77,7 +77,7 @@ function localizeMapboxTilesetURL(url, port) {
     return url.replace(/^mapbox:\/\//, `http://localhost:${port}/tilesets/`);
 }
 
-function localizeSourceURLs(source, port) {
+export function localizeSourceURLs(source, port) {
     for (const tile in source.tiles) {
         source.tiles[tile] = localizeMapboxTilesURL(source.tiles[tile], port);
         source.tiles[tile] = localizeURL(source.tiles[tile], port);
@@ -102,7 +102,7 @@ function localizeSourceURLs(source, port) {
     }
 }
 
-function localizeStyleURLs (style, port) {
+function localizeStyleURLs(style, port) {
     for (const source in style.sources) {
         localizeSourceURLs(style.sources[source], port);
     }

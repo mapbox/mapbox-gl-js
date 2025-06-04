@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Mapbox GL JS debug page</title>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, user-scalable=no"
+        />
+        <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            html,
+            body,
+            #map {
+                height: 100%;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="map"></div>
+        <div id="config"></div>
+
+        <script src='../dist/mapbox-gl-dev.js'></script>
+        <script src='../debug/access_token_generated.js'></script>
+        <script type="module">
+            import { Pane } from "https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js";
+
+            var map = (window.map = new mapboxgl.Map({
+                container: "map",
+                zoom: 18.49,
+                center: [24.9419371, 60.1712992],
+                pitch: 76,
+                hash: true,
+                style: "mapbox://styles/mapbox/standard",
+                projection: "globe",
+                devtools: true,
+                repaint: true,
+            }));
+
+            map.on("style.load", function () {
+                map.repaint = true;
+
+                const pane = new Pane({
+                    container: document.querySelector("#config"),
+                    title: "Parameters",
+                });
+
+                const params = {
+                    lightPreset: "night",
+                    precipitationType: "snow",
+                    precipitationParametersSource: "fromStyleSpecDefaults",
+                };
+
+                let precipitation;
+
+                const precipitationParams = {
+                    revealStart: 11,
+                    revealRange: 2,
+                    snow: {
+                        density: 0.85,
+                        intensity: 1.0,
+                        centerThinning: 0.4,
+                        color: { r: 1, g: 1, b: 1 },
+                        directionAzimuth: 0,
+                        directionPolar: 50,
+                        opacity: 1.0,
+                        flakeSize: 0.71,
+                        vignetteIntensity: 0.3,
+                        vignetteColor: { r: 1, g: 1, b: 1 },
+                    },
+                    rain: {
+                        density: 1,
+                        intensity: 1,
+                        centerThinning: 0,
+                        color: { r: 0.57, g: 0.57, b: 0.57 },
+                        directionAzimuth: 0,
+                        directionPolar: 50,
+                        opacity: 0.19,
+                        dropletSizeX: 1,
+                        dropletSizeY: 10,
+                        distortionStrength: 0.5,
+                        vignetteIntensity: 0.5,
+                        vignetteColor: { r: 0.43, g: 0.43, b: 0.43 },
+                    },
+                };
+
+                const onPrecipitationChange = () => {
+                    if (params.precipitationParametersSource === "fromStyleSpecDefaults") {
+                        precipitation.disabled = true;
+                    } else {
+                        precipitation.disabled = false;
+                    }
+
+                    map.setSnow(null);
+                    map.setRain(null);
+
+                    const zoomBasedReveal = (value) => {
+                        return [
+                            "interpolate",
+                            ["linear"],
+                            ["zoom"],
+                            precipitationParams.revealStart,
+                            0.0,
+                            precipitationParams.revealStart +
+                                precipitationParams.revealRange,
+                            value,
+                        ];
+                    };
+
+                    if (params.precipitationType === "snow") {
+                        if (params.precipitationParametersSource === "fromStyleSpecDefaults") {
+                            map.setSnow({});
+                            return;
+                        }
+                        const sp = precipitationParams.snow;
+                        sp.density;
+                        map.setSnow({
+                            density: zoomBasedReveal(sp.density),
+                            intensity: sp.intensity,
+                            "center-thinning": sp.centerThinning,
+                            direction: [sp.directionAzimuth, sp.directionPolar],
+                            opacity: sp.opacity,
+                            color: `rgb(${sp.color.r * 255}, ${
+                                sp.color.g * 255
+                            }, ${sp.color.b * 255})`,
+                            "flake-size": sp.flakeSize,
+                            vignette: zoomBasedReveal(sp.vignetteIntensity),
+                            "vignette-color": `rgb(${
+                                sp.vignetteColor.r * 255
+                            }, ${sp.vignetteColor.g * 255}, ${
+                                sp.vignetteColor.b * 255
+                            })`,
+                        });
+                    } else {
+                        if (params.precipitationParametersSource === "fromStyleSpecDefaults") {
+                            map.setRain({});
+                            return;
+                        }
+
+                        const rp = precipitationParams.rain;
+
+                        map.setRain({
+                            density: zoomBasedReveal(rp.density),
+                            intensity: rp.intensity,
+                            "center-thinning": rp.centerThinning,
+                            direction: [rp.directionAzimuth, rp.directionPolar],
+                            opacity: rp.opacity,
+                            color: `rgb(${rp.color.r * 255}, ${
+                                rp.color.g * 255
+                            }, ${rp.color.b * 255})`,
+                            "droplet-size": [rp.dropletSizeX, rp.dropletSizeY],
+                            "distortion-strength": rp.distortionStrength,
+                            vignette: zoomBasedReveal(rp.vignetteIntensity),
+                            "vignette-color": `rgb(${
+                                rp.vignetteColor.r * 255
+                            }, ${rp.vignetteColor.g * 255}, ${
+                                rp.vignetteColor.b * 255
+                            })`,
+                        });
+                    }
+                };
+
+                pane.addBinding(params, "lightPreset", {
+                    options: {
+                        dawn: "dawn",
+                        day: "day",
+                        dusk: "dusk",
+                        night: "night",
+                    },
+                }).on("change", (ev) => {
+                    map.setConfigProperty("basemap", "lightPreset", ev.value);
+                });
+
+                pane.addBinding(params, "precipitationType", {
+                    options: {
+                        snow: "snow",
+                        rain: "rain",
+                    },
+                }).on("change", (ev) => {
+                    onPrecipitationChange();
+                });
+
+                pane.addBinding(params, "precipitationParametersSource", {
+                    options: {
+                        fromUI: "fromUI",
+                        fromStyleSpecDefaults: "fromStyleSpecDefaults",
+                    },
+                }).on("change", (ev) => {
+                    onPrecipitationChange();
+                });
+
+                map.setConfigProperty(
+                    "basemap",
+                    "lightPreset",
+                    params.lightPreset
+                );
+
+                precipitation = pane
+                    .addFolder({
+                        title: "Precipitation",
+                        expanded: true,
+                    })
+                    .on("change", (ev) => {
+                        onPrecipitationChange();
+                    });
+
+                precipitation.disabled = true;
+
+                precipitation.addBinding(precipitationParams, "revealStart", {
+                    min: 0,
+                    max: 20,
+                });
+
+                precipitation.addBinding(precipitationParams, "revealRange", {
+                    min: 0.01,
+                    max: 3,
+                });
+
+                const snow = precipitation.addFolder({
+                    title: "Snow",
+                    expanded: true,
+                });
+
+                snow.addBinding(precipitationParams.snow, "density", {
+                    min: 0,
+                    max: 1,
+                });
+                snow.addBinding(precipitationParams.snow, "intensity", {
+                    min: 0,
+                    max: 1,
+                });
+                snow.addBinding(precipitationParams.snow, "color", {
+                    color: { type: "float" },
+                });
+                snow.addBinding(precipitationParams.snow, "opacity", {
+                    min: 0,
+                    max: 1,
+                });
+                snow.addBinding(precipitationParams.snow, "centerThinning", {
+                    min: 0,
+                    max: 1,
+                });
+                snow.addBinding(precipitationParams.snow, "directionAzimuth", {
+                    min: 0,
+                    max: 360,
+                });
+                snow.addBinding(precipitationParams.snow, "directionPolar", {
+                    min: 0,
+                    max: 90,
+                });
+                snow.addBinding(precipitationParams.snow, "flakeSize", {
+                    min: 0,
+                    max: 5,
+                });
+                snow.addBinding(precipitationParams.snow, "vignetteIntensity", {
+                    min: 0,
+                    max: 1,
+                });
+                snow.addBinding(precipitationParams.snow, "vignetteColor", {
+                    color: { type: "float" },
+                });
+
+                const rain = precipitation.addFolder({
+                    title: "Rain",
+                    expanded: true,
+                });
+
+                rain.addBinding(precipitationParams.rain, "density", {
+                    min: 0,
+                    max: 1,
+                });
+                rain.addBinding(precipitationParams.rain, "intensity", {
+                    min: 0,
+                    max: 1,
+                });
+                rain.addBinding(precipitationParams.rain, "color", {
+                    color: { type: "float" },
+                });
+                rain.addBinding(precipitationParams.rain, "opacity", {
+                    min: 0,
+                    max: 1,
+                });
+                rain.addBinding(precipitationParams.rain, "centerThinning", {
+                    min: 0,
+                    max: 1,
+                });
+                rain.addBinding(precipitationParams.rain, "directionAzimuth", {
+                    min: 0,
+                    max: 360,
+                });
+                rain.addBinding(precipitationParams.rain, "directionPolar", {
+                    min: 0,
+                    max: 90,
+                });
+
+                rain.addBinding(precipitationParams.rain, "dropletSizeX", {
+                    min: 0.1,
+                    max: 20,
+                });
+                rain.addBinding(precipitationParams.rain, "dropletSizeY", {
+                    min: 0.1,
+                    max: 20,
+                });
+                rain.addBinding(
+                    precipitationParams.rain,
+                    "distortionStrength",
+                    {
+                        min: 0,
+                        max: 1,
+                    }
+                );
+                rain.addBinding(precipitationParams.rain, "vignetteIntensity", {
+                    min: 0,
+                    max: 1,
+                });
+                rain.addBinding(precipitationParams.rain, "vignetteColor", {
+                    color: { type: "float" },
+                });
+
+                onPrecipitationChange();
+            });
+        </script>
+    </body>
+    <style>
+        #config {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            max-height: 95%;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        #config::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        #config::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        #config::-webkit-scrollbar-thumb {
+            background: rgba(110, 110, 110);
+            border-radius: 10px;
+        }
+        #config::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(90, 90, 90);
+        }
+    </style>
+</html>

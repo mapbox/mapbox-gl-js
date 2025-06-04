@@ -2,6 +2,7 @@ import latest from '../reference/latest';
 import {deepUnbundle} from '../util/unbundle_jsonlint';
 import {createExpression} from '../expression/index';
 import {isFeatureConstant} from '../expression/is_constant';
+import assert from 'assert';
 
 import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../types/tile_id';
@@ -21,6 +22,7 @@ export type FilterExpression = (
     featureTileCoord?: Point,
     featureDistanceData?: FeatureDistanceData,
 ) => boolean;
+
 export type FeatureFilter = {
     filter: FilterExpression;
     dynamicFilter?: FilterExpression;
@@ -97,7 +99,7 @@ function createFilter(filter?: FilterSpecification, scope: string = "", options:
     let staticFilter = true;
     try {
         staticFilter = extractStaticFilter(filterExp);
-    } catch (e: any) {
+    } catch (e) {
         console.warn(
 `Failed to extract static filter. Filter will continue working, but at higher memory usage and slower framerate.
 This is most likely a bug, please report this via https://github.com/mapbox/mapbox-gl-js/issues/new?assignees=&labels=&template=Bug_report.md
@@ -109,14 +111,19 @@ ${JSON.stringify(filterExp, null, 2)}
     }
 
     // Compile the static component of the filter
-    const filterSpec = latest[`filter_${layerType}`];
-    const compiledStaticFilter = createExpression(staticFilter, filterSpec, scope, options);
-
     let filterFunc = null;
-    if (compiledStaticFilter.result === 'error') {
-        throw new Error(compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
-    } else {
-        filterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical);
+    let filterSpec = null;
+    if (layerType !== 'background' && layerType !== 'sky' && layerType !== 'slot') {
+        filterSpec = latest[`filter_${layerType}`];
+        assert(filterSpec);
+        const compiledStaticFilter = createExpression(staticFilter, filterSpec, scope, options);
+
+        if (compiledStaticFilter.result === 'error') {
+            throw new Error(compiledStaticFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            filterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID) => compiledStaticFilter.value.evaluate(globalProperties, feature, {}, canonical);
+        }
     }
 
     // If the static component is not equal to the entire filter then we have a dynamic component
@@ -129,6 +136,7 @@ ${JSON.stringify(filterExp, null, 2)}
         if (compiledDynamicFilter.result === 'error') {
             throw new Error(compiledDynamicFilter.value.map(err => `${err.key}: ${err.message}`).join(', '));
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             dynamicFilterFunc = (globalProperties: GlobalProperties, feature: Feature, canonical?: CanonicalTileID, featureTileCoord?: Point, featureDistanceData?: FeatureDistanceData) => compiledDynamicFilter.value.evaluate(globalProperties, feature, {}, canonical, undefined, undefined, featureTileCoord, featureDistanceData);
             needFeature = !isFeatureConstant(compiledDynamicFilter.value.expression);
         }
@@ -145,6 +153,7 @@ ${JSON.stringify(filterExp, null, 2)}
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractStaticFilter(filter: any): any {
     if (!isDynamicFilter(filter)) {
         return filter;
@@ -162,6 +171,7 @@ function extractStaticFilter(filter: any): any {
     return result;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function collapseDynamicBooleanExpressions(expression: any): any {
     if (!Array.isArray(expression)) {
         return expression;
@@ -171,6 +181,7 @@ function collapseDynamicBooleanExpressions(expression: any): any {
     if (collapsed === true) {
         return collapsed;
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return collapsed.map((subExpression) => collapseDynamicBooleanExpressions(subExpression));
     }
 }
@@ -184,6 +195,7 @@ function collapseDynamicBooleanExpressions(expression: any): any {
  *
  * @param {Array<any>} filter the filter expression mutated in-place.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function unionDynamicBranches(filter: any) {
     let isBranchingDynamically = false;
     const branches = [];
@@ -221,6 +233,7 @@ function unionDynamicBranches(filter: any) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isDynamicFilter(filter: any): boolean {
     // Base Cases
     if (!Array.isArray(filter)) {
@@ -256,6 +269,7 @@ const dynamicConditionExpressions = new Set([
     'to-boolean'
 ]);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function collapsedExpression(expression: any): any {
     if (dynamicConditionExpressions.has(expression[0])) {
 
@@ -274,6 +288,7 @@ function compare(a: number, b: number) {
     return a < b ? -1 : a > b ? 1 : 0;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function geometryNeeded(filter: Array<any> | boolean) {
     if (!Array.isArray(filter)) return false;
     if (filter[0] === 'within' || filter[0] === 'distance') return true;
@@ -283,6 +298,7 @@ function geometryNeeded(filter: Array<any> | boolean) {
     return false;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertFilter(filter?: Array<any> | null): unknown {
     if (!filter) return true;
     const op = filter[0];
@@ -307,22 +323,28 @@ function convertFilter(filter?: Array<any> | null): unknown {
     return converted;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertComparisonOp(property: string, value: any, op: string) {
     switch (property) {
     case '$type':
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [`filter-type-${op}`, value];
     case '$id':
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [`filter-id-${op}`, value];
     default:
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [`filter-${op}`, property, value];
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertDisjunctionOp(filters: Array<Array<any>>) {
 // @ts-expect-error - TS2769 - No overload matches this call.
     return ['any'].concat(filters.map(convertFilter));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertInOp(property: string, values: Array<any>) {
     if (values.length === 0) { return false; }
     switch (property) {

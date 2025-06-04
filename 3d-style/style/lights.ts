@@ -47,8 +47,7 @@ class Lights<P extends LightProps> extends Evented {
     }
 
     get(): LightsSpecification {
-        // @ts-expect-error
-        this._options.properties = this._transitionable.serialize();
+        this._options.properties = this._transitionable.serialize() as LightsSpecification['properties'];
         return this._options;
     }
 

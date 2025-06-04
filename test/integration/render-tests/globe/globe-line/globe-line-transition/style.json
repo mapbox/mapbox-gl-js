@@ -1,0 +1,73 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "height": 300,
+            "width": 200,
+            "operations": [
+                [
+                    "addImage",
+                    "marker",
+                    "./image/marker.png",
+                    {
+                      "pixelRatio": 1.0
+                    }
+                ],
+                [
+                    "addLayer",
+                    {
+                        "id": "symbol",
+                        "type": "symbol",
+                        "source": "geojson",
+                        "layout": {
+                            "icon-image": "marker",
+                            "symbol-placement": "line",
+                            "symbol-spacing": 12.0
+                        }
+                    }
+                ],
+                ["wait"],
+                ["setProjection", "globe"],
+                ["wait"],
+                ["setZoom", 3.2],
+                ["wait"],
+                ["setZoom", 5.5],
+                ["wait"]
+            ]
+        }
+    },
+    "center": [
+        -73.9987,
+        42.0
+    ],
+    "zoom": 0,
+    "pitch": 0,
+    "bearing": 0,
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -74.00438542864366,
+                        40.71275107696869
+                    ],
+                    [
+                        -72.658680,
+                        46.243919
+                    ]
+                ]
+            }
+        }
+    },
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "gray"
+            }
+        }
+    ]
+}

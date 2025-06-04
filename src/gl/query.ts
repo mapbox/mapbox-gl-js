@@ -21,16 +21,14 @@ export class OcclusionQuery {
     }
 
     isResultAvailable(): boolean {
-        const resultReady: any =  this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT_AVAILABLE);
+        const resultReady: boolean = this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT_AVAILABLE);
 
         return resultReady;
     }
 
     consumeResult(): number {
-        const samplesPassed = this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT);
-
+        const samplesPassed: number = this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT);
         this._isFree = true;
-
         return samplesPassed;
     }
 

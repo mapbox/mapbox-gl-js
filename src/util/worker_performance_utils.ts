@@ -1,5 +1,5 @@
 import Dispatcher from './dispatcher';
-import getWorkerPool from './global_worker_pool';
+import {getGlobalWorkerPool as getWorkerPool} from './worker_pool_factory';
 import {PerformanceUtils} from './performance';
 
 import type {Callback} from '../types/callback';
@@ -15,11 +15,11 @@ export const WorkerPerformanceUtils = {
 
         const createTime = performance.getEntriesByName('create', 'mark')[0].startTime;
 
-        dispatcher.broadcast('getWorkerPerformanceMetrics', {}, (err, results: WorkerPerformanceMetrics[]) => {
+        dispatcher.broadcast('getWorkerPerformanceMetrics', undefined, (err, results: WorkerPerformanceMetrics[]) => {
             dispatcher.remove();
             if (err) return callback(err);
 
-            const sums: Record<string, any> = {};
+            const sums: Record<string, number> = {};
 
             for (const result of results) {
                 for (const measure of result.entries) {

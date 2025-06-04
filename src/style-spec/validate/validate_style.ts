@@ -3,6 +3,7 @@ import latestStyleSpec from '../reference/latest';
 import validateGlyphsURL from './validate_glyphs_url';
 
 import type ValidationError from '../error/validation_error';
+import type {StyleReference} from '../reference/latest';
 import type {ValidationOptions} from './validate';
 import type {StyleSpecification} from '../types';
 
@@ -12,7 +13,7 @@ type StyleValidationOptions = {
 
 export default function validateStyle(
     style: StyleSpecification,
-    styleSpec: any = latestStyleSpec,
+    styleSpec: StyleReference = latestStyleSpec,
     options: StyleValidationOptions = {},
 ): ValidationError[] {
     const errors = validate({
@@ -21,7 +22,6 @@ export default function validateStyle(
         valueSpec: styleSpec.$root,
         styleSpec,
         style,
-        // @ts-expect-error - TS2353 - Object literal may only specify known properties, and 'objectElementValidators' does not exist in type 'ValidationOptions'.
         objectElementValidators: {
             glyphs: validateGlyphsURL,
             '*': () => []

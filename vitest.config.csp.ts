@@ -1,13 +1,12 @@
-import {defineConfig, mergeConfig} from 'vite';
+import {defineConfig, mergeConfig} from 'vitest/config';
 import baseConfig from './vitest.config.base';
 
 export default mergeConfig(baseConfig, defineConfig({
     test: {
         browser: {
-            name: 'chromium',
-            provider: 'playwright',
-            enabled: true,
-            headless: true,
+            instances: [
+                {browser: 'chromium'},
+            ],
         },
         include: ['test/integration/csp-tests/**/*.test.ts'],
         testTimeout: 10_000,

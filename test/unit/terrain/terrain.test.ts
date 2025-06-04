@@ -1,17 +1,17 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {
     describe,
     test,
     beforeAll,
     beforeEach,
-    afterEach,
-    afterAll,
     expect,
     waitFor,
     vi,
     createMap,
+    doneAsync,
 } from '../../util/vitest';
-import {getNetworkWorker, http, HttpResponse, getPNGResponse} from '../../util/network';
+import {getPNGResponse} from '../../util/network';
 import {extend} from '../../../src/util/util';
 import DEMData from '../../../src/data/dem_data';
 import {RGBAImage} from '../../../src/util/image';
@@ -31,7 +31,6 @@ import browser from '../../../src/util/browser';
 import * as DOM from '../../../src/util/dom';
 import {Map, AVERAGE_ELEVATION_SAMPLING_INTERVAL, AVERAGE_ELEVATION_EASE_TIME} from '../../../src/ui/map';
 import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock';
-// eslint-disable-next-line import/no-unresolved
 import vectorStub from '../../util/fixtures/10/301/384.pbf?arraybuffer';
 
 function createStyle() {
@@ -97,20 +96,6 @@ const createNegativeGradientDEM = () => {
     return new DEMData(0, new RGBAImage({height: TILE_SIZE + 2, width: TILE_SIZE + 2}, pixels), "mapbox");
 };
 
-let networkWorker: any;
-
-beforeAll(async () => {
-    networkWorker = await getNetworkWorker(window);
-});
-
-afterEach(() => {
-    networkWorker.resetHandlers();
-});
-
-afterAll(() => {
-    networkWorker.stop();
-});
-
 describe('Elevation', () => {
     const dem = createGradientDEM();
 
@@ -143,7 +128,7 @@ describe('Elevation', () => {
         let map: any;
 
         beforeAll(async () => {
-            map = createMap({zoom: 15.1, center:[11.594417, 48.095821]});
+            map = createMap({zoom: 15.1, center: [11.594417, 48.095821]});
             await waitFor(map, 'style.load');
             setMockElevationTerrain(map, zeroDem, 512, 11);
             await waitFor(map, 'render');
@@ -195,39 +180,13 @@ describe('Elevation', () => {
     describe('interpolation', () => {
         let map: any, cache: any, dx: any, coord: any;
 
-        beforeEach(() => {
-            networkWorker.use(
-                ...[
-                    'http://example.com/10/1023/511.png',
-                    'http://example.com/10/0/511.png',
-                    'http://example.com/10/0/512.png',
-                    'http://example.com/10/1023/512.png'
-                ].map(path => {
-                    return http.get(path, async () => {
-                        return new HttpResponse(vectorStub);
-                    });
-                })
-            );
-        });
-
-        beforeAll(async () => {
+        beforeEach(async () => {
+            // eslint-disable-next-line @typescript-eslint/require-await
+            vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                return new window.Response(vectorStub);
+            });
             map = createMap({
-                style: extend(createStyle(), {
-                    sources: {
-                        mapbox: {
-                            type: 'vector',
-                            minzoom: 1,
-                            maxzoom: 10,
-                            tiles: ['http://example.com/{z}/{x}/{y}.png']
-                        }
-                    },
-                    layers: [{
-                        id: 'layerId1',
-                        type: 'circle',
-                        source: 'mapbox',
-                        'source-layer': 'sourceLayer'
-                    }]
-                })
+                style: createStyle()
             });
 
             await waitFor(map, 'style.load');
@@ -249,7 +208,7 @@ describe('Elevation', () => {
                 callback(null);
             };
             map.setTerrain({"source": "mapbox-dem"});
-            await waitFor(map, 'render');
+            await waitFor(map, 'load');
             cache = map.style.getOwnSourceCache('mapbox-dem');
 
             const tilesAtTileZoom = 1 << 14;
@@ -313,7 +272,10 @@ describe('Elevation', () => {
 
     describe('elevation.isDataAvailableAtPoint', () => {
         let map: any;
-        beforeAll(async () => {
+        beforeEach(async () => {
+            vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                return new window.Response(await getPNGResponse());
+            });
             map = createMap();
             await waitFor(map, 'style.load');
             map.addSource('mapbox-dem', {
@@ -351,6 +313,9 @@ describe('Elevation', () => {
     });
 
     test('map._updateAverageElevation', async () => {
+        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            return new window.Response(await getPNGResponse());
+        });
         const map = createMap({
             style: extend(createStyle(), {
                 layers: [{
@@ -524,7 +489,8 @@ describe('Elevation', () => {
     describe('mapbox-gl-js-internal#281', () => {
         let map: any;
 
-        beforeAll(async () => {
+        beforeEach(async () => {
+            const {wait, withAsync} = doneAsync();
             const data = {
                 "type": "FeatureCollection",
                 "features": [{
@@ -536,18 +502,15 @@ describe('Elevation', () => {
                     }
                 }]
             };
+            vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                return new window.Response(await getPNGResponse());
+            });
             map = createMap({
                 style: {
                     version: 8,
                     center: [85, 85],
                     zoom: 2.1,
                     sources: {
-                        mapbox: {
-                            type: 'vector',
-                            minzoom: 1,
-                            maxzoom: 10,
-                            tiles: ['http://example.com/{z}/{x}/{y}.png']
-                        },
                         'mapbox-dem': {
                             type: "raster-dem",
                             tiles: ['http://example.com/{z}/{x}/{y}.png'],
@@ -565,46 +528,46 @@ describe('Elevation', () => {
                 }
             });
 
-            await new Promise(resolve => {
-                map.on('style.load', () => {
-                    map.addSource('trace', {type: 'geojson', data});
-                    map.addLayer({
-                        'id': 'trace',
-                        'type': 'line',
-                        'source': 'trace',
-                        'paint': {
-                            'line-color': 'yellow',
-                            'line-opacity': 0.75,
-                            'line-width': 5
+            map.on('style.load', withAsync((_, doneRef) => {
+                map.addSource('trace', {type: 'geojson', data});
+                map.addLayer({
+                    'id': 'trace',
+                    'type': 'line',
+                    'source': 'trace',
+                    'paint': {
+                        'line-color': 'yellow',
+                        'line-opacity': 0.75,
+                        'line-width': 5
+                    }
+                });
+                const cache = map.style.getOwnSourceCache('mapbox-dem');
+                cache._loadTile = (tile, callback) => {
+                    const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                    tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                    tile.needsHillshadePrepare = true;
+                    tile.needsDEMTextureUpload = true;
+                    tile.state = 'loaded';
+                    callback(null);
+                };
+                cache.used = cache._sourceLoaded = true;
+                map.setTerrain({"source": "mapbox-dem"});
+                map.once('render', () => {
+                    map._updateTerrain();
+                    map.painter.style.on('data', (event) => {
+                        if (event.sourceCacheId === 'other:trace') {
+                            doneRef.resolve();
                         }
                     });
-                    const cache = map.style.getOwnSourceCache('mapbox-dem');
-                    cache._loadTile = (tile, callback) => {
-                        const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
-                        tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
-                        tile.needsHillshadePrepare = true;
-                        tile.needsDEMTextureUpload = true;
-                        tile.state = 'loaded';
-                        callback(null);
-                    };
+                    const cache = map.style.getOwnSourceCache('trace');
+                    cache.transform = map.painter.transform;
+                    cache._addTile(new OverscaledTileID(0, 0, 0, 0, 0));
+                    cache.onAdd();
+                    cache.reload();
                     cache.used = cache._sourceLoaded = true;
-                    map.setTerrain({"source": "mapbox-dem"});
-                    map.once('render', () => {
-                        map._updateTerrain();
-                        map.painter.style.on('data', (event) => {
-                            if (event.sourceCacheId === 'other:trace') {
-                                resolve();
-                            }
-                        });
-                        const cache = map.style.getOwnSourceCache('trace');
-                        cache.transform = map.painter.transform;
-                        cache._addTile(new OverscaledTileID(0, 0, 0, 0, 0));
-                        cache.onAdd();
-                        cache.reload();
-                        cache.used = cache._sourceLoaded = true;
-                    });
                 });
-            });
+            }));
+
+            await wait;
         });
 
         test('Source other:trace is cleared from cache', () => {
@@ -614,11 +577,9 @@ describe('Elevation', () => {
     });
 
     test('mapbox-gl-js-internal#349', async () => {
-        networkWorker.use(
-            http.get('http://example.com/0/0/0.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            })
-        );
+        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            return new window.Response(await getPNGResponse());
+        });
 
         const map = createMap({
             style: {
@@ -658,55 +619,49 @@ describe('Elevation', () => {
 
     describe('mapbox-gl-js-internal#32', () => {
         let map: any, tr: any;
-        beforeAll(async () => {
+        beforeEach(async () => {
+            const {withAsync, wait} = doneAsync();
+            // eslint-disable-next-line @typescript-eslint/require-await
+            vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                return new window.Response(vectorStub);
+            });
             map = createMap({
                 style: {
                     version: 8,
                     center: [85, 85],
                     zoom: 2.1,
+                    layers: [],
                     sources: {
-                        mapbox: {
-                            type: 'vector',
-                            minzoom: 1,
-                            maxzoom: 10,
-                            tiles: ['http://example.com/{z}/{x}/{y}.png']
-                        },
                         'mapbox-dem': {
                             type: "raster-dem",
                             tiles: ['http://example.com/{z}/{x}/{y}.png'],
                             tileSize: 512,
                             maxzoom: 14
                         }
-                    },
-                    layers: [{
-                        id: 'layerId1',
-                        type: 'circle',
-                        source: 'mapbox',
-                        'source-layer': 'sourceLayer'
-                    }]
+                    }
                 }
             });
 
-            await new Promise(resolve => {
-                map.on('style.load', () => {
-                    const cache = map.style.getOwnSourceCache('mapbox-dem');
-                    cache._loadTile = (tile, callback) => {
-                        const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
-                        tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
-                        tile.needsHillshadePrepare = true;
-                        tile.needsDEMTextureUpload = true;
-                        tile.state = 'loaded';
-                        callback(null);
-                    };
-                    cache.used = cache._sourceLoaded = true;
-                    tr = map.painter.transform.clone();
-                    map.setTerrain({"source": "mapbox-dem"});
-                    map.once('render', () => {
-                        map._updateTerrain();
-                        resolve();
-                    });
+            map.on('style.load', withAsync((_, doneRef) => {
+                const cache = map.style.getOwnSourceCache('mapbox-dem');
+                cache._loadTile = (tile, callback) => {
+                    const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                    tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                    tile.needsHillshadePrepare = true;
+                    tile.needsDEMTextureUpload = true;
+                    tile.state = 'loaded';
+                    callback(null);
+                };
+                cache.used = cache._sourceLoaded = true;
+                tr = map.painter.transform.clone();
+                map.setTerrain({"source": "mapbox-dem"});
+                map.once('render', () => {
+                    map._updateTerrain();
+                    doneRef.resolve();
                 });
-            });
+            }));
+
+            await wait;
         });
 
         test('center is not further constrained', () => {
@@ -859,7 +814,11 @@ describe('Drag pan ortho', () => {
         expect(Math.abs(actual - expected) < epsilon).toBeTruthy();
     };
 
-    beforeAll(async () => {
+    beforeEach(async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response(vectorStub);
+        });
         map = createInteractiveMap();
 
         await waitFor(map, 'style.load');
@@ -951,6 +910,10 @@ describe('Negative Elevation', () => {
     let map: any, cache: any;
 
     beforeAll(async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            return new window.Response(vectorStub);
+        });
         map = createMap({
             style: createStyle()
         });
@@ -1172,7 +1135,13 @@ describe('Vertex morphing', () => {
 describe('Render cache efficiency', () => {
     describe('Optimized for terrain, various efficiency', () => {
         let map: any;
-        beforeAll(async () => {
+        beforeEach(async () => {
+            // Stub console.warn to prevent test fail
+            vi.spyOn(console, 'warn').mockImplementation(() => {});
+            // eslint-disable-next-line @typescript-eslint/require-await
+            vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                return new window.Response(vectorStub);
+            });
             map = createMap({
                 style: {
                     version: 8,
@@ -1216,11 +1185,6 @@ describe('Render cache efficiency', () => {
                 'id': 'background',
                 'type': 'background'
             });
-        });
-
-        beforeEach(() => {
-            // Stub console.warn to prevent test fail
-            vi.spyOn(console, 'warn').mockImplementation(() => {});
         });
 
         test('Cache efficiency 1', () => {
@@ -1314,8 +1278,13 @@ describe('Render cache efficiency', () => {
 
     describe('Optimized for terrain, 100% efficiency', () => {
         let map: any;
-        beforeAll(async () => {
-
+        beforeEach(async () => {
+            // Stub console.warn to prevent test fail
+            vi.spyOn(console, 'warn').mockImplementation(() => {});
+            // eslint-disable-next-line @typescript-eslint/require-await
+            vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                return new window.Response(vectorStub);
+            });
             map = createMap({
                 style: {
                     version: 8,
@@ -1359,11 +1328,6 @@ describe('Render cache efficiency', () => {
                 'id': 'background',
                 'type': 'background'
             });
-        });
-
-        beforeEach(() => {
-            // Stub console.warn to prevent test fail
-            vi.spyOn(console, 'warn').mockImplementation(() => {});
         });
 
         test('Cache efficiency 1', () => {
@@ -1494,6 +1458,10 @@ describe('Marker interaction and raycast', () => {
         let terrainTop: any, terrainTopLngLat: any;
 
         beforeAll(async () => {
+            // eslint-disable-next-line @typescript-eslint/require-await
+            vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                return new window.Response(vectorStub);
+            });
             map.addSource('mapbox-dem', {
                 "type": "raster-dem",
                 "tiles": ['http://example.com/{z}/{x}/{y}.png'],
@@ -1591,6 +1559,10 @@ describe('Marker interaction and raycast', () => {
 
 describe('terrain getBounds', () => {
     test('should has correct coordinates of center', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            return new window.Response(vectorStub);
+        });
         const map = createMap({
             style: extend(createStyle(), {
                 layers: [{
@@ -1684,14 +1656,14 @@ describe('terrain getBounds', () => {
         expect(map.transform.elevation).toBeTruthy();
         const bounds = map.getBounds();
         expect(bounds.getNorth().toFixed(6)).toBe(MAX_MERCATOR_LATITUDE.toFixed(6));
-        expect(toFixed(bounds.toArray())).toStrictEqual(toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]]));
+        expect(toFixed(bounds.toArray())).toStrictEqual(toFixed([[-23.3484820899, 77.6464759596], [23.3484820899, 85.0511287798]]));
 
         map.setBearing(180);
         map.setCenter({lng: 0, lat: -90});
 
         const sBounds = map.getBounds();
         expect(sBounds.getSouth().toFixed(6)).toBe((-MAX_MERCATOR_LATITUDE).toFixed(6));
-        expect(toFixed(sBounds.toArray())).toStrictEqual(toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]]));
+        expect(toFixed(sBounds.toArray())).toStrictEqual(toFixed([[-23.3484820899, -85.0511287798], [23.3484820899, -77.6464759596]]));
     });
 
     test("Does not break with no visible DEM tiles (#10610)", async () => {
@@ -1725,6 +1697,10 @@ describe('terrain getBounds', () => {
 });
 
 test('terrain recursively loads parent tiles on 404', async () => {
+    // eslint-disable-next-line @typescript-eslint/require-await
+    vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+        return new window.Response(vectorStub);
+    });
     const style = createStyle();
     const map = createMap({style, center: [0, 0], zoom: 16});
 
@@ -1785,6 +1761,11 @@ test('terrain recursively loads parent tiles on 404', async () => {
 
 describe('#hasCanvasFingerprintNoise', () => {
     test('Dynamic terrain', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            return new window.Response(vectorStub);
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
         vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
 
@@ -1807,6 +1788,11 @@ describe('#hasCanvasFingerprintNoise', () => {
     });
 
     test('Terrain in Style', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            return new window.Response(vectorStub);
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
         vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
 
@@ -1835,6 +1821,11 @@ describe('#hasCanvasFingerprintNoise', () => {
     });
 
     test('Terrain in Style fragment', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            return new window.Response(vectorStub);
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
         vi.spyOn(browser, 'hasCanvasFingerprintNoise').mockImplementation(() => true);
 

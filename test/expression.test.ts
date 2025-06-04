@@ -1,17 +1,21 @@
+// eslint-disable-next-line import/extensions
 import {run} from './integration/lib/expression';
 import {createPropertyExpression} from '../src/style-spec/expression/index';
 import {isFunction} from '../src/style-spec/function/index';
 import convertFunction from '../src/style-spec/function/convert';
 import {toString} from '../src/style-spec/expression/types';
+// eslint-disable-next-line import/extensions
 import ignores from './ignores/all';
 import {CanonicalTileID} from '../src/source/tile_id';
 import MercatorCoordinate from '../src/geo/mercator_coordinate';
 import tileTransform, {getTilePoint} from '../src/geo/projection/tile_transform';
 import {getProjection} from '../src/geo/projection/index';
-
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const projection = getProjection({name: 'mercator'});
+
+// @ts-expect-error - DOMMatrix is not defined in Node.js
+global.DOMMatrix = class {};
 
 function getPoint(coord, canonical) {
     const tileTr = tileTransform(canonical, projection);
@@ -116,7 +120,7 @@ run('js', {ignores, tests}, (fixture) => {
 
         for (const input of fixture.inputs || []) {
             try {
-                const feature = {properties: input[1].properties || {}};
+                const feature = {properties: input[1].properties || {}} as GeoJSON.Feature;
                 availableImages = input[0].availableImages || [];
                 if ('canonicalID' in input[0]) {
                     const id = input[0].canonicalID;
@@ -156,7 +160,7 @@ run('js', {ignores, tests}, (fixture) => {
         }
     };
 
-    const result = {compiled: {}, recompiled: {}};
+    const result = {compiled: {}, recompiled: {}} as {compiled: any, recompiled: any, outputs: unknown, serialized: unknown, roundTripOutputs: unknown};
     const expression = (() => {
         if (isFunction(fixture.expression)) {
             return createPropertyExpression(convertFunction(fixture.expression, spec), spec);
@@ -165,8 +169,9 @@ run('js', {ignores, tests}, (fixture) => {
         }
     })();
 
-    result.outputs = evaluateExpression(expression, result.compiled, {}, availableImages);
+    result.outputs = evaluateExpression(expression, result.compiled);
     if (expression.result === 'success') {
+        // @ts-expect-error - Property '_styleExpression' does not exist on type 'StylePropertyExpression'.
         result.serialized = expression.value._styleExpression.expression.serialize();
         result.roundTripOutputs = evaluateExpression(
             createPropertyExpression(result.serialized, spec),
@@ -177,5 +182,6 @@ run('js', {ignores, tests}, (fixture) => {
         result.recompiled.type = result.compiled.type;
     }
 
-    return result;
+    // Narrow down result to JSON
+    return JSON.parse(JSON.stringify(result));
 });

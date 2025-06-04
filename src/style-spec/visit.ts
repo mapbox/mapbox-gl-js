@@ -11,16 +11,18 @@ import type {
 function getPropertyReference(propertyName: string): StylePropertySpecification {
     for (let i = 0; i < Reference.layout.length; i++) {
         for (const key in Reference[Reference.layout[i]]) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             if (key === propertyName) return Reference[Reference.layout[i]][key];
         }
     }
     for (let i = 0; i < Reference.paint.length; i++) {
         for (const key in Reference[Reference.paint[i]]) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             if (key === propertyName) return Reference[Reference.paint[i]][key];
         }
     }
 
-    return null as any;
+    return null;
 }
 
 export function eachSource(style: StyleSpecification, callback: (_: SourceSpecification) => void) {
@@ -57,7 +59,7 @@ export function eachProperty(
 ) {
     function inner(layer: LayerSpecification, propertyType: 'paint' | 'layout') {
         if (layer.type === 'slot' || layer.type === 'clip') return;
-        const properties = (layer[propertyType] as any);
+        const properties = layer[propertyType];
         if (!properties) return;
         Object.keys(properties).forEach((key) => {
             callback({

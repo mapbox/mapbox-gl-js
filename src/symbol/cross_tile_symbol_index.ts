@@ -1,12 +1,12 @@
 import EXTENT from '../style-spec/data/extent';
 import KDBush from 'kdbush';
 
-import type {SymbolInstanceArray} from '../data/array_types';
-import type Projection from '../geo/projection/projection';
-import type {OverscaledTileID} from '../source/tile_id';
-import type SymbolBucket from '../data/bucket/symbol_bucket';
-import type StyleLayer from '../style/style_layer';
 import type Tile from '../source/tile';
+import type Projection from '../geo/projection/projection';
+import type SymbolBucket from '../data/bucket/symbol_bucket';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
+import type {OverscaledTileID} from '../source/tile_id';
+import type {SymbolInstanceArray} from '../data/array_types';
 
 /*
     The CrossTileSymbolIndex generally works on the assumption that
@@ -25,7 +25,7 @@ import type Tile from '../source/tile';
 // Round anchor positions to roughly 4 pixel grid
 const roundingFactor = 512 / EXTENT / 2;
 
-class TileLayerIndex {
+export class TileLayerIndex {
     tileID: OverscaledTileID;
     bucketInstanceId: number;
     index: KDBush;
@@ -81,7 +81,9 @@ class TileLayerIndex {
 
             // Return any symbol with the same keys whose coordinates are within 1
             // grid unit. (with a 4px grid, this covers a 12px by 12px area)
-            const matchedIds = this.index.range(x - tolerance, y - tolerance, x + tolerance, y + tolerance);
+            // Since KDBush.range does not guarantee that returned ids will be in order of insertion,
+            // we need to sort them to keep a consistent crossTileID for symbol instances when a collision is found
+            const matchedIds = this.index.range(x - tolerance, y - tolerance, x + tolerance, y + tolerance).sort((a, b) => a - b);
             for (const id of matchedIds) {
                 const crossTileID = this.crossTileIDs[id];
                 if (this.keys[id] === key && !zoomCrossTileIDs.has(crossTileID)) {
@@ -128,7 +130,7 @@ class CrossTileSymbolLayerIndex {
         if (wrapDelta !== 0) {
             for (const zoom in this.indexes) {
                 const zoomIndexes = this.indexes[zoom];
-                const newZoomIndex: Record<string, any> = {};
+                const newZoomIndex: Record<string, TileLayerIndex> = {};
                 for (const key in zoomIndexes) {
                     // change the tileID's wrap and add it to a new index
                     const index = zoomIndexes[key];
@@ -244,7 +246,7 @@ class CrossTileSymbolIndex {
     }
 
     addLayer(
-        styleLayer: StyleLayer,
+        styleLayer: TypedStyleLayer,
         tiles: Array<Tile>,
         lng: number,
         projection: Projection,
@@ -255,6 +257,7 @@ class CrossTileSymbolIndex {
         }
 
         let symbolBucketsChanged = false;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const currentBucketIDs: Record<string, any> = {};
 
         if (projection.name !== 'globe') {
@@ -284,6 +287,7 @@ class CrossTileSymbolIndex {
     }
 
     pruneUnusedLayers(usedLayers: Array<string>) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const usedLayerMap: Record<string, any> = {};
         usedLayers.forEach((usedLayer) => {
             usedLayerMap[usedLayer] = true;

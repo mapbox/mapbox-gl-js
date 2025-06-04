@@ -10,14 +10,17 @@ import type {LayerSpecification} from '../../style-spec/types';
 import type Texture from '../../render/texture';
 import type SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 export const COLOR_RAMP_RES = 256;
 export const COLOR_MIX_FACTOR = (Math.pow(COLOR_RAMP_RES, 2) - 1) / (255 * COLOR_RAMP_RES * (COLOR_RAMP_RES + 3));
 
 class RasterStyleLayer extends StyleLayer {
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override type: 'raster';
+
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     colorRamp: RGBAImage;
     colorRampTexture: Texture | null | undefined;
@@ -39,7 +42,7 @@ class RasterStyleLayer extends StyleLayer {
         this._curRampRange = [NaN, NaN];
     }
 
-    getProgramIds(): Array<string> {
+    override getProgramIds(): ProgramName[] {
         return ['raster'];
     }
 
@@ -48,12 +51,11 @@ class RasterStyleLayer extends StyleLayer {
         return !!expr.value;
     }
 
-    tileCoverLift(): number {
-
+    override tileCoverLift(): number {
         return this.paint.get('raster-elevation');
     }
 
-    isDraped(sourceCache?: SourceCache | null): boolean {
+    override isDraped(sourceCache?: SourceCache | null): boolean {
         // Special handling for raster, where the drapeability depends on the source
         if (sourceCache && sourceCache._source instanceof ImageSource) {
             // If tile ID is missing, it's rendered outside of the tile pyramid (eg. poles)
@@ -64,7 +66,7 @@ class RasterStyleLayer extends StyleLayer {
         return this.paint.get('raster-elevation') === 0.0;
     }
 
-    _handleSpecialPaintPropertyUpdate(name: string) {
+    override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'raster-color' || name === 'raster-color-range') {
             // Force recomputation
             this._curRampRange = [NaN, NaN];

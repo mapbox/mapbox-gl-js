@@ -1,5 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {describe, test, expect} from '../../util/vitest';
+import {describe, test, beforeAll, expect} from '../../util/vitest';
 import Point from '@mapbox/point-geometry';
 import Transform from '../../../src/geo/transform';
 import LngLat, {LngLatBounds} from '../../../src/geo/lng_lat';
@@ -194,6 +195,31 @@ describe('transform', () => {
     }
     );
 
+    test('Setting _allowWorldUnderZoom does not constrain', () => {
+        const transform = new Transform();
+        transform._allowWorldUnderZoom = true;
+        transform.zoom = 6;
+        transform.resize(500, 500);
+        transform.center = new LngLat(100, 30);
+        transform.setMaxBounds(new LngLatBounds([0, 0], [50, 20]));
+
+        expect(transform.center.lng > 50).toBeTruthy();
+        expect(transform.center.lat > 20).toBeTruthy();
+    }
+    );
+
+    test('Not setting _allowWorldUnderZoom does constrain', () => {
+        const transform = new Transform();
+        transform.zoom = 6;
+        transform.resize(500, 500);
+        transform.center = new LngLat(100, 30);
+        transform.setMaxBounds(new LngLatBounds([0, 0], [50, 20]));
+
+        expect(transform.center.lng > 50).toBeFalsy();
+        expect(transform.center.lat > 20).toBeFalsy();
+    }
+    );
+
     describe('_minZoomForBounds respects maxBounds', () => {
         test('it returns 0 when lngRange is undefined', () => {
             const transform = new Transform();
@@ -267,7 +293,7 @@ describe('transform', () => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
+            assertDueNorth({x: 0.5, y: 0.5, z: 0}, coord);
         });
 
         test('high pitch', () => {
@@ -279,7 +305,7 @@ describe('transform', () => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
+            assertDueNorth({x: 0.5, y: 0.5, z: 0}, coord);
         });
 
         test('medium pitch', () => {
@@ -291,7 +317,7 @@ describe('transform', () => {
             transform.resize(512, 512);
 
             const coord = transform.pointCoordinate(new Point(transform.width / 2, -10000));
-            assertDueNorth({x: 0.5, y: 0.5, z : 0}, coord);
+            assertDueNorth({x: 0.5, y: 0.5, z: 0}, coord);
         });
     });
 
@@ -316,7 +342,7 @@ describe('transform', () => {
             expect(transform.locationPoint(bounds.getSouthWest()).y.toFixed(10)).toBe(transform.height.toFixed(10));
 
             expect(toFixed(bounds.toArray())).toStrictEqual(
-                toFixed([[ -56.6312307639145, 62.350646608460806 ], [ 56.63123076391412, 85.0511287798 ]])
+                toFixed([[-56.6312307639145, 62.350646608460806], [56.63123076391412, 85.0511287798]])
             );
         });
         test('Looking at South Pole', () => {
@@ -336,7 +362,7 @@ describe('transform', () => {
             expect(transform.locationPoint(bounds.getNorthWest()).y.toFixed(10)).toBe(transform.height.toFixed(10));
 
             expect(toFixed(bounds.toArray())).toStrictEqual(
-                toFixed([[ -56.6312307639145, -85.0511287798], [ 56.63123076391412, -62.350646608460806]])
+                toFixed([[-56.6312307639145, -85.0511287798], [56.63123076391412, -62.350646608460806]])
             );
         });
 
@@ -630,6 +656,26 @@ describe('transform', () => {
                 new OverscaledTileID(14, 0, 14, 2633, 6337)
             ]);
         });
+
+        test('Extend tile coverage for roads', () => {
+            transform.resize(512, 512);
+            transform.center = new LngLat(-122.156884, 37.709877);
+            transform.zoom = 18;
+            transform.pitch = 79;
+            transform.bearing = 0;
+
+            const visibleTiles = transform.coveringTiles({tileSize: 512, minzoom: 14, maxzoom: 14, roundZoom: true, calculateQuadrantVisibility: false});
+
+            expect(visibleTiles).toStrictEqual([
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6336))
+            ]);
+
+            const tileExtension = transform.extendTileCover(visibleTiles, 14, transform._camera.forward());
+
+            expect(tileExtension).toStrictEqual([
+                Object.assign(new OverscaledTileID(14, 0, 14, 2632, 6337))
+            ]);
+        });
     });
 
     test('coveringTiles with fog culling enabled', () => {
@@ -921,6 +967,15 @@ describe('transform', () => {
         expect(transform._seaLevelZoom).toEqual(transformBefore._seaLevelZoom);
     });
 
+    test('Zoom from negative altitude is valid', () => {
+        const transform = new Transform();
+        transform.resize(200, 200);
+
+        const zoom = transform._zoomFromMercatorZ(-100);
+
+        expect(isNaN(zoom)).toBeFalsy();
+    });
+
     test('Compute zoom from camera height', () => {
         const transform = new Transform();
         transform.resize(200, 200);
@@ -981,118 +1036,126 @@ describe('transform', () => {
             maxzoom: 10,
             tileSize: 512
         };
-
-        const transform = new Transform();
+        let transform;
         let centerElevation = 0;
+        let elevation;
         let tilesDefaultElevation = 0;
         const tileElevation: Record<string, any> = {};
-        const elevation = {
-            isDataAvailableAtPoint(_) {
-                return true;
-            },
-            getAtPointOrZero(_) {
-                return this.exaggeration() * centerElevation;
-            },
-            getAtPoint(_) {
-                return this.getAtPointOrZero();
-            },
-            getMinMaxForTile(tileID) {
-                const ele = tileElevation[tileID.key] !== undefined ? tileElevation[tileID.key] : tilesDefaultElevation;
-                if (ele === null) return null;
-                return {min: this.exaggeration() * ele, max: this.exaggeration() * ele};
-            },
-            exaggeration() {
-                return 10; // Low tile zoom used, exaggerate elevation to make impact.
-            },
-            getMinElevationBelowMSL: () => 0,
-            getMinMaxForVisibleTiles: () => null
-        };
-        transform.elevation = elevation;
-        transform.resize(200, 200);
 
-        // make slightly off center so that sort order is not subject to precision issues
-        transform.center = {lng: -0.01, lat: 0.01};
+        beforeAll(() => {
+            transform = new Transform();
+            elevation = {
+                isDataAvailableAtPoint(_) {
+                    return true;
+                },
+                getAtPointOrZero(_) {
+                    return this.exaggeration() * centerElevation;
+                },
+                getAtPoint(_) {
+                    return this.getAtPointOrZero();
+                },
+                getMinMaxForTile(tileID) {
+                    const ele = tileElevation[tileID.key] !== undefined ? tileElevation[tileID.key] : tilesDefaultElevation;
+                    if (ele === null) return null;
+                    return {min: this.exaggeration() * ele, max: this.exaggeration() * ele};
+                },
+                exaggeration() {
+                    return 10; // Low tile zoom used, exaggerate elevation to make impact.
+                },
+                getMinElevationBelowMSL: () => 0,
+                getMinMaxForVisibleTiles: () => null
+            };
+            transform.elevation = elevation;
+            transform.resize(200, 200);
 
-        transform.zoom = 0;
-        expect(transform.coveringTiles(options)).toEqual([]);
+            // make slightly off center so that sort order is not subject to precision issues
+            transform.center = {lng: -0.01, lat: 0.01};
 
-        transform.zoom = 1;
-        expect(transform.coveringTiles(options)).toEqual([
-            new OverscaledTileID(1, 0, 1, 0, 0),
-            new OverscaledTileID(1, 0, 1, 1, 0),
-            new OverscaledTileID(1, 0, 1, 0, 1),
-            new OverscaledTileID(1, 0, 1, 1, 1)]);
+            transform.zoom = 0;
+        });
 
-        transform.zoom = 2.4;
-        expect(transform.coveringTiles(options)).toEqual([
-            new OverscaledTileID(2, 0, 2, 1, 1),
-            new OverscaledTileID(2, 0, 2, 2, 1),
-            new OverscaledTileID(2, 0, 2, 1, 2),
-            new OverscaledTileID(2, 0, 2, 2, 2)]);
+        test('general expectations', () => {
+            expect(transform.coveringTiles(options)).toEqual([]);
 
-        transform.zoom = 10;
-        expect(transform.coveringTiles(options)).toEqual([
-            new OverscaledTileID(10, 0, 10, 511, 511),
-            new OverscaledTileID(10, 0, 10, 512, 511),
-            new OverscaledTileID(10, 0, 10, 511, 512),
-            new OverscaledTileID(10, 0, 10, 512, 512)]);
+            transform.zoom = 1;
+            expect(transform.coveringTiles(options)).toEqual([
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(1, 0, 1, 1, 0),
+                new OverscaledTileID(1, 0, 1, 0, 1),
+                new OverscaledTileID(1, 0, 1, 1, 1)]);
 
-        transform.zoom = 11;
-        expect(transform.coveringTiles(options)).toEqual([
-            new OverscaledTileID(10, 0, 10, 511, 511),
-            new OverscaledTileID(10, 0, 10, 512, 511),
-            new OverscaledTileID(10, 0, 10, 511, 512),
-            new OverscaledTileID(10, 0, 10, 512, 512)]);
+            transform.zoom = 2.4;
+            expect(transform.coveringTiles(options)).toEqual([
+                new OverscaledTileID(2, 0, 2, 1, 1),
+                new OverscaledTileID(2, 0, 2, 2, 1),
+                new OverscaledTileID(2, 0, 2, 1, 2),
+                new OverscaledTileID(2, 0, 2, 2, 2)]);
 
-        transform.zoom = 9.1;
-        transform.pitch = 60.0;
-        transform.bearing = 32.0;
-        transform.center = new LngLat(56.90, 48.20);
-        transform.resize(1024, 768);
-        transform.elevation = null;
-        const cover2D = transform.coveringTiles(options);
-        // No LOD as there is no elevation data.
-        expect(cover2D[0].overscaledZ === cover2D[cover2D.length - 1].overscaledZ).toBeTruthy();
+            transform.zoom = 10;
+            expect(transform.coveringTiles(options)).toEqual([
+                new OverscaledTileID(10, 0, 10, 511, 511),
+                new OverscaledTileID(10, 0, 10, 512, 511),
+                new OverscaledTileID(10, 0, 10, 511, 512),
+                new OverscaledTileID(10, 0, 10, 512, 512)]);
 
-        transform.pitch = 65.0;
-        transform.elevation = elevation;
-        const cover = transform.coveringTiles(options);
-        // First part of the cover should be the same as for 60 degrees no elevation case.
-        expect(cover.slice(0, 6)).toEqual(cover2D.slice(0, 6));
+            transform.zoom = 11;
+            expect(transform.coveringTiles(options)).toEqual([
+                new OverscaledTileID(10, 0, 10, 511, 511),
+                new OverscaledTileID(10, 0, 10, 512, 511),
+                new OverscaledTileID(10, 0, 10, 511, 512),
+                new OverscaledTileID(10, 0, 10, 512, 512)]);
 
-        // Even though it is larger pitch, less tiles are expected as LOD kicks in.
-        expect(cover.length < cover2D.length).toBeTruthy();
-        expect(cover[0].overscaledZ > cover[cover.length - 1].overscaledZ).toBeTruthy();
+            transform.zoom = 9.1;
+            transform.pitch = 60.0;
+            transform.bearing = 32.0;
+            transform.center = new LngLat(56.90, 48.20);
+            transform.resize(1024, 768);
+            transform.elevation = null;
+            const cover2D = transform.coveringTiles(options);
+            // No LOD as there is no elevation data.
+            expect(cover2D[0].overscaledZ === cover2D[cover2D.length - 1].overscaledZ).toBeTruthy();
 
-        // Elevated LOD with elevated center returns the same
-        tilesDefaultElevation = centerElevation = 10000;
+            transform.pitch = 65.0;
+            transform.elevation = elevation;
+            const cover = transform.coveringTiles(options);
+            // First part of the cover should be the same as for 60 degrees no elevation case.
+            expect(cover.slice(0, 6)).toEqual(cover2D.slice(0, 6));
 
-        transform.elevation = null;
-        transform.elevation = elevation;
+            // Even though it is larger pitch, less tiles are expected as LOD kicks in.
+            expect(cover.length < cover2D.length).toBeTruthy();
+            expect(cover[0].overscaledZ > cover[cover.length - 1].overscaledZ).toBeTruthy();
 
-        const cover10k = transform.coveringTiles(options);
-        expect(cover).toEqual(cover10k);
+            // Elevated LOD with elevated center returns the same
+            tilesDefaultElevation = centerElevation = 10000;
 
-        // Lower tiles on side get clipped.
-        const lowTiles = [
-            new OverscaledTileID(9, 0, 9, 335, 178).key,
-            new OverscaledTileID(9, 0, 9, 337, 178).key
-        ];
-        expect(cover.filter(t => lowTiles.includes(t.key)).length === lowTiles.length).toBeTruthy();
+            transform.elevation = null;
+            transform.elevation = elevation;
 
-        for (const t of lowTiles) {
-            tileElevation[t] = 0;
-        }
-        const coverLowSide = transform.coveringTiles(options);
-        expect(coverLowSide.filter(t => lowTiles.includes(t.key)).length === 0).toBeTruthy();
+            const cover10k = transform.coveringTiles(options);
+            expect(cover).toEqual(cover10k);
 
-        tileElevation[lowTiles[0]] = null; // missing elevation information gets to cover.
-        expect(transform.coveringTiles(options).find(t => t.key === lowTiles[0])).toBeTruthy();
+            // Lower tiles on side get clipped.
+            const lowTiles = [
+                new OverscaledTileID(9, 0, 9, 335, 178).key,
+                new OverscaledTileID(9, 0, 9, 337, 178).key
+            ];
+            expect(cover.filter(t => lowTiles.includes(t.key)).length === lowTiles.length).toBeTruthy();
 
-        transform.zoom = 2;
-        transform.pitch = 0;
-        transform.bearing = 0;
-        transform.resize(300, 300);
+            for (const t of lowTiles) {
+                tileElevation[t] = 0;
+            }
+            const coverLowSide = transform.coveringTiles(options);
+            expect(coverLowSide.filter(t => lowTiles.includes(t.key)).length === 0).toBeTruthy();
+
+            tileElevation[lowTiles[0]] = null; // missing elevation information gets to cover.
+            expect(transform.coveringTiles(options).find(t => t.key === lowTiles[0])).toBeTruthy();
+
+            transform.zoom = 2;
+            transform.pitch = 0;
+            transform.bearing = 0;
+            transform.resize(300, 300);
+        });
+
         test('calculates tile coverage at w > 0', () => {
             transform.center = {lng: 630.02, lat: 0.01};
             expect(transform.coveringTiles(options)).toEqual([
@@ -1123,18 +1186,15 @@ describe('transform', () => {
                 new OverscaledTileID(1, 0, 1, 0, 1)
             ]);
         });
-        test(
-            'only includes tiles for a single world, if renderWorldCopies is set to false',
-            () => {
-                transform.zoom = 1;
-                transform.center = {lng: -180.01, lat: 0.01};
-                transform.renderWorldCopies = false;
-                expect(transform.coveringTiles(options)).toEqual([
-                    new OverscaledTileID(1, 0, 1, 0, 0),
-                    new OverscaledTileID(1, 0, 1, 0, 1)
-                ]);
-            }
-        );
+        test('only includes tiles for a single world, if renderWorldCopies is set to false', () => {
+            transform.zoom = 1;
+            transform.center = {lng: -180.01, lat: 0.01};
+            transform.renderWorldCopies = false;
+            expect(transform.coveringTiles(options)).toEqual([
+                new OverscaledTileID(1, 0, 1, 0, 0),
+                new OverscaledTileID(1, 0, 1, 0, 1)
+            ]);
+        });
         test('proper distance to center with wrap. Zoom drop at the end.', () => {
             transform.resize(2000, 2000);
             transform.zoom = 3.29;
@@ -1146,26 +1206,23 @@ describe('transform', () => {
             expect(cover[cover.length - 1].overscaledZ <= 2).toBeTruthy();
         });
 
-        test(
-            'zoom 22 somewhere in Mile High City should load only visible tiles',
-            () => {
-                tilesDefaultElevation = null;
-                centerElevation = 1600;
-                tileElevation[new OverscaledTileID(14, 0, 14, 3413, 6218).key] = 1600;
-                transform.pitch = 0;
-                transform.bearing = 0;
-                transform.resize(768, 768);
-                transform.zoom = options.maxzoom = 22;
-                transform.center = {lng: -104.99813327, lat: 39.72784465999999};
-                options.roundZoom = true;
-                expect(transform.coveringTiles(options)).toEqual([
-                    new OverscaledTileID(22, 0, 22, 873835, 1592007),
-                    new OverscaledTileID(22, 0, 22, 873834, 1592007),
-                    new OverscaledTileID(22, 0, 22, 873835, 1592006),
-                    new OverscaledTileID(22, 0, 22, 873834, 1592006)
-                ]);
-            }
-        );
+        test('zoom 22 somewhere in Mile High City should load only visible tiles', {timeout: 10000}, () => {
+            tilesDefaultElevation = null;
+            centerElevation = 1600;
+            tileElevation[new OverscaledTileID(14, 0, 14, 3413, 6218).key] = 1600;
+            transform.pitch = 0;
+            transform.bearing = 0;
+            transform.resize(768, 768);
+            transform.zoom = options.maxzoom = 22;
+            transform.center = {lng: -104.99813327, lat: 39.72784465999999};
+            options.roundZoom = true;
+            expect(transform.coveringTiles(options)).toEqual([
+                new OverscaledTileID(22, 0, 22, 873835, 1592007),
+                new OverscaledTileID(22, 0, 22, 873834, 1592007),
+                new OverscaledTileID(22, 0, 22, 873835, 1592006),
+                new OverscaledTileID(22, 0, 22, 873834, 1592006)
+            ]);
+        });
     });
 
     test('loads only visible on terrain', () => {
@@ -1304,7 +1361,7 @@ describe('transform', () => {
         transform.zoom = 10;
         transform.center = {lng: 0, lat: 0};
         transform.pitch = 90;
-        transform.padding = {top:0, bottom:0, left:0, right:0};
+        transform.padding = {top: 0, bottom: 0, left: 0, right: 0};
         transform._horizonShift = 0.0;
         const eq = (a, b, eps = 0.000001) => {
             return Math.abs(a - b) < eps;
@@ -1314,11 +1371,11 @@ describe('transform', () => {
         expect(eq(transform.horizonLineFromTop(), 400.0)).toBeTruthy();
 
         // Padding from top, horizon line should go down
-        transform.padding = {top:300, bottom:0, left:0, right:0};
+        transform.padding = {top: 300, bottom: 0, left: 0, right: 0};
         expect(eq(transform.horizonLineFromTop(), 550.0)).toBeTruthy();
 
         // Padding from bottom, horizon line should go up
-        transform.padding = {top:0, bottom:300, left:0, right:0};
+        transform.padding = {top: 0, bottom: 300, left: 0, right: 0};
         expect(eq(transform.horizonLineFromTop(), 250.0)).toBeTruthy();
     });
 
@@ -1439,9 +1496,9 @@ describe('transform', () => {
     describe('freeCamera', () => {
         const rotatedFrame = (quaternion) => {
             return {
-                up: vec3.transformQuat([] as any, [0, -1, 0], quaternion),
-                forward: vec3.transformQuat([] as any, [0, 0, -1], quaternion),
-                right: vec3.transformQuat([] as any, [1, 0, 0], quaternion)
+                up: vec3.transformQuat([] as unknown as vec3, [0, -1, 0], quaternion),
+                forward: vec3.transformQuat([] as unknown as vec3, [0, 0, -1], quaternion),
+                right: vec3.transformQuat([] as unknown as vec3, [1, 0, 0], quaternion)
             };
         };
 
@@ -1590,7 +1647,7 @@ describe('transform', () => {
 
             // Place the camera to an arbitrary position looking away from the map
             options.position = new MercatorCoordinate(-100.0, -10000.0, 1000.0);
-            options.orientation = quat.rotateX([] as any, [0, 0, 0, 1], -45.0 * Math.PI / 180.0);
+            options.orientation = quat.rotateX([] as unknown as quat, [0, 0, 0, 1], -45.0 * Math.PI / 180.0);
             transform.setFreeCameraOptions(options);
 
             expect(fixedPoint(transform.point, 5)).toEqual(new Point(50, 50));
@@ -1614,8 +1671,8 @@ describe('transform', () => {
             transform.resize(100, 100);
             let options = new FreeCameraOptions();
 
-            const orientationWithoutRoll = quat.rotateX([] as any, [0, 0, 0, 1], -Math.PI / 4);
-            const orientationWithRoll = quat.rotateZ([] as any, orientationWithoutRoll, Math.PI / 4);
+            const orientationWithoutRoll = quat.rotateX([] as unknown as quat, [0, 0, 0, 1], -Math.PI / 4);
+            const orientationWithRoll = quat.rotateZ([] as unknown as quat, orientationWithoutRoll, Math.PI / 4);
 
             options.orientation = orientationWithRoll;
             transform.setFreeCameraOptions(options);

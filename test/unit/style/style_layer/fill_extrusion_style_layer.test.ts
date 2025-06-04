@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../../util/vitest';
 import {getIntersectionDistance} from '../../../../src/style/style_layer/fill_extrusion_style_layer';

@@ -4,13 +4,16 @@ import type Point from '@mapbox/point-geometry';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 
 export type EvaluationFeature = {
-    readonly type: 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
+    readonly type: 0 | 1 | 2 | 3 | 'Unknown' | 'Point' | 'LineString' | 'Polygon';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readonly id?: any;
-    readonly properties: {
+    properties: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [_: string]: any;
     };
     readonly patterns?: {
-        [_: string]: string;
+        // Array<[primaryId, secondaryIs]>
+        [_: string]: string[];
     };
     geometry: Array<Array<Point>>;
 };
@@ -23,10 +26,10 @@ export type EvaluationFeature = {
  * @private
  */
 export default function toEvaluationFeature(feature: VectorTileFeature, needGeometry: boolean): EvaluationFeature {
-// @ts-expect-error - TS2322 - Type '0 | 2 | 1 | 3' is not assignable to type '2 | 1 | 3 | "Polygon" | "Point" | "LineString" | "Unknown"'.
-    return {type: feature.type,
+    return {
+        type: feature.type,
         id: feature.id,
-        properties:feature.properties,
-        // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
-        geometry: needGeometry ? loadGeometry(feature) : []};
+        properties: feature.properties,
+        geometry: needGeometry ? loadGeometry(feature) : []
+    };
 }

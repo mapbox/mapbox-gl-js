@@ -1,0 +1,62 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+          "allowed": 0.0005
+        }
+      },
+    "center": [
+        -122.483482,
+        37.833174
+    ],
+    "zoom": 22,
+    "sources": {
+        "route": {
+            "type": "geojson",
+            "data": {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [
+                        [
+                            -122.483696,
+                            37.833818
+                        ],
+                        [
+                            -122.483482,
+                            37.833174
+                        ]
+                    ]
+                }
+            },
+            "lineMetrics": true
+        }
+    },
+    "layers": [
+        {
+            "id": "route",
+            "type": "line",
+            "source": "route",
+            "layout": {
+                "line-width-unit": "meters"
+            },
+            "paint": {
+                "line-width": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "line-progress"
+                    ],
+                    0.0,
+                    30,
+                    1.0,
+                    0.0
+                ],
+                "line-color": "#00ffff"
+            }
+        }
+    ]
+}

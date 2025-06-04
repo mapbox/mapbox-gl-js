@@ -1,0 +1,72 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "spriteFormat": "raster",
+      "height": 256,
+      "operations": [
+        [
+          "setFeatureState",
+          {
+            "source": "mapbox",
+            "sourceLayer": "poi_label",
+            "id": "1"
+          },
+          {
+            "color": "red"
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "center": [
+    13.43527,
+    52.50273
+  ],
+  "zoom": 14,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ],
+      "promoteId": {
+        "poi_label": "localrank"
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "poi_label",
+      "layout": {
+        "icon-image": "dot.sdf",
+        "icon-allow-overlap": true
+      },
+      "paint": {
+        "icon-color": [
+          "coalesce",
+          [
+            "feature-state",
+            "color"
+          ],
+          "black"
+        ]
+      }
+    }
+  ]
+}

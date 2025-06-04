@@ -6,6 +6,7 @@ import deepEqual from '../style-spec/util/deep_equal';
 
 import type {vec4} from 'gl-matrix';
 import type {UnionToIntersection} from 'utility-types';
+import type {Range} from '../../3d-style/elevation/elevation_feature';
 import type {Callback} from '../types/callback';
 
 const DEG_TO_RAD = Math.PI / 180;
@@ -39,7 +40,7 @@ export function radToDeg(a: number): number {
     return a * RAD_TO_DEG;
 }
 
-const TILE_CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]];
+const TILE_CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]] as const;
 
 /**
  * Given a particular bearing, returns the corner of the tile thats farthest
@@ -49,10 +50,9 @@ const TILE_CORNERS = [[0, 0], [1, 0], [1, 1], [0, 1]];
  * @returns {QuadCorner}
  * @private
  */
-export function furthestTileCorner(bearing: number): [number, number] {
+export function furthestTileCorner(bearing: number): Readonly<[number, number]> {
     const alignedBearing = ((bearing + 45) + 360) % 360;
     const cornerIdx = Math.round(alignedBearing / 90) % 4;
-    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number]'.
     return TILE_CORNERS[cornerIdx];
 }
 
@@ -157,7 +157,7 @@ export function polygonizeBounds(min: Point, max: Point, buffer: number = 0, clo
  */
 export function bufferConvexPolygon(ring: Point[], buffer: number): Point[] {
     assert(ring.length > 2, 'bufferConvexPolygon requires the ring to have atleast 3 points');
-    const output = [];
+    const output: Point[] = [];
     for (let currIdx = 0; currIdx < ring.length; currIdx++) {
         const prevIdx = wrap(currIdx - 1, -1, ring.length - 1);
         const nextIdx = wrap(currIdx + 1, -1, ring.length - 1);
@@ -189,7 +189,7 @@ type EaseFunction = (t: number) => number;
  */
 export function bezier(p1x: number, p1y: number, p2x: number, p2y: number): EaseFunction {
     const bezier = new UnitBezier(p1x, p1y, p2x, p2y);
-    return function(t: number) {
+    return function (t: number) {
         return bezier.solve(t);
     };
 }
@@ -286,24 +286,6 @@ export function asyncAll<Item, Result>(
 }
 
 /*
- * Polyfill for Object.values. Not fully spec compliant, but we don't
- * need it to be.
- *
- * @private
- */
-export function values<T>(
-    obj: {
-        [key: string]: T;
-    },
-): Array<T> {
-    const result = [];
-    for (const k in obj) {
-        result.push(obj[k]);
-    }
-    return result;
-}
-
-/*
  * Compute the difference between the keys in one object and the keys
  * in another object.
  *
@@ -311,14 +293,10 @@ export function values<T>(
  * @private
  */
 export function keysDifference<S, T>(
-    obj: {
-        [key: string]: S;
-    },
-    other: {
-        [key: string]: T;
-    },
+    obj: Record<PropertyKey, S>,
+    other: Record<PropertyKey, T>,
 ): Array<string> {
-    const difference = [];
+    const difference: string[] = [];
     for (const i in obj) {
         if (!(i in other)) {
             difference.push(i);
@@ -362,7 +340,7 @@ export function extend<T extends object, U extends Array<object | null | undefin
  * @private
  */
 export function pick<T extends object, K extends keyof T>(src: T, properties: Array<K>): Pick<T, K> {
-    const result: any = {};
+    const result = {} as Pick<T, K>;
     for (let i = 0; i < properties.length; i++) {
         const k = properties[i];
         if (k in src) {
@@ -390,13 +368,13 @@ export function uniqueId(): number {
  * @private
  */
 export function uuid(): string {
-    function b(a: undefined) {
-        return a ? (a ^ Math.random() * (16 >> a / 4)).toString(16) :
-        // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'number[]' and 'number'.
-        // eslint-disable-next-line
-            ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b);
+    function b(a?: undefined): string {
+        return a ?
+            (a ^ Math.random() * (16 >> a / 4)).toString(16) :
+            // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'number[]' and 'number'.
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-unsafe-unary-minus
+            ([1e7] + -[1e3] + -4e3 + -8e3 + -1e11).replace(/[018]/g, b) as string;
     }
-    // @ts-expect-error - TS2554 - Expected 1 arguments, but got 0.
     return b();
 }
 
@@ -457,20 +435,11 @@ export function validateUuid(str?: string | null): boolean {
  * setTimeout(myClass.ontimer, 100);
  * @private
  */
-export function bindAll(fns: Array<string>, context: any): void {
+export function bindAll(fns: Array<string>, context: unknown): void {
     fns.forEach((fn) => {
         if (!context[fn]) { return; }
         context[fn] = context[fn].bind(context);
     });
-}
-
-/**
- * Determine if a string ends with a particular substring
- *
- * @private
- */
-export function endsWith(string: string, suffix: string): boolean {
-    return string.indexOf(suffix, string.length - suffix.length) !== -1;
 }
 
 /**
@@ -479,8 +448,12 @@ export function endsWith(string: string, suffix: string): boolean {
  *
  * @private
  */
-export function mapObject(input: any, iterator: any, context?: any): any {
-    const output: Record<string, any> = {};
+export function mapObject<T, U>(
+    input: Record<PropertyKey, T>,
+    iterator: (value: T, key: PropertyKey, obj: Record<PropertyKey, T>) => U,
+    context?: unknown
+): Record<PropertyKey, U> {
+    const output: Record<PropertyKey, U> = {};
     for (const key in input) {
         output[key] = iterator.call(context || this, input[key], key, input);
     }
@@ -492,8 +465,12 @@ export function mapObject(input: any, iterator: any, context?: any): any {
  *
  * @private
  */
-export function filterObject(input: any, iterator: any, context?: any): any {
-    const output: Record<string, any> = {};
+export function filterObject<T extends Record<PropertyKey, unknown>>(
+    input: T,
+    iterator: (value: T[keyof T], key: keyof T, obj: T) => boolean,
+    context?: unknown
+): T {
+    const output = {} as T;
     for (const key in input) {
         if (iterator.call(context || this, input[key], key, input)) {
             output[key] = input[key];
@@ -511,7 +488,7 @@ export function clone<T>(input: T): T {
     if (Array.isArray(input)) {
         return input.map(clone) as T;
     } else if (typeof input === 'object' && input) {
-        return mapObject(input, clone) as T;
+        return mapObject(input as Record<PropertyKey, unknown>, clone) as T;
     } else {
         return input;
     }
@@ -606,7 +583,7 @@ export type Direction = {
  * @param spherical Spherical coordinates, in [radial, azimuthal, polar]
  * @return Position cartesian coordinates
  */
-export function sphericalPositionToCartesian([r, azimuthal, polar]: [any, any, any]): Position {
+export function sphericalPositionToCartesian([r, azimuthal, polar]: [number, number, number]): Position {
     // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
     // correct for that here
     const a = degToRad(azimuthal + 90), p = degToRad(polar);
@@ -626,7 +603,7 @@ export function sphericalPositionToCartesian([r, azimuthal, polar]: [any, any, a
  * @param spherical Spherical direction, in [azimuthal, polar]
  * @return Direction cartesian direction
  */
-export function sphericalDirectionToCartesian([azimuthal, polar]: [any, any]): Direction {
+export function sphericalDirectionToCartesian([azimuthal, polar]: [number, number]): Direction {
     const position = sphericalPositionToCartesian([1.0, azimuthal, polar]);
 
     return {
@@ -649,16 +626,30 @@ export function cartesianPositionToSpherical(x: number, y: number, z: number): [
     return [radial, azimuthal, polar];
 }
 
-/* global WorkerGlobalScope */
 /**
  *  Returns true if run in the web-worker context.
  *
  * @private
  * @returns {boolean}
  */
-export function isWorker(): boolean {
-    // @ts-expect-error - TS2304
-    return typeof WorkerGlobalScope !== 'undefined' && typeof self !== 'undefined' && self instanceof WorkerGlobalScope;
+export function isWorker(scope?: unknown): scope is Worker {
+    if (typeof self === 'undefined' && scope === undefined) {
+        return false;
+    }
+
+    // Check if WorkerGlobalScope isn't available
+    // This is a global that's only present in browser worker environments
+    // @ts-expect-error - TS2304: Cannot find name 'WorkerGlobalScope'
+    if (typeof WorkerGlobalScope === 'undefined') {
+        return false;
+    }
+
+    // Use provided scope or global self
+    const contextToCheck = scope !== undefined ? scope : self;
+
+    // Final check if context is a WorkerGlobalScope
+    // @ts-expect-error - TS2304: Cannot find name 'WorkerGlobalScope'
+    return contextToCheck instanceof WorkerGlobalScope;
 }
 
 /**
@@ -669,11 +660,11 @@ export function isWorker(): boolean {
  * @return object containing parsed header info.
  */
 
-export function parseCacheControl(cacheControl: string): any {
+export function parseCacheControl(cacheControl: string): Record<string, number> {
     // Taken from [Wreck](https://github.com/hapijs/wreck)
     const re = /(?:^|(?:\s*\,\s*))([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)(?:\=(?:([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)|(?:\"((?:[^"\\]|\\.)*)\")))?/g;
 
-    const header: Record<string, any> = {};
+    const header: Record<string, string | number> = {};
     cacheControl.replace(re, ($0, $1, $2, $3) => {
         const value = $2 || $3;
         header[$1] = value ? value.toLowerCase() : true;
@@ -681,15 +672,15 @@ export function parseCacheControl(cacheControl: string): any {
     });
 
     if (header['max-age']) {
-        const maxAge = parseInt(header['max-age'], 10);
+        const maxAge = parseInt(header['max-age'] as string, 10);
         if (isNaN(maxAge)) delete header['max-age'];
         else header['max-age'] = maxAge;
     }
 
-    return header;
+    return header as Record<string, number>;
 }
 
-let _isSafari = null;
+let _isSafari: boolean | null = null;
 
 export function _resetSafariCheckForTest() {
     _isSafari = null;
@@ -708,25 +699,25 @@ export function _resetSafariCheckForTest() {
  *      let the calling scope pass in the global scope object.
  * @returns {boolean}
  */
-export function isSafari(scope: any): boolean {
+export function isSafari(scope: WindowOrWorkerGlobalScope): boolean {
     if (_isSafari == null) {
-        const userAgent = scope.navigator ? scope.navigator.userAgent : null;
-        _isSafari = !!scope.safari ||
+        const userAgent = (scope as Window).navigator ? (scope as Window).navigator.userAgent : null;
+        _isSafari = !!(scope as {safari?: boolean}).safari ||
         !!(userAgent && (/\b(iPad|iPhone|iPod)\b/.test(userAgent) || (!!userAgent.match('Safari') && !userAgent.match('Chrome'))));
     }
     return _isSafari;
 }
 
-export function isSafariWithAntialiasingBug(scope: any): boolean | null | undefined {
-    const userAgent = scope.navigator ? scope.navigator.userAgent : null;
+export function isSafariWithAntialiasingBug(scope: WindowOrWorkerGlobalScope): boolean | null | undefined {
+    const userAgent: Navigator['userAgent'] = (scope as Window).navigator ? (scope as Window).navigator.userAgent : null;
     if (!isSafari(scope)) return false;
     // 15.4 is known to be buggy.
     // 15.5 may or may not include the fix. Mark it as buggy to be on the safe side.
-    return userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5') || userAgent.match(/CPU (OS|iPhone OS) (15_4|15_5) like Mac OS X/));
+    return !!(userAgent && (userAgent.match('Version/15.4') || userAgent.match('Version/15.5') || userAgent.match(/CPU (OS|iPhone OS) (15_4|15_5) like Mac OS X/)));
 }
 
 export function isFullscreen(): boolean {
-    return !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
+    return !!document.fullscreenElement || !!(document as {webkitFullscreenElement?: boolean}).webkitFullscreenElement;
 }
 
 export function storageAvailable(type: string): boolean {
@@ -735,7 +726,7 @@ export function storageAvailable(type: string): boolean {
         storage.setItem('_mapbox_test_', 1);
         storage.removeItem('_mapbox_test_');
         return true;
-    } catch (e: any) {
+    } catch (e) {
         return false;
     }
 }
@@ -850,7 +841,7 @@ export function computeColorAdjustmentMatrix(
     contrast: number,
     brightnessMin: number,
     brightnessMax: number,
-): Float32Array {
+): mat4 {
     saturation = saturationFactor(saturation);
     contrast = contrastFactor(contrast);
 
@@ -871,7 +862,7 @@ export function computeColorAdjustmentMatrix(
 
     const sa = saturation / 3.0;
     const sb = 1.0 - 2.0 * sa;
-    const saturationMatrix = [
+    const saturationMatrix: mat4 = [
         sb,  sa,  sa,  0.0,
         sa,  sb,  sa,  0.0,
         sa,  sa,  sb,  0.0,
@@ -879,7 +870,7 @@ export function computeColorAdjustmentMatrix(
     ];
 
     const cs = 0.5 - 0.5 * contrast;
-    const contrastMatrix = [
+    const contrastMatrix: mat4 = [
         contrast, 0.0,      0.0,      0.0,
         0.0,      contrast, 0.0,      0.0,
         0.0,      0.0,      contrast, 0.0,
@@ -887,19 +878,28 @@ export function computeColorAdjustmentMatrix(
     ];
 
     const hl = brightnessMax - brightnessMin;
-    const brightnessMatrix = [
+    const brightnessMatrix: mat4 = [
         hl,            0.0,           0.0,           0.0,
         0.0,           hl,            0.0,           0.0,
         0.0,           0.0,           hl,            0.0,
         brightnessMin, brightnessMin, brightnessMin, 1.0
     ];
 
-    mat4.multiply(m, brightnessMatrix as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number], contrastMatrix as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]);
-    mat4.multiply(m, m, saturationMatrix as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]);
-    // mat4.multiply(m, m, hueMatrix);
-
-    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
+    mat4.multiply(m, brightnessMatrix, contrastMatrix);
+    mat4.multiply(m, m, saturationMatrix);
     return m;
+}
+
+function mapRangeValue(value: number, from: Range, to: Range): number {
+    return ((value - from.min) * (to.max - to.min)) / (from.max - from.min) + to.min;
+}
+
+export function mapRange(range: Range, from: Range, to: Range): Range {
+    return {min: mapRangeValue(range.min, from, to), max: mapRangeValue(range.max, from, to)};
+}
+
+export function easeIn(x: number) {
+    return x * x * x * x * x;
 }
 
 export {deepEqual};

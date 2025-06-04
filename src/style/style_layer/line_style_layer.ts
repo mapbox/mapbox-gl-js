@@ -23,6 +23,8 @@ import type {CreateProgramParams} from '../../render/painter';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
 import type SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
+import type {ImageId} from '../../style-spec/expression/types/image_id';
+import type {ProgramName} from '../../render/program';
 
 let properties: {
     layout: Properties<LayoutProps>;
@@ -43,21 +45,22 @@ const getProperties = () => {
 };
 
 class LineFloorwidthProperty extends DataDrivenProperty<number> {
-    useIntegerZoom: boolean | null | undefined;
+    override useIntegerZoom: boolean | null | undefined;
 
-    possiblyEvaluate(
+    override possiblyEvaluate(
         value: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>,
         parameters: EvaluationParameters,
     ): PossiblyEvaluatedPropertyValue<number> {
         parameters = new EvaluationParameters(Math.floor(parameters.zoom), {
             now: parameters.now,
             fadeDuration: parameters.fadeDuration,
-            transition: parameters.transition
+            transition: parameters.transition,
+            worldview: parameters.worldview
         });
         return super.possiblyEvaluate(value, parameters);
     }
 
-    evaluate(
+    override evaluate(
         value: PossiblyEvaluatedValue<number>,
         globals: EvaluationParameters,
         feature: Feature,
@@ -83,15 +86,20 @@ const getLineFloorwidthProperty = () => {
 };
 
 class LineStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override type: 'line';
+
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
 
     gradientVersion: number;
     stepInterpolant: boolean;
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    hasElevatedBuckets: boolean;
+    hasNonElevatedBuckets: boolean;
+
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = getProperties();
@@ -100,10 +108,13 @@ class LineStyleLayer extends StyleLayer {
             this.layout = new PossiblyEvaluated(properties.layout);
         }
         this.gradientVersion = 0;
+        this.hasElevatedBuckets = false;
+        this.hasNonElevatedBuckets = false;
     }
 
-    _handleSpecialPaintPropertyUpdate(name: string) {
+    override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'line-gradient') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const expression: ZoomConstantExpression<'source'> = ((this._transitionablePaint._values['line-gradient'].value.expression) as any);
             this.stepInterpolant = expression._styleExpression && expression._styleExpression.expression instanceof Step;
             this.gradientVersion = (this.gradientVersion + 1) % Number.MAX_SAFE_INTEGER;
@@ -118,8 +129,9 @@ class LineStyleLayer extends StyleLayer {
         return this._transitionablePaint._values['line-width'].value.expression;
     }
 
-    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.paint._values as any)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
     }
 
@@ -127,15 +139,16 @@ class LineStyleLayer extends StyleLayer {
         return new LineBucket(parameters);
     }
 
-    getProgramIds(): string[] {
+    override getProgramIds(): ProgramName[] {
         const patternProperty = this.paint.get('line-pattern');
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const image = patternProperty.constantOr((1 as any));
         const programId = image ? 'linePattern' : 'line';
         return [programId];
     }
 
-    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         const definesValues = (lineDefinesValues(this) as DynamicDefinesType[]);
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),
@@ -144,8 +157,8 @@ class LineStyleLayer extends StyleLayer {
         };
     }
 
-    queryRadius(bucket: Bucket): number {
-        const lineBucket: LineBucket = (bucket as any);
+    override queryRadius(bucket: Bucket): number {
+        const lineBucket = bucket as LineBucket;
         const width = getLineWidth(
             getMaximumPaintValue('line-width', this, lineBucket),
             getMaximumPaintValue('line-gap-width', this, lineBucket));
@@ -154,7 +167,7 @@ class LineStyleLayer extends StyleLayer {
         return width / 2 + Math.abs(offset) + translateDistance(this.paint.get('line-translate'));
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,
@@ -170,11 +183,8 @@ class LineStyleLayer extends StyleLayer {
             this.paint.get('line-translate-anchor'),
             transform.angle, queryGeometry.pixelToTileUnitsFactor);
         const halfWidth = queryGeometry.pixelToTileUnitsFactor / 2 * getLineWidth(
-            // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
             this.paint.get('line-width').evaluate(feature, featureState),
-            // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
             this.paint.get('line-gap-width').evaluate(feature, featureState));
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
         const lineOffset = this.paint.get('line-offset').evaluate(feature, featureState);
         if (lineOffset) {
             geometry = offsetLine(geometry, lineOffset * queryGeometry.pixelToTileUnitsFactor);
@@ -183,14 +193,16 @@ class LineStyleLayer extends StyleLayer {
         return polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth);
     }
 
-    isTileClipped(): boolean {
-        return true;
+    override isTileClipped(): boolean {
+        return this.hasNonElevatedBuckets;
     }
 
-    isDraped(_?: SourceCache | null): boolean {
-        const zOffset = this.layout.get('line-z-offset');
+    override isDraped(_?: SourceCache | null): boolean {
+        return !this.hasElevatedBuckets;
+    }
 
-        return zOffset.isConstant() && !zOffset.constantOr(0);
+    override hasElevation(): boolean {
+        return this.layout && this.layout.get('line-elevation-reference') !== 'none';
     }
 }
 
@@ -225,5 +237,6 @@ function offsetLine(rings: Array<Array<Point>>, offset: number) {
         }
         newRings.push(newRing);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return newRings;
 }

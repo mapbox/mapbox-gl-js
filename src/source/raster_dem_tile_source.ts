@@ -10,15 +10,14 @@ import '../data/dem_data';
 
 import type {Evented} from '../util/evented';
 import type DEMData from '../data/dem_data';
-import type {ISource} from './source';
 import type Dispatcher from '../util/dispatcher';
 import type Tile from './tile';
 import type {Callback} from '../types/callback';
 import type {TextureImage} from '../render/texture';
 import type {RasterDEMSourceSpecification} from '../style-spec/types';
+import type {WorkerSourceDEMTileRequest} from './worker_source';
 
-class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISource {
-    type: 'raster-dem';
+class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
     encoding: 'mapbox' | 'terrarium';
 
     constructor(id: string, options: RasterDEMSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
@@ -29,7 +28,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
         this.encoding = options.encoding || "mapbox";
     }
 
-    loadTile(tile: Tile, callback: Callback<undefined>) {
+    override loadTile(tile: Tile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
@@ -61,10 +60,11 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
 
                 // @ts-expect-error - TS2345 - Argument of type 'TextureImage' is not assignable to parameter of type 'CanvasImageSource'.
                 const rawImageData = transfer ? img : browser.getImageData(img, padding);
-                const params = {
+                const params: WorkerSourceDEMTileRequest = {
                     uid: tile.uid,
-                    coord: tile.tileID,
+                    tileID: tile.tileID,
                     source: this.id,
+                    type: this.type,
                     scope: this.scope,
                     rawImageData,
                     encoding: this.encoding,
@@ -73,7 +73,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
 
                 if (!tile.actor || tile.state === 'expired') {
                     tile.actor = this.dispatcher.getActor();
-                    tile.actor.send('loadDEMTile', params, done.bind(this), undefined, true);
+                    tile.actor.send('loadTile', params, done.bind(this), undefined, true);
                 }
             }
         }
@@ -104,6 +104,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> implements ISou
         const nx = (canonical.x + 1 + dim) % dim;
         const nxw = canonical.x + 1 === dim ? tileID.wrap + 1 : tileID.wrap;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const neighboringTiles: Record<string, any> = {};
         // add adjacent tiles
         neighboringTiles[new OverscaledTileID(tileID.overscaledZ, pxw, canonical.z, px, canonical.y).key] = {backfilled: false};

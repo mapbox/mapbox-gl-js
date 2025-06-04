@@ -10,26 +10,32 @@ import {DEMSampler} from '../../../src/terrain/elevation';
 import {ZoomConstantExpression} from '../../../src/style-spec/expression/index';
 import {Aabb} from '../../../src/util/primitives';
 import {vec3, mat4} from 'gl-matrix';
+import deepEqual from '../../../src/style-spec/util/deep_equal';
+import featureFilter, {type FeatureFilter} from '../../../src/style-spec/feature_filter/index';
+import EvaluationParameters from '../../../src/style/evaluation_parameters';
 
 import type {OverscaledTileID, CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {ReplacementSource} from '../../source/replacement_source';
 import type {Bucket} from '../../../src/data/bucket';
-import type {Node} from '../model';
+import type {ModelNode} from '../model';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type Context from '../../../src/gl/context';
-import type {ProjectionSpecification} from '../../../src/style-spec/types';
+import type {FilterSpecification, ProjectionSpecification} from '../../../src/style-spec/types';
 import type Painter from '../../../src/render/painter';
 import type {vec4} from 'gl-matrix';
 import type {Terrain} from '../../../src/terrain/terrain';
 import type FeatureIndex from '../../../src/data/feature_index';
 import type {GridIndex} from '../../../src/types/grid-index';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
+import type {FeatureStates} from '../../../src/source/source_state';
+import type {FeatureState} from '../../../src/style-spec/expression/index';
+import type {PossiblyEvaluatedValue} from '../../../src/style/properties';
 
 const lookup = new Float32Array(512 * 512);
 const passLookup = new Uint8Array(512 * 512);
 
-function getNodeHeight(node: Node): number {
+function getNodeHeight(node: ModelNode): number {
     let height = 0;
     if (node.meshes) {
         for (const mesh of node.meshes) {
@@ -44,11 +50,12 @@ function getNodeHeight(node: Node): number {
     return height;
 }
 
-function addAABBsToGridIndex(node: Node, key: number, grid: GridIndex) {
+function addAABBsToGridIndex(node: ModelNode, key: number, grid: GridIndex) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (mesh.aabb.min[0] === Infinity) continue;
-            grid.insert(key, mesh.aabb.min[0], mesh.aabb.min[1], mesh.aabb.max[0], mesh.aabb.max[1]);
+            const meshAabb = Aabb.applyTransform(mesh.aabb, node.matrix);
+            grid.insert(key, meshAabb.min[0], meshAabb.min[1], meshAabb.max[0], meshAabb.max[1]);
         }
     }
     if (node.children) {
@@ -73,14 +80,16 @@ export class Tiled3dModelFeature {
     feature: EvaluationFeature;
     evaluatedColor: Array<vec4>;
     evaluatedRMEA: Array<vec4>;
+    evaluatedTranslation: [number, number, number];
     evaluatedScale: [number, number, number];
     hiddenByReplacement: boolean;
     hasTranslucentParts: boolean;
-    node: Node;
+    node: ModelNode;
     aabb: Aabb;
     emissionHeightBasedParams: Array<[number, number, number, number, number]>;
     cameraCollisionOpacity: number;
-    constructor(node: Node) {
+    state: FeatureState | null;
+    constructor(node: ModelNode) {
         this.node = node;
         this.evaluatedRMEA = [[1, 0, 0, 1],
             [1, 0, 0, 1],   // wall
@@ -90,13 +99,15 @@ export class Tiled3dModelFeature {
             [1, 0, 0, 1],   // lamp
             [1, 0, 0, 1]];  // logo
         this.hiddenByReplacement = false;
+        this.evaluatedTranslation = [0, 0, 0];
         this.evaluatedScale = [1, 1, 1];
         this.evaluatedColor = [];
         this.emissionHeightBasedParams = [];
         this.cameraCollisionOpacity = 1;
         // Needs to calculate geometry
-        this.feature = {type: 'Point', id: node.id, geometry: [], properties: {'height' : getNodeHeight(node)}};
+        this.feature = {type: 'Point', id: node.id, geometry: [], properties: {'height': getNodeHeight(node)}};
         this.aabb = this._getLocalBounds();
+        this.state = null;
     }
     _getLocalBounds(): Aabb {
         if (!this.node.meshes) {
@@ -137,15 +148,23 @@ class Tiled3dModelBucket implements Bucket {
     dirty: boolean;
     brightness: number | null | undefined;
     needsUpload: boolean;
+    states: FeatureStates;
+    filter: FeatureFilter | null;
+    worldview: string | undefined;
     constructor(
-        nodes: Array<Node>,
+        layers: Array<ModelStyleLayer>,
+        nodes: Array<ModelNode>,
         id: OverscaledTileID,
         hasMbxMeshFeatures: boolean,
         hasMeshoptCompression: boolean,
         brightness: number | null | undefined,
         featureIndex: FeatureIndex,
+        worldview: string | undefined,
     ) {
         this.id = id;
+        this.layers = layers;
+        this.layerIds = this.layers.map(layer => layer.fqid);
+        this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.modelTraits |= ModelTraits.CoordinateSpaceTile;
         this.uploaded = false;
         this.hasPattern = false;
@@ -161,8 +180,10 @@ class Tiled3dModelBucket implements Bucket {
         this.replacementUpdateTime = 0;
         this.elevationReadFromZ = 0xff; // Re-read if underlying DEM zoom changes.
         this.brightness = brightness;
+        this.worldview = worldview;
         this.dirty = true;
         this.needsUpload = false;
+        this.filter = null;
 
         this.nodesInfo = [];
         for (const node of nodes) {
@@ -170,6 +191,7 @@ class Tiled3dModelBucket implements Bucket {
             addAABBsToGridIndex(node, featureIndex.featureIndexArray.length, featureIndex.grid);
             featureIndex.featureIndexArray.emplaceBack(this.nodesInfo.length - 1, 0 /*sourceLayerIndex*/, featureIndex.bucketLayerIDs.length - 1, 0);
         }
+        this.states = {};
     }
 
     updateFootprints(id: UnwrappedTileID, footprints: Array<TileFootprint>) {
@@ -185,12 +207,22 @@ class Tiled3dModelBucket implements Bucket {
         }
     }
 
-    update() {
-        console.log("Update 3D model bucket");
+    update(states: FeatureStates) {
+        const withStateUpdates = Object.keys(states).length !== 0;
+        if (withStateUpdates && !this.stateDependentLayers.length) return;
+        const layers = withStateUpdates ? this.stateDependentLayers : this.layers;
+        if (!deepEqual(states, this.states)) {
+            for (const layer of layers) {
+                this.evaluate(layer, states);
+            }
+        }
+        this.states = structuredClone(states);
     }
+
     populate() {
         console.log("populate 3D model bucket");
     }
+
     uploadPending(): boolean {
         return !this.uploaded || this.needsUpload;
     }
@@ -214,7 +246,7 @@ class Tiled3dModelBucket implements Bucket {
         this.needsUpload = false;
     }
 
-    updatePbrBuffer(node: Node): boolean {
+    updatePbrBuffer(node: ModelNode): boolean {
         let result = false;
         if (!node.meshes) return result;
         for (const mesh of node.meshes) {
@@ -243,12 +275,17 @@ class Tiled3dModelBucket implements Bucket {
             expressionRequiresReevaluation(layer.paint.get('model-height-based-emissive-strength-multiplier').value, brightnessChanged)) {
             this.projection = projection;
             this.brightness = calculatedBrightness;
+            // reset state so nodes get re-evaluated
+            const nodesInfo = this.getNodesInfo();
+            for (const nodeInfo of nodesInfo) {
+                nodeInfo.state = null;
+            }
             return true;
         }
         return false;
     }
 
-    evaluateScale(painter: Painter, layer: ModelStyleLayer) {
+    evaluateTransform(painter: Painter, layer: ModelStyleLayer) {
         if (painter.transform.zoom === this.zoom) return;
         this.zoom = painter.transform.zoom;
         const nodesInfo = this.getNodesInfo();
@@ -256,15 +293,19 @@ class Tiled3dModelBucket implements Bucket {
         for (const nodeInfo of nodesInfo) {
             const evaluationFeature = nodeInfo.feature;
 
+            nodeInfo.evaluatedTranslation = layer.paint.get('model-translation').evaluate(evaluationFeature, {}, canonical);
             nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical);
         }
     }
 
-    evaluate(layer: ModelStyleLayer) {
+    evaluate(layer: ModelStyleLayer, states?: FeatureStates) {
         const nodesInfo = this.getNodesInfo();
         for (const nodeInfo of nodesInfo) {
             if (!nodeInfo.node.meshes) continue;
             const evaluationFeature = nodeInfo.feature;
+            const state = states && states[evaluationFeature.id];
+            if (deepEqual(state, nodeInfo.state)) continue;
+            nodeInfo.state = structuredClone(state);
             const hasFeatures = nodeInfo.node.meshes && nodeInfo.node.meshes[0].featureData;
             const previousDoorColor = nodeInfo.evaluatedColor[PartIndices.door];
             const previousDoorRMEA = nodeInfo.evaluatedRMEA[PartIndices.door];
@@ -278,18 +319,18 @@ class Tiled3dModelBucket implements Bucket {
                         evaluationFeature.properties['part'] = part;
                     }
 
-                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, {}, canonical).toRenderColor(null);
+                    const color = layer.paint.get('model-color').evaluate(evaluationFeature, state, canonical).toPremultipliedRenderColor(null);
 
-                    const colorMixIntensity = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, {}, canonical);
+                    const colorMixIntensity = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, state, canonical);
                     nodeInfo.evaluatedColor[i] = [color.r, color.g, color.b, colorMixIntensity];
 
-                    nodeInfo.evaluatedRMEA[i][0] = layer.paint.get('model-roughness').evaluate(evaluationFeature, {}, canonical);
+                    nodeInfo.evaluatedRMEA[i][0] = layer.paint.get('model-roughness').evaluate(evaluationFeature, state, canonical);
                     // For the first version metallic is not styled
 
-                    nodeInfo.evaluatedRMEA[i][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, {}, canonical);
+                    nodeInfo.evaluatedRMEA[i][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical);
                     nodeInfo.evaluatedRMEA[i][3] = color.a;
 
-                    nodeInfo.emissionHeightBasedParams[i] = layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, {}, canonical);
+                    nodeInfo.emissionHeightBasedParams[i] = layer.paint.get('model-height-based-emissive-strength-multiplier').evaluate(evaluationFeature, state, canonical);
 
                     if (!nodeInfo.hasTranslucentParts && color.a < 1.0) {
                         nodeInfo.hasTranslucentParts = true;
@@ -301,10 +342,11 @@ class Tiled3dModelBucket implements Bucket {
                 updateNodeFeatureVertices(nodeInfo, doorLightChanged, this.modelTraits);
             } else {
 
-                nodeInfo.evaluatedRMEA[0][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, {}, canonical);
+                nodeInfo.evaluatedRMEA[0][2] = layer.paint.get('model-emissive-strength').evaluate(evaluationFeature, state, canonical);
             }
 
-            nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, {}, canonical);
+            nodeInfo.evaluatedTranslation = layer.paint.get('model-translation').evaluate(evaluationFeature, state, canonical);
+            nodeInfo.evaluatedScale = layer.paint.get('model-scale').evaluate(evaluationFeature, state, canonical);
             if (!this.updatePbrBuffer(nodeInfo.node)) {
                 this.needsUpload = true;
             }
@@ -503,7 +545,16 @@ class Tiled3dModelBucket implements Bucket {
         }
     }
 
+    setFilter(filterSpec: FilterSpecification | null) {
+        this.filter = filterSpec ? featureFilter(filterSpec) : null;
+    }
+
     getNodesInfo(): Array<Tiled3dModelFeature> {
+        if (this.filter) {
+            return this.nodesInfo.filter((node) => {
+                return this.filter.filter(new EvaluationParameters(this.id.overscaledZ, {worldview: this.worldview}), node.feature, this.id.canonical);
+            });
+        }
         return this.nodesInfo;
     }
 
@@ -527,13 +578,11 @@ class Tiled3dModelBucket implements Bucket {
 
         this.replacementUpdateTime = source.updateTime;
         const activeReplacements = source.getReplacementRegionsForTile(coord.toUnwrapped());
-        const nodesInfo = this.getNodesInfo();
 
-        for (let i = 0; i < this.nodesInfo.length; i++) {
-            const node = nodesInfo[i].node;
-
+        for (const nodeInfo of this.getNodesInfo()) {
+            const footprint = nodeInfo.node.footprint;
             // Node is visible if its footprint passes the replacement check
-            nodesInfo[i].hiddenByReplacement = !!node.footprint && !activeReplacements.find(region => region.footprint === node.footprint);
+            nodeInfo.hiddenByReplacement = !!footprint && !activeReplacements.find(region => region.footprint === footprint);
         }
     }
 
@@ -543,15 +592,13 @@ class Tiled3dModelBucket implements Bucket {
         hidden: boolean;
         verticalScale: number;
     } | null | undefined {
-        const nodesInfo = this.getNodesInfo();
         const candidates = [];
 
         const tmpVertex = [0, 0, 0];
 
-        const nodeInverse = mat4.identity([] as any);
+        const nodeInverse = mat4.identity([] as unknown as mat4);
 
-        for (let i = 0; i < this.nodesInfo.length; i++) {
-            const nodeInfo = nodesInfo[i];
+        for (const nodeInfo of this.getNodesInfo()) {
             assert(nodeInfo.node.meshes.length > 0);
             const mesh = nodeInfo.node.meshes[0];
             const meshAabb = mesh.transformedAabb;
@@ -583,9 +630,14 @@ class Tiled3dModelBucket implements Bucket {
     }
 }
 
-function expressionRequiresReevaluation(e: any, brightnessChanged: boolean): boolean {
+function expressionRequiresReevaluation<T>(e: PossiblyEvaluatedValue<T>, brightnessChanged: boolean): boolean {
     assert(e.kind === 'constant' || e instanceof ZoomConstantExpression);
-    return !e.isLightConstant && brightnessChanged;
+
+    if (e instanceof ZoomConstantExpression) {
+        return !e.isLightConstant && brightnessChanged;
+    }
+
+    return false;
 }
 
 function encodeEmissionToByte(emission: number) {

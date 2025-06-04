@@ -75,7 +75,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
@@ -90,7 +90,7 @@
       "source": "a",
       "paint": {
         "line-width": 20,
-        "line-pattern": "generic_icon"
+        "line-pattern": "information"
       }
     }
   ]

@@ -199,9 +199,8 @@ export default class DemMinMaxQuadTree {
         d: vec3,
         exaggeration: number = 1,
     ): number | null | undefined {
-        const min = [minx, miny, -aabbSkirtPadding];
-        const max = [maxx, maxy, this.maximums[0] * exaggeration];
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
+        const min: vec3 = [minx, miny, -aabbSkirtPadding];
+        const max: vec3 = [maxx, maxy, this.maximums[0] * exaggeration];
         return aabbRayIntersect(min, max, p, d);
     }
 
@@ -223,8 +222,8 @@ export default class DemMinMaxQuadTree {
 
         const tHits = [];
         const sortedHits = [];
-        const boundsMin = [];
-        const boundsMax = [];
+        const boundsMin = [] as unknown as vec3;
+        const boundsMax = [] as unknown as vec3;
 
         const stack = [{
             idx: 0,
@@ -240,7 +239,7 @@ export default class DemMinMaxQuadTree {
 
             if (this.leaves[idx]) {
                 // Create 2 triangles to approximate the surface plane for more precise tests
-                decodeBounds(nodex, nodey, depth, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin, boundsMax);
+                decodeBounds(nodex, nodey, depth, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin as number[], boundsMax as number[]);
 
                 const scale = 1 << depth;
                 const minxUv = (nodex + 0) / scale;
@@ -254,13 +253,13 @@ export default class DemMinMaxQuadTree {
                 const cz = sampleElevation(maxxUv, maxyUv, this.dem) * exaggeration;
                 const dz = sampleElevation(minxUv, maxyUv, this.dem) * exaggeration;
 
-                const t0: any = triangleRayIntersect(
+                const t0 = triangleRayIntersect(
                     boundsMin[0], boundsMin[1], az,     // A
                     boundsMax[0], boundsMin[1], bz,     // B
                     boundsMax[0], boundsMax[1], cz,     // C
                     p, d);
 
-                const t1: any = triangleRayIntersect(
+                const t1 = triangleRayIntersect(
                     boundsMax[0], boundsMax[1], cz,
                     boundsMin[0], boundsMax[1], dz,
                     boundsMin[0], boundsMin[1], az,
@@ -273,7 +272,7 @@ export default class DemMinMaxQuadTree {
                 // The ray might go below the two surface triangles but hit one of the sides.
                 // This covers the case of skirt geometry between two dem tiles of different zoom level
                 if (tMin === Number.MAX_VALUE) {
-                    const hitPos = vec3.scaleAndAdd([] as any, p, d, t);
+                    const hitPos = vec3.scaleAndAdd([] as unknown as vec3, p, d, t);
                     const fracx = frac(hitPos[0], boundsMin[0], boundsMax[0]);
                     const fracy = frac(hitPos[1], boundsMin[1], boundsMax[1]);
 
@@ -295,12 +294,11 @@ export default class DemMinMaxQuadTree {
                 const childNodeY = (nodey << 1) + this._siblingOffset[i][1];
 
                 // Decode node aabb from the morton code
-                decodeBounds(childNodeX, childNodeY, depth + 1, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin, boundsMax);
+                decodeBounds(childNodeX, childNodeY, depth + 1, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin as number[], boundsMax as number[]);
 
                 boundsMin[2] = -aabbSkirtPadding;
                 boundsMax[2] = this.maximums[this.childOffsets[idx] + i] * exaggeration;
 
-                // @ts-expect-error - TS2345 - Argument of type 'any[]' is not assignable to parameter of type 'vec3'.
                 const result = aabbRayIntersect(boundsMin, boundsMax, p, d);
                 if (result != null) {
                     // Build the result list from furthest to closest hit.
@@ -384,11 +382,12 @@ export default class DemMinMaxQuadTree {
     }
 }
 
-function bilinearLerp(p00: any, p10: any, p01: any, p11: any, x: number, y: number): any {
+function bilinearLerp(p00: number, p10: number, p01: number, p11: number, x: number, y: number): number {
     return interpolate(
         interpolate(p00, p01, y),
         interpolate(p10, p11, y),
-        x);
+        x
+    );
 }
 
 // Sample elevation in normalized uv-space ([0, 0] is the top left)

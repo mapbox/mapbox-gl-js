@@ -16,6 +16,7 @@ import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import Color from '../style-spec/util/color';
+import {Uniform1i} from './uniform_binding';
 
 import type ProgramConfiguration from '../data/program_configuration';
 import type Context from '../gl/context';
@@ -32,14 +33,18 @@ import type {UniformBindings, UniformValues} from './uniform_binding';
 import type {BinderUniform} from '../data/program_configuration';
 import type Painter from './painter';
 import type {Segment} from "../data/segment";
+import type {ProgramUniformsType, DynamicDefinesType} from '../render/program/program_uniforms';
+import type {PossiblyEvaluated} from '../style/properties';
+
+export type ProgramName = keyof ProgramUniformsType;
 
 export type DrawMode = WebGL2RenderingContext['POINTS'] | WebGL2RenderingContext['LINES'] | WebGL2RenderingContext['TRIANGLES'] | WebGL2RenderingContext['LINE_STRIP'];
 
-type ShaderSource = {
+export type ShaderSource = {
     fragmentSource: string;
     vertexSource: string;
     staticAttributes: Array<string>;
-    usedDefines: Array<string>;
+    usedDefines: Array<DynamicDefinesType>;
     vertexIncludes: Array<string>;
     fragmentIncludes: Array<string>;
 };
@@ -53,15 +58,23 @@ const debugWireframe2DLayerProgramNames = [
 
 const debugWireframe3DLayerProgramNames = [
     "stars",
+    "rainParticle",
+    "snowParticle",
     "fillExtrusion",  "fillExtrusionGroundEffect",
+    "elevatedStructures",
     "model",
     "symbol"];
 
+type InstancingUniformType = {
+    ['u_instanceID']: Uniform1i;
+}
+
+const instancingUniforms = (context: Context): InstancingUniformType => ({
+    'u_instanceID': new Uniform1i(context)});
+
 class Program<Us extends UniformBindings> {
     program: WebGLProgram;
-    attributes: {
-        [_: string]: number;
-    };
+    attributes: Record<string, number>;
     numAttributes: number;
     fixedUniforms: Us;
     binderUniforms: Array<BinderUniform>;
@@ -73,14 +86,18 @@ class Program<Us extends UniformBindings> {
     globeUniforms: GlobeUniformsType | null | undefined;
     shadowUniforms: ShadowUniformsType | null | undefined;
 
-    name: string;
+    name: ProgramName;
     configuration: ProgramConfiguration | null | undefined;
-    fixedDefines: string[];
+    fixedDefines: DynamicDefinesType[];
+
+    // Manually handle instancing by issuing draw calls and replacing gl_InstanceID with uniform
+    forceManualRenderingForInstanceIDShaders: boolean;
+    instancingUniforms: InstancingUniformType | null | undefined;
 
     static cacheKey(
         source: ShaderSource,
         name: string,
-        defines: string[],
+        defines: DynamicDefinesType[],
         programConfiguration?: ProgramConfiguration | null,
     ): string {
         let key = `${name}${programConfiguration ? programConfiguration.cacheKey : ''}`;
@@ -92,14 +109,16 @@ class Program<Us extends UniformBindings> {
         return key;
     }
 
-    constructor(context: Context,
-                name: string,
-                source: ShaderSource,
-                configuration: ProgramConfiguration | null | undefined,
-                fixedUniforms: (arg1: Context) => Us,
-                fixedDefines: string[]) {
+    constructor(
+        context: Context,
+        name: ProgramName,
+        source: ShaderSource,
+        configuration: ProgramConfiguration | null | undefined,
+        fixedUniforms: (arg1: Context) => Us,
+        fixedDefines: DynamicDefinesType[]
+    ) {
         const gl = context.gl;
-        this.program = (gl.createProgram());
+        this.program = gl.createProgram();
 
         this.configuration = configuration;
         this.name = name;
@@ -128,7 +147,20 @@ class Program<Us extends UniformBindings> {
         for (const include of source.vertexIncludes) {
             vertexSource += `\n${includeMap[include]}`;
         }
+
+        this.forceManualRenderingForInstanceIDShaders = context.forceManualRenderingForInstanceIDShaders && source.vertexSource.indexOf("gl_InstanceID") !== -1;
+
+        if (this.forceManualRenderingForInstanceIDShaders) {
+            vertexSource += `\nuniform int u_instanceID;\n`;
+        }
+
         vertexSource += `\n${source.vertexSource}`;
+
+        if (this.forceManualRenderingForInstanceIDShaders) {
+            vertexSource = vertexSource.replaceAll("gl_InstanceID", "u_instanceID");
+        }
+
+        // Replace
 
         const fragmentShader = (gl.createShader(gl.FRAGMENT_SHADER));
         if (gl.isContextLost()) {
@@ -137,7 +169,7 @@ class Program<Us extends UniformBindings> {
         }
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);
-        assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(fragmentShader) as any));
+        assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(fragmentShader));
         gl.attachShader(this.program, fragmentShader);
 
         const vertexShader = (gl.createShader(gl.VERTEX_SHADER));
@@ -147,7 +179,7 @@ class Program<Us extends UniformBindings> {
         }
         gl.shaderSource(vertexShader, vertexSource);
         gl.compileShader(vertexShader);
-        assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), (gl.getShaderInfoLog(vertexShader) as any));
+        assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
         gl.attachShader(this.program, vertexShader);
 
         this.attributes = {};
@@ -164,13 +196,17 @@ class Program<Us extends UniformBindings> {
         }
 
         gl.linkProgram(this.program);
-        assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), (gl.getProgramInfoLog(this.program) as any));
+        assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), gl.getProgramInfoLog(this.program));
 
         gl.deleteShader(vertexShader);
         gl.deleteShader(fragmentShader);
 
         this.fixedUniforms = fixedUniforms(context);
         this.binderUniforms = configuration ? configuration.getUniforms(context) : [];
+
+        if (this.forceManualRenderingForInstanceIDShaders) {
+            this.instancingUniforms = instancingUniforms(context);
+        }
 
         // Symbol and circle layer are depth (terrain + 3d layers) occluded
         // For the sake of native compatibility depth occlusion goes via terrain uniforms block
@@ -273,7 +309,12 @@ class Program<Us extends UniformBindings> {
         stencilMode: Readonly<StencilMode>,
         colorMode: Readonly<ColorMode>,
         indexBuffer: IndexBuffer, segment: Segment,
-        currentProperties: any, zoom?: number | null, configuration?: ProgramConfiguration | null, instanceCount?: number | null) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        currentProperties: PossiblyEvaluated<any>,
+        zoom?: number,
+        configuration?: ProgramConfiguration,
+        instanceCount?: number
+    ) {
 
         const wireframe = painter.options.wireframe;
 
@@ -319,13 +360,13 @@ class Program<Us extends UniformBindings> {
             return;
         }
 
-        const debugDefines = [...this.fixedDefines];
-        debugDefines.push("DEBUG_WIREFRAME");
-        // @ts-expect-error - TS2322 - Type 'string[]' is not assignable to type 'DynamicDefinesType[]'.
+        const debugDefines: DynamicDefinesType[] = [...this.fixedDefines];
+        debugDefines.push('DEBUG_WIREFRAME');
         const debugProgram = painter.getOrCreateProgram(this.name, {config: this.configuration, defines: debugDefines});
 
         context.program.set(debugProgram.program);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const copyUniformValues = (group: string, pSrc: any, pDst: any) => {
             if (pSrc[group] && pDst[group]) {
                 for (const name in pSrc[group]) {
@@ -337,7 +378,7 @@ class Program<Us extends UniformBindings> {
         };
 
         if (configuration) {
-            configuration.setUniforms(debugProgram.program, context, debugProgram.binderUniforms, currentProperties, {zoom: (zoom as any)});
+            configuration.setUniforms(debugProgram.program, context, debugProgram.binderUniforms, currentProperties, {zoom});
         }
 
         copyUniformValues("fixedUniforms", this, debugProgram);
@@ -358,20 +399,34 @@ class Program<Us extends UniformBindings> {
         const count = segment.primitiveLength * 3 * 2; // One triangle corresponds to 3 lines (each has 2 indices)
         const offset = segment.primitiveOffset * 3 * 2 * 2; // One triangles corresponds to 3 lines (2 indices * 2 bytes per index)
 
-        if (instanceCount && instanceCount > 1) {
-            gl.drawElementsInstanced(
-                gl.LINES,
-                count,
-                gl.UNSIGNED_SHORT,
-                offset,
-                instanceCount);
+        if (this.forceManualRenderingForInstanceIDShaders) {
+            const renderInstanceCount = instanceCount ? instanceCount : 1;
+            for (let i = 0; i < renderInstanceCount; ++i) {
+                debugProgram.instancingUniforms["u_instanceID"].set(this.program, "u_instanceID", i);
+
+                gl.drawElements(
+                    gl.LINES,
+                    count,
+                    gl.UNSIGNED_SHORT,
+                    offset
+                );
+            }
         } else {
-            gl.drawElements(
-                gl.LINES,
-                count,
-                gl.UNSIGNED_SHORT,
-                offset
-            );
+            if (instanceCount && instanceCount > 1) {
+                gl.drawElementsInstanced(
+                    gl.LINES,
+                    count,
+                    gl.UNSIGNED_SHORT,
+                    offset,
+                    instanceCount);
+            } else {
+                gl.drawElements(
+                    gl.LINES,
+                    count,
+                    gl.UNSIGNED_SHORT,
+                    offset
+                );
+            }
         }
 
         // Revert to non-wireframe parameters
@@ -382,7 +437,18 @@ class Program<Us extends UniformBindings> {
         context.setColorMode(colorMode);
     }
 
-    draw(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    checkUniforms(name: string, define: DynamicDefinesType, uniforms: any) {
+        if (this.fixedDefines.includes(define)) {
+            for (const key of Object.keys(uniforms)) {
+                if (!uniforms[key].initialized) {
+                    throw new Error(`Program '${this.name}', from draw '${name}': uniform ${key} not set but required by ${define} being defined`);
+                }
+            }
+        }
+    }
+
+    draw<Us>(
          painter: Painter,
          drawMode: DrawMode,
          depthMode: Readonly<DepthMode>,
@@ -394,11 +460,13 @@ class Program<Us extends UniformBindings> {
          layoutVertexBuffer: VertexBuffer,
          indexBuffer: IndexBuffer | undefined,
          segments: SegmentVector,
-         currentProperties: any,
-         zoom?: number | null,
-         configuration?: ProgramConfiguration | null,
-         dynamicLayoutBuffers?: Array<VertexBuffer | null | undefined> | null,
-         instanceCount?: number | null) {
+         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         currentProperties?: PossiblyEvaluated<any>,
+         zoom?: number,
+         configuration?: ProgramConfiguration,
+         dynamicLayoutBuffers?: Array<VertexBuffer | null | undefined>,
+         instanceCount?: number
+    ) {
 
         const context = painter.context;
         const gl = context.gl;
@@ -416,7 +484,7 @@ class Program<Us extends UniformBindings> {
         }
 
         if (configuration) {
-            configuration.setUniforms(this.program, context, this.binderUniforms, currentProperties, {zoom: (zoom as any)});
+            configuration.setUniforms(this.program, context, this.binderUniforms, currentProperties, {zoom});
         }
 
         const primitiveSize = {
@@ -425,6 +493,8 @@ class Program<Us extends UniformBindings> {
             [gl.TRIANGLES]: 3,
             [gl.LINE_STRIP]: 1
         }[drawMode];
+
+        this.checkUniforms(layerID, 'RENDER_SHADOWS', this.shadowUniforms);
 
         const vertexAttribDivisorValue = instanceCount && instanceCount > 0 ? 1 : undefined;
         for (const segment of segments.get()) {
@@ -441,22 +511,40 @@ class Program<Us extends UniformBindings> {
                 vertexAttribDivisorValue
             );
 
-            if (instanceCount && instanceCount > 1) {
-                assert(indexBuffer);
-                gl.drawElementsInstanced(
-                    drawMode,
-                    segment.primitiveLength * primitiveSize,
-                    gl.UNSIGNED_SHORT,
-                    segment.primitiveOffset * primitiveSize * 2,
-                    instanceCount);
-            } else if (indexBuffer) {
-                gl.drawElements(
-                    drawMode,
-                    segment.primitiveLength * primitiveSize,
-                    gl.UNSIGNED_SHORT,
-                    segment.primitiveOffset * primitiveSize * 2);
+            if (this.forceManualRenderingForInstanceIDShaders) {
+                const renderInstanceCount = instanceCount ? instanceCount : 1;
+
+                for (let i = 0; i < renderInstanceCount; ++i) {
+                    this.instancingUniforms["u_instanceID"].set(this.program, "u_instanceID", i);
+
+                    if (indexBuffer) {
+                        gl.drawElements(
+                            drawMode,
+                            segment.primitiveLength * primitiveSize,
+                            gl.UNSIGNED_SHORT,
+                            segment.primitiveOffset * primitiveSize * 2);
+                    } else {
+                        gl.drawArrays(drawMode, segment.vertexOffset, segment.vertexLength);
+                    }
+                }
             } else {
-                gl.drawArrays(drawMode, segment.vertexOffset, segment.vertexLength);
+                if (instanceCount && instanceCount > 1) {
+                    assert(indexBuffer);
+                    gl.drawElementsInstanced(
+                        drawMode,
+                        segment.primitiveLength * primitiveSize,
+                        gl.UNSIGNED_SHORT,
+                        segment.primitiveOffset * primitiveSize * 2,
+                        instanceCount);
+                } else if (indexBuffer) {
+                    gl.drawElements(
+                        drawMode,
+                        segment.primitiveLength * primitiveSize,
+                        gl.UNSIGNED_SHORT,
+                        segment.primitiveOffset * primitiveSize * 2);
+                } else {
+                    gl.drawArrays(drawMode, segment.vertexOffset, segment.vertexLength);
+                }
             }
             if (drawMode === gl.TRIANGLES && indexBuffer) {
                 // Handle potential wireframe rendering for current draw call

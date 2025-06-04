@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
-/* eslint-disable new-cap */
 
 // Emscripten-based JavaScript wrapper for Google Draco WASM decoder, manually optimized for much smaller size
 export function DracoDecoderModule(wasmPromise) {
@@ -11,6 +11,7 @@ export function DracoDecoderModule(wasmPromise) {
         throw new Error("Unexpected Draco error.");
     }
     function memcpyBig(dest, src, num) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return HEAPU8.copyWithin(dest, src, src + num);
     }
     function resizeHeap(requestedSize) {
@@ -21,6 +22,7 @@ export function DracoDecoderModule(wasmPromise) {
             wasmMemory.grow(pages);
             updateMemoryViews();
             return true;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             return false;
         }
@@ -37,8 +39,10 @@ export function DracoDecoderModule(wasmPromise) {
 
     const instantiateWasm = WebAssembly.instantiateStreaming ?
         WebAssembly.instantiateStreaming(wasmPromise, wasmImports) :
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         wasmPromise.then(wasm => wasm.arrayBuffer()).then(buffer => WebAssembly.instantiate(buffer, wasmImports));
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return instantiateWasm.then(output => {
         // minified exports values might change when recompiling Draco WASM, to be manually updated on version ugprade
         const {

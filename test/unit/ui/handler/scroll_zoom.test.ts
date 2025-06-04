@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {
     describe,
@@ -94,6 +95,7 @@ describe('ScrollZoomHandler', () => {
         // simulate the above sequence of wheel events, with render frames
         // interspersed every 20ms
         while (now++ < end) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             if (events.length && lastWheelEvent + events[0][0] === now) {
                 const [, event] = events.shift();
                 simulate.wheel(map.getCanvas(), event);
@@ -179,7 +181,9 @@ describe('ScrollZoomHandler', () => {
         });
 
         test('Should keep maxZoom level during pitch', async () => {
-            vi.useFakeTimers();
+            vi.useFakeTimers({
+                toFake: ['performance'],
+            });
 
             const map = createMap({
                 interactive: true,
@@ -267,7 +271,7 @@ describe('ScrollZoomHandler', () => {
 
             now += 500;
             map.transform.zoom = 0;
-            map.setProjection({name:'globe'});
+            map.setProjection({name: 'globe'});
 
             for (let i = 0; i < 5; i++) {
                 simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -100});
@@ -334,6 +338,7 @@ describe('ScrollZoomHandler', () => {
         map._renderTaskQueue.run();
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('does not zoom if preventDefault is called on the wheel event', async () => {
         const map = createMap({
             interactive: true
@@ -355,8 +360,10 @@ describe('ScrollZoomHandler', () => {
     /**
      * @note Flacky
      */
+    // eslint-disable-next-line @typescript-eslint/require-await
     test.skip('emits one movestart event and one moveend event while zooming', async () => {
-        vi.useFakeTimers(now);
+        vi.stubGlobal('performance', {now: () => now});
+
         const map = createMap({
             interactive: true
         });
@@ -381,6 +388,7 @@ describe('ScrollZoomHandler', () => {
         let lastWheelEvent = now;
 
         while (now++ < end) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             if (events.length && lastWheelEvent + events[0][0] === now) {
                 const [, event] = events.shift();
                 simulate.wheel(map.getCanvas(), event);
@@ -403,7 +411,7 @@ describe('ScrollZoomHandler', () => {
      * @note Flacky
      */
     test.skip('emits one zoomstart event and one zoomend event while zooming', async () => {
-        vi.useFakeTimers(now);
+        vi.stubGlobal('performance', {now: () => now});
         const map = createMap({
             interactive: true
         });
@@ -428,6 +436,7 @@ describe('ScrollZoomHandler', () => {
         let lastWheelEvent = now;
 
         while (now++ < end) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             if (events.length && lastWheelEvent + events[0][0] === now) {
                 const [, event] = events.shift();
                 simulate.wheel(map.getCanvas(), event);

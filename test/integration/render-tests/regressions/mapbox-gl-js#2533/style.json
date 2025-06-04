@@ -3,7 +3,7 @@
   "metadata": {
     "test": {
       "operations": [
-        ["setPaintProperty", "land", "fill-pattern", "zoo_icon"],
+        ["setPaintProperty", "land", "fill-pattern", "zoo"],
         ["wait"]
       ]
     }
@@ -20,7 +20,7 @@
   "transition": {
     "duration": 0
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",

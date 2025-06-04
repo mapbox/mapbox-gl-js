@@ -27,7 +27,7 @@ export const getLayoutProperties = (): Properties<LayoutProps> => layout || (lay
 }));
 
 export type PaintProps = {
-    "model-opacity": DataConstantProperty<number>;
+    "model-opacity": DataDrivenProperty<number>;
     "model-rotation": DataDrivenProperty<[number, number, number]>;
     "model-scale": DataDrivenProperty<[number, number, number]>;
     "model-translation": DataDrivenProperty<[number, number, number]>;
@@ -42,11 +42,12 @@ export type PaintProps = {
     "model-height-based-emissive-strength-multiplier": DataDrivenProperty<[number, number, number, number, number]>;
     "model-cutoff-fade-range": DataConstantProperty<number>;
     "model-front-cutoff": DataConstantProperty<[number, number, number]>;
+    "model-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
 export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
-    "model-opacity": new DataConstantProperty(styleSpec["paint_model"]["model-opacity"]),
+    "model-opacity": new DataDrivenProperty(styleSpec["paint_model"]["model-opacity"]),
     "model-rotation": new DataDrivenProperty(styleSpec["paint_model"]["model-rotation"]),
     "model-scale": new DataDrivenProperty(styleSpec["paint_model"]["model-scale"]),
     "model-translation": new DataDrivenProperty(styleSpec["paint_model"]["model-translation"]),
@@ -61,4 +62,5 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "model-height-based-emissive-strength-multiplier": new DataDrivenProperty(styleSpec["paint_model"]["model-height-based-emissive-strength-multiplier"]),
     "model-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_model"]["model-cutoff-fade-range"]),
     "model-front-cutoff": new DataConstantProperty(styleSpec["paint_model"]["model-front-cutoff"]),
+    "model-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

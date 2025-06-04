@@ -3,6 +3,7 @@
   "sprite": "local://sprites/sprite",
   "metadata": {
     "test": {
+      "spriteFormat": "raster",
       "height": 256,
       "operations": [
         ["wait"],

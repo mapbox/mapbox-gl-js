@@ -13,9 +13,10 @@ import {instanceAttributes} from '../model_attributes';
 import {regionsEquals, transformPointToTile, pointInFootprint, skipClipping} from '../../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import {isValidUrl} from '../../../src/style-spec/validate/validate_model';
+import {type FeatureState} from '../../../src/style-spec/expression/index';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
-import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import type {ReplacementSource, Region} from '../../../3d-style/source/replacement_source';
 import type Point from '@mapbox/point-geometry';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type {mat4} from 'gl-matrix';
@@ -29,22 +30,24 @@ import type {
 } from '../../../src/data/bucket';
 import type Context from '../../../src/gl/context';
 import type VertexBuffer from '../../../src/gl/vertex_buffer';
-import type {FeatureState} from '../../../src/style-spec/expression/index';
 import type {FeatureStates} from '../../../src/source/source_state';
 import type {SpritePositions} from '../../../src/util/image';
 import type {ProjectionSpecification} from '../../../src/style-spec/types';
 import type {TileTransform} from '../../../src/geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
+import type {ImageId} from '../../../src/style-spec/expression/types/image_id';
+import type {StyleModelMap} from '../../../src/style/style_mode';
 
 class ModelFeature {
     feature: EvaluationFeature;
+    featureStates: FeatureState;
     instancedDataOffset: number;
     instancedDataCount: number;
 
-    rotation: Array<number>;
-    scale: Array<number>;
-    translation: Array<number>;
+    rotation: vec3;
+    scale: vec3;
+    translation: vec3;
 
     constructor(feature: EvaluationFeature, offset: number) {
         this.feature = feature;
@@ -82,10 +85,9 @@ class ModelBucket implements Bucket {
     stateDependentLayers: Array<ModelStyleLayer>;
     stateDependentLayerIds: Array<string>;
     hasPattern: boolean;
+    worldview: string | undefined;
 
-    instancesPerModel: {
-        string: PerModelAttributes;
-    };
+    instancesPerModel: Record<string, PerModelAttributes>;
 
     uploaded: boolean;
 
@@ -113,8 +115,9 @@ class ModelBucket implements Bucket {
     modelUris: Array<string>;
     modelsRequested: boolean;
 
-    activeReplacements: Array<any>;
+    activeReplacements: Array<Region>;
     replacementUpdateTime: number;
+    styleDefinedModelURLs: StyleModelMap;
 
     constructor(options: BucketParameters<ModelStyleLayer>) {
         this.zoom = options.zoom;
@@ -123,12 +126,12 @@ class ModelBucket implements Bucket {
         this.layerIds = this.layers.map(layer => layer.fqid);
         this.projection = options.projection;
         this.index = options.index;
+        this.worldview = options.worldview;
 
         this.hasZoomDependentProperties = this.layers[0].isZoomDependent();
 
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.hasPattern = false;
-        // @ts-expect-error - TS2741 - Property 'string' is missing in type '{}' but required in type '{ string: PerModelAttributes; }'.
         this.instancesPerModel = {};
         this.validForExaggeration = 0;
         this.maxVerticalOffset = 0;
@@ -146,6 +149,7 @@ class ModelBucket implements Bucket {
         this.modelsRequested = false;
         this.activeReplacements = [];
         this.replacementUpdateTime = 0;
+        this.styleDefinedModelURLs = options.styleDefinedModelURLs;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
@@ -162,17 +166,15 @@ class ModelBucket implements Bucket {
                 (feature.properties && feature.properties.hasOwnProperty("id")) ? feature.properties["id"] : undefined;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
+            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview}), evaluationFeature, canonical))
                 continue;
 
             const bucketFeature: BucketFeature = {
-                id: featureId,
+                id: featureId as number,
                 sourceLayerIndex,
                 index,
-                // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
                 geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
                 properties: feature.properties,
-                // @ts-expect-error - TS2322 - Type '0 | 2 | 1 | 3' is not assignable to type '2 | 1 | 3'.
                 type: feature.type,
                 patterns: {}
             };
@@ -190,8 +192,7 @@ class ModelBucket implements Bucket {
         this.lookup = null;
     }
 
-    // eslint-disable-next-line no-unused-vars
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions) {
         // called when setFeature state API is used
         for (const modelId in this.instancesPerModel) {
             const instances: PerModelAttributes = this.instancesPerModel[modelId];
@@ -332,9 +333,9 @@ class ModelBucket implements Bucket {
             }
         }
         const modelManager = this.layers[0].modelManager;
-        if (modelManager && this.modelUris) {
+        if (modelManager && this.modelUris && this.modelsRequested) {
             for (const modelUri of this.modelUris) {
-                modelManager.removeModel(modelUri, "");
+                modelManager.removeModel(modelUri, "", true);
             }
         }
     }
@@ -349,17 +350,21 @@ class ModelBucket implements Bucket {
         assert(modelIdProperty);
 
         const modelId = modelIdProperty.evaluate(evaluationFeature, {}, this.canonical);
-
         if (!modelId) {
             warnOnce(`modelId is not evaluated for layer ${layer.id} and it is not going to get rendered.`);
             return modelId;
         }
         // check if it's a valid model (absolute) URL
-        // otherwise it is considered as a style defined model, and hence we don't need to
-        // load it here.
         if (isValidUrl(modelId, false)) {
             if (!this.modelUris.includes(modelId)) {
                 this.modelUris.push(modelId);
+            }
+        } else {
+            // Check if it's a style model
+            if (this.styleDefinedModelURLs[modelId] !== undefined) {
+                if (!this.modelUris.includes(modelId)) {
+                    this.modelUris.push(modelId);
+                }
             }
         }
         if (!this.instancesPerModel[modelId]) {
@@ -421,8 +426,7 @@ class ModelBucket implements Bucket {
         const color = layer.paint.get('model-color').evaluate(evaluationFeature, featureState, canonical);
 
         color.a = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
-        // @ts-expect-error - TS2322 - Type '[]' is not assignable to type 'mat4'.
-        const rotationScaleYZFlip: mat4 = [];
+        const rotationScaleYZFlip = [] as unknown as mat4;
         if (this.maxVerticalOffset < translation[2]) this.maxVerticalOffset = translation[2];
         this.maxScale = Math.max(Math.max(this.maxScale, scale[0]), Math.max(scale[1], scale[2]));
 

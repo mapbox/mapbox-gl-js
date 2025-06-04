@@ -27,7 +27,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -58,7 +58,7 @@
             ],
             "font-scale": 1.6
           },
-          ["image", "government_icon"]
+          ["image", "school"]
         ],
         "text-writing-mode": ["vertical"],
         "symbol-placement": "point"

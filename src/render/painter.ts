@@ -24,14 +24,15 @@ import symbol from './draw_symbol';
 import circle from './draw_circle';
 import assert from 'assert';
 import heatmap from './draw_heatmap';
-import line from './draw_line';
-import fill from './draw_fill';
+import line, {prepare as prepareLine} from './draw_line';
+import fill, {drawDepthPrepass as fillDepthPrepass} from './draw_fill';
 import fillExtrusion from './draw_fill_extrusion';
+import building from '../../3d-style/render/draw_building';
 import hillshade from './draw_hillshade';
 import raster, {prepare as prepareRaster} from './draw_raster';
 import rasterParticle, {prepare as prepareRasterParticle} from './draw_raster_particle';
 import background from './draw_background';
-import debug, {drawDebugPadding, drawDebugQueryGeometry} from './draw_debug';
+import {default as drawDebug, drawDebugPadding, drawDebugQueryGeometry} from './draw_debug';
 import custom from './draw_custom';
 import sky from './draw_sky';
 import Atmosphere from './draw_atmosphere';
@@ -49,27 +50,32 @@ import {WireframeDebugCache} from './wireframe_cache';
 import {FOG_OPACITY_THRESHOLD} from '../style/fog_helpers';
 import Framebuffer from '../gl/framebuffer';
 import {OcclusionParams} from './occlusion_params';
+import {Rain} from '../precipitation/draw_rain';
+import {Snow} from '../precipitation/draw_snow';
 
-// 3D-style related
-import type {Source} from '../source/source';
-import type {CutoffParams} from '../render/cutoff';
-import type Transform from '../geo/transform';
-import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
-import type Style from '../style/style';
-import type StyleLayer from '../style/style_layer';
 import type ImageManager from './image_manager';
-import type GlyphManager from './glyph_manager';
-import type ModelManager from '../../3d-style/render/model_manager';
-import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
-import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
-import type {DynamicDefinesType} from './program/program_uniforms';
-import type {ContextOptions} from '../gl/context';
-import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
-import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
+import type ModelManager from '../../3d-style/render/model_manager';
 import type ProgramConfiguration from '../data/program_configuration';
+import type Style from '../style/style';
+import type Transform from '../geo/transform';
+import type VertexBuffer from '../gl/vertex_buffer';
+import type GlyphManager from './glyph_manager';
+import type {ContextOptions} from '../gl/context';
+import type {CutoffParams} from '../render/cutoff';
+import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
+import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
+import type {LightsUniformsType} from '../../3d-style/render/lights';
+import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
+import type {ProgramName} from './program';
+import type {ProgramUniformsType, DynamicDefinesType} from './program/program_uniforms';
+import type {Source} from '../source/source';
+import type {UniformBindings} from './uniform_binding';
+import type {CrossTileID, VariableOffset} from '../symbol/placement';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
+export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
 
 export type CanvasCopyInstances = {
     canvasCopies: WebGLTexture[];
@@ -113,31 +119,44 @@ type TileBoundsBuffers = {
     tileBoundsSegments: SegmentVector;
 };
 
-type GPUTimers = {
-    [layerId: string]: any;
-};
+type GPUTimer = {calls: number; cpuTime: number; query: WebGLQuery};
+type GPUTimers = Record<string, GPUTimer>;
 
-const draw = {
+type DrawStyleLayer = (
+    painter: Painter,
+    sourceCache: SourceCache,
+    layer: TypedStyleLayer,
+    tileIDs: Array<OverscaledTileID>,
+    variableOffsets?: Partial<Record<CrossTileID, VariableOffset>>,
+    isInitialLoad?: boolean
+) => void;
+
+const draw: Record<string, DrawStyleLayer> = {
     symbol,
     circle,
     heatmap,
     line,
     fill,
     'fill-extrusion': fillExtrusion,
+    building,
     hillshade,
     raster,
     'raster-particle': rasterParticle,
     background,
     sky,
-    debug,
     custom,
     model
 };
 
 const prepare = {
+    line: prepareLine,
     model: modelPrepare,
     raster: prepareRaster,
     'raster-particle': prepareRasterParticle
+};
+
+const depthPrepass = {
+    fill: fillDepthPrepass
 };
 
 /**
@@ -149,9 +168,7 @@ const prepare = {
 class Painter {
     context: Context;
     transform: Transform;
-    _tileTextures: {
-        [_: number]: Array<Texture>;
-    };
+    _tileTextures: Record<number, Array<Texture>>;
     numSublayers: number;
     depthEpsilon: number;
     emptyProgramConfiguration: ProgramConfiguration;
@@ -167,9 +184,7 @@ class Painter {
     quadTriangleIndexBuffer: IndexBuffer;
     mercatorBoundsBuffer: VertexBuffer;
     mercatorBoundsSegments: SegmentVector;
-    _tileClippingMaskIDs: {
-        [_: number]: number;
-    };
+    _tileClippingMaskIDs: Record<number, number>;
     stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
@@ -188,14 +203,12 @@ class Painter {
     id: string;
     _showOverdrawInspector: boolean;
     _shadowMapDebug: boolean;
-    cache: {
-        [_: string]: Program<any>;
-    };
+    cache: Record<string, Program<UniformBindings>>;
     symbolFadeChange: number;
     gpuTimers: GPUTimers;
-    deferredRenderGpuTimeQueries: Array<any>;
+    deferredRenderGpuTimeQueries: WebGLQuery[];
     emptyTexture: Texture;
-    identityMat: Float32Array;
+    identityMat: mat4;
     debugOverlayTexture: Texture;
     debugOverlayCanvas: HTMLCanvasElement;
     _terrain: Terrain | null | undefined;
@@ -204,10 +217,10 @@ class Painter {
     tileLoaded: boolean;
     frameCopies: Array<WebGLTexture>;
     loadTimeStamps: Array<number>;
-    _backgroundTiles: {
-        [key: number]: Tile;
-    };
+    _backgroundTiles: Record<number, Tile>;
     _atmosphere: Atmosphere | null | undefined;
+    _rain?: Rain;
+    _snow?: Snow;
     replacementSource: ReplacementSource;
     conflationActive: boolean;
     firstLightBeamLayer: number;
@@ -219,20 +232,18 @@ class Painter {
     renderDefaultSouthPole: boolean;
     renderElevatedRasterBackface: boolean;
     _fogVisible: boolean;
-    _cachedTileFogOpacities: {
-        [key: number]: [number, number];
-    };
-
-    _shadowRenderer: ShadowRenderer | null | undefined;
-
+    _cachedTileFogOpacities: Record<number, [number, number]>;
+    _shadowRenderer?: ShadowRenderer;
     _wireframeDebugCache: WireframeDebugCache;
 
     tp: ITrackedParameters;
 
     _debugParams: {
+        forceEnablePrecipitation: boolean;
         showTerrainProxyTiles: boolean;
         fpsWindow: number;
         continousRedraw: boolean;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         enabledLayers: any;
     };
 
@@ -253,7 +264,11 @@ class Painter {
 
     _clippingActiveLastFrame: boolean;
 
-    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, tp: ITrackedParameters) {
+    scaleFactor: number;
+
+    worldview: string;
+
+    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, tp: ITrackedParameters, worldview: string | undefined) {
         this.context = new Context(gl, contextCreateOptions);
 
         this.transform = transform;
@@ -268,14 +283,15 @@ class Painter {
         this._dt = 0;
 
         this._debugParams = {
+            forceEnablePrecipitation: false,
             showTerrainProxyTiles: false,
             fpsWindow: 30,
-            continousRedraw:false,
+            continousRedraw: false,
             enabledLayers: {
             }
         };
 
-        const layerTypes = ["fill", "line", "symbol", "circle", "heatmap", "fill-extrusion", "raster", "raster-particle", "hillshade", "model", "background", "sky"];
+        const layerTypes = ["fill", "line", "symbol", "circle", "heatmap", "fill-extrusion", "building", "raster", "raster-particle", "hillshade", "model", "background", "sky"];
 
         for (const layerType of layerTypes) {
             this._debugParams.enabledLayers[layerType] = true;
@@ -285,19 +301,21 @@ class Painter {
             this.style.map.triggerRepaint();
         });
 
+        tp.registerParameter(this._debugParams, ["Precipitation"], "forceEnablePrecipitation");
+
         tp.registerParameter(this._debugParams, ["FPS"], "fpsWindow", {min: 1, max: 100, step: 1});
         tp.registerBinding(this._debugParams, ["FPS"], 'continousRedraw', {
-            readonly:true,
+            readonly: true,
             label: "continuous redraw"
         });
         tp.registerBinding(this, ["FPS"], '_averageFPS', {
-            readonly:true,
+            readonly: true,
             label: "value"
         });
         tp.registerBinding(this, ["FPS"], '_averageFPS', {
-            readonly:true,
+            readonly: true,
             label: "graph",
-            view:'graph',
+            view: 'graph',
             min: 0,
             max: 200
         });
@@ -334,9 +352,13 @@ class Painter {
         this.layersWithOcclusionOpacity = [];
 
         const emptyDepth = new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0));
-        this.emptyDepthTexture = new Texture(this.context, emptyDepth, gl.RGBA);
+        this.emptyDepthTexture = new Texture(this.context, emptyDepth, gl.RGBA8);
 
         this._clippingActiveLastFrame = false;
+
+        this.scaleFactor = scaleFactor;
+
+        this.worldview = worldview;
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {
@@ -468,9 +490,8 @@ class Painter {
         this.debugIndexBuffer = context.createIndexBuffer(tileLineStripIndices);
 
         this.emptyTexture = new Texture(context,
-            new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0)), context.gl.RGBA);
+            new RGBAImage({width: 1, height: 1}, Uint8Array.of(0, 0, 0, 0)), context.gl.RGBA8);
 
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
         this.identityMat = mat4.create();
 
         const gl = this.context.gl;
@@ -514,7 +535,6 @@ class Painter {
         // pending an upstream fix, we draw a fullscreen stencil=0 clipping mask here,
         // effectively clearing the stencil buffer: once an upstream patch lands, remove
         // this function in favor of context.clear({ stencil: 0x0 })
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         this.getOrCreateProgram('clippingMask').draw(this, gl.TRIANGLES,
             DepthMode.disabled, this.stencilClearMode, ColorMode.disabled, CullFaceMode.disabled,
             clippingMaskUniformValues(this.identityMat),
@@ -529,7 +549,7 @@ class Painter {
         }
     }
 
-    _renderTileClippingMasks(layer: StyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
+    _renderTileClippingMasks(layer: TypedStyleLayer, sourceCache?: SourceCache, tileIDs?: Array<OverscaledTileID>) {
         if (!sourceCache || this.currentStencilSource === sourceCache.id || !layer.isTileClipped() || !tileIDs || tileIDs.length === 0) {
             return;
         }
@@ -570,7 +590,6 @@ class Painter {
             const id = this._tileClippingMaskIDs[tileID.key] = this.nextStencilID++;
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = this.getTileBoundsBuffers(tile);
 
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(this, gl.TRIANGLES, DepthMode.disabled,
             // Tests will always pass, and ref value will be written to stencil buffer.
             new StencilMode({func: gl.ALWAYS, mask: 0}, id, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE),
@@ -595,6 +614,7 @@ class Painter {
     stencilModeForClipping(tileID: OverscaledTileID): Readonly<StencilMode> {
         if (this.terrain) return this.terrain.stencilModeForRTTOverlap(tileID);
         const gl = this.context.gl;
+        assert(this._tileClippingMaskIDs[tileID.key] != null);
         return new StencilMode({func: gl.EQUAL, mask: 0xFF}, this._tileClippingMaskIDs[tileID.key], 0x00, gl.KEEP, gl.KEEP, gl.REPLACE);
     }
 
@@ -620,6 +640,7 @@ class Painter {
             if (this.nextStencilID + stencilValues > 256) {
                 this.clearStencil();
             }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const zToStencilMode: Record<string, any> = {};
             for (let i = 0; i < stencilValues; i++) {
                 zToStencilMode[i + minTileZ] = new StencilMode({func: gl.GEQUAL, mask: 0xFF}, i + this.nextStencilID, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
@@ -690,7 +711,7 @@ class Painter {
         const depthHeight = Math.ceil(this.height);
 
         const fboPrev = this.context.bindFramebuffer.get();
-        const texturePrev = gl.getParameter(gl.TEXTURE_BINDING_2D);
+        const texturePrev: WebGLTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
 
         if (!this.depthFBO || this.depthFBO.width !== depthWidth || this.depthFBO.height !== depthHeight) {
             if (this.depthFBO) {
@@ -702,7 +723,7 @@ class Painter {
             if (depthWidth !== 0 && depthHeight !== 0) {
                 this.depthFBO = new Framebuffer(this.context, depthWidth, depthHeight, false, 'texture');
 
-                this.depthTexture = new Texture(this.context, {width: depthWidth, height: depthHeight, data: null}, gl.DEPTH_STENCIL);
+                this.depthTexture = new Texture(this.context, {width: depthWidth, height: depthHeight, data: null}, gl.DEPTH24_STENCIL8);
                 this.depthFBO.depthAttachment.set(this.depthTexture.texture);
             }
         }
@@ -746,7 +767,8 @@ class Painter {
 
         const layers = this.style._mergedLayers;
 
-        const layerIds = this.style.order.filter((id) => {
+        const drapingEnabled = !!(this.terrain && this.terrain.enabled);
+        const getLayerIds = () => this.style._getOrder(drapingEnabled).filter((id) => {
             const layer = layers[id];
 
             if (layer.type in this._debugParams.enabledLayers) {
@@ -755,6 +777,8 @@ class Painter {
 
             return true;
         });
+
+        let layerIds = getLayerIds();
 
         let layersRequireTerrainDepth = false;
         let layersRequireFinalDepth = false;
@@ -767,7 +791,7 @@ class Painter {
             }
 
             if (layer.type === 'symbol') {
-                if ((layer as SymbolStyleLayer).hasInitialOcclusionOpacityProperties) {
+                if (layer.hasInitialOcclusionOpacityProperties) {
                     layersRequireFinalDepth = true;
                 } else {
                     layersRequireTerrainDepth = true;
@@ -775,7 +799,7 @@ class Painter {
             }
         }
 
-        const orderedLayers = layerIds.map(id => layers[id]);
+        let orderedLayers = layerIds.map(id => layers[id]);
         const sourceCaches = this.style._mergedSourceCaches;
 
         this.imageManager = style.imageManager;
@@ -834,15 +858,15 @@ class Painter {
             coordsSortedByDistance[id] = sourceCache.sortCoordinatesByDistance(coordsAscending[id]);
         }
 
-        const getLayerSource = (layer: StyleLayer) => {
+        const getLayerSource = (layer: TypedStyleLayer) => {
             const cache = this.style.getLayerSourceCache(layer);
             if (!cache || !cache.used) return null;
             return cache.getSource();
         };
 
         if (conflationSourcesInStyle || clippingActiveThisFrame || this._clippingActiveLastFrame) {
-            const conflationLayersInStyle = [];
-            const conflationLayerIndicesInStyle = [];
+            const conflationLayersInStyle: TypedStyleLayer[] = [];
+            const conflationLayerIndicesInStyle: number[] = [];
 
             let idx = 0;
             for (const layer of orderedLayers) {
@@ -860,7 +884,7 @@ class Painter {
                 // where certain features should be replaced by overlapping features from another layer with higher
                 // precedence. A special data structure 'replacementSource' is used to compute regions
                 // on visible tiles where potential overlap might occur between features of different layers.
-                const conflationSources = [];
+                const conflationSources: Array<{layer: string; cache: SourceCache; order: number; clipMask: number; clipScope: string[]}> = [];
                 for (let i = 0; i < conflationLayersInStyle.length; i++) {
                     const layer = conflationLayersInStyle[i];
                     const layerIdx = conflationLayerIndicesInStyle[i];
@@ -873,7 +897,7 @@ class Painter {
 
                     let order = ReplacementOrderLandmark;
                     let clipMask = LayerTypeMask.None;
-                    const clipScope = [];
+                    const clipScope: string[] = [];
                     let addToSources = true;
                     if (layer.type === 'clip') {
                         // Landmarks have precedence over fill extrusions regardless of order in the style.
@@ -935,7 +959,7 @@ class Painter {
                     this.minCutoffZoom = Math.max(layer.minzoom, this.minCutoffZoom);
                 }
             }
-            if (layer.is3D()) {
+            if (layer.is3D(drapingEnabled)) {
                 if (this.opaquePassCutoff === Infinity) {
                     this.opaquePassCutoff = i;
                 }
@@ -963,6 +987,10 @@ class Painter {
             // All render to texture is done in translucent pass to remove need
             // for depth buffer allocation per tile.
             this.opaquePassCutoff = 0;
+
+            // Calling updateTileBinding() has possibly changed drape first layer order.
+            layerIds = getLayerIds();
+            orderedLayers = layerIds.map(id => layers[id]);
         }
 
         const shadowRenderer = this._shadowRenderer;
@@ -1004,6 +1032,32 @@ class Painter {
             }
         }
 
+        const snow = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.snow);
+        const rain = this._debugParams.forceEnablePrecipitation || !!(this.style && this.style.rain);
+
+        if (snow && !this._snow) {
+            this._snow = new Snow(this);
+        }
+        if (!snow && this._snow) {
+            this._snow.destroy();
+            delete this._snow;
+        }
+
+        if (rain && !this._rain) {
+            this._rain = new Rain(this);
+        }
+        if (!rain && this._rain) {
+            this._rain.destroy();
+            delete this._rain;
+        }
+
+        if (this._snow) {
+            this._snow.update(this);
+        }
+        if (this._rain) {
+            this._rain.update(this);
+        }
+
         // Following line is billing related code. Do not change. See LICENSE.txt
         if (!isMapAuthenticated(this.context.gl)) return;
 
@@ -1020,7 +1074,6 @@ class Painter {
             const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
             if (!(layer.type === 'custom' || layer.type === 'raster' || layer.type === 'raster-particle' || layer.isSky()) && !(coords && coords.length)) continue;
 
-            // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
             this.renderLayer(this, sourceCache, layer, coords);
         }
 
@@ -1049,14 +1102,15 @@ class Painter {
                 const fogLUT = this.style.getLut(fog.scope);
                 if (!shouldRenderAtmosphere) {
 
-                    const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
+                    const ignoreLutColor = fog.properties.get('color-use-theme') === 'none';
+                    const fogColor = fog.properties.get('color').toNonPremultipliedRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...fogColor);
                 }
 
                 if (shouldRenderAtmosphere) {
-
-                    const spaceColor = fog.properties.get('space-color').toRenderColor(fogLUT).toArray01();
+                    const ignoreLutColor = fog.properties.get('space-color-use-theme') === 'none';
+                    const spaceColor = fog.properties.get('space-color').toNonPremultipliedRenderColor(ignoreLutColor ? null : fogLUT).toArray01();
 
                     return new Color(...spaceColor);
                 }
@@ -1084,10 +1138,8 @@ class Painter {
                 const layer = orderedLayers[this.currentLayer];
                 const sourceCache = style.getLayerSourceCache(layer);
                 if (layer.isSky()) continue;
-                const coords = sourceCache ? (layer.is3D() ? coordsSortedByDistance : coordsDescending)[sourceCache.id] : undefined;
-                // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
+                const coords = sourceCache ? (layer.is3D(drapingEnabled) ? coordsSortedByDistance : coordsDescending)[sourceCache.id] : undefined;
                 this._renderTileClippingMasks(layer, sourceCache, coords);
-                // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                 this.renderLayer(this, sourceCache, layer, coords);
             }
         }
@@ -1109,7 +1161,6 @@ class Painter {
                 if (!layer.isSky()) continue;
                 const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
 
-                // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                 this.renderLayer(this, sourceCache, layer, coords);
             }
         }
@@ -1118,7 +1169,7 @@ class Painter {
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
 
-        function coordsForTranslucentLayer(layer: StyleLayer, sourceCache?: SourceCache) {
+        function coordsForTranslucentLayer(layer: TypedStyleLayer, sourceCache?: SourceCache) {
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
             // separate clipping masks
@@ -1126,7 +1177,7 @@ class Painter {
 
             if (sourceCache) {
                 const coordsSet = layer.type === 'symbol' ? coordsDescendingSymbol :
-                    (layer.is3D() ? coordsSortedByDistance : coordsDescending);
+                    (layer.is3D(drapingEnabled) ? coordsSortedByDistance : coordsDescending);
 
                 coords = coordsSet[sourceCache.id];
             }
@@ -1142,7 +1193,6 @@ class Painter {
                 const layer = orderedLayers[this.currentLayer];
                 if (layer.type === "raster" || layer.type === "raster-particle") {
                     const sourceCache = style.getLayerSourceCache(layer);
-                    // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'. | TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                     this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
                 }
                 ++this.currentLayer;
@@ -1168,7 +1218,7 @@ class Painter {
                 continue;
             }
 
-            if (layer.is3D()) {
+            if (layer.is3D(drapingEnabled)) {
                 last3DLayerIdx = i;
             }
         }
@@ -1177,6 +1227,8 @@ class Painter {
         if (layersRequireFinalDepth && last3DLayerIdx === -1) {
             layersRequireTerrainDepth = true;
         }
+
+        let depthPrepassRendered = false;
 
         while (this.currentLayer < layerIds.length) {
             const layer = orderedLayers[this.currentLayer];
@@ -1204,6 +1256,28 @@ class Painter {
                 continue;
             }
 
+            if (!depthPrepassRendered && layer.is3D(drapingEnabled) && !drapingEnabled) {
+                // Perform a depth pre-pass step just before rendering of the first 3D layer.
+                // This allows some functionalty/features such as 3D intersections to pre-populate
+                // the depth buffer with information that wouldn't otherwise be available
+                const saveCurrentLayer = this.currentLayer;
+                const renderDepthSubpass = (pass: DepthPrePass) => {
+                    for (this.currentLayer = 0; this.currentLayer < orderedLayers.length; this.currentLayer++) {
+                        const depthPassLayer = orderedLayers[this.currentLayer];
+                        if (depthPrepass[depthPassLayer.type]) {
+                            const sourceCache = this.style.getLayerSourceCache(depthPassLayer);
+                            depthPrepass[depthPassLayer.type](this, sourceCache, depthPassLayer, coordsForTranslucentLayer(depthPassLayer, sourceCache), pass);
+                        }
+                    }
+                };
+
+                renderDepthSubpass('initialize');
+                renderDepthSubpass('reset');
+
+                this.currentLayer = saveCurrentLayer;
+                depthPrepassRendered = true;
+            }
+
             // Blit depth for symbols and circles which are occluded by terrain only
             if (layersRequireTerrainDepth && !terrainDepthCopied && this.terrain && !this.transform.isOrthographic) {
                 terrainDepthCopied = true;
@@ -1216,11 +1290,9 @@ class Painter {
                 this.blitDepth();
             }
 
-            if (!layer.is3D() && !this.terrain) {
-                // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
+            if (!this.terrain) {
                 this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
             }
-            // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'. | TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
             this.renderLayer(this, sourceCache, layer, coordsForTranslucentLayer(layer, sourceCache));
 
             // Render ground shadows after the last shadow caster layer
@@ -1236,7 +1308,6 @@ class Painter {
 
                         const sourceCache = style.getLayerSourceCache(layer);
                         const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
-                        // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                         this.renderLayer(this, sourceCache, layer, coords);
                     }
                     this.currentLayer = saveCurrentLayer;
@@ -1253,11 +1324,9 @@ class Painter {
                     const layer = orderedLayers[this.currentLayer];
                     const sourceCache = style.getLayerSourceCache(layer);
                     const coords = sourceCache ? coordsDescending[sourceCache.id] : undefined;
-                    if (!layer.is3D() && !this.terrain) {
-                        // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
+                    if (!this.terrain) {
                         this._renderTileClippingMasks(layer, sourceCache, sourceCache ? coordsAscending[sourceCache.id] : undefined);
                     }
-                    // @ts-expect-error - TS2345 - Argument of type 'void | SourceCache' is not assignable to parameter of type 'SourceCache'.
                     this.renderLayer(this, sourceCache, layer, coords);
                 }
                 this.depthOcclusion = false;
@@ -1273,6 +1342,13 @@ class Painter {
             this.terrain.postRender();
         }
 
+        if (this._snow) {
+            this._snow.draw(this);
+        }
+
+        if (this._rain) {
+            this._rain.draw(this);
+        }
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             // Use source with highest maxzoom
             let selectedSource = null;
@@ -1286,7 +1362,7 @@ class Painter {
             });
             if (selectedSource) {
                 if (this.options.showTileBoundaries) {
-                    draw.debug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false, this.options.showParseStatus);
+                    drawDebug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false, this.options.showParseStatus);
                 }
 
                 Debug.run(() => {
@@ -1302,7 +1378,7 @@ class Painter {
         }
 
         if (this.terrain && this._debugParams.showTerrainProxyTiles) {
-            draw.debug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true, this.options.showParseStatus);
+            drawDebug(this, this.terrain.proxySourceCache, this.terrain.proxyCoords, new Color(1.0, 0.8, 0.1, 1.0), true, this.options.showParseStatus);
         }
 
         if (this.options.showPadding) {
@@ -1324,7 +1400,7 @@ class Painter {
         }
     }
 
-    prepareLayer(layer: StyleLayer) {
+    prepareLayer(layer: TypedStyleLayer) {
         this.gpuTimingStart(layer);
 
         const {unsupportedLayers} = this.transform.projection;
@@ -1339,7 +1415,7 @@ class Painter {
         this.gpuTimingEnd();
     }
 
-    renderLayer(painter: Painter, sourceCache: SourceCache | null | undefined, layer: StyleLayer, coords?: Array<OverscaledTileID>) {
+    renderLayer(painter: Painter, sourceCache: SourceCache | undefined, layer: TypedStyleLayer, coords?: Array<OverscaledTileID>) {
         if (layer.isHidden(this.transform.zoom)) return;
         if (layer.type !== 'background' && layer.type !== 'sky' && layer.type !== 'custom' && layer.type !== 'model' && layer.type !== 'raster' && layer.type !== 'raster-particle' && !(coords && coords.length)) return;
 
@@ -1353,7 +1429,7 @@ class Painter {
         this.gpuTimingEnd();
     }
 
-    gpuTimingStart(layer: StyleLayer) {
+    gpuTimingStart(layer: TypedStyleLayer) {
         if (!this.options.gpuTiming) return;
         const ext = this.context.extTimerQuery;
         const gl = this.context.gl;
@@ -1403,36 +1479,33 @@ class Painter {
         return currentLayerTimers;
     }
 
-    collectDeferredRenderGpuQueries(): Array<any> {
+    collectDeferredRenderGpuQueries(): WebGLQuery[] {
         const currentQueries = this.deferredRenderGpuTimeQueries;
         this.deferredRenderGpuTimeQueries = [];
         return currentQueries;
     }
 
-    queryGpuTimers(gpuTimers: GPUTimers): {
-        [layerId: string]: number;
-    } {
-        const layers: Record<string, any> = {};
+    queryGpuTimers(gpuTimers: GPUTimers): {[layerId: string]: number} {
+        const layers: Record<string, number> = {};
         for (const layerId in gpuTimers) {
             const gpuTimer = gpuTimers[layerId];
             const ext = this.context.extTimerQuery;
             const gl = this.context.gl;
             const gpuTime = ext.getQueryParameter(gpuTimer.query, gl.QUERY_RESULT) / (1000 * 1000);
             ext.deleteQueryEXT(gpuTimer.query);
-            layers[layerId] = (gpuTime);
+            layers[layerId] = gpuTime;
         }
         return layers;
     }
 
-    queryGpuTimeDeferredRender(gpuQueries: Array<any>): number {
+    queryGpuTimeDeferredRender(gpuQueries: WebGLQuery[]): number {
         if (!this.options.gpuTimingDeferredRender) return 0;
-        const ext = this.context.extTimerQuery;
         const gl = this.context.gl;
 
         let gpuTime = 0;
         for (const query of gpuQueries) {
-            gpuTime += ext.getQueryParameter(query, gl.QUERY_RESULT) / (1000 * 1000);
-            ext.deleteQueryEXT(query);
+            gpuTime += gl.getQueryParameter(query, gl.QUERY_RESULT) / (1000 * 1000);
+            gl.deleteQuery(query);
         }
 
         return gpuTime;
@@ -1445,12 +1518,12 @@ class Painter {
      * @private
      */
     translatePosMatrix(
-        matrix: Float32Array,
+        matrix: mat4,
         tile: Tile,
         translate: [number, number],
         translateAnchor: 'map' | 'viewport',
         inViewportPixelUnitsUnits?: boolean,
-    ): Float32Array {
+    ): mat4 {
         if (!translate[0] && !translate[1]) return matrix;
 
         const angle = inViewportPixelUnitsUnits ?
@@ -1515,9 +1588,9 @@ class Painter {
      * @returns {string[]}
      * @private
      */
-    currentGlobalDefines(name: string, overrideFog?: boolean | null, overrideRtt?: boolean | null): string[] {
+    currentGlobalDefines(name: string, overrideFog?: boolean | null, overrideRtt?: boolean | null): DynamicDefinesType[] {
         const rtt = (overrideRtt === undefined) ? this.terrain && this.terrain.renderingToTexture : overrideRtt;
-        const defines = [];
+        const defines: DynamicDefinesType[] = [];
 
         if (this.style && this.style.enable3dLights()) {
             // In case of terrain and map optimized for terrain mode flag
@@ -1533,12 +1606,6 @@ class Painter {
         }
         if (this.renderPass === 'shadow') {
             if (!this._shadowMapDebug) defines.push('DEPTH_TEXTURE');
-        } else if (this.shadowRenderer) {
-            if (this.shadowRenderer.useNormalOffset) {
-                defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
-            } else {
-                defines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
-            }
         }
         if (this.terrainRenderModeElevated()) {
             defines.push('TERRAIN');
@@ -1555,9 +1622,9 @@ class Painter {
         return defines;
     }
 
-    getOrCreateProgram(name: string, options?: CreateProgramParams): Program<any> {
+    getOrCreateProgram<T extends ProgramName>(name: T, options?: CreateProgramParams): Program<ProgramUniformsType[T]> {
         this.cache = this.cache || {};
-        const defines = (((options && options.defines) || []) as string[]);
+        const defines = ((options && options.defines) || []);
         const config = options && options.config;
         const overrideFog = options && options.overrideFog;
         const overrideRtt = options && options.overrideRtt;
@@ -1567,9 +1634,10 @@ class Painter {
         const key = Program.cacheKey(shaders[name], name, allDefines, config);
 
         if (!this.cache[key]) {
-            this.cache[key] = new Program(this.context, name, shaders[name], config, programUniforms[name], allDefines);
+            this.cache[key] = new Program(this.context, name, shaders[name], config, programUniforms[name] as (Context) => UniformBindings, allDefines);
         }
-        return this.cache[key];
+
+        return this.cache[key] as Program<ProgramUniformsType[T]>;
     }
 
     /*
@@ -1609,7 +1677,7 @@ class Painter {
             this.debugOverlayCanvas.width = 512;
             this.debugOverlayCanvas.height = 512;
             const gl = this.context.gl;
-            this.debugOverlayTexture = new Texture(this.context, this.debugOverlayCanvas, gl.RGBA);
+            this.debugOverlayTexture = new Texture(this.context, this.debugOverlayCanvas, gl.RGBA8);
         }
     }
 
@@ -1647,7 +1715,7 @@ class Painter {
         }
     }
 
-    uploadCommonLightUniforms(context: Context, program: Program<any>) {
+    uploadCommonLightUniforms(context: Context, program: Program<LightsUniformsType>) {
         if (this.style.enable3dLights()) {
             const directionalLight = this.style.directionalLight;
             const ambientLight = this.style.ambientLight;
@@ -1659,8 +1727,8 @@ class Painter {
         }
     }
 
-    uploadCommonUniforms(context: Context, program: Program<any>, tileID?: UnwrappedTileID | null, fogMatrix?: Float32Array | null, cutoffParams?: CutoffParams | null) {
-        this.uploadCommonLightUniforms(context, program);
+    uploadCommonUniforms(context: Context, program: Program<ProgramUniformsType[ProgramName]>, tileID?: UnwrappedTileID | null, fogMatrix?: Float32Array | null, cutoffParams?: CutoffParams | null) {
+        this.uploadCommonLightUniforms(context, program as unknown as Program<LightsUniformsType>);
 
         // Fog is not enabled when rendering to texture so we
         // can safely skip uploading uniforms in that case
@@ -1741,7 +1809,7 @@ class Painter {
         const tileSize = 512;
         const tileIDs = this.transform.coveringTiles({tileSize});
         for (const tileID of tileIDs) {
-            newTiles[tileID.key] = oldTiles[tileID.key] || new Tile(tileID, tileSize, this.transform.tileZoom, this);
+            newTiles[tileID.key] = oldTiles[tileID.key] || new Tile(tileID, tileSize, this.transform.tileZoom, this, undefined, this.worldview);
         }
         return newTiles;
     }
@@ -1756,8 +1824,8 @@ class Painter {
      * Initially planned to be used for Tiled3DModelSource, 2D source that is used with ModelLayer of buildings type and
      * custom layer buildings.
      */
-    isSourceForClippingOrConflation(layer: StyleLayer, source?: Source | null): boolean {
-        if (!layer.is3D()) {
+    isSourceForClippingOrConflation(layer: TypedStyleLayer, source?: Source | null): boolean {
+        if (!layer.is3D(!!(this.terrain && this.terrain.enabled))) {
             return false;
         }
 
@@ -1794,6 +1862,7 @@ class Painter {
     }
 
     // For native compatibility depth for occlusion is kept as before
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setupDepthForOcclusion(useDepthForOcclusion: boolean, program: Program<any>, uniforms?: ReturnType<typeof defaultTerrainUniforms>) {
         const context = this.context;
         const gl = context.gl;

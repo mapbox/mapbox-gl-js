@@ -172,7 +172,85 @@ class TriangleDraped {
     }
 }
 
+class WrappedTileDraped {
+    constructor() {
+        this.id = 'wrapped-tile-draped';
+        this.type = 'custom';
+        this.renderingMode = '3d';
+        this.wrapTileId = true;
+    }
+
+    onAdd(map, gl) {
+        const vertexSource = `
+        attribute vec2 a_pos;
+        void main() {
+            gl_Position = vec4(a_pos, 1.0, 1.0);
+        }`;
+
+        const fragmentSource = `
+        precision highp float;
+        uniform vec3 u_color;
+        void main() {
+            gl_FragColor = vec4(u_color, 0.5);
+        }`;
+
+        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertexShader, vertexSource);
+        gl.compileShader(vertexShader);
+        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragmentShader, fragmentSource);
+        gl.compileShader(fragmentShader);
+
+        this.program = gl.createProgram();
+        gl.attachShader(this.program, vertexShader);
+        gl.attachShader(this.program, fragmentShader);
+        gl.linkProgram(this.program);
+
+        this.program.aPos = gl.getAttribLocation(this.program, "a_pos");
+        this.program.uColor = gl.getUniformLocation(this.program, "u_color");
+
+        const verts = new Float32Array([1, 1, 1, -1, -1, -1, -1, -1, -1, 1, 1, 1]);
+        this.vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+    }
+
+    shouldRerenderTiles() {
+        return true;
+    }
+
+    getColor(tileId) {
+        if (tileId.x < 0) {
+            return [0, 0, 0];
+        } else {
+            return [255, 0, 0];
+        }
+    }
+
+    renderToTile(gl, tileId) {
+        gl.useProgram(this.program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.enableVertexAttribArray(this.program.aPos);
+        gl.vertexAttribPointer(this.program.aPos, 2, gl.FLOAT, false, 0, 0);
+        const color = this.getColor(tileId);
+        gl.uniform3f(this.program.uColor, color[0], color[1], color[2]);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+
+    render() {
+    }
+}
+
+class UnwrappedTileDraped extends WrappedTileDraped {
+    constructor() {
+        super();
+        this.wrapTileId = false;
+    }
+}
+
 export default {
+    "wrapped-tile-draped": WrappedTileDraped,
+    "unwrapped-tile-draped": UnwrappedTileDraped,
     "triangle-draped": TriangleDraped,
     "tent-3d": Tent3D,
     "null-island": NullIsland

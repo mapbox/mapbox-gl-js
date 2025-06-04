@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "spriteFormat": "raster",
       "pixelRatio": 2,
       "width": 64,
       "height": 64

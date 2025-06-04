@@ -1,8 +1,10 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
 import {Event, Evented} from '../../../src/util/evented';
 
 describe('Evented', () => {
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('calls listeners added with "on"', async () => {
         const evented = new Evented();
         const listener = vi.fn();
@@ -12,6 +14,7 @@ describe('Evented', () => {
         expect(listener).toHaveBeenCalledTimes(2);
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('calls listeners added with "once" once', async () => {
         const evented = new Evented();
         const listener = vi.fn();
@@ -29,6 +32,7 @@ describe('Evented', () => {
         evented.fire(new Event('a'));
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('passes data to listeners', async () => {
         const evented = new Evented();
         expect.assertions(1);
@@ -38,6 +42,7 @@ describe('Evented', () => {
         evented.fire(new Event('a', {foo: 'bar'}));
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('passes "target" to listeners', async () => {
         const evented = new Evented();
         expect.assertions(1);
@@ -47,6 +52,7 @@ describe('Evented', () => {
         evented.fire(new Event('a'));
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('passes "type" to listeners', async () => {
         const evented = new Evented();
         expect.assertions(1);
@@ -56,6 +62,7 @@ describe('Evented', () => {
         evented.fire(new Event('a'));
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('removes listeners with "off"', async () => {
         const evented = new Evented();
         const listener = vi.fn();
@@ -65,6 +72,7 @@ describe('Evented', () => {
         expect(listener).not.toHaveBeenCalled();
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('removes one-time listeners with "off"', async () => {
         const evented = new Evented();
         const listener = vi.fn();
@@ -74,6 +82,7 @@ describe('Evented', () => {
         expect(listener).not.toHaveBeenCalled();
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('once listener is removed prior to call', async () => {
         const evented = new Evented();
         const listener = vi.fn();
@@ -86,6 +95,7 @@ describe('Evented', () => {
         expect(listener).toHaveBeenCalledTimes(1);
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('reports if an event has listeners with "listens"', async () => {
         const evented = new Evented();
         evented.on('a', () => {});
@@ -95,6 +105,7 @@ describe('Evented', () => {
 
     test(
         'does not report true to "listens" if all listeners have been removed',
+        // eslint-disable-next-line @typescript-eslint/require-await
         async () => {
             const evented = new Evented();
             const listener = () => {};
@@ -104,6 +115,7 @@ describe('Evented', () => {
         }
     );
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('does not immediately call listeners added within another listener', async () => {
         const evented = new Evented();
 
@@ -113,6 +125,7 @@ describe('Evented', () => {
         evented.fire(new Event('a'));
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('has backward compatibility for fire(string, object) API', async () => {
         const evented = new Evented();
         const listener = vi.fn();
@@ -122,6 +135,7 @@ describe('Evented', () => {
         expect(listener.mock.calls[0][0].foo).toBeTruthy();
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('on is idempotent', async () => {
         const evented = new Evented();
         const listenerA = vi.fn();
@@ -135,6 +149,7 @@ describe('Evented', () => {
     });
 
     describe('evented parents', () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('adds parents with "setEventedParent"', async () => {
             const listener = vi.fn();
             const eventedSource = new Evented();
@@ -146,6 +161,7 @@ describe('Evented', () => {
             expect(listener).toHaveBeenCalledTimes(2);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('passes original data to parent listeners', async () => {
             const eventedSource = new Evented();
             const eventedSink = new Evented();
@@ -157,6 +173,7 @@ describe('Evented', () => {
             eventedSource.fire(new Event('a', {foo: 'bar'}));
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('attaches parent data to parent listeners', async () => {
             const eventedSource = new Evented();
             const eventedSink = new Evented();
@@ -168,6 +185,7 @@ describe('Evented', () => {
             eventedSource.fire(new Event('a', {foo: 'bar'}));
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('attaches parent data from a function to parent listeners', async () => {
             const eventedSource = new Evented();
             const eventedSink = new Evented();
@@ -196,6 +214,7 @@ describe('Evented', () => {
             });
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('removes parents with "setEventedParent(null)"', async () => {
             const listener = vi.fn();
             const eventedSource = new Evented();
@@ -207,6 +226,7 @@ describe('Evented', () => {
             expect(listener).not.toHaveBeenCalled();
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('reports if an event has parent listeners with "listens"', async () => {
             const eventedSource = new Evented();
             const eventedSink = new Evented();
@@ -215,6 +235,7 @@ describe('Evented', () => {
             expect(eventedSink.listens('a')).toBeTruthy();
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('eventedParent data function is evaluated on every fire', async () => {
             const eventedSource = new Evented();
             const eventedParent = new Evented();

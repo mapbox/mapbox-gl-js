@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect} from '../../util/vitest';
 import {renderColorRamp} from '../../../src/util/color_ramp';
@@ -6,7 +7,12 @@ import {createPropertyExpression} from '../../../src/style-spec/expression/index
 const spec = {
     'function': true,
     'property-function': true,
-    'type': 'color'
+    'type': 'color',
+    "expression": {
+        "parameters": [
+            "line-progress"
+        ]
+    }
 };
 
 function pixelAt(image, i) {

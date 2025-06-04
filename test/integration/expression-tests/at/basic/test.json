@@ -20,7 +20,7 @@
       8,
       {"error": "Array index out of bounds: -1 < 0."},
       {"error": "Array index out of bounds: 4 > 2."},
-      {"error": "Array index must be an integer, but found 1.5 instead."}
+      {"error": "Array index must be an integer, but found 1.5 instead. Use at-interpolated to retrieve interpolated result with a fractional index."}
     ],
     "serialized": [
       "number",

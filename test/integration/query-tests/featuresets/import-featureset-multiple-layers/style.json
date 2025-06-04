@@ -1,0 +1,60 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "queryGeometry": [32, 32],
+      "queryOptions": {
+        "target": {"featuresetId": "featureset", "importId": "basemap"}
+      }
+    }
+  },
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "featuresets": {
+          "featureset": {
+            "selectors": [
+              {
+                "layer": "a",
+                "featureNamespace": "a",
+                "properties": {
+                  "a-property-value": ["get", "key"],
+                  "a-constant-value": "constant-a"
+                }
+              }
+            ]
+          }
+        },
+        "sources": {
+          "geojson": {
+            "type": "geojson",
+            "data": {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [0, 0]
+              },
+              "properties": {
+                "key": "value"
+              }
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "a",
+            "type": "circle",
+            "source": "geojson"
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {},
+  "layers": []
+}

@@ -4,6 +4,7 @@
     "test": {
       "width": 128,
       "height": 64,
+      "spriteFormat": "raster",
       "operations": [
         ["setStyle", "local://mapbox-gl-styles/styles/satellite-v9.json"],
         ["setZoom", 0],

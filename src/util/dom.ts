@@ -2,8 +2,8 @@ import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 
 // refine the return type based on tagName, e.g. 'button' -> HTMLButtonElement
-export function create<T extends string>(tagName: T, className?: string | null, container?: HTMLElement): ReturnType<typeof document.createElement> {
-    const el = document.createElement(tagName);
+export function create<T extends keyof HTMLElementTagNameMap>(tagName: T, className?: string | null, container?: HTMLElement) {
+    const el = document.createElement<T>(tagName);
     if (className !== undefined && className !== null) el.className = className;
     if (container) container.appendChild(el);
     return el;
@@ -67,16 +67,15 @@ export function touchPos(el: HTMLElement, touches: TouchList): Array<Point> {
     for (let i = 0; i < touches.length; i++) {
         points.push(getScaledPoint(el, rect, touches[i]));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return points;
 }
 
 export function mouseButton(e: MouseEvent): number {
     assert(e.type === 'mousedown' || e.type === 'mouseup');
-    // @ts-expect-error - TS2339 - Property 'InstallTrigger' does not exist on type 'Window & typeof globalThis'.
-    if (typeof window.InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey &&
-        window.navigator.platform.toUpperCase().indexOf('MAC') >= 0) {
+    if (/firefox/i.test(navigator.userAgent) && /macintosh/i.test(navigator.userAgent) && e.button === 2 && e.ctrlKey) {
         // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
-        // Firefox (detected by InstallTrigger) on Mac determines e.button = 2 when
+        // Firefox on Mac (detected by user agent) determines e.button = 2 when
         // using Control + left click
         return 0;
     }

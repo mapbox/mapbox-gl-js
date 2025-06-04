@@ -1,7 +1,8 @@
-import {ValueType} from '../types';
+import {typeEquals, ValueType} from '../types';
 import {Color, typeOf, toString as valueToString} from '../values';
 import Formatted from '../types/formatted';
 import ResolvedImage from '../types/resolved_image';
+import * as isConstant from '../is_constant';
 import Literal from './literal';
 
 import type {Type} from '../types';
@@ -9,6 +10,13 @@ import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
 
+const FQIDSeparator = '\u001F';
+
+function makeConfigFQID(id: string, ownScope?: string | null, contextScope?: string | null): string {
+    return [id, ownScope, contextScope].filter(Boolean).join(FQIDSeparator);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function coerceValue(type: string, value: any): any {
     switch (type) {
     case 'string': return valueToString(value);
@@ -19,7 +27,7 @@ function coerceValue(type: string, value: any): any {
         return Formatted.fromString(valueToString(value));
     }
     case 'resolvedImage': {
-        return ResolvedImage.fromString(valueToString(value));
+        return ResolvedImage.build(valueToString(value));
     }
     }
     return value;
@@ -42,46 +50,57 @@ class Config implements Expression {
     type: Type;
     key: string;
     scope: string | null | undefined;
+    featureConstant: boolean;
 
-    constructor(type: Type, key: string, scope?: string) {
+    constructor(type: Type, key: string, scope?: string, featureConstant: boolean = false) {
         this.type = type;
         this.key = key;
         this.scope = scope;
+        this.featureConstant = featureConstant;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Config | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Config | null | void {
         let type = context.expectedType;
         if (type === null || type === undefined) {
             type = ValueType;
         }
         if (args.length < 2 || args.length > 3) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Config'.
             return context.error(`Invalid number of arguments for 'config' expression.`);
         }
 
         const configKey = context.parse(args[1], 1);
         if (!(configKey instanceof Literal)) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Config'.
             return context.error(`Key name of 'config' expression must be a string literal.`);
         }
+
+        let featureConstant = true;
+        let configScopeValue: string | undefined;
+        const configKeyValue = valueToString(configKey.value);
 
         if (args.length >= 3) {
             const configScope = context.parse(args[2], 2);
             if (!(configScope instanceof Literal)) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Config'.
                 return context.error(`Scope of 'config' expression must be a string literal.`);
             }
-            return new Config(type, valueToString(configKey.value), valueToString(configScope.value));
+
+            configScopeValue = valueToString(configScope.value);
         }
 
-        return new Config(type, valueToString(configKey.value));
+        if (context.options) {
+            const fqid = makeConfigFQID(configKeyValue, configScopeValue, context._scope);
+            const config = context.options.get(fqid);
+            if (config) {
+                featureConstant = isConstant.isFeatureConstant(config.value || config.default);
+            }
+        }
+
+        return new Config(type, configKeyValue, configScopeValue, featureConstant);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
-        const FQIDSeparator = '\u001F';
-        const configKey = [this.key, this.scope, ctx.scope].filter(Boolean).join(FQIDSeparator);
-
-        const config = ctx.getConfig(configKey);
+        const fqid = makeConfigFQID(this.key, this.scope, ctx.scope);
+        const config = ctx.getConfig(fqid);
         if (!config) return null;
 
         const {type, value, values, minValue, maxValue, stepValue} = config;
@@ -104,7 +123,8 @@ class Config implements Expression {
             if (typeof result === 'number') {
                 result = clampToAllowedNumber(result, minValue, maxValue, stepValue);
             } else if (Array.isArray(result)) {
-                result = result.map((item) => typeof item === 'number' ? clampToAllowedNumber(item, minValue, maxValue, stepValue) : item);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                result = result.map((item) => (typeof item === 'number' ? clampToAllowedNumber(item, minValue, maxValue, stepValue) : item));
             }
         }
 
@@ -117,7 +137,7 @@ class Config implements Expression {
         }
 
         // @ts-expect-error - TS2367 - This comparison appears to be unintentional because the types 'string' and 'Type' have no overlap.
-        if ((type && type !== this.type) || (result !== undefined && typeOf(result) !== this.type)) {
+        if ((type && type !== this.type) || (result !== undefined && !typeEquals(typeOf(result), this.type))) {
             result = coerceValue(this.type.kind, result);
         }
 
@@ -133,7 +153,7 @@ class Config implements Expression {
     serialize(): SerializedExpression {
         const res = ["config", this.key];
         if (this.scope) {
-            res.concat(this.key);
+            res.concat(this.scope);
         }
         return res;
     }

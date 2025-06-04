@@ -21,7 +21,7 @@
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "zoom": 1,
   "sources": {
     "geojson": {
@@ -33,7 +33,7 @@
                 "type": "Feature",
                 "id": 1,
                 "properties": {
-                  "pattern": "generic_icon"
+                  "pattern": "information"
                 },
                 "geometry": {
                     "type": "Polygon",
@@ -76,8 +76,8 @@
             "fill-pattern": [
                 "case",
                 ["boolean", ["feature-state", "hover"], false],
-                "generic_icon",
-                "generic_metro"
+                "information",
+                "car"
             ]
         }
     }

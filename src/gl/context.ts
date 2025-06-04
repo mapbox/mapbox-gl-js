@@ -27,6 +27,7 @@ export type ContextOptions = {
     extTextureFilterAnisotropicForceOff?: boolean;
     extTextureFloatLinearForceOff?: boolean;
     extStandardDerivativesForceOff?: boolean;
+    forceManualRenderingForInstanceIDShaders?: boolean;
 };
 
 class Context {
@@ -68,15 +69,25 @@ class Context {
     renderer: string | null | undefined;
     vendor: string | null | undefined;
 
-    extTextureFilterAnisotropic: any;
-    extTextureFilterAnisotropicMax: any;
-    extTextureHalfFloat: any;
-    extRenderToTextureHalfFloat: any;
-    extDebugRendererInfo: any;
-    extTimerQuery: any;
-    extTextureFloatLinear: any;
+    // eslint-disable-next-line camelcase
+    extTextureFilterAnisotropic: EXT_texture_filter_anisotropic;
+    extTextureFilterAnisotropicMax: GLfloat;
+    // eslint-disable-next-line camelcase
+    extRenderToTextureHalfFloat: EXT_color_buffer_half_float;
+    // eslint-disable-next-line camelcase
+    extDebugRendererInfo: WEBGL_debug_renderer_info;
+    extTimerQuery: {
+        /* EXT_disjoint_timer_query is not yet available as a TypeScript type */
+        TIME_ELAPSED_EXT: number;
+        getQueryParameter: (query: WebGLQuery, pname: GLenum) => GLuint;
+        deleteQueryEXT: (query: WebGLQuery) => void;
+    };
+    // eslint-disable-next-line camelcase
+    extTextureFloatLinear: OES_texture_float_linear;
     options: ContextOptions;
     maxPointSize: number;
+
+    forceManualRenderingForInstanceIDShaders: boolean;
 
     constructor(gl: WebGL2RenderingContext, options?: ContextOptions) {
         this.gl = gl;
@@ -112,7 +123,7 @@ class Context {
         this.pixelStoreUnpack = new PixelStoreUnpack(this);
         this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
         this.pixelStoreUnpackFlipY = new PixelStoreUnpackFlipY(this);
-        this.options = options ? {...options} : {};
+        this.options = options ? Object.assign({}, options) : {};
 
         if (!this.options.extTextureFilterAnisotropicForceOff) {
             this.extTextureFilterAnisotropic = (
@@ -130,6 +141,9 @@ class Context {
             this.renderer = gl.getParameter(this.extDebugRendererInfo.UNMASKED_RENDERER_WEBGL);
             this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
         }
+
+        // Force manual rendering for instanced draw calls having gl_InstanceID usage in the shader for PowerVR adapters
+        this.forceManualRenderingForInstanceIDShaders = (options && !!options.forceManualRenderingForInstanceIDShaders) || (this.renderer && this.renderer.indexOf("PowerVR") !== -1);
 
         if (!this.options.extTextureFloatLinearForceOff) {
             this.extTextureFloatLinear = gl.getExtension('OES_texture_float_linear');
@@ -254,7 +268,7 @@ class Context {
 
         if (color) {
             mask |= gl.COLOR_BUFFER_BIT;
-            this.clearColor.set(color);
+            this.clearColor.set(color.toNonPremultipliedRenderColor(null));
             if (colorMask) {
                 this.colorMask.set(colorMask);
             } else {

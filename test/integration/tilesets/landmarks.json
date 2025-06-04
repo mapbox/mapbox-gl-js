@@ -1,0 +1,57 @@
+{
+    "attribution": "<a href=\"https://www.mapbox.com/about/maps/\" target=\"_blank\" title=\"Mapbox\" aria-label=\"Mapbox\">&copy; Mapbox</a> <a class=\"mapbox-improve-map\" href=\"https://www.mapbox.com/contribute/\" target=\"_blank\" title=\"Improve this map\" aria-label=\"Improve this map\">Improve this map</a>",
+    "bounds": [
+        -180,
+        -85,
+        180,
+        85
+    ],
+    "cacheControl": "max-age=43200,s-maxage=604800",
+    "capabilities": [],
+    "center": [
+        0,
+        0,
+        3
+    ],
+    "created": 1739202188782,
+    "description": "Internal tileset used for development - Mapbox Landmark Icons v1",
+    "extra_bounds": [
+        [
+            -18.716583,
+            34.608345,
+            48.080292,
+            73.128931
+        ],
+        [
+            122.871094,
+            26.431228,
+            158.730469,
+            46.800059
+        ],
+        [
+            -129.550781,
+            19.642588,
+            -64.335938,
+            53.540307
+        ]
+    ],
+    "format": "mrt",
+    "id": "mapbox.mbx-landmark-icons-v1-staging",
+    "mapbox_logo": true,
+    "maxzoom": 10,
+    "minzoom": 10,
+    "name": "Mapbox Landmark Icons v1 - Staging",
+    "private": false,
+    "raster_layers": [
+        {
+            "fields": {
+                "current_job_id": "2025-02-24"
+            },
+            "id": "landmark-icons"
+        }
+    ],
+    "scheme": "xyz",
+    "tilejson": "3.0.0",
+    "tiles": ["local://tiles/mrt/landmarks_{z}_{x}_{y}.mrt"],
+    "webpage": "https://studio.mapbox.com/tilesets/mapbox.mbx-landmark-icons-v1-staging"
+}

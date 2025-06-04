@@ -59,10 +59,8 @@ class NavigationControl implements IControl {
                 '_setButtonTitle',
                 '_updateZoomButtons'
             ], this);
-            // @ts-expect-error - TS2345 - Argument of type '(e: any) => void' is not assignable to parameter of type '() => unknown'.
             this._zoomInButton = this._createButton('mapboxgl-ctrl-zoom-in', (e) => { if (this._map) this._map.zoomIn({}, {originalEvent: e}); });
             DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomInButton).setAttribute('aria-hidden', 'true');
-            // @ts-expect-error - TS2345 - Argument of type '(e: any) => void' is not assignable to parameter of type '() => unknown'.
             this._zoomOutButton = this._createButton('mapboxgl-ctrl-zoom-out', (e) => { if (this._map) this._map.zoomOut({}, {originalEvent: e}); });
             DOM.create('span', `mapboxgl-ctrl-icon`, this._zoomOutButton).setAttribute('aria-hidden', 'true');
         }
@@ -70,7 +68,6 @@ class NavigationControl implements IControl {
             bindAll([
                 '_rotateCompassArrow'
             ], this);
-            // @ts-expect-error - TS2345 - Argument of type '(e: any) => void' is not assignable to parameter of type '() => unknown'.
             this._compass = this._createButton('mapboxgl-ctrl-compass', (e) => {
                 const map = this._map;
                 if (!map) return;
@@ -151,16 +148,14 @@ class NavigationControl implements IControl {
         this._map = undefined;
     }
 
-    _createButton(className: string, fn: () => unknown): HTMLButtonElement {
+    _createButton(className: string, fn: (e: Event) => unknown): HTMLButtonElement {
         const a = DOM.create('button', className, this._container);
-        // @ts-expect-error - TS2339 - Property 'type' does not exist on type 'HTMLElement'.
         a.type = 'button';
         a.addEventListener('click', fn);
-        // @ts-expect-error - TS2322 - Type 'HTMLElement' is not assignable to type 'HTMLButtonElement'.
         return a;
     }
 
-    _setButtonTitle(button: HTMLButtonElement, title: string) {
+    _setButtonTitle(button: HTMLButtonElement, title: 'ResetBearing' | 'ZoomIn' | 'ZoomOut') {
         if (!this._map) return;
         const str = this._map._getUIString(`NavigationControl.${title}`);
         button.setAttribute('aria-label', str);
@@ -214,8 +209,7 @@ class MouseRotateWrapper {
     off() {
         const element = this.element;
         element.removeEventListener('mousedown', this.mousedown);
-        // @ts-expect-error - TS2769 - No overload matches this call.
-        element.removeEventListener('touchstart', this.touchstart, {passive: false});
+        element.removeEventListener('touchstart', this.touchstart);
         element.removeEventListener('touchmove', this.touchmove);
         element.removeEventListener('touchend', this.touchend);
         element.removeEventListener('touchcancel', this.reset);

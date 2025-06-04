@@ -8,7 +8,7 @@
   },
   "center": [ 0, 0 ],
   "zoom": 0,
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "sources": {
     "geojson": {
       "type": "geojson",
@@ -38,7 +38,7 @@
         "icon-image": [
             "coalesce",
             ["image", "fav-bicycle-18"],
-            ["image", "generic_metro"]
+            ["image", "car"]
         ],
         "text-field": [ "case",
           ["to-boolean", ["coalesce",
@@ -62,7 +62,7 @@
               ""
           ]],
           "blue",
-          "red" 
+          "red"
         ],
         "text-opacity": [ "case",
           ["to-boolean", ["coalesce",
@@ -70,7 +70,7 @@
               ""
           ]],
           0.2,
-          1 
+          1
         ]
       }
     }

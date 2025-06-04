@@ -1,4 +1,5 @@
 #include "_prelude_terrain.vertex.glsl"
+#include "_prelude_shadow.vertex.glsl"
 
 in vec4 a_pos_offset;
 in vec4 a_tex_size;
@@ -22,6 +23,23 @@ in vec2 a_texb;
 in float a_occlusion_query_opacity;
 #endif
 
+#ifdef ELEVATED_ROADS
+in vec3 a_x_axis;
+in vec3 a_y_axis;
+
+uniform float u_normal_scale;
+#endif
+
+#ifdef INDICATOR_CUTOUT
+out highp float v_z_offset;
+#else
+#ifdef Z_OFFSET
+#ifdef RENDER_SHADOWS
+out highp float v_z_offset;
+#endif
+#endif
+#endif
+
 // contents of a_size vary based on the type of property value
 // used for {text,icon}-size.
 // For constants, a_size is disabled.
@@ -34,6 +52,7 @@ uniform bool u_is_size_feature_constant;
 uniform highp float u_size_t; // used to interpolate between zoom stops when size is a composite function
 uniform highp float u_size; // used when size is both zoom and feature constant
 uniform mat4 u_matrix;
+uniform mat4 u_inv_matrix;
 uniform mat4 u_label_plane_matrix;
 uniform mat4 u_coord_matrix;
 uniform bool u_is_text;
@@ -68,6 +87,17 @@ out vec3 v_gamma_scale_size_fade_opacity;
 #ifdef RENDER_TEXT_AND_SYMBOL
 out float is_sdf;
 out vec2 v_tex_a_icon;
+#endif
+
+#ifdef Z_OFFSET
+#ifdef RENDER_SHADOWS
+uniform mat4 u_light_matrix_0;
+uniform mat4 u_light_matrix_1;
+
+out highp vec4 v_pos_light_view_0;
+out highp vec4 v_pos_light_view_1;
+out highp float v_depth;
+#endif
 #endif
 
 #pragma mapbox: define highp vec4 fill_color
@@ -182,8 +212,12 @@ void main() {
 
     vec4 projected_pos;
 #ifdef PROJECTION_GLOBE_VIEW
-    vec3 proj_pos = mix_globe_mercator(a_projected_pos.xyz + h, mercator_pos, u_zoom_transition);
-    projected_pos = u_label_plane_matrix * vec4(proj_pos, 1.0);
+#ifdef PROJECTED_POS_ON_VIEWPORT
+    projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xyz + h, 1.0);
+#else
+    vec3 proj_pos = mix_globe_mercator(a_projected_pos.xyz, mercator_pos, u_zoom_transition) + h;
+    projected_pos = u_label_plane_matrix * vec4(proj_pos, 1.0);    
+#endif
 #else
     projected_pos = u_label_plane_matrix * vec4(a_projected_pos.xy, h.z, 1.0);
 #endif
@@ -202,23 +236,17 @@ void main() {
 #endif
 
 #ifdef Z_OFFSET
-    z += u_pitch_with_map ? a_auto_z_offset + (u_elevation_from_sea ? z_offset : z_offset) : 0.0;
+    z += u_pitch_with_map ? a_auto_z_offset + z_offset : 0.0;
 #else
-    z += u_pitch_with_map ? (u_elevation_from_sea ? z_offset : z_offset) : 0.0;
+    z += u_pitch_with_map ? z_offset : 0.0;
 #endif
 
     // Symbols might end up being behind the camera. Move them AWAY.
     float occlusion_fade = globe_occlusion_fade;
 
-    float projection_transition_fade = 1.0;
-#if defined(PROJECTED_POS_ON_VIEWPORT) && defined(PROJECTION_GLOBE_VIEW)
-    projection_transition_fade = 1.0 - step(EPSILON, u_zoom_transition);
-#endif
     vec2 fade_opacity = unpack_opacity(a_fade_opacity);
     float fade_change = fade_opacity[1] > 0.5 ? u_fade_change : -u_fade_change;
-    float interpolated_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
-
-    float out_fade_opacity = interpolated_fade_opacity * projection_transition_fade;
+    float out_fade_opacity = max(0.0, min(occlusion_fade, fade_opacity[0] + fade_change));
 
 #ifdef DEPTH_OCCLUSION
     float depth_occlusion = occlusionFadeMultiSample(projected_point);
@@ -234,15 +262,24 @@ void main() {
     float alpha = opacity * out_fade_opacity;
     float hidden = float(alpha == 0.0 || projected_point.w <= 0.0 || occlusion_fade == 0.0);
 
+    vec3 pos;
 #ifdef PROJECTION_GLOBE_VIEW
     // Map aligned labels in globe view are aligned to the surface of the globe
     vec3 xAxis = u_pitch_with_map ? normalize(cross(a_globe_normal, u_up_vector)) : vec3(1, 0, 0);
     vec3 yAxis = u_pitch_with_map ? normalize(cross(a_globe_normal, xAxis)) : vec3(0, 1, 0);
 
-    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xyz / projected_pos.w + xAxis * offset.x + yAxis * offset.y, 1.0), AWAY, hidden);
+    pos = projected_pos.xyz / projected_pos.w + xAxis * offset.x + yAxis * offset.y;
 #else
-    gl_Position = mix(u_coord_matrix * vec4(projected_pos.xy / projected_pos.w + offset, z, 1.0), AWAY, hidden);
+#ifdef ELEVATED_ROADS
+    vec3 xAxis = vec3(a_x_axis.xy, a_x_axis.z * u_normal_scale);
+    vec3 yAxis = vec3(a_y_axis.xy, a_y_axis.z * u_normal_scale);
+
+    pos = projected_pos.xyz / projected_pos.w + xAxis * offset.x + yAxis * offset.y;
+#else // ELEVATED_ROADS
+    pos = vec3(projected_pos.xy / projected_pos.w + offset, z);
+#endif // ELEVATED_ROADS
 #endif
+    gl_Position = mix(u_coord_matrix * vec4(pos, 1.0), AWAY, hidden);
     float gamma_scale = gl_Position.w;
 
     // Cast to float is required to fix a rendering error in Swiftshader
@@ -258,4 +295,29 @@ void main() {
     v_tex_b = a_texb / u_texsize;
 #endif
 
+#ifdef Z_OFFSET
+#ifdef RENDER_SHADOWS
+    vec4 shd_pos = u_inv_matrix * vec4(pos, 1.0);
+    vec3 shd_pos0 = shd_pos.xyz;
+    vec3 shd_pos1 = shd_pos.xyz;
+#ifdef NORMAL_OFFSET
+    vec3 shd_pos_offset = shadow_normal_offset(vec3(0.0, 0.0, 1.0));
+    shd_pos0 += shd_pos_offset * shadow_normal_offset_multiplier0();
+    shd_pos1 += shd_pos_offset * shadow_normal_offset_multiplier1();
+#endif
+    v_pos_light_view_0 = u_light_matrix_0 * vec4(shd_pos0, 1);
+    v_pos_light_view_1 = u_light_matrix_1 * vec4(shd_pos1, 1);
+    v_depth = gl_Position.w;
+#endif
+#endif
+
+#ifdef INDICATOR_CUTOUT
+    v_z_offset = e;
+#else
+#ifdef Z_OFFSET
+#ifdef RENDER_SHADOWS
+    v_z_offset = e;
+#endif
+#endif
+#endif
 }

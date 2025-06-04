@@ -6,11 +6,14 @@ import type {PaintProps} from './hillshade_style_layer_properties';
 import type {LayerSpecification} from '../../style-spec/types';
 import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 class HillshadeStyleLayer extends StyleLayer {
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override type: 'hillshade';
+
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {
@@ -24,16 +27,15 @@ class HillshadeStyleLayer extends StyleLayer {
         return this.hasOffscreenPass() && this.paint.get('hillshade-illumination-anchor') === 'viewport';
     }
 
-    hasOffscreenPass(): boolean {
+    override hasOffscreenPass(): boolean {
         return this.paint.get('hillshade-exaggeration') !== 0 && this.visibility !== 'none';
     }
 
-    getProgramIds(): Array<string> {
+    override getProgramIds(): ProgramName[] {
         return ['hillshade', 'hillshadePrepare'];
     }
 
-    // eslint-disable-next-line no-unused-vars
-    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         return {
             overrideFog: false
         };

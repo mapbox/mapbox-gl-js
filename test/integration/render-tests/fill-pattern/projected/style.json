@@ -5,8 +5,13 @@
       "height": 256,
       "width": 256,
       "operations": [
-        ["setProjection", "albers"],
-        ["wait"]
+        [
+          "setProjection",
+          "albers"
+        ],
+        [
+          "wait"
+        ]
       ]
     }
   },
@@ -47,7 +52,7 @@
       "data": "local://data/graticule.geojson"
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "fill",
@@ -55,7 +60,7 @@
       "source": "geojson",
       "paint": {
         "fill-antialias": false,
-        "fill-pattern": "generic_icon"
+        "fill-pattern": "information"
       }
     },
     {
@@ -63,8 +68,8 @@
       "source": "graticule",
       "type": "line",
       "paint": {
-          "line-width": 1,
-          "line-color": "#aaa"
+        "line-width": 1,
+        "line-color": "#aaa"
       }
     }
   ]

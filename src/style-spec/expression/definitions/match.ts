@@ -1,6 +1,6 @@
 import assert from 'assert';
 import {typeOf} from '../values';
-import {ValueType} from '../types';
+import {typeEquals, ValueType} from '../types';
 
 import type {Type} from '../types';
 import type {Expression, SerializedExpression} from '../expression';
@@ -28,12 +28,10 @@ class Match implements Expression {
         this.otherwise = otherwise;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Match | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Match | null | void {
         if (args.length < 5)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
             return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
         if (args.length % 2 !== 1)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
             return context.error(`Expected an even number of arguments.`);
 
         let inputType;
@@ -41,6 +39,7 @@ class Match implements Expression {
         if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cases: Record<string, any> = {};
         const outputs = [];
         for (let i = 2; i < args.length - 1; i += 2) {
@@ -52,23 +51,17 @@ class Match implements Expression {
             }
 
             const labelContext = context.concat(i);
-            // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'unknown'.
-            if (labels.length === 0) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
+            if ((labels as unknown[]).length === 0) {
                 return labelContext.error('Expected at least one branch label.');
             }
 
-            // @ts-expect-error - TS2488 - Type 'unknown' must have a '[Symbol.iterator]()' method that returns an iterator.
-            for (const label of labels) {
+            for (const label of (labels as unknown[])) {
                 if (typeof label !== 'number' && typeof label !== 'string') {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
                     return labelContext.error(`Branch labels must be numbers or strings.`);
                 } else if (typeof label === 'number' && Math.abs(label) > Number.MAX_SAFE_INTEGER) {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
                     return labelContext.error(`Branch labels must be integers no larger than ${Number.MAX_SAFE_INTEGER}.`);
 
                 } else if (typeof label === 'number' && Math.floor(label) !== label) {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
                     return labelContext.error(`Numeric branch labels must be integer values.`);
 
                 } else if (!inputType) {
@@ -78,7 +71,6 @@ class Match implements Expression {
                 }
 
                 if (typeof cases[String(label)] !== 'undefined') {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Match'.
                     return labelContext.error('Branch labels must be unique.');
                 }
 
@@ -103,12 +95,13 @@ class Match implements Expression {
             return null;
         }
 
-        return new Match((inputType), (outputType as any), input, cases, outputs, otherwise);
+        return new Match(inputType, outputType, input, cases, outputs, otherwise);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         const input = (this.input.evaluate(ctx));
-        const output = (typeOf(input) === this.inputType && this.outputs[this.cases[input]]) || this.otherwise;
+        const output = (typeEquals(typeOf(input), this.inputType) && this.outputs[this.cases[input]]) || this.otherwise;
         return output.evaluate(ctx);
     }
 
@@ -147,7 +140,7 @@ class Match implements Expression {
             }
         }
 
-        const coerceLabel = (label: number | string) => this.inputType.kind === 'number' ? Number(label) : label;
+        const coerceLabel = (label: number | string) => (this.inputType.kind === 'number' ? Number(label) : label);
 
         for (const [outputIndex, labels] of groupedByOutput) {
             if (labels.length === 1) {

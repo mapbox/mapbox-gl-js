@@ -7,11 +7,14 @@ import {
     isMapboxHTTPCDNURL
 } from './mapbox_url';
 
+type Prop = {name: string; value: string};
 type LivePerformanceMetrics = {
-    counters: Array<any>;
-    metadata: Array<any>;
-    attributes: Array<any>;
+    counters: Prop[];
+    metadata: Prop[];
+    attributes: Prop[];
 };
+
+type ResourceTimers = Record<string, Array<PerformanceResourceTiming>>;
 
 export type LivePerformanceData = {
     interactionRange: [number, number];
@@ -41,13 +44,8 @@ export const LivePerformanceUtils = {
     }
 } as const;
 
-function categorize(
-    arr: Array<PerformanceResourceTiming>,
-    fn: (entry: PerformanceResourceTiming) => string,
-): {
-    [key: string]: Array<PerformanceResourceTiming>;
-} {
-    const obj: Record<string, any> = {};
+function categorize(arr: Array<PerformanceResourceTiming>, fn: (entry: PerformanceResourceTiming) => string): ResourceTimers {
+    const obj: ResourceTimers = {};
     if (arr) {
         for (const item of arr) {
             const category = fn(item);
@@ -60,10 +58,8 @@ function categorize(
     return obj;
 }
 
-function getCountersPerResourceType(resourceTimers: {
-    [key: string]: Array<PerformanceResourceTiming>;
-}) {
-    const obj: Record<string, any> = {};
+function getCountersPerResourceType(resourceTimers: ResourceTimers): Record<string, number> {
+    const obj: Record<string, number> = {};
     if (resourceTimers) {
         for (const category in resourceTimers) {
             if (category !== 'other') {
@@ -140,10 +136,7 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
 
     // Please read carefully before adding or modifying the following metrics:
     // https://github.com/mapbox/gl-js-team/blob/main/docs/live_performance_metrics.md
-    const addMetric = (arr: Array<{
-        name: string;
-        value: string;
-    }>, name: string, value?: number | string | null) => {
+    const addMetric = (arr: Array<{name: string; value: string}>, name: string, value?: number | string | null) => {
         if (value !== undefined && value !== null) {
             arr.push({name, value: value.toString()});
         }

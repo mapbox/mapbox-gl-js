@@ -1,6 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {describe, test, beforeAll, afterEach, afterAll, expect} from '../../util/vitest';
-import {getNetworkWorker, http, HttpResponse} from '../../util/network';
+import {describe, test, expect} from '../../util/vitest';
+import {mockFetch} from '../../util/network';
 import Style from '../../../src/style/style';
 import Transform from '../../../src/geo/transform';
 import {RequestManager} from '../../../src/util/mapbox';
@@ -22,25 +23,11 @@ class StubMap extends Evented {
     }
 }
 
-let networkWorker: any;
-
-beforeAll(async () => {
-    networkWorker = await getNetworkWorker(window);
-});
-
-afterEach(() => {
-    networkWorker.resetHandlers();
-});
-
-afterAll(() => {
-    networkWorker.stop();
-});
-
 describe('ModelLayer#loadStyleExpressionConstraint', () => {
     test('validates the style', async () => {
-        networkWorker.use(
-            http.get('/style.json', async () => {
-                return HttpResponse.json({
+        mockFetch({
+            '/style.json': () => {
+                return new Response(JSON.stringify({
                     "version": 8,
                     "sources": {
                         "trees": {
@@ -60,8 +47,8 @@ describe('ModelLayer#loadStyleExpressionConstraint', () => {
                             "paint": {
                                 "model-scale": [
                                     "interpolate",
-                                    [ "linear" ],
-                                    [ "zoom" ],
+                                    ["linear"],
+                                    ["zoom"],
                                     14.2,
                                     [
                                         1.0,
@@ -84,8 +71,8 @@ describe('ModelLayer#loadStyleExpressionConstraint', () => {
                                     "door",
                                     [
                                         "interpolate",
-                                        [ "linear" ],
-                                        [ "measure-light", "brightness" ],
+                                        ["linear"],
+                                        ["measure-light", "brightness"],
                                         0.2,
                                         1.5,
                                         0.4,
@@ -106,25 +93,24 @@ describe('ModelLayer#loadStyleExpressionConstraint', () => {
                                 ],
                                 "model-color": [
                                     "interpolate",
-                                    [ "linear" ],
-                                    [ "measure-light", "brightness" ],
+                                    ["linear"],
+                                    ["measure-light", "brightness"],
                                     0, "white",
                                     0.15, "yellow"
                                 ],
                                 "model-color-mix-intensity": [
                                     "interpolate",
-                                    [ "linear" ],
-                                    [ "measure-light", "brightness" ],
+                                    ["linear"],
+                                    ["measure-light", "brightness"],
                                     0, 0,
                                     0.15, 1
                                 ]
                             }
                         }
                     ]
-
-                });
-            }),
-        );
+                }));
+            }
+        });
 
         const style = new Style(new StubMap());
         let errorCount = 0;

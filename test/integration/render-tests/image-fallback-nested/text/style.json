@@ -3,7 +3,8 @@
   "metadata": {
     "test": {
       "height": 128,
-      "width": 128
+      "width": 128,
+      "allowed": 0.00025
     }
   },
   "center": [ 0, 0 ],
@@ -53,7 +54,7 @@
         "icon-image": [
             "coalesce",
             ["image", ["get", "icon"]],
-            ["image", "park"]
+            ["image", "fav-park-18"]
         ],
         "text-field": ["to-string",
             ["coalesce",
@@ -75,7 +76,7 @@
               ""
           ]],
           "blue",
-          "red" 
+          "red"
         ],
         "text-opacity": [ "case",
           ["to-boolean", ["coalesce",
@@ -83,7 +84,7 @@
               ""
           ]],
           0.2,
-          1 
+          1
         ]
       }
     }

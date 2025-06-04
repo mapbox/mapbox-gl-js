@@ -1,0 +1,70 @@
+{
+    "version": 8,
+    "metadata": {
+      "test": {
+        "height": 100,
+        "width": 100,
+        "allowed": 0.0007,
+        "collisionDebug": true
+      }
+    },
+    "center": [ 24.966764371588624, 60.318679633550005],
+    "zoom": 21,
+    "sources": {
+      "places": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "coordinates": [
+                                24.966764371588624,
+                                60.318679633550005
+                            ],
+                            "type": "Point"
+                        },
+                        "properties": {
+                            "labelText": "Helsinki Airport"
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "coordinates": [
+                                24.966764371588624,
+                                60.318679633550005
+                            ],
+                            "type": "Point"
+                        },
+                        "properties": {
+                            "iconSrc": "bicycle-12"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "sprite": "local://sprites/sprite",
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "poi-labels",
+            "type": "symbol",
+            "source": "places",
+            "layout": {
+                "icon-image": ["get", "iconSrc"],
+                "icon-anchor": "center",
+                "text-field": ["get", "labelText"],
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ],
+                "text-variable-anchor": ["right"],
+                "text-radial-offset": 2,
+                "text-allow-overlap": true
+            }
+        }]
+  }
+  

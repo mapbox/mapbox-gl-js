@@ -13,16 +13,27 @@ export default function validateFog(options: ValidationOptions): Array<Validatio
 
     const rootType = getType(fog);
     if (fog === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else if (rootType !== 'object') {
         errors = errors.concat([new ValidationError('fog', fog, `object expected, ${rootType} found`)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
     for (const key in fog) {
         const transitionMatch = key.match(/^(.*)-transition$/);
+        const useThemeMatch = key.match(/^(.*)-use-theme$/);
 
-        if (transitionMatch && fogSpec[transitionMatch[1]] && fogSpec[transitionMatch[1]].transition) {
+        if (useThemeMatch && fogSpec[useThemeMatch[1]]) {
+            errors = errors.concat(validate({
+                key,
+                value: fog[key],
+                valueSpec: {type: 'string'},
+                style,
+                styleSpec
+            }));
+        } else if (transitionMatch && fogSpec[transitionMatch[1]] && fogSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
                 value: fog[key],
@@ -43,5 +54,6 @@ export default function validateFog(options: ValidationOptions): Array<Validatio
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

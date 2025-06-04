@@ -11,98 +11,84 @@ import {enforceCacheSizeLimit} from '../util/tile_request_cache';
 import {PerformanceUtils} from '../util/performance';
 import {Event} from '../util/evented';
 import {getProjection} from '../geo/projection/index';
+import {ImageRasterizer} from '../render/image_rasterizer';
+import {isWorker} from '../util/util';
 
-import type {Class} from '../types/class';
-import type {
-    WorkerSource,
-    WorkerTileParameters,
-    WorkerDEMTileParameters,
-    WorkerTileCallback,
-    WorkerDEMTileCallback,
-    TileParameters,
-    WorkerRasterArrayTileParameters,
-    WorkerRasterArrayTileCallback
-} from '../source/worker_source';
-import type {WorkerGlobalScopeInterface} from '../util/web_worker';
-import type {Callback} from '../types/callback';
-import type {LayerSpecification, ProjectionSpecification} from '../style-spec/types';
-import type {ConfigOptions} from '../style/properties';
-import type {PluginState} from './rtl_text_plugin';
 import type Projection from '../geo/projection/projection';
+import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {TaskMetadata} from '../util/scheduler';
+import type {RtlTextPlugin} from './rtl_text_plugin';
+import type {RasterizedImageMap} from '../render/image_manager';
+import type {ActorMessage, ActorMessages} from '../util/actor_messages';
+import type {WorkerSource, WorkerSourceConstructor} from './worker_source';
+import type {StyleModelMap} from '../style/style_mode';
+
+/**
+ * Source types that can instantiate a {@link WorkerSource} in {@link MapWorker}.
+ */
+type WorkerSourceType =
+    | 'vector'
+    | 'geojson'
+    | 'raster-dem'
+    | 'raster-array'
+    | 'batched-model';
+
+/**
+ * Generic type for grouping items by mapId and style scope.
+ */
+type WorkerScopeRegistry<T> = Record<string, Record<string, T>>;
+
+/**
+ * WorkerSources grouped by mapId, style scope, sourceType, and sourceId.
+ */
+type WorkerSourceRegistry = WorkerScopeRegistry<Record<string, Record<string, WorkerSource>>>;
 
 /**
  * @private
  */
-export default class Worker {
-    self: WorkerGlobalScopeInterface;
+export default class MapWorker {
+    self: Worker;
     actor: Actor;
-    layerIndexes: {
-        [mapId: string]: {
-            [scope: string]: StyleLayerIndex;
-        };
-    };
-    availableImages: {
-        [mapId: string]: {
-            [scope: string]: Array<string>;
-        };
-    };
-    workerSourceTypes: {
-        [_: string]: Class<WorkerSource>;
-    };
-    workerSources: {
-        [mapId: string]: {
-            [scope: string]: {
-                [sourceType: string]: {
-                    [sourceId: string]: WorkerSource;
-                };
-            };
-        };
-    };
-    demWorkerSources: {
-        [mapId: string]: {
-            [scope: string]: {
-                [sourceId: string]: RasterDEMTileWorkerSource;
-            };
-        };
-    };
-    rasterArrayWorkerSource: RasterArrayTileWorkerSource | null | undefined;
-    projections: {
-        [_: string]: Projection;
-    };
+    layerIndexes: WorkerScopeRegistry<StyleLayerIndex>;
+    availableImages: WorkerScopeRegistry<ImageId[]>;
+    availableModels: WorkerScopeRegistry<StyleModelMap>;
+    workerSourceTypes: Record<WorkerSourceType, WorkerSourceConstructor>;
+    workerSources: WorkerSourceRegistry;
+    projections: Record<string, Projection>;
     defaultProjection: Projection;
-    isSpriteLoaded: {
-        [mapId: string]: {
-            [scope: string]: boolean;
-        };
-    };
+    isSpriteLoaded: WorkerScopeRegistry<boolean>;
     referrer: string | null | undefined;
     dracoUrl: string | null | undefined;
     brightness: number | null | undefined;
+    imageRasterizer: ImageRasterizer;
+    worldview: string | undefined;
 
-    constructor(self: WorkerGlobalScopeInterface) {
+    constructor(self: Worker) {
         PerformanceUtils.measure('workerEvaluateScript');
         this.self = self;
         this.actor = new Actor(self, this);
 
         this.layerIndexes = {};
         this.availableImages = {};
+        this.availableModels = {};
         this.isSpriteLoaded = {};
+        this.imageRasterizer = new ImageRasterizer();
 
         this.projections = {};
         this.defaultProjection = getProjection({name: 'mercator'});
 
         this.workerSourceTypes = {
-            vector: VectorTileWorkerSource,
-            geojson: GeoJSONWorkerSource,
-            // @ts-expect-error - TS2419 - Types of construct signatures are incompatible.
+            'vector': VectorTileWorkerSource,
+            'geojson': GeoJSONWorkerSource,
+            'raster-dem': RasterDEMTileWorkerSource,
+            'raster-array': RasterArrayTileWorkerSource,
             'batched-model': Tiled3dModelWorkerSource
         };
 
         // [mapId][scope][sourceType][sourceName] => worker source instance
         this.workerSources = {};
-        this.demWorkerSources = {};
 
-        this.self.registerWorkerSource = (name: string, WorkerSource: Class<WorkerSource>) => {
+        this.self.registerWorkerSource = (name: string, WorkerSource: WorkerSourceConstructor) => {
             if (this.workerSourceTypes[name]) {
                 throw new Error(`Worker source with name "${name}" already registered.`);
             }
@@ -110,11 +96,7 @@ export default class Worker {
         };
 
         // This is invoked by the RTL text plugin when the download via the `importScripts` call has finished, and the code has been parsed.
-        this.self.registerRTLTextPlugin = (rtlTextPlugin: {
-            applyArabicShaping: any;
-            processBidirectionalText: any;
-            processStyledBidirectionalText?: any;
-        }) => {
+        this.self.registerRTLTextPlugin = (rtlTextPlugin: RtlTextPlugin) => {
             if (globalRTLTextPlugin.isParsed()) {
                 throw new Error('RTL text plugin already registered.');
             }
@@ -124,34 +106,28 @@ export default class Worker {
         };
     }
 
-    clearCaches(mapId: string, unused: unknown, callback: WorkerTileCallback) {
+    clearCaches(mapId: number, params: ActorMessages['clearCaches']['params'], callback: ActorMessages['clearCaches']['callback']) {
         delete this.layerIndexes[mapId];
         delete this.availableImages[mapId];
+        delete this.availableModels[mapId];
         delete this.workerSources[mapId];
-        delete this.demWorkerSources[mapId];
-        delete this.rasterArrayWorkerSource;
         callback();
     }
 
-    checkIfReady(mapID: string, unused: unknown, callback: WorkerTileCallback) {
+    checkIfReady(mapID: string, params: ActorMessages['checkIfReady']['params'], callback: ActorMessages['checkIfReady']['callback']) {
         // noop, used to check if a worker is fully set up and ready to receive messages
         callback();
     }
 
-    setReferrer(mapID: string, referrer: string) {
+    setReferrer(mapID: string, referrer: ActorMessages['setReferrer']['params']) {
         this.referrer = referrer;
     }
 
-    spriteLoaded(mapId: string, {
-        scope,
-        isLoaded,
-    }: {
-        scope: string;
-        isLoaded: boolean;
-    }) {
+    spriteLoaded(mapId: number, params: ActorMessages['spriteLoaded']['params']) {
         if (!this.isSpriteLoaded[mapId])
             this.isSpriteLoaded[mapId] = {};
 
+        const {scope, isLoaded} = params;
         this.isSpriteLoaded[mapId][scope] = isLoaded;
 
         if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
@@ -170,17 +146,12 @@ export default class Worker {
         }
     }
 
-    setImages(mapId: string, {
-        scope,
-        images,
-    }: {
-        scope: string;
-        images: Array<string>;
-    }, callback: WorkerTileCallback) {
+    setImages(mapId: number, params: ActorMessages['setImages']['params'], callback: ActorMessages['setImages']['callback']) {
         if (!this.availableImages[mapId]) {
             this.availableImages[mapId] = {};
         }
 
+        const {scope, images} = params;
         this.availableImages[mapId][scope] = images;
 
         if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
@@ -198,77 +169,79 @@ export default class Worker {
         callback();
     }
 
-    setProjection(mapId: string, config: ProjectionSpecification) {
+    setModels(mapId: number, {scope, models}: ActorMessages['setModels']['params'], callback: ActorMessages['setModels']['callback']) {
+        if (!this.availableModels[mapId]) {
+            this.availableModels[mapId] = {};
+        }
+
+        this.availableModels[mapId][scope] = models;
+
+        if (!this.workerSources[mapId] || !this.workerSources[mapId][scope]) {
+            callback();
+            return;
+        }
+
+        for (const workerSource in this.workerSources[mapId][scope]) {
+            const ws = this.workerSources[mapId][scope][workerSource];
+            for (const source in ws) {
+                ws[source].availableModels = models;
+            }
+        }
+
+        callback();
+    }
+
+    setProjection(mapId: number, config: ActorMessages['setProjection']['params']) {
         this.projections[mapId] = getProjection(config);
     }
 
-    setBrightness(mapId: string, brightness: number | null | undefined, callback: WorkerTileCallback) {
+    setBrightness(mapId: number, brightness: ActorMessages['setBrightness']['params'], callback: ActorMessages['setBrightness']['callback']) {
         this.brightness = brightness;
         callback();
     }
 
-    setLayers(mapId: string, params: {
-        layers: Array<LayerSpecification>;
-        scope: string;
-        options: ConfigOptions;
-    }, callback: WorkerTileCallback) {
+    setWorldview(mapId: number, worldview: ActorMessages['setWorldview']['params'], callback: ActorMessages['setWorldview']['callback']) {
+        this.worldview = worldview;
+        callback();
+    }
+
+    setLayers(mapId: number, params: ActorMessages['setLayers']['params'], callback: ActorMessages['setLayers']['callback']) {
         this.getLayerIndex(mapId, params.scope).replace(params.layers, params.options);
         callback();
     }
 
-    updateLayers(mapId: string, params: {
-        layers: Array<LayerSpecification>;
-        scope: string;
-        removedIds: Array<string>;
-        options: ConfigOptions;
-    }, callback: WorkerTileCallback) {
+    updateLayers(mapId: number, params: ActorMessages['updateLayers']['params'], callback: ActorMessages['updateLayers']['callback']) {
         this.getLayerIndex(mapId, params.scope).update(params.layers, params.removedIds, params.options);
         callback();
     }
 
-    loadTile(mapId: string, params: WorkerTileParameters & {
-        type: string;
-    }, callback: WorkerTileCallback) {
+    loadTile(mapId: number, params: ActorMessages['loadTile']['params'], callback: ActorMessages['loadTile']['callback']) {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source, params.scope).loadTile(params, callback);
     }
 
-    loadDEMTile(mapId: string, params: WorkerDEMTileParameters, callback: WorkerDEMTileCallback) {
-        this.getDEMWorkerSource(mapId, params.source, params.scope).loadTile(params, callback);
+    decodeRasterArray(mapId: number, params: ActorMessages['decodeRasterArray']['params'], callback: ActorMessages['decodeRasterArray']['callback']) {
+        (this.getWorkerSource(mapId, params.type, params.source, params.scope) as RasterArrayTileWorkerSource).decodeRasterArray(params, callback);
     }
 
-    decodeRasterArray(mapId: string, params: WorkerRasterArrayTileParameters, callback: WorkerRasterArrayTileCallback) {
-        this.getRasterArrayWorkerSource().decodeRasterArray(params, callback);
-    }
-
-    reloadTile(mapId: string, params: WorkerTileParameters & {
-        type: string;
-    }, callback: WorkerTileCallback) {
+    reloadTile(mapId: number, params: ActorMessages['reloadTile']['params'], callback: ActorMessages['reloadTile']['callback']) {
         assert(params.type);
         params.projection = this.projections[mapId] || this.defaultProjection;
         this.getWorkerSource(mapId, params.type, params.source, params.scope).reloadTile(params, callback);
     }
 
-    abortTile(mapId: string, params: TileParameters & {
-        type: string;
-    }, callback: WorkerTileCallback) {
+    abortTile(mapId: number, params: ActorMessages['abortTile']['params'], callback: ActorMessages['abortTile']['callback']) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source, params.scope).abortTile(params, callback);
     }
 
-    removeTile(mapId: string, params: TileParameters & {
-        type: string;
-    }, callback: WorkerTileCallback) {
+    removeTile(mapId: number, params: ActorMessages['removeTile']['params'], callback: ActorMessages['removeTile']['callback']) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type, params.source, params.scope).removeTile(params, callback);
     }
 
-    removeSource(mapId: string, params: {
-        source: string;
-        scope: string;
-        type: string;
-    }, callback: WorkerTileCallback) {
+    removeSource(mapId: number, params: ActorMessages['removeSource']['params'], callback: ActorMessages['removeSource']['callback']) {
         assert(params.type);
         assert(params.scope);
         assert(params.source);
@@ -296,9 +269,7 @@ export default class Worker {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    loadWorkerSource(map: string, params: {
-        url: string;
-    }, callback: Callback<undefined>) {
+    loadWorkerSource(mapId: number, params: ActorMessages['loadWorkerSource']['params'], callback: ActorMessages['loadWorkerSource']['callback']) {
         try {
             this.self.importScripts(params.url);
             callback();
@@ -307,7 +278,7 @@ export default class Worker {
         }
     }
 
-    syncRTLPluginState(map: string, state: PluginState, callback: Callback<boolean>) {
+    syncRTLPluginState(mapId: number, state: ActorMessages['syncRTLPluginState']['params'], callback: ActorMessages['syncRTLPluginState']['callback']) {
         try {
             globalRTLTextPlugin.setState(state);
             const pluginURL = globalRTLTextPlugin.getPluginURL();
@@ -321,16 +292,16 @@ export default class Worker {
                 const error = complete ? undefined : new Error(`RTL Text Plugin failed to import scripts from ${pluginURL}`);
                 callback(error, complete);
             }
-        } catch (e: any) {
+        } catch (e) {
             callback(e.toString());
         }
     }
 
-    setDracoUrl(map: string, dracoUrl: string) {
+    setDracoUrl(mapId: number, dracoUrl: ActorMessages['setDracoUrl']['params']) {
         this.dracoUrl = dracoUrl;
     }
 
-    getAvailableImages(mapId: string, scope: string): Array<string> {
+    getAvailableImages(mapId: number, scope: string): ImageId[] {
         if (!this.availableImages[mapId]) {
             this.availableImages[mapId] = {};
         }
@@ -344,7 +315,21 @@ export default class Worker {
         return availableImages;
     }
 
-    getLayerIndex(mapId: string, scope: string): StyleLayerIndex {
+    getAvailableModels(mapId: number, scope: string): StyleModelMap {
+        if (!this.availableModels[mapId]) {
+            this.availableModels[mapId] = {};
+        }
+
+        let availableModels = this.availableModels[mapId][scope];
+
+        if (!availableModels) {
+            availableModels = {};
+        }
+
+        return availableModels;
+    }
+
+    getLayerIndex(mapId: number, scope: string): StyleLayerIndex {
         if (!this.layerIndexes[mapId]) {
             this.layerIndexes[mapId] = {};
         }
@@ -359,73 +344,67 @@ export default class Worker {
         return layerIndex;
     }
 
-    getWorkerSource(mapId: string, type: string, source: string, scope: string): WorkerSource {
-        if (!this.workerSources[mapId])
-            this.workerSources[mapId] = {};
-        if (!this.workerSources[mapId][scope])
-            this.workerSources[mapId][scope] = {};
-        if (!this.workerSources[mapId][scope][type])
-            this.workerSources[mapId][scope][type] = {};
+    getWorkerSource(mapId: number, type: string, source: string, scope: string): WorkerSource {
+        const workerSources = this.workerSources;
+
+        if (!workerSources[mapId])
+            workerSources[mapId] = {};
+        if (!workerSources[mapId][scope])
+            workerSources[mapId][scope] = {} as Record<WorkerSourceType, {[sourceId: string]: WorkerSource}>;
+        if (!workerSources[mapId][scope][type])
+            workerSources[mapId][scope][type] = {};
+
         if (!this.isSpriteLoaded[mapId])
             this.isSpriteLoaded[mapId] = {};
 
-        if (!this.workerSources[mapId][scope][type][source]) {
+        if (!workerSources[mapId][scope][type][source]) {
             // use a wrapped actor so that we can attach a target mapId param
             // to any messages invoked by the WorkerSource
             const actor = {
-                send: (type: string, data: unknown, callback: any, _: any, mustQueue: boolean, metadata: any) => {
-                    this.actor.send(type, data, callback, mapId, mustQueue, metadata);
+                send: <T extends ActorMessage>(type: T, data: ActorMessages[T]['params'], callback: ActorMessages[T]['callback'], _targetMapId: number, mustQueue: boolean, metadata: TaskMetadata) => {
+                    return this.actor.send(type, data, callback, mapId, mustQueue, metadata);
                 },
                 scheduler: this.actor.scheduler
-            };
-            this.workerSources[mapId][scope][type][source] = new (this.workerSourceTypes[type] as any)(
-                (actor as any),
+            } as Actor;
+
+            workerSources[mapId][scope][type][source] = new this.workerSourceTypes[type](
+                actor,
                 this.getLayerIndex(mapId, scope),
                 this.getAvailableImages(mapId, scope),
+                this.getAvailableModels(mapId, scope),
                 this.isSpriteLoaded[mapId][scope],
                 undefined,
-                this.brightness);
+                this.brightness,
+                this.worldview
+            );
         }
 
-        return this.workerSources[mapId][scope][type][source];
+        return workerSources[mapId][scope][type][source];
     }
 
-    getDEMWorkerSource(mapId: string, source: string, scope: string): RasterDEMTileWorkerSource {
-        if (!this.demWorkerSources[mapId])
-            this.demWorkerSources[mapId] = {};
-
-        if (!this.demWorkerSources[mapId][scope])
-            this.demWorkerSources[mapId][scope] = {};
-
-        if (!this.demWorkerSources[mapId][scope][source]) {
-            this.demWorkerSources[mapId][scope][source] = new RasterDEMTileWorkerSource();
+    rasterizeImagesWorker(mapId: number, params: ActorMessages['rasterizeImagesWorker']['params'], callback: ActorMessages['rasterizeImagesWorker']['callback']) {
+        const rasterizedImages: RasterizedImageMap = new Map();
+        for (const [id, {image, imageVariant}] of params.tasks.entries()) {
+            const rasterizedImage = this.imageRasterizer.rasterize(imageVariant, image, params.scope, mapId);
+            rasterizedImages.set(id, rasterizedImage);
         }
-
-        return this.demWorkerSources[mapId][scope][source];
+        callback(undefined, rasterizedImages);
     }
 
-    getRasterArrayWorkerSource(): RasterArrayTileWorkerSource {
-        if (!this.rasterArrayWorkerSource) {
-            this.rasterArrayWorkerSource = new RasterArrayTileWorkerSource();
-        }
-
-        return this.rasterArrayWorkerSource;
+    removeRasterizedImages(mapId: number, params: ActorMessages['removeRasterizedImages']['params'], callback: ActorMessages['removeRasterizedImages']['callback']) {
+        this.imageRasterizer.removeImagesFromCacheByIds(params.imageIds, params.scope, mapId);
+        callback();
     }
 
-    enforceCacheSizeLimit(mapId: string, limit: number) {
+    enforceCacheSizeLimit(mapId: number, limit: ActorMessages['enforceCacheSizeLimit']['params']) {
         enforceCacheSizeLimit(limit);
     }
 
-    getWorkerPerformanceMetrics(mapId: string, params: any, callback: (error?: Error, result?: any) => void) {
+    getWorkerPerformanceMetrics(mapId: number, params: ActorMessages['getWorkerPerformanceMetrics']['params'], callback: ActorMessages['getWorkerPerformanceMetrics']['callback']) {
         callback(undefined, PerformanceUtils.getWorkerPerformanceMetrics());
     }
 }
 
-// @ts-expect-error - TS2304
-if (typeof WorkerGlobalScope !== 'undefined' &&
-    typeof self !== 'undefined' &&
-    // @ts-expect-error - TS2304
-    self instanceof WorkerGlobalScope) {
-// @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2345 - Argument of type 'Window & typeof globalThis' is not assignable to parameter of type 'WorkerGlobalScopeInterface'.
-    self.worker = new Worker(self);
+if (isWorker(self)) {
+    self.worker = new MapWorker(self);
 }

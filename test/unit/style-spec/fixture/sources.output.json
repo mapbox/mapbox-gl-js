@@ -42,5 +42,21 @@
   {
     "message": "sources.missing-url: Either \"url\" or \"tiles\" is required.",
     "line": 53
+  },
+  {
+    "message": "sources.invalid-bounds-too-few.bounds: array length 4 expected, length 3 found",
+    "line": 64
+  },
+  {
+    "message": "sources.invalid-bounds-too-many.bounds: array length 4 expected, length 5 found",
+    "line": 69
+  },
+  {
+    "message": "sources.invalid-bounds-values.bounds[2]: number expected, string found",
+    "line": 74
+  },
+  {
+    "message": "sources.invalid-extra-bounds-values.extra_bounds[0]: Expected number but found string.",
+    "line": 100
   }
 ]

@@ -1,38 +1,71 @@
-export type ResolvedImageOptions = {
-    namePrimary: string;
-    nameSecondary: string | null | undefined;
-    available: boolean;
-};
+import {ImageId} from './image_id';
+import {ImageVariant} from './image_variant';
+
+import type {ImageIdSpec} from './image_id';
+import type {RasterizationOptions} from './image_variant';
 
 export default class ResolvedImage {
-    namePrimary: string;
-    nameSecondary: string | null | undefined;
+    primaryId: ImageId;
+    primaryOptions?: RasterizationOptions;
+    secondaryId?: ImageId;
+    secondaryOptions?: RasterizationOptions;
     available: boolean;
 
-    constructor(options: ResolvedImageOptions) {
-        this.namePrimary = options.namePrimary;
-        if (options.nameSecondary) {
-            this.nameSecondary = options.nameSecondary;
-        }
-        this.available = options.available;
+    constructor(
+        primaryId: string | ImageIdSpec,
+        primaryOptions?: RasterizationOptions,
+        secondaryId?: string | ImageIdSpec,
+        secondaryOptions?: RasterizationOptions,
+        available: boolean = false,
+    ) {
+        this.primaryId = ImageId.from(primaryId);
+        this.primaryOptions = primaryOptions;
+        if (secondaryId) this.secondaryId = ImageId.from(secondaryId);
+        this.secondaryOptions = secondaryOptions;
+        this.available = available;
     }
 
     toString(): string {
-        if (this.nameSecondary) {
-            return `[${this.namePrimary},${this.nameSecondary}]`;
+        if (this.primaryId && this.secondaryId) {
+            const primaryName = this.primaryId.name;
+            const secondaryName = this.secondaryId.name;
+            return `[${primaryName},${secondaryName}]`;
         }
-        return this.namePrimary;
+
+        return this.primaryId.name;
     }
 
-    static fromString(namePrimary: string, nameSecondary?: string | null): ResolvedImage | null {
-        if (!namePrimary) return null; // treat empty values as no image
-        return new ResolvedImage({namePrimary, nameSecondary, available: false});
+    hasPrimary(): boolean {
+        return !!this.primaryId;
     }
 
-    serialize(): Array<string> {
-        if (this.nameSecondary) {
-            return ["image", this.namePrimary, this.nameSecondary];
+    getPrimary(): ImageVariant {
+        return new ImageVariant(this.primaryId, this.primaryOptions);
+    }
+
+    hasSecondary(): boolean {
+        return !!this.secondaryId;
+    }
+
+    getSecondary(): ImageVariant | null {
+        if (!this.secondaryId) {
+            return null;
         }
-        return ["image", this.namePrimary];
+
+        return new ImageVariant(this.secondaryId, this.secondaryOptions);
+    }
+
+    static from(image: string | ResolvedImage): ResolvedImage {
+        return typeof image === 'string' ? ResolvedImage.build({name: image}) : image;
+    }
+
+    static build(
+        primaryId: string | ImageIdSpec,
+        secondaryId?: string | ImageIdSpec,
+        primaryOptions?: RasterizationOptions,
+        secondaryOptions?: RasterizationOptions
+    ): ResolvedImage | null {
+        if (!primaryId || (typeof primaryId === 'object' && !('name' in primaryId))) return null; // treat empty values as no image
+        return new ResolvedImage(primaryId, primaryOptions, secondaryId, secondaryOptions);
     }
 }

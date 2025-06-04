@@ -14,10 +14,10 @@ export default function validateEnum(options: ValidationOptions): Array<Validati
             errors.push(new ValidationError(key, value, `expected one of [${valueSpec.values.join(', ')}], ${JSON.stringify(value)} found`));
         }
     } else { // >=v8
-        // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string'.
-        if (Object.keys(valueSpec.values).indexOf(unbundle(value)) === -1) {
+        if (Object.keys(valueSpec.values).indexOf(unbundle(value) as string) === -1) {
             errors.push(new ValidationError(key, value, `expected one of [${Object.keys(valueSpec.values).join(', ')}], ${JSON.stringify(value)} found`));
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

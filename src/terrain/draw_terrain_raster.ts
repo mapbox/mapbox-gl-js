@@ -30,6 +30,9 @@ import type {OverscaledTileID, CanonicalTileID} from '../source/tile_id';
 import type SourceCache from '../source/source_cache';
 import type Painter from '../render/painter';
 import type Tile from '../source/tile';
+import type {DynamicDefinesType} from '../render/program/program_uniforms';
+import type {GlobeRasterUniformsType} from './globe_raster_program';
+import type {TerrainRasterUniformsType} from './terrain_raster_program';
 
 export {
     drawTerrainRaster
@@ -146,7 +149,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const context = painter.context;
     const gl = context.gl;
 
-    let program, programMode;
+    let program: Program<GlobeRasterUniformsType>;
+    let programMode: number;
     const tr = painter.transform;
     const useCustomAntialiasing = globeUseCustomAntiAliasing(painter, context, tr);
 
@@ -165,9 +169,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     vertexMorphing.update(now);
     const globeMercatorMatrix = calculateGlobeMercatorMatrix(tr);
-    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+    const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
     const sharedBuffers = painter.globeSharedBuffers;
-    const viewport = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
+    const viewport: [number, number] = [tr.width * browser.devicePixelRatio, tr.height * browser.devicePixelRatio];
     const globeMatrix = Float32Array.from(tr.globeMatrix);
     const elevationOptions = {useDenormalizedUpVectorScale: true};
 
@@ -208,7 +212,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod, tr.worldSize / tr._pixelsPerMercatorPixel);
             const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
             const uniformValues = globeRasterUniformValues(
-                // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'mat4'.
                 tr.expandedFarZProjMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
                 mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
                 tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, skirtHeightValue, tr._farZ, gridMatrix);
@@ -233,10 +236,9 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
     // Render the poles.
     if (sharedBuffers && (painter.renderDefaultNorthPole || painter.renderDefaultSouthPole)) {
-        const defines = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
+        const defines: DynamicDefinesType[] = ['GLOBE_POLES', 'PROJECTION_GLOBE_VIEW'];
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
-        // @ts-expect-error - TS2322 - Type 'string[]' is not assignable to type 'DynamicDefinesType[]'.
         program = painter.getOrCreateProgram('globeRaster', {defines});
         for (const coord of tileIDs) {
             // Fill poles by extrapolating adjacent border tiles
@@ -258,10 +260,8 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
                 const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
 
-                // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
-                const drawPole = (program: Program<any>, vertexBuffer: VertexBuffer) => program.draw(
+                const drawPole = (program: Program<GlobeRasterUniformsType>, vertexBuffer: VertexBuffer) => program.draw(
                     painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
-                    // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'mat4'.
                     globeRasterUniformValues(tr.expandedFarZProjMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
                     tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
                     tr.globeCenterInViewSpace, tr.globeRadius, viewport, 0, tr._farZ), "globe_pole_raster", vertexBuffer,
@@ -275,7 +275,6 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                     drawPole(program, northPoleBuffer);
                 }
                 if (bottomCap && painter.renderDefaultSouthPole) {
-                    // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
                     poleMatrix = mat4.scale(mat4.create(), poleMatrix, [1, -1, 1]);
                     drawPole(program, southPoleBuffer);
                 }
@@ -291,17 +290,24 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
         const context = painter.context;
         const gl = context.gl;
 
-        let program, programMode;
+        let program: Program<TerrainRasterUniformsType>;
+        let programMode: number;
         const shadowRenderer = painter.shadowRenderer;
         const cutoffParams = getCutoffParams(painter, painter.longestCutoffRange);
 
         const setShaderMode = (mode: number) => {
             if (programMode === mode)
                 return;
-            const modes = ([] as any);
+            const modes: DynamicDefinesType[] = [];
             modes.push(shaderDefines[mode]);
             if (cutoffParams.shouldRenderCutoff) {
                 modes.push('RENDER_CUTOFF');
+            }
+            if (shadowRenderer) {
+                modes.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+                if (shadowRenderer.useNormalOffset) {
+                    modes.push('NORMAL_OFFSET');
+                }
             }
             program = painter.getOrCreateProgram('terrainRaster', {defines: modes});
             programMode = mode;

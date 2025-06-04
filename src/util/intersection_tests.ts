@@ -1,7 +1,7 @@
 import {isCounterClockwise} from './util';
 import Point from '@mapbox/point-geometry';
 
-export {polygonIntersectsBufferedPoint, polygonIntersectsMultiPolygon, polygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared, polygonIntersectsBox, polygonContainsPoint, triangleIntersectsTriangle};
+export {polygonIntersectsBufferedPoint, polygonIntersectsMultiPolygon, polygonIntersectsBufferedMultiLine, polygonIntersectsPolygon, distToSegmentSquared, polygonIntersectsBox, polygonContainsPoint, triangleIntersectsTriangle, segmentSegmentIntersection};
 
 type Line = ReadonlyArray<Point>;
 type MultiLine = ReadonlyArray<Line>;
@@ -103,6 +103,29 @@ function lineIntersectsLine(lineA: Line, lineB: Line) {
 function lineSegmentIntersectsLineSegment(a0: Point, a1: Point, b0: Point, b1: Point) {
     return isCounterClockwise(a0, b0, b1) !== isCounterClockwise(a1, b0, b1) &&
         isCounterClockwise(a0, a1, b0) !== isCounterClockwise(a0, a1, b1);
+}
+
+function signedAreaTriangle(a: Point, b: Point, c: Point): number {
+    return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x);
+}
+
+// Performs intersection between two line segments and returns the intersection point (t, s) along both segments if any
+function segmentSegmentIntersection(a0: Point, a1: Point, b0: Point, b1: Point): [number, number] | undefined {
+    const area0 = signedAreaTriangle(a0, a1, b1);
+    const area1 = signedAreaTriangle(a0, a1, b0);
+
+    if (Math.sign(area0) === Math.sign(area1)) {
+        return undefined;
+    }
+
+    const area2 = signedAreaTriangle(b0, b1, a0);
+    const area3 = area2 + area1 - area0;
+
+    if (Math.sign(area2) === Math.sign(area3)) {
+        return undefined;
+    }
+
+    return [area2 / (area2 - area3), area1 / (area1 - area0)];
 }
 
 function pointIntersectsBufferedLine(p: Point, line: Line, radius: number) {

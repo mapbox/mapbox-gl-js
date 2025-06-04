@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {beforeEach, describe, test, expect, waitFor, vi, createMap} from '../../../util/vitest';
 import {fixedLngLat} from '../../../util/fixed';
@@ -347,7 +348,7 @@ describe('Map#projection', () => {
         test('In Globe', () => {
             map.setProjection('globe');
             expect(pointToFixed(map.project({lng: 0, lat: 0}))).toEqual({x: "100.00000000", y: "100.00000000"});
-            expect(pointToFixed(map.project({lng:  -72.817409474, lat: 43.692434709}))).toEqual({x: "38.86205343", y: "38.86205343"});
+            expect(pointToFixed(map.project({lng: -72.817409474, lat: 43.692434709}))).toEqual({x: "38.86205343", y: "38.86205343"});
         });
         test('In Natural Earth', () => {
             map.setProjection('naturalEarth');

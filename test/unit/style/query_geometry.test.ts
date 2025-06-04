@@ -1,9 +1,10 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import {fixedNum} from '../../util/fixed';
 import Point from '@mapbox/point-geometry';
 import Transform from '../../../src/geo/transform';
-import {projectPolygonCoveringPoles, unwrapQueryPolygon} from '../../../src/style/query_geometry';
+import {QueryGeometry, projectPolygonCoveringPoles, unwrapQueryPolygon} from '../../../src/style/query_geometry';
 
 describe('Query geometry', () => {
     test('projectPolygonCoveringPoles', () => {
@@ -66,6 +67,19 @@ describe('Query geometry', () => {
         const actual = projected.polygon.map(p => { return {x: fixedNum(p.x, 5), y: fixedNum(p.y, 5)}; });
 
         expect(actual).toEqual(expected);
+    });
+
+    describe('createFromScreenPoints', () => {
+        test('not above horizon on low globe zooms', () => {
+            const tr = new Transform();
+            tr.setProjection({name: 'globe'});
+            tr.resize(512, 512);
+            tr.zoom = 1;
+            tr.pitch = 0;
+
+            const geom = QueryGeometry.createFromScreenPoints([new Point(0, 0), new Point(512, 512)], tr);
+            expect(geom.isAboveHorizon).toEqual(false);
+        })
     });
 
     describe('unwrapQueryPolygon', () => {

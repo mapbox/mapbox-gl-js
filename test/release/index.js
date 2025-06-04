@@ -107,6 +107,16 @@ const pages = [
         "url": "./globe-with-video.html"
     },
     {
+        "key": "interactions",
+        "title": "Interactions",
+        "url": "./featuresets.html"
+    },
+    {
+        "key": "precipitation",
+        "title": "Precipitation",
+        "url": "./precipitation.html"
+    },
+    {
         "key": "scroll_zoom_blocker",
         "title": "Gestures",
         "url": "./scroll_zoom_blocker.html"
@@ -122,6 +132,11 @@ const pages = [
         "url": "./custom-source.html"
     },
     {
+        "key": "landmark-icons",
+        "title": "Landmark Icons",
+        "url": "./landmark-icons.html"
+    },
+    {
         "key": "atmosphere",
         "title": "Atmosphere",
         "url": "./atmosphere.html"
@@ -132,11 +147,11 @@ const versions = {
     'latest': {}
 };
 
-Object.keys(mapboxglVersions).forEach(function(version) {
+Object.keys(mapboxglVersions).forEach(function (version) {
     versions[version] = mapboxglVersions[version];
 });
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const jsLatest = document.createElement("a");
     jsLatest.href = "../../dist/mapbox-gl.js";
     const cssLatest = document.createElement("a");
@@ -153,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const prevButton = document.querySelector('#prev');
     const nextButton = document.querySelector('#next');
 
-    document.querySelector('.navbar-expand').addEventListener('click', function() {
+    document.querySelector('.navbar-expand').addEventListener('click', function () {
         versionItem.classList.remove('active');
         titleItem.classList.remove('active');
     });
@@ -177,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    titleElement.addEventListener('click', function() {
+    titleElement.addEventListener('click', function () {
         versionItem.classList.remove('active');
         titleItem.classList[titleItem.classList.contains('active') ? 'remove' : 'add']('active');
     });
@@ -199,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
         item.innerHTML = '<span class="item-title">' + page.title + '</span>';
         item.dataset.page = page;
         item.dataset.index = i;
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function () {
             pageIndex = this.dataset.index;
             if (pageIndex < 0) pageIndex = 0;
             params.page = pages[pageIndex].key;
@@ -215,12 +230,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     versionNumber.innerText = params.version;
-    versionButton.addEventListener('click', function() {
+    versionButton.addEventListener('click', function () {
         titleItem.classList.remove('active');
         versionItem.classList[versionItem.classList.contains('active') ? 'remove' : 'add']('active');
     });
 
-    Object.keys(versions).forEach(function(version) {
+    Object.keys(versions).forEach(function (version) {
         const item = document.createElement('a');
         item.classList.add('dropdown-item');
         const metadata = versions[version];
@@ -229,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         item.innerHTML = '<span class="item-title">' + version + '</span> <span class="item-meta">' + (metadata.released ? (new Date(metadata.released)).toISOString().substr(0, 10) : '&lt;unknown&gt;') +  '</span>';
         item.dataset.version = version;
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function () {
             params.version = this.dataset.version;
             versionItem.classList.remove('active');
             load();
@@ -317,14 +332,14 @@ document.addEventListener('DOMContentLoaded', function() {
         location.hash = hash;
     }
 
-    prevButton.addEventListener('click', function() {
+    prevButton.addEventListener('click', function () {
         if (pageIndex > 0) {
             pageIndex--;
             load();
         }
     });
 
-    nextButton.addEventListener('click', function() {
+    nextButton.addEventListener('click', function () {
         if (pageIndex + 1 < pages.length) {
             pageIndex++;
             load();

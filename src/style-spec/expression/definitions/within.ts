@@ -85,6 +85,7 @@ function getTilePolygon(coordinates: Array<Array<GeoJSON.Position>>, bbox: BBox,
         }
         polygon.push(ring);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return polygon;
 }
 
@@ -94,6 +95,7 @@ function getTilePolygons(coordinates: Array<Array<Array<GeoJSON.Position>>>, bbo
         const polygon = getTilePolygon(coordinates[i], bbox, canonical);
         polygons.push(polygon);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return polygons;
 }
 
@@ -118,6 +120,7 @@ function getTilePoints(geometry: Array<Array<Point>> | null | undefined, pointBB
     const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
     const tilePoints = [];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (!geometry) return tilePoints;
     for (const points of geometry) {
         for (const point of points) {
@@ -126,6 +129,7 @@ function getTilePoints(geometry: Array<Array<Point>> | null | undefined, pointBB
             tilePoints.push(p);
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return tilePoints;
 }
 
@@ -155,8 +159,8 @@ function getTileLines(geometry: Array<Array<Point>> | null | undefined, lineBBox
 }
 
 function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons) {
-    const pointBBox = [Infinity, Infinity, -Infinity, -Infinity];
-    const polyBBox = [Infinity, Infinity, -Infinity, -Infinity];
+    const pointBBox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
+    const polyBBox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
 
     const canonical = ctx.canonicalID();
     if (!canonical) {
@@ -164,11 +168,8 @@ function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPo
     }
 
     if (polygonGeometry.type === 'Polygon') {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         const tilePolygon = getTilePolygon(polygonGeometry.coordinates, polyBBox, canonical);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         const tilePoints = getTilePoints(ctx.geometry(), pointBBox, polyBBox, canonical);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         if (!boxWithinBox(pointBBox, polyBBox)) return false;
 
         for (const point of tilePoints) {
@@ -176,11 +177,8 @@ function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPo
         }
     }
     if (polygonGeometry.type === 'MultiPolygon') {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         const tilePolygons = getTilePolygons(polygonGeometry.coordinates, polyBBox, canonical);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         const tilePoints = getTilePoints(ctx.geometry(), pointBBox, polyBBox, canonical);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         if (!boxWithinBox(pointBBox, polyBBox)) return false;
 
         for (const point of tilePoints) {
@@ -192,8 +190,8 @@ function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPo
 }
 
 function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons) {
-    const lineBBox = [Infinity, Infinity, -Infinity, -Infinity];
-    const polyBBox = [Infinity, Infinity, -Infinity, -Infinity];
+    const lineBBox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
+    const polyBBox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
 
     const canonical = ctx.canonicalID();
     if (!canonical) {
@@ -201,11 +199,8 @@ function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPol
     }
 
     if (polygonGeometry.type === 'Polygon') {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         const tilePolygon = getTilePolygon(polygonGeometry.coordinates, polyBBox, canonical);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         const tileLines = getTileLines(ctx.geometry(), lineBBox, polyBBox, canonical);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         if (!boxWithinBox(lineBBox, polyBBox)) return false;
 
         for (const line of tileLines) {
@@ -213,11 +208,8 @@ function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPol
         }
     }
     if (polygonGeometry.type === 'MultiPolygon') {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         const tilePolygons = getTilePolygons(polygonGeometry.coordinates, polyBBox, canonical);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         const tileLines = getTileLines(ctx.geometry(), lineBBox, polyBBox, canonical);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         if (!boxWithinBox(lineBBox, polyBBox)) return false;
 
         for (const line of tileLines) {
@@ -238,17 +230,16 @@ class Within implements Expression {
         this.geometries = geometries;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Within | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Within | void {
         if (args.length !== 2)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Within'.
             return context.error(`'within' expression requires exactly one argument, but found ${args.length - 1} instead.`);
         if (isValue(args[1])) {
-            const geojson = (args[1] as any);
+            const geojson = args[1] as GeoJSON.GeoJSON;
             if (geojson.type === 'FeatureCollection') {
                 for (let i = 0; i < geojson.features.length; ++i) {
                     const type = geojson.features[i].geometry.type;
                     if (type === 'Polygon' || type === 'MultiPolygon') {
-                        return new Within(geojson, geojson.features[i].geometry);
+                        return new Within(geojson, geojson.features[i].geometry as GeoJSONPolygons);
                     }
                 }
             } else if (geojson.type === 'Feature') {
@@ -256,11 +247,10 @@ class Within implements Expression {
                 if (type === 'Polygon' || type === 'MultiPolygon') {
                     return new Within(geojson, geojson.geometry);
                 }
-            } else if (geojson.type  === 'Polygon' || geojson.type === 'MultiPolygon') {
+            } else if (geojson.type === 'Polygon' || geojson.type === 'MultiPolygon') {
                 return new Within(geojson, geojson);
             }
         }
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Within'.
         return context.error(`'within' expression requires valid geojson object that contains polygon geometry type.`);
     }
 

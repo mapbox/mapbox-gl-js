@@ -1,0 +1,38 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 64,
+      "width": 128,
+      "operations": [
+        ["on", "styleimagemissing", [["addImage", "rocket", "./image/rocket.png"]]],
+        ["addLayer", {
+          "id": "test",
+          "type": "symbol",
+          "source": "geojson",
+          "layout": {
+            "icon-image": ["image", "rocket"]
+          }
+        }],
+        ["wait"],
+        ["wait"]
+      ]
+    }
+  },
+  "zoom": 0,
+  "center": [0, 0],
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [{
+          "type": "Feature",
+          "geometry": {"type": "Point", "coordinates": [0, 0]}
+        }]
+      }
+    }
+  },
+  "layers": []
+}

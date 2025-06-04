@@ -7,44 +7,69 @@ import type {CanonicalTileID} from '../source/tile_id';
 
 const DEFAULT_MIN_ZOOM = 0;
 const DEFAULT_MAX_ZOOM = 25.5;
-/*
+/**
  * The circumference at a line of latitude in meters.
+ * @private
  */
 export function circumferenceAtLatitude(latitude: number): number {
     return earthCircumference * Math.cos(latitude * Math.PI / 180);
 }
 
+/**
+ * @private
+ */
 export function mercatorXfromLng(lng: number): number {
     return (180 + lng) / 360;
 }
 
+/**
+ * @private
+ */
 export function mercatorYfromLat(lat: number): number {
     return (180 - (180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)))) / 360;
 }
 
+/**
+ * @private
+ */
 export function mercatorZfromAltitude(altitude: number, lat: number): number {
     return altitude / circumferenceAtLatitude(lat);
 }
 
+/**
+ * @private
+ */
 export function lngFromMercatorX(x: number): number {
     return x * 360 - 180;
 }
 
+/**
+ * @private
+ */
 export function latFromMercatorY(y: number): number {
     const y2 = 180 - y * 360;
     return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
 }
 
+/**
+ * @private
+ */
 export function altitudeFromMercatorZ(z: number, y: number): number {
     return z * circumferenceAtLatitude(latFromMercatorY(y));
 }
 
 export const MAX_MERCATOR_LATITUDE = 85.051129;
 
+/**
+ * @private
+ */
 export function getLatitudeScale(lat: number): number {
     return Math.cos(degToRad(clamp(lat, -MAX_MERCATOR_LATITUDE, MAX_MERCATOR_LATITUDE)));
 }
 
+/**
+ * @private
+ */
 export function getMetersPerPixelAtLatitude(lat: number, zoom: number): number {
     const constrainedZoom = clamp(zoom, DEFAULT_MIN_ZOOM, DEFAULT_MAX_ZOOM);
     const constrainedScale = Math.pow(2.0, constrainedZoom);
@@ -65,6 +90,9 @@ export function mercatorScale(lat: number): number {
     return 1 / Math.cos(lat * Math.PI / 180);
 }
 
+/**
+ * @private
+ */
 export function tileToMeter(canonical: CanonicalTileID, tileYCoordinate: number = 0): number {
     const circumferenceAtEquator = 40075017;
     const mercatorY = (canonical.y + tileYCoordinate / EXTENT) / (1 << canonical.z);

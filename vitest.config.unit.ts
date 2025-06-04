@@ -2,7 +2,6 @@ import {basename as pathBasename} from 'node:path';
 import {readFileSync} from 'node:fs';
 import {mergeConfig, defineConfig} from 'vitest/config';
 import {globSync} from 'glob';
-
 import baseConfig from './vitest.config.base';
 
 function styleSpecFixtures() {
@@ -30,15 +29,19 @@ function styleSpecFixtures() {
 
 export default mergeConfig(baseConfig, defineConfig({
     test: {
+        browser: {
+            instances: [
+                {browser: 'chromium'},
+            ],
+        },
         include: ['test/unit/**/*.test.ts'],
         setupFiles: ['test/unit/setup.ts'],
         reporters: process.env.CI ? [
             ['html', {outputFile: './test/unit/vitest/index.html'}],
             ['junit', {outputFile: './test/unit/test-results.xml'}],
-        ] : ['basic'],
+            ['default', {summary: false}]
+        ] : [['default', {summary: false}]],
     },
-    // For msw mock worker
-    publicDir: 'test/unit/mock-worker',
     plugins: [
         styleSpecFixtures()
     ]

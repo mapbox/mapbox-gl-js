@@ -10,7 +10,7 @@ import type {ColorThemeSpecification} from "../style-spec/types";
 
 export type LUT = {
     image: RGBAImage;
-    data: string;
+    data?: string;
     texture?: Texture3D;
 };
 
@@ -26,6 +26,7 @@ export function evaluateColorThemeProperties(
     scope: string,
     values?: ColorThemeSpecification,
     configOptions?: ConfigOptions | null,
+    worldview?: string
 ): PossiblyEvaluated<Props> {
     const properties = extend({}, values);
     for (const name of Object.keys(styleSpec.colorTheme)) {
@@ -39,5 +40,5 @@ export function evaluateColorThemeProperties(
     // @ts-expect-error - TS2344 - Type 'ColorThemeSpecification' does not satisfy the constraint 'PropertyValueSpecifications<Props>'.
     transitionable.setTransitionOrValue<ColorThemeSpecification>(properties, configOptions);
     const transitioning = transitionable.untransitioned();
-    return transitioning.possiblyEvaluate(new EvaluationParameters(0.0));
+    return transitioning.possiblyEvaluate(new EvaluationParameters(0.0, {worldview}));
 }

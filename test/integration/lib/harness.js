@@ -1,4 +1,3 @@
-/* eslint-disable no-process-exit */
 
 import path from 'path';
 import fs from 'fs';
@@ -6,9 +5,9 @@ import {globSync} from 'glob';
 import shuffleSeed from 'shuffle-seed';
 import {queue} from 'd3-queue';
 import chalk from 'chalk';
-import template from 'lodash.template';
+import template from 'lodash/template.js';
 import createServer from './server.js';
-
+// eslint-disable-next-line import/order
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -20,7 +19,7 @@ export default function (directory, implementation, options, run) {
     const server = createServer();
 
     const tests = options.tests || [];
-    const ignores = options.ignores || {};
+    const ignores = options.ignores || {'todo': [], 'skip': []};
 
     let sequence = globSync(`**/${options.fixtureFilename || 'style.json'}`, {cwd: directory})
         .sort((a, b) => a.localeCompare(b, 'en'))
@@ -31,9 +30,10 @@ export default function (directory, implementation, options, run) {
             server.localizeURLs(style);
 
             style.metadata = style.metadata || {};
+            const testName = `${path.basename(directory)}/${id}`;
             style.metadata.test = Object.assign({
                 id,
-                ignored: ignores[`${path.basename(directory)}/${id}`],
+                skip: ignores.skip.includes(testName) || ignores.todo.includes(testName),
                 width: 512,
                 height: 512,
                 pixelRatio: 1,
@@ -54,8 +54,8 @@ export default function (directory, implementation, options, run) {
                 return false;
             }
 
-            if (/^skip/.test(test.ignored)) {
-                console.log(chalk.gray(`* skipped ${test.id} (${test.ignored})`));
+            if (test.skip) {
+                console.log(chalk.gray(`* skipped ${test.id}`));
                 return false;
             }
 
@@ -79,7 +79,7 @@ export default function (directory, implementation, options, run) {
                 handleResult(error);
             }
 
-            function handleResult (error) {
+            function handleResult(error) {
                 if (error) {
                     test.error = error;
                 }
@@ -182,8 +182,7 @@ export default function (directory, implementation, options, run) {
             stats[test.status] = (stats[test.status] || 0) + 1;
         }
 
-        const unsuccessful = tests.filter(test =>
-            test.status === 'failed' || test.status === 'errored');
+        const unsuccessful = tests.filter(test => test.status === 'failed' || test.status === 'errored');
 
         const resultsShell = resultsTemplate({unsuccessful, tests, stats, shuffle: options.shuffle, seed: options.seed})
             .split('<!-- results go here -->');

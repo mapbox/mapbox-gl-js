@@ -7,12 +7,12 @@
       "allowed": 0.00025,
       "operations": [
         ["wait"],
-        ["addModel", "maple", "./models/maple.glb"],
-        ["addModel", "maple1", "./models/maple1.glb"],
-        ["addModel", "oak1", "./models/oak1.glb"],
-        ["addModel", "oak2", "./models/oak2.glb"],
-        ["addModel", "oak3", "./models/oak3.glb"],
-        ["addModel", "spur1", "./models/spur1.glb"],
+        ["addModel", "maple", "/models/maple.glb"],
+        ["addModel", "maple1", "/models/maple1.glb"],
+        ["addModel", "oak1", "/models/oak1.glb"],
+        ["addModel", "oak2", "/models/oak2.glb"],
+        ["addModel", "oak3", "/models/oak3.glb"],
+        ["addModel", "spur1", "/models/spur1.glb"],
         ["wait"],
         ["addLayer", {
               "id": "tree-layer",

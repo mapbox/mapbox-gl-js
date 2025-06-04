@@ -62,7 +62,7 @@
   "pitch": 60,
   "zoom": 2,
   "bearing": -90,
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "line",
@@ -70,7 +70,7 @@
       "source": "geojson",
       "paint": {
         "line-width": 12,
-        "line-pattern": "generic_icon",
+        "line-pattern": "information",
         "line-trim-offset": [0.7, 1.0]
       }
     }

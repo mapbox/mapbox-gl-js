@@ -5,7 +5,7 @@ import {ValidationWarning} from '../style-spec/error/validation_error';
 import type {Evented} from '../util/evented';
 import type {ValidationErrors as _ValidationErrors} from '../style-spec/validate_style.min';
 
-export type {Validator, ValidationErrors} from '../style-spec/validate_style.min';
+export type {Validator, ValidationError, ValidationErrors} from '../style-spec/validate_style.min';
 
 export function emitValidationErrors(emitter: Evented, errors?: _ValidationErrors | null): boolean {
     let hasErrors = false;
@@ -31,6 +31,8 @@ export {
     validateLights,
     validateModel,
     validateFog,
+    validateSnow,
+    validateRain,
     validateLayer,
     validateFilter,
     validatePaintProperty,

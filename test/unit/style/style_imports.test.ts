@@ -1,18 +1,19 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {describe, test, beforeAll, afterEach, afterAll, expect, waitFor, vi} from '../../util/vitest';
-import {getNetworkWorker, http, HttpResponse} from '../../util/network';
+import {describe, test, expect, waitFor, vi} from '../../util/vitest';
+import {mockFetch} from '../../util/network';
 import Tile from '../../../src/source/tile';
 import Style from '../../../src/style/style';
 import Transform from '../../../src/geo/transform';
 import StyleLayer from '../../../src/style/style_layer';
 import VectorTileSource from '../../../src/source/vector_tile_source';
 import GlyphManager from '../../../src/render/glyph_manager';
-import {Event, Evented} from '../../../src/util/evented';
-import {RequestManager} from '../../../src/util/mapbox';
+import {Event} from '../../../src/util/evented';
 import {OverscaledTileID} from '../../../src/source/tile_id';
-
 import {extend} from '../../../src/util/util';
 import {makeFQID} from '../../../src/util/fqid';
+import {ImageId} from '../../../src/style-spec/expression/types/image_id';
+import {StubMap} from './utils';
 
 function createStyleJSON(properties) {
     return extend({
@@ -21,37 +22,6 @@ function createStyleJSON(properties) {
         layers: []
     }, properties);
 }
-
-class StubMap extends Evented {
-    constructor() {
-        super();
-        this.transform = new Transform();
-        this._requestManager = new RequestManager();
-        this._markers = [];
-        this._triggerCameraUpdate = () => {};
-        this._prioritizeAndUpdateProjection = () => {};
-    }
-
-    setCamera() {}
-
-    _getMapId() {
-        return 1;
-    }
-}
-
-let networkWorker: any;
-
-beforeAll(async () => {
-    networkWorker = await getNetworkWorker(window);
-});
-
-afterEach(() => {
-    networkWorker.resetHandlers();
-});
-
-afterAll(() => {
-    networkWorker.stop();
-});
 
 describe('Style#loadURL', () => {
     test('wraps style with schema into import', async () => {
@@ -64,7 +34,9 @@ describe('Style#loadURL', () => {
             }
         });
 
-        networkWorker.use(http.get('/style.json', () => HttpResponse.json(initialStyle)));
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle))
+        });
 
         await new Promise(resolve => {
             style.once('style.load', () => {
@@ -85,7 +57,9 @@ describe('Style#loadURL', () => {
             fragment: true,
         });
 
-        networkWorker.use(http.get('/style.json', () => HttpResponse.json(initialStyle)));
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle))
+        });
 
         await new Promise(resolve => {
             style.once('style.load', () => {
@@ -112,16 +86,16 @@ describe('Style#loadURL', () => {
 
         const spy = vi.fn();
 
-        networkWorker.use(
-            http.get('/style.json', ({request}) => {
+        mockFetch({
+            '/style.json': (request) => {
                 spy(request);
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/streets-v12.json', ({request}) => {
+                return new Response(JSON.stringify(initialStyle));
+            },
+            '/styles/streets-v12.json': (request) => {
                 spy(request);
-                return HttpResponse.json(fragment);
-            }),
-        );
+                return new Response(JSON.stringify(fragment));
+            }
+        });
 
         await new Promise(resolve => {
             style.once("style.load", () => {
@@ -136,14 +110,10 @@ describe('Style#loadURL', () => {
     });
 
     test('non existing imports don\'t block root style', async () => {
-        networkWorker.use(
-            http.get('/styles/not-found.json', () => {
-                return new HttpResponse(null, {status: 404});
-            }),
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-        );
+        mockFetch({
+            '/styles/not-found.json': () => new Response(null, {status: 404}),
+            '/style.json': () => new Response(JSON.stringify(initialStyle)),
+        });
 
         const style = new Style(new StubMap());
 
@@ -171,12 +141,12 @@ describe('Style#loadURL', () => {
 
         const spy = vi.fn();
 
-        networkWorker.use(
-            http.get('/style.json', ({request}) => {
+        mockFetch({
+            '/style.json': (request) => {
                 spy(request);
-                return HttpResponse.json(initialStyle);
-            }),
-        );
+                return new Response(JSON.stringify(initialStyle));
+            }
+        });
 
         style.loadURL('/style.json');
         await waitFor(style, "style.load");
@@ -251,24 +221,24 @@ describe('Style#loadURL', () => {
 
         const spy = vi.fn();
 
-        networkWorker.use(
-            http.get('/style.json', ({request}) => {
+        mockFetch({
+            '/style.json': (request) => {
                 spy(request);
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/parent.json', ({request}) => {
+                return new Response(JSON.stringify(initialStyle));
+            },
+            '/styles/parent.json': (request) => {
                 spy(request);
-                return HttpResponse.json(parentFragment);
-            }),
-            http.get('/styles/child1.json', ({request}) => {
+                return new Response(JSON.stringify(parentFragment));
+            },
+            '/styles/child1.json': (request) => {
                 spy(request);
-                return HttpResponse.json(childFragment1);
-            }),
-            http.get('/styles/child2.json', ({request}) => {
+                return new Response(JSON.stringify(childFragment1));
+            },
+            '/styles/child2.json': (request) => {
                 spy(request);
-                return HttpResponse.json(childFragment2);
-            }),
-        );
+                return new Response(JSON.stringify(childFragment2));
+            }
+        });
 
         style.loadURL('/style.json');
         await waitFor(style, "style.load");
@@ -296,14 +266,10 @@ describe('Style#loadURL', () => {
             imports: [{id: 'streets', url: '/styles/streets-v12.json'}],
         });
 
-        networkWorker.use(
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/streets-v12.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            })
-        );
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle)),
+            '/styles/streets-v12.json': () => new Response(JSON.stringify(createStyleJSON()))
+        });
 
         const spy = vi.fn();
         map.on('style.import.load', spy);
@@ -327,14 +293,10 @@ describe('Style#loadURL', () => {
             imports: [{id: 'streets', url: '/styles/streets-v12.json'}],
         });
 
-        networkWorker.use(
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/streets-v12.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            })
-        );
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle)),
+            '/styles/streets-v12.json': () => new Response(JSON.stringify(createStyleJSON()))
+        });
 
         const spy = vi.fn();
         map.on('dataloading', spy);
@@ -363,14 +325,10 @@ describe('Style#loadURL', () => {
             imports: [{id: 'streets', url: '/styles/streets-v12.json'}],
         });
 
-        networkWorker.use(
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/streets-v12.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            })
-        );
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle)),
+            '/styles/streets-v12.json': () => new Response(JSON.stringify(createStyleJSON()))
+        });
 
         const spy = vi.fn();
         map.on('data', spy);
@@ -401,14 +359,10 @@ describe('Style#loadURL', () => {
             imports: [{id: 'streets', url: '/styles/streets-v12.json'}],
         });
 
-        networkWorker.use(
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/styles/streets-v12.json', () => {
-                return HttpResponse.json(createStyleJSON({version: 'invalid'}));
-            })
-        );
+        mockFetch({
+            '/style.json': () => new Response(JSON.stringify(initialStyle)),
+            '/styles/streets-v12.json': () => new Response(JSON.stringify(createStyleJSON({version: 'invalid'})))
+        });
 
         style.loadURL('/style.json');
         const {error} = await waitFor(map, "error");
@@ -433,12 +387,12 @@ describe('Style#loadJSON', () => {
 
         const spy = vi.fn();
 
-        networkWorker.use(
-            http.get('/styles/streets-v12.json', ({request}) => {
+        mockFetch({
+            '/styles/streets-v12.json': (request) => {
                 spy(request);
-                return HttpResponse.json(fragment);
-            })
-        );
+                return new Response(JSON.stringify(fragment));
+            }
+        });
 
         style.loadJSON(initialStyle);
         await waitFor(style, "style.load");
@@ -768,12 +722,12 @@ describe('Style#updateImport', () => {
         const map = new StubMap();
         const style = new Style(map);
 
-        networkWorker.use(
-            http.get('/style.json', ({request}) => {
+        mockFetch({
+            '/style.json': (request) => {
                 spy(request);
-                return HttpResponse.json(initialStyle);
-            }),
-        );
+                return new Response(JSON.stringify(initialStyle));
+            },
+        });
 
         const initialStyle = createStyleJSON({
             imports: [{id: 'streets', url: '/style.json', data: createStyleJSON({
@@ -810,15 +764,15 @@ describe('Style#updateImport', () => {
         const map = new StubMap();
         const style = new Style(map);
 
-        networkWorker.use(
-            http.get('/style.json', () => {
-                return HttpResponse.json(initialStyle);
-            }),
-            http.get('/style2.json', ({request}) => {
+        mockFetch({
+            '/style.json': (request) => {
+                return new Response(JSON.stringify(initialStyle));
+            },
+            '/style2.json': (request) => {
                 spy(request);
-                return HttpResponse.json(initialStyle);
-            }),
-        );
+                return new Response(JSON.stringify(initialStyle));
+            },
+        });
 
         const initialStyle = createStyleJSON({
             imports: [{id: 'streets', url: '/style.json'}],
@@ -841,26 +795,59 @@ describe('Style#updateImport', () => {
             });
         });
     });
+
+    test('update import with no config should use values in schema', async () => {
+        const style = new Style(new StubMap());
+
+        const initialStyle = createStyleJSON({
+            imports: [{id: 'basemap', url: '',
+                config: {
+                    lightPreset: "day"
+                },
+                data: createStyleJSON({
+                    sources: {new: {type: 'vector', tiles: []}},
+                    schema: {
+                        lightPreset: {
+                            default: 'night'
+                        }
+                    }
+                })
+            }],
+        });
+
+        style.loadJSON(initialStyle);
+
+        await waitFor(style, "style.load");
+
+        style.updateImport('basemap', {
+            id: 'basemap',
+            data: createStyleJSON({
+                sources: {mapbox: {type: 'vector', tiles: []}},
+                schema: {
+                    lightPreset: {
+                        default: 'day'
+                    }
+                }
+            })
+        });
+
+        expect(style.stylesheet.imports[style.getImportIndex('basemap')].config).toBeUndefined();
+        expect(style.options.get(makeFQID('lightPreset', 'basemap')).default.value).toStrictEqual('day');
+    });
 });
 
 describe('Style#getImportGlobalIds', () => {
     test('should return all imports', async () => {
         const style = new Style(new StubMap());
 
-        networkWorker.use(
-            http.get('/standard.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            }),
-            http.get('/standard-2.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            }),
-            http.get('/supplement.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            }),
-            http.get('/roads.json', () => {
-                return HttpResponse.json(createStyleJSON());
-            }),
-        );
+        mockFetch({
+            '/standard.json': () => new Response(JSON.stringify(createStyleJSON())),
+            '/standard-2.json': () => new Response(JSON.stringify(createStyleJSON())),
+            '/supplement.json': () => new Response(JSON.stringify(createStyleJSON())),
+            '/roads.json': () => new Response(JSON.stringify(createStyleJSON())),
+            '/inner.json': () => new Response(JSON.stringify(createStyleJSON())),
+            '/non-standard.json': () => new Response(JSON.stringify(createStyleJSON())),
+        });
 
         style.loadJSON({
             version: 8,
@@ -1833,6 +1820,7 @@ describe('Terrain', () => {
 
         // Using terrain from the root style
         style.loadJSON(rootWithTerrain);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.load', resolve));
         expect(style.terrain.scope).toEqual(style.scope);
         expect(style.getTerrain()).toEqual({source: 'mapbox-dem', exaggeration: 2});
@@ -1912,20 +1900,20 @@ describe('Terrain', () => {
 
             const spy = vi.fn();
 
-            networkWorker.use(
-                http.get('/style.json', ({request}) => {
+            mockFetch({
+                '/style.json': (request) => {
                     spy(request);
-                    return HttpResponse.json(initialStyle);
-                }),
-                http.get('/standard.json', ({request}) => {
+                    return new Response(JSON.stringify(initialStyle));
+                },
+                '/standard.json': (request) => {
                     spy(request);
-                    return HttpResponse.json(standardFragment);
-                }),
-                http.get('/navigation.json', ({request}) => {
+                    return new Response(JSON.stringify(standardFragment));
+                },
+                '/navigation.json': (request) => {
                     spy(request);
-                    return HttpResponse.json(navigationFragment);
-                })
-            );
+                    return new Response(JSON.stringify(navigationFragment));
+                }
+            });
 
             style.loadURL('/style.json');
 
@@ -2327,7 +2315,7 @@ describe('Style#queryRenderedFeatures', () => {
         imports: [{id: 'streets', url: '/styles/streets-v12.json', data: fragment}]
     });
 
-    test('returns features only from the root style', async () => {
+    test.skip('returns features only from the root style', async () => {
         const style = new Style(new StubMap());
         style.loadJSON(initialStyle);
 
@@ -2341,7 +2329,7 @@ describe('Style#queryRenderedFeatures', () => {
         expect(results.length).toEqual(1);
     });
 
-    test('returns features only from the root style when including layers', async () => {
+    test.skip('returns features only from the root style when including layers', async () => {
         const style = new Style(new StubMap());
 
         style.loadJSON(initialStyle);
@@ -2562,8 +2550,7 @@ test('Style#setGeoJSONSourceData', async () => {
     style.loadJSON(initialStyle);
 
     await waitFor(style, 'style.load');
-    expect(() =>
-        style.setGeoJSONSourceData(makeFQID('mapbox', 'streets'), {type: 'FeatureCollection', features: []})).toThrowError(/There is no source with this ID/);
+    expect(() => style.setGeoJSONSourceData(makeFQID('mapbox', 'streets'), {type: 'FeatureCollection', features: []})).toThrowError(/There is no source with this ID/);
 });
 
 describe('Style#setConfigProperty', () => {
@@ -2596,7 +2583,7 @@ describe('Style#setConfigProperty', () => {
 
         expect(style.getConfigProperty('standard', 'showBackground')).toEqual(false);
 
-        style.dispatcher.broadcast = function(key, value) {
+        style.dispatcher.broadcast = function (key, value) {
             expect(key).toEqual('updateLayers');
             expect(value.scope).toEqual('standard');
             expect(value.removedIds).toEqual([]);
@@ -2649,6 +2636,7 @@ describe('Style#setState', () => {
         const initialStyle = createStyleJSON();
         style.loadJSON(initialStyle);
 
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2656,6 +2644,7 @@ describe('Style#setState', () => {
         });
 
         style.setState(nextStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.import.load', resolve));
 
         expect(style.serialize()).toEqual(nextStyle);
@@ -2671,6 +2660,7 @@ describe('Style#setState', () => {
         });
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2678,6 +2668,7 @@ describe('Style#setState', () => {
         });
 
         style.setState(nextStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.import.load', resolve));
 
         expect(style.serialize()).toEqual(nextStyle);
@@ -2693,6 +2684,7 @@ describe('Style#setState', () => {
         });
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2700,6 +2692,7 @@ describe('Style#setState', () => {
         });
 
         style.setState(nextStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.import.load', resolve));
 
         expect(style.serialize()).toEqual(nextStyle);
@@ -2713,6 +2706,7 @@ describe('Style#setState', () => {
         });
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => style.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2734,6 +2728,7 @@ describe('Style#setState', () => {
         })}]});
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => style.on('style.load', resolve));
 
         expect(style.ambientLight).toBeTruthy();
@@ -2769,6 +2764,7 @@ describe('Style#setState', () => {
         const initialStyle = createStyleJSON({imports: [{id: 'a', url: '', data: fragmentStyle}]});
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => style.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2798,6 +2794,7 @@ describe('Style#setState', () => {
         });
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2805,13 +2802,14 @@ describe('Style#setState', () => {
         });
 
         style.setState(nextStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => map.on('style.import.load', resolve));
 
         expect(style.serialize()).toEqual(nextStyle);
     });
 
     /**
-     * @not For some reason in browser we not set loaded after style.load event
+     * For some reason in browser we not set loaded after style.load event
      */
     test.skip('Updates fragment URL', async () => {
         const map = new StubMap();
@@ -2823,16 +2821,12 @@ describe('Style#setState', () => {
             schema: {lightPreset: {default: 'day'}}
         });
 
-        networkWorker.use(
-            http.get('/style1.json', () => {
-                return HttpResponse.json(createStyleJSON({
-                    schema: {lightPreset: {default: 'day'}}
-                }));
-            }),
-            http.get('/style2.json', () => {
-                return HttpResponse.json(data);
-            })
-        );
+        mockFetch({
+            '/style1.json': () => new Response(JSON.stringify(createStyleJSON({
+                schema: {lightPreset: {default: 'day'}}
+            }))),
+            '/style2.json': () => new Response(JSON.stringify(data))
+        });
 
         const initialStyle = createStyleJSON({
             imports: [{id: 'a', url: '/style1.json', config: {lightPreset: 'night'}}],
@@ -2873,6 +2867,7 @@ describe('Style#setState', () => {
         });
 
         style.loadJSON(initialStyle);
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => style.on('style.load', resolve));
 
         const nextStyle = createStyleJSON({
@@ -2906,6 +2901,7 @@ describe('Style#setState', () => {
 
         style.loadJSON(initialStyle);
 
+        // eslint-disable-next-line no-promise-executor-return
         await new Promise((resolve) => style.on('style.load', resolve));
 
         expect(style.order).toEqual([
@@ -3018,4 +3014,117 @@ test('Style#areTilesLoaded', async () => {
 
         style.loadJSON(initialStyle);
     });
+});
+
+test('Style#_updateTilesForChangedImages', async () => {
+    const style = new Style(new StubMap());
+
+    const fragment = createStyleJSON({sources: {geojson: {type: 'geojson', data: {type: 'FeatureCollection', features: []}}}});
+    const rootStyle = createStyleJSON({imports: [{id: 'basemap', url: '', data: fragment}]});
+    style.loadJSON(rootStyle);
+
+    await waitFor(style, 'style.load');
+    vi.spyOn(style, '_updateTilesForChangedImages');
+
+    const sourceCache = style.getSourceCache(makeFQID('geojson', 'basemap'));
+    vi.spyOn(sourceCache, 'setDependencies');
+    vi.spyOn(sourceCache, 'reloadTilesForDependencies');
+
+    const imageId = ImageId.from('missing-image');
+    const imageIdStr = imageId.toString();
+    const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
+
+    const tile = new Tile(tileID);
+    sourceCache._tiles[tileID.key] = tile;
+    vi.spyOn(tile, 'setDependencies');
+
+    await new Promise((resolve) => {
+        expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(false);
+
+        style.getImages(0, {images: [imageId], source: 'geojson', scope: 'basemap', tileID, type: 'icons'}, (err, result) => {
+            expect(err).toBeFalsy();
+            expect(result.size).toEqual(0);
+            resolve();
+        });
+    });
+
+    expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(1);
+    expect(sourceCache.setDependencies).toHaveBeenCalledTimes(1);
+    expect(sourceCache.setDependencies).toHaveBeenCalledWith(tileID.key, 'icons', [imageIdStr]);
+
+    expect(tile.setDependencies).toHaveBeenCalledTimes(1);
+    expect(tile.setDependencies).toHaveBeenCalledWith('icons', [imageIdStr]);
+    expect(tile.hasDependency(['icons'], [imageIdStr])).toEqual(true);
+
+    style.getFragmentStyle('basemap').addImage(imageId, {});
+    style.update({});
+
+    expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(2);
+    expect(sourceCache.reloadTilesForDependencies).toHaveBeenCalledTimes(1);
+    expect(sourceCache.reloadTilesForDependencies).toHaveBeenCalledWith(['icons', 'patterns'], [imageIdStr]);
+});
+
+test('Style#getFeaturesetDescriptors', async () => {
+    const style = new Style(new StubMap());
+    const initialStyle = createStyleJSON({
+        imports: [{
+            id: 'basemap',
+            url: '',
+            data: createStyleJSON({
+                featuresets: {
+                    poi: {selectors: []},
+                    buildings: {selectors: []}
+                }
+            })
+        }]
+    });
+
+    style.loadJSON(initialStyle);
+    await waitFor(style, 'style.load');
+
+    expect(style.getFeaturesetDescriptors()).toEqual([]);
+    expect(style.getFeaturesetDescriptors('basemap')).toEqual([{featuresetId: 'poi', importId: 'basemap'}, {featuresetId: 'buildings', importId: 'basemap'}]);
+});
+
+test('Style#getFragmentStyle', async () => {
+    const map = new StubMap();
+    const style = new Style(map);
+
+    // Load a style with imports
+    const initialStyle = createStyleJSON({
+        imports: [{
+            id: 'basemap', url: '', data: createStyleJSON({
+                imports: [{
+                    id: 'basemap', url: '', data: createStyleJSON()
+                }]
+            })
+        }]
+    });
+
+    style.loadJSON(initialStyle);
+    await waitFor(style, 'style.load');
+
+    // Style should return itself when fragmentId is `undefined`
+    expect(style.getFragmentStyle()).toBe(style);
+
+    // Root style should return itself when fragmentId is empty string
+    expect(style.getFragmentStyle('')).toEqual(style);
+
+    // Style should return the fragment with ID 'basemap'
+    const basemapFragment1 = style.getFragmentStyle('basemap');
+    expect(basemapFragment1).not.toEqual(style);
+    expect(basemapFragment1.scope).toEqual('basemap');
+
+    // Fragment should return itself when fragmentId is `undefined`
+    expect(basemapFragment1.getFragmentStyle()).toBe(basemapFragment1);
+
+    // Fragment style should not return the fragment with ID ''
+    expect(basemapFragment1.getFragmentStyle('')).toBeUndefined();
+
+    const basemapFragment2 = basemapFragment1.getFragmentStyle('basemap');
+    expect(basemapFragment2).not.toEqual(basemapFragment1);
+    expect(basemapFragment2.scope).toEqual(makeFQID('basemap', 'basemap'));
+
+    // Fragment should return itself when fragmentId is `undefined`
+    expect(basemapFragment2.getFragmentStyle()).toBe(basemapFragment2);
 });

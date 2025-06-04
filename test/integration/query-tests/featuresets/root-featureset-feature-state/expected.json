@@ -1,0 +1,59 @@
+[
+  {
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          13.415899872779846,
+          52.49650898486527
+        ],
+        [
+          13.415518999099731,
+          52.49595051069343
+        ]
+      ]
+    },
+    "type": "Feature",
+    "properties": {
+      "class": "street_limited",
+      "type": "living_street"
+    },
+    "id": 22701544,
+    "target": {"featuresetId": "roads"},
+    "source": "mapbox",
+    "sourceLayer": "road",
+    "state": {
+      "stateA": 1,
+      "stateB": "feature_id as number"
+    }
+  },
+  {
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          13.416382670402527,
+          52.49716869375419
+        ],
+        [
+          13.415899872779846,
+          52.49650898486527
+        ]
+      ]
+    },
+    "type": "Feature",
+    "properties": {
+      "class": "path",
+      "type": "path"
+    },
+    "id": 22701541,
+    "target": {"featuresetId": "roads"},
+    "source": "mapbox",
+    "sourceLayer": "road",
+    "state": {
+      "stateB": {
+        "stateKey": [4, 2]
+      }
+    }
+  }
+]

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 
 import migrateToV8 from './migrate/v8';
@@ -16,7 +17,7 @@ import migrateToExpressions from './migrate/expressions';
  * var style = fs.readFileSync('./style.json', 'utf8');
  * fs.writeFileSync('./style.json', JSON.stringify(migrate(style)));
  */
-export default function(style) {
+export default function (style) {
     let migrated = false;
 
     if (style.version === 7) {
@@ -33,5 +34,6 @@ export default function(style) {
         throw new Error('cannot migrate from', style.version);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return style;
 }

@@ -70,7 +70,7 @@ class ParsingContext {
         options: {
             typeAnnotation?: 'assert' | 'coerce' | 'omit';
         } = {},
-    ): Expression | null | undefined {
+    ): Expression | null | void {
         if (index || expectedType) {
             return this.concat(index, null, expectedType, bindings)._parse(expr, options);
         }
@@ -94,7 +94,7 @@ class ParsingContext {
         options: {
             typeAnnotation?: 'assert' | 'coerce' | 'omit';
         } = {},
-    ): Expression | null | undefined {
+    ): Expression | null | void {
         return this.concat(index, key, expectedType, bindings)._parse(expr, options);
     }
 
@@ -103,7 +103,7 @@ class ParsingContext {
         options: {
             typeAnnotation?: 'assert' | 'coerce' | 'omit';
         },
-    ): Expression | null | undefined {
+    ): Expression | null | void {
         if (expr === null || typeof expr === 'string' || typeof expr === 'boolean' || typeof expr === 'number') {
             expr = ['literal', expr];
         }
@@ -120,7 +120,6 @@ class ParsingContext {
 
         if (Array.isArray(expr)) {
             if (expr.length === 0) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                 return this.error(`Expected an array with at least one element. If you wanted a literal array, use ["literal", []].`);
             }
 
@@ -158,7 +157,7 @@ class ParsingContext {
                     const ec = new EvaluationContext(this._scope, this.options);
                     try {
                         parsed = new Literal(parsed.type, parsed.evaluate(ec));
-                    } catch (e: any) {
+                    } catch (e) {
                         this.error(e.message);
                         return null;
                     }
@@ -170,13 +169,10 @@ class ParsingContext {
             // Try to parse as array
             return Coercion.parse(['to-array', expr], this);
         } else if (typeof expr === 'undefined') {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return this.error(`'undefined' value invalid. Use null instead.`);
         } else if (typeof expr === 'object') {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return this.error(`Bare objects invalid. Use ["literal", {...}] instead.`);
         } else {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return this.error(`Expected an array, but found ${typeof expr} instead.`);
         }
     }
@@ -275,5 +271,5 @@ function isConstant(expression: Expression) {
     }
 
     return isFeatureConstant(expression) &&
-        isGlobalPropertyConstant(expression, ['zoom', 'heatmap-density', 'line-progress', 'raster-value', 'sky-radial-progress', 'accumulated', 'is-supported-script', 'pitch', 'distance-from-center', 'measure-light', 'raster-particle-speed']);
+        isGlobalPropertyConstant(expression, ['zoom', 'heatmap-density', 'worldview', 'line-progress', 'raster-value', 'sky-radial-progress', 'accumulated', 'is-supported-script', 'pitch', 'distance-from-center', 'measure-light', 'raster-particle-speed']);
 }

@@ -26,18 +26,30 @@ function isComparableType(op: ComparisonOperator, type: Type) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function eq(ctx: EvaluationContext, a: any, b: any): boolean { return a === b; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function neq(ctx: EvaluationContext, a: any, b: any): boolean { return a !== b; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function lt(ctx: EvaluationContext, a: any, b: any): boolean { return a < b; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function gt(ctx: EvaluationContext, a: any, b: any): boolean { return a > b; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function lteq(ctx: EvaluationContext, a: any, b: any): boolean { return a <= b; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function gteq(ctx: EvaluationContext, a: any, b: any): boolean { return a >= b; }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function eqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) === 0; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function neqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return !eqCollate(ctx, a, b, c); }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ltCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) < 0; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function gtCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) > 0; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function lteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) <= 0; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function gteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) >= 0; }
 
 /**
@@ -59,7 +71,9 @@ function gteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { 
  */
 function makeComparison(
     op: ComparisonOperator,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compareBasic: (arg1: EvaluationContext, arg2?: any, arg3?: any) => boolean,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compareWithCollator: (arg1: EvaluationContext, arg2?: any, arg3?: any, arg4?: any) => boolean,
 ): ExpressionRegistration {
     const isOrderComparison = op !== '==' && op !== '!=';
@@ -79,23 +93,20 @@ function makeComparison(
             this.hasUntypedArgument = lhs.type.kind === 'value' || rhs.type.kind === 'value';
         }
 
-        static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | undefined {
+        static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | void {
             if (args.length !== 3 && args.length !== 4)
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                 return context.error(`Expected two or three arguments.`);
 
-            const op: ComparisonOperator = (args[0] as any);
+            const op = args[0] as ComparisonOperator;
 
             let lhs = context.parse(args[1], 1, ValueType);
             if (!lhs) return null;
             if (!isComparableType(op, lhs.type)) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                 return context.concat(1).error(`"${op}" comparisons are not supported for type '${toString(lhs.type)}'.`);
             }
             let rhs = context.parse(args[2], 2, ValueType);
             if (!rhs) return null;
             if (!isComparableType(op, rhs.type)) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                 return context.concat(2).error(`"${op}" comparisons are not supported for type '${toString(rhs.type)}'.`);
             }
 
@@ -104,7 +115,6 @@ function makeComparison(
                 lhs.type.kind !== 'value' &&
                 rhs.type.kind !== 'value'
             ) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                 return context.error(`Cannot compare types '${toString(lhs.type)}' and '${toString(rhs.type)}'.`);
             }
 
@@ -127,7 +137,6 @@ function makeComparison(
                     lhs.type.kind !== 'value' &&
                     rhs.type.kind !== 'value'
                 ) {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                     return context.error(`Cannot use collator to compare non-string types.`);
                 }
                 collator = context.parse(args[3], 3, CollatorType);
@@ -176,8 +185,7 @@ function makeComparison(
         }
 
         serialize(): SerializedExpression {
-            const serialized = [op];
-            // @ts-expect-error - TS2345 - Argument of type 'SerializedExpression' is not assignable to parameter of type 'ComparisonOperator'.
+            const serialized: SerializedExpression[] = [op];
             this.eachChild(child => { serialized.push(child.serialize()); });
             return serialized;
         }

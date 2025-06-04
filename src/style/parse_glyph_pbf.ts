@@ -2,32 +2,30 @@ import {AlphaImage} from '../util/image';
 import Protobuf from 'pbf';
 const border = 3;
 
-import type {StyleGlyph} from './style_glyph';
+import type {StyleGlyph, GlyphMetrics} from './style_glyph';
 
-function readFontstacks(tag: number, glyphData: {
+export type GlyphData = {
     glyphs: Array<StyleGlyph>;
     ascender?: number;
     descender?: number;
-}, pbf: Protobuf) {
+};
+
+function readFontstacks(tag: number, glyphData: GlyphData, pbf: Protobuf) {
     glyphData.glyphs = [];
     if (tag === 1) {
         pbf.readMessage(readFontstack, glyphData);
     }
 }
 
-function readFontstack(tag: number,  glyphData: {
-    glyphs: Array<StyleGlyph>;
-    ascender?: number;
-    descender?: number;
-}, pbf: Protobuf) {
+function readFontstack(tag: number, glyphData: GlyphData, pbf: Protobuf) {
     if (tag === 3) {
-        const {id, bitmap, width, height, left, top, advance} = pbf.readMessage(readGlyph, {});
+        const {id, bitmap, width, height, left, top, advance} = pbf.readMessage(readGlyph, {} as StyleGlyph & GlyphMetrics);
         glyphData.glyphs.push({
             id,
             bitmap: new AlphaImage({
                 width: width + 2 * border,
                 height: height + 2 * border
-            }, bitmap),
+            }, bitmap as unknown as Uint8Array),
             metrics: {width, height, left, top, advance}
         });
     } else if (tag === 4) {
@@ -37,9 +35,9 @@ function readFontstack(tag: number,  glyphData: {
     }
 }
 
-function readGlyph(tag: number, glyph: any, pbf: Protobuf) {
+function readGlyph(tag: number, glyph: StyleGlyph & GlyphMetrics & {bitmap: Uint8Array}, pbf: Protobuf) {
     if (tag === 1) glyph.id = pbf.readVarint();
-    else if (tag === 2) glyph.bitmap = pbf.readBytes();
+    else if (tag === 2) (glyph as {bitmap: Uint8Array}).bitmap = pbf.readBytes();
     else if (tag === 3) glyph.width = pbf.readVarint();
     else if (tag === 4) glyph.height = pbf.readVarint();
     else if (tag === 5) glyph.left = pbf.readSVarint();
@@ -47,13 +45,8 @@ function readGlyph(tag: number, glyph: any, pbf: Protobuf) {
     else if (tag === 7) glyph.advance = pbf.readVarint();
 }
 
-export default function(data: ArrayBuffer | Uint8Array): {
-    glyphs: Array<StyleGlyph>;
-    ascender?: number;
-    descender?: number;
-} {
-// @ts-expect-error - TS2345 - Argument of type '{}' is not assignable to parameter of type '{ glyphs: StyleGlyph[]; ascender?: number; descender?: number; }'.
-    return new Protobuf(data).readFields(readFontstacks, {});
+export default function parseGlyphPbf(data: ArrayBuffer | Uint8Array): GlyphData {
+    return new Protobuf(data).readFields(readFontstacks, {} as GlyphData);
 }
 
 export const GLYPH_PBF_BORDER = border;

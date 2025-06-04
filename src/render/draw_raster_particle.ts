@@ -35,7 +35,7 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
 import type SourceCache from '../source/source_cache';
 import type Painter from './painter';
-import type {DynamicDefinesType} from "./program/program_uniforms";
+import type {DynamicDefinesType} from './program/program_uniforms';
 
 export default drawRasterParticle;
 
@@ -44,6 +44,7 @@ const RASTER_PARTICLE_TEXTURE_UNIT = 1;
 const RASTER_COLOR_TEXTURE_UNIT = 2;
 const SPEED_MAX_VALUE = 0.15;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function drawRasterParticle(painter: Painter, sourceCache: SourceCache, layer: RasterParticleStyleLayer, tileIDs: Array<OverscaledTileID>, _: any, isInitialLoad: boolean) {
     if (painter.renderPass === 'offscreen') {
         renderParticlesToTexture(painter, sourceCache, layer, tileIDs);
@@ -59,7 +60,7 @@ function createPositionRGBAData(textureDimension: number): Uint8Array {
     const numParticles = textureDimension * textureDimension;
     const RGBAPositions = new Uint8Array(4 * numParticles);
     // Hash function from https://www.shadertoy.com/view/XlGcRh
-    const esgtsa = function(s: number): number {
+    const esgtsa = function (s: number): number {
         s |= 0;
         s = Math.imul(s ^ 2747636419, 2654435769);
         s = Math.imul(s ^ (s >>> 16), 2654435769);
@@ -133,7 +134,7 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
         if (!data) continue;
         assert(data.texture);
 
-        const textureSize = [tile.tileSize, tile.tileSize];
+        const textureSize: [number, number] = [tile.tileSize, tile.tileSize];
         let tileFramebuffer = layer.tileFramebuffer;
         if (!tileFramebuffer) {
             const fbWidth = textureSize[0];
@@ -144,7 +145,6 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
 
         let state = tile.rasterParticleState;
         if (!state) {
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
             state = tile.rasterParticleState = new RasterParticleState(context, id, textureSize, particlePositionRGBAImage);
         }
 
@@ -177,7 +177,7 @@ function renderParticlesToTexture(painter: Painter, sourceCache: SourceCache, la
         // Allocate a texture if not allocated
         context.activeTexture.set(gl.TEXTURE0 + RASTER_COLOR_TEXTURE_UNIT);
         let tex = layer.colorRampTexture;
-        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA8);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
 
@@ -230,16 +230,15 @@ function getTileData(
         uint8: 'DATA_FORMAT_UINT8',
         uint16: 'DATA_FORMAT_UINT16',
         uint32: 'DATA_FORMAT_UINT32',
-    }[format];
+    }[format] as DynamicDefinesType;
 
     return {
         texture,
-        textureOffset: [ buffer / (tileSize + 2 * buffer), tileSize / (tileSize + 2 * buffer)],
+        textureOffset: [buffer / (tileSize + 2 * buffer), tileSize / (tileSize + 2 * buffer)],
         tileSize,
         scalarData,
         scale: mix,
         offset,
-        // @ts-expect-error - TS2322 - Type 'string' is not assignable to type 'DynamicDefinesType'.
         defines: ['RASTER_ARRAY', dataFormatDefine]
     };
 }
@@ -264,7 +263,6 @@ function renderBackground(painter: Painter, layer: RasterParticleStyleLayer, til
         context.clear({color: Color.transparent});
         if (!renderBackground) continue;
         particleState.backgroundColorTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         program.draw(
             painter,
             gl.TRIANGLES,
@@ -310,7 +308,7 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
     const isGlobeProjection = painter.transform.projection.name === 'globe';
     const maxSpeed = layer.paint.get('raster-particle-max-speed');
     for (const targetTile of tiles) {
-        const [targetTileID, targetTileData, targetTileState, ] = targetTile;
+        const [targetTileID, targetTileData, targetTileState,] = targetTile;
 
         context.activeTexture.set(gl.TEXTURE0 + VELOCITY_TEXTURE_UNIT);
         targetTileData.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
@@ -339,11 +337,10 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
             const rasterParticleTextureRes = state.particleTexture0.size;
             assert(rasterParticleTextureRes[0] === rasterParticleTextureRes[1]);
             const rasterParticleTextureSideLen = rasterParticleTextureRes[0];
-            const tileOffset = [nx - x, ny - y];
+            const tileOffset: [number, number] = [nx - x, ny - y];
             const uniforms = rasterParticleDrawUniformValues(
                 RASTER_PARTICLE_TEXTURE_UNIT,
                 rasterParticleTextureSideLen,
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
                 tileOffset,
                 VELOCITY_TEXTURE_UNIT,
                 targetTileData.texture.size,
@@ -353,7 +350,6 @@ function renderParticles(painter: Painter, sourceCache: SourceCache, layer: Rast
                 targetTileData.scale,
                 targetTileData.offset
             );
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(
                 painter,
                 gl.POINTS,
@@ -385,7 +381,7 @@ function updateParticles(painter: Painter, layer: RasterParticleStyleLayer, tile
     context.viewport.set([0, 0, particleFramebuffer.width, particleFramebuffer.height]);
 
     for (const tile of tiles) {
-        const [, data, state, ] = tile;
+        const [, data, state,] = tile;
 
         context.activeTexture.set(gl.TEXTURE0 + VELOCITY_TEXTURE_UNIT);
         data.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
@@ -408,7 +404,6 @@ function updateParticles(painter: Painter, layer: RasterParticleStyleLayer, tile
         particleFramebuffer.colorAttachment.set(state.particleTexture1.texture);
         context.clear({color: Color.transparent});
         const updateProgram = painter.getOrCreateProgram('rasterParticleUpdate', {defines: data.defines});
-        // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
         updateProgram.draw(
             painter,
             gl.TRIANGLES,
@@ -503,7 +498,7 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
         }
 
         const uniformValues = rasterParticleUniformValues(
-            projMatrix,
+            projMatrix as Float32Array,
             normalizeMatrix,
             globeMatrix,
             globeMercatorMatrix,
@@ -530,7 +525,6 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
                 assert(buffer);
                 assert(indexBuffer);
                 assert(segments);
-                // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
                 program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, painter.renderElevatedRasterBackface ? CullFaceMode.frontCCW : CullFaceMode.backCCW, uniformValues, layer.id, buffer, indexBuffer, segments);
             }
         } else {
@@ -538,7 +532,6 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
             const stencilMode = stencilModes[coord.overscaledZ];
             const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
 
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
                 uniformValues, layer.id, tileBoundsBuffer,
                 tileBoundsIndexBuffer, tileBoundsSegments);
@@ -572,9 +565,7 @@ export function prepare(layer: RasterParticleStyleLayer, sourceCache: SourceCach
     // @ts-expect-error - TS2322 - Type 'Tile[]' is not assignable to type 'RasterArrayTile[]'.
     const tiles: Array<RasterArrayTile> = sourceCache.getIds().map(id => sourceCache.getTileByID(id));
     for (const tile of tiles) {
-        // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
         if (tile.updateNeeded(sourceLayer, band)) {
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
             source.prepareTile(tile, sourceLayer, band);
         }
     }

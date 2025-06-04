@@ -18,9 +18,8 @@ class At implements Expression {
         this.input = input;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): At | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): At | null | void {
         if (args.length !== 3)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'At'.
             return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
 
         const index = context.parse(args[1], 1, NumberType);
@@ -28,7 +27,7 @@ class At implements Expression {
 
         if (!index || !input) return null;
 
-        const t: ArrayType = (input.type as any);
+        const t = input.type as ArrayType;
         return new At(t.itemType, index, input);
     }
 
@@ -45,7 +44,7 @@ class At implements Expression {
         }
 
         if (index !== Math.floor(index)) {
-            throw new RuntimeError(`Array index must be an integer, but found ${index} instead.`);
+            throw new RuntimeError(`Array index must be an integer, but found ${index} instead. Use at-interpolated to retrieve interpolated result with a fractional index.`);
         }
 
         return array[index];

@@ -2,6 +2,7 @@ import {validateStyle as validateStyleMin} from './validate_style.min';
 import {v8} from './style-spec';
 import readStyle from './read_style';
 
+import type {StyleReference} from './reference/latest';
 import type {ValidationErrors} from './validate_style.min';
 import type {StyleSpecification} from './types';
 
@@ -21,16 +22,16 @@ import type {StyleSpecification} from './types';
  *   var errors = validate(style);
  */
 
-export default function validateStyle(style: StyleSpecification | string | Buffer, styleSpec: any = v8): ValidationErrors {
+export default function validateStyle(style: StyleSpecification | string | Buffer, styleSpec: StyleReference = v8): ValidationErrors {
     let s = style;
 
     try {
         s = readStyle(s);
-    } catch (e: any) {
+    } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [e];
     }
 
-    // @ts-expect-error - TS2345 - Argument of type 'string | StyleSpecification | Buffer' is not assignable to parameter of type 'StyleSpecification'.
     return validateStyleMin(s, styleSpec);
 }
 

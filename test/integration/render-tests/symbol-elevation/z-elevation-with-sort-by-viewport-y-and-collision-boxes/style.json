@@ -1,0 +1,104 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "collisionDebug": "true",
+      "allowed": 0.0035,
+      "width": 256,
+      "height": 256,
+      "operations": [
+      ]
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://models/vector/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "test": {
+      "maxzoom": 15,
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [11.58195, 48.12975]
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [11.58198, 48.12976]
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [11.58201, 48.12977]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pitch": 56,
+  "zoom": 16.9,
+  "bearing": 0,
+  "center": [
+    11.582,
+    48.1303
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "type": "fill-extrusion",
+      "paint": {
+        "fill-extrusion-height": ["number", ["get", "height"]],
+        "fill-extrusion-base": ["number", ["get", "min_height"]],
+        "fill-extrusion-color": "white"
+      },
+      "source-layer": "building",
+      "filter": [
+        "==",
+        [
+          "get",
+          "extrude"
+        ],
+        "true"
+      ],
+      "source": "composite",
+      "id": "3d-buildings1"
+    },
+    {
+      "id": "test",
+      "type": "symbol",
+      "source": "test",
+      "layout": {
+        "symbol-z-elevate": true,
+        "icon-image": "building-12",
+        "symbol-z-order": "viewport-y",
+        "icon-allow-overlap": true,
+        "text-optional": true,
+        "text-field": "Test",
+        "text-font": ["NotoCJK"],
+        "text-offset": [0, 1]
+      }
+    }
+  ]
+}

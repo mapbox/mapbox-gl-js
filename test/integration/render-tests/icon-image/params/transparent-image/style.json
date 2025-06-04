@@ -1,0 +1,42 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "scaleFactor": 2,
+      "width": 64,
+      "height": 64,
+      "allowed": 0.006
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/park",
+  "layers": [
+    {
+      "id": "colored",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": [
+          "image",
+          "park",
+          {
+            "params": {
+              "fill": "rgba(255, 0, 0, 0.5)"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

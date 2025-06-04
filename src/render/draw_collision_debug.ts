@@ -12,7 +12,7 @@ import type VertexBuffer from '../gl/vertex_buffer';
 import type IndexBuffer from '../gl/index_buffer';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type Projection from '../geo/projection/projection';
@@ -22,14 +22,14 @@ export default drawCollisionDebug;
 type TileBatch = {
     circleArray: Array<number>;
     circleOffset: number;
-    transform: Float32Array;
-    invTransform: Float32Array;
+    transform: mat4;
+    invTransform: mat4;
     projection: Projection;
 };
 
 let quadTriangles: QuadTriangleArray | null | undefined;
 
-function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: StyleLayer, coords: Array<OverscaledTileID>, translate: [number, number], translateAnchor: 'map' | 'viewport', isText: boolean) {
+function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: TypedStyleLayer, coords: Array<OverscaledTileID>, translate: [number, number], translateAnchor: 'map' | 'viewport', isText: boolean) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
@@ -41,7 +41,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
         const tile = sourceCache.getTile(coord);
-        const bucket: SymbolBucket | null | undefined = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as SymbolBucket;
         if (!bucket) continue;
 
         const tileMatrix = getCollisionDebugTileProjectionMatrix(coord, bucket, tr);
@@ -67,8 +67,7 @@ function drawCollisionDebug(painter: Painter, sourceCache: SourceCache, layer: S
                 circleArray,
                 circleOffset,
                 transform,
-                // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
-                invTransform,
+                invTransform: invTransform as Float32Array,
                 projection: bucket.getProjection()
             });
 

@@ -1,14 +1,50 @@
+import ResolvedImage from '../../style-spec/expression/types/resolved_image';
+
 import type FillStyleLayer from '../../style/style_layer/fill_style_layer';
 import type FillExtrusionStyleLayer from '../../style/style_layer/fill_extrusion_style_layer';
 import type LineStyleLayer from '../../style/style_layer/line_style_layer';
 import type {
     BucketFeature,
-    PopulateParameters
+    PopulateParameters,
+    ImageDependenciesMap
 } from '../bucket';
 
 type PatternStyleLayers = Array<LineStyleLayer> | Array<FillStyleLayer> | Array<FillExtrusionStyleLayer>;
 
-export function hasPattern(type: string, layers: PatternStyleLayers, options: PopulateParameters): boolean {
+type AddPatternResult = {
+    primary: string | null;
+    secondary: string | null;
+}
+
+function addPattern(pattern: string | ResolvedImage, patterns: ImageDependenciesMap, pixelRatio: number = 1): AddPatternResult {
+    if (!pattern) {
+        return null;
+    }
+
+    const patternPrimary = typeof pattern === 'string' ? ResolvedImage.from(pattern).getPrimary() : pattern.getPrimary();
+    const patternSecondary = typeof pattern === 'string' ? null : pattern.getSecondary();
+
+    for (const pattern of [patternPrimary, patternSecondary]) {
+        if (!pattern) {
+            continue;
+        }
+
+        const id = pattern.id.toString();
+        if (!patterns.has(id)) {
+            patterns.set(id, []);
+        }
+
+        pattern.scaleSelf(pixelRatio);
+        patterns.get(id).push(pattern);
+    }
+
+    return {
+        primary: patternPrimary.toString(),
+        secondary: patternSecondary ? patternSecondary.toString() : null
+    };
+}
+
+export function hasPattern(type: string, layers: PatternStyleLayers, pixelRatio: number, options: PopulateParameters): boolean {
     const patterns = options.patternDependencies;
     let hasPattern = false;
 
@@ -21,9 +57,9 @@ export function hasPattern(type: string, layers: PatternStyleLayers, options: Po
         }
 
         const constantPattern = patternProperty.constantOr(null);
-        if (constantPattern) {
+
+        if (addPattern(constantPattern, patterns, pixelRatio)) {
             hasPattern = true;
-            patterns[constantPattern] =  true;
         }
     }
 
@@ -35,6 +71,7 @@ export function addPatternDependencies(
     layers: PatternStyleLayers,
     patternFeature: BucketFeature,
     zoom: number,
+    pixelRatio: number,
     options: PopulateParameters,
 ): BucketFeature {
     const patterns = options.patternDependencies;
@@ -47,11 +84,21 @@ export function addPatternDependencies(
             let pattern = patternPropertyValue.evaluate({zoom}, patternFeature, {}, options.availableImages);
             pattern = pattern && pattern.name ? pattern.name : pattern;
 
-            // add to patternDependencies
-            patterns[pattern] = true;
+            const patternResult = addPattern(pattern, patterns, pixelRatio);
+
+            if (!patternResult) {
+                continue;
+            }
+
+            const {
+                primary: primarySerialized,
+                secondary: secondarySerialized
+            } = patternResult;
 
             // save for layout
-            patternFeature.patterns[layer.id] = pattern;
+            if (primarySerialized) {
+                patternFeature.patterns[layer.id] = [primarySerialized, secondarySerialized].filter(Boolean);
+            }
         }
     }
     return patternFeature;

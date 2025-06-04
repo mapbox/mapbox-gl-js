@@ -1,0 +1,15 @@
+{
+  "expression": ["image", "poi_circle", {"params": {"fill_color": 42}}],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]['params']['fill_color']",
+          "error": "Expected color but found number instead."
+        }
+      ]
+    }
+  }
+}

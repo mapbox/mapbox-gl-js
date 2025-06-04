@@ -1,4 +1,5 @@
 #include "_prelude_lighting.glsl"
+#include "_prelude_shadow.fragment.glsl"
 
 #define SDF_PX 8.0
 #define SDF 1.0
@@ -10,12 +11,23 @@ uniform highp float u_gamma_scale;
 uniform lowp float u_device_pixel_ratio;
 uniform bool u_is_text;
 uniform bool u_is_halo;
+uniform lowp float u_scale_factor;
 #ifdef ICON_TRANSITION
 uniform float u_icon_transition;
 #endif
 
 #ifdef COLOR_ADJUSTMENT
 uniform mat4 u_color_adj_mat;
+#endif
+
+#ifdef INDICATOR_CUTOUT
+in highp float v_z_offset;
+#else
+#ifdef Z_OFFSET
+#ifdef RENDER_SHADOWS
+in highp float v_z_offset;
+#endif
+#endif
 #endif
 
 in vec2 v_tex_a;
@@ -28,6 +40,16 @@ in vec3 v_gamma_scale_size_fade_opacity;
 #ifdef RENDER_TEXT_AND_SYMBOL
 in float is_sdf;
 in vec2 v_tex_a_icon;
+#endif
+
+#ifdef Z_OFFSET
+#ifdef RENDER_SHADOWS
+uniform vec3 u_ground_shadow_factor;
+
+in highp vec4 v_pos_light_view_0;
+in highp vec4 v_pos_light_view_1;
+in highp float v_depth;
+#endif
 #endif
 
 #pragma mapbox: define highp vec4 fill_color
@@ -76,8 +98,8 @@ void main() {
     bool draw_halo = v_draw_halo > 0.0;
     if (draw_halo) {
         out_color = halo_color;
-        gamma = (halo_blur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
-        buff = (6.0 - halo_width / fontScale) / SDF_PX;
+        gamma = (halo_blur * u_scale_factor * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
+        buff = (6.0 - halo_width * u_scale_factor / fontScale) / SDF_PX;
     }
 
     lowp float dist = texture(u_texture, v_tex_a).r;
@@ -103,7 +125,17 @@ void main() {
 
     #ifdef LIGHTING_3D_MODE
         out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
+        #ifdef Z_OFFSET
+        #ifdef RENDER_SHADOWS
+            float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+            out_color.rgb *= mix(abs(v_z_offset) > 0.0 ? u_ground_shadow_factor : vec3(1.0), vec3(1.0), light);
+        #endif // RENDER_SHADOWS
+        #endif // Z_OFFSET
     #endif
+
+#ifdef INDICATOR_CUTOUT
+    out_color = applyCutout(out_color, v_z_offset);
+#endif
 
     glFragColor = out_color;
 

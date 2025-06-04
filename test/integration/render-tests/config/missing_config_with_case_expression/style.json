@@ -1,0 +1,77 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "height": 64,
+            "width": 64
+        }
+    },
+    "center": [
+        0,
+        0
+    ],
+    "zoom": 0,
+    "sources": {
+        "point": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": 1
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                -10
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "name": 0
+                        },
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                0,
+                                10
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "schema": {
+        "content": {
+            "default": "text"
+        }
+    },
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "white"
+            }
+        },
+        {
+            "id": "text",
+            "type": "symbol",
+            "source": "point",
+            "layout": {
+                "text-field": ["case", ["config", "showText"], "a", ["format", ["config", "content"]]],
+                "text-font": [
+                    "Open Sans Semibold",
+                    "Arial Unicode MS Bold"
+                ]
+            }
+        }
+    ]
+}

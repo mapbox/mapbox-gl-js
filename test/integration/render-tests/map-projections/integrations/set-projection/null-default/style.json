@@ -2,6 +2,7 @@
     "version": 8,
     "metadata": {
       "test": {
+        "spriteFormat": "raster",
         "width": 512,
         "height": 512,
         "operations": [

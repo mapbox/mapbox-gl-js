@@ -3,18 +3,20 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64
+      "height": 64,
+      "pixelRatio": 2,
+      "allowed": 0.00129
     }
   },
   "zoom": 0.5,
   "sources": {},
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
       "type": "background",
       "paint": {
-        "background-pattern": "cemetery_icon"
+        "background-pattern": "cemetery"
       }
     }
   ]

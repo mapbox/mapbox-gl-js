@@ -2,6 +2,7 @@ import * as DOM from '../../util/dom';
 
 import type Point from '@mapbox/point-geometry';
 import type {Handler, HandlerResult} from '../handler';
+import type {PitchRotateKey} from '../handler_manager';
 
 const LEFT_BUTTON = 0;
 const RIGHT_BUTTON = 2;
@@ -11,6 +12,15 @@ const BUTTONS_FLAGS = {
     [LEFT_BUTTON]: 1,
     [RIGHT_BUTTON]: 2
 };
+
+// Map from [KeyboardEvent.key](https://developer.mozilla.org/docs/Web/API/KeyboardEvent/key) values
+// to [MouseEvent](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent) instance properties
+const MODIFIER_KEYS = {
+    'Control': 'ctrlKey',
+    'Alt': 'altKey',
+    'Shift': 'shiftKey',
+    'Meta': 'metaKey'
+} as const;
 
 function buttonStillPressed(e: MouseEvent, button: number) {
     const flag = BUTTONS_FLAGS[button];
@@ -25,9 +35,7 @@ class MouseHandler implements Handler {
     _moved: boolean;
     _clickTolerance: number;
 
-    constructor(options: {
-        clickTolerance: number;
-    }) {
+    constructor(options: {clickTolerance: number}) {
         this.reset();
         this._clickTolerance = options.clickTolerance || 1;
     }
@@ -43,11 +51,11 @@ class MouseHandler implements Handler {
         this._eventButton = undefined;
     }
 
-    _correctButton(e: MouseEvent, button: number): boolean {  //eslint-disable-line
+    _correctButton(e: MouseEvent, button: number): boolean {
         return false; // implemented by child
     }
 
-    _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {  //eslint-disable-line
+    _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
         return {}; // implemented by child
     }
 
@@ -112,16 +120,16 @@ class MouseHandler implements Handler {
 }
 
 export class MousePanHandler extends MouseHandler {
-
-    mousedown(e: MouseEvent, point: Point) {
+    override mousedown(e: MouseEvent, point: Point) {
         super.mousedown(e, point);
         if (this._lastPoint) this._active = true;
     }
-    _correctButton(e: MouseEvent, button: number): boolean {
+
+    override _correctButton(e: MouseEvent, button: number): boolean {
         return button === LEFT_BUTTON && !e.ctrlKey;
     }
 
-    _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
+    override _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
         return {
             around: point,
             panDelta: point.sub(lastPoint)
@@ -130,11 +138,22 @@ export class MousePanHandler extends MouseHandler {
 }
 
 export class MouseRotateHandler extends MouseHandler {
-    _correctButton(e: MouseEvent, button: number): boolean {
-        return (button === LEFT_BUTTON && e.ctrlKey) || (button === RIGHT_BUTTON);
+    _pitchRotateKey?: 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey';
+
+    constructor(options: {clickTolerance: number; pitchRotateKey?: PitchRotateKey}) {
+        super(options);
+        this._pitchRotateKey = options.pitchRotateKey ?
+            MODIFIER_KEYS[options.pitchRotateKey] :
+            undefined;
     }
 
-    _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
+    override _correctButton(e: MouseEvent, button: number): boolean {
+        return this._pitchRotateKey ?
+            (button === LEFT_BUTTON && e[this._pitchRotateKey]) :
+            (button === LEFT_BUTTON && e.ctrlKey) || (button === RIGHT_BUTTON);
+    }
+
+    override _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
         const degreesPerPixelMoved = 0.8;
         const bearingDelta = (point.x - lastPoint.x) * degreesPerPixelMoved;
         if (bearingDelta) {
@@ -144,6 +163,9 @@ export class MouseRotateHandler extends MouseHandler {
     }
 
     contextmenu(e: MouseEvent) {
+        // if pitch rotation is overridden, don't prevent context menu
+        if (this._pitchRotateKey) return;
+
         // prevent browser context menu when necessary; we don't allow it with rotation
         // because we can't discern rotation gesture start from contextmenu on Mac
         e.preventDefault();
@@ -151,11 +173,22 @@ export class MouseRotateHandler extends MouseHandler {
 }
 
 export class MousePitchHandler extends MouseHandler {
-    _correctButton(e: MouseEvent, button: number): boolean {
-        return (button === LEFT_BUTTON && e.ctrlKey) || (button === RIGHT_BUTTON);
+    _pitchRotateKey?: 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey';
+
+    constructor(options: {clickTolerance: number; pitchRotateKey?: PitchRotateKey}) {
+        super(options);
+        this._pitchRotateKey = options.pitchRotateKey ?
+            MODIFIER_KEYS[options.pitchRotateKey] :
+            undefined;
     }
 
-    _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
+    override _correctButton(e: MouseEvent, button: number): boolean {
+        return this._pitchRotateKey ?
+            (button === LEFT_BUTTON && e[this._pitchRotateKey]) :
+            (button === LEFT_BUTTON && e.ctrlKey) || (button === RIGHT_BUTTON);
+    }
+
+    override _move(lastPoint: Point, point: Point): HandlerResult | null | undefined {
         const degreesPerPixelMoved = -0.5;
         const pitchDelta = (point.y - lastPoint.y) * degreesPerPixelMoved;
         if (pitchDelta) {
@@ -165,6 +198,9 @@ export class MousePitchHandler extends MouseHandler {
     }
 
     contextmenu(e: MouseEvent) {
+        // if pitch rotation is overridden, don't prevent context menu
+        if (this._pitchRotateKey) return;
+
         // prevent browser context menu when necessary; we don't allow it with rotation
         // because we can't discern rotation gesture start from contextmenu on Mac
         e.preventDefault();

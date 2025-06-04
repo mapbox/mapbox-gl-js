@@ -1,10 +1,12 @@
 import {default as ValidationError, ValidationWarning} from '../error/validation_error';
-import {unbundle} from '../util/unbundle_jsonlint';
+import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import validateObject from './validate_object';
 import validateEnum from './validate_enum';
 import validateExpression from './validate_expression';
 import validateString from './validate_string';
 import getType from '../util/get_type';
+import {createExpression} from '../expression/index';
+import * as isConstant from '../expression/is_constant';
 
 import type {StyleReference} from '../reference/latest';
 import type {ValidationOptions} from './validate';
@@ -23,10 +25,9 @@ export default function validateSource(options: ValidationOptions): Array<Valida
         return [new ValidationError(key, value, '"type" is required')];
     }
 
-    const type = unbundle(value.type);
-    let errors = [];
+    const type = unbundle(value.type) as string;
+    let errors: ValidationError[] = [];
 
-    // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'string'.
     if (['vector', 'raster', 'raster-dem', 'raster-array'].includes(type)) {
         if (!value.url && !value.tiles) {
             errors.push(new ValidationWarning(key, value, 'Either "url" or "tiles" is required.'));
@@ -47,7 +48,6 @@ export default function validateSource(options: ValidationOptions): Array<Valida
             objectElementValidators
         }));
         return errors;
-
     case 'geojson':
         errors = validateObject({
             key,
@@ -57,6 +57,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
             styleSpec,
             objectElementValidators
         });
+
         if (value.cluster) {
             for (const prop in value.clusterProperties) {
                 const [operator, mapExpr] = value.clusterProperties[prop];
@@ -74,8 +75,8 @@ export default function validateSource(options: ValidationOptions): Array<Valida
                 }));
             }
         }
-        return errors;
 
+        return errors;
     case 'video':
         return validateObject({
             key,
@@ -109,8 +110,8 @@ export default function validateSource(options: ValidationOptions): Array<Valida
 }
 
 function getSourceTypeValues(styleSpec: StyleReference) {
-// @ts-expect-error - TS2347 - Untyped function calls may not accept type arguments.
-    return styleSpec.source.reduce<Array<any>>((memo, source) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return styleSpec.source.reduce((memo: string[], source: string) => {
         const sourceType = styleSpec[source];
         if (sourceType.type.type === 'enum') {
             memo = memo.concat(Object.keys(sourceType.type.values));
@@ -125,11 +126,30 @@ function validatePromoteId({
 }: Partial<ValidationOptions>) {
     if (getType(value) === 'string') {
         return validateString({key, value});
-    } else {
-        const errors = [];
-        for (const prop in value) {
-            errors.push(...validateString({key: `${key}.${prop}`, value: value[prop]}));
+    } else if (Array.isArray(value)) {
+        const errors: ValidationError[] = [];
+        const unbundledValue = deepUnbundle(value);
+        const expression = createExpression(unbundledValue);
+        if (expression.result === 'error') {
+            expression.value.forEach((err) => {
+                errors.push(new ValidationError(`${key}${err.key}`, null, `${err.message}`));
+            });
         }
+
+        // @ts-expect-error - TS2339: Property 'expression' does not exist on type 'ParsingError[] | StyleExpression'.
+        const parsed = expression.value.expression;
+        const onlyFeatureDependent = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'heatmap-density', 'line-progress', 'raster-value', 'sky-radial-progress', 'accumulated', 'is-supported-script', 'pitch', 'distance-from-center', 'measure-light', 'raster-particle-speed']);
+        if (!onlyFeatureDependent) {
+            errors.push(new ValidationError(`${key}`, null, 'promoteId expression should be only feature dependent'));
+        }
+
+        return errors;
+    } else {
+        const errors: ValidationError[] = [];
+        for (const prop in value) {
+            errors.push(...validatePromoteId({key: `${key}.${prop}`, value: value[prop]}));
+        }
+
         return errors;
     }
 }

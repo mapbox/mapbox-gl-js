@@ -26,7 +26,7 @@ uniform float u_emissive_strength;
 #ifndef RASTER_ARRAY
 // Since samplers cannot be used as function parameters, they must be hard-coded. These
 // are therefore instead moved to the raster_array prelude when raster arrays are active.
-uniform sampler2D u_image0;
+uniform highp sampler2D u_image0;
 uniform sampler2D u_image1;
 #endif
 

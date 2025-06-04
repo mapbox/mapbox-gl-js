@@ -1,9 +1,11 @@
+import browser from '../../src/util/browser';
 import {Evented, ErrorEvent, Event} from '../../src/util/evented';
 import {ResourceType} from '../../src/util/ajax';
 import loadTileJSON from '../../src/source/load_tilejson';
 import TileBounds from '../../src/source/tile_bounds';
 import {extend} from '../../src/util/util';
 import {postTurnstileEvent} from '../../src/util/mapbox';
+import {makeFQID} from '../../src/util/fqid';
 
 // Import Tiled3dModelBucket as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
@@ -17,7 +19,9 @@ import type {Callback} from '../../src/types/callback';
 import type {Cancelable} from '../../src/types/cancelable';
 import type {OverscaledTileID} from '../../src/source/tile_id';
 import type {ISource, SourceEvents} from '../../src/source/source';
-import type {ModelSourceSpecification} from '../../src/style-spec/types';
+import type {ModelSourceSpecification, PromoteIdSpecification} from '../../src/style-spec/types';
+import type {WorkerSourceTiled3dModelRequest, WorkerSourceVectorTileResult} from '../../src/source/worker_source';
+import type {AJAXError} from '../../src/util/ajax';
 
 class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     type: 'batched-model';
@@ -30,11 +34,16 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     reparseOverscaled: boolean | undefined;
     usedInConflation: boolean;
     tileSize: number;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
+    promoteId?: PromoteIdSpecification | null;
+    vectorLayers?: never;
+    vectorLayerIds?: never;
+    rasterLayers?: never;
+    rasterLayerIds?: never;
     tiles: Array<string>;
     dispatcher: Dispatcher;
     scheme: string;
@@ -44,7 +53,6 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     map: Map;
 
     onRemove: undefined;
-    reload: undefined;
     abortTile: undefined;
     unloadTile: undefined;
     prepare: undefined;
@@ -61,7 +69,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         this.tileSize = 512;
 
         this._options = options;
-        this.tiles = (this._options.tiles as any);
+        this.tiles = this._options.tiles;
         this.maxzoom = options.maxzoom || 19;
         this.minzoom = options.minzoom || 0;
         this.roundZoom = true;
@@ -77,11 +85,23 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         this.load();
     }
 
+    reload() {
+        this.cancelTileJSONRequest();
+        const fqid = makeFQID(this.id, this.scope);
+        this.load(() => this.map.style.clearSource(fqid));
+    }
+
+    cancelTileJSONRequest() {
+        if (!this._tileJSONRequest) return;
+        this._tileJSONRequest.cancel();
+        this._tileJSONRequest = null;
+    }
+
     load(callback?: Callback<undefined>) {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
         const language = Array.isArray(this.map._language) ? this.map._language.join() : this.map._language;
-        const worldview = this.map._worldview;
+        const worldview = this.map.getWorldview();
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, language, worldview, (err, tileJSON) => {
             this._tileJSONRequest = null;
             this._loaded = true;
@@ -119,9 +139,9 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
     }
 
     loadTile(tile: Tile, callback: Callback<undefined>) {
-        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url((this.tiles as any), this.scheme));
+        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme));
         const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
-        const params = {
+        const params: WorkerSourceTiled3dModelRequest = {
             request,
             data: undefined,
             uid: tile.uid,
@@ -134,8 +154,11 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             scope: this.scope,
             showCollisionBoxes: this.map.showCollisionBoxes,
             isSymbolTile: tile.isSymbolTile,
-            brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0
+            brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
+            pixelRatio: browser.devicePixelRatio,
+            promoteId: this.promoteId,
         };
+
         if (!tile.actor || tile.state === 'expired') {
             tile.actor = this.dispatcher.getActor();
             tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
@@ -145,7 +168,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
         } else {
             // If the tile has already been parsed we may just need to reevaluate
             if (tile.buckets) {
-                const buckets: Tiled3dModelBucket[] = (Object.values(tile.buckets) as any[]);
+                const buckets = Object.values(tile.buckets) as Tiled3dModelBucket[];
                 for (const bucket of buckets) {
                     bucket.dirty = true;
                 }
@@ -155,22 +178,15 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
-        function done(err: Error | null | undefined, data: any) {
+        function done(err?: AJAXError | null, data?: WorkerSourceVectorTileResult | null) {
             if (tile.aborted) return callback(null);
 
-            // @ts-expect-error - TS2339 - Property 'status' does not exist on type 'Error'.
             if (err && err.status !== 404) {
                 return callback(err);
             }
 
-            if (data) {
-                if (data.resourceTiming) tile.resourceTiming = data.resourceTiming;
-                if (this.map._refreshExpiredTiles) tile.setExpiryData(data);
-                tile.buckets = {...tile.buckets, ...data.buckets};
-                if (data.featureIndex) {
-                    tile.latestFeatureIndex = data.featureIndex;
-                }
-            }
+            if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
+            tile.loadModelData(data, this.map.painter);
 
             tile.state = 'loaded';
             callback(null);

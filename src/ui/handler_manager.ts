@@ -28,21 +28,32 @@ import type {Handler, HandlerResult} from './handler';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
+/**
+ * One of modifier [KeyboardEvent.key](https://developer.mozilla.org/docs/Web/API/KeyboardEvent/key) values.
+ */
+export type PitchRotateKey = 'Control' | 'Alt' | 'Shift' | 'Meta';
+
+export type HandlerManagerOptions = {
+    interactive: boolean;
+    pitchWithRotate: boolean;
+    clickTolerance: number;
+    bearingSnap: number;
+    pitchRotateKey?: PitchRotateKey;
+};
+
 type EventsInProgress = {
     [T in keyof MapEvents]?: MapEvents[T];
 };
 
-const isMoving = (p: {
-    [key: string]: any;
-}) => p.zoom || p.drag || p.pitch || p.rotate;
+const isMoving = (p: EventsInProgress) => p.zoom || p.drag || p.pitch || p.rotate;
 
 class RenderFrameEvent extends Event<{renderFrame: {timeStamp: number}}, 'renderFrame'> {
-    type: 'renderFrame';
+    override type: 'renderFrame';
     timeStamp: number;
 }
 
 class TrackingEllipsoid {
-    constants: Array<number>;
+    constants: vec3;
     radius: number;
 
     constructor() {
@@ -52,10 +63,9 @@ class TrackingEllipsoid {
     }
 
     setup(center: vec3, pointOnSurface: vec3) {
-        const centerToSurface = vec3.sub([] as any, pointOnSurface, center);
+        const centerToSurface = vec3.sub([] as unknown as vec3, pointOnSurface, center);
         if (centerToSurface[2] < 0) {
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
-            this.radius = vec3.length(vec3.div([] as any, centerToSurface, this.constants));
+            this.radius = vec3.length(vec3.div([] as unknown as vec3, centerToSurface, this.constants));
         } else {
             // The point on surface is above the center. This can happen for example when the camera is
             // below the clicked point (like a mountain) Use slightly shorter radius for less aggressive movement
@@ -66,20 +76,18 @@ class TrackingEllipsoid {
     // Cast a ray from the center of the ellipsoid and the intersection point.
     projectRay(dir: vec3): vec3 {
         // Perform the intersection test against a unit sphere
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
         vec3.div(dir, dir, this.constants);
         vec3.normalize(dir, dir);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
         vec3.mul(dir, dir, this.constants);
 
-        const intersection = vec3.scale([] as any, dir, this.radius);
+        const intersection = vec3.scale([] as unknown as vec3, dir, this.radius);
 
         if (intersection[2] > 0) {
             // The intersection point is above horizon so special handling is required.
             // Otherwise direction of the movement would be inverted due to the ellipsoid shape
-            const h = vec3.scale([] as any, [0, 0, 1], vec3.dot(intersection, [0, 0, 1]));
-            const r = vec3.scale([] as any, vec3.normalize([] as any, [intersection[0], intersection[1], 0]), this.radius);
-            const p = vec3.add([] as any, intersection, vec3.scale([] as any, vec3.sub([] as any, vec3.add([] as any, r, h), intersection), 2));
+            const h = vec3.scale([] as unknown as vec3, [0, 0, 1], vec3.dot(intersection, [0, 0, 1]));
+            const r = vec3.scale([] as unknown as vec3, vec3.normalize([] as unknown as vec3, [intersection[0], intersection[1], 0]), this.radius);
+            const p = vec3.add([] as unknown as vec3, intersection, vec3.scale([] as unknown as vec3, vec3.sub([] as unknown as vec3, vec3.add([] as unknown as vec3, r, h), intersection), 2));
 
             intersection[0] = p[0];
             intersection[1] = p[1];
@@ -99,7 +107,7 @@ class HandlerManager {
     _handlers: Array<{
         handlerName: string;
         handler: Handler;
-        allowed: any;
+        allowed: Array<string>;
     }>;
     _eventsInProgress: EventsInProgress;
     _frameId: number | null | undefined;
@@ -109,21 +117,16 @@ class HandlerManager {
         [key: string]: Handler;
     };
     _updatingCamera: boolean;
-    _changes: Array<[HandlerResult, any, any]>;
+    _changes: Array<[HandlerResult, EventsInProgress, Record<string, InputEvent | RenderFrameEvent>]>;
     _previousActiveHandlers: {
         [key: string]: Handler;
     };
-    _listeners: Array<[HTMLElement | Document, string, undefined | AddEventListenerOptions]>;
+    _listeners: Array<[HTMLElement | Document | Window, string, undefined | AddEventListenerOptions]>;
     _trackingEllipsoid: TrackingEllipsoid;
     _dragOrigin: vec3 | null | undefined;
     _originalZoom: number | null | undefined;
 
-    constructor(map: Map, options: {
-        interactive: boolean;
-        pitchWithRotate: boolean;
-        clickTolerance: number;
-        bearingSnap: number;
-    }) {
+    constructor(map: Map, options: HandlerManagerOptions) {
         this._map = map;
         this._el = this._map.getCanvasContainer();
         this._handlers = [];
@@ -181,28 +184,23 @@ class HandlerManager {
             [el, 'wheel', {passive: false}],
             [el, 'contextmenu', undefined],
 
-            // @ts-expect-error - TS2322 - Type 'Window & typeof globalThis' is not assignable to type 'Document | HTMLElement'.
             [window, 'blur', undefined]
         ];
 
         for (const [target, type, listenerOptions] of this._listeners) {
             const listener = target === document ? this.handleWindowEvent : this.handleEvent;
-            target.addEventListener((type as any), (listener as any), listenerOptions);
+            target.addEventListener(type, listener as EventListener, listenerOptions);
         }
     }
 
     destroy() {
         for (const [target, type, listenerOptions] of this._listeners) {
             const listener = target === document ? this.handleWindowEvent : this.handleEvent;
-            target.removeEventListener((type as any), (listener as any), listenerOptions);
+            target.removeEventListener(type, listener as EventListener, listenerOptions);
         }
     }
 
-    _addDefaultHandlers(options: {
-        interactive: boolean;
-        pitchWithRotate: boolean;
-        clickTolerance: number;
-    }) {
+    _addDefaultHandlers(options: HandlerManagerOptions) {
         const map = this._map;
         const el = map.getCanvasContainer();
         this._add('mapEvent', new MapEventHandler(map, options));
@@ -248,9 +246,9 @@ class HandlerManager {
         const keyboard = map.keyboard = new KeyboardHandler();
         this._add('keyboard', keyboard);
 
-        for (const name of ['boxZoom', 'doubleClickZoom', 'tapDragZoom', 'touchPitch', 'dragRotate', 'dragPan', 'touchZoomRotate', 'scrollZoom', 'keyboard']) {
-            if (options.interactive && (options as any)[name]) {
-                (map as any)[name].enable((options as any)[name]);
+        for (const name of ['boxZoom', 'doubleClickZoom', 'tapDragZoom', 'touchPitch', 'dragRotate', 'dragPan', 'touchZoomRotate', 'scrollZoom', 'keyboard'] as const) {
+            if (options.interactive && options[name]) {
+                map[name].enable(options[name]);
             }
         }
     }
@@ -324,17 +322,15 @@ class HandlerManager {
                 mapTouches.push(t);
             }
         }
-        // @ts-expect-error - TS2352 - Conversion of type 'any[]' to type 'TouchList' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-        return mapTouches as TouchList;
+        return mapTouches as unknown as TouchList;
     }
 
     handleEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
-
         this._updatingCamera = true;
         assert(e.timeStamp !== undefined);
 
         const isRenderFrame = e.type === 'renderFrame';
-        const inputEvent = isRenderFrame ? undefined : (e as InputEvent);
+        const inputEvent = isRenderFrame ? undefined : e;
 
         /*
          * We don't call e.preventDefault() for any events by default.
@@ -342,11 +338,10 @@ class HandlerManager {
          */
 
         const mergedHandlerResult: HandlerResult = {needsRenderFrame: false};
-        const eventsInProgress: Record<string, any> = {};
-        const activeHandlers: Record<string, any> = {};
+        const eventsInProgress: EventsInProgress = {};
+        const activeHandlers: Record<string, Handler> = {};
 
-        // @ts-expect-error - TS2339 - Property 'touches' does not exist on type 'InputEvent | RenderFrameEvent'.
-        const mapTouches = e.touches ? this._getMapTouches((e as TouchEvent).touches) : undefined;
+        const mapTouches = (e as TouchEvent).touches ? this._getMapTouches((e as TouchEvent).touches) : undefined;
         const points = mapTouches ? DOM.touchPos(this._el, mapTouches) :
             isRenderFrame ? undefined : // renderFrame event doesn't have any points
             DOM.mousePos(this._el, (e as MouseEvent));
@@ -359,8 +354,8 @@ class HandlerManager {
                 handler.reset();
 
             } else {
-                if ((handler as any)[eventName || e.type]) {
-                    data = (handler as any)[eventName || e.type](e, points, mapTouches);
+                if (handler[eventName || e.type]) {
+                    data = handler[eventName || e.type](e, points, mapTouches);
                     this.mergeHandlerResult(mergedHandlerResult, eventsInProgress, data, handlerName, inputEvent);
                     if (data && data.needsRenderFrame) {
                         this._triggerRenderFrame();
@@ -373,7 +368,7 @@ class HandlerManager {
             }
         }
 
-        const deactivatedHandlers: Record<string, any> = {};
+        const deactivatedHandlers: Record<string, InputEvent | RenderFrameEvent> = {};
         for (const name in this._previousActiveHandlers) {
             if (!activeHandlers[name]) {
                 deactivatedHandlers[name] = inputEvent;
@@ -401,7 +396,7 @@ class HandlerManager {
         }
     }
 
-    mergeHandlerResult(mergedHandlerResult: HandlerResult, eventsInProgress: any, handlerResult: HandlerResult, name: string, e?: InputEvent) {
+    mergeHandlerResult(mergedHandlerResult: HandlerResult, eventsInProgress: EventsInProgress, handlerResult: HandlerResult, name: string, e?: InputEvent | RenderFrameEvent) {
         if (!handlerResult) return;
 
         extend(mergedHandlerResult, handlerResult);
@@ -410,26 +405,25 @@ class HandlerManager {
 
         // track which handler changed which camera property
         if (handlerResult.zoomDelta !== undefined) {
-            eventsInProgress.zoom = eventData;
+            eventsInProgress.zoom = eventData as MapEvents['zoom'];
         }
         if (handlerResult.panDelta !== undefined) {
-            eventsInProgress.drag = eventData;
+            eventsInProgress.drag = eventData as MapEvents['drag'];
         }
         if (handlerResult.pitchDelta !== undefined) {
-            eventsInProgress.pitch = eventData;
+            eventsInProgress.pitch = eventData as MapEvents['pitch'];
         }
         if (handlerResult.bearingDelta !== undefined) {
-            eventsInProgress.rotate = eventData;
+            eventsInProgress.rotate = eventData as MapEvents['rotate'];
         }
     }
 
     _applyChanges() {
-        const combined: Record<string, any> = {};
-        const combinedEventsInProgress: Record<string, any> = {};
-        const combinedDeactivatedHandlers: Record<string, any> = {};
+        const combined: HandlerResult = {};
+        const combinedEventsInProgress: EventsInProgress = {};
+        const combinedDeactivatedHandlers: Record<string, Handler> = {};
 
         for (const [change, eventsInProgress, deactivatedHandlers] of this._changes) {
-
             if (change.panDelta) combined.panDelta = (combined.panDelta || new Point(0, 0))._add(change.panDelta);
             if (change.zoomDelta) combined.zoomDelta = (combined.zoomDelta || 0) + change.zoomDelta;
             if (change.bearingDelta) combined.bearingDelta = (combined.bearingDelta || 0) + change.bearingDelta;
@@ -447,8 +441,7 @@ class HandlerManager {
         this._changes = [];
     }
 
-    _updateMapTransform(combinedResult: any, combinedEventsInProgress: any, deactivatedHandlers: any) {
-
+    _updateMapTransform(combinedResult: HandlerResult, combinedEventsInProgress: EventsInProgress, deactivatedHandlers: Record<string, Handler>) {
         const map = this._map;
         const tr = map.transform;
 
@@ -558,7 +551,7 @@ class HandlerManager {
             // This way the zoom interpolation can be kept linear and independent of the (possible) terrain elevation
             const pickedPosition: vec3 = aroundCoord ? toVec3(aroundCoord) : toVec3(tr.pointCoordinate3D(around));
 
-            const aroundRay = {dir: vec3.normalize([] as any, vec3.sub([] as any, pickedPosition, tr._camera.position))};
+            const aroundRay = {dir: vec3.normalize([] as unknown as vec3, vec3.sub([] as unknown as vec3, pickedPosition, tr._camera.position))};
             if (aroundRay.dir[2] < 0) {
                 // Special handling is required if the ray created from the cursor is heading up.
                 // This scenario is possible if user is trying to zoom towards a feature like a hill or a mountain.
@@ -583,7 +576,7 @@ class HandlerManager {
         this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
     }
 
-    _fireEvents(newEventsInProgress: EventsInProgress, deactivatedHandlers: any, allowEndAnimation: boolean) {
+    _fireEvents(newEventsInProgress: EventsInProgress, deactivatedHandlers: Record<string, Handler>, allowEndAnimation: boolean) {
         const wasMoving = isMoving(this._eventsInProgress);
         const nowMoving = isMoving(newEventsInProgress);
 
@@ -654,7 +647,7 @@ class HandlerManager {
 
     }
 
-    _fireEvent(type: keyof MapEvents, event?: {originalEvent: unknown}) {
+    _fireEvent(type: keyof MapEvents, event?: MouseEvent | TouchEvent) {
         const eventData = (event ? {originalEvent: event} : {});
         this._map.fire(new Event(type, eventData as MapEvents[keyof MapEvents]));
     }

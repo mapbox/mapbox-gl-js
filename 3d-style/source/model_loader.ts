@@ -16,12 +16,13 @@ import {base64DecToArr} from '../../src/util/util';
 import TriangleGridIndex from '../../src/util/triangle_grid_index';
 import {HEIGHTMAP_DIM} from '../data/model';
 
-import type {vec2} from 'gl-matrix';
+import type {vec2, vec4} from 'gl-matrix';
 import type {Class} from '../../src/types/class';
 import type {Footprint} from '../util/conflation';
 import type {TextureImage} from '../../src/render/texture';
-import type {Mesh, Node, Material, ModelTexture, Sampler, AreaLight} from '../data/model';
+import type {Mesh, ModelNode, Material, MaterialDescription, ModelTexture, Sampler, AreaLight, PbrMetallicRoughness} from '../data/model';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertTextures(gltf: any, images: Array<TextureImage>): Array<ModelTexture> {
     const textures: ModelTexture[] = [];
     const gl = WebGL2RenderingContext;
@@ -44,7 +45,7 @@ function convertTextures(gltf: any, images: Array<TextureImage>): Array<ModelTex
     return textures;
 }
 
-function convertMaterial(materialDesc: any, textures: Array<ModelTexture>): Material {
+function convertMaterial(materialDesc: MaterialDescription, textures: Array<ModelTexture>): Material {
     const {
         emissiveFactor = [0, 0, 0],
         alphaMode = 'OPAQUE',
@@ -81,7 +82,7 @@ function convertMaterial(materialDesc: any, textures: Array<ModelTexture>): Mate
             metallicRoughnessTexture: metallicRoughnessTexture ? textures[metallicRoughnessTexture.index] : undefined
         },
         doubleSided,
-        emissiveFactor,
+        emissiveFactor: new Color(...emissiveFactor),
         alphaMode,
         alphaCutoff,
         normalTexture: normalTexture ? textures[normalTexture.index] : undefined,
@@ -92,7 +93,7 @@ function convertMaterial(materialDesc: any, textures: Array<ModelTexture>): Mate
 }
 
 function computeCentroid(indexArray: ArrayBufferView, vertexArray: ArrayBufferView): vec3 {
-    const out = [0.0, 0.0, 0.0];
+    const out: vec3 = [0.0, 0.0, 0.0];
     // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'ArrayBufferView'.
     const indexSize = indexArray.length;
     if (indexSize > 0) {
@@ -106,7 +107,6 @@ function computeCentroid(indexArray: ArrayBufferView, vertexArray: ArrayBufferVi
         out[1] /= indexSize;
         out[2] /= indexSize;
     }
-    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec3'.
     return out;
 }
 
@@ -125,6 +125,7 @@ function getNormalizedScale(arrayType: Class<ArrayBufferView>) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getBufferData(gltf: any, accessor: any) {
     const bufferView = gltf.json.bufferViews[accessor.bufferView];
     const buffer = gltf.buffers[bufferView.buffer];
@@ -138,6 +139,7 @@ function getBufferData(gltf: any, accessor: any) {
     return bufferData;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setArrayData(gltf: any, accessor: any, array: any, buffer: ArrayBufferView) {
     const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
     const norm = getNormalizedScale(ArrayType);
@@ -154,6 +156,7 @@ function setArrayData(gltf: any, accessor: any, array: any, buffer: ArrayBufferV
     array._trim();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertPrimitive(primitive: any, gltf: any, textures: Array<ModelTexture>): Mesh {
     const indicesIdx = primitive.indices;
     const attributeMap = primitive.attributes;
@@ -238,6 +241,7 @@ function convertPrimitive(primitive: any, gltf: any, textures: Array<ModelTextur
     return mesh;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertMeshes(gltf: any, textures: Array<ModelTexture>): Array<Array<Mesh>> {
     const meshes: Mesh[][] = [];
     for (const meshDesc of gltf.json.meshes) {
@@ -250,11 +254,11 @@ function convertMeshes(gltf: any, textures: Array<ModelTexture>): Array<Array<Me
     return meshes;
 }
 
-function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): Node {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): ModelNode {
     const {matrix, rotation, translation, scale, mesh, extras, children} = nodeDesc;
-    // @ts-expect-error - TS2740 - Type '{}' is missing the following properties from type 'Node': id, matrix, meshes, children, and 6 more.
-    const node: Node = {};
-    node.matrix = matrix || mat4.fromRotationTranslationScale([] as any, rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
+    const node = {} as ModelNode;
+    node.matrix = matrix || mat4.fromRotationTranslationScale([] as unknown as mat4, rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
     if (mesh !== undefined) {
         node.meshes = meshes[mesh];
         const anchor: vec2 = node.anchor = [0, 0];
@@ -275,7 +279,7 @@ function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): Node
         }
     }
     if (children) {
-        const converted: Node[] = [];
+        const converted: ModelNode[] = [];
         for (const childNodeIdx of children) {
             converted.push(convertNode(gltf.json.nodes[childNodeIdx], gltf, meshes));
         }
@@ -310,6 +314,7 @@ function convertFootprint(mesh: FootprintMesh): Footprint | null | undefined {
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseLegacyFootprintMesh(gltfNode: any): FootprintMesh | null | undefined {
     if (!gltfNode.extras || !gltfNode.extras.ground) {
         return null;
@@ -383,7 +388,7 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
 
     let baseVertex = 0;
 
-    const tempVertex = [];
+    const tempVertex = [] as unknown as vec3;
     for (const mesh of meshes) {
         baseVertex = vertices.length;
 
@@ -394,8 +399,7 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
             tempVertex[0] = vArray[i * 3 + 0];
             tempVertex[1] = vArray[i * 3 + 1];
             tempVertex[2] = vArray[i * 3 + 2];
-            // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'vec3'.
-            vec3.transformMat4(tempVertex as [], tempVertex as [], matrix);
+            vec3.transformMat4(tempVertex, tempVertex, matrix);
             vertices.push(new Point(tempVertex[0], tempVertex[1]));
         }
 
@@ -421,7 +425,8 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
     return {vertices, indices};
 }
 
-function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNodes: any) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function convertFootprints(convertedNodes: Array<ModelNode>, sceneNodes: any, modelNodes: any) {
     // modelNodes == a list of nodes in the gltf file
     // sceneNodes == an index array pointing to modelNodes being parsed
     assert(convertedNodes.length === sceneNodes.length);
@@ -433,8 +438,8 @@ function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNo
     //     connected to correct models via matching ids.
 
     // Find footprint-only nodes from the list.
-    const nodeFootprintLookup: Record<string, any> = {};
-    const footprintNodeIndices = new Set();
+    const nodeFootprintLookup: Record<string, number> = {};
+    const footprintNodeIndices = new Set<number>();
 
     for (let i = 0; i < convertedNodes.length; i++) {
         const gltfNode = modelNodes[sceneNodes[i]];
@@ -488,17 +493,16 @@ function convertFootprints(convertedNodes: Array<Node>, sceneNodes: any, modelNo
 
     // Remove footprint nodes as they serve no other purpose
     if (footprintNodeIndices.size > 0) {
-        // @ts-expect-error - TS2362 - The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type. | TS2363 - The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
-        const nodesToRemove = Array.from(footprintNodeIndices.values()).sort((a, b) => a - b);
+        const nodesToRemove: number[] = Array.from(footprintNodeIndices.values()).sort((a, b) => a - b);
 
         for (let i = nodesToRemove.length - 1; i >= 0; i--) {
-            // @ts-expect-error - TS2769 - No overload matches this call.
             convertedNodes.splice(nodesToRemove[i], 1);
         }
     }
 }
 
-export default function convertModel(gltf: any): Array<Node> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function convertModel(gltf: any): Array<ModelNode> {
     const textures = convertTextures(gltf, gltf.images);
     const meshes = convertMeshes(gltf, textures);
 
@@ -506,7 +510,7 @@ export default function convertModel(gltf: any): Array<Node> {
     const {scenes, scene, nodes} = gltf.json;
     const gltfNodes = scenes ? scenes[scene || 0].nodes : nodes;
 
-    const resultNodes: Node[] = [];
+    const resultNodes: ModelNode[] = [];
     for (const nodeIdx of gltfNodes) {
         resultNodes.push(convertNode(nodes[nodeIdx], gltf, meshes));
     }
@@ -514,7 +518,8 @@ export default function convertModel(gltf: any): Array<Node> {
     return resultNodes;
 }
 
-export function process3DTile(gltf: any, zScale: number): Array<Node> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function process3DTile(gltf: any, zScale: number): Array<ModelNode> {
     const nodes = convertModel(gltf);
     for (const node of nodes) {
         for (const mesh of node.meshes) {
@@ -561,9 +566,7 @@ function parseHeightmap(mesh: Mesh) {
 }
 
 function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
-
-    // @ts-expect-error - TS2740 - Type '{}' is missing the following properties from type 'Mesh': indexArray, indexBuffer, vertexArray, vertexBuffer, and 14 more.
-    const mesh: Mesh = {};
+    const mesh = {} as Mesh;
     mesh.indexArray = new TriangleIndexArray();
     mesh.indexArray.reserve(4 * lights.length);
     mesh.vertexArray = new ModelLayoutArray();
@@ -591,14 +594,14 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
         // door posts. Later, additional vertices at depth distance from door could be reconsidered.
         // 0.01f to prevent intersection with door post.
         const width = light.width - 2 * light.depth * zScale * (horizontalSpread + 0.01);
-        const v1 = vec3.scaleAndAdd([] as any, light.pos, tangent as [number, number, number], width / 2);
-        const v2 = vec3.scaleAndAdd([] as any, light.pos, tangent as [number, number, number], -width / 2);
+        const v1 = vec3.scaleAndAdd([] as unknown as vec3, light.pos, tangent as [number, number, number], width / 2);
+        const v2 = vec3.scaleAndAdd([] as unknown as vec3, light.pos, tangent as [number, number, number], -width / 2);
         const v0 = [v1[0], v1[1], v1[2] + light.height];
         const v3 = [v2[0], v2[1], v2[2] + light.height];
 
-        const v1extrusion = vec3.scaleAndAdd([] as any, light.normal, tangent as [number, number, number], horizontalSpread);
+        const v1extrusion = vec3.scaleAndAdd([] as unknown as vec3, light.normal, tangent as [number, number, number], horizontalSpread);
         vec3.scale(v1extrusion, v1extrusion, fallOff);
-        const v2extrusion = vec3.scaleAndAdd([] as any, light.normal, tangent as [number, number, number], -horizontalSpread);
+        const v2extrusion = vec3.scaleAndAdd([] as unknown as vec3, light.normal, tangent as [number, number, number], -horizontalSpread);
         vec3.scale(v2extrusion, v2extrusion, fallOff);
 
         vec3.add(v1extrusion, v1, v1extrusion);
@@ -649,18 +652,11 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
         mesh.indexArray.emplaceBack(1 + currentVertex, 3 + currentVertex, 2 + currentVertex);
         currentVertex += 10;
     }
-    //mesh.featureArray = new FeatureVertexArray();
-    //mesh.featureArray.reserve(10 * lights.length);
-    //for (let i = 0; i < 10 * lights.length; i++) {
-    //    mesh.featureArray.emplaceBack(0xffff, 0xffff, 0xffff, 0xffff, 0, 0, 0);
-    //}
-    // @ts-expect-error - TS2740 - Type '{}' is missing the following properties from type 'Material': normalTexture, occlusionTexture, emissionTexture, pbrMetallicRoughness, and 5 more.
-    const material: Material = {};
+    const material = {} as Material;
     material.defined = true;
-    material.emissiveFactor = [0, 0, 0];
-    const pbrMetallicRoughness: Record<string, any> = {};
+    material.emissiveFactor = Color.black;
+    const pbrMetallicRoughness = {} as PbrMetallicRoughness;
     pbrMetallicRoughness.baseColorFactor = Color.white;
-    // @ts-expect-error - TS2739 - Type 'Record<string, any>' is missing the following properties from type 'PbrMetallicRoughness': baseColorFactor, metallicFactor, roughnessFactor, baseColorTexture, metallicRoughnessTexture
     material.pbrMetallicRoughness = pbrMetallicRoughness;
     mesh.material = material;
     mesh.aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
@@ -680,7 +676,7 @@ function decodeLights(base64: string): Array<AreaLight> {
     const stride = 6;
     for (let i = 0; i < lightCount; i++) {
         const height = lightData[i * 2 * stride] / 30;
-        const elevation = lightData[i * 2 * stride + 1 ] / 30;
+        const elevation = lightData[i * 2 * stride + 1] / 30;
         const depth = lightData[i * 2 * stride + 10] / 100;
         const x0 = lightDataFloat[i * stride + 1];
         const y0 = lightDataFloat[i * stride + 2];
@@ -689,10 +685,9 @@ function decodeLights(base64: string): Array<AreaLight> {
         const dx = x1 - x0;
         const dy = y1 - y0;
         const width = Math.hypot(dx, dy);
-        const normal = [dy / width, -dx / width, 0];
-        const pos = [x0 + dx * 0.5, y0 + dy * 0.5, elevation];
-        const points = [x0, y0, x1, y1];
-        // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec3'. | TS2322 - Type 'number[]' is not assignable to type 'vec3'. | TS2322 - Type 'number[]' is not assignable to type 'vec4'.
+        const normal: vec3 = [dy / width, -dx / width, 0];
+        const pos: vec3 = [x0 + dx * 0.5, y0 + dy * 0.5, elevation];
+        const points: vec4 = [x0, y0, x1, y1];
         lights.push({pos, normal, width, height, depth, points});
     }
     return lights;

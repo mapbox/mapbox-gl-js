@@ -76,7 +76,7 @@
   "sources": {
     "geojson": {
       "type": "geojson",
-      "data": 
+      "data":
       {
         "type": "FeatureCollection",
         "features": [

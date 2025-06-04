@@ -1,4 +1,4 @@
-import Color from '../style-spec/util/color';
+import Color, {type NonPremultipliedRenderColor} from '../style-spec/util/color';
 
 import type {BlendEquationType, BlendFuncType, ColorMaskType} from './types';
 
@@ -10,13 +10,13 @@ export const DST_COLOR = 0x0306;
 
 export default class ColorMode {
     blendFunction: BlendFuncType;
-    blendColor: Color;
+    blendColor: NonPremultipliedRenderColor;
     mask: ColorMaskType;
     blendEquation: BlendEquationType | null | undefined;
 
     constructor(blendFunction: BlendFuncType, blendColor: Color, mask: ColorMaskType, blendEquation?: BlendEquationType | null) {
         this.blendFunction = blendFunction;
-        this.blendColor = blendColor;
+        this.blendColor = blendColor.toNonPremultipliedRenderColor(null);
         this.mask = mask;
         this.blendEquation = blendEquation;
     }

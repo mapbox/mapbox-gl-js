@@ -2,7 +2,8 @@ import assert from 'assert';
 import {
     charHasUprightVerticalOrientation,
     charAllowsIdeographicBreaking,
-    charInComplexShapingScript
+    charInComplexShapingScript,
+    needsRotationInVerticalMode
 } from '../util/script_detection';
 import verticalizePunctuation from '../util/verticalize_punctuation';
 import {plugin as rtlTextPlugin} from '../source/rtl_text_plugin';
@@ -10,17 +11,24 @@ import ONE_EM from './one_em';
 import {warnOnce} from '../util/util';
 import {GLYPH_PBF_BORDER} from '../style/parse_glyph_pbf';
 
-import type {StyleGlyph, GlyphMetrics} from '../style/style_glyph';
-import type {ImagePosition} from '../render/image_atlas';
+import type {GlyphMap} from '../render/glyph_manager';
+import type {GlyphMetrics} from '../style/style_glyph';
+import type {ImagePosition, ImagePositionMap} from '../render/image_atlas';
 import type {GlyphRect, GlyphPositions} from '../render/glyph_atlas';
 import type {FormattedSection} from '../style-spec/expression/types/formatted';
 import type Formatted from '../style-spec/expression/types/formatted';
+import type {ImageVariant} from '../style-spec/expression/types/image_variant';
 
 const WritingMode = {
     horizontal: 1,
     vertical: 2,
     horizontalOnly: 3
-};
+} as const;
+
+/**
+ * Represents the writing mode orientation.
+ */
+export type Orientation = typeof WritingMode[keyof typeof WritingMode];
 
 const SHAPING_DEFAULT_OFFSET = -17;
 export {shapeText, shapeIcon, fitIconToText, getAnchorAlignment, WritingMode, SHAPING_DEFAULT_OFFSET};
@@ -28,7 +36,7 @@ export {shapeText, shapeIcon, fitIconToText, getAnchorAlignment, WritingMode, SH
 // The position of a glyph relative to the text's anchor point.
 export type PositionedGlyph = {
     glyph: number;
-    imageName: string | null;
+    image: ImageVariant | null;
     x: number;
     y: number;
     vertical: boolean;
@@ -52,7 +60,7 @@ export type Shaping = {
     bottom: number;
     left: number;
     right: number;
-    writingMode: 1 | 2;
+    writingMode: Orientation;
     text: string;
     iconsInText: boolean;
     verticalizable: boolean;
@@ -86,12 +94,12 @@ class SectionOptions {
     scale: number;
     fontStack: string;
     // Image options
-    imageName: string | null;
+    image: ImageVariant | null;
 
     constructor() {
         this.scale = 1.0;
         this.fontStack = "";
-        this.imageName = null;
+        this.image = null;
     }
 
     static forText(scale: number | null | undefined, fontStack: string): SectionOptions {
@@ -101,9 +109,9 @@ class SectionOptions {
         return textOptions;
     }
 
-    static forImage(imageName: string): SectionOptions {
+    static forImage(image: ImageVariant | null): SectionOptions {
         const imageOptions = new SectionOptions();
-        imageOptions.imageName = imageName;
+        imageOptions.image = image;
         return imageOptions;
     }
 
@@ -122,14 +130,14 @@ class TaggedString {
         this.imageSectionID = null;
     }
 
-    static fromFeature(text: Formatted, defaultFontStack: string): TaggedString {
+    static fromFeature(text: Formatted, defaultFontStack: string, pixelRatio: number): TaggedString {
         const result = new TaggedString();
         for (let i = 0; i < text.sections.length; i++) {
             const section = text.sections[i];
             if (!section.image) {
                 result.addTextSection(section, defaultFontStack);
             } else {
-                result.addImageSection(section);
+                result.addImageSection(section, pixelRatio);
             }
         }
         return result;
@@ -201,13 +209,14 @@ class TaggedString {
         }
     }
 
-    addImageSection(section: FormattedSection) {
-        const imageName = section.image ? section.image.namePrimary : '';
-        if (imageName.length === 0) {
+    addImageSection(section: FormattedSection, pixelRatio: number) {
+        const image = section.image ? section.image.getPrimary() : null;
+        if (!image) {
             warnOnce(`Can't add FormattedSection with an empty image.`);
             return;
         }
 
+        image.scaleSelf(pixelRatio);
         const nextImageSectionCharCode = this.getNextImageSectionCharCode();
         if (!nextImageSectionCharCode) {
             warnOnce(`Reached maximum number of images ${PUAend - PUAbegin + 2}`);
@@ -215,7 +224,7 @@ class TaggedString {
         }
 
         this.text += String.fromCodePoint(nextImageSectionCharCode);
-        this.sections.push(SectionOptions.forImage(imageName));
+        this.sections.push(SectionOptions.forImage(image));
         this.sectionIndex.push(this.sections.length - 1);
     }
 
@@ -242,24 +251,15 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
     if (start < text.length) {
         lines.push(input.substring(start, text.length));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return lines;
 }
 
 function shapeText(
     text: Formatted,
-    glyphMap: {
-        [_: string]: {
-            glyphs: {
-                [_: number]: StyleGlyph | null | undefined;
-            };
-            ascender?: number;
-            descender?: number;
-        };
-    },
+    glyphMap: GlyphMap,
     glyphPositions: GlyphPositions,
-    imagePositions: {
-        [_: string]: ImagePosition;
-    },
+    imagePositions: ImagePositionMap,
     defaultFontStack: string,
     maxWidth: number,
     lineHeight: number,
@@ -267,12 +267,13 @@ function shapeText(
     textJustify: TextJustify,
     spacing: number,
     translate: [number, number],
-    writingMode: 1 | 2,
+    writingMode: Orientation,
     allowVerticalPlacement: boolean,
     layoutTextSize: number,
     layoutTextSizeThisZoom: number,
-): Shaping | false {
-    const logicalInput = TaggedString.fromFeature(text, defaultFontStack);
+    pixelRatio: number = 1
+): Shaping {
+    const logicalInput = TaggedString.fromFeature(text, defaultFontStack, pixelRatio);
 
     if (writingMode === WritingMode.vertical) {
         logicalInput.verticalizePunctuation(allowVerticalPlacement);
@@ -324,7 +325,7 @@ function shapeText(
     };
 
     shapeLines(shaping, glyphMap, glyphPositions, imagePositions, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement, layoutTextSizeThisZoom);
-    if (isEmpty(positionedLines)) return false;
+    if (isEmpty(positionedLines)) return undefined;
 
     return shaping;
 }
@@ -346,16 +347,16 @@ const whitespace: {
 const breakable: {
     [_: number]: boolean;
 } = {
-    [0x0a]:   true, // newline
-    [0x20]:   true, // space
-    [0x26]:   true, // ampersand
-    [0x28]:   true, // left parenthesis
-    [0x29]:   true, // right parenthesis
-    [0x2b]:   true, // plus sign
-    [0x2d]:   true, // hyphen-minus
-    [0x2f]:   true, // solidus
-    [0xad]:   true, // soft hyphen
-    [0xb7]:   true, // middle dot
+    [0x0a]: true, // newline
+    [0x20]: true, // space
+    [0x26]: true, // ampersand
+    [0x28]: true, // left parenthesis
+    [0x29]: true, // right parenthesis
+    [0x2b]: true, // plus sign
+    [0x2d]: true, // hyphen-minus
+    [0x2f]: true, // solidus
+    [0xad]: true, // soft hyphen
+    [0xb7]: true, // middle dot
     [0x200b]: true, // zero-width space
     [0x2010]: true, // hyphen
     [0x2013]: true, // en dash
@@ -368,28 +369,18 @@ const breakable: {
 function getGlyphAdvance(
     codePoint: number,
     section: SectionOptions,
-    glyphMap: {
-        [_: string]: {
-            glyphs: {
-                [_: number]: StyleGlyph | null | undefined;
-            };
-            ascender?: number;
-            descender?: number;
-        };
-    },
-    imagePositions: {
-        [_: string]: ImagePosition;
-    },
+    glyphMap: GlyphMap,
+    imagePositions: ImagePositionMap,
     spacing: number,
     layoutTextSize: number,
 ): number {
-    if (!section.imageName) {
+    if (!section.image) {
         const positions = glyphMap[section.fontStack];
         const glyph = positions && positions.glyphs[codePoint];
         if (!glyph) return 0;
         return glyph.metrics.advance * section.scale + spacing;
     } else {
-        const imagePosition = imagePositions[section.imageName];
+        const imagePosition = imagePositions.get(section.image.toString());
         if (!imagePosition) return 0;
         return imagePosition.displaySize[0] * section.scale * ONE_EM / layoutTextSize + spacing;
     }
@@ -398,18 +389,8 @@ function getGlyphAdvance(
 function determineAverageLineWidth(logicalInput: TaggedString,
                                    spacing: number,
                                    maxWidth: number,
-                                   glyphMap: {
-                                       [_: string]: {
-                                           glyphs: {
-                                               [_: number]: StyleGlyph | null | undefined;
-                                           };
-                                           ascender?: number;
-                                           descender?: number;
-                                       };
-                                   },
-                                   imagePositions: {
-                                       [_: string]: ImagePosition;
-                                   },
+                                   glyphMap: GlyphMap,
+                                   imagePositions: ImagePositionMap,
                                    layoutTextSize: number) {
     let totalWidth = 0;
 
@@ -515,18 +496,8 @@ function determineLineBreaks(
     logicalInput: TaggedString,
     spacing: number,
     maxWidth: number,
-    glyphMap: {
-        [_: string]: {
-            glyphs: {
-                [_: number]: StyleGlyph | null | undefined;
-            };
-            ascender?: number;
-            descender?: number;
-        };
-    },
-    imagePositions: {
-        [_: string]: ImagePosition;
-    },
+    glyphMap: GlyphMap,
+    imagePositions: ImagePositionMap,
     layoutTextSize: number,
 ): Array<number> {
     if (!logicalInput)
@@ -548,7 +519,7 @@ function determineLineBreaks(
         // surrounding spaces.
         if ((i < logicalInput.length() - 1)) {
             const ideographicBreak = charAllowsIdeographicBreaking(codePoint);
-            if (breakable[codePoint] || ideographicBreak || section.imageName) {
+            if (breakable[codePoint] || ideographicBreak || section.image) {
 
                 potentialLineBreaks.push(
                     evaluateBreak(
@@ -605,24 +576,14 @@ function getAnchorAlignment(anchor: SymbolAnchor): AnchorAlignment {
 }
 
 function shapeLines(shaping: Shaping,
-                    glyphMap: {
-                        [_: string]: {
-                            glyphs: {
-                                [_: number]: StyleGlyph | null | undefined;
-                            };
-                            ascender?: number;
-                            descender?: number;
-                        };
-                    },
+                    glyphMap: GlyphMap,
                     glyphPositions: GlyphPositions,
-                    imagePositions: {
-                        [_: string]: ImagePosition;
-                    },
+                    imagePositions: ImagePositionMap,
                     lines: Array<TaggedString>,
                     lineHeight: number,
                     textAnchor: SymbolAnchor,
                     textJustify: TextJustify,
-                    writingMode: 1 | 2,
+                    writingMode: Orientation,
                     spacing: number,
                     allowVerticalPlacement: boolean,
                     layoutTextSizeThisZoom: number) {
@@ -641,7 +602,7 @@ function shapeLines(shaping: Shaping,
     for (const line of lines) {
         const sections = line.getSections();
         for (const section of sections) {
-            if (section.imageName) continue;
+            if (section.image) continue;
 
             const glyphData = glyphMap[section.fontStack];
             if (!glyphData) continue;
@@ -679,9 +640,20 @@ function shapeLines(shaping: Shaping,
             let sectionScale = section.scale;
             let metrics = null;
             let rect = null;
-            let imageName = null;
+            let image = null;
             let verticalAdvance = ONE_EM;
             let glyphOffset = 0;
+
+            // In vertical writing mode, glyphs are rotated 90 degrees counterclockwise when preparing the glyph quads.
+            //
+            // For glyphs with a `Tr` vertical orientation that need to be rotated 90 degrees clockwise
+            // (following regional convention), we achieve this by forcing their writing mode to be horizontal.
+            // However, they are still inserted into the vertical shaping process,
+            // which ultimately results in the same effect as rotating them 90 degrees clockwise during glyph quad
+            // preparation.
+            if (writingMode === WritingMode.vertical && needsRotationInVerticalMode(codePoint)) {
+                writingMode = WritingMode.horizontal;
+            }
 
             const vertical = !(writingMode === WritingMode.horizontal ||
                 // Don't verticalize glyphs that have no upright orientation if vertical placement is disabled.
@@ -690,7 +662,7 @@ function shapeLines(shaping: Shaping,
                 // are from complex text layout script, or whitespaces.
                 (allowVerticalPlacement && (whitespace[codePoint] || charInComplexShapingScript(codePoint))));
 
-            if (!section.imageName) {
+            if (!section.image) {
                 // Find glyph position in the glyph atlas, if bitmap is null,
                 // glyphPosition will not exit in the glyphPosition map
                 const glyphPositionData = glyphPositions[section.fontStack];
@@ -730,9 +702,9 @@ function shapeLines(shaping: Shaping,
                     glyphOffset = SHAPING_DEFAULT_OFFSET + (lineMaxScale - sectionScale) * ONE_EM;
                 }
             } else {
-                const imagePosition = imagePositions[section.imageName];
+                const imagePosition = imagePositions.get(section.image.toString());
                 if (!imagePosition) continue;
-                imageName = section.imageName;
+                image = section.image;
                 shaping.iconsInText = shaping.iconsInText || true;
                 rect = imagePosition.paddedRect;
                 const size = imagePosition.displaySize;
@@ -769,11 +741,11 @@ function shapeLines(shaping: Shaping,
             }
 
             if (!vertical) {
-                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
+                positionedGlyphs.push({glyph: codePoint, image, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
                 x += metrics.advance * sectionScale + spacing;
             } else {
                 shaping.verticalizable = true;
-                positionedGlyphs.push({glyph: codePoint, imageName, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
+                positionedGlyphs.push({glyph: codePoint, image, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
                 x += verticalAdvance * sectionScale + spacing;
             }
         }
@@ -846,6 +818,14 @@ function align(positionedLines: Array<PositionedLine>,
             positionedGlyph.y += shiftY;
         }
     }
+}
+
+export function isPositionedIcon(icon: unknown): icon is PositionedIcon {
+    return icon["imagePrimary"] !== undefined &&
+        icon["top"] !== undefined &&
+        icon["bottom"] !== undefined &&
+        icon["left"] !== undefined &&
+        icon["right"] !== undefined;
 }
 
 export type PositionedIcon = {
@@ -931,4 +911,20 @@ function fitIconToText(
     }
 
     return {imagePrimary: image, imageSecondary: undefined, top, right, bottom, left, collisionPadding};
+}
+
+export function isFullyStretchableX(icon: PositionedIcon) {
+    const imagePrimary = icon.imagePrimary;
+    return !imagePrimary.stretchX;
+}
+
+export function isFullyStretchableY(icon: PositionedIcon) {
+    const imagePrimary = icon.imagePrimary;
+    return !imagePrimary.stretchY;
+}
+
+export function getPositionedIconSize(icon: PositionedIcon) {
+    const width = icon.right - icon.left;
+    const height = icon.bottom - icon.top;
+    return {width, height};
 }

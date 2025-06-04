@@ -1,0 +1,210 @@
+{
+  "version": 8,
+  "sources": {
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "font-scale-override": 2.0,
+              "text-font-override": [
+                "Arial"
+              ]
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "no image_name - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": ["image"]
+      }
+    },
+    {
+      "id": "primary image_name - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": ["image", "rocket"]
+      }
+    },
+    {
+      "id": "primary image_name as expression - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          ["get", "icon"]
+        ]
+      }
+    },
+    {
+      "id": "image_name + options with params - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "rocket",
+          {"params": {"bg": "#000"}}
+        ]
+      }
+    },
+    {
+      "id": "image_name + options with iconset - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "rocket",
+          {"iconset": {"id": "landmarks"}}
+        ]
+      }
+    },
+    {
+      "id": "image_name + options with params and iconset - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "rocket",
+          {
+            "params": {"bg": "#000"},
+            "iconset": {"id": "landmarks"}
+          }
+        ]
+      }
+    },
+    {
+      "id": "image_name + options with params - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "rocket",
+          {"params": "invalid"}
+        ]
+      }
+    },
+    {
+      "id": "image_name + options with iconset - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "rocket",
+          {"iconset": "invalid"}
+        ]
+      }
+    },
+    {
+      "id": "image_name + options with iconset missing id - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "rocket",
+          {"iconset": {"invalid": "landmarks"}}
+        ]
+      }
+    },
+    {
+      "id": "secondary image_name - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "image_name_1",
+          "image_name_2"
+        ]
+      }
+    },
+    {
+      "id": "secondary image_name - invalid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "image_name_1",
+          ["image_name_2"]
+        ]
+      }
+    },
+    {
+      "id": "primary image_name + options with secondary image_name - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "image_name_1",
+          {
+            "params": {"bg": "#000"},
+            "iconset": {"id": "landmarks"}
+          },
+          "image_name_2"
+        ]
+      }
+    },
+    {
+      "id": "primary image_name with secondary image_name + options - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "image_name_1",
+          "image_name_2",
+          {
+            "params": {"bg": "#000"},
+            "iconset": {"id": "landmarks"}
+          }
+        ]
+      }
+    },
+    {
+      "id": "primary image_name + options with secondary image_name + options - valid",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": [
+          "image",
+          "image_name_1",
+          {
+            "params": {"bg": "#000"},
+            "iconset": {"id": "landmarks"}
+          },
+          "image_name_2",
+          {
+            "params": {"bg": "#000"},
+            "iconset": {"id": "landmarks"}
+          }
+        ]
+      }
+    }
+  ]
+}

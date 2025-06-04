@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #controls { position: absolute; top: 0; left: 0; }
+    </style>
+</head>
+<body>
+<div id='map'></div>
+<div id='controls'>
+    <label><input id='terrain-checkbox' type='checkbox' checked> terrain</label><br />
+    <div>
+        <label>Projection:</label>
+        <select id="projName">
+            <option value="mercator" selected>Mercator</option>
+            <option value="globe">Globe</option>
+            <option value="albers">Albers USA</option>
+            <option value="equalEarth">Equal Earth</option>
+            <option value="equirectangular">Equirectangular</option>
+            <option value="lambertConformalConic">Lambert Conformal Conic</option>
+            <option value="naturalEarth">Natural Earth</option>
+            <option value="winkelTripel">Winkel Tripel</option>
+        </select>
+    </div>
+</div>
+
+<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='../debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    devtools: true,
+    zoom: 17.23,
+    center: [-118.443458, 34.061512],
+    pitch: 62.4,
+    bearing: 45,
+    style: 'mapbox://styles/mapbox/streets-v10',
+    hash: true
+});
+
+const r = 255 * 0.65;
+map.on('style.load', function() {
+    map.addLayer({
+        'id': '3d-buildings',
+        //'source': 'composite',
+        'source': {
+            'type': 'vector',
+            'url': 'mapbox://mapbox.3d-buildings'
+        },
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 14,
+        'paint': {
+            'fill-extrusion-color': ['rgb', ['number', ['feature-state', 'hover-r'], r], ['number', ['feature-state', 'hover-g'], r], ['number', ['feature-state', 'hover-b'], r]],
+            'fill-extrusion-height': ["get", "height"],
+            'fill-extrusion-base': ["get", "min_height"],
+            // 'fill-extrusion-height-alignment': 'terrain',
+            // 'fill-extrusion-base-alignment': 'flat',
+        }
+    });
+
+    map.addSource('mapbox-dem', {
+        "type": "raster-dem",
+        "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+        "tileSize": 512,
+        "maxzoom": 16
+    });
+
+    if (document.getElementById('terrain-checkbox').checked) {
+        map.setTerrain({"source": "mapbox-dem", "exaggeration": 10.0});
+    }
+
+    window.addEventListener('click', function(e) {
+        e.point = new mapboxgl.Point(e.clientX, e.clientY);
+        console.time('query');
+        const features = map.queryRenderedFeatures(e.point, {layers: ['3d-buildings']});
+        console.timeEnd('query');
+
+        for (const feature of features) {
+            console.log(feature);
+        }
+    });
+});
+document.getElementById('terrain-checkbox').onclick = function() {
+    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
+};
+
+document.getElementById('projName').addEventListener('change', (e) => {
+    const el = document.getElementById('projName');
+    map.setProjection(el.options[el.selectedIndex].value);
+});
+
+</script>
+</body>
+</html>

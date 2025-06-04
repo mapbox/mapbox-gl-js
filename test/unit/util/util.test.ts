@@ -1,9 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {describe, test, expect} from '../../util/vitest';
-
-import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, endsWith, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util';
-
 import Point from '@mapbox/point-geometry';
+import {describe, test, expect} from '../../util/vitest';
+import {mapValue, degToRad, radToDeg, easeCubicInOut, getAABBPointSquareDist, furthestTileCorner, keysDifference, extend, pick, uniqueId, bindAll, asyncAll, clamp, smoothstep, wrap, bezier, mapObject, filterObject, deepEqual, clone, arraysIntersect, isCounterClockwise, parseCacheControl, uuid, validateUuid, nextPowerOfTwo, isPowerOfTwo, bufferConvexPolygon, prevPowerOfTwo, shortestAngle, _resetSafariCheckForTest, isSafariWithAntialiasingBug} from '../../../src/util/util';
 
 const EPSILON = 1e-8;
 
@@ -22,11 +21,11 @@ describe('util', () => {
     expect(easeCubicInOut(0.2)).toEqual(0.03200000000000001);
     expect(easeCubicInOut(0.5)).toEqual(0.5);
     expect(easeCubicInOut(1)).toEqual(1);
-    expect(keysDifference({a:1}, {})).toEqual(['a']);
-    expect(keysDifference({a:1}, {a:1})).toEqual([]);
-    expect(extend({a:1}, {b:2})).toEqual({a:1, b:2});
-    expect(pick({a:1, b:2, c:3}, ['a', 'c'])).toEqual({a:1, c:3});
-    expect(pick({a:1, b:2, c:3}, ['a', 'c', 'd'])).toEqual({a:1, c:3});
+    expect(keysDifference({a: 1}, {})).toEqual(['a']);
+    expect(keysDifference({a: 1}, {a: 1})).toEqual([]);
+    expect(extend({a: 1}, {b: 2})).toEqual({a: 1, b: 2});
+    expect(pick({a: 1, b: 2, c: 3}, ['a', 'c'])).toEqual({a: 1, c: 3});
+    expect(pick({a: 1, b: 2, c: 3}, ['a', 'c', 'd'])).toEqual({a: 1, c: 3});
     expect(typeof uniqueId() === 'number').toBeTruthy();
 
     expect(degToRad(radToDeg(Math.PI))).toEqual(Math.PI);
@@ -208,16 +207,11 @@ describe('util', () => {
         }, () => {});
     });
 
-    test('endsWith', () => {
-        expect(endsWith('mapbox', 'box')).toBeTruthy();
-        expect(endsWith('mapbox', 'map')).toBeFalsy();
-    });
-
     test('mapObject', () => {
         expect.assertions(6);
         expect(mapObject({}, () => { expect(false).toBeTruthy(); })).toEqual({});
         const that: Record<string, any> = {};
-        expect(mapObject({map: 'box'}, function(value, key, object) {
+        expect(mapObject({map: 'box'}, function (value, key, object) {
             expect(value).toEqual('box');
             expect(key).toEqual('map');
             expect(object).toEqual({map: 'box'});
@@ -230,7 +224,7 @@ describe('util', () => {
         expect.assertions(6);
         expect(filterObject({}, () => { expect(false).toBeTruthy(); })).toEqual({});
         const that: Record<string, any> = {};
-        filterObject({map: 'box'}, function(value, key, object) {
+        filterObject({map: 'box'}, function (value, key, object) {
             expect(value).toEqual('box');
             expect(key).toEqual('map');
             expect(object).toEqual({map: 'box'});

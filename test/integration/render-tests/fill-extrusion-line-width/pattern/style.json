@@ -61,7 +61,7 @@
                 [
                   0.00030537196272462097,
                   -0.00007812970969212074
-                ]                
+                ]
               ],
               "type": "LineString"
             }
@@ -70,7 +70,7 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "pitch": 60,
   "zoom": 18,
   "layers": [
@@ -79,7 +79,7 @@
       "type": "fill-extrusion",
       "source": "geojson",
       "paint": {
-        "fill-extrusion-pattern": "generic_icon",
+        "fill-extrusion-pattern": "information",
         "fill-extrusion-height": 10,
         "fill-extrusion-line-width": 2.0
       }

@@ -79,21 +79,19 @@ function splitRange(range: IndexRange, isLine: boolean) {
     }
 }
 
-function getBBox(pointSets: Array<GeoJSON.Position>, range: IndexRange) {
-    const bbox = [Infinity, Infinity, -Infinity, -Infinity];
+function getBBox(pointSets: Array<[number, number]>, range: IndexRange) {
+    const bbox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
     if (!isRangeSafe(range, pointSets.length)) return bbox;
     for (let i = range[0]; i <= range[1]; ++i) {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         updateBBox(bbox, pointSets[i]);
     }
     return bbox;
 }
 
-function getPolygonBBox(polygon: Array<Array<GeoJSON.Position>>) {
-    const bbox = [Infinity, Infinity, -Infinity, -Infinity];
+function getPolygonBBox(polygon: Array<Array<[number, number]>>) {
+    const bbox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
     for (let i = 0; i < polygon.length; ++i) {
         for (let j = 0; j < polygon[i].length; ++j) {
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
             updateBBox(bbox, polygon[i][j]);
         }
     }
@@ -149,17 +147,16 @@ function getLngLatPoints(coordinates: Array<Point>, canonical: CanonicalTileID) 
     for (let i = 0; i < coordinates.length; ++i) {
         coords.push(getLngLatPoint(coordinates[i], canonical));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return coords;
 }
 
-function pointToLineDistance(point: GeoJSON.Position, line: Array<GeoJSON.Position>, ruler: CheapRuler) {
-// @ts-expect-error - TS2345 - Argument of type 'Position[]' is not assignable to parameter of type 'Line'.
+function pointToLineDistance(point: [number, number], line: Array<[number, number]>, ruler: CheapRuler) {
     const nearestPoint = ruler.pointOnLine(line, point).point;
-    // @ts-expect-error - TS2345 - Argument of type 'Position' is not assignable to parameter of type 'Point'.
     return ruler.distance(point, nearestPoint);
 }
 
-function pointsToLineDistance(points: Array<GeoJSON.Position>, rangeA: IndexRange, line: Array<GeoJSON.Position>, rangeB: IndexRange, ruler: CheapRuler) {
+function pointsToLineDistance(points: Array<[number, number]>, rangeA: IndexRange, line: Array<[number, number]>, rangeB: IndexRange, ruler: CheapRuler) {
     const subLine = line.slice(rangeB[0], rangeB[1] + 1);
     let dist = Infinity;
     for (let i = rangeA[0]; i <= rangeA[1]; ++i) {
@@ -169,24 +166,20 @@ function pointsToLineDistance(points: Array<GeoJSON.Position>, rangeA: IndexRang
 }
 
 // precondition is two segments are not intersecting with each other
-function segmentToSegmentDistance(p1: GeoJSON.Position, p2: GeoJSON.Position, q1: GeoJSON.Position, q2: GeoJSON.Position, ruler: CheapRuler) {
+function segmentToSegmentDistance(p1: [number, number], p2: [number, number], q1: [number, number], q2: [number, number], ruler: CheapRuler) {
     const dist1 = Math.min(
-        // @ts-expect-error - TS2345 - Argument of type 'Position' is not assignable to parameter of type 'Point'.
         ruler.pointToSegmentDistance(p1, q1, q2),
-        // @ts-expect-error - TS2345 - Argument of type 'Position' is not assignable to parameter of type 'Point'.
         ruler.pointToSegmentDistance(p2, q1, q2)
     );
     const dist2 = Math.min(
-        // @ts-expect-error - TS2345 - Argument of type 'Position' is not assignable to parameter of type 'Point'.
         ruler.pointToSegmentDistance(q1, p1, p2),
-        // @ts-expect-error - TS2345 - Argument of type 'Position' is not assignable to parameter of type 'Point'.
         ruler.pointToSegmentDistance(q2, p1, p2)
     );
 
     return Math.min(dist1, dist2);
 }
 
-function lineToLineDistance(line1: Array<GeoJSON.Position>, range1: IndexRange, line2: Array<GeoJSON.Position>, range2: IndexRange, ruler: CheapRuler) {
+function lineToLineDistance(line1: Array<[number, number]>, range1: IndexRange, line2: Array<[number, number]>, range2: IndexRange, ruler: CheapRuler) {
     if (!isRangeSafe(range1, line1.length) || !isRangeSafe(range2, line2.length)) {
         return NaN;
     }
@@ -200,21 +193,20 @@ function lineToLineDistance(line1: Array<GeoJSON.Position>, range1: IndexRange, 
     return dist;
 }
 
-function pointsToPointsDistance(pointSet1: Array<GeoJSON.Position>, range1: IndexRange, pointSet2: Array<GeoJSON.Position>, range2: IndexRange, ruler: CheapRuler) {
+function pointsToPointsDistance(pointSet1: Array<[number, number]>, range1: IndexRange, pointSet2: Array<[number, number]>, range2: IndexRange, ruler: CheapRuler) {
     if (!isRangeSafe(range1, pointSet1.length) || !isRangeSafe(range2, pointSet2.length)) {
         return NaN;
     }
     let dist = Infinity;
     for (let i = range1[0]; i <= range1[1]; ++i) {
         for (let j = range2[0]; j <= range2[1]; ++j) {
-            // @ts-expect-error - TS2345 - Argument of type 'Position' is not assignable to parameter of type 'Point'.
             if ((dist = Math.min(dist, ruler.distance(pointSet1[i], pointSet2[j]))) === 0.0) return dist;
         }
     }
     return dist;
 }
 
-function pointToPolygonDistance(point: GeoJSON.Position, polygon: Array<Array<GeoJSON.Position>>, ruler: CheapRuler) {
+function pointToPolygonDistance(point: [number, number], polygon: Array<Array<[number, number]>>, ruler: CheapRuler) {
     if (pointWithinPolygon(point, polygon, true /*trueOnBoundary*/)) return 0.0;
     let dist = Infinity;
     for (const ring of polygon) {
@@ -224,7 +216,6 @@ function pointToPolygonDistance(point: GeoJSON.Position, polygon: Array<Array<Ge
             return NaN;
         }
         if (ring[0] !== ring[ringLen - 1]) {
-            // @ts-expect-error - TS2345 - Argument of type 'Position' is not assignable to parameter of type 'Point'.
             if ((dist = Math.min(dist, ruler.pointToSegmentDistance(point, ring[ringLen - 1], ring[0]))) === 0.0) return dist;
         }
         if ((dist = Math.min(dist, pointToLineDistance(point, ring, ruler))) === 0.0) return dist;
@@ -232,7 +223,7 @@ function pointToPolygonDistance(point: GeoJSON.Position, polygon: Array<Array<Ge
     return dist;
 }
 
-function lineToPolygonDistance(line: Array<GeoJSON.Position>, range: IndexRange, polygon: Array<Array<GeoJSON.Position>>, ruler: CheapRuler) {
+function lineToPolygonDistance(line: Array<[number, number]>, range: IndexRange, polygon: Array<Array<[number, number]>>, ruler: CheapRuler) {
     if (!isRangeSafe(range, line.length)) {
         return NaN;
     }
@@ -251,7 +242,7 @@ function lineToPolygonDistance(line: Array<GeoJSON.Position>, range: IndexRange,
     return dist;
 }
 
-function polygonIntersect(polygon1: Array<Array<GeoJSON.Position>>, polygon2: Array<Array<GeoJSON.Position>>) {
+function polygonIntersect(polygon1: Array<Array<[number, number]>>, polygon2: Array<Array<[number, number]>>) {
     for (const ring of polygon1) {
         for (let i = 0; i <= ring.length - 1; ++i) {
             if (pointWithinPolygon(ring[i], polygon2, true /*trueOnBoundary*/)) return true;
@@ -260,14 +251,12 @@ function polygonIntersect(polygon1: Array<Array<GeoJSON.Position>>, polygon2: Ar
     return false;
 }
 
-function polygonToPolygonDistance(polygon1: Array<Array<GeoJSON.Position>>, polygon2: Array<Array<GeoJSON.Position>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
+function polygonToPolygonDistance(polygon1: Array<Array<[number, number]>>, polygon2: Array<Array<[number, number]>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
     const bbox1 = getPolygonBBox(polygon1);
     const bbox2 = getPolygonBBox(polygon2);
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
     if (currentMiniDist !== Infinity && bboxToBBoxDistance(bbox1, bbox2, ruler) >= currentMiniDist) {
         return currentMiniDist;
     }
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
     if (boxWithinBox(bbox1, bbox2)) {
         if (polygonIntersect(polygon1, polygon2)) return 0.0;
     } else if (polygonIntersect(polygon2, polygon1)) {
@@ -287,9 +276,9 @@ function polygonToPolygonDistance(polygon1: Array<Array<GeoJSON.Position>>, poly
     return dist;
 }
 
-function updateQueue(distQueue: any, miniDist: number, ruler: CheapRuler, pointSet1: Array<GeoJSON.Position>, pointSet2: Array<GeoJSON.Position>, r1: IndexRange | null, r2: IndexRange | null) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function updateQueue(distQueue: any, miniDist: number, ruler: CheapRuler, pointSet1: Array<[number, number]>, pointSet2: Array<[number, number]>, r1: IndexRange | null, r2: IndexRange | null) {
     if (r1 === null || r2 === null) return;
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
     const tempDist = bboxToBBoxDistance(getBBox(pointSet1, r1), getBBox(pointSet2, r2), ruler);
     // Insert new pair to the queue if the bbox distance is less than miniDist, the pair with biggest distance will be at the top
     if (tempDist < miniDist) distQueue.push({dist: tempDist, range1: r1, range2: r2});
@@ -297,8 +286,7 @@ function updateQueue(distQueue: any, miniDist: number, ruler: CheapRuler, pointS
 
 // Divide and conquer, the time complexity is O(n*lgn), faster than Brute force O(n*n)
 // Most of the time, use index for in-place processing.
-function pointSetToPolygonDistance(pointSets: Array<GeoJSON.Position>, isLine: boolean, polygon: Array<Array<GeoJSON.Position>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
-// @ts-expect-error - TS2345 - Argument of type 'Position' is not assignable to parameter of type 'Point'.
+function pointSetToPolygonDistance(pointSets: Array<[number, number]>, isLine: boolean, polygon: Array<Array<[number, number]>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
     let miniDist = Math.min(ruler.distance(pointSets[0], polygon[0][0]), currentMiniDist);
     if (miniDist === 0.0) return miniDist;
     const initialDistPair: DistPair = {
@@ -330,12 +318,10 @@ function pointSetToPolygonDistance(pointSets: Array<GeoJSON.Position>, isLine: b
         } else {
             const newRanges = splitRange(range, isLine);
             if (newRanges[0] !== null) {
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
                 const tempDist = bboxToBBoxDistance(getBBox(pointSets, newRanges[0]), polyBBox, ruler);
                 if (tempDist < miniDist) distQueue.push({dist: tempDist, range1: newRanges[0], range2: [0, 0]});
             }
             if (newRanges[1] !== null) {
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
                 const tempDist = bboxToBBoxDistance(getBBox(pointSets, newRanges[1]), polyBBox, ruler);
                 if (tempDist < miniDist) distQueue.push({dist: tempDist, range1: newRanges[1], range2: [0, 0]});
             }
@@ -344,8 +330,7 @@ function pointSetToPolygonDistance(pointSets: Array<GeoJSON.Position>, isLine: b
     return miniDist;
 }
 
-function pointSetsDistance(pointSet1: Array<GeoJSON.Position>, isLine1: boolean, pointSet2: Array<GeoJSON.Position>, isLine2: boolean, ruler: CheapRuler, currentMiniDist: number = Infinity) {
-// @ts-expect-error - TS2345 - Argument of type 'Position' is not assignable to parameter of type 'Point'.
+function pointSetsDistance(pointSet1: Array<[number, number]>, isLine1: boolean, pointSet2: Array<[number, number]>, isLine2: boolean, ruler: CheapRuler, currentMiniDist: number = Infinity) {
     let miniDist = Math.min(currentMiniDist, ruler.distance(pointSet1[0], pointSet2[0]));
     if (miniDist === 0.0) return miniDist;
     const initialDistPair: DistPair = {
@@ -390,11 +375,10 @@ function pointSetsDistance(pointSet1: Array<GeoJSON.Position>, isLine1: boolean,
     return miniDist;
 }
 
-function pointSetToLinesDistance(pointSet: Array<GeoJSON.Position>, isLine: boolean, lines: Array<Array<GeoJSON.Position>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
+function pointSetToLinesDistance(pointSet: Array<[number, number]>, isLine: boolean, lines: Array<Array<[number, number]>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
     let dist = currentMiniDist;
     const bbox1 = getBBox(pointSet, [0, pointSet.length - 1]);
     for (const line of lines) {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         if (dist !== Infinity && bboxToBBoxDistance(bbox1, getBBox(line, [0, line.length - 1]), ruler) >= dist) continue;
         dist = Math.min(dist, pointSetsDistance(pointSet, isLine, line, true /*isLine*/, ruler, dist));
         if (dist === 0.0) return dist;
@@ -402,11 +386,10 @@ function pointSetToLinesDistance(pointSet: Array<GeoJSON.Position>, isLine: bool
     return dist;
 }
 
-function pointSetToPolygonsDistance(points: Array<GeoJSON.Position>, isLine: boolean, polygons: Array<Array<Array<GeoJSON.Position>>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
+function pointSetToPolygonsDistance(points: Array<[number, number]>, isLine: boolean, polygons: Array<Array<Array<[number, number]>>>, ruler: CheapRuler, currentMiniDist: number = Infinity) {
     let dist = currentMiniDist;
     const bbox1 = getBBox(points, [0, points.length - 1]);
     for (const polygon of polygons) {
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'BBox'.
         if (dist !== Infinity && bboxToBBoxDistance(bbox1, getPolygonBBox(polygon), ruler) >= dist) continue;
         const tempDist = pointSetToPolygonDistance(points, isLine, polygon, ruler, dist);
         if (isNaN(tempDist)) return tempDist;
@@ -415,7 +398,7 @@ function pointSetToPolygonsDistance(points: Array<GeoJSON.Position>, isLine: boo
     return dist;
 }
 
-function polygonsToPolygonsDistance(polygons1: Array<Array<Array<GeoJSON.Position>>>, polygons2: Array<Array<Array<GeoJSON.Position>>>, ruler: CheapRuler) {
+function polygonsToPolygonsDistance(polygons1: Array<Array<Array<[number, number]>>>, polygons2: Array<Array<Array<[number, number]>>>, ruler: CheapRuler) {
     let dist = Infinity;
     for (const polygon1 of polygons1) {
         for (const polygon2 of polygons2) {
@@ -437,15 +420,15 @@ function pointsToGeometryDistance(originGeometry: Array<Array<Point>>, canonical
     const ruler = new CheapRuler(lngLatPoints[0][1], 'meters');
     if (geometry.type === 'Point' || geometry.type === 'MultiPoint' || geometry.type === 'LineString') {
         return pointSetsDistance(lngLatPoints, false /*isLine*/,
-            geometry.type === "Point" ? [geometry.coordinates] : geometry.coordinates,
+            (geometry.type === 'Point' ? [geometry.coordinates] : geometry.coordinates) as Array<[number, number]>,
             geometry.type === 'LineString' /*isLine*/, ruler);
     }
     if (geometry.type === 'MultiLineString') {
-        return pointSetToLinesDistance(lngLatPoints, false /*isLine*/,  geometry.coordinates, ruler);
+        return pointSetToLinesDistance(lngLatPoints, false /*isLine*/, geometry.coordinates as Array<Array<[number, number]>>, ruler);
     }
     if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
         return pointSetToPolygonsDistance(lngLatPoints, false /*isLine*/,
-            geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates, ruler);
+            (geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates) as Array<Array<Array<[number, number]>>>, ruler);
     }
     return null;
 }
@@ -462,13 +445,13 @@ function linesToGeometryDistance(originGeometry: Array<Array<Point>>, canonical:
     const ruler = new CheapRuler(lngLatLines[0][0][1], 'meters');
     if (geometry.type === 'Point' || geometry.type === 'MultiPoint' || geometry.type === 'LineString') {
         return pointSetToLinesDistance(
-            geometry.type === "Point" ? [geometry.coordinates] : geometry.coordinates,
+            (geometry.type === 'Point' ? [geometry.coordinates] : geometry.coordinates) as Array<[number, number]>,
             geometry.type === 'LineString' /*isLine*/, lngLatLines, ruler);
     }
     if (geometry.type === 'MultiLineString') {
         let dist = Infinity;
         for (let i = 0; i < geometry.coordinates.length; i++) {
-            const tempDist = pointSetToLinesDistance(geometry.coordinates[i], true /*isLine*/, lngLatLines, ruler, dist);
+            const tempDist = pointSetToLinesDistance(geometry.coordinates[i] as Array<[number, number]>, true /*isLine*/, lngLatLines, ruler, dist);
             if (isNaN(tempDist)) return tempDist;
             if ((dist = Math.min(dist, tempDist)) === 0.0) return dist;
         }
@@ -478,7 +461,7 @@ function linesToGeometryDistance(originGeometry: Array<Array<Point>>, canonical:
         let dist = Infinity;
         for (let i = 0; i < lngLatLines.length; i++) {
             const tempDist = pointSetToPolygonsDistance(lngLatLines[i], true /*isLine*/,
-                geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates,
+                (geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates) as Array<Array<Array<[number, number]>>>,
                 ruler, dist);
             if (isNaN(tempDist)) return tempDist;
             if ((dist = Math.min(dist, tempDist)) === 0.0) return dist;
@@ -500,13 +483,13 @@ function polygonsToGeometryDistance(originGeometry: Array<Array<Point>>, canonic
     const ruler = new CheapRuler(lngLatPolygons[0][0][0][1], 'meters');
     if (geometry.type === 'Point' || geometry.type === 'MultiPoint' || geometry.type === 'LineString') {
         return pointSetToPolygonsDistance(
-            geometry.type === "Point" ? [geometry.coordinates] : geometry.coordinates,
+            (geometry.type === 'Point' ? [geometry.coordinates] : geometry.coordinates) as Array<[number, number]>,
             geometry.type === 'LineString' /*isLine*/, lngLatPolygons, ruler);
     }
     if (geometry.type === 'MultiLineString') {
         let dist = Infinity;
         for (let i = 0; i < geometry.coordinates.length; i++) {
-            const tempDist = pointSetToPolygonsDistance(geometry.coordinates[i], true /*isLine*/, lngLatPolygons, ruler, dist);
+            const tempDist = pointSetToPolygonsDistance(geometry.coordinates[i] as Array<[number, number]>, true /*isLine*/, lngLatPolygons, ruler, dist);
             if (isNaN(tempDist)) return tempDist;
             if ((dist = Math.min(dist, tempDist)) === 0.0) return dist;
         }
@@ -514,7 +497,7 @@ function polygonsToGeometryDistance(originGeometry: Array<Array<Point>>, canonic
     }
     if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
         return polygonsToPolygonsDistance(
-            geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates,
+            (geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates) as Array<Array<Array<[number, number]>>>,
             lngLatPolygons, ruler);
     }
     return null;
@@ -541,31 +524,26 @@ class Distance implements Expression {
         this.geometries = geometries;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Distance | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Distance | null | void {
         if (args.length !== 2) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Distance'.
-            return context.error(
-                `'distance' expression requires either one argument, but found ' ${args.length -
-                    1} instead.`
-            );
+            return context.error(`'distance' expression requires either one argument, but found ' ${args.length - 1} instead.`);
         }
         if (isValue(args[1])) {
-            const geojson = (args[1] as any);
+            const geojson = args[1] as GeoJSON.GeoJSON;
             if (geojson.type === 'FeatureCollection') {
                 for (let i = 0; i < geojson.features.length; ++i) {
                     if (isTypeValid(geojson.features[i].geometry.type)) {
-                        return new Distance(geojson, geojson.features[i].geometry);
+                        return new Distance(geojson, geojson.features[i].geometry as DistanceGeometry);
                     }
                 }
             } else if (geojson.type === 'Feature') {
                 if (isTypeValid(geojson.geometry.type)) {
-                    return new Distance(geojson, geojson.geometry);
+                    return new Distance(geojson, geojson.geometry as DistanceGeometry);
                 }
             } else if (isTypeValid(geojson.type)) {
-                return new Distance(geojson, geojson);
+                return new Distance(geojson, geojson as DistanceGeometry);
             }
         }
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Distance'.
         return context.error(
             "'distance' expression needs to be an array with format [\'Distance\', GeoJSONObj]."
         );

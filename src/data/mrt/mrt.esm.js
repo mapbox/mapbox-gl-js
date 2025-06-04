@@ -1,9 +1,11 @@
-// @ts-nocheck
 /* eslint-disable */
+// @ts-nocheck
+
+import {LRUCache} from '../../util/lru';
 
 function readTileHeader(pbf, end) {
   return pbf.readFields(readTileHeaderTag, {
-    header_length: 0,
+    headerLength: 0,
     x: 0,
     y: 0,
     z: 0,
@@ -11,7 +13,7 @@ function readTileHeader(pbf, end) {
   }, end);
 }
 function readTileHeaderTag(tag, obj, pbf) {
-  if (tag === 1) obj.header_length = pbf.readFixed32();else if (tag === 2) obj.x = pbf.readVarint();else if (tag === 3) obj.y = pbf.readVarint();else if (tag === 4) obj.z = pbf.readVarint();else if (tag === 5) obj.layers.push(readLayer(pbf, pbf.readVarint() + pbf.pos));
+  if (tag === 1) obj.headerLength = pbf.readFixed32();else if (tag === 2) obj.x = pbf.readVarint();else if (tag === 3) obj.y = pbf.readVarint();else if (tag === 4) obj.z = pbf.readVarint();else if (tag === 5) obj.layers.push(readLayer(pbf, pbf.readVarint() + pbf.pos));
 }
 function readFilter(pbf, end) {
   return pbf.readFields(readFilterTag, {}, end);
@@ -33,11 +35,11 @@ function readFilterTag(tag, obj, pbf) {
 }
 function readFilterDelta(pbf, end) {
   return pbf.readFields(readFilterDeltaTag, {
-    block_size: 0
+    blockSize: 0
   }, end);
 }
 function readFilterDeltaTag(tag, obj, pbf) {
-  if (tag === 1) obj.block_size = pbf.readVarint();
+  if (tag === 1) obj.blockSize = pbf.readVarint();
 }
 function readCodec(pbf, end) {
   return pbf.readFields(readCodecTag, {}, end);
@@ -59,33 +61,44 @@ function readCodecTag(tag, obj, pbf) {
 }
 function readDataIndexEntry(pbf, end) {
   return pbf.readFields(readDataIndexEntryTag, {
-    first_byte: 0,
-    last_byte: 0,
+    firstByte: 0,
+    lastByte: 0,
     filters: [],
     codec: null,
     offset: 0,
     scale: 0,
-    deprecated_offset: 0,
-    deprecated_scale: 0,
     bands: []
   }, end);
 }
 function readDataIndexEntryTag(tag, obj, pbf) {
-  if (tag === 1) obj.first_byte = pbf.readFixed64();else if (tag === 2) obj.last_byte = pbf.readFixed64();else if (tag === 3) obj.filters.push(readFilter(pbf, pbf.readVarint() + pbf.pos));else if (tag === 4) obj.codec = readCodec(pbf, pbf.readVarint() + pbf.pos);else if (tag === 5) obj.deprecated_offset = pbf.readFloat();else if (tag === 6) obj.deprecated_scale = pbf.readFloat();else if (tag === 7) obj.bands.push(pbf.readString());else if (tag === 8) obj.offset = pbf.readDouble();else if (tag === 9) obj.scale = pbf.readDouble();
+  let deprecated_scale = 0;
+  let deprecated_offset = 0;
+  if (tag === 1) obj.firstByte = pbf.readFixed64();else if (tag === 2) obj.lastByte = pbf.readFixed64();else if (tag === 3) obj.filters.push(readFilter(pbf, pbf.readVarint() + pbf.pos));else if (tag === 4) obj.codec = readCodec(pbf, pbf.readVarint() + pbf.pos);else if (tag === 5) deprecated_offset = pbf.readFloat();else if (tag === 6) deprecated_scale = pbf.readFloat();else if (tag === 7) obj.bands.push(pbf.readString());else if (tag === 8) obj.offset = pbf.readDouble();else if (tag === 9) obj.scale = pbf.readDouble();
+
+  // Overwrite these values if they're zero. Scale can never be zero, so this could only
+  // mean it's being overwritten with something that is potentially valid (or at least
+  // not any more invalid). For offset, the same situation applies except that it could
+  // technically have been affirmatively set to zero to begin with. However, it would then
+  // be overwritten with the deprecated float32 value, which is identically zero whether
+  // or not it was actually set. At the end of the day, it only achieves some increased
+  // robustness for historical tilesets written during early beta, before the field type
+  // was upgraded to double precision.
+  if (obj.offset === 0) obj.offset = deprecated_offset;
+  if (obj.scale === 0) obj.scale = deprecated_scale;
 }
 function readLayer(pbf, end) {
   return pbf.readFields(readLayerTag, {
     version: 0,
     name: '',
     units: '',
-    tilesize: 0,
+    tileSize: 0,
     buffer: 0,
-    pixel_format: 0,
-    data_index: []
+    pixelFormat: 0,
+    dataIndex: []
   }, end);
 }
 function readLayerTag(tag, obj, pbf) {
-  if (tag === 1) obj.version = pbf.readVarint();else if (tag === 2) obj.name = pbf.readString();else if (tag === 3) obj.units = pbf.readString();else if (tag === 4) obj.tilesize = pbf.readVarint();else if (tag === 5) obj.buffer = pbf.readVarint();else if (tag === 6) obj.pixel_format = pbf.readVarint();else if (tag === 7) obj.data_index.push(readDataIndexEntry(pbf, pbf.readVarint() + pbf.pos));
+  if (tag === 1) obj.version = pbf.readVarint();else if (tag === 2) obj.name = pbf.readString();else if (tag === 3) obj.units = pbf.readString();else if (tag === 4) obj.tileSize = pbf.readVarint();else if (tag === 5) obj.buffer = pbf.readVarint();else if (tag === 6) obj.pixelFormat = pbf.readVarint();else if (tag === 7) obj.dataIndex.push(readDataIndexEntry(pbf, pbf.readVarint() + pbf.pos));
 }
 function readNumericData(pbf, values) {
   pbf.readFields(readNumericDataTag, values);
@@ -109,43 +122,6 @@ function readUint32ValuesTag(tag, values, pbf) {
     }
   }
 }
-
-class LRUCache {
-  /**
-   * @param {number} capacity - max size of cache
-   */
-  constructor(capacity) {
-    this.capacity = capacity;
-    this.cache = new Map();
-  }
-
-  /**
-   * @param {string} key - value of key to get
-   * @return {any} - returned value or undefined
-   */
-  get(key) {
-    if (!this.cache.has(key)) return undefined;
-    const value = this.cache.get(key);
-    this.cache.delete(key);
-    this.cache.set(key, value);
-    return value;
-  }
-
-  /**
-   * @param {string} key - value of key to set
-   * @param {any} value - value to associate with key
-   */
-  put(key, value) {
-    if (this.cache.has(key)) {
-      this.cache.delete(key);
-    } else if (this.cache.size === this.capacity) {
-      this.cache.delete(this.cache.keys().next().value);
-    }
-    this.cache.set(key, value);
-  }
-}
-
-/** @typedef { import("../types/types").TArrayLike } TArrayLike; */
 
 /**
  * Decode difference-encoded data using a cumulative sum operation along
@@ -185,8 +161,6 @@ function deltaDecode(data, shape) {
   return data;
 }
 
-/** @typedef { import("../types/types").TArrayLike } TArrayLike; */
-
 /**
  * Perform zigzag decoding.
  *
@@ -217,9 +191,6 @@ function zigzagDecode(data) {
   }
   return data;
 }
-
-/** @typedef { import("../types/types").TArrayLike } TArrayLike; */
-/** @typedef { import("../types/types").TPixelFormat } TPixelFormat; */
 
 /**
  * Perform bitshuffle decoding.
@@ -617,7 +588,7 @@ try {
   tds = 1;
 } catch (e) {}
 
-/** @typedef { import("./types/types").TCodec } TCodec */
+/* global Response */
 
 /** @type { { [key: string]: string } } */
 const DS_TYPES = {
@@ -649,6 +620,14 @@ function decompress(bytes, codec) {
   return new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer().then(buf => new Uint8Array(buf));
 }
 
+/**
+ * An error class for MRT modules.
+ *
+ * MRTError should be thrown only for user input errors and not for
+ * internal inconsistencies or assertions. The class is designed to
+ * facilitate catching and responding to the end user with meaningful
+ * error messages.
+ */
 class MRTError extends Error {
   /**
    * @param {string} message - error message
@@ -659,20 +638,21 @@ class MRTError extends Error {
   }
 }
 
-const VERSION = '1.0.0-alpha.24.2';
+const VERSION = '2.0.1';
 
-/** @typedef { import("pbf") } Pbf; */
-/** @typedef { import("./types/types").TArrayLike } TArrayLike; */
-/** @typedef { import("./types/types").TDataRange } TDataRange; */
-/** @typedef { import("./types/types").TBlockReference } TBlockReference; */
-/** @typedef { import("./types/types").TRasterLayerConfig } TRasterLayerConfig; */
-/** @typedef { import("./types/types").TBandViewRGBA } TBandViewRGBA; */
-/** @typedef { import("./types/types").TPbfRasterTileData } TPbfRasterTileData */
-/** @typedef { import("./types/types").TProcessingTask } TProcessingTask */
-/** @typedef { import("./types/types").TProcessingBatch } TProcessingBatch */
-/** @typedef { import("./types/types").TDecodingResult } TDecodingResult */
-/** @typedef { import("./types/types").TPbfDataIndexEntry } TPbfDataIndexEntry */
-/** @typedef { import("./types/types").TPixelFormat } TPixelFormat */
+/** @typedef { import("pbf").default } Pbf; */
+/** @typedef { import("./types").TCodec } TCodec */
+/** @typedef { import("./types").TArrayLike } TArrayLike; */
+/** @typedef { import("./types").TDataRange } TDataRange; */
+/** @typedef { import("./types").TBlockReference } TBlockReference; */
+/** @typedef { import("./types").TRasterLayerConfig } TRasterLayerConfig; */
+/** @typedef { import("./types").TBandViewRGBA } TBandViewRGBA; */
+/** @typedef { import("./types").TPbfRasterTileData } TPbfRasterTileData */
+/** @typedef { import("./types").TProcessingTask } TProcessingTask */
+/** @typedef { import("./types").TProcessingBatch } TProcessingBatch */
+/** @typedef { import("./types").TDecodingResult } TDecodingResult */
+/** @typedef { import("./types").TPbfDataIndexEntry } TPbfDataIndexEntry */
+/** @typedef { import("./types").TPixelFormat } TPixelFormat */
 
 const MRT_VERSION = 1;
 
@@ -694,7 +674,7 @@ const PIXEL_FORMAT_TO_CTOR = {
   uint8: Uint8Array
 };
 
-/** @type {any} */
+/** @type {Pbf} */
 let Pbf;
 class MapboxRasterTile {
   /**
@@ -705,7 +685,7 @@ class MapboxRasterTile {
     this.y = NaN;
     this.z = NaN;
 
-    /** @type { { [key: string]: RasterLayer } } */
+    /** @type { { [key: string]: MapboxRasterLayer } } */
     this.layers = {};
     this._cacheSize = cacheSize;
   }
@@ -713,7 +693,7 @@ class MapboxRasterTile {
   /**
    * Get a layer instance by name
    * @param {string} layerName - name of requested layer
-   * @return {RasterLayer} layer instance
+   * @return {MapboxRasterLayer} layer instance
    */
   getLayer(layerName) {
     const layer = this.layers[layerName];
@@ -759,9 +739,7 @@ class MapboxRasterTile {
     this.y = meta.y;
     this.z = meta.z;
     for (const layer of meta.layers) {
-      this.layers[layer.name] = new RasterLayer(layer, {
-        cacheSize: this._cacheSize
-      });
+      this.layers[layer.name] = new MapboxRasterLayer(layer, {cacheSize: this._cacheSize});
     }
     return this;
   }
@@ -777,8 +755,8 @@ class MapboxRasterTile {
     const layer = this.getLayer(range.layerName);
     for (let blockIndex of range.blockIndices) {
       const block = layer.dataIndex[blockIndex];
-      const firstByte = block.first_byte - range.firstByte;
-      const lastByte = block.last_byte - range.firstByte;
+      const firstByte = block.firstByte - range.firstByte;
+      const lastByte = block.lastByte - range.firstByte;
       if (layer._blocksInProgress.has(blockIndex)) continue;
       const task = {
         layerName: layer.name,
@@ -809,26 +787,26 @@ class MapboxRasterTile {
     return new MRTDecodingBatch(tasks, onCancel, onComplete);
   }
 }
-class RasterLayer {
+class MapboxRasterLayer {
   /**
    * @param {object} pbf - layer configuration
    * @param {number} pbf.version - major version of MRT specification with which tile was encoded
    * @param {string} pbf.name - layer name
    * @param {string} pbf.units - layer units
-   * @param {number} pbf.tilesize - number of rows and columns in raster data
+   * @param {number} pbf.tileSize - number of rows and columns in raster data
    * @param {number} pbf.buffer - number of pixels around the edge of each tile
-   * @param {number} pbf.pixel_format - encoded pixel format enum indicating uint32, uint16, or uint8
-   * @param {TPbfDataIndexEntry[]} pbf.data_index - index of data chunk byte offsets
+   * @param {number} pbf.pixelFormat - encoded pixel format enum indicating uint32, uint16, or uint8
+   * @param {TPbfDataIndexEntry[]} pbf.dataIndex - index of data chunk byte offsets
    * @param {TRasterLayerConfig} [config] - Additional configuration parameters
    */
   constructor({
     version,
     name,
     units,
-    tilesize,
-    pixel_format,
+    tileSize,
+    pixelFormat,
     buffer,
-    data_index
+    dataIndex
   }, config) {
     // Take these directly from decoded Pbf
     this.version = version;
@@ -837,11 +815,11 @@ class RasterLayer {
     }
     this.name = name;
     this.units = units;
-    this.tileSize = tilesize;
+    this.tileSize = tileSize;
     this.buffer = buffer;
-    this.pixelFormat = PIXEL_FORMAT[pixel_format];
-    this.dataIndex = data_index;
-    this.bandShape = [tilesize + 2 * buffer, tilesize + 2 * buffer, PIXEL_FORMAT_TO_DIM_LEN[this.pixelFormat]];
+    this.pixelFormat = PIXEL_FORMAT[pixelFormat];
+    this.dataIndex = dataIndex;
+    this.bandShape = [tileSize + 2 * buffer, tileSize + 2 * buffer, PIXEL_FORMAT_TO_DIM_LEN[this.pixelFormat]];
 
     // Type script is creating more problems than it solves here:
     const cacheSize = config ? config.cacheSize : 5;
@@ -921,12 +899,14 @@ class RasterLayer {
       default:
         throw new MRTError(`Invalid band \`${JSON.stringify(band)}\`. Expected string or integer.`);
     }
-    throw new MRTError(`Band not found: ${JSON.stringify(band)}`);
+
+    // If we reach here, the band was not found
+    return {blockIndex: -1, blockBandIndex: -1};
   }
 
   /**
    * Get the byte range of a data slice, for performing a HTTP Range fetch
-   * @param {number[]} bandList - list of slices to be covered
+   * @param {Array<number | string>} bandList - list of slices to be covered
    * @return {TDataRange} range of data
    */
   getDataRange(bandList) {
@@ -947,8 +927,8 @@ class RasterLayer {
         blockIndices.push(blockIndex);
       }
       allBlocks.add(blockIndex);
-      firstByte = Math.min(firstByte, block.first_byte);
-      lastByte = Math.max(lastByte, block.last_byte);
+      firstByte = Math.min(firstByte, block.firstByte);
+      lastByte = Math.max(lastByte, block.lastByte);
     }
     if (allBlocks.size > this.cacheSize) {
       throw new MRTError(`Number of blocks to decode (${allBlocks.size}) exceeds cache size (${this.cacheSize}).`);
@@ -963,7 +943,7 @@ class RasterLayer {
 
   /**
    * Check if the specified band is valid
-   * @param {number} band - sequence band
+   * @param {number | string} band - sequence band
    * @return {boolean} - true if band exists in layer
    */
   hasBand(band) {
@@ -975,7 +955,7 @@ class RasterLayer {
 
   /**
    * Check if the layer has data for a given sequence band
-   * @param {number} band - sequence band
+   * @param {number | string} band - sequence band
    * @return {boolean} true if data is already available
    */
   hasDataForBand(band) {
@@ -987,7 +967,7 @@ class RasterLayer {
 
   /**
    * Get a typed array view of data
-   * @param {number} band - sequence band
+   * @param {number | string} band - sequence band
    * @return {TBandViewRGBA} view of raster layer
    */
   getBandView(band) {
@@ -995,6 +975,10 @@ class RasterLayer {
       blockIndex,
       blockBandIndex
     } = this.getBlockForBand(band);
+
+    if (blockIndex < 0) {
+        throw new MRTError(`Band not found: ${JSON.stringify(band)}`);
+    }
 
     /** @type {Uint8Array} */
     const blockData = this._decodedBlocks.get(blockIndex.toString());
@@ -1013,13 +997,8 @@ class RasterLayer {
       buffer: this.buffer,
       pixelFormat: this.pixelFormat,
       dimension: this.dimension,
-      // Offset and scale were upgraded from single precision to double. Since they
-      // are both initialized to zero, we prefer non-deprecated properties. If the
-      // non-deprecated property is zero, then we use the deprecated property, which
-      // has also been initialized to zero. This will ignore the deprecated field if
-      // both are non-zero.
-      offset: block.offset !== 0 ? block.offset : block.deprecated_offset,
-      scale: block.scale !== 0 ? block.scale : block.deprecated_scale
+      offset: block.offset,
+      scale: block.scale
     };
   }
 }
@@ -1131,4 +1110,4 @@ MapboxRasterTile.performDecoding = function (buf, decodingBatch) {
   }));
 };
 
-export { MRTDecodingBatch, MRTError, MapboxRasterTile, RasterLayer, VERSION, deltaDecode };
+export { MRTDecodingBatch, MRTError, MapboxRasterTile, MapboxRasterLayer, VERSION, deltaDecode };

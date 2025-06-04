@@ -17,14 +17,18 @@ import type {TilespaceQueryGeometry} from '../query_geometry';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
+import type {ImageId} from '../../style-spec/expression/types/image_id';
+import type {ProgramName} from '../../render/program';
 
 class FillStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override type: 'fill';
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
+
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {
@@ -34,12 +38,13 @@ class FillStyleLayer extends StyleLayer {
         super(layer, properties, scope, lut, options);
     }
 
-    getProgramIds(): string[] {
+    override getProgramIds(): ProgramName[] {
         const pattern = this.paint.get('fill-pattern');
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const image = pattern && pattern.constantOr((1 as any));
 
-        const ids = [image ? 'fillPattern' : 'fill'];
+        const ids: ProgramName[] = [image ? 'fillPattern' : 'fill'];
 
         if (this.paint.get('fill-antialias')) {
             ids.push(image && !this.getPaintProperty('fill-outline-color') ? 'fillOutlinePattern' : 'fillOutline');
@@ -48,14 +53,14 @@ class FillStyleLayer extends StyleLayer {
         return ids;
     }
 
-    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),
             overrideFog: false
         };
     }
 
-    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
 
         const outlineColor = this.paint._values['fill-outline-color'];
@@ -69,12 +74,11 @@ class FillStyleLayer extends StyleLayer {
         return new FillBucket(parameters);
     }
 
-    queryRadius(): number {
-
+    override queryRadius(): number {
         return translateDistance(this.paint.get('fill-translate'));
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,
@@ -92,12 +96,23 @@ class FillStyleLayer extends StyleLayer {
         return polygonIntersectsMultiPolygon(translatedPolygon, geometry);
     }
 
-    isTileClipped(): boolean {
-        return true;
+    override isTileClipped(): boolean {
+        return this.paint.get('fill-z-offset').constantOr(1.0) === 0.0;
     }
 
-    is3D(): boolean {
-        return this.paint.get('fill-z-offset').constantOr(1.0) !== 0.0;
+    override is3D(terrainEnabled?: boolean): boolean {
+        if (this.paint.get('fill-z-offset').constantOr(1.0) !== 0.0) return true;
+
+        const potentially3D = this.layout && this.layout.get('fill-elevation-reference') !== 'none';
+        return terrainEnabled != null ? (potentially3D && !terrainEnabled) : potentially3D;
+    }
+
+    override hasElevation(): boolean {
+        return this.layout && this.layout.get('fill-elevation-reference') !== 'none';
+    }
+
+    override hasShadowPass(): boolean {
+        return this.layout && this.layout.get('fill-elevation-reference') !== 'none';
     }
 }
 

@@ -3,6 +3,7 @@ import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import EXTENT from '../style-spec/data/extent';
+import ResolvedImage from '../style-spec/expression/types/resolved_image';
 import FillExtrusionBucket, {
     fillExtrusionHeightLift,
     ELEVATION_SCALE,
@@ -28,7 +29,11 @@ import {Frustum} from '../util/primitives';
 import {mat4} from "gl-matrix";
 import {getCutoffParams} from './cutoff';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
+import browser from '../util/browser';
 
+import type {vec3} from 'gl-matrix';
+import type {UniformValues} from './uniform_binding';
+import type {DynamicDefinesType} from './program/program_uniforms';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
 import type SourceCache from '../source/source_cache';
 import type Painter from './painter';
@@ -36,9 +41,12 @@ import type Tile from '../source/tile';
 import type {Terrain} from '../terrain/terrain';
 import type Context from '../gl/context';
 import type {OverscaledTileID} from '../source/tile_id';
+import type {GroundEffect, PartData} from '../data/bucket/fill_extrusion_bucket';
 import type {
-    GroundEffect,
-    PartData} from '../data/bucket/fill_extrusion_bucket';
+    FillExtrusionDepthUniformsType,
+    FillExtrusionPatternUniformsType,
+} from './program/fill_extrusion_program';
+import type SegmentVector from '../data/segment';
 
 export default draw;
 
@@ -64,7 +72,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     if (terrain || conflateLayer) {
         for (const coord of coords) {
             const tile = source.getTile(coord);
-            const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
+            const bucket = tile.getBucket(layer) as FillExtrusionBucket;
             if (!bucket) {
                 continue;
             }
@@ -92,6 +100,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
     } else if (painter.renderPass === 'translucent') {
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const noPattern = !layer.paint.get('fill-extrusion-pattern').constantOr((1 as any));
 
         const color = layer.paint.get('fill-extrusion-color').constantOr(Color.white);
@@ -136,7 +145,9 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             const aoRadius = layer.paint.get('fill-extrusion-ambient-occlusion-ground-radius');
             const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
 
-            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(layer.lut).toArray01().slice(0, 3);
+            const floodLightIgnoreLut = layer.paint.get('fill-extrusion-flood-light-color-use-theme').constantOr("default") === 'none';
+
+            const floodLightColor = layer.paint.get('fill-extrusion-flood-light-color').toNonPremultipliedRenderColor(floodLightIgnoreLut ? null : layer.lut).toArray01().slice(0, 3) as [number, number, number];
 
             const aoEnabled = aoIntensity > 0 && aoRadius > 0;
 
@@ -153,7 +164,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
                 if (!showOverdraw) {
                     // Mark the alpha channel with the DF values (that determine the intensity of the effects). No color is written.
-                    // @ts-expect-error - TS2345 - Argument of type '{ func: 519; mask: 255; }' is not assignable to parameter of type 'StencilTest'.
                     const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
                     const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
 
@@ -187,7 +197,6 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
                     {
                         // Mark the alpha channel with the DF values (that determine the intensity of the effects). No color is written.
-                        // @ts-expect-error - TS2345 - Argument of type '{ func: 519; mask: 255; }' is not assignable to parameter of type 'StencilTest'.
                         const stencilSdfPass = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
                         const colorSdfPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [false, false, false, true], gl.MIN);
 
@@ -227,10 +236,10 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         if (!framebufferCopyTexture || (framebufferCopyTexture && (framebufferCopyTexture.size[0] !== width || framebufferCopyTexture.size[1] !== height))) {
                             if (framebufferCopyTexture) framebufferCopyTexture.destroy();
                             framebufferCopyTexture = terrain.framebufferCopyTexture = new Texture(context,
-                                new RGBAImage({width, height}), gl.RGBA);
+                                new RGBAImage({width, height}), gl.RGBA8);
                         }
                         framebufferCopyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-                        gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, width, height, 0);
+                        gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
                     }
                     // Render ground AO.
                     if (aoEnabled) {
@@ -266,12 +275,15 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const gl = context.gl;
     const tr = painter.transform;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
+    const patternTransition = layer.paint.get('fill-extrusion-pattern-cross-fade');
+    const constantPattern = patternProperty.constantOr(null);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const image = patternProperty.constantOr((1 as any));
     const opacity = layer.paint.get('fill-extrusion-opacity');
     const lighting3DMode = painter.style.enable3dLights();
     const aoRadius = (lighting3DMode && !image) ? layer.paint.get('fill-extrusion-ambient-occlusion-wall-radius') : layer.paint.get('fill-extrusion-ambient-occlusion-radius');
-    const ao = [layer.paint.get('fill-extrusion-ambient-occlusion-intensity'), aoRadius];
+    const ao: [number, number] = [layer.paint.get('fill-extrusion-ambient-occlusion-intensity'), aoRadius];
     const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
 
     const zeroRoofRadius = edgeRadius > 0 && !layer.paint.get('fill-extrusion-rounded-roof');
@@ -279,16 +291,19 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const heightLift = tr.projection.name === 'globe' ? fillExtrusionHeightLift() : 0;
     const isGlobeProjection = tr.projection.name === 'globe';
     const globeToMercator = isGlobeProjection ? globeToMercatorTransition(tr.zoom) : 0.0;
-    const mercatorCenter = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
+    const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
-    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toRenderColor(layer.lut).toArray01().slice(0, 3) as any);
+    const floodLightColorUseTheme = layer.paint.get('fill-extrusion-flood-light-color-use-theme').constantOr('default') === 'none';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toNonPremultipliedRenderColor(floodLightColorUseTheme ? null : layer.lut).toArray01().slice(0, 3) as any);
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
     const wallMode = layer.paint.get('fill-extrusion-line-width').constantOr(1.0) !== 0.0;
+    const heightAlignment = layer.paint.get('fill-extrusion-height-alignment');
+    const baseAlignment = layer.paint.get('fill-extrusion-base-alignment');
 
     const cutoffParams = getCutoffParams(painter, layer.paint.get('fill-extrusion-cutoff-fade-range'));
-    const emissiveStrength = layer.paint.get('fill-extrusion-emissive-strength');
-    const baseDefines = ([] as any);
+    const baseDefines: DynamicDefinesType[] = [];
     if (isGlobeProjection) {
         baseDefines.push('PROJECTION_GLOBE_VIEW');
     }
@@ -318,6 +333,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;
     const drawDepth = isShadowPass && !!shadowRenderer;
+    const cullFaceMode = isShadowPass ? CullFaceMode.disabled : CullFaceMode.backCCW;
     if (painter.shadowRenderer) painter.shadowRenderer.useNormalOffset = true;
 
     let groundShadowFactor: [number, number, number] = [0, 0, 0];
@@ -328,6 +344,12 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             groundShadowFactor = calculateGroundShadowFactor(painter.style, directionalLight, ambientLight);
         }
 
+        if (!isShadowPass) {
+            baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+            if (shadowRenderer.useNormalOffset) {
+                baseDefines.push('NORMAL_OFFSET');
+            }
+        }
         singleCascadeDefines = baseDefines.concat(['SHADOWS_SINGLE_CASCADE']);
     }
 
@@ -335,7 +357,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const stats = layer.getLayerRenderingStats();
     for (const coord of coords) {
         const tile = source.getTile(coord);
-        const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as FillExtrusionBucket;
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
 
         let singleCascade = false;
@@ -345,6 +367,25 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
         const affectedByFog = painter.isTileAffectedByFog(coord);
         const programConfiguration = bucket.programConfigurations.get(layer.id);
+
+        let transitionableConstantPattern = false;
+        if (constantPattern && tile.imageAtlas) {
+            const atlas = tile.imageAtlas;
+            const pattern = ResolvedImage.from(constantPattern);
+            const primaryPatternImage = pattern.getPrimary().scaleSelf(browser.devicePixelRatio).toString();
+            const secondaryPatternImageVariant = pattern.getSecondary();
+            const primaryPosTo = atlas.patternPositions.get(primaryPatternImage);
+            const secondaryPosTo = secondaryPatternImageVariant ? atlas.patternPositions.get(secondaryPatternImageVariant.scaleSelf(browser.devicePixelRatio).toString()) : null;
+
+            transitionableConstantPattern = !!primaryPosTo && !!secondaryPosTo;
+
+            if (primaryPosTo) programConfiguration.setConstantPatternPositions(primaryPosTo, secondaryPosTo);
+        }
+
+        if (patternTransition > 0 && (transitionableConstantPattern || !!programConfiguration.getPatternTransitionVertexBuffer('fill-extrusion-pattern'))) {
+            baseDefines.push('FILL_EXTRUSION_PATTERN_TRANSITION');
+        }
+
         const program = painter.getOrCreateProgram(programName,
             {config: programConfiguration, defines: singleCascade ? singleCascadeDefines : baseDefines, overrideFog: affectedByFog});
 
@@ -370,23 +411,16 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             programConfiguration.updatePaintBuffers();
         }
 
-        const constantPattern = patternProperty.constantOr(null);
-        if (constantPattern && tile.imageAtlas) {
-            const atlas = tile.imageAtlas;
-            const posTo = atlas.patternPositions[constantPattern.toString()];
-            if (posTo) programConfiguration.setConstantPatternPositions(posTo);
-        }
-
         const shouldUseVerticalGradient = layer.paint.get('fill-extrusion-vertical-gradient');
         const lineWidthScale = 1.0 / bucket.tileToMeter;
-        let uniformValues;
+        let uniformValues: UniformValues<FillExtrusionDepthUniformsType | FillExtrusionPatternUniformsType>;
         if (isShadowPass && shadowRenderer) {
             if (frustumCullShadowCaster(tile.tileID, bucket, painter)) {
                 continue;
             }
             const tileMatrix = shadowRenderer.calculateShadowPassMatrixFromTile(tile.tileID.toUnwrapped());
 
-            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, roofEdgeRadius, lineWidthScale, verticalScale);
+            uniformValues = fillExtrusionDepthUniformValues(tileMatrix, roofEdgeRadius, lineWidthScale, verticalScale, heightAlignment, baseAlignment);
         } else {
             const matrix = painter.translatePosMatrix(
                 coord.expandedProjMatrix,
@@ -397,13 +431,11 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
             if (image) {
-                // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'boolean'.
                 uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
-                    tile, heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale);
+                    tile, heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, patternTransition);
             } else {
-                // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'boolean'.
                 uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
-                    heightLift, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor, emissiveStrength);
+                    heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor);
             }
         }
 
@@ -434,7 +466,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         if (isGlobeProjection) dynamicBuffers.push(bucket.layoutVertexExtBuffer);
         if (wallMode) dynamicBuffers.push(bucket.wallVertexBuffer);
 
-        program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, CullFaceMode.backCCW,
+        program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             segments, layer.paint, painter.transform.zoom,
             programConfiguration, dynamicBuffers);
@@ -446,7 +478,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
 function updateReplacement(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, layerIndex: number) {
     for (const coord of coords) {
         const tile = source.getTile(coord);
-        const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
+        const bucket = tile.getBucket(layer) as FillExtrusionBucket;
         if (!bucket) {
             continue;
         }
@@ -455,12 +487,12 @@ function updateReplacement(painter: Painter, source: SourceCache, layer: FillExt
     }
 }
 
-function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: any, attenuation: number, replacementActive: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture | null) {
+function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, cullFaceMode: CullFaceMode, aoPass: boolean, subpass: GroundEffectSubpassType, opacity: number, aoIntensity: number, aoRadius: number, floodLightIntensity: number, floodLightColor: [number, number, number], attenuation: number, replacementActive: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture | null) {
     const context = painter.context;
     const gl = context.gl;
     const tr = painter.transform;
     const zoom = painter.transform.zoom;
-    const defines = ([] as any);
+    const defines: DynamicDefinesType[] = [];
 
     const cutoffParams = getCutoffParams(painter, layer.paint.get('fill-extrusion-cutoff-fade-range'));
     if (subpass === 'clear') {
@@ -481,16 +513,15 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
     }
     const edgeRadius = layer.layout.get('fill-extrusion-edge-radius');
 
-    const renderGroundEffectTile = (coord: OverscaledTileID, groundEffect: GroundEffect, segments: any, matrix: Float32Array, meterToTile: number) => {
+    const renderGroundEffectTile = (coord: OverscaledTileID, groundEffect: GroundEffect, segments: SegmentVector, matrix: mat4, meterToTile: number) => {
         const programConfiguration = groundEffect.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
         const program = painter.getOrCreateProgram('fillExtrusionGroundEffect', {config: programConfiguration, defines, overrideFog: affectedByFog});
 
-        const ao = [aoIntensity, aoRadius * meterToTile];
+        const ao: [number, number] = [aoIntensity, aoRadius * meterToTile];
 
         const edgeRadiusTile = zoom >= 17 ? 0 : edgeRadius * meterToTile;
         const fbSize = framebufferCopyTexture ? framebufferCopyTexture.size[0] : 0;
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number]'.
         const uniformValues = fillExtrusionGroundEffectUniformValues(painter, matrix, opacity, aoPass, meterToTile, ao, floodLightIntensity, floodLightColor, attenuation, edgeRadiusTile, fbSize);
 
         const dynamicBuffers = [];
@@ -506,10 +537,11 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const bucket: FillExtrusionBucket | null | undefined = (tile.getBucket(layer) as any);
         if (!bucket || bucket.projection.name !== tr.projection.name || !bucket.groundEffect || (bucket.groundEffect && !bucket.groundEffect.hasData())) continue;
 
-        const groundEffect: GroundEffect = (bucket.groundEffect as any);
+        const groundEffect = bucket.groundEffect;
         const meterToTile = 1 / bucket.tileToMeter;
         {
             const matrix = painter.translatePosMatrix(
@@ -529,10 +561,10 @@ function drawGroundEffect(painter: Painter, source: SourceCache, layer: FillExtr
                 const nTile = source.getTile(nCoord);
                 if (!nTile) continue;
 
-                const nBucket: FillExtrusionBucket | null | undefined = (nTile.getBucket(layer) as any);
+                const nBucket = nTile.getBucket(layer) as FillExtrusionBucket;
                 if (!nBucket || nBucket.projection.name !== tr.projection.name || !nBucket.groundEffect || (nBucket.groundEffect && !nBucket.groundEffect.hasData())) continue;
 
-                const nGroundEffect: GroundEffect = (nBucket.groundEffect as any);
+                const nGroundEffect = nBucket.groundEffect;
                 assert(nGroundEffect.regionSegments);
 
                 let translation, regionId;
@@ -578,6 +610,13 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
     const demTile = terrain ? terrain.findDEMTileFor(coord) : null;
     if ((!demTile || !demTile.dem) && !reconcileReplacementState) {
         return;     // defer update until an elevation tile is available.
+    }
+    // invalidate border computation if DEM tile has updated since last border update
+    if (terrain && demTile && demTile.dem) {
+        if (bucket.selfDEMTileTimestamp !== demTile.dem._timestamp) {
+            bucket.borderDoneWithNeighborZ = [-1, -1, -1, -1];
+            bucket.selfDEMTileTimestamp = demTile.dem._timestamp;
+        }
     }
 
     const reconcileReplacement = (centroid1: PartData, centroid2: PartData) => {
@@ -644,18 +683,16 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         if (!terrain) {
             return 0;
         }
-        const points = [[verticalEdge ? edge : min, verticalEdge ? min : edge, 0], [verticalEdge ? edge : max, verticalEdge ? max : edge, 0]];
+        const points: vec3[] = [[verticalEdge ? edge : min, verticalEdge ? min : edge, 0], [verticalEdge ? edge : max, verticalEdge ? max : edge, 0]];
 
         const coord3 = maxOffsetFromBorder < 0 ? EXTENT + maxOffsetFromBorder : maxOffsetFromBorder;
-        const thirdPoint = [verticalEdge ? coord3 : (min + max) / 2, verticalEdge ? (min + max) / 2 : coord3, 0];
+        const thirdPoint: vec3 = [verticalEdge ? coord3 : (min + max) / 2, verticalEdge ? (min + max) / 2 : coord3, 0];
         if ((edge === 0 && maxOffsetFromBorder < 0) || (edge !== 0 && maxOffsetFromBorder > 0)) {
             // Third point is inside neighbor tile, not in the |coord| tile.
-            // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec3'.
             terrain.getForTilePoints(neighborTileID, [thirdPoint], true, neighborDEMTile);
         } else {
             points.push(thirdPoint);
         }
-        // @ts-expect-error - TS2345 - Argument of type 'number[][]' is not assignable to parameter of type 'vec3[]'.
         terrain.getForTilePoints(coord, points, true, demTile);
         return Math.max(points[0][2], points[1][2], thirdPoint[2]) / terrain.exaggeration();
     };
@@ -674,18 +711,27 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
         if (!nBucket || !(nBucket instanceof FillExtrusionBucket)) {
             continue;
         }
+
+        // Look up the neighbor DEM tile
+        const neighborDEMTile = terrain ? terrain.findDEMTileFor(nid) : null;
+        if ((!neighborDEMTile || !neighborDEMTile.dem) && !reconcileReplacementState) {
+            continue;
+        }
+
+        // invalidate border computation if neighbour DEM tile has updated since last border update
+        if (terrain && neighborDEMTile && neighborDEMTile.dem) {
+            if (bucket.borderDEMTileTimestamp[i] !== neighborDEMTile.dem._timestamp) {
+                bucket.borderDoneWithNeighborZ[i] = -1;
+                bucket.borderDEMTileTimestamp[i] = neighborDEMTile.dem._timestamp;
+            }
+        }
+
         if (bucket.borderDoneWithNeighborZ[i] === nBucket.canonical.z) {
             continue;
         }
 
         if (nBucket.centroidVertexArray.length === 0) {
             nBucket.createCentroidsBuffer();
-        }
-
-        // Look up the neighbor DEM tile
-        const neighborDEMTile = terrain ? terrain.findDEMTileFor(nid) : null;
-        if ((!neighborDEMTile || !neighborDEMTile.dem) && !reconcileReplacementState) {
-            continue;
         }
 
         const j = (i < 2 ? 1 : 5) - i;
@@ -712,7 +758,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             const partA = bucket.featuresOnBorder[ia];
             const centroidA = bucket.centroidData[partA.centroidDataIndex];
             assert(partA.borders);
-            const partABorderRange = (partA.borders as any)[i];
+            const partABorderRange = partA.borders[i];
 
             // Find all nBucket parts that share the border overlap
             let partB;
@@ -733,7 +779,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 const saveIb = ib;
                 let count = 0;
                 while (true) {
-                    // Collect all parts overlapping parta on the edge, to make sure it is only one.
+                    // Collect all parts overlapping parts on the edge, to make sure it is only one.
                     assert(partB.borders);
                     const partBBorderRange = (partB.borders)[j];
                     if (partBBorderRange[0] > partABorderRange[1] - error) {
@@ -746,7 +792,8 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     partB = nBucket.featuresOnBorder[b[ib]];
                 }
                 partB = nBucket.featuresOnBorder[b[saveIb]];
-                if (count > 1) {
+                let doReconcile = false;
+                if (count >= 1) {
                     // if it can be concluded that it is the piece of the same feature,
                     // use it, even following features (inner details) overlap on border edge.
                     assert(partB.borders);
@@ -754,6 +801,9 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     if (Math.abs(partABorderRange[0] - partBBorderRange[0]) < error &&
                         Math.abs(partABorderRange[1] - partBBorderRange[1]) < error) {
                         count = 1;
+                        // In some cases count could be 1 but a different feature, here we make sure
+                        // we are reconciling the same feature
+                        doReconcile = true;
                         ib = saveIb + 1;
                     }
                 } else if (count === 0) {
@@ -763,7 +813,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 }
 
                 const centroidB = nBucket.centroidData[partB.centroidDataIndex];
-                if (reconcileReplacementState && count === 1) {
+                if (reconcileReplacementState && doReconcile) {
                     reconcileReplacement(centroidA, centroidB);
                 }
 
@@ -804,9 +854,9 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
     }
 }
 
-const XAxis = [1, 0, 0];
-const YAxis = [0, 1, 0];
-const ZAxis = [0, 0, 1];
+const XAxis: vec3 = [1, 0, 0];
+const YAxis: vec3 = [0, 1, 0];
+const ZAxis: vec3 = [0, 0, 1];
 
 function frustumCullShadowCaster(id: OverscaledTileID, bucket: FillExtrusionBucket, painter: Painter): boolean {
     const transform = painter.transform;
@@ -826,10 +876,9 @@ function frustumCullShadowCaster(id: OverscaledTileID, bucket: FillExtrusionBuck
             height += minmax.max;
         }
     }
-    const shadowDir = [...shadowRenderer.shadowDirection];
+    const shadowDir = [...shadowRenderer.shadowDirection] as vec3;
     shadowDir[2] = -shadowDir[2];
 
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
     const tileShadowVolume = shadowRenderer.computeSimplifiedTileShadowVolume(unwrappedId, height, ws, shadowDir);
     if (!tileShadowVolume) {
         return false;
@@ -837,16 +886,14 @@ function frustumCullShadowCaster(id: OverscaledTileID, bucket: FillExtrusionBuck
 
     // Projected shadow volume has 3-6 unique edge direction vectors.
     // These are used for computing remaining separating axes for the intersection test
-    const edges = [XAxis, YAxis, ZAxis, shadowDir, [shadowDir[0], 0, shadowDir[2]], [0, shadowDir[1], shadowDir[2]]];
+    const edges: vec3[] = [XAxis, YAxis, ZAxis, shadowDir, [shadowDir[0], 0, shadowDir[2]], [0, shadowDir[1], shadowDir[2]]];
     const isGlobe = transform.projection.name === 'globe';
     const zoom = transform.scaleZoom(ws);
     const cameraFrustum = Frustum.fromInvProjectionMatrix(transform.invProjMatrix, transform.worldSize, zoom, !isGlobe);
     const cascadeFrustum = shadowRenderer.getCurrentCascadeFrustum();
-    // @ts-expect-error - TS2345 - Argument of type 'number[][]' is not assignable to parameter of type 'vec3[]'.
     if (cameraFrustum.intersectsPrecise(tileShadowVolume.vertices, tileShadowVolume.planes, edges) === 0) {
         return true;
     }
-    // @ts-expect-error - TS2345 - Argument of type 'number[][]' is not assignable to parameter of type 'vec3[]'.
     if (cascadeFrustum.intersectsPrecise(tileShadowVolume.vertices, tileShadowVolume.planes, edges) === 0) {
         return true;
     }

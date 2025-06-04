@@ -1,0 +1,109 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 112,
+      "height": 64,
+      "allowed": 0.00075
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              -24,
+              -16
+            ],
+            [
+              -24,
+              0
+            ],
+            [
+              -24,
+              16
+            ]
+          ],
+          [
+            [
+              -13,
+              -16
+            ],
+            [
+              -13,
+              0
+            ],
+            [
+              -10,
+              16
+            ]
+          ],
+          [
+            [
+              -2,
+              -16
+            ],
+            [
+              2,
+              16
+            ],
+            [
+              6,
+              -16
+            ]
+          ],
+          [
+            [
+              14,
+              -16
+            ],
+            [
+              14,
+              16
+            ],
+            [
+              14,
+              0
+            ]
+          ],
+          [
+            [
+              24,
+              -16
+            ],
+            [
+              24,
+              16
+            ],
+            [
+              24.2,
+              -16
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "pitch": 70.0,
+  "bearing": 180.0,
+  "zoom": 1.0,
+  
+  "projection": { "name": "mercator" },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-blur": 7.0,
+        "line-width": 8
+      }
+    }
+  ]
+}

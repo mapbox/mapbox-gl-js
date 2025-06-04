@@ -12,11 +12,14 @@ import type Texture from '../../render/texture';
 import type Framebuffer from '../../gl/framebuffer';
 import type SourceCache from '../../source/source_cache';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 const COLOR_RAMP_RES = 256;
 
 class RasterParticleStyleLayer extends StyleLayer {
-    paint: PossiblyEvaluated<PaintProps>;
+    override type: 'raster-particle';
+
+    override paint: PossiblyEvaluated<PaintProps>;
 
     // Shared rendering resources
 
@@ -39,7 +42,7 @@ class RasterParticleStyleLayer extends StyleLayer {
         this.lastInvalidatedAt = browser.now();
     }
 
-    onRemove(_: MapboxMap): void {
+    override onRemove(_: MapboxMap): void {
         if (this.colorRampTexture) {
             this.colorRampTexture.destroy();
         }
@@ -58,19 +61,19 @@ class RasterParticleStyleLayer extends StyleLayer {
         return !!expr.value;
     }
 
-    getProgramIds(): Array<string> {
+    override getProgramIds(): ProgramName[] {
         return ['rasterParticle'];
     }
 
-    hasOffscreenPass(): boolean {
+    override hasOffscreenPass(): boolean {
         return this.visibility !== 'none';
     }
 
-    isDraped(_?: SourceCache | null): boolean {
+    override isDraped(_?: SourceCache | null): boolean {
         return false;
     }
 
-    _handleSpecialPaintPropertyUpdate(name: string) {
+    override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'raster-particle-color' || name === 'raster-particle-max-speed') {
             this._updateColorRamp();
             this._invalidateAnimationState();
@@ -91,7 +94,7 @@ class RasterParticleStyleLayer extends StyleLayer {
             expression,
             evaluationKey: 'rasterParticleSpeed',
             image: this.colorRamp,
-            clips: [{start:0, end}],
+            clips: [{start: 0, end}],
             resolution: COLOR_RAMP_RES,
         });
         this.colorRampTexture = null;
@@ -101,7 +104,7 @@ class RasterParticleStyleLayer extends StyleLayer {
         this.lastInvalidatedAt = browser.now();
     }
 
-    tileCoverLift(): number {
+    override tileCoverLift(): number {
         return this.paint.get('raster-particle-elevation');
     }
 }

@@ -49,7 +49,7 @@
     }
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "line",
@@ -61,8 +61,8 @@
         "text-field": ["format", "London",
                                 ["image", "london-overground"],
                                 ["image", "london-underground"],
-                                ["image", "national-rail"],
-                                ["image", "dlr"]
+                                ["image", "gb-national-rail"],
+                                ["image", "london-dlr"]
                               ],
         "text-font": [
           "Open Sans Semibold",

@@ -7,7 +7,8 @@ import browser from '../util/browser';
 
 import type {CanonicalTileID} from '../source/tile_id';
 import type {RGBAImage} from '../util/image';
-import type {DEMSourceEncoding} from '../source/worker_source';
+
+export type DEMSourceEncoding = 'mapbox' | 'terrarium';
 
 // DEMData is a data structure for decoding, backfilling, and storing elevation data for processing in the hillshade shaders
 // data can be populated either from a pngraw image tile or from serliazed data sent back from a worker. When data is initially
@@ -22,7 +23,7 @@ import type {DEMSourceEncoding} from '../source/worker_source';
 const unpackVectors = {
     mapbox: [6553.6, 25.6, 0.1, 10000.0],
     terrarium: [256.0, 1.0, 1.0 / 256.0, 32768.0]
-};
+} as const;
 
 function unpackMapbox(r: number, g: number, b: number): number {
     // unpacking formula for mapbox.terrain-rgb:
@@ -64,10 +65,11 @@ export default class DEMData {
         // debugger;
         this.uid = uid;
         if (data.height !== data.width) throw new RangeError('DEM tiles must be square');
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'DEMData'. | TS2409 - Return type of constructor signature must be assignable to the instance type of the class.
-        if (sourceEncoding && sourceEncoding !== "mapbox" && sourceEncoding !== "terrarium") return warnOnce(
-            `"${sourceEncoding}" is not a valid encoding type. Valid types include "mapbox" and "terrarium".`
-        );
+        if (sourceEncoding && sourceEncoding !== "mapbox" && sourceEncoding !== "terrarium") {
+            warnOnce(`"${sourceEncoding}" is not a valid encoding type. Valid types include "mapbox" and "terrarium".`);
+            return;
+        }
+
         this.stride = data.height;
         const dim = this.dim = data.height - 2;
         const values = new Uint32Array(data.data.buffer);
@@ -130,8 +132,7 @@ export default class DEMData {
         return v - p;
     }
 
-    static getUnpackVector(encoding: DEMSourceEncoding): [number, number, number, number] {
-        // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number, number, number]'.
+    static getUnpackVector(encoding: DEMSourceEncoding) {
         return unpackVectors[encoding];
     }
 
@@ -141,7 +142,7 @@ export default class DEMData {
     }
 
     static pack(altitude: number, encoding: DEMSourceEncoding): [number, number, number, number] {
-        const color = [0, 0, 0, 0];
+        const color: [number, number, number, number] = [0, 0, 0, 0];
         const vector = DEMData.getUnpackVector(encoding);
         let v = Math.floor((altitude + vector[3]) / vector[2]);
         color[2] = v % 256;
@@ -149,7 +150,6 @@ export default class DEMData {
         color[1] = v % 256;
         v = Math.floor(v / 256);
         color[0] = v;
-        // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type '[number, number, number, number]'.
         return color;
     }
 

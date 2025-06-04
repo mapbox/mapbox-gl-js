@@ -27,7 +27,6 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {

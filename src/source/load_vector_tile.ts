@@ -3,13 +3,15 @@ import Protobuf from 'pbf';
 import {getArrayBuffer} from '../util/ajax';
 
 import type {Callback} from '../types/callback';
-import type {RequestedTileParameters} from './worker_source';
+import type {WorkerSourceVectorTileRequest} from './worker_source';
 import type Scheduler from '../util/scheduler';
 
 export type LoadVectorTileResult = {
     rawData: ArrayBuffer;
     vectorTile?: VectorTile;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expires?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cacheControl?: any;
     resourceTiming?: Array<PerformanceResourceTiming>;
 };
@@ -23,9 +25,10 @@ export type LoadVectorTileResult = {
 export type LoadVectorDataCallback = Callback<LoadVectorTileResult | null | undefined>;
 
 export type AbortVectorData = () => void;
-export type LoadVectorData = (params: RequestedTileParameters, callback: LoadVectorDataCallback) => AbortVectorData | null | undefined;
+export type LoadVectorData = (params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback) => AbortVectorData | undefined;
 export class DedupedRequest {
     entries: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
     };
     scheduler: Scheduler | null | undefined;
@@ -35,6 +38,7 @@ export class DedupedRequest {
         this.scheduler = scheduler;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     request(key: string, metadata: any, request: any, callback: LoadVectorDataCallback): () => void {
         const entry = this.entries[key] = this.entries[key] || {callbacks: []};
 
@@ -83,7 +87,7 @@ export class DedupedRequest {
  * @private
  */
 export function loadVectorTile(
-    params: RequestedTileParameters,
+    params: WorkerSourceVectorTileRequest,
     callback: LoadVectorDataCallback,
     skipParse?: boolean,
 ): () => void {

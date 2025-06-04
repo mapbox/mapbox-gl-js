@@ -3,7 +3,7 @@ import ParsingContext from './parsing_context';
 import assert from 'assert';
 
 import type EvaluationContext from './evaluation_context';
-import type {Expression, ExpressionRegistry} from './expression';
+import type {Expression, ExpressionRegistry, SerializedExpression} from './expression';
 import type {Type} from './types';
 import type {Value} from './values';
 
@@ -52,16 +52,14 @@ class CompoundExpression implements Expression {
         return false;
     }
 
-    serialize(): Array<unknown> {
-        // @ts-expect-error - TS2769 - No overload matches this call.
-        return [this.name].concat(this.args.map(arg => arg.serialize()));
+    serialize(): SerializedExpression[] {
+        return [this.name as SerializedExpression].concat(this.args.map(arg => arg.serialize()));
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | undefined {
-        const op: string = (args[0] as any);
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | void {
+        const op = args[0] as string;
         const definition = CompoundExpression.definitions[op];
         if (!definition) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`Unknown expression "${op}". If you wanted a literal array, use ["literal", [...]].`, 0);
         }
 
@@ -75,7 +73,7 @@ class CompoundExpression implements Expression {
 
         const overloadParams = [];
 
-        let signatureContext: ParsingContext = (null as any);
+        let signatureContext: ParsingContext = null;
 
         let overloadIndex = -1;
 

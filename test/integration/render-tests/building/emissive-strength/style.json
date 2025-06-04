@@ -1,0 +1,127 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00014,
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["wait"],
+        ["setPaintProperty", "building", "building-emissive-strength", 
+          [
+            "match",
+            ["get", "building-part"],
+            "walls",
+            0.9,
+            "rooftop",
+            0.5,
+            0
+          ]
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "cast-shadows": true
+      }
+    }
+  ],
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    }
+  },
+  "zoom": 19,
+  "pitch": 55,
+  "bearing": 40,
+  "center": [
+    11.5772808,
+    48.1390948
+  ],
+  "layers": [
+    {
+      "type": "background",
+      "paint": {
+        "background-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11.0,
+          [
+            "rgba",
+            239.00001525878907,
+            233.00001525878907,
+            225.00001525878907,
+            1.0
+          ],
+          13.0,
+          [
+            "rgba",
+            230.00001525878907,
+            228.00001525878907,
+            224.00001525878907,
+            1.0
+          ]
+        ]
+      },
+      "id": "land"
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "composite",
+      "source-layer": "procedural_buildings",
+      "minzoom": 15,
+      "layout": {
+        "building-roof-shape": "parapet",
+        "building-height": [
+          "number",
+          [
+            "get",
+            "height"
+          ]
+        ],
+        "building-base": [
+          "number",
+          [
+            "get",
+            "min_height"
+          ]
+        ]
+      },
+      "paint": {
+        "building-color": [
+          "match",
+          ["get", "building-part"],
+          "walls",
+          ["hsl", 41, 90, 90],
+          "rooftop",
+          ["hsl", 25, 43, 80],
+          ["hsl", 41, 90, 90]
+        ],
+        "building-ambient-occlusion-wall-intensity": 1
+      }
+    }
+  ]
+}

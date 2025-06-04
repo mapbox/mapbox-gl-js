@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, createMap as globalCreateMap} from '../../../util/vitest';
 import VectorTileSource from '../../../../src/source/vector_tile_source';
@@ -27,14 +28,15 @@ function createMap(logoPosition, logoRequired, deleteStyle) {
 }
 
 function createSource(options, logoRequired) {
-    const source = new VectorTileSource('id', options, {send () {}});
+    const source = new VectorTileSource('id', options, {send() {}});
     source.onAdd({
         _requestManager: {
             _skuToken: '1234567890123',
             canonicalizeTileset: tileJSON => tileJSON.tiles
         },
         transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
-        _getMapId: () => 1
+        _getMapId: () => 1,
+        getWorldview: () => {}
     });
     source.on('error', (e) => {
         throw e.error;

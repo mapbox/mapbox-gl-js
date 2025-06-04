@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "spriteFormat": "raster",
       "width": 512,
       "height": 512,
       "operations": [
@@ -9,7 +10,7 @@
         ["wait"],
         ["setProjection", {
           "name": "albers",
-          "center": [-40, 0],
+          "center": [-38, 0],
           "parallels": [90, 90]
         }],
         ["wait"]

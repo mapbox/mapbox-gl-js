@@ -1,5 +1,4 @@
 import createStyleLayer from './create_style_layer';
-import {values} from '../util/util';
 import groupByLayout from '../style-spec/group_by_layout';
 
 import type {TypedStyleLayer} from './style_layer/typed_style_layer';
@@ -9,6 +8,7 @@ import type {ConfigOptions} from './properties';
 export type LayerConfigs = {
     [_: string]: LayerSpecification;
 };
+
 export type Family<Layer extends TypedStyleLayer> = Array<Layer>;
 
 class StyleLayerIndex {
@@ -49,7 +49,7 @@ class StyleLayerIndex {
         for (const layerConfig of layerConfigs) {
             this._layerConfigs[layerConfig.id] = layerConfig;
 
-            const layer = this._layers[layerConfig.id] = (createStyleLayer(layerConfig, this.scope, null, this._options) as TypedStyleLayer);
+            const layer = this._layers[layerConfig.id] = createStyleLayer(layerConfig, this.scope, null, this._options);
             layer.compileFilter(options);
             if (this.keyCache[layerConfig.id])
                 delete this.keyCache[layerConfig.id];
@@ -62,7 +62,7 @@ class StyleLayerIndex {
 
         this.familiesBySource = {};
 
-        const groups = groupByLayout(values(this._layerConfigs), this.keyCache);
+        const groups = groupByLayout(Object.values(this._layerConfigs), this.keyCache);
 
         for (const layerConfigs of groups) {
             const layers = layerConfigs.map((layerConfig) => this._layers[layerConfig.id]);

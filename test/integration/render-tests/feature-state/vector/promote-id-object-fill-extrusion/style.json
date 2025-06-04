@@ -1,0 +1,70 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.002,
+      "height": 256,
+      "operations": [
+        [
+          "setFeatureState",
+          {
+            "source": "mapbox",
+            "sourceLayer": "building",
+            "id": "3000000169912"
+          },
+          {
+            "color": "magenta"
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "center": [
+    13.43527,
+    52.50273
+  ],
+  "zoom": 14,
+  "pitch": 45,
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ],
+      "promoteId": {
+        "building": "osm_id"
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "fill-extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "paint": {
+        "fill-extrusion-base": 0,
+        "fill-extrusion-height": 20,
+        "fill-extrusion-color": [
+          "coalesce",
+          [
+            "feature-state",
+            "color"
+          ],
+          "gray"
+        ]
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 class ParsingError extends Error {
     key: string;
-    message: string;
+    override message: string;
     constructor(key: string, message: string) {
         super(message);
         this.message = message;

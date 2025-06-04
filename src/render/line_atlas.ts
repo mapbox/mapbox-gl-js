@@ -85,6 +85,7 @@ class LineAtlas {
             ranges.push({left, right, isDash, zeroLength: dashLength === 0});
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return ranges;
     }
 
@@ -207,10 +208,8 @@ class LineAtlas {
         const pos = {
             tl: [y, n],
             br: [length, 0]
-        };
-        // @ts-expect-error - TS2322 - Type '{ tl: number[]; br: number[]; }' is not assignable to type 'SpritePosition'.
+        } as SpritePosition;
         this.positions[key] = pos;
-        // @ts-expect-error - TS2322 - Type '{ tl: number[]; br: number[]; }' is not assignable to type 'SpritePosition'.
         return pos;
     }
 }

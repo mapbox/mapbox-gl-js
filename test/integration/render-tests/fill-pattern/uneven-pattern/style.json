@@ -13,7 +13,7 @@
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
@@ -28,7 +28,7 @@
       "source": "mapbox",
       "source-layer": "water",
       "paint": {
-        "fill-pattern": "interstate_1"
+        "fill-pattern": "us-interstate-2"
       }
     }
   ]

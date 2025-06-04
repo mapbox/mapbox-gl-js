@@ -84,9 +84,9 @@ const atmosphereUniforms = (context: Context): AtmosphereUniformsType => ({
 
 const globeRasterUniformValues = (
     projMatrix: mat4,
-    globeMatrix: Float32Array,
-    globeMercatorMatrix: Float32Array,
-    normalizeMatrix: Float64Array,
+    globeMatrix: mat4,
+    globeMercatorMatrix: mat4,
+    normalizeMatrix: mat4,
     zoomTransition: number,
     mercCenter: [number, number],
     frustumDirTl: [number, number, number],
@@ -101,9 +101,9 @@ const globeRasterUniformValues = (
     gridMatrix?: mat4 | null,
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
-    'u_globe_matrix': globeMatrix,
+    'u_globe_matrix': globeMatrix as Float32Array,
     'u_normalize_matrix': Float32Array.from(normalizeMatrix),
-    'u_merc_matrix': globeMercatorMatrix,
+    'u_merc_matrix': globeMercatorMatrix as Float32Array,
     'u_zoom_transition': zoomTransition,
     'u_merc_center': mercCenter,
     'u_image0': 0,

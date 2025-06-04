@@ -59,6 +59,7 @@ class FeatureWrapper implements VectorTileFeature {
             for (const point of this._feature.geometry) {
                 geometry.push([new Point(point[0], point[1])]);
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return geometry;
         } else {
             const geometry = [];
@@ -69,11 +70,13 @@ class FeatureWrapper implements VectorTileFeature {
                 }
                 geometry.push(newRing);
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return geometry;
         }
     }
 
     toGeoJSON(x: number, y: number, z: number): GeoJSON.Feature {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return toGeoJSON.call(this, x, y, z);
     }
 }
@@ -97,6 +100,38 @@ class GeoJSONWrapper implements VectorTile, VectorTileLayer {
 
     feature(i: number): VectorTileFeature {
         return new FeatureWrapper(this._features[i]);
+    }
+}
+
+class LayeredGeoJSONTileLayerWrapper implements VectorTileLayer {
+    name: string;
+    extent: number;
+    length: number;
+    _features: Array<Feature>;
+
+    constructor(name: string, features: Array<Feature>) {
+        this.name = name;
+        this.extent = EXTENT;
+        this.length = features.length;
+        this._features = features;
+    }
+
+    feature(i: number): VectorTileFeature {
+        return new FeatureWrapper(this._features[i]);
+    }
+}
+
+export class LayeredGeoJSONWrapper extends GeoJSONWrapper {
+    override layers: {[_: string]: VectorTileLayer};
+
+    constructor(featureLayers: {[_: string]: Array<Feature>}) {
+        super([]);
+
+        this.layers = {};
+
+        for (const key in featureLayers) {
+            this.layers[key] = new LayeredGeoJSONTileLayerWrapper(key, featureLayers[key]);
+        }
     }
 }
 

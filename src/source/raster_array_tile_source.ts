@@ -1,23 +1,26 @@
 import Texture from '../render/texture';
 import RasterTileSource from './raster_tile_source';
 import {extend} from '../util/util';
-import {ResourceType} from '../util/ajax';
+import {RGBAImage} from '../util/image';
 import {ErrorEvent} from '../util/evented';
+import {ResourceType} from '../util/ajax';
 import RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
 // Import MRTData as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../data/mrt_data';
 
-import type {Evented} from '../util/evented';
-import type Tile from './tile';
-import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
 import type RasterArrayTile from './raster_array_tile';
+import type {Map as MapboxMap} from '../ui/map';
+import type {Evented} from '../util/evented';
 import type {Callback} from '../types/callback';
+import type {AJAXError} from '../util/ajax';
+import type {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 import type {TextureDescriptor} from './raster_array_tile';
-import type {ISource, SourceRasterLayer} from './source';
+import type {StyleImage, StyleImageMap} from '../style/style_image';
 import type {RasterArraySourceSpecification} from '../style-spec/types';
+import type {WorkerSourceRasterArrayTileRequest} from './worker_source';
 
 /**
  * A data source containing raster-array tiles created with [Mapbox Tiling Service](https://docs.mapbox.com/mapbox-tiling-service/guides/).
@@ -33,16 +36,21 @@ import type {RasterArraySourceSpecification} from '../style-spec/types';
  *
  * @see [Example: Create a wind particle animation](https://docs.mapbox.com/mapbox-gl-js/example/raster-particle-layer/)
  */
-class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements ISource {
-    type: 'raster-array';
-    map: Map;
-    rasterLayers: Array<SourceRasterLayer> | undefined;
-    rasterLayerIds: Array<string> | undefined;
+class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
+    override map: MapboxMap;
+
+    /**
+     * When `true`, the source will only load the tile header
+     * and use range requests to load and parse the tile data.
+     * Otherwise, the entire tile will be loaded and parsed in the Worker.
+     */
+    partial: boolean;
 
     constructor(id: string, options: RasterArraySourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-array';
         this.maxzoom = 22;
+        this.partial = true;
         this._options = extend({type: 'raster-array'}, options);
     }
 
@@ -58,18 +66,26 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         this.map.triggerRepaint();
     }
 
-    loadTile(tile: Tile, callback: Callback<undefined>) {
-        tile = (tile as RasterArrayTile);
-
+    override loadTile(tile: RasterArrayTile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
-        const requestParams = this.map._requestManager.transformRequest(url, ResourceType.Tile);
+        const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
 
-        // @ts-expect-error - TS2339 - Property 'requestParams' does not exist on type 'Tile'.
-        tile.requestParams = requestParams;
+        const params: WorkerSourceRasterArrayTileRequest = {
+            request,
+            uid: tile.uid,
+            tileID: tile.tileID,
+            type: this.type,
+            source: this.id,
+            scope: this.scope,
+            partial: this.partial
+        };
+
+        tile.source = this.id;
+        tile.scope = this.scope;
+        tile.requestParams = request;
         if (!tile.actor) tile.actor = this.dispatcher.getActor();
 
-        // @ts-expect-error - TS2339 - Property 'fetchHeader' does not exist on type 'Tile'.
-        tile.request = tile.fetchHeader(undefined, (error?: Error | null, dataBuffer?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
+        const done = (error?: AJAXError | null, data?: MapboxRasterTile, cacheControl?: string, expires?: string) => {
             delete tile.request;
 
             if (tile.aborted) {
@@ -79,23 +95,49 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
 
             if (error) {
                 // silence AbortError
-                // @ts-expect-error - TS2339 - Property 'code' does not exist on type 'Error'.
-                if (error.code === 20)
-                    return;
+                if (error.name === 'AbortError') return;
                 tile.state = 'errored';
                 return callback(error);
             }
 
-            if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
+            if (this.map._refreshExpiredTiles && data) {
+                tile.setExpiryData({cacheControl, expires});
+            }
 
-            tile.state = 'empty';
+            if (this.partial) {
+                tile.state = 'empty';
+            } else {
+                if (!data) return callback(null);
+
+                tile.state = 'loaded';
+                tile._isHeaderLoaded = true;
+                tile._mrt = data;
+            }
+
             callback(null);
-        });
+        };
+
+        if (this.partial) {
+            // Load only the tile header in the main thread
+            tile.request = tile.fetchHeader(undefined, done.bind(this));
+        } else {
+            // Load and parse the entire tile in Worker
+            tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
+        }
     }
 
-    unloadTile(tile: Tile, _?: Callback<undefined> | null) {
-        tile = (tile as RasterArrayTile);
+    override abortTile(tile: RasterArrayTile) {
+        if (tile.request) {
+            tile.request.cancel();
+            delete tile.request;
+        }
 
+        if (tile.actor) {
+            tile.actor.send('abortTile', {uid: tile.uid, type: this.type, source: this.id, scope: this.scope});
+        }
+    }
+
+    override unloadTile(tile: RasterArrayTile, _?: Callback<undefined> | null) {
         const texture = tile.texture;
         if (texture && texture instanceof Texture) {
             // Clean everything else up owned by the tile, but preserve the texture.
@@ -106,28 +148,19 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
             this.map.painter.saveTileTexture(texture);
         } else {
             tile.destroy();
-
-            // @ts-expect-error - TS2339 - Property 'flushQueues' does not exist on type 'Tile'.
             tile.flushQueues();
-            // @ts-expect-error - TS2339 - Property '_isHeaderLoaded' does not exist on type 'Tile'.
             tile._isHeaderLoaded = false;
 
-            // @ts-expect-error - TS2339 - Property '_mrt' does not exist on type 'Tile'.
             delete tile._mrt;
-            // @ts-expect-error - TS2339 - Property 'textureDescriptor' does not exist on type 'Tile'.
             delete tile.textureDescriptor;
         }
 
-        // @ts-expect-error - TS2339 - Property 'fbo' does not exist on type 'Tile'.
         if (tile.fbo) {
-            // @ts-expect-error - TS2339 - Property 'fbo' does not exist on type 'Tile'.
             tile.fbo.destroy();
-            // @ts-expect-error - TS2339 - Property 'fbo' does not exist on type 'Tile'.
             delete tile.fbo;
         }
 
         delete tile.request;
-        // @ts-expect-error - TS2339 - Property 'requestParams' does not exist on type 'Tile'.
         delete tile.requestParams;
 
         delete tile.neighboringTiles;
@@ -156,6 +189,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
             }
 
             if (data) {
+                tile._isHeaderLoaded = true;
                 tile.setTexture(data, this.map.painter);
                 tile.state = 'loaded';
                 this.triggerRepaint(tile);
@@ -167,7 +201,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
      * Get the initial band for a source layer.
      * @private
      */
-    getInitialBand(sourceLayer: string): string | number | void {
+    getInitialBand(sourceLayer: string): string | number {
         if (!this.rasterLayers) return 0;
         const rasterLayer = this.rasterLayers.find(({id}) => id === sourceLayer);
         const fields = rasterLayer && rasterLayer.fields;
@@ -187,9 +221,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         tile: RasterArrayTile,
         layer: RasterStyleLayer | RasterParticleStyleLayer,
         fallbackToPrevious: boolean,
-    ): TextureDescriptor & {
-        texture: Texture | null | undefined;
-    } | void {
+    ): TextureDescriptor & {texture: Texture | null | undefined;} | void {
         if (!tile) return;
 
         const sourceLayer = layer.sourceLayer || (this.rasterLayerIds && this.rasterLayerIds[0]);
@@ -213,6 +245,42 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> implements 
         if (tile.updateNeeded(sourceLayer, band) && !fallbackToPrevious) return;
 
         return Object.assign({}, tile.textureDescriptor, {texture: tile.texture});
+    }
+
+    /**
+     * Creates style images from raster array tiles based on the requested image names.
+     * Used by `ImageProvider` to resolve pending image requests.
+     * @private
+     * @param {RasterArrayTile[]} tiles - Array of loaded raster array tiles to extract data from
+     * @param {string[]} imageNames - Array of image names in format "layerId/bandId" to extract
+     * @returns {StyleImageMap<string>} Map of image names to StyleImage objects
+     */
+    getImages(tiles: RasterArrayTile[], imageNames: string[]): StyleImageMap<string> {
+        const styleImages = new Map<string, StyleImage>();
+
+        for (const tile of tiles) {
+            for (const name of imageNames) {
+                const [layerId, bandId] = name.split('/');
+                const layer = tile.getLayer(layerId);
+                if (!layer) continue;
+                if (!layer.hasBand(bandId) || !layer.hasDataForBand(bandId)) continue;
+
+                const {bytes, tileSize, buffer} = layer.getBandView(bandId);
+                const size = tileSize + 2 * buffer;
+
+                const styleImage: StyleImage = {
+                    data: new RGBAImage({width: size, height: size}, bytes),
+                    pixelRatio: 2,
+                    sdf: false,
+                    usvg: false,
+                    version: 0
+                };
+
+                styleImages.set(name, styleImage);
+            }
+        }
+
+        return styleImages;
     }
 }
 

@@ -1,0 +1,73 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "width": 500,
+      "operations": [
+        ["setFeatureState", {"target": {"featuresetId": "roads", "importId": "basemap"}, "id": "289597991"}, {"stateA": 1}],
+        ["setFeatureState", {"target": {"featuresetId": "roads", "importId": "basemap"}, "id": 289597991}, {"stateB": "feature_id as number"}],
+        ["setFeatureState", {"target": {"featuresetId": "roads", "importId": "basemap"}, "id": "4612752"}, {"stateB": {"stateKey" : [4, 2]}}]
+      ],
+      "queryGeometry": [199, 184],
+      "queryOptions": {
+        "target": {"featuresetId": "roads", "importId": "basemap"}
+      }
+    }
+  },
+  "center": [13.418056, 52.499167],
+  "zoom": 14,
+  "imports": [
+    {
+      "id": "basemap",
+      "url": "",
+      "data": {
+        "version": 8,
+        "featuresets": {
+          "roads": {
+            "selectors": [
+              {
+                "layer": "road",
+                "properties": {
+                  "type": ["get", "type"],
+                  "class": ["get", "class"]
+                }
+              }
+            ]
+          }
+        },
+        "sources": {
+          "mapbox": {
+            "type": "vector",
+            "maxzoom": 14,
+            "tiles": ["local://tiles/{z}-{x}-{y}.mvt"]
+          }
+        },
+        "layers": [
+          {
+            "id": "line",
+            "type": "line",
+            "source": "mapbox",
+            "source-layer": "road",
+            "paint": {
+              "line-color": "red"
+            },
+            "interactive": true
+          },
+          {
+            "id": "road",
+            "type": "circle",
+            "source": "mapbox",
+            "source-layer": "road",
+            "paint": {
+              "circle-radius": 10
+            },
+            "interactive": true
+          }
+        ]
+      }
+    }
+  ],
+  "sources": {},
+  "layers": []
+}

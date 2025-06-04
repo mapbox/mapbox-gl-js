@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "spriteFormat": "raster",
       "height": 128.4,
       "width" : 128.4
     }
@@ -12,7 +13,7 @@
   ],
   "zoom": 0,
   "sources": {
-    "geojson": 
+    "geojson":
     {
       "type": "geojson",
       "data": {

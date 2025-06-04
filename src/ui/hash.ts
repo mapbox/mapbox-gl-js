@@ -86,7 +86,7 @@ export default class Hash {
         const hash = location.hash.replace('#', '');
         if (this._hashName) {
             // Split the parameter-styled hash into parts and find the value we need
-            let keyval;
+            let keyval: string[];
             hash.split('&').map(
                 part => part.split('=')
             ).forEach(part => {
@@ -103,8 +103,7 @@ export default class Hash {
         const map = this._map;
         if (!map) return false;
         const loc = this._getCurrentHash();
-        // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'number'.
-        if (loc.length >= 3 && !loc.some(v => isNaN(v))) {
+        if (loc.length >= 3 && !loc.some(v => isNaN(Number(v)))) {
             const bearing = map.dragRotate.isEnabled() && map.touchZoomRotate.isEnabled() ? +(loc[3] || 0) : map.getBearing();
             map.jumpTo({
                 center: [+loc[2], +loc[1]],
@@ -123,6 +122,9 @@ export default class Hash {
     }
 }
 
+/**
+ * @private
+ */
 export function getHashString(map: Map, mapFeedback?: boolean): string {
     const center = map.getCenter(),
         zoom = Math.round(map.getZoom() * 100) / 100,

@@ -1,0 +1,68 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "operations": [
+        [
+          "setFeatureState",
+          {
+            "source": "mapbox",
+            "sourceLayer": "road",
+            "id": "footway"
+          },
+          {
+            "color": "blue"
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "center": [
+    13.43527,
+    52.50273
+  ],
+  "zoom": 14,
+  "sprite": "local://sprites/sprite",
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ],
+      "promoteId": {
+        "road": "type"
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+        "line-width": 5,
+        "line-color": [
+          "coalesce",
+          [
+            "feature-state",
+            "color"
+          ],
+          "black"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.0001,
+      "height": 256,
+      "width": 256,
+      "operations": []
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "cast-shadows": true,
+        "direction": [210, 0]
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "extrude": "true",
+              "underground": "false"
+            },
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "bearing":180,
+  "pitch": 40,
+  "zoom": 18,
+  "center": [11.5690998, 48.1323676],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "geojson",
+      "minzoom": 16,
+      "layout": {
+        "building-roof-shape": "parapet",
+        "building-base": 0,
+        "building-height": 10
+      },
+      "paint": {
+        "building-color": [
+          "match",
+          ["get", "building-part"],
+          "walls",
+          ["hsl", 41, 90, 90],
+          "rooftop",
+          ["hsl", 25, 43, 80],
+          ["hsl", 41, 90, 90]
+        ],
+        "building-ambient-occlusion-ground-intensity": 0.5,
+        "building-ambient-occlusion-wall-intensity": 1.0,
+        "building-ambient-occlusion-ground-radius": 30
+      }
+    }
+  ]
+}

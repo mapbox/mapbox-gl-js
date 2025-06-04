@@ -3,7 +3,7 @@ import refProperties from './util/ref_properties';
 import type {LayerSpecification} from './types';
 
 function deref(layer: LayerSpecification, parent: LayerSpecification): LayerSpecification {
-    const result: Record<string, any> = {};
+    const result = {} as LayerSpecification;
 
     for (const k in layer) {
         if (k !== 'ref') {
@@ -13,11 +13,11 @@ function deref(layer: LayerSpecification, parent: LayerSpecification): LayerSpec
 
     refProperties.forEach((k) => {
         if (k in parent) {
-            result[k] = (parent as any)[k];
+            result[k] = parent[k];
         }
     });
 
-    return result as LayerSpecification;
+    return result;
 }
 
 /**
@@ -36,14 +36,14 @@ function deref(layer: LayerSpecification, parent: LayerSpecification): LayerSpec
 export default function derefLayers(layers: Array<LayerSpecification>): Array<LayerSpecification> {
     layers = layers.slice();
 
-    const map: any = Object.create(null);
+    const map: Record<string, LayerSpecification> = Object.create(null);
     for (let i = 0; i < layers.length; i++) {
         map[layers[i].id] = layers[i];
     }
 
     for (let i = 0; i < layers.length; i++) {
         if ('ref' in layers[i]) {
-            layers[i] = deref(layers[i], map[(layers[i] as any).ref]);
+            layers[i] = deref(layers[i], map[(layers[i] as LayerSpecification & {ref: string}).ref]);
         }
     }
 

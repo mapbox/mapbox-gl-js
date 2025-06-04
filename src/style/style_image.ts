@@ -1,8 +1,10 @@
 import type {RGBAImage} from '../util/image';
-import type {Map} from '../ui/map';
+import type {Map as MapboxMap} from '../ui/map';
+import type {Icon} from '../data/usvg/usvg_pb_decoder';
 
 export type StyleImageData = {
-    data: RGBAImage;
+    data?: RGBAImage;
+    icon?: Icon;
     version: number;
     hasRenderCallback?: boolean;
     userImage?: StyleImageInterface;
@@ -11,6 +13,9 @@ export type StyleImageData = {
 export type StyleImageMetadata = {
     pixelRatio: number;
     sdf: boolean;
+    usvg: boolean;
+    width?: number;
+    height?: number;
     stretchX?: Array<[number, number]>;
     stretchY?: Array<[number, number]>;
     content?: [number, number, number, number];
@@ -18,12 +23,19 @@ export type StyleImageMetadata = {
 
 export type StyleImage = StyleImageData & StyleImageMetadata;
 
+export type StyleImages = Record<string, StyleImage>;
+
+/**
+ * A Map of `StyleImages` indexed by some type `T`.
+ */
+export type StyleImageMap<T> = Map<T, StyleImage>;
+
 export type StyleImageInterface = {
     width: number;
     height: number;
     data: Uint8Array | Uint8ClampedArray;
     render?: () => boolean;
-    onAdd?: (map: Map, id: string) => void;
+    onAdd?: (map: MapboxMap, id: string) => void;
     onRemove?: () => void;
 };
 
@@ -110,7 +122,7 @@ export function renderStyleImage(image: StyleImage): boolean {
  * @memberof StyleImageInterface
  * @instance
  * @name render
- * @return {boolean} `true` if this method updated the image. `false` if the image was not changed.
+ * @returns {boolean} `true` if this method updated the image. `false` if the image was not changed.
  */
 
 /**

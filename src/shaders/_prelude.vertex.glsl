@@ -92,10 +92,15 @@ vec4 unpack_mix_color(const vec4 packedColors, const float t) {
 //
 // The offset is calculated in a series of steps that should preserve this precision:
 vec2 get_pattern_pos(const vec2 pixel_coord_upper, const vec2 pixel_coord_lower,
-    const vec2 pattern_size, const float tile_units_to_pixels, const vec2 pos) {
+    const vec2 pattern_size, const vec2 units_to_pixels, const vec2 pos) {
 
     vec2 offset = mod(mod(mod(pixel_coord_upper, pattern_size) * 256.0, pattern_size) * 256.0 + pixel_coord_lower, pattern_size);
-    return (tile_units_to_pixels * pos + offset) / pattern_size;
+    return (units_to_pixels * pos + offset) / pattern_size;
+}
+
+vec2 get_pattern_pos(const vec2 pixel_coord_upper, const vec2 pixel_coord_lower,
+    const vec2 pattern_size, const float tile_units_to_pixels, const vec2 pos) {
+    return get_pattern_pos(pixel_coord_upper, pixel_coord_lower, pattern_size, vec2(tile_units_to_pixels), pos);
 }
 
 float mercatorXfromLng(float lng) {

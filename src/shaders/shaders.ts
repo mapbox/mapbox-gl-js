@@ -1,124 +1,240 @@
-// @ts-nocheck
-// Disable Flow annotations here because Flow doesn't support importing GLSL files
-
+// @ts-expect-error - GLSL import
 import preludeCommon from './_prelude.glsl';
+// @ts-expect-error - GLSL import
 import preludeFrag from './_prelude.fragment.glsl';
+// @ts-expect-error - GLSL import
 import preludeVert from './_prelude.vertex.glsl';
+// @ts-expect-error - GLSL import
 import backgroundFrag from './background.fragment.glsl';
+// @ts-expect-error - GLSL import
 import backgroundVert from './background.vertex.glsl';
+// @ts-expect-error - GLSL import
 import backgroundPatternFrag from './background_pattern.fragment.glsl';
+// @ts-expect-error - GLSL import
 import backgroundPatternVert from './background_pattern.vertex.glsl';
+// @ts-expect-error - GLSL import
+import buildingFrag from '../../3d-style/shaders/building.fragment.glsl';
+// @ts-expect-error - GLSL import
+import buildingVert from '../../3d-style/shaders/building.vertex.glsl';
+// @ts-expect-error - GLSL import
+import buildingDepthFrag from '../../3d-style/shaders/building_depth.fragment.glsl';
+// @ts-expect-error - GLSL import
+import buildingDepthVert from '../../3d-style/shaders/building_depth.vertex.glsl';
+// @ts-expect-error - GLSL import
 import circleFrag from './circle.fragment.glsl';
+// @ts-expect-error - GLSL import
 import circleVert from './circle.vertex.glsl';
+// @ts-expect-error - GLSL import
 import clippingMaskFrag from './clipping_mask.fragment.glsl';
+// @ts-expect-error - GLSL import
 import clippingMaskVert from './clipping_mask.vertex.glsl';
+// @ts-expect-error - GLSL import
 import heatmapFrag from './heatmap.fragment.glsl';
+// @ts-expect-error - GLSL import
 import heatmapVert from './heatmap.vertex.glsl';
+// @ts-expect-error - GLSL import
 import heatmapTextureFrag from './heatmap_texture.fragment.glsl';
+// @ts-expect-error - GLSL import
 import heatmapTextureVert from './heatmap_texture.vertex.glsl';
+// @ts-expect-error - GLSL import
 import collisionBoxFrag from './collision_box.fragment.glsl';
+// @ts-expect-error - GLSL import
 import collisionBoxVert from './collision_box.vertex.glsl';
+// @ts-expect-error - GLSL import
 import collisionCircleFrag from './collision_circle.fragment.glsl';
+// @ts-expect-error - GLSL import
 import collisionCircleVert from './collision_circle.vertex.glsl';
+// @ts-expect-error - GLSL import
 import debugFrag from './debug.fragment.glsl';
+// @ts-expect-error - GLSL import
 import debugVert from './debug.vertex.glsl';
+// @ts-expect-error - GLSL import
 import fillFrag from './fill.fragment.glsl';
+// @ts-expect-error - GLSL import
 import fillVert from './fill.vertex.glsl';
+// @ts-expect-error - GLSL import
 import fillOutlineFrag from './fill_outline.fragment.glsl';
+// @ts-expect-error - GLSL import
 import fillOutlineVert from './fill_outline.vertex.glsl';
+// @ts-expect-error - GLSL import
 import fillOutlinePatternFrag from './fill_outline_pattern.fragment.glsl';
+// @ts-expect-error - GLSL import
 import fillOutlinePatternVert from './fill_outline_pattern.vertex.glsl';
+// @ts-expect-error - GLSL import
 import fillPatternFrag from './fill_pattern.fragment.glsl';
+// @ts-expect-error - GLSL import
 import fillPatternVert from './fill_pattern.vertex.glsl';
+// @ts-expect-error - GLSL import
 import fillExtrusionFrag from './fill_extrusion.fragment.glsl';
+// @ts-expect-error - GLSL import
 import fillExtrusionVert from './fill_extrusion.vertex.glsl';
+// @ts-expect-error - GLSL import
 import fillExtrusionPatternFrag from './fill_extrusion_pattern.fragment.glsl';
+// @ts-expect-error - GLSL import
 import fillExtrusionPatternVert from './fill_extrusion_pattern.vertex.glsl';
+// @ts-expect-error - GLSL import
 import hillshadePrepareFrag from './hillshade_prepare.fragment.glsl';
+// @ts-expect-error - GLSL import
 import fillExtrusionGroundEffectFrag from './fill_extrusion_ground_effect.fragment.glsl';
+// @ts-expect-error - GLSL import
 import fillExtrusionGroundEffectVert from './fill_extrusion_ground_effect.vertex.glsl';
+// @ts-expect-error - GLSL import
 import hillshadePrepareVert from './hillshade_prepare.vertex.glsl';
+// @ts-expect-error - GLSL import
 import hillshadeFrag from './hillshade.fragment.glsl';
+// @ts-expect-error - GLSL import
 import hillshadeVert from './hillshade.vertex.glsl';
+// @ts-expect-error - GLSL import
 import lineFrag from './line.fragment.glsl';
+// @ts-expect-error - GLSL import
 import lineVert from './line.vertex.glsl';
+// @ts-expect-error - GLSL import
 import linePatternFrag from './line_pattern.fragment.glsl';
+// @ts-expect-error - GLSL import
 import linePatternVert from './line_pattern.vertex.glsl';
+// @ts-expect-error - GLSL import
 import rasterFrag from './raster.fragment.glsl';
+// @ts-expect-error - GLSL import
 import rasterVert from './raster.vertex.glsl';
+// @ts-expect-error - GLSL import
 import rasterParticleFrag from './raster_particle.fragment.glsl';
+// @ts-expect-error - GLSL import
 import rasterParticleVert from './raster_particle.vertex.glsl';
+// @ts-expect-error - GLSL import
 import rasterParticleDrawFrag from './raster_particle_draw.fragment.glsl';
+// @ts-expect-error - GLSL import
 import rasterParticleDrawVert from './raster_particle_draw.vertex.glsl';
+// @ts-expect-error - GLSL import
 import rasterParticleTextureFrag from './raster_particle_texture.fragment.glsl';
+// @ts-expect-error - GLSL import
 import rasterParticleTextureVert from './raster_particle_texture.vertex.glsl';
+// @ts-expect-error - GLSL import
 import rasterParticleUpdateFrag from './raster_particle_update.fragment.glsl';
+// @ts-expect-error - GLSL import
 import rasterParticleUpdateVert from './raster_particle_update.vertex.glsl';
+// @ts-expect-error - GLSL import
 import symbolFrag from './symbol.fragment.glsl';
+// @ts-expect-error - GLSL import
 import symbolVert from './symbol.vertex.glsl';
+// @ts-expect-error - GLSL import
 import skyboxFrag from './skybox.fragment.glsl';
+// @ts-expect-error - GLSL import
 import skyboxGradientFrag from './skybox_gradient.fragment.glsl';
+// @ts-expect-error - GLSL import
 import skyboxVert from './skybox.vertex.glsl';
+// @ts-expect-error - GLSL import
 import terrainRasterFrag from './terrain_raster.fragment.glsl';
+// @ts-expect-error - GLSL import
 import terrainRasterVert from './terrain_raster.vertex.glsl';
+// @ts-expect-error - GLSL import
 import terrainDepthFrag from './terrain_depth.fragment.glsl';
+// @ts-expect-error - GLSL import
 import terrainDepthVert from './terrain_depth.vertex.glsl';
+// @ts-expect-error - GLSL import
 import preludeTerrainVert from './_prelude_terrain.vertex.glsl';
+// @ts-expect-error - GLSL import
 import preludeFogVert from './_prelude_fog.vertex.glsl';
+// @ts-expect-error - GLSL import
 import preludeFogFrag from './_prelude_fog.fragment.glsl';
+// @ts-expect-error - GLSL import
 import preludeLighting from './_prelude_lighting.glsl';
+// @ts-expect-error - GLSL import
 import preludeRasterArrayFrag from './_prelude_raster_array.glsl';
+// @ts-expect-error - GLSL import
 import preludeRasterParticleFrag from './_prelude_raster_particle.glsl';
+// @ts-expect-error - GLSL import
 import skyboxCaptureFrag from './skybox_capture.fragment.glsl';
+// @ts-expect-error - GLSL import
 import skyboxCaptureVert from './skybox_capture.vertex.glsl';
+// @ts-expect-error - GLSL import
 import globeFrag from './globe_raster.fragment.glsl';
+// @ts-expect-error - GLSL import
 import globeVert from './globe_raster.vertex.glsl';
+// @ts-expect-error - GLSL import
 import atmosphereFrag from './atmosphere.fragment.glsl';
+// @ts-expect-error - GLSL import
 import atmosphereVert from './atmosphere.vertex.glsl';
+// @ts-expect-error - GLSL import
 import starsFrag from './stars.fragment.glsl';
+// @ts-expect-error - GLSL import
 import starsVert from './stars.vertex.glsl';
+// @ts-expect-error - GLSL import
+import snowFrag from './snow_particle.fragment.glsl';
+// @ts-expect-error - GLSL import
+import snowVert from './snow_particle.vertex.glsl';
+// @ts-expect-error - GLSL import
+import rainFrag from './rain_particle.fragment.glsl';
+// @ts-expect-error - GLSL import
+import rainVert from './rain_particle.vertex.glsl';
+// @ts-expect-error - GLSL import
+import vignetteFrag from './vignette.fragment.glsl';
+// @ts-expect-error - GLSL import
+import vignetteVert from './vignette.vertex.glsl';
+// @ts-expect-error - GLSL import
 import occlusionFrag from './occlusion.fragment.glsl';
+// @ts-expect-error - GLSL import
 import occlusionVert from './occlusion.vertex.glsl';
+// @ts-expect-error - GLSL import
+import elevatedStructuresDepthReconstructFrag from '../../3d-style/shaders/elevated_structures_depth_reconstruct.fragment.glsl';
+// @ts-expect-error - GLSL import
+import elevatedStructuresDepthReconstructVert from '../../3d-style/shaders/elevated_structures_depth_reconstruct.vertex.glsl';
+// @ts-expect-error - GLSL import
+import elevatedStructuresDepthFrag from '../../3d-style/shaders/elevated_structures_depth.fragment.glsl';
+// @ts-expect-error - GLSL import
+import elevatedStructuresDepthVert from '../../3d-style/shaders/elevated_structures_depth.vertex.glsl';
+// @ts-expect-error - GLSL import
+import elevatedStructuresModelFrag from '../../3d-style/shaders/elevated_structures_model.fragment.glsl';
+// @ts-expect-error - GLSL import
+import elevatedStructuresModelVert from '../../3d-style/shaders/elevated_structures_model.vertex.glsl';
 // 3d-style related shaders
+// @ts-expect-error - GLSL import
 import fillExtrusionDepthFrag from '../../3d-style/shaders/fill_extrusion_depth.fragment.glsl';
+// @ts-expect-error - GLSL import
 import fillExtrusionDepthVert from '../../3d-style/shaders/fill_extrusion_depth.vertex.glsl';
+// @ts-expect-error - GLSL import
 import groundShadowFrag from '../../3d-style/shaders/ground_shadow.fragment.glsl';
+// @ts-expect-error - GLSL import
 import groundShadowVert from '../../3d-style/shaders/ground_shadow.vertex.glsl';
+// @ts-expect-error - GLSL import
 import modelVert from '../../3d-style/shaders/model.vertex.glsl';
+// @ts-expect-error - GLSL import
 import modelFrag from '../../3d-style/shaders/model.fragment.glsl';
+// @ts-expect-error - GLSL import
 import modelDepthVert from '../../3d-style/shaders/model_depth.vertex.glsl';
+// @ts-expect-error - GLSL import
 import modelDepthFrag from '../../3d-style/shaders/model_depth.fragment.glsl';
+// @ts-expect-error - GLSL import
 import preludeShadowVert from '../../3d-style/shaders/_prelude_shadow.vertex.glsl';
+// @ts-expect-error - GLSL import
 import preludeShadowFrag from '../../3d-style/shaders/_prelude_shadow.fragment.glsl';
 
-export let preludeTerrain: Record<string, any> = {};
-export let preludeFog: Record<string, any> = {};
-export let preludeShadow: Record<string, any> = {};
-export let preludeRasterArray: Record<string, any> = {};
-export let preludeRasterParticle: Record<string, any> = {};
+import type {ShaderSource} from '../render/program';
+import type {DynamicDefinesType} from '../render/program/program_uniforms';
 
-const commonDefines = [];
+const commonDefines: DynamicDefinesType[] = [];
 parseUsedPreprocessorDefines(preludeCommon, commonDefines);
 parseUsedPreprocessorDefines(preludeVert, commonDefines);
 parseUsedPreprocessorDefines(preludeFrag, commonDefines);
-export const includeMap = {
-    "_prelude_fog.vertex.glsl": preludeFogVert,
-    "_prelude_terrain.vertex.glsl": preludeTerrainVert,
-    "_prelude_shadow.vertex.glsl": preludeShadowVert,
-    "_prelude_fog.fragment.glsl": preludeFogFrag,
-    "_prelude_shadow.fragment.glsl": preludeShadowFrag,
-    "_prelude_lighting.glsl": preludeLighting,
-    "_prelude_raster_array.glsl": preludeRasterArrayFrag,
-    "_prelude_raster_particle.glsl": preludeRasterParticleFrag
-} as const;
-// Populated during precompilation
-const defineMap: Record<string, any> = {};
 
-preludeTerrain = compile('', preludeTerrainVert);
-preludeFog = compile(preludeFogFrag, preludeFogVert);
-preludeShadow = compile(preludeShadowFrag, preludeShadowVert);
-preludeRasterArray = compile(preludeRasterArrayFrag, '');
-preludeRasterParticle = compile(preludeRasterParticleFrag, '');
+export const includeMap = {
+    '_prelude_fog.vertex.glsl': preludeFogVert,
+    '_prelude_terrain.vertex.glsl': preludeTerrainVert,
+    '_prelude_shadow.vertex.glsl': preludeShadowVert,
+    '_prelude_fog.fragment.glsl': preludeFogFrag,
+    '_prelude_shadow.fragment.glsl': preludeShadowFrag,
+    '_prelude_lighting.glsl': preludeLighting,
+    '_prelude_raster_array.glsl': preludeRasterArrayFrag,
+    '_prelude_raster_particle.glsl': preludeRasterParticleFrag
+} as const;
+
+// Populated during precompilation
+const defineMap: Record<string, DynamicDefinesType[]> = {};
+
+export const preludeTerrain = compile('', preludeTerrainVert);
+export const preludeFog = compile(preludeFogFrag, preludeFogVert);
+export const preludeShadow = compile(preludeShadowFrag, preludeShadowVert);
+export const preludeRasterArray = compile(preludeRasterArrayFrag, '');
+export const preludeRasterParticle = compile(preludeRasterParticleFrag, '');
 
 export const prelude = compile(preludeFrag, preludeVert);
 export const preludeCommonSource = preludeCommon;
@@ -130,6 +246,8 @@ export const preludeFragPrecisionQualifiers = `precision mediump float;`;
 export default {
     background: compile(backgroundFrag, backgroundVert),
     backgroundPattern: compile(backgroundPatternFrag, backgroundPatternVert),
+    building: compile(buildingFrag, buildingVert),
+    buildingDepth: compile(buildingDepthFrag, buildingDepthVert),
     circle: compile(circleFrag, circleVert),
     clippingMask: compile(clippingMaskFrag, clippingMaskVert),
     heatmap: compile(heatmapFrag, heatmapVert),
@@ -137,6 +255,9 @@ export default {
     collisionBox: compile(collisionBoxFrag, collisionBoxVert),
     collisionCircle: compile(collisionCircleFrag, collisionCircleVert),
     debug: compile(debugFrag, debugVert),
+    elevatedStructuresDepth: compile(elevatedStructuresDepthFrag, elevatedStructuresDepthVert),
+    elevatedStructuresDepthReconstruct: compile(elevatedStructuresDepthReconstructFrag, elevatedStructuresDepthReconstructVert),
+    elevatedStructures: compile(elevatedStructuresModelFrag, elevatedStructuresModelVert),
     fill: compile(fillFrag, fillVert),
     fillOutline: compile(fillOutlineFrag, fillOutlineVert),
     fillOutlinePattern: compile(fillOutlinePatternFrag, fillOutlinePatternVert),
@@ -166,10 +287,13 @@ export default {
     model: compile(modelFrag, modelVert),
     modelDepth: compile(modelDepthFrag, modelDepthVert),
     stars: compile(starsFrag, starsVert),
+    snowParticle: compile(snowFrag, snowVert),
+    rainParticle: compile(rainFrag, rainVert),
+    vignette: compile(vignetteFrag, vignetteVert),
     occlusion: compile(occlusionFrag, occlusionVert)
-};
+} as const;
 
-export function parseUsedPreprocessorDefines(source, defines) {
+export function parseUsedPreprocessorDefines(source: string, defines: DynamicDefinesType[]): void {
     const lines = source.replace(/\s*\/\/[^\n]*\n/g, '\n').split('\n');
     for (let line of lines) {
         line = line.trim();
@@ -180,7 +304,7 @@ export function parseUsedPreprocessorDefines(source, defines) {
                     .replace(/!|defined|\(|\)|\|\||&&/g, '')
                     .replace(/\s+/g, ' ').trim();
 
-                const newDefines = line.split(' ');
+                const newDefines = line.split(' ') as DynamicDefinesType[];
                 for (const define of newDefines) {
                     if (!defines.includes(define)) {
                         defines.push(define);
@@ -192,23 +316,24 @@ export function parseUsedPreprocessorDefines(source, defines) {
 }
 
 // Expand #pragmas to #ifdefs.
-export function compile(fragmentSource, vertexSource) {
+export function compile(fragmentSource: string, vertexSource: string): ShaderSource {
     const includeRegex = /#include\s+"([^"]+)"/g;
     const pragmaRegex = /#pragma mapbox: ([\w\-]+) ([\w]+) ([\w]+) ([\w]+)/g;
     const attributeRegex = /(attribute(\S*)|(^\s*|;)in) (highp |mediump |lowp )?([\w]+) ([\w]+)/gm;
 
-    let staticAttributes = vertexSource.match(attributeRegex);
+    let staticAttributes: string[] = vertexSource.match(attributeRegex);
 
     if (staticAttributes) {
         staticAttributes = staticAttributes.map((str) => {
             const tokens = str.split(' ');
+
             return tokens[tokens.length - 1];
         });
         // remove duplicates as Safari does not support lookbehind in regex
         // so we need to get rid of initialize-* expressions
         staticAttributes = [...new Set(staticAttributes)];
     }
-    const fragmentPragmas: Record<string, any> = {};
+    const fragmentPragmas: Record<string, boolean> = {};
 
     const vertexIncludes = [];
     const fragmentIncludes = [];
@@ -226,7 +351,7 @@ export function compile(fragmentSource, vertexSource) {
         return;
     }
 
-    let usedDefines = [...commonDefines];
+    let usedDefines: DynamicDefinesType[] = [...commonDefines];
     parseUsedPreprocessorDefines(fragmentSource, usedDefines);
     parseUsedPreprocessorDefines(vertexSource, usedDefines);
     for (const includePath of [...vertexIncludes, ...fragmentIncludes]) {

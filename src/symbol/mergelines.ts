@@ -1,7 +1,7 @@
 import type Point from '@mapbox/point-geometry';
 import type {SymbolFeature} from '../data/bucket/symbol_bucket';
 
-export default function(features: Array<SymbolFeature>): Array<SymbolFeature> {
+export default function (features: Array<SymbolFeature>): Array<SymbolFeature> {
     const leftIndex: {
         [_: string]: number;
     } = {};
@@ -63,7 +63,7 @@ export default function(features: Array<SymbolFeature>): Array<SymbolFeature> {
             delete rightIndex[rightKey];
 
             rightIndex[getKey(text, mergedFeatures[i].geometry, true)] = i;
-            mergedFeatures[j].geometry = (null as any);
+            mergedFeatures[j].geometry = null;
 
         } else if (leftKey in rightIndex) {
             // found mergeable line adjacent to the start of the current line, merge
@@ -81,5 +81,6 @@ export default function(features: Array<SymbolFeature>): Array<SymbolFeature> {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return mergedFeatures.filter((f) => f.geometry);
 }

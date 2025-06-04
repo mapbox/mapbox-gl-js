@@ -3,7 +3,7 @@
   "propertySpec": {"type": "boolean"},
   "inputs": [
     [
-      {"availableImages": ["monument-15"]},
+      {"availableImages": [{"name": "monument-15"}]},
       {"properties": {"x": "monument-15"}}
     ],
     [{}, {"properties": {"x": "monument-15"}}]

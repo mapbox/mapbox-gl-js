@@ -5,12 +5,14 @@ import type Context from '../gl/context';
 
 class VertexArrayObject {
     context: Context;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     boundProgram: Program<any> | null | undefined;
     boundLayoutVertexBuffer: VertexBuffer | null | undefined;
     boundPaintVertexBuffers: Array<VertexBuffer>;
     boundIndexBuffer: IndexBuffer | null | undefined;
     boundVertexOffset: number | null | undefined;
     boundDynamicVertexBuffers: Array<VertexBuffer | null | undefined>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vao: any;
 
     constructor() {
@@ -24,6 +26,7 @@ class VertexArrayObject {
     }
 
     bind(context: Context,
+         // eslint-disable-next-line @typescript-eslint/no-explicit-any
          program: Program<any>,
          layoutVertexBuffer: VertexBuffer,
          paintVertexBuffers: Array<VertexBuffer>,
@@ -75,6 +78,7 @@ class VertexArrayObject {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     freshBind(program: Program<any>,
               layoutVertexBuffer: VertexBuffer,
               paintVertexBuffers: Array<VertexBuffer>,

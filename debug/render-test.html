@@ -7,7 +7,7 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
     <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
-        #map {border: 1px solid #ccc;}
+        #map {outline: 1px solid #ccc;}
     </style>
 </head>
 
@@ -17,36 +17,86 @@
     <script src='../dist/mapbox-gl-dev.js'></script>
     <script src='../debug/access_token_generated.js'></script>
     <script type='module'>
+        import {renderTestNow} from 'http://localhost:9966/test/integration/lib/constants.js';
         import {applyOperations} from 'http://localhost:9966/test/integration/lib/operation-handlers.js';
 
         async function fetchStyle() {
             let test = new URLSearchParams(location.search).get('test');
-            if (!test) test = prompt('test name:') || 'text-writing-mode/line_label/mixed-multiline-horizontal-mode';
+            if (!test) test = prompt('test name:', 'text-writing-mode/line_label/mixed-multiline-horizontal-mode');
 
             const response = await fetch(`http://localhost:9966/test/integration/render-tests/${test}/style.json`);
             const style = await response.json();
-
-            history.replaceState({}, '', `${location.pathname}?test=${test}`);
-            console.log(style);
 
             return style;
         }
 
         const style = await fetchStyle();
 
+        let {width, height} = style.metadata.test;
+
         const {
-            width, height,
             fadeDuration = 0,
             localIdeographFontFamily = false,
             operations,
+            scaleFactor = 1,
             ...options
         } = style.metadata.test;
+
+        if (!width) {
+            width = 512;
+        }
+
+        if (!height) {
+            height = 512;
+        }
+
+        const {searchParams: queryParams} = new URL(location);
+
+        if (queryParams.has('pixelRatio')) {
+            window.devicePixelRatio = parseFloat(queryParams.get('pixelRatio'));
+        } else {
+            window.devicePixelRatio = 1;
+        }
+
+        if (queryParams.has('spriteFormat')) {
+            options.spriteFormat = queryParams.get('spriteFormat');
+        } else if (!options.spriteFormat) {
+            options.spriteFormat = 'icon_set';
+        }
+
+        if (options.spriteFormat === 'icon_set' && style.sprite && !style.sprite.endsWith('.pbf')) {
+            style.sprite += '.pbf';
+        }
+
+        if (options.spriteFormat === 'icon_set' && style.metadata && style.metadata.test && style.metadata.test.operations) {
+            style.metadata.test.operations.forEach(op => {
+                if (op[0] === 'setStyle') {
+                    if (op[1].sprite && !op[1].sprite.endsWith('.pbf')) {
+                        op[1].sprite += '.pbf';
+                    }
+                }
+            });
+        }
+
+        if (options.spriteFormat === 'icon_set' && style.imports && style.imports.length) {
+            style.imports.forEach(imp => {
+                if (!imp.data) return;
+                if (imp.data.sprite && !imp.data.sprite.endsWith('.pbf')) {
+                    imp.data.sprite += '.pbf';
+                }
+            });
+        }
 
         const container = document.getElementById('map');
         container.style.width = width + 'px';
         container.style.height = height + 'px';
 
-        const transformRequest = url => ({url: url.replace('local://', 'http://localhost:9966/test/integration/')});
+        const transformRequest = url => ({url:
+            url
+                .replace('local://mapbox-gl-styles/', 'http://localhost:9966/node_modules/mapbox-gl-styles/')
+                .replace('local://mvt-fixtures/', 'http://localhost:9966/node_modules/@mapbox/mvt-fixtures/')
+                .replace('local://', 'http://localhost:9966/test/integration/')
+        });
 
         const map = window.map = new mapboxgl.Map({
             container,
@@ -56,7 +106,9 @@
             localIdeographFontFamily,
             interactive: false,
             attributionControl: false,
-            performanceMetricsCollection: false
+            performanceMetricsCollection: false,
+            scaleFactor,
+            spriteFormat: options.spriteFormat || 'auto',
         });
 
         map.removeControl(map._logoControl);
@@ -68,8 +120,8 @@
         map._authenticate = () => { };
 
         // override internal timing to enable precise wait operations
-        window._renderTestNow = 0;
-        mapboxgl.setNow(window._renderTestNow);
+        renderTestNow.current = 0;
+        mapboxgl.setNow(renderTestNow.current);
 
         if (options.debug) {
             map.showTileBoundaries = true;
@@ -85,7 +137,15 @@
         if (options.fadeDuration) map._isInitialLoad = false;
 
         map.repaint = true;
-        await map.once('load');
+
+        const event = await Promise.race([
+            map.once('load'),
+            new Promise((resolve) => setTimeout(resolve, 1000, {type: 'timeout'}))
+        ]);
+
+        if (event.type === 'timeout') {
+            console.error('Map load timed out after 1 second');
+        }
 
         await applyOperations(map, style.metadata.test);
 

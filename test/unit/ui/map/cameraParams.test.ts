@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, createMap, vi, waitFor} from '../../../util/vitest';
 import {MAX_MERCATOR_LATITUDE} from '../../../../src/geo/mercator_coordinate';
@@ -49,6 +50,7 @@ describe('Map#cameraParams', () => {
         });
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('#setMinPitch', async () => {
         const map = createMap({pitch: 20});
 
@@ -98,6 +100,7 @@ describe('Map#cameraParams', () => {
         expect(map.getPitch()).toEqual(0);
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('#setMaxPitch', async () => {
         const map = createMap({pitch: 0});
 
@@ -125,7 +128,7 @@ describe('Map#cameraParams', () => {
     });
 
     test('unset maxPitch', () => {
-        const map = createMap({maxPitch:10});
+        const map = createMap({maxPitch: 10});
         map.setMaxPitch(null);
         map.setPitch(20);
         expect(map.getPitch()).toEqual(20);
@@ -139,7 +142,7 @@ describe('Map#cameraParams', () => {
     });
 
     test('ignore maxPitchs over minPitch', () => {
-        const map = createMap({minPitch:10});
+        const map = createMap({minPitch: 10});
         expect(() => {
             map.setMaxPitch(0);
         }).toThrowError();
@@ -171,8 +174,9 @@ describe('Map#cameraParams', () => {
         }).toThrowError(`minPitch must be greater than or equal to 0`);
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('#setMinZoom', async () => {
-        const map = createMap({zoom:5});
+        const map = createMap({zoom: 5});
 
         const onZoomStart = vi.fn();
         const onZoom = vi.fn();
@@ -198,7 +202,7 @@ describe('Map#cameraParams', () => {
     });
 
     test('unset minZoom', () => {
-        const map = createMap({minZoom:5});
+        const map = createMap({minZoom: 5});
         map.setMinZoom(null);
         map.setZoom(1);
         expect(map.getZoom()).toEqual(1);
@@ -212,7 +216,7 @@ describe('Map#cameraParams', () => {
     });
 
     test('ignore minZooms over maxZoom', () => {
-        const map = createMap({zoom:2, maxZoom:5});
+        const map = createMap({zoom: 2, maxZoom: 5});
         expect(() => {
             map.setMinZoom(6);
         }).toThrowError();
@@ -220,8 +224,9 @@ describe('Map#cameraParams', () => {
         expect(map.getZoom()).toEqual(0);
     });
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     test('#setMaxZoom', async () => {
-        const map = createMap({zoom:0});
+        const map = createMap({zoom: 0});
 
         const onZoomStart = vi.fn();
         const onZoom = vi.fn();
@@ -247,7 +252,7 @@ describe('Map#cameraParams', () => {
     });
 
     test('unset maxZoom', () => {
-        const map = createMap({maxZoom:5});
+        const map = createMap({maxZoom: 5});
         map.setMaxZoom(null);
         map.setZoom(6);
         expect(map.getZoom()).toEqual(6);
@@ -261,7 +266,7 @@ describe('Map#cameraParams', () => {
     });
 
     test('ignore maxZooms over minZoom', () => {
-        const map = createMap({minZoom:5});
+        const map = createMap({minZoom: 5});
         expect(() => {
             map.setMaxZoom(4);
         }).toThrowError();
@@ -271,13 +276,13 @@ describe('Map#cameraParams', () => {
 
     test('throw on maxZoom smaller than minZoom at init', () => {
         expect(() => {
-            createMap({minZoom:10, maxZoom:5});
+            createMap({minZoom: 10, maxZoom: 5});
         }).toThrowError(`maxZoom must be greater than or equal to minZoom`);
     });
 
     test('throw on maxZoom smaller than minZoom at init with falsey maxZoom', () => {
         expect(() => {
-            createMap({minZoom:1, maxZoom:0});
+            createMap({minZoom: 1, maxZoom: 0});
         }).toThrowError(`maxZoom must be greater than or equal to minZoom`);
     });
 
@@ -342,8 +347,8 @@ describe('Map#cameraParams', () => {
             expect(parseFloat(map.getBounds().getCenter().lat.toFixed(10))).toEqual(0);
 
             expect(toFixed(map.getBounds().toArray())).toEqual(toFixed([
-                [ -70.31249999999976, -57.326521225216965 ],
-                [ 70.31249999999977, 57.32652122521695 ] ]));
+                [-70.31249999999976, -57.326521225216965],
+                [70.31249999999977, 57.32652122521695]]));
         });
 
         test('rotated bounds', () => {
@@ -378,7 +383,7 @@ describe('Map#cameraParams', () => {
             const bounds = map.getBounds();
             expect(bounds.getNorth().toFixed(6)).toBe(MAX_MERCATOR_LATITUDE.toString());
             expect(toFixed(bounds.toArray())).toStrictEqual(
-                toFixed([[ -23.3484820899, 77.6464759596 ], [ 23.3484820899, 85.0511287798 ]])
+                toFixed([[-23.3484820899, 77.6464759596], [23.3484820899, 85.0511287798]])
             );
 
             map.setBearing(180);
@@ -387,7 +392,7 @@ describe('Map#cameraParams', () => {
             const sBounds = map.getBounds();
             expect(sBounds.getSouth().toFixed(6)).toBe((-MAX_MERCATOR_LATITUDE).toString());
             expect(toFixed(sBounds.toArray())).toStrictEqual(
-                toFixed([[ -23.3484820899, -85.0511287798 ], [ 23.3484820899, -77.6464759596]])
+                toFixed([[-23.3484820899, -85.0511287798], [23.3484820899, -77.6464759596]])
             );
         });
 
@@ -396,18 +401,18 @@ describe('Map#cameraParams', () => {
 
             let bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual(
-                toFixed([[ -73.8873304141, -73.8873304141, ], [ 73.8873304141, 73.8873304141]])
+                toFixed([[-73.8873304141, -73.8873304141,], [73.8873304141, 73.8873304141]])
             );
 
             map.jumpTo({zoom: 0, center: [0, 90]});
             bounds = map.getBounds();
             expect(bounds.getNorth()).toBe(90);
-            expect(toFixed(bounds.toArray())).toStrictEqual(toFixed([[ -180, 11.1637985859 ], [ 180, 90 ]]));
+            expect(toFixed(bounds.toArray())).toStrictEqual(toFixed([[-180, 11.1637985859], [180, 90]]));
 
             map.jumpTo({zoom: 0, center: [0, -90]});
             bounds = map.getBounds();
             expect(bounds.getSouth()).toBe(-90);
-            expect(toFixed(bounds.toArray())).toStrictEqual(toFixed([[ -180, -90 ], [ 180, -11.1637985859]]));
+            expect(toFixed(bounds.toArray())).toStrictEqual(toFixed([[-180, -90], [180, -11.1637985859]]));
 
             map.jumpTo({zoom: 2, center: [0, 45], bearing: 0, pitch: 20});
             bounds = map.getBounds();
@@ -423,36 +428,36 @@ describe('Map#cameraParams', () => {
 
             let bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
-                [ "-65.1780745470", "-85.0511290000", ],
-                [ "51.0506680427", "79.9819510537" ]
+                ["-65.1780745470", "-85.0511290000",],
+                ["51.0506680427", "79.9819510537"]
             ]);
 
             map.jumpTo({zoom: 0, center: [-96, 37.5]});
             bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
-                [ "-180.0000000000", "-45.1620125974" ],
-                [ "21.1488460355", "85.0511290000" ]
+                ["-180.0000000000", "-45.1620125974"],
+                ["21.1488460355", "85.0511290000"]
             ]);
 
             map.jumpTo({zoom: 3.3, center: [-99, 42], bearing: 24});
             bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
-                [ "-108.2217655978", "34.8501901832" ],
-                [ "-88.9997447442", "49.1066330318" ]
+                ["-108.2217655978", "34.8501901832"],
+                ["-88.9997447442", "49.1066330318"]
             ]);
 
             map.jumpTo({zoom: 3.3, center: [-99, 42], bearing: 24});
             bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
-                [ "-108.2217655978", "34.8501901832" ],
-                [ "-88.9997447442", "49.1066330318" ]
+                ["-108.2217655978", "34.8501901832"],
+                ["-88.9997447442", "49.1066330318"]
             ]);
 
             map.setPitch(50);
             bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
-                [ "-106.5868397979", "34.9358140751" ],
-                [ "-77.8438130022", "58.8683265070" ]
+                ["-106.5868397979", "34.9358140751"],
+                ["-77.8438130022", "58.8683265070"]
             ]);
         });
 
@@ -461,29 +466,29 @@ describe('Map#cameraParams', () => {
 
             let bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
-                [ "-89.7369085165", "-57.5374138724" ],
-                [ "89.7369085165", "57.5374138724" ]
+                ["-89.7369085165", "-57.5374138724"],
+                ["89.7369085165", "57.5374138724"]
             ]);
 
             map.jumpTo({zoom: 2, center: [-20, -70]});
             bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
-                [ "-58.0047683883", "-82.4864361385" ],
-                [ "7.3269895739", "-57.3283436312" ]
+                ["-58.0047683883", "-82.4864361385"],
+                ["7.3269895739", "-57.3283436312"]
             ]);
 
             map.jumpTo({zoom: 2, center: [-70, -20]});
             bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
-                [ "-92.4701297641", "-34.6981068954" ],
-                [ "-51.1668245330", "-5.6697541071" ]
+                ["-92.4701297641", "-34.6981068954"],
+                ["-51.1668245330", "-5.6697541071"]
             ]);
 
             map.jumpTo({pitch: 50, bearing: -20});
             bounds = map.getBounds();
             expect(toFixed(bounds.toArray())).toStrictEqual([
-                [ "-111.9596616309", "-38.1908385183" ],
-                [ "-52.4906377771", "22.9304574207" ]
+                ["-111.9596616309", "-38.1908385183"],
+                ["-52.4906377771", "22.9304574207"]
             ]);
         });
 
@@ -531,7 +536,7 @@ describe('Map#cameraParams', () => {
 
     describe('#setMaxBounds', () => {
         test('constrains map bounds', () => {
-            const map = createMap({zoom:0});
+            const map = createMap({zoom: 0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
             expect(
                 toFixed([[-130.4297000000, 7.0136641176], [-61.5234400000, 60.2398142283]])
@@ -539,7 +544,7 @@ describe('Map#cameraParams', () => {
         });
 
         test('when no argument is passed, map bounds constraints are removed', () => {
-            const map = createMap({zoom:0});
+            const map = createMap({zoom: 0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
             expect(
                 toFixed([[-166.28906999999964, -27.6835270554], [-25.664070000000066, 73.8248206697]])
@@ -553,7 +558,7 @@ describe('Map#cameraParams', () => {
         });
 
         test('throws on invalid bounds', () => {
-            const map = createMap({zoom:0});
+            const map = createMap({zoom: 0});
             expect(() => {
                 map.setMaxBounds([-130.4297, 50.0642], [-61.52344, 24.20688]);
             }).toThrowError(Error);
@@ -573,12 +578,12 @@ describe('Map#cameraParams', () => {
 
     describe('#getMaxBounds', () => {
         test('returns null when no bounds set', () => {
-            const map = createMap({zoom:0});
+            const map = createMap({zoom: 0});
             expect(map.getMaxBounds()).toEqual(null);
         });
 
         test('returns bounds', () => {
-            const map = createMap({zoom:0});
+            const map = createMap({zoom: 0});
             const bounds = [[-130.4297, 50.0642], [-61.52344, 24.20688]];
             map.setMaxBounds(bounds);
             expect(map.getMaxBounds().toArray()).toEqual(bounds);
@@ -587,7 +592,6 @@ describe('Map#cameraParams', () => {
 
     describe('#snapToNorth', () => {
         test('snaps when less than < 7 degrees', async () => {
-            // t.setTimeout(10000);
             const map = createMap();
             await waitFor(map, "load");
             map.setBearing(6);
@@ -598,7 +602,6 @@ describe('Map#cameraParams', () => {
         });
 
         test('does not snap when > 7 degrees', async () => {
-            // t.setTimeout(2000);
             const map = createMap();
             await waitFor(map, "load");
             map.setBearing(8);
@@ -609,7 +612,6 @@ describe('Map#cameraParams', () => {
         });
 
         test('snaps when < bearingSnap', async () => {
-            // t.setTimeout(2000);
             const map = createMap({"bearingSnap": 12});
             await waitFor(map, "load");
             map.setBearing(11);
@@ -620,7 +622,6 @@ describe('Map#cameraParams', () => {
         });
 
         test('does not snap when > bearingSnap', async () => {
-            // t.setTimeout(2000);
             const map = createMap({"bearingSnap": 10});
             await waitFor(map, "load");
             map.setBearing(11);

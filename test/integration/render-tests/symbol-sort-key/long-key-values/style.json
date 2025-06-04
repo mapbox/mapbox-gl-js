@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {"type": "Feature", "properties": {"key": 100000000}, "geometry": {"type": "Point", "coordinates": [-7, -7]}},
+          {"type": "Feature", "properties": {"key": 100000001}, "geometry": {"type": "Point", "coordinates": [-7,  7]}},
+          {"type": "Feature", "properties": {"key": 100000002}, "geometry": {"type": "Point", "coordinates": [ 7,  7]}},
+          {"type": "Feature", "properties": {"key": 100000003}, "geometry": {"type": "Point", "coordinates": [ 7, -7]}}
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/rect",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": ["get", "key"],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "symbol-sort-key": ["get", "key"],
+        "icon-image": "rect",
+        "icon-text-fit": "both",
+        "icon-allow-overlap": true,
+        "text-allow-overlap": true
+      },
+      "paint": {
+        "text-color": "white"
+      }
+    }
+  ]
+}

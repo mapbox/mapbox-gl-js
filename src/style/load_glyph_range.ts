@@ -1,21 +1,23 @@
 import {getArrayBuffer, ResourceType} from '../util/ajax';
 import parseGlyphPBF from './parse_glyph_pbf';
 
-import type {StyleGlyph} from './style_glyph';
+import type {StyleGlyph, StyleGlyphs} from './style_glyph';
 import type {RequestManager} from '../util/mapbox';
 import type {Callback} from '../types/callback';
 
-export default function (fontstack: string,
-                           range: number,
-                           urlTemplate: string,
-                           requestManager: RequestManager,
-                           callback: Callback<{
-                               glyphs: {
-                                   [key: number]: StyleGlyph | null;
-                               };
-                               ascender?: number;
-                               descender?: number;
-                           }>) {
+export type GlyphRange = {
+    glyphs?: StyleGlyphs;
+    ascender?: number;
+    descender?: number;
+};
+
+export function loadGlyphRange(
+    fontstack: string,
+    range: number,
+    urlTemplate: string,
+    requestManager: RequestManager,
+    callback: Callback<GlyphRange>
+) {
     const begin = range * 256;
     const end = begin + 255;
 
@@ -25,11 +27,11 @@ export default function (fontstack: string,
             .replace('{range}', `${begin}-${end}`),
         ResourceType.Glyphs);
 
-    getArrayBuffer(request, (err?: Error | null, data?: ArrayBuffer | null) => {
+    getArrayBuffer(request, (err?: Error, data?: ArrayBuffer) => {
         if (err) {
             callback(err);
         } else if (data) {
-            const glyphs: Record<string, any> = {};
+            const glyphs: Record<string, StyleGlyph> = {};
             const glyphData = parseGlyphPBF(data);
             for (const glyph of glyphData.glyphs) {
                 glyphs[glyph.id] = glyph;

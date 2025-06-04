@@ -1,0 +1,60 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 50,
+      "height": 50
+    }
+  },
+  "sources": {
+    "test": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0.05, 51.5]
+      }
+    },
+    "landmarks": {
+      "type": "raster-array",
+      "url": "local://tilesets/landmarks.json"
+    }
+  },
+  "iconsets": {
+    "landmarks": {
+      "type": "source",
+      "source": "landmarks"
+    }
+  },
+  "center": [
+    0.05,
+    51.5
+  ],
+  "zoom": 14.0,
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "grey"
+      }
+    },
+    {
+      "id": "landmark-icon",
+      "type": "symbol",
+      "source": "test",
+      "paint": {
+      },
+      "layout": {
+        "icon-image": [
+          "image",
+          "landmark-icons/the-o2",
+          {
+            "iconset": {
+              "id": "landmarks"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

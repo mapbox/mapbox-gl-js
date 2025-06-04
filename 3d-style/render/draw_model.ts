@@ -6,7 +6,7 @@ import ColorMode from '../../src/gl/color_mode';
 import DepthMode from '../../src/gl/depth_mode';
 import CullFaceMode from '../../src/gl/cull_face_mode';
 import {mat4, vec3, vec4} from 'gl-matrix';
-import {getMetersPerPixelAtLatitude, mercatorZfromAltitude} from '../../src/geo/mercator_coordinate';
+import {getMetersPerPixelAtLatitude, mercatorZfromAltitude, tileToMeter} from '../../src/geo/mercator_coordinate';
 import TextureSlots from './texture_slots';
 import {convertModelMatrixForGlobe} from '../util/model_util';
 import {clamp, warnOnce} from '../../src/util/util';
@@ -20,8 +20,10 @@ import {Texture3D} from '../../src/render/texture';
 import {pointInFootprint} from '../../3d-style/source/replacement_source';
 import Point from '@mapbox/point-geometry';
 
+import type Program from '../../src/render/program';
 import type Transform from '../../src/geo/transform';
 import type ModelBucket from '../data/bucket/model_bucket';
+import type {UniformValues} from '../../src/render/uniform_binding';
 import type {OverscaledTileID} from '../../src/source/tile_id';
 import type {Tiled3dModelFeature} from '../data/bucket/tiled_3d_model_bucket';
 import type Tiled3dModelBucket from '../data/bucket/tiled_3d_model_bucket';
@@ -29,12 +31,12 @@ import type Painter from '../../src/render/painter';
 import type {CreateProgramParams} from '../../src/render/painter';
 import type SourceCache from '../../src/source/source_cache';
 import type ModelStyleLayer from '../style/style_layer/model_style_layer';
-import type {Mesh, Node, ModelTexture} from '../data/model';
+import type {Mesh, ModelNode, ModelTexture} from '../data/model';
 import type {DynamicDefinesType} from '../../src/render/program/program_uniforms';
 import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type {CutoffParams} from '../../src/render/cutoff';
 import type {LUT} from "../../src/util/lut";
-import type EvaluationParameters from '../../src/style/evaluation_parameters';
+import type {ModelUniformsType, ModelDepthUniformsType} from '../render/program/model_program';
 
 export default drawModels;
 
@@ -71,15 +73,12 @@ type RenderData = {
 
 function fogMatrixForModel(modelMatrix: mat4, transform: Transform): mat4 {
     // convert model matrix from the default world size to the one used by the fog
-    const fogMatrix = [...modelMatrix];
+    const fogMatrix = [...modelMatrix] as mat4;
     const scale = transform.cameraWorldSizeForFog / transform.worldSize;
-    const scaleMatrix = mat4.identity([] as any);
+    const scaleMatrix = mat4.identity([] as unknown as mat4);
     mat4.scale(scaleMatrix, scaleMatrix, [scale, scale, 1]);
-    // @ts-expect-error - TS2345 - Argument of type '[number]' is not assignable to parameter of type 'mat4'.
-    mat4.multiply(fogMatrix as [number], scaleMatrix, fogMatrix as [number]);
-    // @ts-expect-error - TS2345 - Argument of type '[number]' is not assignable to parameter of type 'mat4'.
-    mat4.multiply(fogMatrix as [number], transform.worldToFogMatrix, fogMatrix as [number]);
-    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'mat4'.
+    mat4.multiply(fogMatrix, scaleMatrix, fogMatrix);
+    mat4.multiply(fogMatrix, transform.worldToFogMatrix, fogMatrix);
     return fogMatrix;
 }
 
@@ -108,9 +107,10 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
     setupTexture(normalTexture, 'HAS_TEXTURE_u_normalTexture', TextureSlots.Normal);
     setupTexture(occlusionTexture, 'HAS_TEXTURE_u_occlusionTexture', TextureSlots.Occlusion);
     setupTexture(emissionTexture, 'HAS_TEXTURE_u_emissionTexture', TextureSlots.Emission);
+
     if (lut) {
         if (!lut.texture) {
-            lut.texture = new Texture3D(painter.context, lut.image, [lut.image.height, lut.image.height, lut.image.height], context.gl.RGBA);
+            lut.texture = new Texture3D(painter.context, lut.image, [lut.image.height, lut.image.height, lut.image.height], context.gl.RGBA8);
         }
         context.activeTexture.set(context.gl.TEXTURE0 + TextureSlots.LUT);
         if (lut.texture) {
@@ -148,11 +148,17 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
         definesValues.push('DIFFUSE_SHADED');
     }
 
-    definesValues.push('USE_STANDARD_DERIVATIVES');
+    const shadowRenderer = painter.shadowRenderer;
+    if (shadowRenderer) {
+        definesValues.push('RENDER_SHADOWS', 'DEPTH_TEXTURE');
+        if (shadowRenderer.useNormalOffset) {
+            definesValues.push('NORMAL_OFFSET');
+        }
+    }
 }
 
 function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer, modelParameters: ModelParameters, stencilMode: StencilMode, colorMode: ColorMode) {
-    const opacity = layer.paint.get('model-opacity');
+    const opacity = layer.paint.get('model-opacity').constantOr(1.0);
 
     assert(opacity > 0);
     const context = painter.context;
@@ -168,12 +174,13 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     if (painter.transform.projection.zAxisUnit === "pixels") {
         lightingMatrix = [...sortedMesh.nodeModelMatrix];
     } else {
-        lightingMatrix = mat4.multiply([] as any, modelParameters.zScaleMatrix, sortedMesh.nodeModelMatrix);
+        lightingMatrix = mat4.multiply([] as unknown as mat4, modelParameters.zScaleMatrix, sortedMesh.nodeModelMatrix);
     }
     mat4.multiply(lightingMatrix, modelParameters.negCameraPosMatrix, lightingMatrix);
-    const normalMatrix = mat4.invert([] as any, lightingMatrix);
+    const normalMatrix = mat4.invert([] as unknown as mat4, lightingMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
 
+    const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
     const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
     const uniformValues = modelUniformValues(
         new Float32Array(sortedMesh.worldViewProjection),
@@ -183,7 +190,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
         painter,
 
         opacity,
-        pbr.baseColorFactor.toRenderColor(null),
+        pbr.baseColorFactor,
         material.emissiveFactor,
         pbr.metallicFactor,
         pbr.roughnessFactor,
@@ -198,9 +205,10 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     // Extra buffers (colors, normals, texCoords)
     const dynamicBuffers = [];
 
-    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
+
+    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
 
     let fogMatrixArray = null;
     if (fog) {
@@ -265,7 +273,7 @@ export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painte
     }
 }
 
-function prepareMeshes(transform: Transform, node: Node, modelMatrix: mat4, projectionMatrix: mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>,  opaqueMeshes: Array<SortedMesh>) {
+function prepareMeshes(transform: Transform, node: ModelNode, modelMatrix: mat4, projectionMatrix: mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>,  opaqueMeshes: Array<SortedMesh>) {
 
     let nodeModelMatrix;
     if (transform.projection.name === 'globe') {
@@ -274,7 +282,7 @@ function prepareMeshes(transform: Transform, node: Node, modelMatrix: mat4, proj
         nodeModelMatrix = [...modelMatrix];
     }
     mat4.multiply(nodeModelMatrix, nodeModelMatrix, node.matrix);
-    const worldViewProjection = mat4.multiply([] as any, projectionMatrix, nodeModelMatrix);
+    const worldViewProjection = mat4.multiply([] as unknown as mat4, projectionMatrix, nodeModelMatrix);
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (mesh.material.alphaMode !== 'BLEND') {
@@ -283,12 +291,11 @@ function prepareMeshes(transform: Transform, node: Node, modelMatrix: mat4, proj
                 continue;
             }
 
-            const centroidPos = vec3.transformMat4([] as any, mesh.centroid, worldViewProjection);
-            // Filter meshes behind the camera
-            if (centroidPos[2] > 0.0) {
-                const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix};
-                transparentMeshes.push(transparentMesh);
-            }
+            const centroidPos = vec3.transformMat4([] as unknown as vec3, mesh.centroid, worldViewProjection);
+            // Filter meshes behind the camera if in perspective mode
+            if (!transform.isOrthographic && centroidPos[2] <= 0.0) continue;
+            const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix};
+            transparentMeshes.push(transparentMesh);
         }
     }
     if (node.children) {
@@ -318,7 +325,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         return;
     }
     // early return if totally transparent
-    const opacity = layer.paint.get('model-opacity');
+    const opacity = layer.paint.get('model-opacity').constantOr(1.0);
     if (opacity === 0) {
         return;
     }
@@ -382,7 +389,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     const modelParametersVector: ModelParameters[] = [];
 
     const mercCameraPos = painter.transform.getFreeCameraOptions().position;
-    const cameraPos = vec3.scale([] as any, [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
+    const cameraPos = vec3.scale([] as unknown as vec3, [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
     vec3.negate(cameraPos, cameraPos);
     const transparentMeshes: SortedMesh[] = [];
     const opaqueMeshes: SortedMesh[] = [];
@@ -399,15 +406,14 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         model.computeModelMatrix(painter, rotation, scale, translation, true, true, false);
 
         // compute model parameters matrices
-        const negCameraPosMatrix = mat4.identity([] as any);
+        const negCameraPosMatrix = mat4.identity([] as unknown as mat4);
         const modelMetersPerPixel = getMetersPerPixelAtLatitude(model.position.lat, painter.transform.zoom);
         const modelPixelsPerMeter = 1.0 / modelMetersPerPixel;
-        const zScaleMatrix = mat4.fromScaling([] as any, [1.0, 1.0, modelPixelsPerMeter]);
+        const zScaleMatrix = mat4.fromScaling([] as unknown as mat4, [1.0, 1.0, modelPixelsPerMeter]);
         mat4.translate(negCameraPosMatrix, negCameraPosMatrix, cameraPos);
         const modelParameters = {zScaleMatrix, negCameraPosMatrix};
         modelParametersVector.push(modelParameters);
         for (const node of model.nodes) {
-            // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'mat4'.
             prepareMeshes(painter.transform, node, model.matrix, painter.transform.expandedFarZProjMatrix, modelIndex, transparentMeshes, opaqueMeshes);
         }
         modelIndex++;
@@ -569,7 +575,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
     const modelIdUnevaluatedProperty = layer._unevaluatedLayout._values['model-id'];
 
-    const evaluationParameters = {...layer.layout.get("model-id").parameters} as EvaluationParameters;
+    const evaluationParameters = Object.assign({}, layer.layout.get("model-id").parameters);
 
     const layerIndex = painter.style.order.indexOf(layer.fqid);
 
@@ -579,7 +585,6 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
         if (!bucket || bucket.projection.name !== tr.projection.name) continue;
         const modelUris = bucket.getModelUris();
         if (modelUris && !bucket.modelsRequested) {
-            // geojson models are always set in the root scope to avoid model duplication
             modelManager.addModelsFromBucket(modelUris, scope);
             bucket.modelsRequested = true;
         }
@@ -596,7 +601,6 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
             const tileMatrix = tr.calculatePosMatrix(coord.toUnwrapped(), tr.worldSize);
             renderData.tileMatrix.set(tileMatrix);
-            // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
             renderData.shadowTileMatrix = Float32Array.from(shadowRenderer.calculateShadowPassMatrixFromMatrix(tileMatrix));
             renderData.aabb.min.fill(0);
             renderData.aabb.max[0] = renderData.aabb.max[1] = EXTENT;
@@ -606,7 +610,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
         // camera position in the tile coordinates
         const tiles = 1 << coord.canonical.z;
-        const cameraPos = [
+        const cameraPos: [number, number, number] = [
             ((mercCameraPos.x - coord.wrap) * tiles - coord.canonical.x) * EXTENT,
             (mercCameraPos.y * tiles - coord.canonical.y) * EXTENT,
             mercCameraPos.z * tiles * EXTENT
@@ -629,10 +633,14 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
             }
 
             const model = modelManager.getModel(modelId, scope);
+            if (!model && !modelManager.hasURLBeenRequested(modelId) && !bucket.modelUris.includes(modelId)) {
+                // We are asking for a model that's not yet on this bucket's model list
+                bucket.modelUris.push(modelId);
+                bucket.modelsRequested = false;
+            }
             if (!model || !model.uploaded) continue;
 
             for (const node of model.nodes) {
-                // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number, number]'.
                 drawInstancedNode(painter, layer, node, modelInstances, cameraPos, coord, renderData);
             }
         }
@@ -641,7 +649,8 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
 const minimumInstanceCount = 20;
 
-function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: ModelNode, modelInstances: any, cameraPos: [number, number, number], coord: OverscaledTileID, renderData: RenderData) {
     const context = painter.context;
     const isShadowPass = painter.renderPass === 'shadow';
     const shadowRenderer = painter.shadowRenderer;
@@ -652,8 +661,8 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
         for (const mesh of node.meshes) {
             const definesValues = ['MODEL_POSITION_ON_GPU'];
             const dynamicBuffers = [];
-            let program;
-            let uniformValues;
+            let program: Program<ModelUniformsType | ModelDepthUniformsType>;
+            let uniformValues: UniformValues<ModelUniformsType | ModelDepthUniformsType>;
             let colorMode;
 
             if (modelInstances.instancedDataArray.length > minimumInstanceCount) {
@@ -669,11 +678,13 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                 uniformValues = modelDepthUniformValues(renderData.shadowTileMatrix, renderData.shadowTileMatrix, Float32Array.from(node.matrix));
                 colorMode = shadowRenderer.getShadowPassColorMode();
             } else {
-                setupMeshDraw(definesValues, dynamicBuffers, mesh, painter, layer.lut);
+
+                const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
+                setupMeshDraw(definesValues, dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                 program = painter.getOrCreateProgram('model', {defines: (definesValues as DynamicDefinesType[]), overrideFog: affectedByFog});
                 const material = mesh.material;
                 const pbr = material.pbrMetallicRoughness;
-                const layerOpacity = layer.paint.get('model-opacity');
+                const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
 
                 const emissiveStrength = layer.paint.get('model-emissive-strength').constantOr(0.0);
                 uniformValues = modelUniformValues(
@@ -684,7 +695,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Node,
                     painter,
 
                     layerOpacity,
-                    pbr.baseColorFactor.toRenderColor(null),
+                    pbr.baseColorFactor,
                     material.emissiveFactor,
                     pbr.metallicFactor,
                     pbr.roughnessFactor,
@@ -742,10 +753,10 @@ function prepareBatched(painter: Painter, source: SourceCache, layer: ModelStyle
         const tile = source.getTile(coord);
         const bucket = tile.getBucket(layer) as Tiled3dModelBucket | null | undefined;
         if (!bucket) continue;
+        bucket.setFilter(layer.filter);
         // Conflation
         if (painter.conflationActive) bucket.updateReplacement(coord, painter.replacementSource);
-        // evaluate scale
-        bucket.evaluateScale(painter, layer);
+        bucket.evaluateTransform(painter, layer);
         // Compute elevation
         if (painter.terrain && exaggeration > 0) {
             bucket.elevationUpdate(painter.terrain, exaggeration, coord, layer.source);
@@ -768,15 +779,15 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     }
 
     const mercCameraPos = painter.transform.getFreeCameraOptions().position;
-    const cameraPos = vec3.scale([] as any, [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
-    const negCameraPos = vec3.negate([] as any, cameraPos);
+    const cameraPos = vec3.scale([] as unknown as vec3, [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
+    const negCameraPos = vec3.negate([] as unknown as vec3, cameraPos);
     // compute model parameters matrices
-    const negCameraPosMatrix = mat4.identity([] as any);
+    const negCameraPosMatrix = mat4.identity([] as unknown as mat4);
     const metersPerPixel = getMetersPerPixelAtLatitude(tr.center.lat, tr.zoom);
     const pixelsPerMeter = 1.0 / metersPerPixel;
-    const zScaleMatrix = mat4.fromScaling([] as any, [1.0, 1.0, pixelsPerMeter]);
+    const zScaleMatrix = mat4.fromScaling([] as unknown as mat4, [1.0, 1.0, pixelsPerMeter]);
     mat4.translate(negCameraPosMatrix, negCameraPosMatrix, negCameraPos);
-    const layerOpacity = layer.paint.get('model-opacity');
+    const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
 
     const depthModeRW = new DepthMode(context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
     const depthModeRO = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
@@ -791,7 +802,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     const cutoffParams = getCutoffParams(painter, layer.paint.get('model-cutoff-fade-range'));
 
     const stats = layer.getLayerRenderingStats();
-    const drawTiles = function() {
+    const drawTiles = function () {
         let start, end, step;
         // When front cutoff is enabled the tiles are iterated in back to front order
         if (frontCutoffEnabled) {
@@ -804,7 +815,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             step = 1;
         }
 
-        const invTileMatrix = new Float64Array(16);
+        const invTileMatrix = new Float64Array(16) as unknown as mat4;
         const cameraPosTileCoord = vec3.create();
         const cameraPointTileCoord = new Point(0.0, 0.0);
 
@@ -822,15 +833,14 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             const modelTraits = bucket.modelTraits;
 
             if (!isShadowPass && frontCutoffEnabled) {
-                // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
                 mat4.invert(invTileMatrix, tileMatrix);
-                // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
                 vec3.transformMat4(cameraPosTileCoord, cameraPos, invTileMatrix);
                 cameraPointTileCoord.x = cameraPosTileCoord[0];
                 cameraPointTileCoord.y = cameraPosTileCoord[1];
             }
 
             const sortedNodes: Array<SortedNode> = [];
+            bucket.setFilter(layer.filter);
             for (const nodeInfo of bucket.getNodesInfo()) {
                 if (nodeInfo.hiddenByReplacement) continue;
                 if (!nodeInfo.node.meshes) continue;
@@ -843,15 +853,11 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
 
                 const calculateNodeAabb = () => {
                     const localBounds = nodeInfo.aabb;
-                    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec3'.
-                    aabb.min = [...localBounds.min];
-                    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'vec3'.
-                    aabb.max = [...localBounds.max];
+                    aabb.min = [...localBounds.min] as vec3;
+                    aabb.max = [...localBounds.max] as vec3;
                     aabb.min[2] += elevation;
                     aabb.max[2] += elevation;
-                    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
                     vec3.transformMat4(aabb.min, aabb.min, tileMatrix);
-                    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
                     vec3.transformMat4(aabb.max, aabb.max, tileMatrix);
                     return aabb;
                 };
@@ -859,7 +865,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
 
                 const scale = nodeInfo.evaluatedScale;
                 if (scale[0] <= 1 && scale[1] <= 1 && scale[2] <= 1 && nodeAabb.intersects(frustum) === 0) {
-                    // While it is possible to use arbitrary scale for  landmarks, it is highly unlikely
+                    // While it is possible to use arbitrary scale for landmarks, it is highly unlikely
                     // and frustum culling optimization could be skipped in that case.
                     continue;
                 }
@@ -876,29 +882,26 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     }
                 }
 
-                const tileModelMatrix = [...tileMatrix];
+                const tileModelMatrix = [...tileMatrix] as mat4;
+                const tileUnitsPerMeter = 1.0 / tileToMeter(coord.canonical);
 
                 const anchorX = node.anchor ? node.anchor[0] : 0;
                 const anchorY = node.anchor ? node.anchor[1] : 0;
 
-                // @ts-expect-error - TS2345 - Argument of type '[number]' is not assignable to parameter of type 'mat4'.
-                mat4.translate(tileModelMatrix as [number], tileModelMatrix as [number], [anchorX * (scale[0] - 1),
-                    anchorY * (scale[1] - 1),
-                    elevation]);
+                mat4.translate(tileModelMatrix, tileModelMatrix, [
+                    anchorX * (scale[0] - 1) + nodeInfo.evaluatedTranslation[0] * tileUnitsPerMeter,
+                    anchorY * (scale[1] - 1) + nodeInfo.evaluatedTranslation[1] * tileUnitsPerMeter,
+                    elevation + nodeInfo.evaluatedTranslation[2]]);
                 if (!vec3.exactEquals(scale, DefaultModelScale)) {
-                    // @ts-expect-error - TS2345 - Argument of type '[number]' is not assignable to parameter of type 'mat4'.
-                    mat4.scale(tileModelMatrix as [number], tileModelMatrix as [number], scale);
+                    mat4.scale(tileModelMatrix, tileModelMatrix, scale);
                 }
 
                 // keep model and nodemodel matrices separate for rendering door lights
-                // @ts-expect-error - TS2345 - Argument of type '[number]' is not assignable to parameter of type 'ReadonlyMat4'.
-                const nodeModelMatrix = mat4.multiply([] as any, tileModelMatrix as [number], node.matrix);
-                // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-                const wvpForNode = mat4.multiply([] as any, tr.expandedFarZProjMatrix, nodeModelMatrix);
+                const nodeModelMatrix = mat4.multiply([] as unknown as mat4, tileModelMatrix, node.matrix);
+                const wvpForNode = mat4.multiply([] as unknown as mat4, tr.expandedFarZProjMatrix, nodeModelMatrix);
                 // Lights come in tilespace so wvp should not include node.matrix when rendering door ligths
-                // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-                const wvpForTile = mat4.multiply([] as any, tr.expandedFarZProjMatrix, tileModelMatrix as [number]);
-                const anchorPos = vec4.transformMat4([] as any, [anchorX, anchorY, elevation, 1.0], wvpForNode);
+                const wvpForTile = mat4.multiply([] as unknown as mat4, tr.expandedFarZProjMatrix, tileModelMatrix);
+                const anchorPos = vec4.transformMat4([] as unknown as vec4, [anchorX, anchorY, elevation, 1.0], wvpForNode);
                 const depth = anchorPos[2];
 
                 node.hidden = false;
@@ -906,7 +909,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 if (!isShadowPass) {
                     if (frontCutoffEnabled) {
                         opacity *= nodeInfo.cameraCollisionOpacity;
-                        opacity *= calculateFrontCutoffOpacity(tileModelMatrix as any, tr, nodeInfo.aabb, frontCutoffParams);
+                        opacity *= calculateFrontCutoffOpacity(tileModelMatrix, tr, nodeInfo.aabb, frontCutoffParams);
                     }
 
                     opacity *= calculateFarCutoffOpacity(cutoffParams, depth);
@@ -924,7 +927,6 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     wvpForNode,
                     wvpForTile,
                     nodeModelMatrix,
-                    // @ts-expect-error - TS2322 - Type 'number[]' is not assignable to type 'mat4'.
                     tileModelMatrix
                 };
 
@@ -954,9 +956,9 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 const nodeInfo = sortedNode.nodeInfo;
                 const node = nodeInfo.node;
 
-                let lightingMatrix = mat4.multiply([] as any, zScaleMatrix, sortedNode.tileModelMatrix);
+                let lightingMatrix = mat4.multiply([] as unknown as mat4, zScaleMatrix, sortedNode.tileModelMatrix);
                 mat4.multiply(lightingMatrix, negCameraPosMatrix, lightingMatrix);
-                const normalMatrix = mat4.invert([] as any, lightingMatrix);
+                const normalMatrix = mat4.invert([] as unknown as mat4, lightingMatrix);
                 mat4.transpose(normalMatrix, normalMatrix);
                 mat4.scale(normalMatrix, normalMatrix, normalScale as [number, number, number]);
 
@@ -964,6 +966,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 lightingMatrix = mat4.multiply(lightingMatrix, lightingMatrix, node.matrix);
 
                 const isLightBeamPass = painter.renderPass === 'light-beam';
+                const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
                 const hasMapboxFeatures = modelTraits & ModelTraits.HasMapboxMeshFeatures;
                 const emissiveStrength = hasMapboxFeatures ? 0.0 : nodeInfo.evaluatedRMEA[0][2];
 
@@ -988,14 +991,17 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         defines: []
                     };
                     const dynamicBuffers = [];
-                    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, layer.lut);
+
+                    if (!isShadowPass && shadowRenderer) {
+                        shadowRenderer.useNormalOffset = !!mesh.normalBuffer;
+                    }
+
+                    setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                     if (!hasMapboxFeatures) {
-                        // @ts-expect-error
                         programOptions.defines.push('DIFFUSE_SHADED');
                     }
 
                     if (singleCascade) {
-                        // @ts-expect-error
                         programOptions.defines.push('SHADOWS_SINGLE_CASCADE');
                     }
 
@@ -1030,13 +1036,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     // Handle Texture transform
                     if (material.occlusionTexture && material.occlusionTexture.offsetScale) {
                         occlusionTextureTransform = material.occlusionTexture.offsetScale;
-                        // @ts-expect-error
                         programOptions.defines.push('OCCLUSION_TEXTURE_TRANSFORM');
-                    }
-
-                    if (!isShadowPass && shadowRenderer) {
-                        // Set normal offset before program creation, as it adds/remove necessary defines under the hood
-                        shadowRenderer.useNormalOffset = !!mesh.normalBuffer;
                     }
 
                     const program = painter.getOrCreateProgram('model', programOptions);
@@ -1062,7 +1062,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             new Float32Array(node.matrix),
                             painter,
                             sortedNode.opacity,
-                            pbr.baseColorFactor.toRenderColor(null),
+                            pbr.baseColorFactor,
                             material.emissiveFactor,
                             pbr.metallicFactor,
                             pbr.roughnessFactor,
@@ -1125,10 +1125,8 @@ function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderD
     aabb.min[2] += bucket.terrainElevationMin;
     aabb.max[2] += bucket.terrainElevationMax;
 
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-    vec3.transformMat4(aabb.min, aabb.min, renderData.tileMatrix);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-    vec3.transformMat4(aabb.max, aabb.max, renderData.tileMatrix);
+    vec3.transformMat4(aabb.min, aabb.min, renderData.tileMatrix as unknown as mat4);
+    vec3.transformMat4(aabb.max, aabb.max, renderData.tileMatrix as unknown as mat4);
     const intersection = aabb.intersects(shadowRenderer.getCurrentCascadeFrustum());
     if (painter.currentShadowCascade === 0) {
         bucket.isInsideFirstShadowMapFrustum = intersection === 2;

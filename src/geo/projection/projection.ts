@@ -6,8 +6,8 @@ import {mat4} from 'gl-matrix';
 import EXTENT from '../../style-spec/data/extent';
 import tileTransform from './tile_transform';
 
-import type Transform from '../../geo/transform';
 import type {vec3} from 'gl-matrix';
+import type Transform from '../../geo/transform';
 import type MercatorCoordinate from '../mercator_coordinate';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type {CanonicalTileID, UnwrappedTileID} from '../../source/tile_id';
@@ -59,11 +59,11 @@ export default class Projection {
         this.range = [3.5, 7];
     }
 
-    project(lng: number, lat: number): ProjectedPoint { // eslint-disable-line
+    project(lng: number, lat: number): ProjectedPoint {
         return {x: 0, y: 0, z: 0}; // overriden in subclasses
     }
 
-    unproject(x: number, y: number): LngLat { // eslint-disable-line
+    unproject(x: number, y: number): LngLat {
         return new LngLat(0, 0); // overriden in subclasses
     }
 
@@ -71,8 +71,8 @@ export default class Projection {
         return {x, y, z: 0};
     }
 
-    locationPoint(tr: Transform, lngLat: LngLat, terrain: boolean = true): Point {
-        return tr._coordinatePoint(tr.locationCoordinate(lngLat), terrain);
+    locationPoint(tr: Transform, lngLat: LngLat, altitude?: number, terrain: boolean = true): Point {
+        return tr._coordinatePoint(tr.locationCoordinate(lngLat, altitude), terrain);
     }
 
     pixelsPerMeter(lat: number, worldSize: number): number {
@@ -86,7 +86,7 @@ export default class Projection {
     // `pixelSpaceConversion` is useful for converting between pixel spaces where some logic
     // expects mercator pixels, such as raycasting where the scale is expected to be in
     // mercator pixels.
-    pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number { // eslint-disable-line
+    pixelSpaceConversion(lat: number, worldSize: number, interpolationT: number): number {
         return 1.0;
     }
 
@@ -103,8 +103,7 @@ export default class Projection {
     pointCoordinate3D(tr: Transform, x: number, y: number): vec3 | null | undefined {
         const p = new Point(x, y);
         if (tr.elevation) {
-            // @ts-expect-error - TS2322 - Type 'vec4' is not assignable to type 'vec3'.
-            return tr.elevation.pointCoordinate(p);
+            return tr.elevation.pointCoordinate(p) as vec3;
         } else {
             const mc = this.pointCoordinate(tr, p.x, p.y, 0);
             return [mc.x, mc.y, mc.z];
@@ -120,16 +119,14 @@ export default class Projection {
         return p.y < horizon;
     }
 
-    createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array { // eslint-disable-line
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
+    createInversionMatrix(tr: Transform, id: CanonicalTileID): mat4 {
         return identity;
     }
 
-    createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): Float64Array {
+    createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): mat4 {
         let scale, scaledX, scaledY;
         const canonical = id.canonical;
-        // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
-        const posMatrix = mat4.identity(new Float64Array(16));
+        const posMatrix = mat4.identity(new Float64Array(16) as unknown as mat4);
 
         if (this.isReprojectedInTileSpace) {
             const cs = tileTransform(canonical, this);
@@ -147,7 +144,6 @@ export default class Projection {
         mat4.translate(posMatrix, posMatrix, [scaledX, scaledY, 0]);
         mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
 
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float64Array'.
         return posMatrix;
     }
 

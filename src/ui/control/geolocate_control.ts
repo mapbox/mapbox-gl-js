@@ -147,7 +147,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
         // clear the geolocation watch if exists
         if (this._geolocationWatchID !== undefined) {
             this.options.geolocation.clearWatch(this._geolocationWatchID);
-            this._geolocationWatchID = (undefined as any);
+            this._geolocationWatchID = undefined;
         }
 
         // clear the markers from the map
@@ -160,7 +160,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
 
         this._container.remove();
         this._map.off('zoom', this._onZoom);
-        this._map = (undefined as any);
+        this._map = undefined;
         this._numberOfWatches = 0;
         this._noTimeout = false;
     }
@@ -429,7 +429,6 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             return;
         }
         this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
-        // @ts-expect-error - TS2322 - Type 'HTMLElement' is not assignable to type 'HTMLButtonElement'.
         this._geolocateButton = DOM.create('button', `mapboxgl-ctrl-geolocate`, this._container);
         DOM.create('span', `mapboxgl-ctrl-icon`, this._geolocateButton).setAttribute('aria-hidden', 'true');
 
@@ -630,7 +629,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                 this._numberOfWatches++;
                 let positionOptions;
                 if (this._numberOfWatches > 1) {
-                    positionOptions = {maximumAge:600000, timeout:0};
+                    positionOptions = {maximumAge: 600000, timeout: 0};
                     this._noTimeout = true;
                 } else {
                     positionOptions = this.options.positionOptions;
@@ -689,7 +688,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
         // @ts-expect-error - TS2769 - No overload matches this call.
         window.removeEventListener('deviceorientationabsolute', this._onDeviceOrientation);
 
-        this._geolocationWatchID = (undefined as any);
+        this._geolocationWatchID = undefined;
         this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
         this._geolocateButton.setAttribute('aria-pressed', 'false');
 
@@ -724,7 +723,7 @@ export default GeolocateControl;
  * @event geolocate
  * @memberof GeolocateControl
  * @instance
- * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
+ * @property {GeolocationPosition} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
  * @example
  * // Initialize the GeolocateControl.
  * const geolocate = new mapboxgl.GeolocateControl({
@@ -748,7 +747,7 @@ export default GeolocateControl;
  * @event error
  * @memberof GeolocateControl
  * @instance
- * @property {PositionError} data The returned [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
+ * @property {GeolocationPositionError} data The returned [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
  * @example
  * // Initialize the GeolocateControl.
  * const geolocate = new mapboxgl.GeolocateControl({
@@ -772,7 +771,7 @@ export default GeolocateControl;
  * @event outofmaxbounds
  * @memberof GeolocateControl
  * @instance
- * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
+ * @property {GeolocationPosition} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
  * @example
  * // Initialize the GeolocateControl.
  * const geolocate = new mapboxgl.GeolocateControl({

@@ -1,0 +1,223 @@
+{
+  "version": 8,
+  "metadata": {
+    "description": "",
+    "test": {
+      "height": 512,
+      "width": 512,
+      "allowed": 0.0007,
+      "operations": [
+        ["wait"],
+        ["setZoom", 3.0],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "country-boundaries": {
+      "type": "vector",
+      "maxzoom": 2,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -111.7296546,
+                68.7052613
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "zoom": 2.22,
+  "pitch": 35,
+  "center": [
+    -110,
+    33
+  ],
+  "projection": {
+    "name": "globe"
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightblue"
+      }
+    },
+    {
+      "id": "country-boundaries",
+      "type": "fill-extrusion",
+      "paint": {
+        "fill-extrusion-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "get",
+            "color_group"
+          ],
+          1,
+          "hsl(0, 87%, 68%)",
+          6,
+          "hsl(43, 88%, 58%)"
+        ],
+        "fill-extrusion-height": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "get",
+            "color_group"
+          ],
+          1,
+          3000000,
+          6,
+          300000
+        ],
+        "fill-extrusion-opacity": 0.9,
+        "fill-extrusion-vertical-gradient": false
+      },
+      "source": "country-boundaries",
+      "source-layer": "country_boundaries"
+    },
+    {
+      "filter": [
+          "match",
+          [
+          "get",
+          "class"
+          ],
+          [
+          "country",
+          "disputed_country"
+          ],
+          [
+          "match",
+          [
+              "get",
+              "worldview"
+          ],
+          [
+              "US",
+              "all"
+          ],
+          true,
+          false
+          ],
+          false
+      ],
+      "id": "country-label",
+      "layout": {
+          "symbol-z-elevate": true,
+          "icon-image": "",
+          "text-field": [
+          "format",
+          [
+              "coalesce",
+              [
+              "get",
+              "name_en"
+              ],
+              [
+              "get",
+              "name"
+              ]
+          ],
+          {}
+          ],
+          "text-font": [
+            "Open Sans Semibold",
+            "Arial Unicode MS Bold"
+          ],
+          "text-line-height": 1.100000023841858,
+          "text-max-width": 6.0
+      },
+      "maxzoom": 10.0,
+      "minzoom": 1.0,
+      "paint": {
+          "icon-opacity": [
+          "step",
+          [
+              "zoom"
+          ],
+          [
+              "case",
+              [
+              "has",
+              "text_anchor"
+              ],
+              1.0,
+              0.0
+          ],
+          7.0,
+          0.0
+          ],
+          "text-color": [
+          "rgba",
+          0.0,
+          0.0,
+          0.0,
+          1.0
+          ],
+          "text-halo-color": [
+          "interpolate",
+          [
+              "linear"
+          ],
+          [
+              "zoom"
+          ],
+          2.0,
+          [
+              "rgba",
+              255.0,
+              255.0,
+              255.0,
+              0.75
+          ],
+          3.0,
+          [
+              "rgba",
+              255.0,
+              255.0,
+              255.0,
+              1.0
+          ]
+          ],
+          "text-halo-width": 1.25
+      },
+      "source": "country-boundaries",
+      "source-layer": "place_label",
+      "type": "symbol"
+    },
+    {
+      "id": "test",
+      "source": "geojson",
+      "type": "symbol",
+      "layout": {
+        "text-field": "Hides Canada",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

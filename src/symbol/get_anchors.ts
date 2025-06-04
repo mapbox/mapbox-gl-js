@@ -110,6 +110,7 @@ function getAnchors(
         ((shapedLabelLength / 2 + fixedExtraOffset) * boxScale * overscaling) % spacing :
         (spacing / 2 * overscaling) % spacing;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, false, tileExtent);
 }
 
@@ -164,5 +165,6 @@ function resample(line: Array<Point>, offset: number, spacing: number, angleWind
         anchors = resample(line, distance / 2, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, true, tileExtent);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return anchors;
 }

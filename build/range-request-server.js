@@ -1,16 +1,16 @@
-import st from 'st';
 import fs from 'fs';
-import { dirname, join, normalize } from 'path';
-import { fileURLToPath } from 'url';
+import {dirname, join, normalize} from 'path';
+import {fileURLToPath} from 'url';
 import http from 'http';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-
-function formatLog (req, res) {
+function formatLog(req, res) {
     return `[${res.statusCode} ${res.statusMessage}] ${req.method.toUpperCase()} ${req.url}`;
 }
 
-const port = process.env.PORT || 9967;
+/** @type {number} */
+const port = Number(process.env.PORT) || 9967;
+/** @type {string} */
 const host = process.env.HOST || '0.0.0.0';
 
 // This script implements a basic dev server roughly equivalent in behavior to
@@ -26,7 +26,7 @@ http.createServer((req, res) => {
     const safeUrl = join(__dirname, '..', unsafeUrl);
 
     const range = req.headers.range;
-    let options = {};
+    const options = {};
     let start, end;
 
     if (range) {
@@ -59,7 +59,7 @@ http.createServer((req, res) => {
             return;
         }
 
-        let contentLength = stat.size;
+        const contentLength = stat.size;
 
         if (req.method === "HEAD") {
             res.statusCode = 200;
@@ -70,15 +70,12 @@ http.createServer((req, res) => {
         } else {
             let retrievedLength;
             if (start !== undefined && end !== undefined) {
-                retrievedLength = (end+1) - start;
-            }
-            else if (start !== undefined) {
+                retrievedLength = (end + 1) - start;
+            } else if (start !== undefined) {
                 retrievedLength = contentLength - start;
-            }
-            else if (end !== undefined) {
-                retrievedLength = (end+1);
-            }
-            else {
+            } else if (end !== undefined) {
+                retrievedLength = (end + 1);
+            } else {
                 retrievedLength = contentLength;
             }
 
@@ -90,7 +87,7 @@ http.createServer((req, res) => {
             end = Math.min(end, contentLength);
 
             if (range !== undefined) {
-                res.setHeader("content-range", `bytes ${start || 0}-${end || (contentLength-1)}/${contentLength}`);
+                res.setHeader("content-range", `bytes ${start || 0}-${end || (contentLength - 1)}/${contentLength}`);
                 res.setHeader("accept-ranges", "bytes");
             }
 
@@ -110,4 +107,4 @@ http.createServer((req, res) => {
     });
 }).listen(port, host, () => {
     console.log(`Listening on http://${host}:${port} `);
-})
+});

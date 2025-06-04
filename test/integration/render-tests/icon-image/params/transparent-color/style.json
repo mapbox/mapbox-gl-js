@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "spriteFormat": "icon_set",
+      "width": 128,
+      "height": 64,
+      "allowed": 0.006
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/colored",
+  "layers": [
+    {
+      "id": "orig",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": ["image", "colored"],
+        "icon-offset": [-25, 0]
+      }
+    },
+    {
+      "id": "colored",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": ["image", "colored",
+          {
+            "params": {
+              "color0": "rgba(255, 0, 0, 0)",
+              "color1": "rgba(255, 255, 0, 0.5)",
+              "color2": "rgba(0, 0, 0, 0)",
+              "color3": "rgba(0, 0, 255, 0.5)"
+            }
+          }
+        ],
+        "icon-offset": [25, 0]
+      }
+    }
+  ]
+}

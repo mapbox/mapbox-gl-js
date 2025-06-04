@@ -8,8 +8,9 @@ import browser from '../util/browser';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 import {DedupedRequest, loadVectorTile} from './load_vector_tile';
 import {makeFQID} from '../util/fqid';
+import {isMapboxURL} from '../util/mapbox_url';
 
-import type {ISource, SourceEvents} from './source';
+import type {ISource, SourceEvents, SourceVectorLayer} from './source';
 import type {OverscaledTileID} from './tile_id';
 import type {Map} from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -19,7 +20,8 @@ import type {Cancelable} from '../types/cancelable';
 import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-spec/types';
 import type Actor from '../util/actor';
 import type {LoadVectorTileResult} from './load_vector_tile';
-import type {WorkerTileResult} from './worker_source';
+import type {WorkerSourceVectorTileRequest, WorkerSourceVectorTileResult} from './worker_source';
+import type {AJAXError} from '../util/ajax';
 
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
@@ -47,7 +49,7 @@ import type {WorkerTileResult} from './worker_source';
  * @see [Example: Add a vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/vector-source/)
  * @see [Example: Add a third party vector tile source](https://docs.mapbox.com/mapbox-gl-js/example/third-party/)
  */
-class VectorTileSource extends Evented<SourceEvents> implements ISource {
+class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'> {
     type: 'vector';
     id: string;
     scope: string;
@@ -56,37 +58,39 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
     url: string;
     scheme: string;
     tileSize: number;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
-    roundZoom: boolean | undefined;
-    attribution: string | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
+    roundZoom?: boolean;
+    attribution?: string;
     // eslint-disable-next-line camelcase
-    mapbox_logo: boolean | undefined;
-    promoteId: PromoteIdSpecification | null | undefined;
+    mapbox_logo?: boolean;
+    promoteId?: PromoteIdSpecification | null;
 
     _options: VectorSourceSpecification;
     _collectResourceTiming: boolean;
     dispatcher: Dispatcher;
     map: Map;
-    bounds: [number, number, number, number] | null | undefined;
+    bounds?: [number, number, number, number] | null;
     tiles: Array<string>;
-    tileBounds: TileBounds;
-    reparseOverscaled: boolean | undefined;
-    isTileClipped: boolean | undefined;
-    _tileJSONRequest: Cancelable | null | undefined;
+    tileBounds?: TileBounds;
+    reparseOverscaled?: boolean;
+    isTileClipped?: boolean;
+    _tileJSONRequest?: Cancelable | null;
     _loaded: boolean;
-    _tileWorkers: {
-        [key: string]: Actor;
-    };
+    _tileWorkers: Record<string, Actor>;
     _deduped: DedupedRequest;
-    vectorLayerIds: Array<string> | undefined;
+    vectorLayers?: Array<SourceVectorLayer>;
+    vectorLayerIds?: Array<string>;
+    rasterLayers?: never;
+    rasterLayerIds?: never;
+    hasWorldviews?: boolean;
+    worldviewDefault?: string;
+    localizableLayerIds?: Set<string>;
 
     prepare: undefined;
     _clear: undefined;
 
-    constructor(id: string, options: VectorSourceSpecification & {
-        collectResourceTiming: boolean;
-    }, dispatcher: Dispatcher, eventedParent: Evented) {
+    constructor(id: string, options: VectorSourceSpecification & {collectResourceTiming: boolean}, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -119,18 +123,37 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
         this._loaded = false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
         const language = Array.isArray(this.map._language) ? this.map._language.join() : this.map._language;
-        const worldview = this.map._worldview;
+        const worldview = this.map.getWorldview();
         this._tileJSONRequest = loadTileJSON(this._options, this.map._requestManager, language, worldview, (err, tileJSON) => {
             this._tileJSONRequest = null;
             this._loaded = true;
             if (err) {
                 if (language) console.warn(`Ensure that your requested language string is a valid BCP-47 code or list of codes. Found: ${language}`);
-                if (worldview && worldview.length !== 2) console.warn(`Requested worldview strings must be a valid ISO alpha-2 code. Found: ${worldview}`);
+                if (worldview) console.warn(`Requested worldview strings must be a valid ISO alpha-2 code. Found: ${worldview}`);
 
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
                 extend(this, tileJSON);
-                if (tileJSON.bounds) this.tileBounds = new TileBounds(tileJSON.bounds, this.minzoom, this.maxzoom);
+
+                this.hasWorldviews = !!tileJSON.worldview_options;
+                if (tileJSON.worldview_default) {
+                    this.worldviewDefault = tileJSON.worldview_default;
+                }
+
+                if (tileJSON.vector_layers) {
+                    this.vectorLayers = tileJSON.vector_layers;
+                    this.vectorLayerIds = [];
+                    this.localizableLayerIds = new Set();
+                    for (const layer of tileJSON.vector_layers) {
+                        this.vectorLayerIds.push(layer.id);
+                        // Check if the layer source is localizable
+                        if (tileJSON.worldview && tileJSON.worldview[layer.source]) {
+                            this.localizableLayerIds.add(layer.id);
+                        }
+                    }
+                }
+
+                this.tileBounds = TileBounds.fromTileJSON(tileJSON);
                 postTurnstileEvent(tileJSON.tiles, this.map._requestManager._customAccessToken);
 
                 // `content` is included here to prevent a race condition where `Style#updateSources` is called
@@ -223,19 +246,21 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
     }
 
     loadTile(tile: Tile, callback: Callback<undefined>) {
-        const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme));
+        const tileUrl = tile.tileID.canonical.url(this.tiles, this.scheme);
+        const url = this.map._requestManager.normalizeTileURL(tileUrl);
         const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
         const lutForScope = this.map.style ? this.map.style.getLut(this.scope) : null;
-        const params = {
+        const lut = lutForScope ? {image: lutForScope.image.clone()} : null;
+
+        const params: WorkerSourceVectorTileRequest = {
             request,
             data: undefined,
             uid: tile.uid,
             tileID: tile.tileID,
             tileZoom: tile.tileZoom,
             zoom: tile.tileID.overscaledZ,
-            lut: lutForScope ? {
-                image: lutForScope.image.clone()
-            } : null,
+            maxZoom: this.maxzoom,
+            lut,
             tileSize: this.tileSize * tile.tileID.overscaleFactor(),
             type: this.type,
             source: this.id,
@@ -246,8 +271,18 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
             isSymbolTile: tile.isSymbolTile,
             brightness: this.map.style ? (this.map.style.getBrightness() || 0.0) : 0.0,
             extraShadowCaster: tile.isExtraShadowCaster,
-            tessellationStep: this.map._tessellationStep
+            tessellationStep: this.map._tessellationStep,
+            scaleFactor: this.map.getScaleFactor(),
+            worldview: this.map.getWorldview() || this.worldviewDefault
         };
+
+        // If we request a Mapbox URL, use the `worldview` param in the WorkerTile
+        // to filter out features in the localizable layers
+        // that are not visible in the current worldview.
+        if (this.hasWorldviews && isMapboxURL(tileUrl)) {
+            params.localizableLayerIds = this.localizableLayerIds;
+        }
+
         params.request.collectResourceTiming = this._collectResourceTiming;
 
         if (!tile.actor || tile.state === 'expired') {
@@ -283,13 +318,12 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource {
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
-        function done(err?: Error | null, data?: WorkerTileResult | null) {
+        function done(err?: AJAXError | null, data?: WorkerSourceVectorTileResult | null) {
             delete tile.request;
 
             if (tile.aborted)
                 return callback(null);
 
-            // @ts-expect-error - TS2339 - Property 'status' does not exist on type 'Error'.
             if (err && err.status !== 404) {
                 return callback(err);
             }

@@ -1,0 +1,15 @@
+{
+  "expression": ["image", "poi_circle", {"params": {"": "blue"}}],
+  "inputs": [],
+  "expected": {
+    "compiled": {
+      "result": "error",
+      "errors": [
+        {
+          "key": "[2]['params']",
+          "error": "Image parameter name should be non-empty"
+        }
+      ]
+    }
+  }
+}

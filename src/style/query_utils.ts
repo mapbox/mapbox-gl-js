@@ -1,17 +1,20 @@
 import Point from '@mapbox/point-geometry';
 
 import type {PossiblyEvaluatedPropertyValue} from './properties';
-import type StyleLayer from '../style/style_layer';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type CircleBucket from '../data/bucket/circle_bucket';
 import type LineBucket from '../data/bucket/line_bucket';
 
 export function getMaximumPaintValue(
     property: string,
-    layer: StyleLayer,
+    layer: TypedStyleLayer,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     bucket: CircleBucket<any> | LineBucket,
 ): number {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = ((layer.paint as any).get(property) as PossiblyEvaluatedPropertyValue<any>).value;
     if (value.kind === 'constant') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return value.value;
     } else {
         return bucket.programConfigurations.get(layer.id).getMaxValue(property);
@@ -43,6 +46,7 @@ export function translate(
         const point = queryGeometry[i];
         translated.push(point.sub(pt));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return translated;
 }
 

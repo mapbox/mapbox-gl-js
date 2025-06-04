@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@4.1.3
-  browser-tools: circleci/browser-tools@1.4.8
+  browser-tools: circleci/browser-tools@1.5.1
 
 workflows:
   default:
@@ -59,28 +59,46 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - setup-playwright:
+      - setup-playwright-linux:
           requires:
             - prepare-linux
           filters:
             tags:
               only: /.*/
+      - setup-playwright-mac:
+          requires:
+            - prepare-mac
+          filters:
+            tags:
+              only: /.*/
+      - setup-playwright-windows:
+          requires:
+            - prepare-windows
+          filters:
+            tags:
+              only: /.*/
       - test-unit:
           requires:
-            - setup-playwright
+            - setup-playwright-linux
+          filters:
+            tags:
+              only: /.*/
+      - test-usvg:
+          requires:
+            - setup-playwright-linux
           filters:
             tags:
               only: /.*/
       - test-csp:
           requires:
-            - setup-playwright
+            - setup-playwright-linux
             - build
           filters:
             tags:
               only: /.*/
       - test-query:
           requires:
-            - prepare-linux
+            - setup-playwright-linux
           filters:
             tags:
               only: /.*/
@@ -119,25 +137,25 @@ workflows:
               ignore: /.*/
       - test-render-linux-chrome-dev:
           requires:
-            - prepare-linux
+            - setup-playwright-linux
           filters:
             tags:
               only: /.*/
       - test-render-linux-chrome-prod:
           requires:
-            - prepare-linux
+            - setup-playwright-linux
           filters:
             tags:
               only: /.*/
       - test-render-linux-chrome-csp:
           requires:
-            - prepare-linux
+            - setup-playwright-linux
           filters:
             tags:
               only: /.*/
       - test-render-linux-firefox-dev:
           requires:
-            - prepare-linux
+            - setup-playwright-linux
           filters:
             tags:
               only: /.*/
@@ -147,13 +165,13 @@ workflows:
               only: /.*/
       - test-render-mac-chrome-dev:
           requires:
-            - prepare-mac
+            - setup-playwright-mac
           filters:
             tags:
               only: /.*/
       - test-render-mac-safari-dev:
           requires:
-            - prepare-mac
+            - setup-playwright-mac
           filters:
             tags:
               only: /.*/
@@ -163,7 +181,7 @@ workflows:
               only: /.*/
       - test-render-windows-chrome-dev:
           requires:
-            - prepare-windows
+            - setup-playwright-windows
           filters:
             tags:
               only: /.*/
@@ -288,20 +306,62 @@ jobs:
           paths:
             - mapbox-gl-js/dist
 
-  setup-playwright:
+  setup-playwright-mac:
+    <<: *mac-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys:
+            - v1-playwright-mac-{{ checksum "package-lock.json" }}
+      - run:
+          name: Playwright version
+          command: npx playwright --version
+      - run: npx playwright install webkit chromium
+      - save_cache:
+          key: v1-playwright-mac-{{ checksum "package-lock.json" }}
+          paths:
+           - ~/Library/Caches/ms-playwright
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - Library/Caches/ms-playwright
+
+  setup-playwright-windows:
+    <<: *windows-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys:
+            - v1-playwright-windows-{{ checksum "package-lock.json" }}
+      - run:
+          name: Playwright version
+          command: npx playwright --version
+      - run: npx playwright install chromium
+      - save_cache:
+          key: v1-playwright-windows-{{ checksum "package-lock.json" }}
+          paths:
+           - ~/AppData/Local/ms-playwright
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - AppData/Local/ms-playwright
+
+  setup-playwright-linux:
     <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
       - restore_cache:
           keys:
-            - v0-playwright-{{ checksum "package-lock.json" }}
+            - v1-playwright-linux-{{ checksum "package-lock.json" }}
       - run:
           name: Playwright version
           command: npx playwright --version
-      - run: npx playwright install chromium
+      - run: npx playwright install firefox chromium
       - save_cache:
-          key: v0-playwright-{{ checksum "package-lock.json" }}
+          key: v1-playwright-linux-{{ checksum "package-lock.json" }}
           paths:
            - ~/.cache
       - persist_to_workspace:
@@ -365,17 +425,32 @@ jobs:
       - store_test_results:
           path: test/unit/test-results.xml
 
+  test-usvg:
+    <<: *linux-defaults
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Run usvg tests
+          command: |
+            tar xvzf test/usvg/test-suite.tar.gz -C test/usvg/
+            npm run test-usvg
+          no_output_timeout: 5m
+      - store_artifacts:
+          path: test/usvg/vitest
+      - store_test_results:
+          path: test/usvg/test-results.xml
+
   test-query:
     <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome
       - run: npm run test-query
-      - store_test_results:
-          path: test/integration/query-tests
       - store_artifacts:
-          path: "test/integration/query-tests/index.html"
+          path: test/integration/query-tests/vitest/
+      - store_test_results:
+          path: test/integration/query-tests/vitest/test-results.xml
 
   test-csp:
     <<:  *linux-defaults
@@ -462,10 +537,10 @@ jobs:
           name: Running tests in parallel
           command: |
             npm run test-render
-      - store_test_results:
-          path: test/integration/render-tests
       - store_artifacts:
-          path: "test/integration/render-tests/index.html"
+          path: test/integration/render-tests/vitest
+      - store_test_results:
+          path: test/integration/render-tests/test-results.xml
 
   test-render-linux-chrome-prod:
     <<: *linux-defaults
@@ -473,11 +548,13 @@ jobs:
       - attach_workspace:
           at: ~/
       - browser-tools/install-chrome
-      - run: npm run test-render-prod
-      - store_test_results:
-          path: test/integration/render-tests
+      - run:
+          command: |
+            npm run test-render-prod
       - store_artifacts:
-          path: "test/integration/render-tests/index.html"
+          path: test/integration/render-tests/vitest
+      - store_test_results:
+          path: test/integration/render-tests/test-results.xml
 
   test-render-linux-chrome-csp:
     <<: *linux-defaults
@@ -485,23 +562,26 @@ jobs:
       - attach_workspace:
           at: ~/
       - browser-tools/install-chrome
-      - run: npm run test-render-csp
-      - store_test_results:
-          path: test/integration/render-tests
+      - run:
+          command: |
+            npm run test-render-csp
       - store_artifacts:
-          path: "test/integration/render-tests/index.html"
+          path: test/integration/render-tests/vitest
+      - store_test_results:
+          path: test/integration/render-tests/vitest/test-results.xml
 
   test-render-linux-firefox-dev:
     <<: *linux-defaults
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-firefox
-      - run: npm run test-render-firefox
-      - store_test_results:
-          path: test/integration/render-tests
+      - run:
+          command: |
+            npm run test-render-firefox
       - store_artifacts:
-          path: "test/integration/render-tests/index.html"
+          path: test/integration/render-tests/vitest
+      - store_test_results:
+          path: test/integration/render-tests/test-results.xml
 
   prepare-mac:
     <<: *mac-defaults
@@ -530,27 +610,28 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - browser-tools/install-chrome
       - run:
           name: Creating test list
           command: |
             circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split --split-by=timings > tests-to-run.txt
-      - run: npm run test-render
-      - store_test_results:
-          path: test/integration/render-tests
+      - run:
+          command: npm run test-render
       - store_artifacts:
-          path: "test/integration/render-tests/index.html"
+          path: test/integration/render-tests/vitest
+      - store_test_results:
+          path: test/integration/render-tests/test-results.xml
 
   test-render-mac-safari-dev:
     <<: *mac-defaults
     steps:
       - attach_workspace:
           at: ~/
-      - run: npm run test-render-safari
-      - store_test_results:
-          path: test/integration/render-tests
+      - run:
+          command: npm run test-render-safari
       - store_artifacts:
-          path: "test/integration/render-tests/index.html"
+          path: test/integration/render-tests/vitest
+      - store_test_results:
+          path: test/integration/render-tests/test-results.xml
 
   prepare-windows:
     <<: *windows-defaults
@@ -572,8 +653,6 @@ jobs:
           key: v2-windows-npm-{{ .Branch }}-{{ checksum "package-lock.json" }}
           paths:
             - ~/log.txt
-      - store_artifacts:
-          path: "test/integration/render-tests/index.html"
       - run: npm run build-dev
       - run:
           name: Clean up workspace to persist faster
@@ -598,29 +677,16 @@ jobs:
             $nodeVersion = Get-Content .nvmrc
             nvm install $nodeVersion
             nvm use $nodeVersion
-      # The browser-tools orb doesn't work on Windows, so we install chrome manually.
-      - run:
-          name: Installing Chrome on Windows
-          command: |
-            $uri = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
-            $path = "$PSScriptRoot\ChromeSetup.exe";
-            Invoke-WebRequest -Uri $uri -OutFile $path;
-            Start-Process $path /install -NoNewWindow -Wait;
-            Remove-Item $path;
-
-            $chromeInstalled = (Get-Item (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe').'(Default)').VersionInfo;
-            if ($chromeInstalled.FileName -eq $null) {
-              Write-Host "Chrome failed to install";
-            }
       - run:
           name: Creating test list
           command: |
             circleci tests glob "test/integration/render-tests/**/*.json" | circleci tests split | Out-File -Encoding utf8 -FilePath tests-to-run.txt
-      - run: npm run test-render
-      - store_test_results:
-          path: test/integration/render-tests
+      - run:
+          command: npm run test-render
       - store_artifacts:
-          path: "test/integration/render-tests/index.html"
+          path: test/integration/render-tests/vitest
+      - store_test_results:
+          path: test/integration/render-tests/test-results.xml
 
   trigger-performance-tests:
     <<: *linux-defaults

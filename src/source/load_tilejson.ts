@@ -7,14 +7,6 @@ import type {Callback} from '../types/callback';
 import type {TileJSON} from '../types/tilejson';
 import type {Cancelable} from '../types/cancelable';
 import type {SourceSpecification} from '../style-spec/types';
-import type {SourceVectorLayer, SourceRasterLayer} from './source';
-
-type ExtendedTileJSON = TileJSON & {
-    vectorLayers?: Array<SourceVectorLayer>;
-    vectorLayerIds?: Array<string>;
-    rasterLayers?: Array<SourceRasterLayer>;
-    rasterLayerIds?: Array<string>;
-};
 
 type TileJSONLike = {url?: string, tiles?: Array<string>};
 type Options = Extract<SourceSpecification, TileJSONLike> & TileJSONLike & {
@@ -68,14 +60,17 @@ function getInlinedTileJSON(data?: TileJSON, language?: string, worldview?: stri
     return null;
 }
 
-export default function(
+/**
+ * @private
+ */
+export default function (
     options: Options,
     requestManager: RequestManager,
     language: string | null | undefined,
     worldview: string | null | undefined,
-    callback: Callback<ExtendedTileJSON>,
+    callback: Callback<TileJSON>,
 ): Cancelable {
-    const loaded = function(err?: Error | null, tileJSON?: Partial<TileJSON>) {
+    const loaded = function (err?: Error | null, tileJSON?: Partial<TileJSON>) {
         if (err) {
             return callback(err);
         } else if (tileJSON) {
@@ -102,21 +97,11 @@ export default function(
                 }
             }
 
-            const result = pick(
+            const result: TileJSON = pick(
                 // explicit source options take precedence over TileJSON
-                extend(tileJSON, options),
-                ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'scheme', 'tileSize', 'encoding']
-            ) as ExtendedTileJSON;
-
-            if (tileJSON.vector_layers) {
-                result.vectorLayers = tileJSON.vector_layers;
-                result.vectorLayerIds = result.vectorLayers.map((layer) => { return layer.id; });
-            }
-
-            if (tileJSON.raster_layers) {
-                result.rasterLayers = tileJSON.raster_layers;
-                result.rasterLayerIds = result.rasterLayers.map((layer) => { return layer.id; });
-            }
+                extend({}, tileJSON, options),
+                ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'extra_bounds', 'scheme', 'tileSize', 'encoding', 'vector_layers', 'raster_layers', 'worldview_options', 'worldview_default', 'worldview']
+            );
 
             result.tiles = requestManager.canonicalizeTileset(result, options.url);
             callback(null, result);

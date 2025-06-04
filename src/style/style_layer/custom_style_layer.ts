@@ -1,9 +1,8 @@
 import StyleLayer from '../style_layer';
 import assert from 'assert';
 
-import type MercatorCoordinate from '../../geo/mercator_coordinate';
 import type {Map} from '../../ui/map';
-import type {ValidationErrors} from '../validate_style';
+import type {ValidationError, ValidationErrors} from '../validate_style';
 import type {ProjectionSpecification} from '../../style-spec/types';
 import type SourceCache from '../../source/source_cache';
 
@@ -39,6 +38,7 @@ type CustomLayerRenderMethod = (
  * @property {string} id A unique layer id.
  * @property {string} type The layer's type. Must be `"custom"`.
  * @property {string} renderingMode Either `"2d"` or `"3d"`. Defaults to `"2d"`.
+ * @property {boolean} wrapTileId If `renderWorldCopies` is enabled `renderToTile` of the custom layer method will be called with different `x` value of the tile rendered on different copies of the world unless `wrapTileId` is set to `true`. Defaults to `false`.
  * @example
  * // Custom layer implemented as ES6 class
  * class NullIslandLayer {
@@ -126,7 +126,7 @@ type CustomLayerRenderMethod = (
  * coordinates to gl coordinates. The mercator coordinate `[0, 0]` represents the
  * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. When
  * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
- * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLngLat
+ * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate#fromLngLat}
  * can be used to project a `LngLat` to a mercator coordinate.
  */
 
@@ -155,17 +155,34 @@ type CustomLayerRenderMethod = (
  * coordinates to gl coordinates. The spherical mercator coordinate `[0, 0]` represents the
  * top left corner of the mercator world and `[1, 1]` represents the bottom right corner. When
  * the `renderingMode` is `"3d"`, the z coordinate is conformal. A box with identical x, y, and z
- * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate}.fromLngLat
+ * lengths in mercator units would be rendered as a cube. {@link MercatorCoordinate#fromLngLat}
  * can be used to project a `LngLat` to a mercator coordinate.
+ */
+
+/**
+ * Called for every tile of a map with enabled terrain or globe projection.
+ * By default it passes the unwrapped tile ID of corresponding tile.
+ * You can use `wrapTileId` to pass the wrapped tile ID.
+ *
+ * The layer can assume blending and depth state is set to allow the layer to properly
+ * blend and clip other layers. The layer cannot make any other assumptions about the
+ * current GL state.
+ *
+ * @function
+ * @memberof CustomLayerInterface
+ * @name renderToTile
+ * @param {WebGL2RenderingContext} gl The map's gl context.
+ * @param {{ z: number, x: number, y: number }} tileId Tile ID to render to.
  */
 export interface CustomLayerInterface {
     id: string;
     type: 'custom';
     slot?: string;
     renderingMode?: '2d' | '3d';
+    wrapTileId?: boolean;
     render: CustomLayerRenderMethod;
     prerender?: CustomLayerRenderMethod;
-    renderToTile?: (gl: WebGL2RenderingContext, tileId: MercatorCoordinate) => void;
+    renderToTile?: (gl: WebGL2RenderingContext, tileId: {z: number, x: number, y: number}) => void;
     shouldRerenderTiles?: () => boolean;
     onAdd?: (map: Map, gl: WebGL2RenderingContext) => void;
     onRemove?: (map: Map, gl: WebGL2RenderingContext) => void;
@@ -180,7 +197,7 @@ export interface CustomLayerInterface {
 }
 
 export function validateCustomStyleLayer(layerObject: CustomLayerInterface): ValidationErrors {
-    const errors = [];
+    const errors: ValidationError[] = [];
     const id = layerObject.id;
 
     if (id === undefined) {
@@ -207,6 +224,7 @@ export function validateCustomStyleLayer(layerObject: CustomLayerInterface): Val
 }
 
 class CustomStyleLayer extends StyleLayer {
+    override type: 'custom';
 
     implementation: CustomLayerInterface;
 
@@ -216,15 +234,15 @@ class CustomStyleLayer extends StyleLayer {
         if (implementation.slot) this.slot = implementation.slot;
     }
 
-    is3D(): boolean {
+    override is3D(terrainEnabled?: boolean): boolean {
         return this.implementation.renderingMode === '3d';
     }
 
-    hasOffscreenPass(): boolean {
+    override hasOffscreenPass(): boolean {
         return this.implementation.prerender !== undefined;
     }
 
-    isDraped(_?: SourceCache | null): boolean {
+    override isDraped(_?: SourceCache | null): boolean {
         return this.implementation.renderToTile !== undefined;
     }
 
@@ -232,23 +250,24 @@ class CustomStyleLayer extends StyleLayer {
         return !!this.implementation.shouldRerenderTiles && this.implementation.shouldRerenderTiles();
     }
 
-    recalculate() {}
-    updateTransitions() {}
-    hasTransition(): boolean {
+    override recalculate() {}
+    override updateTransitions() {}
+    override hasTransition(): boolean {
         return false;
     }
 
-    serialize(): any {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    override serialize(): any {
         assert(false, "Custom layers cannot be serialized");
     }
 
-    onAdd(map: Map) {
+    override onAdd(map: Map) {
         if (this.implementation.onAdd) {
             this.implementation.onAdd(map, map.painter.context.gl);
         }
     }
 
-    onRemove(map: Map) {
+    override onRemove(map: Map) {
         if (this.implementation.onRemove) {
             this.implementation.onRemove(map, map.painter.context.gl);
         }

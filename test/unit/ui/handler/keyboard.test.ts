@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi, createMap as globalCreateMap} from '../../../util/vitest';
 import {Map} from '../../../../src/ui/map';
@@ -86,6 +87,7 @@ test('KeyboardHandler pans map in response to arrow keys when disableRotation ha
     expect(easeToArgs.offset[1]).toEqual(100);
 });
 
+// eslint-disable-next-line @typescript-eslint/require-await
 test('KeyboardHandler rotates map in response to Shift+left/right arrow keys', async () => {
     const map = createMap({zoom: 10, center: [0, 0], bearing: 0});
     vi.spyOn(map, 'easeTo');
@@ -107,6 +109,7 @@ test('KeyboardHandler rotates map in response to Shift+left/right arrow keys', a
     expect(easeToArgs.offset[0]).toEqual(-0);
 });
 
+// eslint-disable-next-line @typescript-eslint/require-await
 test('KeyboardHandler does not rotate map in response to Shift+left/right arrow keys when disableRotation has been called', async () => {
     const map = createMap({zoom: 10, center: [0, 0], bearing: 0});
     vi.spyOn(map, 'easeTo');
@@ -129,6 +132,7 @@ test('KeyboardHandler does not rotate map in response to Shift+left/right arrow 
     expect(easeToArgs.offset[0]).toEqual(-0);
 });
 
+// eslint-disable-next-line @typescript-eslint/require-await
 test('KeyboardHandler pitches map in response to Shift+up/down arrow keys', async () => {
     const map = createMap({zoom: 10, center: [0, 0], pitch: 30});
     vi.spyOn(map, 'easeTo');
@@ -150,6 +154,7 @@ test('KeyboardHandler pitches map in response to Shift+up/down arrow keys', asyn
     expect(easeToArgs.offset[1]).toEqual(-0);
 });
 
+// eslint-disable-next-line @typescript-eslint/require-await
 test('KeyboardHandler does not pitch map in response to Shift+up/down arrow keys when disableRotation has been called', async () => {
     const map = createMap({zoom: 10, center: [0, 0], pitch: 30});
     vi.spyOn(map, 'easeTo');

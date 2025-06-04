@@ -1,0 +1,42 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 150,
+      "height": 150,
+      "allowed": 0.0005
+    }
+  },
+  "zoom": 16.0,
+  "center": [0.0, 0.0],
+  "sources": {
+    "trim_offset": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-90.0, 0.0], [90.0, 0.0]
+          ]
+        }
+      },
+      "lineMetrics": true
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "trim_offset",
+      "layout": {
+        "line-z-offset": 0.01
+      },
+      "paint": {
+        "line-width": 10,
+        "line-trim-offset": [0.0, 0.5]
+      }
+    }
+  ]
+}

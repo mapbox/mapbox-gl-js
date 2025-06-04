@@ -22,16 +22,18 @@ import type CircleBucket from '../../data/bucket/circle_bucket';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../../render/painter';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 class HeatmapStyleLayer extends StyleLayer {
+    override type: 'heatmap';
 
     heatmapFbo: Framebuffer | null | undefined;
     colorRamp: RGBAImage;
     colorRampTexture: Texture | null | undefined;
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     createBucket(parameters: BucketParameters<HeatmapStyleLayer>): HeatmapBucket {
         return new HeatmapBucket(parameters);
@@ -48,7 +50,7 @@ class HeatmapStyleLayer extends StyleLayer {
         this._updateColorRamp();
     }
 
-    _handleSpecialPaintPropertyUpdate(name: string) {
+    override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'heatmap-color') {
             this._updateColorRamp();
         }
@@ -64,18 +66,19 @@ class HeatmapStyleLayer extends StyleLayer {
         this.colorRampTexture = null;
     }
 
-    resize() {
+    override resize() {
         if (this.heatmapFbo) {
             this.heatmapFbo.destroy();
             this.heatmapFbo = null;
         }
     }
 
-    queryRadius(bucket: Bucket): number {
+    override queryRadius(bucket: Bucket): number {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getMaximumPaintValue('heatmap-radius', this, (bucket as CircleBucket<any>));
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,
@@ -85,23 +88,21 @@ class HeatmapStyleLayer extends StyleLayer {
         pixelPosMatrix: Float32Array,
         elevationHelper?: DEMSampler | null,
     ): boolean {
-
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
         const size = this.paint.get('heatmap-radius').evaluate(feature, featureState);
         return queryIntersectsCircle(
             queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
             true, true, new Point(0, 0), size);
     }
 
-    hasOffscreenPass(): boolean {
+    override hasOffscreenPass(): boolean {
         return this.paint.get('heatmap-opacity') !== 0 && this.visibility !== 'none';
     }
 
-    getProgramIds(): Array<string> {
+    override getProgramIds(): ProgramName[] {
         return ['heatmap', 'heatmapTexture'];
     }
 
-    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         if (name === 'heatmap') {
             return {
                 config: new ProgramConfiguration(this, {zoom, lut}),

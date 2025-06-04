@@ -1,55 +1,56 @@
-
 import loadGeometry from './load_geometry';
 import toEvaluationFeature from './evaluation_feature';
+import EvaluationParameters from '../style/evaluation_parameters';
 import EXTENT from '../style-spec/data/extent';
-import featureFilter from '../style-spec/feature_filter/index';
 import Grid from 'grid-index';
 import DictionaryCoder from '../util/dictionary_coder';
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import Feature from '../util/vectortile_to_geojson';
-import {arraysIntersect, mapObject, extend} from '../util/util';
+import {arraysIntersect, mapObject, extend, warnOnce} from '../util/util';
 import {register} from '../util/web_worker_transfer';
-import EvaluationParameters from '../style/evaluation_parameters';
 import {polygonIntersectsBox} from '../util/intersection_tests';
 import {PossiblyEvaluated} from '../style/properties';
 import {FeatureIndexArray} from './array_types';
 import {DEMSampler} from '../terrain/elevation';
+import Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket';
+import {loadMatchingModelFeature} from '../../3d-style/style/style_layer/model_style_layer';
+import {createExpression} from '../style-spec/expression/index';
+import EvaluationContext from '../style-spec/expression/evaluation_context';
 
-import type SourceFeatureState from '../source/source_state';
 import type {OverscaledTileID} from '../source/tile_id';
 import type Point from '@mapbox/point-geometry';
-import type StyleLayer from '../style/style_layer';
-import type {QueryResult} from '../source/query_features';
-import type {FeatureStates} from '../source/source_state';
-import type {FeatureFilter} from '../style-spec/feature_filter/index';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
+import type {QrfQuery, QrfTarget, QueryResult} from '../source/query_features';
 import type Transform from '../geo/transform';
-import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
-import type {FilterSpecification, PromoteIdSpecification} from '../style-spec/types';
+import type {PromoteIdSpecification, LayerSpecification} from '../style-spec/types';
 import type {TilespaceQueryGeometry} from '../style/query_geometry';
 import type {FeatureIndex as FeatureIndexStruct} from './array_types';
 import type {TileTransform} from '../geo/projection/tile_transform';
 import type {VectorTileLayer, VectorTileFeature} from '@mapbox/vector-tile';
 import type {GridIndex} from '../types/grid-index';
+import type {FeatureState, StyleExpression} from '../style-spec/expression/index';
+import type {FeatureVariant} from '../util/vectortile_to_geojson';
+import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {PossiblyEvaluatedPropertyValue} from '../style/properties';
 
 type QueryParameters = {
     pixelPosMatrix: Float32Array;
     transform: Transform;
-    tileResult: TilespaceQueryGeometry;
+    tilespaceGeometry: TilespaceQueryGeometry;
     tileTransform: TileTransform;
-    params: {
-        filter: FilterSpecification;
-        layers: Array<string>;
-        availableImages: Array<string>;
-    };
+    availableImages: ImageId[];
+    worldview: string | undefined;
 };
 
-type FeatureIndices = {
+type FeatureIndices = FeatureIndexStruct | {
     bucketIndex: number;
     sourceLayerIndex: number;
     featureIndex: number;
     layoutVertexArrayOffset: number;
-} | FeatureIndexStruct;
+};
+
+type IntersectionTest = (feature: VectorTileFeature, styleLayer: TypedStyleLayer, featureState: FeatureState, layoutVertexArrayOffset: number) => boolean | number;
 
 class FeatureIndex {
     tileID: OverscaledTileID;
@@ -58,19 +59,17 @@ class FeatureIndex {
     z: number;
     grid: GridIndex;
     featureIndexArray: FeatureIndexArray;
-    promoteId: PromoteIdSpecification | null | undefined;
+    promoteId?: PromoteIdSpecification;
+    promoteIdExpression?: StyleExpression;
 
     rawTileData: ArrayBuffer;
     bucketLayerIDs: Array<Array<string>>;
 
-    vtLayers: {
-        [_: string]: VectorTileLayer;
-    };
-    vtFeatures: {
-        [_: string]: VectorTileFeature[];
-    };
+    vtLayers: Record<string, VectorTileLayer>;
+    vtFeatures: Record<string, VectorTileFeature[]>;
     sourceLayerCoder: DictionaryCoder;
-    is3DTile: boolean; // no vector source layers
+    is3DTile: boolean; // 3D tile has no vector source layers
+    serializedLayersCache: Map<string, LayerSpecification>;
 
     constructor(tileID: OverscaledTileID, promoteId?: PromoteIdSpecification | null) {
         this.tileID = tileID;
@@ -81,6 +80,7 @@ class FeatureIndex {
         this.featureIndexArray = new FeatureIndexArray();
         this.promoteId = promoteId;
         this.is3DTile = false;
+        this.serializedLayersCache = new Map();
     }
 
     insert(feature: VectorTileFeature, geometry: Array<Array<Point>>, featureIndex: number, sourceLayerIndex: number, bucketIndex: number, layoutVertexArrayOffset: number = 0, envelopePadding: number = 0) {
@@ -117,9 +117,7 @@ class FeatureIndex {
         }
     }
 
-    loadVTLayers(): {
-        [_: string]: VectorTileLayer;
-        } {
+    loadVTLayers(): Record<string, VectorTileLayer> {
         if (!this.vtLayers) {
             this.vtLayers = new VectorTile(new Protobuf(this.rawTileData)).layers;
             this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
@@ -132,27 +130,17 @@ class FeatureIndex {
     }
 
     // Finds non-symbol features in this tile at a particular position.
-    query(
-        args: QueryParameters,
-        styleLayers: {
-            [_: string]: StyleLayer;
-        },
-        serializedLayers: {
-            [_: string]: any;
-        },
-        sourceFeatureState: SourceFeatureState,
-    ): QueryResult {
+    query(query: QrfQuery, params: QueryParameters): QueryResult {
+        const {tilespaceGeometry, transform, tileTransform, pixelPosMatrix, availableImages, worldview} = params;
+
         this.loadVTLayers();
-        const params = args.params || {},
-            // @ts-expect-error - TS2339 - Property 'filter' does not exist on type '{}'.
-            filter = featureFilter(params.filter);
-        const tilespaceGeometry = args.tileResult;
-        const transform = args.transform;
+        this.serializedLayersCache.clear();
 
         const bounds = tilespaceGeometry.bufferedTilespaceBounds;
         const queryPredicate = (bx1: number, by1: number, bx2: number, by2: number) => {
             return polygonIntersectsBox(tilespaceGeometry.bufferedTilespaceGeometry, bx1, by1, bx2, by2);
         };
+
         const matching = this.grid.query(bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y, queryPredicate);
         matching.sort(topDownFeatureComparator);
 
@@ -174,36 +162,25 @@ class FeatureIndex {
             let featureGeometry = null;
 
             if (this.is3DTile) {
-                // 3D tile is a single bucket tile.
-                const layerID = this.bucketLayerIDs[0][0];
-                const layer = styleLayers[layerID];
-                if (layer.type !== "model") continue;
-                const {queryFeature, intersectionZ} = layer.queryIntersectsMatchingFeature(tilespaceGeometry, match.featureIndex, filter, transform);
-                if (queryFeature) {
-                    this.appendToResult(result, layerID, match.featureIndex, queryFeature, intersectionZ);
-                }
+                this.loadMatchingModelFeature(result, match, query, tilespaceGeometry, transform, worldview);
                 continue;
             }
+
+            const intersectionTest = (feature: VectorTileFeature, styleLayer: TypedStyleLayer, featureState: FeatureState, layoutVertexArrayOffset: number = 0) => {
+                if (!featureGeometry) {
+                    featureGeometry = loadGeometry(feature, this.tileID.canonical, tileTransform);
+                }
+
+                return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, transform, pixelPosMatrix, elevationHelper, layoutVertexArrayOffset);
+            };
 
             this.loadMatchingFeature(
                 result,
                 match,
-                filter,
-                // @ts-expect-error - TS2339 - Property 'layers' does not exist on type '{}'.
-                params.layers,
-                // @ts-expect-error - TS2339 - Property 'availableImages' does not exist on type '{}'.
-                params.availableImages,
-                styleLayers,
-                serializedLayers,
-                sourceFeatureState,
-                (feature: VectorTileFeature, styleLayer: StyleLayer, featureState: any, layoutVertexArrayOffset: number = 0) => {
-                    if (!featureGeometry) {
-                        // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
-                        featureGeometry = loadGeometry(feature, this.tileID.canonical, args.tileTransform);
-                    }
-
-                    return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, args.transform, args.pixelPosMatrix, elevationHelper, layoutVertexArrayOffset);
-                }
+                query,
+                availableImages,
+                worldview,
+                intersectionTest
             );
         }
 
@@ -213,80 +190,218 @@ class FeatureIndex {
     loadMatchingFeature(
         result: QueryResult,
         featureIndexData: FeatureIndices,
-        filter: FeatureFilter,
-        filterLayerIDs: Array<string>,
-        availableImages: Array<string>,
-        styleLayers: {
-            [_: string]: StyleLayer;
-        },
-        serializedLayers: {
-            [_: string]: any;
-        },
-        sourceFeatureState?: SourceFeatureState,
-        intersectionTest?: (
-            feature: VectorTileFeature,
-            styleLayer: StyleLayer,
-            featureState: any,
-            layoutVertexArrayOffset: number,
-        ) => boolean | number) {
-
+        query: QrfQuery,
+        availableImages: ImageId[],
+        worldview: string | undefined,
+        intersectionTest?: IntersectionTest
+    ): void {
         const {featureIndex, bucketIndex, sourceLayerIndex, layoutVertexArrayOffset} = featureIndexData;
-        const layerIDs = this.bucketLayerIDs[bucketIndex];
-        if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs))
-            return;
 
+        const layerIDs = this.bucketLayerIDs[bucketIndex];
+        const queryLayers = query.layers;
+        const queryLayerIDs = Object.keys(queryLayers);
+        if (queryLayerIDs.length && !arraysIntersect(queryLayerIDs, layerIDs)) {
+            return;
+        }
+
+        const querySourceCache = query.sourceCache;
         const sourceLayerName = this.sourceLayerCoder.decode(sourceLayerIndex);
         const sourceLayer = this.vtLayers[sourceLayerName];
         const feature = sourceLayer.feature(featureIndex);
 
-        if (filter.needGeometry) {
-            const evaluationFeature = toEvaluationFeature(feature, true);
-            if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), evaluationFeature, this.tileID.canonical)) {
-                return;
-            }
-            // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'Feature'.
-        } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ), feature)) {
-            return;
-        }
-
         const id = this.getId(feature, sourceLayerName);
-
         for (let l = 0; l < layerIDs.length; l++) {
-            const layerID = layerIDs[l];
+            const layerId = layerIDs[l];
 
-            if (filterLayerIDs && filterLayerIDs.indexOf(layerID) < 0) {
-                continue;
-            }
+            if (!queryLayers[layerId]) continue;
+            const {styleLayer, targets} = queryLayers[layerId];
 
-            const styleLayer = styleLayers[layerID];
-
-            if (!styleLayer) continue;
-
-            let featureState: Record<string, any> = {};
-            if (id !== undefined && sourceFeatureState) {
+            let featureState: FeatureState = {};
+            if (id !== undefined) {
                 // `feature-state` expression evaluation requires feature state to be available
-                featureState = sourceFeatureState.getState(styleLayer.sourceLayer || '_geojsonTileLayer', id);
+                featureState = querySourceCache.getFeatureState(styleLayer.sourceLayer, id);
             }
 
-            const intersectionZ = !intersectionTest || intersectionTest(feature, styleLayer, featureState, layoutVertexArrayOffset);
+            const intersectionZ = (!intersectionTest || intersectionTest(feature, styleLayer, featureState, layoutVertexArrayOffset)) as number;
             if (!intersectionZ) {
                 // Only applied for non-symbol features
                 continue;
             }
 
             const geojsonFeature = new Feature(feature, this.z, this.x, this.y, id);
+            geojsonFeature.tile = this.tileID.canonical;
+            geojsonFeature.state = featureState;
 
-            const serializedLayer = extend({}, serializedLayers[layerID]);
+            let serializedLayer = this.serializedLayersCache.get(layerId);
+            if (!serializedLayer) {
+                serializedLayer = styleLayer.serialize();
+                serializedLayer.id = layerId;
+                this.serializedLayersCache.set(layerId, serializedLayer);
+            }
 
-            serializedLayer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
-            serializedLayer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
+            geojsonFeature.source = serializedLayer.source;
+            geojsonFeature.sourceLayer = serializedLayer['source-layer'];
 
-            geojsonFeature.layer = serializedLayer;
-            this.appendToResult(result, layerID, featureIndex, geojsonFeature, intersectionZ);
+            geojsonFeature.layer = extend({}, serializedLayer);
+            geojsonFeature.layer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
+            geojsonFeature.layer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
+
+            // Iterate over all targets to check if the feature should be included and add feature variants if necessary
+            let shouldInclude = false;
+            for (const target of targets) {
+                this.updateFeatureProperties(geojsonFeature, target);
+                const {filter} = target;
+                if (filter) {
+                    feature.properties = geojsonFeature.properties;
+                    if (filter.needGeometry) {
+                        const evaluationFeature = toEvaluationFeature(feature, true);
+                        if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), evaluationFeature, this.tileID.canonical)) {
+                            continue;
+                        }
+                    } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature)) {
+                        continue;
+                    }
+                }
+
+                // Feature passes at least one target filter
+                shouldInclude = true;
+
+                // If the target has associated interaction id, add a feature variant for it
+                if (target.targetId) {
+                    this.addFeatureVariant(geojsonFeature, target);
+                }
+            }
+
+            if (shouldInclude) {
+                this.appendToResult(result, layerId, featureIndex, geojsonFeature, intersectionZ);
+            }
         }
     }
 
-    appendToResult(result: QueryResult, layerID: string, featureIndex: number, geojsonFeature: GeoJSONFeature, intersectionZ: boolean | number) {
+    loadMatchingModelFeature(
+        result: QueryResult,
+        featureIndexData: FeatureIndices,
+        query: QrfQuery,
+        tilespaceGeometry: TilespaceQueryGeometry,
+        transform: Transform,
+        worldview: string | undefined,
+    ): void {
+        // 3D tile is a single bucket tile.
+        const layerId = this.bucketLayerIDs[0][0];
+        const queryLayers = query.layers;
+        if (!queryLayers[layerId]) return;
+
+        const {styleLayer, targets} = queryLayers[layerId];
+        if (styleLayer.type !== 'model') return;
+
+        const tile = tilespaceGeometry.tile;
+        const featureIndex = featureIndexData.featureIndex;
+
+        const bucket = tile.getBucket(styleLayer);
+        if (!bucket || !(bucket instanceof Tiled3dModelBucket)) return;
+
+        const model = loadMatchingModelFeature(bucket, featureIndex, tilespaceGeometry, transform);
+        if (!model) return;
+
+        const {z, x, y} = tile.tileID.canonical;
+        const {feature, intersectionZ, position} = model;
+
+        let featureState: FeatureState = {};
+        if (feature.id !== undefined) {
+            featureState = query.sourceCache.getFeatureState(styleLayer.sourceLayer, feature.id);
+        }
+
+        const geojsonFeature = new Feature({} as unknown as VectorTileFeature, z, x, y, feature.id);
+        geojsonFeature.tile = this.tileID.canonical;
+        geojsonFeature.state = featureState;
+
+        geojsonFeature.properties = feature.properties;
+        geojsonFeature.geometry = {type: 'Point', coordinates: [position.lng, position.lat]};
+
+        let serializedLayer = this.serializedLayersCache.get(layerId);
+        if (!serializedLayer) {
+            serializedLayer = styleLayer.serialize();
+            serializedLayer.id = layerId;
+            this.serializedLayersCache.set(layerId, serializedLayer);
+        }
+
+        geojsonFeature.source = serializedLayer.source;
+        geojsonFeature.sourceLayer = serializedLayer['source-layer'];
+
+        geojsonFeature.layer = extend({}, serializedLayer);
+
+        // Iterate over all targets to check if the feature should be included and add feature variants if necessary
+        let shouldInclude = false;
+        for (const target of targets) {
+            this.updateFeatureProperties(geojsonFeature, target);
+            const {filter} = target;
+            if (filter) {
+                feature.properties = geojsonFeature.properties;
+                if (filter.needGeometry) {
+                    if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature, this.tileID.canonical)) {
+                        continue;
+                    }
+                } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature)) {
+                    continue;
+                }
+            }
+
+            // Feature passes at least one target filter
+            shouldInclude = true;
+
+            // If the target has associated interaction id, add a feature variant for it
+            if (target.targetId) {
+                this.addFeatureVariant(geojsonFeature, target);
+            }
+        }
+
+        if (shouldInclude) {
+            this.appendToResult(result, layerId, featureIndex, geojsonFeature, intersectionZ);
+        }
+    }
+
+    updateFeatureProperties(feature: Feature, target: QrfTarget, availableImages?: ImageId[]) {
+        if (target.properties) {
+            const transformedProperties = {};
+            for (const name in target.properties) {
+                const expression = target.properties[name];
+                const value = expression.evaluate(
+                    {zoom: this.z},
+                    feature._vectorTileFeature,
+                    feature.state,
+                    feature.tile,
+                    availableImages
+                );
+                if (value != null) transformedProperties[name] = value;
+            }
+            feature.properties = transformedProperties;
+        }
+    }
+
+    /**
+     * Create a feature variant for a query target and add it to the original feature.
+     *
+     * @param {Feature} feature The original feature.
+     * @param {QrfTarget} target The target to derive the feature for.
+     * @returns {Feature} The derived feature.
+     */
+    addFeatureVariant(feature: Feature, target: QrfTarget, availableImages?: ImageId[]) {
+        const variant: FeatureVariant = {
+            target: target.target,
+            namespace: target.namespace,
+            uniqueFeatureID: target.uniqueFeatureID,
+        };
+
+        if (target.properties) {
+            variant.properties = feature.properties;
+        }
+
+        feature.variants = feature.variants || {};
+        feature.variants[target.targetId] = feature.variants[target.targetId] || [];
+        feature.variants[target.targetId].push(variant);
+    }
+
+    appendToResult(result: QueryResult, layerID: string, featureIndex: number, geojsonFeature: Feature, intersectionZ?: number) {
         let layerResult = result[layerID];
         if (layerResult === undefined) {
             layerResult = result[layerID] = [];
@@ -299,39 +414,20 @@ class FeatureIndex {
     // return a matching set of GeoJSONFeatures
     lookupSymbolFeatures(
         symbolFeatureIndexes: Array<number>,
-        serializedLayers: {
-            [key: string]: StyleLayer;
-        },
         bucketIndex: number,
         sourceLayerIndex: number,
-        filterSpec: FilterSpecification,
-        filterLayerIDs: Array<string>,
-        availableImages: Array<string>,
-        styleLayers: {
-            [_: string]: StyleLayer;
-        },
+        query: QrfQuery,
+        availableImages: ImageId[],
+        worldview: string | undefined
     ): QueryResult {
-        const result: Record<string, any> = {};
+        const result: QueryResult = {};
         this.loadVTLayers();
 
-        const filter = featureFilter(filterSpec);
-
         for (const symbolFeatureIndex of symbolFeatureIndexes) {
-            this.loadMatchingFeature(
-                result, {
-                    bucketIndex,
-                    sourceLayerIndex,
-                    featureIndex: symbolFeatureIndex,
-                    layoutVertexArrayOffset: 0
-                },
-                filter,
-                filterLayerIDs,
-                availableImages,
-                styleLayers,
-                serializedLayers
-            );
-
+            const featureIndexData = {bucketIndex, sourceLayerIndex, featureIndex: symbolFeatureIndex, layoutVertexArrayOffset: 0};
+            this.loadMatchingFeature(result, featureIndexData, query, availableImages, worldview);
         }
+
         return result;
     }
 
@@ -365,9 +461,29 @@ class FeatureIndex {
     getId(feature: VectorTileFeature, sourceLayerId: string): string | number {
         let id: string | number = feature.id;
         if (this.promoteId) {
-            const propName = typeof this.promoteId === 'string' ? this.promoteId : this.promoteId[sourceLayerId];
-            if (propName != null)
-                id = feature.properties[propName] as string | number;
+            const propName = !Array.isArray(this.promoteId) && typeof this.promoteId === 'object' ? this.promoteId[sourceLayerId] : this.promoteId;
+            if (propName != null) {
+                if (Array.isArray(propName)) {
+                    if (!this.promoteIdExpression) {
+                        const expression = createExpression(propName);
+                        if (expression.result === 'success') {
+                            this.promoteIdExpression = expression.value;
+                        } else {
+                            const error = expression.value.map(err => `${err.key}: ${err.message}`).join(', ');
+                            warnOnce(`Failed to create expression for promoteId: ${error}`);
+                            return undefined;
+                        }
+                    }
+                    // _evaluator is explicitly omitted from serialization here https://github.com/mapbox/mapbox-gl-js-internal/blob/internal/src/util/web_worker_transfer.ts#L112
+                    // and promoteIdExpression is first created in worker thread and will later be used in main thread, so a reinitialize will be needed.
+                    if (!this.promoteIdExpression._evaluator) {
+                        this.promoteIdExpression._evaluator = new EvaluationContext();
+                    }
+                    id = this.promoteIdExpression.evaluate({zoom: 0}, feature) as string | number;
+                } else {
+                    id = feature.properties[propName] as string | number;
+                }
+            }
             if (typeof id === 'boolean') id = Number(id);
         }
         return id;
@@ -378,11 +494,13 @@ register(FeatureIndex, 'FeatureIndex', {omit: ['rawTileData', 'sourceLayerCoder'
 
 export default FeatureIndex;
 
-function evaluateProperties(serializedProperties: unknown, styleLayerProperties: unknown, feature: VectorTileFeature, featureState: FeatureStates, availableImages: Array<string>) {
-    return mapObject(serializedProperties, (property, key) => {
-        const prop = styleLayerProperties instanceof PossiblyEvaluated ? styleLayerProperties.get(key) : null;
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'. | TS2339 - Property 'evaluate' does not exist on type 'unknown'.
-        return prop && prop.evaluate ? prop.evaluate(feature, featureState, availableImages) : prop;
+function evaluateProperties(serializedProperties: Record<PropertyKey, unknown>, styleLayerProperties: unknown, feature: VectorTileFeature, featureState: FeatureState, availableImages: ImageId[]) {
+    return mapObject(serializedProperties, (_, key) => {
+        const prop = styleLayerProperties instanceof PossiblyEvaluated ?
+            styleLayerProperties.get(key) as PossiblyEvaluatedPropertyValue<unknown> :
+            null;
+
+        return prop && prop.evaluate ? prop.evaluate(feature, featureState, undefined, availableImages) : prop;
     });
 }
 

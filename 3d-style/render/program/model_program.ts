@@ -14,7 +14,6 @@ import type {UniformValues} from '../../../src/render/uniform_binding';
 import type Context from '../../../src/gl/context';
 import type Painter from '../../../src/render/painter';
 import type {Material} from '../../data/model';
-import type {RenderColor} from "../../../src/style-spec/util/color";
 
 export type ModelUniformsType = {
     ['u_matrix']: UniformMatrix4f;
@@ -45,6 +44,8 @@ export type ModelUniformsType = {
     ['u_occlusionTextureTransform']: Uniform4f;
 };
 
+export type ModelDefinesType = 'DIFFUSE_SHADED' | 'SHADOWS_SINGLE_CASCADE' | 'OCCLUSION_TEXTURE_TRANSFORM';
+
 const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
     'u_lighting_matrix': new UniformMatrix4f(context),
@@ -70,22 +71,22 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
     'u_lutTexture': new Uniform1i(context),
     'u_color_mix': new Uniform4f(context),
     'u_aoIntensity': new Uniform1f(context),
-    'u_emissive_strength' : new Uniform1f(context),
+    'u_emissive_strength': new Uniform1f(context),
     'u_occlusionTextureTransform': new Uniform4f(context)
 
 });
 
-const emptyMat4 = new Float32Array(mat4.identity([] as any));
+const emptyMat4 = new Float32Array(mat4.identity([] as unknown as mat4));
 
 const modelUniformValues = (
-    matrix: Float32Array,
-    lightingMatrix: Float32Array,
-    normalMatrix: Float32Array,
-    nodeMatrix: Float32Array,
+    matrix: mat4,
+    lightingMatrix: mat4,
+    normalMatrix: mat4,
+    nodeMatrix: mat4,
     painter: Painter,
     opacity: number,
-    baseColorFactor: RenderColor,
-    emissiveFactor: [number, number, number],
+    baseColorFactor: Color,
+    emissiveFactor: Color,
     metallicFactor: number,
     roughnessFactor: number,
     material: Material,
@@ -107,19 +108,19 @@ const modelUniformValues = (
 
     const alphaMask = material.alphaMode === 'MASK';
 
-    const lightColor = light.properties.get('color').toRenderColor(null);
+    const lightColor = light.properties.get('color').toNonPremultipliedRenderColor(null);
 
     const aoIntensity = layer.paint.get('model-ambient-occlusion-intensity');
 
-    const colorMix = layer.paint.get('model-color').constantOr(Color.white).toRenderColor(null);
+    const colorMix = layer.paint.get('model-color').constantOr(Color.white).toNonPremultipliedRenderColor(null);
 
-    const colorMixIntensity = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
+    colorMix.a = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
 
     const uniformValues = {
-        'u_matrix': matrix,
-        'u_lighting_matrix': lightingMatrix,
-        'u_normal_matrix': normalMatrix,
-        'u_node_matrix': nodeMatrix ? nodeMatrix : emptyMat4,
+        'u_matrix': matrix as Float32Array,
+        'u_lighting_matrix': lightingMatrix as Float32Array,
+        'u_normal_matrix': normalMatrix as Float32Array,
+        'u_node_matrix': (nodeMatrix ? nodeMatrix : emptyMat4) as Float32Array,
         'u_lightpos': lightPos,
         'u_lightintensity': light.properties.get('intensity'),
         'u_lightcolor': [lightColor.r, lightColor.g, lightColor.b] as [number, number, number],
@@ -128,8 +129,8 @@ const modelUniformValues = (
         'u_baseTextureIsAlpha': 0,
         'u_alphaMask': +alphaMask,
         'u_alphaCutoff': material.alphaCutoff,
-        'u_baseColorFactor': [baseColorFactor.r, baseColorFactor.g, baseColorFactor.b, baseColorFactor.a] as [number, number, number, number],
-        'u_emissiveFactor': [emissiveFactor[0], emissiveFactor[1], emissiveFactor[2], 1.0] as [number, number, number, number],
+        'u_baseColorFactor': baseColorFactor.toNonPremultipliedRenderColor(null).toArray01(),
+        'u_emissiveFactor': emissiveFactor.toNonPremultipliedRenderColor(null).toArray01(),
         'u_metallicFactor': metallicFactor,
         'u_roughnessFactor': roughnessFactor,
         'u_baseColorTexture': TextureSlots.BaseColor,
@@ -138,7 +139,7 @@ const modelUniformValues = (
         'u_occlusionTexture': TextureSlots.Occlusion,
         'u_emissionTexture': TextureSlots.Emission,
         'u_lutTexture': TextureSlots.LUT,
-        'u_color_mix': [colorMix.r, colorMix.g, colorMix.b, colorMixIntensity] as [number, number, number, number],
+        'u_color_mix': colorMix.toArray01(),
         'u_aoIntensity': aoIntensity,
         'u_emissive_strength': emissiveStrength,
         'u_occlusionTextureTransform': occlusionTextureTransform ? occlusionTextureTransform : [0, 0, 0, 0] as [number, number, number, number]
@@ -160,14 +161,14 @@ const modelDepthUniforms = (context: Context): ModelDepthUniformsType => ({
 });
 
 const modelDepthUniformValues = (
-    matrix: Float32Array,
-    instance: Float32Array = emptyMat4,
-    nodeMatrix: Float32Array = emptyMat4,
+    matrix: mat4,
+    instance: mat4 = emptyMat4,
+    nodeMatrix: mat4 = emptyMat4,
 ): UniformValues<ModelDepthUniformsType> => {
     return {
-        'u_matrix': matrix,
-        'u_instance': instance,
-        'u_node_matrix': nodeMatrix
+        'u_matrix': matrix as Float32Array,
+        'u_instance': instance as Float32Array,
+        'u_node_matrix': nodeMatrix as Float32Array
     };
 };
 

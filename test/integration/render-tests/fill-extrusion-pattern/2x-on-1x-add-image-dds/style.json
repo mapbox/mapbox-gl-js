@@ -79,7 +79,7 @@
               "fill-extrusion-pattern": {
                 "property": "height",
                 "type": "interval",
-                "stops": [[0, "pattern"]] 
+                "stops": [[0, "pattern"]]
               },
               "fill-extrusion-height": 10
             }

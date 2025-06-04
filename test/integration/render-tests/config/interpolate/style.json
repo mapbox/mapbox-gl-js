@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 50,
+      "height": 50
+    }
+  },
+  "sources": {},
+  "schema": {
+    "theme": {
+      "default": "default",
+      "values": ["default", "faded", "monochrome"]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          5,
+          [
+            "match",
+            ["config", "theme"],
+            "monochrome",
+            "grey",
+            "blue"
+          ],
+          6,
+          "white"
+        ]
+      }
+    }
+  ]
+}

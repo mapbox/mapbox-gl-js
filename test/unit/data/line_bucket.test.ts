@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi} from '../../util/vitest';
 import Protobuf from 'pbf';
@@ -6,7 +7,6 @@ import Point from '@mapbox/point-geometry';
 import segment from '../../../src/data/segment';
 import LineBucket from '../../../src/data/bucket/line_bucket';
 import LineStyleLayer from '../../../src/style/style_layer/line_style_layer';
-// eslint-disable-next-line import/no-unresolved
 import tileStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 // Load a line feature from fixture tile.

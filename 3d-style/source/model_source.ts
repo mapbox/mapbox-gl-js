@@ -24,13 +24,17 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     minzoom: number;
     maxzoom: number;
     tileSize: number;
-    minTileCacheSize: number | null | undefined;
-    maxTileCacheSize: number | null | undefined;
+    minTileCacheSize?: number;
+    maxTileCacheSize?: number;
     roundZoom: boolean | undefined;
     reparseOverscaled: boolean | undefined;
     attribution: string | undefined;
     // eslint-disable-next-line camelcase
     mapbox_logo: boolean | undefined;
+    vectorLayers?: never;
+    vectorLayerIds?: never;
+    rasterLayers?: never;
+    rasterLayerIds?: never;
     map: Map;
     uri: string;
     models: Array<Model>;
@@ -49,7 +53,6 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     /**
      * @private
      */
-    // eslint-disable-next-line no-unused-vars
     constructor(id: string, options: ModelSourceSpecification, dispatcher: Dispatcher, eventedParent: Evented) {
         super();
         this.id = id;
@@ -59,7 +62,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         this._options = options;
     }
 
-    load(): Promise<void> {
+    load(): void {
         const modelPromises = [];
 
         // @ts-expect-error - TS2339 - Property 'models' does not exist on type 'ModelSourceSpecification'.
@@ -80,10 +83,11 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
             modelPromises.push(modelPromise);
         }
 
-        return Promise.allSettled(modelPromises).then(() => {
+        Promise.allSettled(modelPromises).then(() => {
             this._loaded = true;
             this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
         }).catch((err) => {
+            this._loaded = true;
             this.fire(new ErrorEvent(new Error(`Could not load models: ${err.message}`)));
         });
     }
@@ -104,13 +108,11 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     getModels(): Array<Model> {
         return this.models;
     }
-    // eslint-disable-next-line no-unused-vars
+
     loadTile(tile: Tile, callback: Callback<undefined>) {}
 
-    serialize(): any {
-        return {
-            type: 'model'
-        };
+    serialize(): ModelSourceSpecification {
+        return this._options;
     }
 }
 

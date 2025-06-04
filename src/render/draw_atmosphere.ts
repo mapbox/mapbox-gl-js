@@ -68,10 +68,10 @@ class Atmosphere {
         this.params = new StarsParams();
         this.updateNeeded = true;
 
-        painter.tp.registerParameter(this.params, ["Stars"], "starsCount", {min:100, max: 16000, step:1}, () => { this.updateNeeded = true; });
-        painter.tp.registerParameter(this.params, ["Stars"], "sizeMultiplier", {min:0.01, max: 2.0, step:0.01});
-        painter.tp.registerParameter(this.params, ["Stars"], "sizeRange", {min:0.0, max: 200.0, step:1}, () => { this.updateNeeded = true; });
-        painter.tp.registerParameter(this.params, ["Stars"], "intensityRange", {min:0.0, max: 200.0, step:1}, () => { this.updateNeeded = true; });
+        painter.tp.registerParameter(this.params, ["Stars"], "starsCount", {min: 100, max: 16000, step: 1}, () => { this.updateNeeded = true; });
+        painter.tp.registerParameter(this.params, ["Stars"], "sizeMultiplier", {min: 0.01, max: 2.0, step: 0.01});
+        painter.tp.registerParameter(this.params, ["Stars"], "sizeRange", {min: 0.0, max: 200.0, step: 1}, () => { this.updateNeeded = true; });
+        painter.tp.registerParameter(this.params, ["Stars"], "intensityRange", {min: 0.0, max: 200.0, step: 1}, () => { this.updateNeeded = true; });
     }
 
     update(painter: Painter) {
@@ -82,7 +82,7 @@ class Atmosphere {
 
             this.atmosphereBuffer = new AtmosphereBuffer(context);
 
-            // Part of internal stlye spec, not exposed to gl-js
+            // Part of internal style spec, not exposed to gl-js
             const sizeRange = this.params.sizeRange;
             const intensityRange = this.params.intensityRange;
 
@@ -95,7 +95,7 @@ class Atmosphere {
             let base = 0;
             for (let i = 0; i < stars.length; ++i) {
 
-                const star = vec3.scale([] as any, stars[i], 200.0);
+                const star = vec3.scale([] as unknown as vec3, stars[i], 200.0);
 
                 const size = Math.max(0, 1.0 + 0.01 * sizeRange * (-0.5 + 1.0 * sRand()));
                 const intensity = Math.max(0, 1.0 + 0.01 * intensityRange * (-0.5 + 1.0 * sRand()));
@@ -138,12 +138,14 @@ class Atmosphere {
         const transitionT = globeToMercatorTransition(tr.zoom);
 
         const fogLUT = painter.style.getLut(fog.scope);
+        const colorIgnoreLut = fog.properties.get('color-use-theme') === 'none';
+        const fogColor = fog.properties.get('color').toNonPremultipliedRenderColor(colorIgnoreLut ? null : fogLUT).toArray01();
 
-        const fogColor = fog.properties.get('color').toRenderColor(fogLUT).toArray01();
+        const hignoreLutIgnoreLut = fog.properties.get('high-color-use-theme') === 'none';
+        const highColor = fog.properties.get('high-color').toNonPremultipliedRenderColor(hignoreLutIgnoreLut ? null : fogLUT).toArray01();
 
-        const highColor = fog.properties.get('high-color').toRenderColor(fogLUT).toArray01();
-
-        const spaceColor = fog.properties.get('space-color').toRenderColor(fogLUT).toArray01PremultipliedAlpha();
+        const spaceColorIgnoreLut = fog.properties.get('space-color-use-theme') === 'none';
+        const spaceColor = fog.properties.get('space-color').toNonPremultipliedRenderColor(spaceColorIgnoreLut ? null : fogLUT).toArray01();
 
         // https://www.desmos.com/calculator/oanvvpr36d
         // Ensure horizon blend is 0-exclusive to prevent division by 0 in the shader
@@ -158,8 +160,7 @@ class Atmosphere {
             tr.worldSize / (2.0 * Math.PI * 1.025) - 1.0 : tr.globeRadius;
 
         const temporalOffset = (painter.frameCounter / 1000.0) % 1;
-        const globeCenterInViewSpace = ((tr.globeCenterInViewSpace) as Array<number>);
-        // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'ReadonlyVec3'.
+        const globeCenterInViewSpace = tr.globeCenterInViewSpace;
         const globeCenterDistance = vec3.length(globeCenterInViewSpace);
         const distanceToHorizon = Math.sqrt(Math.pow(globeCenterDistance, 2.0) - Math.pow(globeRadius, 2.0));
         const horizonAngle = Math.acos(distanceToHorizon / globeCenterDistance);
@@ -191,7 +192,6 @@ class Atmosphere {
             const colorMode = alphaPass ? this.colorModeWriteAlpha : this.colorModeAlphaBlendedWriteRGB;
             const name = alphaPass ? "atmosphere_glow_alpha" : "atmosphere_glow";
             if (buffer) {
-                // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
                 program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
                         colorMode, CullFaceMode.backCW, uniforms, name,
                         buffer.vertexBuffer, buffer.indexBuffer, buffer.segments);
@@ -206,7 +206,6 @@ class Atmosphere {
     }
 
     drawStars(painter: Painter, fog: Fog) {
-
         const starIntensity = clamp(fog.properties.get('star-intensity'), 0.0, 1.0);
 
         if (starIntensity === 0) {
@@ -219,31 +218,26 @@ class Atmosphere {
 
         const program = painter.getOrCreateProgram('stars');
 
-        const orientation = quat.identity([] as any);
-
+        const orientation = quat.identity([] as unknown as quat);
         quat.rotateX(orientation, orientation, -tr._pitch);
         quat.rotateZ(orientation, orientation, -tr.angle);
         quat.rotateX(orientation, orientation, degToRad(tr._center.lat));
         quat.rotateY(orientation, orientation, -degToRad(tr._center.lng));
 
         const rotationMatrix = mat4.fromQuat(new Float32Array(16), orientation);
+        const mvp = mat4.multiply([] as unknown as mat4, tr.starsProjMatrix, rotationMatrix);
+        const modelView3 = mat3.fromMat4([] as unknown as mat3, rotationMatrix);
+        const modelviewInv = mat3.invert([] as unknown as mat3, modelView3);
 
-        const mvp = mat4.multiply([] as any, tr.starsProjMatrix, rotationMatrix);
-
-        const modelView3 = mat3.fromMat4([] as any, rotationMatrix);
-
-        const modelviewInv = mat3.invert([] as any, modelView3);
-
-        const camUp = [0, 1, 0];
-        vec3.transformMat3(camUp as [number, number, number], camUp as [number, number, number], modelviewInv);
-        vec3.scale(camUp as [number, number, number], camUp as [number, number, number], this.params.sizeMultiplier);
-        const camRight = [1, 0, 0];
-        vec3.transformMat3(camRight as [number, number, number], camRight as [number, number, number], modelviewInv);
-        vec3.scale(camRight as [number, number, number], camRight as [number, number, number], this.params.sizeMultiplier);
+        const camUp: vec3 = [0, 1, 0];
+        vec3.transformMat3(camUp, camUp, modelviewInv);
+        vec3.scale(camUp, camUp, this.params.sizeMultiplier);
+        const camRight: vec3 = [1, 0, 0];
+        vec3.transformMat3(camRight, camRight, modelviewInv);
+        vec3.scale(camRight, camRight, this.params.sizeMultiplier);
 
         const uniforms = starsUniformValues(
               mvp,
-              // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type '[number, number, number]'.
               camUp,
               camRight,
               starIntensity);
@@ -251,7 +245,6 @@ class Atmosphere {
         painter.uploadCommonUniforms(context, program);
 
         if (this.starsVx && this.starsIdx) {
-            // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
             program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled,
                 this.colorModeAlphaBlendedWriteRGB, CullFaceMode.disabled, uniforms, "atmosphere_stars",
                 this.starsVx, this.starsIdx, this.starsSegments);

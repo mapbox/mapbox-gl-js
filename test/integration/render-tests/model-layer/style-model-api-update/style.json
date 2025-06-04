@@ -5,9 +5,9 @@
       "height": 512,
       "allowed": 0.00035,
       "operations": [
-        ["addModel", "tree", "./models/tree.glb"],
+        ["addModel", "tree", "/models/tree.glb"],
         ["wait"],
-        ["addModel", "tree", "./models/nested-cubes.glb"],
+        ["addModel", "tree", "/models/nested-cubes.glb"],
         ["wait"]
       ]
     }

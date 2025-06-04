@@ -4,8 +4,15 @@
     "test": {
       "allowed": 0.0003,
       "operations": [
-        ["setPaintProperty", "land", "fill-pattern", null],
-        ["wait"]
+        [
+          "setPaintProperty",
+          "land",
+          "fill-pattern",
+          null
+        ],
+        [
+          "wait"
+        ]
       ]
     }
   },
@@ -21,7 +28,7 @@
   "transition": {
     "duration": 0
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
@@ -37,7 +44,7 @@
       "source-layer": "water",
       "paint": {
         "fill-color": "#3bb2d0",
-        "fill-pattern": "zoo_icon"
+        "fill-pattern": "zoo"
       }
     }
   ]

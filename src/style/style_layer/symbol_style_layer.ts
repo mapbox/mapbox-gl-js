@@ -40,6 +40,8 @@ import type {Feature, SourceExpression, CompositeExpression} from '../../style-s
 import type {Expression} from '../../style-spec/expression/expression';
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {LUT} from "../../util/lut";
+import type {ImageId} from '../../style-spec/expression/types/image_id';
+import type {ProgramName} from '../../render/program';
 
 let properties: {
     layout: Properties<LayoutProps>;
@@ -60,14 +62,16 @@ const getProperties = () => {
 };
 
 class SymbolStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override type: 'symbol';
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
 
-    _colorAdjustmentMatrix: Float32Array;
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
+
+    _colorAdjustmentMatrix: mat4;
     _saturation: number;
     _contrast: number;
     _brightnessMin: number;
@@ -77,13 +81,11 @@ class SymbolStyleLayer extends StyleLayer {
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         super(layer, getProperties(), scope, lut, options);
-        // @ts-expect-error - TS2322 - Type 'mat4' is not assignable to type 'Float32Array'.
-        this._colorAdjustmentMatrix = mat4.identity([] as any);
-
+        this._colorAdjustmentMatrix = mat4.identity([] as unknown as mat4);
         this.hasInitialOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
     }
 
-    recalculate(parameters: EvaluationParameters, availableImages: Array<string>) {
+    override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
 
         if (this.layout.get('icon-rotation-alignment') === 'auto') {
@@ -135,7 +137,7 @@ class SymbolStyleLayer extends StyleLayer {
         contrast: number,
         brightnessMin: number,
         brightnessMax: number,
-    ): Float32Array {
+    ): mat4 {
         if (this._saturation !== saturation ||
             this._contrast !== contrast ||
             this._brightnessMin !== brightnessMin ||
@@ -151,13 +153,14 @@ class SymbolStyleLayer extends StyleLayer {
         return this._colorAdjustmentMatrix;
     }
 
-    getValueAndResolveTokens(
-        name: any,
+    getValueAndResolveTokens<T extends keyof LayoutProps>(
+        name: T,
         feature: Feature,
         canonical: CanonicalTileID,
-        availableImages: Array<string>,
+        availableImages: ImageId[],
     ): string {
-        const value = this.layout.get(name).evaluate(feature, {}, canonical, availableImages);
+        const property = this.layout.get(name) as unknown as PossiblyEvaluatedPropertyValue<LayoutProps[T]>;
+        const value = property.evaluate(feature, {}, canonical, availableImages) as unknown as string;
         const unevaluated = this._unevaluatedLayout._values[name];
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
             return resolveTokens(feature.properties, value);
@@ -170,49 +173,42 @@ class SymbolStyleLayer extends StyleLayer {
         return new SymbolBucket(parameters);
     }
 
-    queryRadius(): number {
+    override queryRadius(): number {
         return 0;
     }
 
-    queryIntersectsFeature(): boolean {
+    override queryIntersectsFeature(): boolean {
         assert(false); // Should take a different path in FeatureIndex
         return false;
     }
 
     _setPaintOverrides() {
-        for (const overridable of getProperties().paint.overridableProperties) {
+        for (const overridable of getProperties().paint.overridableProperties as Array<keyof PaintProps>) {
             if (!SymbolStyleLayer.hasPaintOverride(this.layout, overridable)) {
                 continue;
             }
-            // @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'keyof PaintProps'.
-            const overriden = this.paint.get(overridable);
-            // @ts-expect-error - TS2345 - Argument of type 'unknown' is not assignable to parameter of type 'PossiblyEvaluatedPropertyValue<unknown>'.
+            const overriden = this.paint.get(overridable) as unknown as PossiblyEvaluatedPropertyValue<PaintProps>;
             const override = new FormatSectionOverride(overriden);
-            // @ts-expect-error - TS2339 - Property 'property' does not exist on type 'unknown'.
             const styleExpression = new StyleExpression(override, overriden.property.specification, this.scope, this.options);
             let expression = null;
             // eslint-disable-next-line no-warning-comments
             // TODO: check why were the `isLightConstant` values omitted from the construction of these expressions
-            // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'. | TS2339 - Property 'value' does not exist on type 'unknown'.
             if (overriden.value.kind === 'constant' || overriden.value.kind === 'source') {
                 expression = (new ZoomConstantExpression('source', styleExpression) as SourceExpression);
             } else {
                 expression = (new ZoomDependentExpression('composite',
                                                           styleExpression,
-                                                          // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
                                                           overriden.value.zoomStops,
-                                                          // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'unknown'.
-                                                          overriden.value._interpolationType) as CompositeExpression);
+                                                          overriden.value.interpolationType) as CompositeExpression);
             }
-            // @ts-expect-error - TS2339 - Property 'property' does not exist on type 'unknown'.
+            // @ts-expect-error - TS2322 - Type 'PossiblyEvaluatedPropertyValue<PaintProps>' is not assignable to type 'never'.
             this.paint._values[overridable] = new PossiblyEvaluatedPropertyValue(overriden.property,
                                                                                  expression,
-                                                                                 // @ts-expect-error - TS2339 - Property 'parameters' does not exist on type 'unknown'.
                                                                                  overriden.parameters);
         }
     }
 
-    _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
+    override _handleOverridablePaintPropertyUpdate<T, R>(name: string, oldValue: PropertyValue<T, R>, newValue: PropertyValue<T, R>): boolean {
         if (!this.layout || oldValue.isDataDriven() || newValue.isDataDriven()) {
             return false;
         }
@@ -243,7 +239,7 @@ class SymbolStyleLayer extends StyleLayer {
                 if (hasOverrides) return;
 
                 if (expression instanceof Literal && typeOf(expression.value) === FormattedType) {
-                    const formatted: Formatted = ((expression.value) as any);
+                    const formatted = (expression.value) as Formatted;
                     checkSections(formatted.sections);
                 } else if (expression instanceof FormatExpression) {
                     checkSections(expression.sections);
@@ -252,7 +248,7 @@ class SymbolStyleLayer extends StyleLayer {
                 }
             };
 
-            const expr: ZoomConstantExpression<'source'> = ((textField.value) as any);
+            const expr = (textField.value) as ZoomConstantExpression<'source'>;
             if (expr._styleExpression) {
                 checkExpression(expr._styleExpression.expression);
             }
@@ -261,15 +257,19 @@ class SymbolStyleLayer extends StyleLayer {
         return hasOverrides;
     }
 
-    getProgramIds(): string[] {
+    override getProgramIds(): ProgramName[] {
         return ['symbol'];
     }
 
-    getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(name: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),
             overrideFog: false
         };
+    }
+
+    override hasElevation(): boolean {
+        return this.layout && this.layout.get('symbol-elevation-reference') === 'hd-road-markup';
     }
 }
 

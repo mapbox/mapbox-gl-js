@@ -14,7 +14,9 @@ coverage
 .nyc_output
 *_generated.js
 *_generated.js.map
+tests-to-run.txt
 test/**/__screenshots__/
+test/integration/**/vitest
 test/integration/**/index*.html
 test/integration/**/actual.png
 test/integration/**/actual.json
@@ -37,3 +39,9 @@ vitest.config.js.*
 
 tsconfig.tsbuildinfo
 bundle-analysis.html
+
+# tmp usvg ignores
+test/usvg/vitest/
+test/usvg/test-suite/
+test/usvg/test-results.xml
+src/data/usvg/usvg_pb_renderer.js

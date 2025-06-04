@@ -3,7 +3,7 @@
   "metadata": {
     "test": {
       "height": 256,
-      "allowed": 0.00016
+      "allowed": 0.00209
     }
   },
   "center": [
@@ -20,14 +20,14 @@
       ]
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "background",
       "type": "background",
       "paint": {
-        "background-pattern": "cemetery_icon"
+        "background-pattern": "cemetery"
       }
     },
     {

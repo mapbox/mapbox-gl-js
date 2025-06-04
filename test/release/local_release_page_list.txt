@@ -16,3 +16,6 @@ globe-with-video.html
 standard-style.html
 raster-array.html
 raster-particle-layer.html
+featuresets.html
+precipitation.html
+landmark-icons.html

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import Actor from '../../../src/util/actor';
@@ -15,6 +16,7 @@ describe('Actor', () => {
             }
             test(mapId, data, id) {
                 for (const listener of this.listeners) {
+                    // eslint-disable-next-line @typescript-eslint/no-implied-eval
                     setTimeout(listener, 0, {data: {data, id, type: '<response>'}});
                 }
             }
@@ -51,6 +53,7 @@ describe('Actor', () => {
             }
             test(mapId, data, id, type, targetMapId) {
                 for (const listener of this.listeners) {
+                    // eslint-disable-next-line @typescript-eslint/no-implied-eval
                     setTimeout(listener, 0, {data: {data, id, type, targetMapId}});
                 }
             }
@@ -61,12 +64,12 @@ describe('Actor', () => {
 
         await new Promise(resolve => {
             new Actor(worker, {
-                test () {
+                test() {
                     resolve();
                 }
             }, 1);
             new Actor(worker, {
-                test () {
+                test() {
                     expect.unreachable();
                 }
             }, 2);
@@ -77,10 +80,10 @@ describe('Actor', () => {
 
     test('#remove unbinds event listener', () => {
         const actor = new Actor({
-            addEventListener (type, callback, useCapture) {
+            addEventListener(type, callback, useCapture) {
                 this._addEventListenerArgs = [type, callback, useCapture];
             },
-            removeEventListener (type, callback, useCapture) {
+            removeEventListener(type, callback, useCapture) {
                 expect([type, callback, useCapture]).toEqual(this._addEventListenerArgs);
             }
         }, {}, null);

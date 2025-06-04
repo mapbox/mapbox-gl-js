@@ -25,12 +25,12 @@ export function getScaleAdjustment(transform: Transform): number {
     return scaleAdjustment;
 }
 
-export function getProjectionAdjustmentInverted(transform: Transform): number[] {
+export function getProjectionAdjustmentInverted(transform: Transform): mat2 {
     const m = getProjectionAdjustments(transform, true);
     return mat2.invert([] as unknown as mat2, [
         m[0], m[1],
         m[4], m[5]]
-    ) as number[];
+    );
 }
 
 export function getProjectionInterpolationT(
@@ -130,11 +130,11 @@ function getShearAdjustment(projection: Projection, zoom: number, loc: LngLat, i
 
     const scale = Math.abs(delta3.x) / Math.abs(delta4.y);
 
-    const unrotate = mat4.identity([] as any);
+    const unrotate = mat4.identity([] as unknown as mat4);
     mat4.rotateZ(unrotate, unrotate, (-angleAdjust) * (1 - (withoutRotation ? 0 : interpT)));
 
     // unskew
-    const shear = mat4.identity([] as any);
+    const shear = mat4.identity([] as unknown as mat4);
     mat4.scale(shear, shear, [1, 1 - (1 - scale) * interpT, 1]);
     shear[4] = -delta4.x / delta4.y * interpT;
 

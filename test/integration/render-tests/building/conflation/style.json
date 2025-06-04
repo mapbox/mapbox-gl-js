@@ -1,0 +1,222 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "allowed": 0.00154,
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment"
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "cast-shadows": true,
+        "intensity": 0.8599999904632569,
+        "direction": [
+          311.9219970703125,
+          82.37799835205078  
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "file-system-tiles": {
+      "type": "batched-model",
+      "maxzoom": 14,
+      "tiles": [
+        "local://models/landmark/mbx/{x}-{y}-{z}.glb"
+      ]
+    }
+  },
+  "zoom": 16.1,
+  "center": [
+    11.574606,
+    48.138809
+  ],
+  "layers": [
+    {
+      "type": "background",
+      "paint": {
+        "background-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11.0,
+          [
+            "rgba",
+            239.00001525878907,
+            233.00001525878907,
+            225.00001525878907,
+            1.0
+          ],
+          13.0,
+          [
+            "rgba",
+            230.00001525878907,
+            228.00001525878907,
+            224.00001525878907,
+            1.0
+          ]
+        ]
+      },
+      "id": "land"
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "composite",
+      "source-layer": "procedural_buildings",
+      "minzoom": 15,
+      "filter": [
+        "all",
+        [ "==", [ "get", "extrude" ], "true" ],
+        [ "==", [ "get", "underground" ], "false" ]
+      ],
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": [
+          "get",
+          "height"
+        ],
+        "fill-extrusion-opacity": 1.0
+      },
+      "layout": {
+        "fill-extrusion-edge-radius": 0.5
+      }
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "composite",
+      "source-layer": "procedural_buildings",
+      "minzoom": 15,
+      "layout": {
+        "building-roof-shape": "parapet",
+        "building-height": [
+          "number",
+          [
+            "get",
+            "height"
+          ]
+        ],
+        "building-base": [
+          "number",
+          [
+            "get",
+            "min_height"
+          ]
+        ]
+      },
+      "paint": {
+        "building-color": [
+          "match",
+          ["get", "building-part"],
+          "walls",
+          ["hsl", 41, 90, 90],
+          "rooftop",
+          ["hsl", 25, 43, 80],
+          ["hsl", 41, 90, 90]
+        ],
+        "building-ambient-occlusion-wall-intensity": 1
+      }
+    },
+    {
+      "minzoom": 14.0,
+      "type": "model",
+      "source": "file-system-tiles",
+      "paint": {
+        "model-color-mix-intensity": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "logo",
+          0.0,
+          "roof",
+          0.0,
+          1.0
+        ],
+        "model-emissive-strength": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "door",
+          1.7,
+          "logo",
+          0.0,
+          "window",
+          0.456,
+          0.0
+        ],
+        "model-scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "model-color": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "door",
+          [
+            "rgba",
+            128.0,
+            255.0,
+            255.0,
+            1.0
+          ],
+          "roof",
+          [
+            "rgba",
+            178.5,
+            178.5,
+            178.5,
+            1.0
+          ],
+          "window",
+          [
+            "rgba",
+            255.0,
+            255.0,
+            0.0,
+            1.0
+          ],
+          [
+            "rgba",
+            255.0,
+            255.0,
+            255.0,
+            1.0
+          ]
+        ],
+        "model-opacity": 1.0
+      },
+      "id": "landmarks"
+    }
+  ]
+}

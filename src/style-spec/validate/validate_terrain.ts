@@ -15,18 +15,30 @@ export default function validateTerrain(options: ValidationOptions): Array<Valid
 
     const rootType = getType(terrain);
     if (terrain === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else if (rootType === 'null') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else if (rootType !== 'object') {
         errors = errors.concat([new ValidationError('terrain', terrain, `object expected, ${rootType} found`)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
     for (const key in terrain) {
         const transitionMatch = key.match(/^(.*)-transition$/);
+        const useThemeMatch = key.match(/^(.*)-use-theme$/);
 
-        if (transitionMatch && terrainSpec[transitionMatch[1]] && terrainSpec[transitionMatch[1]].transition) {
+        if (useThemeMatch && terrainSpec[useThemeMatch[1]]) {
+            errors = errors.concat(validate({
+                key,
+                value: terrain[key],
+                valueSpec: {type: 'string'},
+                style,
+                styleSpec
+            }));
+        } else if (transitionMatch && terrainSpec[transitionMatch[1]] && terrainSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
                 value: terrain[key],
@@ -51,7 +63,7 @@ export default function validateTerrain(options: ValidationOptions): Array<Valid
         errors.push(new ValidationError(key, terrain, `terrain is missing required property "source"`));
     } else {
         const source = style.sources && style.sources[terrain.source];
-        const sourceType = source && unbundle(source.type);
+        const sourceType = source && unbundle(source.type) as string;
         if (!source) {
             errors.push(new ValidationError(key, terrain.source, `source "${terrain.source}" not found`));
         } else if (sourceType !== 'raster-dem') {
@@ -59,5 +71,6 @@ export default function validateTerrain(options: ValidationOptions): Array<Valid
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

@@ -1,6 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {describe, test, beforeAll, afterEach, afterAll, expect, waitFor, vi} from '../../util/vitest';
-import {getNetworkWorker, http, HttpResponse, getPNGResponse} from '../../util/network';
+import {describe, test, expect, waitFor, vi} from '../../util/vitest';
+import {getPNGResponse, mockFetch} from '../../util/network';
 import RasterTileSource from '../../../src/source/raster_tile_source';
 import config from '../../../src/util/config';
 import {OverscaledTileID} from '../../../src/source/tile_id';
@@ -18,7 +19,8 @@ function createSource(options, transformCallback) {
             clearSource: () => {},
             getLut: () => { return null; },
             getBrightness: () => { return 0.0; },
-        }
+        },
+        getWorldview: () => undefined
     });
 
     source.on('error', (e) => {
@@ -28,33 +30,17 @@ function createSource(options, transformCallback) {
     return source;
 }
 
-let networkWorker: any;
-
-beforeAll(async () => {
-    networkWorker = await getNetworkWorker(window);
-});
-
-afterEach(() => {
-    networkWorker.resetHandlers();
-});
-
-afterAll(() => {
-    networkWorker.stop();
-});
-
 describe('RasterTileSource', () => {
     test('transforms request for TileJSON URL', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json({
-                    minzoom: 0,
-                    maxzoom: 22,
-                    attribution: "Mapbox",
-                    tiles: ["http://example.com/{z}/{x}/{y}.png"],
-                    bounds: [-47, -7, -45, -5]
-                });
-            }),
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify({
+                minzoom: 0,
+                maxzoom: 22,
+                attribution: "Mapbox",
+                tiles: ["http://example.com/{z}/{x}/{y}.png"],
+                bounds: [-47, -7, -45, -5]
+            }))
+        });
         const transformSpy = vi.fn((url) => {
             return {url};
         });
@@ -94,22 +80,20 @@ describe('RasterTileSource', () => {
 
         const e = await waitFor(source, "data");
         if (e.sourceDataType === 'metadata') {
-            expect(source.tileBounds.bounds).toEqual({_sw:{lng: -47, lat: -7}, _ne:{lng: -45, lat: 90}});
+            expect(source.tileBounds.bounds).toEqual({_sw: {lng: -47, lat: -7}, _ne: {lng: -45, lat: 90}});
         }
     });
 
     test('respects TileJSON.bounds when loaded from TileJSON', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json({
-                    minzoom: 0,
-                    maxzoom: 22,
-                    attribution: "Mapbox",
-                    tiles: ["http://example.com/{z}/{x}/{y}.png"],
-                    bounds: [-47, -7, -45, -5]
-                });
-            }),
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify({
+                minzoom: 0,
+                maxzoom: 22,
+                attribution: "Mapbox",
+                tiles: ["http://example.com/{z}/{x}/{y}.png"],
+                bounds: [-47, -7, -45, -5]
+            }))
+        });
         const source = createSource({url: "/source.json"});
 
         const e = await waitFor(source, "data");
@@ -120,20 +104,18 @@ describe('RasterTileSource', () => {
     });
 
     test('transforms tile urls before requesting', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json({
-                    minzoom: 0,
-                    maxzoom: 22,
-                    attribution: "Mapbox",
-                    tiles: ["http://example.com/{z}/{x}/{y}.png"],
-                    bounds: [-47, -7, -45, -5]
-                });
-            }),
-            http.get('http://example.com/10/5/5.png', async () => {
-                return new HttpResponse(await getPNGResponse());
-            }),
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify({
+                minzoom: 0,
+                maxzoom: 22,
+                attribution: "Mapbox",
+                tiles: ["http://example.com/{z}/{x}/{y}.png"],
+                bounds: [-47, -7, -45, -5]
+            })),
+            'http://example.com/10/5/5.png': async () => {
+                return new Response(await getPNGResponse());
+            }
+        });
         const source = createSource({url: "/source.json"});
         const transformSpy = vi.spyOn(source.map._requestManager, 'transformRequest');
         const e = await waitFor(source, "data");
@@ -142,7 +124,7 @@ describe('RasterTileSource', () => {
             const tile = {
                 tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                 state: 'loading',
-                loadVectorData () {},
+                loadVectorData() {},
                 setExpiryData() {}
             };
 
@@ -160,23 +142,21 @@ describe('RasterTileSource', () => {
     describe('adds @2x to requests on hidpi devices', () => {
         // helper function that makes a mock mapbox raster source and makes it load a tile
         async function makeMapboxSource(url, extension, loadCb, accessToken) {
-            networkWorker.use(
-                http.get('/source.json', async () => {
-                    return HttpResponse.json(sourceFixture);
-                }),
-                http.get('http://path.png/v4/path.png.json', async () => {
-                    return HttpResponse.json({});
-                }),
-                http.get('http://path.png/v4/10/5/5@2x.png', async () => {
-                    return new HttpResponse(await getPNGResponse());
-                }),
-                http.get('http://path.png/v4/10/5/5@2x.png32', async () => {
-                    return new HttpResponse(await getPNGResponse());
-                }),
-                http.get('http://path.png/v4/10/5/5@2x.jpg70', async () => {
-                    return new HttpResponse(await getPNGResponse());
-                })
-            );
+            mockFetch({
+                '/source.json': () => new Response(JSON.stringify(sourceFixture)),
+                'http://path.png/v4/path.png.json': () => {
+                    return new Response(JSON.stringify({}));
+                },
+                'http://path.png/v4/10/5/5@2x.png': async () => {
+                    return new Response(await getPNGResponse());
+                },
+                'http://path.png/v4/10/5/5@2x.png32': async () => {
+                    return new Response(await getPNGResponse());
+                },
+                'http://path.png/v4/10/5/5@2x.jpg70': async () => {
+                    return new Response(await getPNGResponse());
+                }
+            });
             window.devicePixelRatio = 2;
             config.API_URL = 'http://path.png';
             config.REQUIRE_ACCESS_TOKEN = !!accessToken;
@@ -190,7 +170,7 @@ describe('RasterTileSource', () => {
             const tile = {
                 tileID: new OverscaledTileID(10, 0, 10, 5, 5),
                 state: 'loading',
-                loadVectorData () {},
+                loadVectorData() {},
                 setExpiryData() {}
             };
 
@@ -233,27 +213,24 @@ describe('RasterTileSource', () => {
     });
 
     test('supports property updates', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            }),
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture)),
+        });
         const source = createSource({url: '/source.json'});
 
         const loadSpy = vi.spyOn(source, 'load');
         const clearSourceSpy = vi.spyOn(source.map.style, 'clearSource');
 
         await waitFor(source, 'data');
-        networkWorker.resetHandlers();
 
         const responseSpy = vi.fn();
 
-        networkWorker.use(
-            http.get('/source.json', async ({request}) => {
+        mockFetch({
+            '/source.json': (request) => {
                 responseSpy.call(request);
-                return HttpResponse.json({...sourceFixture, maxzoom: 22});
-            }),
-        );
+                return new Response(JSON.stringify(sourceFixture));
+            },
+        });
 
         source.attribution = 'OpenStreetMap';
         source.reload();
@@ -267,14 +244,10 @@ describe('RasterTileSource', () => {
     });
 
     test('supports url property updates', async () => {
-        networkWorker.use(
-            http.get('/source.json', async () => {
-                return HttpResponse.json(sourceFixture);
-            }),
-            http.get('/new-source.json', async () => {
-                return HttpResponse.json({...sourceFixture, minzoom: 0, maxzoom: 22});
-            })
-        );
+        mockFetch({
+            '/source.json': () => new Response(JSON.stringify(sourceFixture)),
+            '/new-source.json': () => new Response(JSON.stringify({...sourceFixture, minzoom: 0, maxzoom: 22}))
+        });
 
         const source = createSource({url: '/source.json'});
         source.setUrl('/new-source.json');

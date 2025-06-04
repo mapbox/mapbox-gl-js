@@ -4,7 +4,7 @@
     {
       "type": "Feature",
       "properties": {
-        "model-uri": "http://localhost:7357/models/tree.glb",
+        "model-uri": "http://localhost:63315/models/tree.glb",
         "scale": [100, 100, 100]
       },
       "geometry": {
@@ -35,7 +35,7 @@
       "type": "Feature",
       "properties": {
         "id" : "maple-tree",
-        "model-uri": "http://localhost:7357/models/maple.glb",
+        "model-uri": "http://localhost:63315/models/maple.glb",
         "scale": [20, 20, 20]
       },
       "geometry": {

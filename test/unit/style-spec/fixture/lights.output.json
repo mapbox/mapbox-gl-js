@@ -13,26 +13,30 @@
   },
   {
     "message": "id: string expected, array found",
-    "line": 15
+    "line": 16
   },
   {
     "message": "color: unknown property \"color\"",
-    "line": 17
-  },
-  {
-    "message": "intensity: unknown property \"intensity\"",
     "line": 18
   },
   {
-    "message": "direction: unknown property \"direction\"",
+    "message": "intensity: unknown property \"intensity\"",
     "line": 19
   },
   {
-    "message": "cast-shadows: unknown property \"cast-shadows\"",
+    "message": "direction: unknown property \"direction\"",
     "line": 20
   },
   {
-    "message": "shadow-intensity: unknown property \"shadow-intensity\"",
+    "message": "cast-shadows: unknown property \"cast-shadows\"",
     "line": 21
+  },
+  {
+    "message": "shadow-intensity: unknown property \"shadow-intensity\"",
+    "line": 22
+  },
+  {
+    "message": "color-use-theme: unknown property \"color-use-theme\"",
+    "line": 23
   }
 ]

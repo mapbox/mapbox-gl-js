@@ -1,9 +1,9 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import Protobuf from 'pbf';
 import {VectorTile} from '@mapbox/vector-tile';
 import classifyRings from '../../../src/util/classify_rings';
-// eslint-disable-next-line import/no-unresolved
 import vectorTileStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 // Load a fill feature from fixture tile.
@@ -16,11 +16,11 @@ test('classifyRings', () => {
 
     geometry = [
         [
-            {x:0, y:0},
-            {x:0, y:40},
-            {x:40, y:40},
-            {x:40, y:0},
-            {x:0, y:0}
+            {x: 0, y: 0},
+            {x: 0, y: 40},
+            {x: 40, y: 40},
+            {x: 40, y: 0},
+            {x: 0, y: 0}
         ]
     ];
     classified = classifyRings(geometry);
@@ -29,18 +29,18 @@ test('classifyRings', () => {
 
     geometry = [
         [
-            {x:0, y:0},
-            {x:0, y:40},
-            {x:40, y:40},
-            {x:40, y:0},
-            {x:0, y:0}
+            {x: 0, y: 0},
+            {x: 0, y: 40},
+            {x: 40, y: 40},
+            {x: 40, y: 0},
+            {x: 0, y: 0}
         ],
         [
-            {x:60, y:0},
-            {x:60, y:40},
-            {x:100, y:40},
-            {x:100, y:0},
-            {x:60, y:0}
+            {x: 60, y: 0},
+            {x: 60, y: 40},
+            {x: 100, y: 40},
+            {x: 100, y: 0},
+            {x: 60, y: 0}
         ]
     ];
     classified = classifyRings(geometry);
@@ -50,17 +50,17 @@ test('classifyRings', () => {
 
     geometry = [
         [
-            {x:0, y:0},
-            {x:0, y:40},
-            {x:40, y:40},
-            {x:40, y:0},
-            {x:0, y:0}
+            {x: 0, y: 0},
+            {x: 0, y: 40},
+            {x: 40, y: 40},
+            {x: 40, y: 0},
+            {x: 0, y: 0}
         ],
         [
-            {x:10, y:10},
-            {x:20, y:10},
-            {x:20, y:20},
-            {x:10, y:10}
+            {x: 10, y: 10},
+            {x: 20, y: 10},
+            {x: 20, y: 20},
+            {x: 10, y: 10}
         ]
     ];
     classified = classifyRings(geometry);
@@ -78,11 +78,11 @@ describe('classifyRings + maxRings', () => {
     function createGeometry(options) {
         const geometry = [
             // Outer ring, area = 3200
-            [ {x:0, y:0}, {x:0, y:40}, {x:40, y:40}, {x:40, y:0}, {x:0, y:0} ],
+            [{x: 0, y: 0}, {x: 0, y: 40}, {x: 40, y: 40}, {x: 40, y: 0}, {x: 0, y: 0}],
             // Inner ring, area = 100
-            [ {x:30, y:30}, {x:32, y:30}, {x:32, y:32}, {x:30, y:30} ],
+            [{x: 30, y: 30}, {x: 32, y: 30}, {x: 32, y: 32}, {x: 30, y: 30}],
             // Inner ring, area = 4
-            [ {x:10, y:10}, {x:20, y:10}, {x:20, y:20}, {x:10, y:10} ]
+            [{x: 10, y: 10}, {x: 20, y: 10}, {x: 20, y: 20}, {x: 10, y: 10}]
         ];
         if (options && options.reverse) {
             geometry[0].reverse();

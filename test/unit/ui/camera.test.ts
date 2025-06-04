@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {createCamera} from './camera/utils';
 import {describe, test, expect, vi} from '../../util/vitest';
@@ -69,6 +70,7 @@ describe('camera', () => {
             expect(camera.getPitch()).toEqual(60);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('emits move events, preserving eventData', async () => {
             let started: any, moved: any, ended: any;
             const eventData = {data: 'ok'};
@@ -84,6 +86,7 @@ describe('camera', () => {
             expect(ended).toEqual('ok');
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('emits zoom events, preserving eventData', async () => {
             let started: any, zoomed: any, ended: any;
             const eventData = {data: 'ok'};
@@ -99,6 +102,7 @@ describe('camera', () => {
             expect(ended).toEqual('ok');
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('emits rotate events, preserving eventData', async () => {
             let started: any, rotated: any, ended: any;
             const eventData = {data: 'ok'};
@@ -114,6 +118,7 @@ describe('camera', () => {
             expect(ended).toEqual('ok');
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('emits pitch events, preserving eventData', async () => {
             let started: any, pitched: any, ended: any;
             const eventData = {data: 'ok'};
@@ -135,6 +140,15 @@ describe('camera', () => {
             camera.jumpTo({center: [1, 2]});
             expect(!camera.isEasing()).toBeTruthy();
         });
+
+        test('retain or not padding based on passed option', () => {
+            camera.jumpTo({padding: {top: 10, right: 10, bottom: 10, left: 10}});
+            expect(camera.getPadding()).toEqual({top: 10, right: 10, bottom: 10, left: 10});
+            camera.jumpTo({padding: {top: 20, right: 20, bottom: 20, left: 20}, retainPadding: true});
+            expect(camera.getPadding()).toEqual({top: 20, right: 20, bottom: 20, left: 20});
+            camera.jumpTo({padding: {top: 30, right: 30, bottom: 30, left: 30}, retainPadding: false});
+            expect(camera.getPadding()).toEqual({top: 20, right: 20, bottom: 20, left: 20});
+        });
     });
 
     describe('#setCenter', () => {
@@ -152,6 +166,7 @@ describe('camera', () => {
             }).toThrowError(Error);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('emits move events, preserving eventData', async () => {
             let started: any, moved: any, ended: any;
             const eventData = {data: 'ok'};
@@ -182,6 +197,7 @@ describe('camera', () => {
             expect(camera.getZoom()).toEqual(3);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('emits move and zoom events, preserving eventData', async () => {
             let movestarted: any, moved: any, moveended: any, zoomstarted: any, zoomed: any, zoomended: any;
             const eventData = {data: 'ok'};
@@ -219,6 +235,7 @@ describe('camera', () => {
             expect(camera.getBearing()).toEqual(4);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('emits move and rotate events, preserving eventData', async () => {
             let movestarted: any, moved: any, moveended: any, rotatestarted: any, rotated: any, rotateended: any;
             const eventData = {data: 'ok'};
@@ -308,6 +325,7 @@ describe('camera', () => {
             expect(Math.abs(c1.lat - c.lat) - Math.abs(c2.lat - c.lat) < 1e-10).toBeTruthy();
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('emits move events, preserving eventData', async () => {
             const camera = createCamera();
             let started: any, moved: any;
@@ -325,6 +343,7 @@ describe('camera', () => {
             camera.panBy([100, 0], {duration: 0}, eventData);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('supresses movestart if noMoveStart option is true', async () => {
             const camera = createCamera();
             let started: any;
@@ -371,6 +390,7 @@ describe('camera', () => {
             }
         );
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('emits move events, preserving eventData', async () => {
             const camera = createCamera();
             let started: any, moved: any;
@@ -388,6 +408,7 @@ describe('camera', () => {
             camera.panTo([100, 0], {duration: 0}, eventData);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         test('supresses movestart if noMoveStart option is true', async () => {
             const camera = createCamera();
             let started: any;
@@ -851,7 +872,7 @@ describe('camera', () => {
             const p1 = [256, 384];
             const bearing = 225;
 
-            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -39.7287, lat: -0});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(0.946);
             expect(camera.getBearing()).toEqual(-135);
@@ -865,7 +886,7 @@ describe('camera', () => {
             const p1 = [300, 510];
             const bearing = 225;
 
-            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: 17.5434, lat: -80.2279});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(1.311);
             expect(camera.getBearing()).toEqual(-135);
@@ -878,7 +899,7 @@ describe('camera', () => {
             const p1 = [256, 384];
             const bearing = 0;
 
-            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -39.7287, lat: -0});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(1.164);
             expect(camera.getBearing()).toEqual(0);
@@ -928,7 +949,7 @@ describe('camera', () => {
             const camera = createCamera({projection: {name: 'globe'}});
             const bb = [[-180, 10], [180, 50]];
 
-            const transform = camera.cameraForBounds(bb, {padding:{top: 10, right: 75, bottom: 50, left: 25}});
+            const transform = camera.cameraForBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}});
             expect(fixedLngLat(transform.center, 4)).toEqual({lng: 180, lat: 80});
             expect(fixedNum(transform.zoom, 3)).toEqual(0.892);
         });
@@ -988,7 +1009,7 @@ describe('camera', () => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
-            camera.fitBounds(bb, {duration:0});
+            camera.fitBounds(bb, {duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -100.5, lat: 34.7171});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(2.469);
         });
@@ -997,7 +1018,7 @@ describe('camera', () => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
-            camera.fitBounds(bb, {padding: 15, duration:0});
+            camera.fitBounds(bb, {padding: 15, duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -100.5, lat: 34.7171});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(2.382);
         });
@@ -1006,7 +1027,7 @@ describe('camera', () => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
-            camera.fitBounds(bb, {bearing: 45, duration:0});
+            camera.fitBounds(bb, {bearing: 45, duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -100.5, lat: 34.7171});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(2.254);
         });
@@ -1015,7 +1036,7 @@ describe('camera', () => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
-            camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0});
+            camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -100.5, lat: 34.7171});
         });
 
@@ -1023,7 +1044,7 @@ describe('camera', () => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
-            camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0, pitch: 30});
+            camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0, pitch: 30});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -100.5, lat: 34.7171});
             expect(camera.getPitch()).toEqual(30);
         });
@@ -1032,8 +1053,23 @@ describe('camera', () => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
-            camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration:0});
+            camera.fitBounds(bb, {padding: {top: 10, right: 75, bottom: 50, left: 25}, duration: 0});
             expect(camera.transform.padding).toEqual({top: 10, right: 75, bottom: 50, left: 25});
+        });
+
+        test('retain or not padding based on provided padding option', () => {
+            const bb1 = [[-133, 11], [-68, 50]];
+            const bb2 = [[-133, 13], [-68, 50]];
+            const bb3 = [[-133, 17], [-68, 50]];
+            const camera = createCamera();
+            camera.fitBounds(bb1, {duration: 0, padding: {top: 100}});
+            expect(camera.getPadding()).toEqual({top: 100, bottom: 0, left: 0, right: 0});
+
+            camera.fitBounds(bb2, {duration: 0, padding: {top: 200}, retainPadding: false});
+            expect(camera.getPadding()).toEqual({top: 100, bottom: 0, left: 0, right: 0});
+
+            camera.fitBounds(bb3, {duration: 0, padding: {top: 300}, retainPadding: true});
+            expect(camera.getPadding()).toEqual({top: 300, bottom: 0, left: 0, right: 0});
         });
 
         test('#12450', () => {
@@ -1058,7 +1094,7 @@ describe('camera', () => {
             const p1 = [256, 384];
             const bearing = 225;
 
-            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -45, lat: 0});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(0.915); // 0.915 ~= log2(4*sqrt(2)/3)
             expect(camera.getBearing()).toEqual(-135);
@@ -1072,7 +1108,7 @@ describe('camera', () => {
             const p1 = [210, 510];
             const bearing = 225;
 
-            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -30.215, lat: -84.1374});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(5.2);
             expect(camera.getBearing()).toEqual(-135);
@@ -1085,7 +1121,7 @@ describe('camera', () => {
             const p1 = [210, 510];
             const bearing = 225;
 
-            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0, pitch: 60});
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration: 0, pitch: 60});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -30.215, lat: -84.1374});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(5.056);
             expect(camera.getBearing()).toEqual(-135);
@@ -1101,7 +1137,7 @@ describe('camera', () => {
 
             const zoom = camera.getZoom();
             const center = camera.getCenter();
-            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual(center);
             expect(fixedNum(camera.getZoom(), 3)).toEqual(zoom);
             expect(camera.getBearing()).toEqual(0);
@@ -1115,7 +1151,7 @@ describe('camera', () => {
             const p1 = [256, 384];
             const bearing = 0;
 
-            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -45, lat: 0});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(1);
             expect(camera.getBearing()).toEqual(0);
@@ -1127,7 +1163,7 @@ describe('camera', () => {
             const p0 = [256, 384];
             const bearing = 0;
 
-            camera.fitScreenCoordinates(p0, p1, bearing, {duration:0});
+            camera.fitScreenCoordinates(p0, p1, bearing, {duration: 0});
             expect(fixedLngLat(camera.getCenter(), 4)).toEqual({lng: -45, lat: 0});
             expect(fixedNum(camera.getZoom(), 3)).toEqual(1);
             expect(camera.getBearing()).toEqual(0);

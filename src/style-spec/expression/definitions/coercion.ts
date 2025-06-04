@@ -36,12 +36,11 @@ class Coercion implements Expression {
         this.args = args;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression | null | void {
         if (args.length < 2)
-        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
             return context.error(`Expected at least one argument.`);
 
-        const name: string = (args[0] as any);
+        const name = args[0] as string;
         const parsed = [];
         let type: Type | ArrayType = NullType;
         if (name === 'to-array') {
@@ -53,7 +52,6 @@ class Coercion implements Expression {
                 if (context.expectedType.kind === 'array') {
                     type = array(context.expectedType.itemType, arrayLength);
                 } else {
-                    // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                     return context.error(`Expected ${context.expectedType.kind} but found array.`);
                 }
             } else if (arrayLength > 0 && isValue(args[1][0])) {
@@ -70,7 +68,6 @@ class Coercion implements Expression {
                 } else {
                     const memberType = getType(member);
                     if (memberType !== type.itemType.kind) {
-                        // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                         return context.error(`Expected ${type.itemType.kind} but found ${memberType}.`);
                     }
                     parsedMember = context.registry['literal'].parse(['literal', member === undefined ? null : member], context);
@@ -82,7 +79,6 @@ class Coercion implements Expression {
             assert(types[name], name);
 
             if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Expression'.
                 return context.error(`Expected one argument.`);
 
             type = types[name];
@@ -97,6 +93,7 @@ class Coercion implements Expression {
         return new Coercion(type, parsed);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         if (this.type.kind === 'boolean') {
             return Boolean(this.args[0].evaluate(ctx));
@@ -138,8 +135,9 @@ class Coercion implements Expression {
             // created by properties that expect the 'formatted' type.
             return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'resolvedImage') {
-            return ResolvedImage.fromString(valueToString(this.args[0].evaluate(ctx)));
+            return ResolvedImage.build(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'array') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return this.args.map(arg => { return arg.evaluate(ctx); });
         } else {
             return valueToString(this.args[0].evaluate(ctx));

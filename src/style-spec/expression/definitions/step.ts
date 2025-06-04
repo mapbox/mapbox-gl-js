@@ -26,14 +26,12 @@ class Step implements Expression {
         }
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Step | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Step | null | void {
         if (args.length - 1 < 4) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Step'.
             return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`);
         }
 
         if ((args.length - 1) % 2 !== 0) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Step'.
             return context.error(`Expected an even number of arguments.`);
         }
 
@@ -42,7 +40,7 @@ class Step implements Expression {
 
         const stops: Stops = [];
 
-        let outputType: Type = (null as any);
+        let outputType: Type = null;
         if (context.expectedType && context.expectedType.kind !== 'value') {
             outputType = context.expectedType;
         }
@@ -55,12 +53,10 @@ class Step implements Expression {
             const valueKey = i + 1;
 
             if (typeof label !== 'number') {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Step'.
                 return context.error('Input/output pairs for "step" expressions must be defined using literal numeric values (not computed expressions) for the input values.', labelKey);
             }
 
             if (stops.length && stops[stops.length - 1][0] >= label) {
-                // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Step'.
                 return context.error('Input/output pairs for "step" expressions must be arranged with input values in strictly ascending order.', labelKey);
             }
 
@@ -73,6 +69,7 @@ class Step implements Expression {
         return new Step(outputType, input, stops);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         const labels = this.labels;
         const outputs = this.outputs;

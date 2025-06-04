@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, beforeAll, beforeEach, expect, vi, createMap} from '../../../util/vitest';
 import GeolocateControl from '../../../../src/ui/control/geolocate_control';
@@ -8,6 +9,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+    // eslint-disable-next-line @typescript-eslint/require-await
     vi.spyOn(window.navigator.permissions, 'query').mockImplementation(async () => {
         return {state: 'granted'};
     });
@@ -379,6 +381,7 @@ test('GeolocateControl trackuserlocationstart event', async () => {
     });
     map.addControl(geolocate);
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     await afterUIChanges(async (resolve) => {
         const click = new window.Event('click');
 
@@ -558,7 +561,7 @@ test("GeolocateControl accuracy circle doesn't flicker in size", async () => {
                     });
                     map.zoomTo(18, {duration: 0});
                 });
-                map.panBy([123, 123], {duration:0});
+                map.panBy([123, 123], {duration: 0});
                 map.zoomTo(17, {duration: 0});
             });
             map.zoomTo(18, {duration: 0});

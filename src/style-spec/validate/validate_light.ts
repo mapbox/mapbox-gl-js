@@ -14,16 +14,27 @@ export default function validateLight(options: ValidationOptions): Array<Validat
 
     const rootType = getType(light);
     if (light === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else if (rootType !== 'object') {
         errors = errors.concat([new ValidationError('light', light, `object expected, ${rootType} found`)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
     for (const key in light) {
         const transitionMatch = key.match(/^(.*)-transition$/);
+        const useThemeMatch = key.match(/^(.*)-use-theme$/);
 
-        if (transitionMatch && lightSpec[transitionMatch[1]] && lightSpec[transitionMatch[1]].transition) {
+        if (useThemeMatch && lightSpec[useThemeMatch[1]]) {
+            errors = errors.concat(validate({
+                key,
+                value: light[key],
+                valueSpec: {type: 'string'},
+                style,
+                styleSpec
+            }));
+        } else if (transitionMatch && lightSpec[transitionMatch[1]] && lightSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
                 value: light[key],
@@ -44,5 +55,6 @@ export default function validateLight(options: ValidationOptions): Array<Validat
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

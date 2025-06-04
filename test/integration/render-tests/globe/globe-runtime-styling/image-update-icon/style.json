@@ -7,7 +7,7 @@
       "operations": [
         [
           "updateImage",
-          "generic_icon",
+          "globe_blue",
           "./image/marker_18x18.png"
         ],
         [
@@ -32,14 +32,14 @@
       }
     }
   },
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "geometry",
       "type": "symbol",
       "source": "geometry",
       "layout": {
-        "icon-image": "generic_icon"
+        "icon-image": "globe_blue"
       }
     }
   ]

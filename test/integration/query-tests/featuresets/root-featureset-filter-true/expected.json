@@ -1,0 +1,17 @@
+[
+  {
+    "geometry": {
+      "type": "Point",
+      "coordinates": [0, 0]
+    },
+    "type": "Feature",
+    "properties": {
+      "a-constant-value": "constant-a",
+      "a-property-value": "value"
+    },
+    "target": {"featuresetId": "circle"},
+    "namespace": "a",
+    "state": {},
+    "source": "geojson"
+  }
+]

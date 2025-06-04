@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {
     describe,
@@ -27,6 +28,16 @@ test('Marker uses a default marker element with an appropriate offset', () => {
     const marker = new Marker();
     expect(marker.getElement()).toBeTruthy();
     expect(marker.getOffset().equals(new Point(0, -14))).toBeTruthy();
+});
+
+test('Marker retain default options for passed undefined', () => {
+    const marker = new Marker({
+        rotation: undefined,
+        altitude: undefined,
+    });
+
+    expect(marker.getRotation()).toEqual(0);
+    expect(marker.getAltitude()).toEqual(0);
 });
 
 test('Marker uses a default marker element with custom color', () => {
@@ -885,6 +896,25 @@ test('Marker can set and update rotation', () => {
 
     marker.setRotation(90);
     expect(marker.getRotation()).toEqual(90);
+
+    map.remove();
+});
+
+test('Marker can set and update altitude', () => {
+    const map = createMap({zoom: 16, pitch: 45});
+    const marker = new Marker({altitude: 100})
+        .setLngLat([0, 0])
+        .addTo(map);
+    map._domRenderTaskQueue.run();
+
+    expect(marker.getAltitude()).toEqual(100);
+    expect(marker.getElement().style.transform).toMatch("translate(256px, 192px");
+
+    marker.setAltitude(0);
+    map._domRenderTaskQueue.run();
+
+    expect(marker.getAltitude()).toEqual(0);
+    expect(marker.getElement().style.transform).toMatch("translate(256px, 256px");
 
     map.remove();
 });

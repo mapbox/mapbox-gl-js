@@ -14,6 +14,7 @@ import type SkyLayer from '../style/style_layer/sky_style_layer';
 import type Program from './program';
 import type SourceCache from '../source/source_cache';
 import type Painter from './painter';
+import type {SkyboxCaptureUniformsType} from '../render/program/skybox_capture_program';
 
 export default drawSky;
 
@@ -63,11 +64,11 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
     context.activeTexture.set(gl.TEXTURE0);
     let colorRampTexture = layer.colorRampTexture;
     if (!colorRampTexture) {
-        colorRampTexture = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA);
+        colorRampTexture = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA8);
     }
     colorRampTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     const uniformValues = skyboxGradientUniformValues(
-        transform.skyboxMatrix,
+        transform.skyboxMatrix as Float32Array,
         layer.getCenter(painter, false),
 
         layer.paint.get('sky-gradient-radius'),
@@ -77,7 +78,6 @@ function drawSkyboxGradient(painter: Painter, layer: SkyLayer, depthMode: DepthM
 
     painter.uploadCommonUniforms(context, program);
 
-    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
     program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
         uniformValues, 'skyboxGradient', layer.skyboxGeometry.vertexBuffer,
@@ -94,18 +94,17 @@ function drawSkyboxFromCapture(painter: Painter, layer: SkyLayer, depthMode: Dep
 
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, layer.skyboxTexture);
 
-    const uniformValues = skyboxUniformValues(transform.skyboxMatrix, layer.getCenter(painter, false), 0, opacity, temporalOffset);
+    const uniformValues = skyboxUniformValues(transform.skyboxMatrix as Float32Array, layer.getCenter(painter, false), 0, opacity, temporalOffset);
 
     painter.uploadCommonUniforms(context, program);
 
-    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
     program.draw(painter, gl.TRIANGLES, depthMode, StencilMode.disabled,
         painter.colorModeForRenderPass(), CullFaceMode.backCW,
         uniformValues, 'skybox', layer.skyboxGeometry.vertexBuffer,
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
 }
 
-function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<any>, faceRotate: mat4, sunDirection: [number, number, number], i: number) {
+function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<SkyboxCaptureUniformsType>, faceRotate: mat4, sunDirection: [number, number, number], i: number) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -114,17 +113,16 @@ function drawSkyboxFace(painter: Painter, layer: SkyLayer, program: Program<any>
     const sunIntensity = layer.paint.get('sky-atmosphere-sun-intensity');
 
     const uniformValues = skyboxCaptureUniformValues(
-        // @ts-expect-error - TS2345 - Argument of type 'mat3' is not assignable to parameter of type 'Float32Array'.
-        mat3.fromMat4(mat3.create(), faceRotate),
+        mat3.fromMat4(mat3.create(), faceRotate) as Float32Array,
         sunDirection,
         sunIntensity,
-        atmosphereColor,
-        atmosphereHaloColor);
+        atmosphereColor.toPremultipliedRenderColor(null),
+        atmosphereHaloColor.toPremultipliedRenderColor(null)
+    );
 
     const glFace = gl.TEXTURE_CUBE_MAP_POSITIVE_X + i;
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, glFace, layer.skyboxTexture, 0);
 
-    // @ts-expect-error - TS2554 - Expected 12-16 arguments, but got 11.
     program.draw(painter, gl.TRIANGLES, DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.frontCW,
         uniformValues, 'skyboxCapture', layer.skyboxGeometry.vertexBuffer,
         layer.skyboxGeometry.indexBuffer, layer.skyboxGeometry.segment);
@@ -160,47 +158,30 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
 
     const sunDirection = layer.getCenter(painter, true);
     const program = painter.getOrCreateProgram('skyboxCapture');
-    const faceRotate = new Float64Array(16);
+    const faceRotate = new Float64Array(16) as unknown as mat4;
 
     // +x;
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.identity(faceRotate);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.rotateY(faceRotate, faceRotate, -Math.PI * 0.5);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 0);
     // -x
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.identity(faceRotate);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.rotateY(faceRotate, faceRotate, Math.PI * 0.5);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 1);
     // +y
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.identity(faceRotate);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.rotateX(faceRotate, faceRotate, -Math.PI * 0.5);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 2);
     // -y
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.identity(faceRotate);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.rotateX(faceRotate, faceRotate, Math.PI * 0.5);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 3);
     // +z
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.identity(faceRotate);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 4);
     // -z
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.identity(faceRotate);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     mat4.rotateY(faceRotate, faceRotate, Math.PI);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
     drawSkyboxFace(painter, layer, program, faceRotate, sunDirection, 5);
 
     context.viewport.set([0, 0, painter.width, painter.height]);

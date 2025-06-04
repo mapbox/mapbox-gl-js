@@ -113,17 +113,17 @@ export class TouchZoomHandler extends TwoTouchHandler {
     _distance: number;
     _startDistance: number;
 
-    reset() {
+    override reset() {
         super.reset();
         this._distance = 0;
         this._startDistance = 0;
     }
 
-    _start(points: [Point, Point]) {
+    override _start(points: [Point, Point]) {
         this._startDistance = this._distance = points[0].dist(points[1]);
     }
 
-    _move(points: [Point, Point], pinchAround?: Point | null): HandlerResult | null | undefined {
+    override _move(points: [Point, Point], pinchAround?: Point | null): HandlerResult | null | undefined {
         const lastDistance = this._distance;
         this._distance = points[0].dist(points[1]);
         if (!this._active && Math.abs(getZoomDelta(this._distance, this._startDistance)) < ZOOM_THRESHOLD) return;
@@ -146,19 +146,19 @@ function getBearingDelta(a: Point, b: Point) {
 export class TouchRotateHandler extends TwoTouchHandler {
     _minDiameter: number;
 
-    reset() {
+    override reset() {
         super.reset();
         this._minDiameter = 0;
         this._startVector = undefined;
         this._vector = undefined;
     }
 
-    _start(points: [Point, Point]) {
+    override _start(points: [Point, Point]) {
         this._startVector = this._vector = points[0].sub(points[1]);
         this._minDiameter = points[0].dist(points[1]);
     }
 
-    _move(points: [Point, Point], pinchAround?: Point | null): HandlerResult | null | undefined {
+    override _move(points: [Point, Point], pinchAround?: Point | null): HandlerResult | null | undefined {
         const lastVector = this._vector;
         this._vector = points[0].sub(points[1]);
 
@@ -206,7 +206,7 @@ const ALLOWED_SINGLE_TOUCH_TIME = 100;
  * The `TouchPitchHandler` allows the user to pitch the map by dragging up and down with two fingers.
  *
  * @see [Example: Set pitch and bearing](https://docs.mapbox.com/mapbox-gl-js/example/set-perspective/)
-*/
+ */
 export class TouchPitchHandler extends TwoTouchHandler {
 
     _valid: boolean | undefined;
@@ -219,14 +219,14 @@ export class TouchPitchHandler extends TwoTouchHandler {
         this._map = map;
     }
 
-    reset() {
+    override reset() {
         super.reset();
         this._valid = undefined;
         this._firstMove = undefined;
         this._lastPoints = undefined;
     }
 
-    _start(points: [Point, Point]) {
+    override _start(points: [Point, Point]) {
         this._lastPoints = points;
         if (isVertical(points[0].sub(points[1]))) {
             // fingers are more horizontal than vertical
@@ -235,7 +235,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
 
     }
 
-    _move(points: [Point, Point], center: Point | null | undefined, e: TouchEvent): HandlerResult | null | undefined {
+    override _move(points: [Point, Point], center: Point | null | undefined, e: TouchEvent): HandlerResult | null | undefined {
         const lastPoints = this._lastPoints;
         if (!lastPoints) return;
         const vectorA = points[0].sub(lastPoints[0]);
@@ -243,7 +243,6 @@ export class TouchPitchHandler extends TwoTouchHandler {
 
         if (this._map._cooperativeGestures && !isFullscreen() && e.touches.length < 3) return;
 
-        // @ts-expect-error - TS2322 - Type 'boolean | void' is not assignable to type 'boolean'.
         this._valid = this.gestureBeginsVertically(vectorA, vectorB, e.timeStamp);
 
         if (!this._valid) return;
@@ -257,7 +256,7 @@ export class TouchPitchHandler extends TwoTouchHandler {
         };
     }
 
-    gestureBeginsVertically(vectorA: Point, vectorB: Point, timeStamp: number): void | boolean {
+    gestureBeginsVertically(vectorA: Point, vectorB: Point, timeStamp: number): undefined | boolean {
         if (this._valid !== undefined) return this._valid;
 
         const threshold = 2;

@@ -15,10 +15,11 @@ import type {RGBAImage} from '../../util/image';
 import type SkyboxGeometry from '../../render/skybox_geometry';
 import type {Position} from '../../util/util';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 function getCelestialDirection(azimuth: number, altitude: number, leftHanded: boolean): [number, number, number] {
     const up: [number, number, number] = [0, 0, 1];
-    const rotation = quat.identity([] as any);
+    const rotation = quat.identity([] as unknown as quat);
 
     quat.rotateY(rotation, rotation, leftHanded ? -degToRad(azimuth) + Math.PI : degToRad(azimuth));
     quat.rotateX(rotation, rotation, -degToRad(altitude));
@@ -28,9 +29,11 @@ function getCelestialDirection(azimuth: number, altitude: number, leftHanded: bo
 }
 
 class SkyLayer extends StyleLayer {
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override type: 'sky';
+
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
     _lightPosition: Position;
 
     skyboxFbo: Framebuffer | null | undefined;
@@ -51,7 +54,7 @@ class SkyLayer extends StyleLayer {
         this._updateColorRamp();
     }
 
-    _handleSpecialPaintPropertyUpdate(name: string) {
+    override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'sky-gradient') {
             this._updateColorRamp();
         } else if (name === 'sky-atmosphere-sun' ||
@@ -107,7 +110,7 @@ class SkyLayer extends StyleLayer {
         return getCelestialDirection(direction[0], -direction[1] + 90, leftHanded);
     }
 
-    isSky(): boolean {
+    override isSky(): boolean {
         return true;
     }
 
@@ -117,11 +120,11 @@ class SkyLayer extends StyleLayer {
         this._lightPosition = painter.style.light.properties.get('position');
     }
 
-    hasOffscreenPass(): boolean {
+    override hasOffscreenPass(): boolean {
         return true;
     }
 
-    getProgramIds(): string[] | null {
+    override getProgramIds(): ProgramName[] | null {
         const type = this.paint.get('sky-type');
         if (type === 'atmosphere') {
             return ['skyboxCapture', 'skybox'];

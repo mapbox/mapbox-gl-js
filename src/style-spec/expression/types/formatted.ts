@@ -31,8 +31,11 @@ export default class Formatted {
 
     isEmpty(): boolean {
         if (this.sections.length === 0) return true;
-        return !this.sections.some(section => section.text.length !== 0 ||
-                                             (section.image && section.image.namePrimary.length !== 0));
+        return !this.sections.some(section => {
+            if (section.text.length !== 0) return true;
+            if (!section.image) return false;
+            return section.image.hasPrimary();
+        });
     }
 
     static factory(text: Formatted | string): Formatted {
@@ -52,7 +55,8 @@ export default class Formatted {
         const serialized: Array<unknown> = ["format"];
         for (const section of this.sections) {
             if (section.image) {
-                serialized.push(["image", section.image.namePrimary]);
+                const primaryId = section.image.getPrimary().id.toString();
+                serialized.push(['image', primaryId]);
                 continue;
             }
             serialized.push(section.text);
@@ -66,7 +70,7 @@ export default class Formatted {
                 options["font-scale"] = section.scale;
             }
             if (section.textColor) {
-                options["text-color"] = (["rgba"] as Array<unknown>).concat(section.textColor.toRenderColor(null).toArray());
+                options["text-color"] = (["rgba"] as Array<unknown>).concat(section.textColor.toNonPremultipliedRenderColor(null).toArray());
             }
             serialized.push(options);
         }

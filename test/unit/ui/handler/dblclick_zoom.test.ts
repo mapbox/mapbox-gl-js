@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, waitFor, vi, createMap} from '../../../util/vitest';
 import simulate, {constructTouch, simulateDoubleTap} from '../../../util/simulate_interaction';

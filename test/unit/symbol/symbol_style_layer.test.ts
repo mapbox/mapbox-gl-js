@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
 import SymbolStyleLayer from '../../../src/style/style_layer/symbol_style_layer';
@@ -60,7 +61,7 @@ describe('hasPaintOverrides', () => {
     });
 
     test('format expression, overriden text-color', () => {
-        const props = {layout: {'text-field': ["format", ["get", "name"], {"text-color":"red"}]}};
+        const props = {layout: {'text-field': ["format", ["get", "name"], {"text-color": "red"}]}};
         const layer = createSymbolLayer(props);
         expect(SymbolStyleLayer.hasPaintOverride(layer.layout, 'text-color')).toEqual(true);
     });

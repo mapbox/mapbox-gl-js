@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect} from '../../util/vitest';
 import {register, serialize, deserialize} from '../../../src/util/web_worker_transfer';
@@ -5,11 +6,13 @@ import {register, serialize, deserialize} from '../../../src/util/web_worker_tra
 test('round trip', () => {
     class Foo {
         n;
+        b;
         buffer;
         _cached;
 
-        constructor(n) {
+        constructor(n, b) {
             this.n = n;
+            this.b = b;
             this.buffer = new ArrayBuffer(100);
             this.squared();
         }
@@ -25,7 +28,7 @@ test('round trip', () => {
 
     register(Foo, 'Foo', {omit: ['_cached']});
 
-    const foo = new Foo(10);
+    const foo = new Foo(10, 4895947598347521289105569050n);
     const transferables = new Set();
     const deserialized = deserialize(serialize(foo, transferables));
     expect(deserialized instanceof Foo).toBeTruthy();
@@ -34,6 +37,7 @@ test('round trip', () => {
     expect(foo !== bar).toBeTruthy();
     expect(bar.constructor === Foo).toBeTruthy();
     expect(bar.n === 10).toBeTruthy();
+    expect(bar.b === 4895947598347521289105569050n).toBeTruthy();
     expect(bar.buffer === foo.buffer).toBeTruthy();
     expect(transferables.has(foo.buffer)).toBeTruthy();
     expect(bar._cached === undefined).toBeTruthy();

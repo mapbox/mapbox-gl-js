@@ -9,15 +9,18 @@ import {loadVectorTile, DedupedRequest} from './load_vector_tile';
 
 import type {
     WorkerSource,
-    WorkerTileResult,
-    WorkerTileParameters,
-    WorkerTileCallback,
-    TileParameters
+    WorkerSourceTileRequest,
+    WorkerSourceVectorTileRequest,
+    WorkerSourceVectorTileResult,
+    WorkerSourceVectorTileCallback,
 } from './worker_source';
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
 import type Scheduler from '../util/scheduler';
+import type {TaskMetadata} from '../util/scheduler';
 import type {LoadVectorData} from './load_vector_tile';
+import type {ImageId} from '../style-spec/expression/types/image_id';
+import type {StyleModelMap} from '../style/style_mode';
 
 /**
  * The {@link WorkerSource} implementation that supports {@link VectorTileSource}.
@@ -31,18 +34,15 @@ import type {LoadVectorData} from './load_vector_tile';
 class VectorTileWorkerSource extends Evented implements WorkerSource {
     actor: Actor;
     layerIndex: StyleLayerIndex;
-    availableImages: Array<string>;
+    availableImages: ImageId[];
+    availableModels: StyleModelMap;
     loadVectorData: LoadVectorData;
-    loading: {
-        [_: number]: WorkerTile;
-    };
-    loaded: {
-        [_: number]: WorkerTile;
-    };
+    loading: Record<number, WorkerTile>;
+    loaded: Record<number, WorkerTile>;
     deduped: DedupedRequest;
     isSpriteLoaded: boolean;
-    scheduler: Scheduler | null | undefined;
-    brightness: number | null | undefined;
+    scheduler?: Scheduler | null;
+    brightness?: number | null;
 
     /**
      * @param [loadVectorData] Optional method for custom loading of a VectorTile
@@ -51,11 +51,12 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * loads the pbf at `params.url`.
      * @private
      */
-    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: Array<string>, isSpriteLoaded: boolean, loadVectorData?: LoadVectorData | null, brightness?: number | null) {
+    constructor(actor: Actor, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, isSpriteLoaded: boolean, loadVectorData?: LoadVectorData | null, brightness?: number | null) {
         super();
         this.actor = actor;
         this.layerIndex = layerIndex;
         this.availableImages = availableImages;
+        this.availableModels = availableModels;
         this.loadVectorData = loadVectorData || loadVectorTile;
         this.loading = {};
         this.loaded = {};
@@ -71,7 +72,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * a `params.url` property) for fetching and producing a VectorTile object.
      * @private
      */
-    loadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
+    loadTile(params: WorkerSourceVectorTileRequest, callback: WorkerSourceVectorTileCallback) {
         const uid = params.uid;
 
         const requestParam = params && params.request;
@@ -79,10 +80,11 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
         const workerTile = this.loading[uid] = new WorkerTile(params);
         workerTile.abort = this.loadVectorData(params, (err, response) => {
-
             const aborted = !this.loading[uid];
 
             delete this.loading[uid];
+
+            workerTile.cancelRasterize();
 
             if (aborted || err || !response) {
                 workerTile.status = 'done';
@@ -91,6 +93,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             }
 
             const rawTileData = response.rawData;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const cacheControl: Record<string, any> = {};
             if (response.expires) cacheControl.expires = response.expires;
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
@@ -99,9 +102,10 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             // because we stub the vector tile interface around JSON data instead of parsing it directly
             workerTile.vectorTile = response.vectorTile || new VectorTile(new Protobuf(rawTileData));
             const parseTile = () => {
-                const workerTileCallback = (err?: Error | null, result?: WorkerTileResult | null) => {
+                const WorkerSourceVectorTileCallback = (err?: Error | null, result?: WorkerSourceVectorTileResult | null) => {
                     if (err || !result) return callback(err);
 
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const resourceTiming: Record<string, any> = {};
                     if (perf) {
                         // Transferring a copy of rawTileData because the worker needs to retain its copy.
@@ -114,16 +118,16 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                     }
                     callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
                 };
-                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, workerTileCallback);
+                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, WorkerSourceVectorTileCallback);
             };
 
             if (this.isSpriteLoaded) {
                 parseTile();
             } else {
+                // Defer tile parsing until sprite is ready. Style emits 'spriteLoaded' event, which triggers the 'isSpriteLoaded' event here.
                 this.once('isSpriteLoaded', () => {
                     if (this.scheduler) {
-                        const metadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
-                        // @ts-expect-error - TS2345 - Argument of type '{ type: string; isSymbolTile: boolean; zoom: number; }' is not assignable to parameter of type 'TaskMetadata'.
+                        const metadata: TaskMetadata = {type: 'parseTile', isSymbolTile: params.isSymbolTile, zoom: params.tileZoom};
                         this.scheduler.add(parseTile, metadata);
                     } else {
                         parseTile();
@@ -140,23 +144,25 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
      * Implements {@link WorkerSource#reloadTile}.
      * @private
      */
-    reloadTile(params: WorkerTileParameters, callback: WorkerTileCallback) {
+    reloadTile(params: WorkerSourceVectorTileRequest, callback: WorkerSourceVectorTileCallback) {
         const loaded = this.loaded,
             uid = params.uid;
 
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
+            workerTile.scaleFactor = params.scaleFactor;
             workerTile.showCollisionBoxes = params.showCollisionBoxes;
             workerTile.projection = params.projection;
             workerTile.brightness = params.brightness;
             workerTile.tileTransform = tileTransform(params.tileID.canonical, params.projection);
             workerTile.extraShadowCaster = params.extraShadowCaster;
             workerTile.lut = params.lut;
-            const done = (err?: Error | null, data?: WorkerTileResult | null) => {
+            workerTile.worldview = params.worldview;
+            const done = (err?: Error | null, data?: WorkerSourceVectorTileResult | null) => {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {
                     delete workerTile.reloadCallback;
-                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, reloadCallback);
+                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, reloadCallback);
                 }
                 callback(err, data);
             };
@@ -166,7 +172,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             } else if (workerTile.status === 'done') {
                 // if there was no vector tile data on the initial load, don't try and re-parse tile
                 if (workerTile.vectorTile) {
-                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.actor, done);
+                    workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, done);
                 } else {
                     done();
                 }
@@ -178,12 +184,9 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
     /**
      * Implements {@link WorkerSource#abortTile}.
-     *
-     * @param params
-     * @param params.uid The UID for this tile.
      * @private
      */
-    abortTile(params: TileParameters, callback: WorkerTileCallback) {
+    abortTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
         const uid = params.uid;
         const tile = this.loading[uid];
         if (tile) {
@@ -195,12 +198,9 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
     /**
      * Implements {@link WorkerSource#removeTile}.
-     *
-     * @param params
-     * @param params.uid The UID for this tile.
      * @private
      */
-    removeTile(params: TileParameters, callback: WorkerTileCallback) {
+    removeTile(params: WorkerSourceTileRequest, callback: WorkerSourceVectorTileCallback) {
         const loaded = this.loaded,
             uid = params.uid;
         if (loaded && loaded[uid]) {

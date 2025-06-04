@@ -13,7 +13,7 @@ function isWorker() {
 }
 const browserWriteFile = (filepath, data, cb) => {
     const xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
+    xhttp.onreadystatechange = function () {
         if (xhttp.readyState === 4 && xhttp.status === 200) {
             cb();
         }
@@ -29,7 +29,7 @@ const browserWriteFile = (filepath, data, cb) => {
 };
 
 if (isWorker()) {
-    onmessage = function(e) {
+    onmessage = function (e) {
         e.data.forEach((file) => {
             browserWriteFile(
               file.path,

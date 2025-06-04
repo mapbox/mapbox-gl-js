@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect, assert, beforeEach, beforeAll, afterEach, afterAll, vi} from 'vitest';
 import {Map} from '../../src/ui/map';
@@ -9,9 +10,9 @@ export function waitFor(evented, event) {
     });
 }
 
-export function createStyleJSON(options) {
+export function createStyleJSON(options = {}) {
     return {
-        version: 8,
+        version: 8 as const,
         sources: {},
         layers: [],
         ...options
@@ -29,11 +30,11 @@ export function doneAsync() {
         doneRef.reject = reject;
     });
 
-    const withAsync = (fn) => {
+    const withAsync = (fn): void => {
         return async (...args) => {
             try {
                 await fn(...args, doneRef);
-            } catch (err: any) {
+            } catch (err) {
                 doneRef.reject(err);
             }
         };
@@ -46,7 +47,7 @@ export function doneAsync() {
     };
 }
 
-export function createMap(options, callback) {
+export function createMap(options, callback?: (err: any, map: Map) => void) {
     const container = window.document.createElement('div');
     const defaultOptions = {
         container,

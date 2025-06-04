@@ -24,14 +24,17 @@ import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../../render/painter';
 import type {DynamicDefinesType} from '../../render/program/program_uniforms';
 import type {LUT} from "../../util/lut";
+import type {ProgramName} from '../../render/program';
 
 class CircleStyleLayer extends StyleLayer {
-    _unevaluatedLayout: Layout<LayoutProps>;
-    layout: PossiblyEvaluated<LayoutProps>;
+    override type: 'circle';
 
-    _transitionablePaint: Transitionable<PaintProps>;
-    _transitioningPaint: Transitioning<PaintProps>;
-    paint: PossiblyEvaluated<PaintProps>;
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
+
+    override _transitionablePaint: Transitionable<PaintProps>;
+    override _transitioningPaint: Transitioning<PaintProps>;
+    override paint: PossiblyEvaluated<PaintProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {
@@ -45,15 +48,15 @@ class CircleStyleLayer extends StyleLayer {
         return new CircleBucket(parameters);
     }
 
-    queryRadius(bucket: Bucket): number {
-        const circleBucket: CircleBucket<CircleStyleLayer> = (bucket as any);
+    override queryRadius(bucket: Bucket): number {
+        const circleBucket = bucket as CircleBucket<CircleStyleLayer>;
         return getMaximumPaintValue('circle-radius', this, circleBucket) +
             getMaximumPaintValue('circle-stroke-width', this, circleBucket) +
 
             translateDistance(this.paint.get('circle-translate'));
     }
 
-    queryIntersectsFeature(
+    override queryIntersectsFeature(
         queryGeometry: TilespaceQueryGeometry,
         feature: VectorTileFeature,
         featureState: FeatureState,
@@ -63,16 +66,13 @@ class CircleStyleLayer extends StyleLayer {
         pixelPosMatrix: Float32Array,
         elevationHelper?: DEMSampler | null,
     ): boolean {
-
         const translation = tilespaceTranslate(
-
             this.paint.get('circle-translate'),
             this.paint.get('circle-translate-anchor'),
-            transform.angle, queryGeometry.pixelToTileUnitsFactor);
+            transform.angle, queryGeometry.pixelToTileUnitsFactor
+        );
 
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
         const size = this.paint.get('circle-radius').evaluate(feature, featureState) +
-        // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
             this.paint.get('circle-stroke-width').evaluate(feature, featureState);
 
         return queryIntersectsCircle(queryGeometry, geometry, transform, pixelPosMatrix, elevationHelper,
@@ -80,17 +80,27 @@ class CircleStyleLayer extends StyleLayer {
             this.paint.get('circle-pitch-scale') === 'map', translation, size);
     }
 
-    getProgramIds(): Array<string> {
+    override getProgramIds(): ProgramName[] {
         return ['circle'];
     }
 
-    getDefaultProgramParams(_: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
+    override getDefaultProgramParams(_: string, zoom: number, lut: LUT | null): CreateProgramParams | null {
         const definesValues = (circleDefinesValues(this) as DynamicDefinesType[]);
         return {
             config: new ProgramConfiguration(this, {zoom, lut}),
             defines: definesValues,
             overrideFog: false
         };
+    }
+
+    override is3D(terrainEnabled?: boolean): boolean {
+        if (terrainEnabled) return false;
+
+        return !!this.layout && this.layout.get('circle-elevation-reference') !== 'none';
+    }
+
+    override hasElevation(): boolean {
+        return this.layout && this.layout.get('circle-elevation-reference') !== 'none';
     }
 }
 
@@ -138,7 +148,7 @@ export function queryIntersectsCircle(
                 queryGeometry.tilespaceRays.map((r) => intersectAtHeight(r, z)) :
                 queryGeometry.queryGeometry.screenGeometry;
 
-            const projectedCenter = vec4.transformMat4([] as any, [reproj.x, reproj.y, reproj.z, 1], pixelPosMatrix);
+            const projectedCenter = vec4.transformMat4([] as unknown as vec4, [reproj.x, reproj.y, reproj.z, 1], pixelPosMatrix);
             if (!scaleWithMap && alignWithMap) {
                 size *= projectedCenter[3] / transform.cameraToCenterDistance;
             } else if (scaleWithMap && !alignWithMap) {
@@ -161,7 +171,7 @@ export function queryIntersectsCircle(
 }
 
 function projectPoint(x: number, y: number, z: number, pixelPosMatrix: Float32Array) {
-    const point = vec4.transformMat4([] as any, [x, y, z, 1], pixelPosMatrix);
+    const point = vec4.transformMat4([] as unknown as vec4, [x, y, z, 1], pixelPosMatrix);
     return new Point(point[0] / point[3], point[1] / point[3]);
 }
 

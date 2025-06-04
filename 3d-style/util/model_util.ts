@@ -50,12 +50,12 @@ type BoxFace = {
 // corners are in world coordinates.
 export function getBoxBottomFace(corners: Array<vec3>, meterToMercator: number): [number, number, number, number] {
     const zUp =  [0, 0, 1];
-    const boxFaces: BoxFace[] = [{corners: [0, 1, 3, 2], dotProductWithUp : 0},
-        {corners: [1, 5, 2, 6], dotProductWithUp : 0},
-        {corners: [0, 4, 1, 5], dotProductWithUp : 0},
-        {corners: [2, 6, 3, 7], dotProductWithUp : 0},
-        {corners: [4, 7, 5, 6], dotProductWithUp : 0},
-        {corners: [0, 3, 4, 7], dotProductWithUp : 0}];
+    const boxFaces: BoxFace[] = [{corners: [0, 1, 3, 2], dotProductWithUp: 0},
+        {corners: [1, 5, 2, 6], dotProductWithUp: 0},
+        {corners: [0, 4, 1, 5], dotProductWithUp: 0},
+        {corners: [2, 6, 3, 7], dotProductWithUp: 0},
+        {corners: [4, 7, 5, 6], dotProductWithUp: 0},
+        {corners: [0, 3, 4, 7], dotProductWithUp: 0}];
     for (const face of boxFaces) {
         const p0 = corners[face.corners[0]];
         const p1 = corners[face.corners[1]];
@@ -83,39 +83,37 @@ export function rotationFor3Points(
     h2: number,
     meterToMercator: number,
 ): quat {
-    const p0p1 = [p1[0] - p0[0], p1[1] - p0[1], 0.0];
-    const p0p2 = [p2[0] - p0[0], p2[1] - p0[1], 0.0];
+    const p0p1: vec3 = [p1[0] - p0[0], p1[1] - p0[1], 0.0];
+    const p0p2: vec3 = [p2[0] - p0[0], p2[1] - p0[1], 0.0];
     // If model scale is zero, all bounding box points are identical and no rotation can be calculated
-    if (vec3.length(p0p1 as [number, number, number]) < 1e-12 || vec3.length(p0p2 as [number, number, number]) < 1e-12) {
+    if (vec3.length(p0p1) < 1e-12 || vec3.length(p0p2) < 1e-12) {
         return quat.identity(out);
     }
-    const from = vec3.cross([] as any, p0p1 as [number, number, number], p0p2 as [number, number, number]);
+    const from = vec3.cross([] as unknown as vec3, p0p1, p0p2);
     vec3.normalize(from, from);
-    vec3.subtract(p0p2 as [number, number, number], p2, p0);
+    vec3.subtract(p0p2, p2, p0);
     p0p1[2] = (h1 - h0) * meterToMercator;
     p0p2[2] = (h2 - h0) * meterToMercator;
     const to = p0p1;
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
-    vec3.cross(to, p0p1 as [number, number, number], p0p2 as [number, number, number]);
-    // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec3'.
+    vec3.cross(to, p0p1, p0p2);
     vec3.normalize(to, to);
-    return quat.rotationTo(out, from, to);
+    return quat.rotationTo(out, from, to) as quat;
 }
 
 export function coordinateFrameAtEcef(ecef: vec3): mat4 {
-    const zAxis = [ecef[0], ecef[1], ecef[2]];
-    let yAxis = [0.0, 1.0, 0.0];
-    const xAxis = vec3.cross([] as any, yAxis as [number, number, number], zAxis as [number, number, number]);
-    vec3.cross(yAxis as [number, number, number], zAxis as [number, number, number], xAxis);
-    if (vec3.squaredLength(yAxis as [number, number, number]) === 0.0) {
+    const zAxis: vec3 = [ecef[0], ecef[1], ecef[2]];
+    let yAxis: vec3 = [0.0, 1.0, 0.0];
+    const xAxis: vec3 = vec3.cross([] as unknown as vec3, yAxis, zAxis);
+    vec3.cross(yAxis, zAxis, xAxis);
+    if (vec3.squaredLength(yAxis) === 0.0) {
         // Coordinate space is ambiguous if the model is placed directly at north or south pole
         yAxis = [0.0, 1.0, 0.0];
-        vec3.cross(xAxis, zAxis as [number, number, number], yAxis as [number, number, number]);
+        vec3.cross(xAxis, zAxis, yAxis);
         assert(vec3.squaredLength(xAxis) > 0.0);
     }
     vec3.normalize(xAxis, xAxis);
-    vec3.normalize(yAxis as [number, number, number], yAxis as [number, number, number]);
-    vec3.normalize(zAxis as [number, number, number], zAxis as [number, number, number]);
+    vec3.normalize(yAxis, yAxis);
+    vec3.normalize(zAxis, zAxis);
     return [xAxis[0], xAxis[1], xAxis[2], 0.0,
         yAxis[0], yAxis[1], yAxis[2], 0.0,
         zAxis[0], zAxis[1], zAxis[2], 0.0,
@@ -139,7 +137,7 @@ export function convertModelMatrix(matrix: mat4, transform: Transform, scaleWith
     const lat = latFromMercatorY(position[1] / worldSize);
     const lng = lngFromMercatorX(position[0] / worldSize);
     // Construct a matrix for scaling the original one to ecef space and removing the translation in mercator space
-    const mercToEcef = mat4.identity([] as any);
+    const mercToEcef = mat4.identity([] as unknown as mat4);
     const sourcePixelsPerMeter = mercatorZfromAltitude(1, lat) * worldSize;
     const pixelsPerMeterConversion = mercatorZfromAltitude(1, 0) * worldSize * getMetersPerPixelAtLatitude(lat, transform.zoom);
     const pixelsToEcef = 1.0 / globeECEFUnitsToPixelScale(worldSize);
@@ -153,12 +151,11 @@ export function convertModelMatrix(matrix: mat4, transform: Transform, scaleWith
     // Construct coordinate space matrix at the provided location in ecef space.
     const ecefCoord = latLngToECEF(lat, lng);
     // add altitude
-    vec3.add(ecefCoord, ecefCoord, vec3.scale([] as any, vec3.normalize([] as any, ecefCoord), sourcePixelsPerMeter * scale * position[2]));
+    vec3.add(ecefCoord, ecefCoord, vec3.scale([] as unknown as vec3, vec3.normalize([] as unknown as vec3, ecefCoord), sourcePixelsPerMeter * scale * position[2]));
     const ecefFrame = coordinateFrameAtEcef(ecefCoord);
     mat4.scale(mercToEcef, mercToEcef, [scale, scale, scale * sourcePixelsPerMeter]);
     mat4.translate(mercToEcef, mercToEcef, [-position[0], -position[1], -position[2]]);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-    const result = mat4.multiply([] as any, transform.globeMatrix, ecefFrame);
+    const result = mat4.multiply([] as unknown as mat4, transform.globeMatrix, ecefFrame);
     mat4.multiply(result, result, mercToEcef);
     mat4.multiply(result, result, matrix);
     return result;
@@ -172,7 +169,7 @@ export function mercatorToGlobeMatrix(matrix: mat4, transform: Transform): mat4 
     const pixelsToEcef = pixelsPerMeterConversion / globeECEFUnitsToPixelScale(worldSize);
     const pixelsPerMeter = mercatorZfromAltitude(1, transform.center.lat) * worldSize;
 
-    const m = mat4.identity([] as any);
+    const m = mat4.identity([] as unknown as mat4);
     mat4.rotateY(m, m, degToRad(transform.center.lng));
     mat4.rotateX(m, m, degToRad(transform.center.lat));
 
@@ -181,7 +178,6 @@ export function mercatorToGlobeMatrix(matrix: mat4, transform: Transform): mat4 
 
     mat4.translate(m, m, [transform.point.x - 0.5 * worldSize, transform.point.y - 0.5 * worldSize, 0.0]);
     mat4.multiply(m, m, matrix);
-    // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
     return mat4.multiply(m, transform.globeMatrix, m);
 }
 

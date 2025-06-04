@@ -97,17 +97,27 @@ function tsObjectDeclaration(key, properties, overrides = {}) {
 function tsObject(properties, indent, overrides = {}) {
     return `{
 ${Object.keys(properties)
-        .map(k => {
-            const property = `    ${indent}${tsProperty(k, properties[k], overrides[k])}`;
+        .flatMap(k => {
+            let property = `    ${indent}${tsProperty(k, properties[k], overrides[k])}`;
+
+            if (properties[k].experimental) {
+                const experimentalTag = tag('@experimental', 'This property is experimental and subject to change in future versions.', `    ${indent}`);
+                property = [experimentalTag, property].join('\n');
+            }
+
+            const result = [property];
+
             if (properties[k].transition) {
                 const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification`;
-                return [property, propertyTransition].join(',\n');
-            } else if (properties[k].experimental) {
-                const experimentalTag = tag('@experimental', 'This property is experimental and subject to change in future versions.', `    ${indent}`);
-                return [experimentalTag, property].join('\n');
-            } else {
-                return property;
+                result.push(propertyTransition);
             }
+
+            if (properties[k]['use-theme']) {
+                const propertyUseTheme = `    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
+                result.push(propertyUseTheme);
+            }
+
+            return result;
         })
         .join(',\n')}
 ${indent}}`;
@@ -234,7 +244,7 @@ export type FormattedSpecification = string;
 
 export type ResolvedImageSpecification = string;
 
-export type PromoteIdSpecification = {[_: string]: string} | string;
+export type PromoteIdSpecification = {[_: string]: string | ExpressionSpecification} | string | ExpressionSpecification;
 
 export type FilterSpecification =
     | ExpressionSpecification
@@ -285,6 +295,7 @@ export type CompositeFunctionSpecification<T> =
     | { type: 'interval',    stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T }
     | { type: 'categorical', stops: Array<[{zoom: number, value: string | number | boolean}, T]>, property: string, default?: T };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ExpressionSpecification = [string, ...any[]];
 
 export type PropertyValueSpecification<T> =
@@ -307,11 +318,17 @@ ${tsObjectDeclaration('SourcesSpecification', spec.sources)}
 
 ${tsObjectDeclaration('ModelsSpecification', spec.models)}
 
+${tsObjectDeclaration('IconsetsSpecification', spec.iconsets)}
+
 ${tsObjectDeclaration('LightSpecification', spec.light)}
 
 ${tsObjectDeclaration('TerrainSpecification', spec.terrain)}
 
 ${tsObjectDeclaration('FogSpecification', spec.fog)}
+
+${tsObjectDeclaration('SnowSpecification', spec.snow)}
+
+${tsObjectDeclaration('RainSpecification', spec.rain)}
 
 ${tsObjectDeclaration('CameraSpecification', spec.camera)}
 
@@ -320,6 +337,8 @@ ${tsObjectDeclaration('ColorThemeSpecification', spec.colorTheme)}
 ${tsObjectDeclaration('ProjectionSpecification', spec.projection)}
 
 ${tsObjectDeclaration('ImportSpecification', spec.import)}
+
+${tsObjectDeclaration('IndoorSpecification', spec.indoor)}
 
 ${tsObjectDeclaration('ConfigSpecification', spec.config)}
 
@@ -346,6 +365,9 @@ ${spec.source.map(key => {
 
 export type SourceSpecification =
 ${spec.source.map(key => `    | ${tsSourceSpecificationTypeName(key)}`).join('\n')}
+
+export type IconsetSpecification =
+${spec.iconset.map(key => `    | ${tsObject(spec[key], '    ')}`).join('\n')}
 
 export type ModelSpecification = ${tsType(spec.model)};
 

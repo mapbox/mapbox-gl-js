@@ -13,7 +13,7 @@ const M = Math.sqrt(3) / 2;
 
 export default class EqualEarth extends Projection {
 
-    project(lng: number, lat: number): ProjectedPoint {
+    override project(lng: number, lat: number): ProjectedPoint {
         // based on https://github.com/d3/d3-geo, MIT-licensed
         lat = lat / 180 * Math.PI;
         lng = lng / 180 * Math.PI;
@@ -30,7 +30,7 @@ export default class EqualEarth extends Projection {
         };
     }
 
-    unproject(x: number, y: number): LngLat {
+    override unproject(x: number, y: number): LngLat {
         // based on https://github.com/d3/d3-geo, MIT-licensed
         x = (2 * x - 0.5) * Math.PI;
         y = (2 * (1 - y) - 1) * Math.PI;

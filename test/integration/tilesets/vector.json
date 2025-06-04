@@ -1,5 +1,5 @@
 {
   "tiles": [
-    "http://localhost:7357/tiles/{z}-{x}-{y}.mvt"
+    "local://tiles/{z}-{x}-{y}.mvt"
   ]
 }

@@ -1,4 +1,3 @@
-'use strict';
 
 import fs from 'fs';
 import ejs from 'ejs';
@@ -101,7 +100,7 @@ global.defaultValue = function (property) {
         if (typeof property.default !== 'string') {
             return JSON.stringify(property.default);
         } else {
-            const {r, g, b, a} = Color.parse(property.default) as Color;
+            const {r, g, b, a} = Color.parse(property.default);
             return `new Color(${r}, ${g}, ${b}, ${a})`;
         }
     default: throw new Error(`unknown type for ${property.name}`);
@@ -113,7 +112,15 @@ global.overrides = function (property) {
 };
 
 global.propertyValue = function (type, property, valueType) {
-    const spec = `styleSpec["${valueType}_${property.type_}"]["${property.name}"]`;
+    const valueTypeString = valueType ? `${valueType}_` : "";
+    let spec = `styleSpec["${valueTypeString}${property.type_}"]["${property.name}"]`;
+    if (property.name.endsWith('-use-theme')) {
+        spec = JSON.stringify({
+            "type": "string",
+            "default": "default",
+            "property-type": property['property-type']
+        });
+    }
     if (customTypeBindings[`${type}.${property.name}`]) {
         return `new ${customTypeBindings[`${type}.${property.name}`]}(${spec})`;
     }
@@ -140,19 +147,31 @@ const layerPropertiesJs3Dstyle = ejs.compile(fs.readFileSync('src/style/style_la
 const layers = Object.keys(spec.layer.type.values).map((type) => {
     const layoutSpec = spec[`layout_${type}`] ?? {};
     const paintSpec = spec[`paint_${type}`] ?? {};
-    const layoutProperties = Object.keys(layoutSpec).reduce<Array<any>>((memo, name) => {
+    const layoutProperties = Object.keys(layoutSpec).reduce((memo, name) => {
         layoutSpec[name].name = name;
         layoutSpec[name].type_ = type;
         memo.push(layoutSpec[name]);
         return memo;
     }, []);
 
-    const paintProperties = Object.keys(paintSpec).reduce<Array<any>>((memo, name) => {
+    const paintProperties = Object.keys(paintSpec).reduce((memo, name) => {
         paintSpec[name].name = name;
         paintSpec[name].type_ = type;
         memo.push(paintSpec[name]);
         return memo;
     }, []);
+
+    for (const prop of paintProperties) {
+        if (prop.type === 'color') {
+            paintProperties.push({
+                'type': 'string',
+                'type_': prop.type_,
+                'default': 'default',
+                'property-type': 'data-driven',
+                'name': `${prop.name}-use-theme`
+            });
+        }
+    }
 
     return {type, layoutProperties, paintProperties};
 });
@@ -162,7 +181,7 @@ for (const layer of layers) {
     let styleDir = '..';
     let outputDir = `src/style/style_layer`;
     let properties = layerPropertiesJs;
-    if (layer.type === 'model') {
+    if (layer.type === 'model' || layer.type === 'building') {
         srcDir = '../../../src';
         styleDir = '../../../src/style';
         outputDir = `3d-style/style/style_layer`;
@@ -174,10 +193,21 @@ for (const layer of layers) {
 const lightPropertiesJs = ejs.compile(fs.readFileSync('3d-style/style/light_properties.js.ejs', 'utf8'), {strict: true});
 
 const lights = Object.keys(spec['light-3d'].type.values).map((type) => {
-    const properties = Object.keys(spec[`properties_light_${type}`]).reduce<Array<any>>((memo, name) => {
+    const properties = Object.keys(spec[`properties_light_${type}`]).reduce((memo, name) => {
         spec[`properties_light_${type}`][name].name = name;
         spec[`properties_light_${type}`][name].type_ = `light_${type}`;
         memo.push(spec[`properties_light_${type}`][name]);
+
+        if (name === 'color') {
+            memo.push({
+                'type': 'string',
+                'type_': `light_${type}`,
+                'default': 'default',
+                'property-type': 'data-constant',
+                'name': `${name}-use-theme`
+            });
+        }
+
         return memo;
     }, []);
 
@@ -187,3 +217,23 @@ const lights = Object.keys(spec['light-3d'].type.values).map((type) => {
 for (const light of lights) {
     fs.writeFileSync(`3d-style/style/${light.type}_light_properties.ts`, lightPropertiesJs(light));
 }
+
+// Snow
+const snowPropertiesJs = ejs.compile(fs.readFileSync('3d-style/style/snow_properties.js.ejs', 'utf8'), {strict: true});
+const snowProperties = Object.keys(spec[`snow`]).reduce((memo, name) => {
+    spec[`snow`][name].name = name;
+    spec[`snow`][name].type_ = `snow`;
+    memo.push(spec[`snow`][name]);
+    return memo;
+}, []);
+fs.writeFileSync(`3d-style/style/snow_properties.ts`, snowPropertiesJs(snowProperties));
+
+// Rain
+const rainPropertiesJs = ejs.compile(fs.readFileSync('3d-style/style/rain_properties.js.ejs', 'utf8'), {strict: true});
+const rainProperties = Object.keys(spec[`rain`]).reduce((memo, name) => {
+    spec[`rain`][name].name = name;
+    spec[`rain`][name].type_ = `rain`;
+    memo.push(spec[`rain`][name]);
+    return memo;
+}, []);
+fs.writeFileSync(`3d-style/style/rain_properties.ts`, rainPropertiesJs(rainProperties));

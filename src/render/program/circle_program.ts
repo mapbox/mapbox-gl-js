@@ -40,13 +40,13 @@ const circleUniforms = (context: Context): CircleUniformsType => ({
     'u_emissive_strength': new Uniform1f(context),
 });
 
-const identityMatrix = mat4.create() as Float32Array;
+const identityMatrix = mat4.create();
 
 const circleUniformValues = (
     painter: Painter,
     coord: OverscaledTileID,
     tile: Tile,
-    invMatrix: Float32Array,
+    invMatrix: mat4,
     mercatorCenter: [number, number],
     layer: CircleStyleLayer,
 ): UniformValues<CircleUniformsType> => {
@@ -75,10 +75,10 @@ const circleUniformValues = (
             coord.projMatrix,
             tile,
             layer.paint.get('circle-translate'),
-            layer.paint.get('circle-translate-anchor')),
+            layer.paint.get('circle-translate-anchor')) as Float32Array,
         'u_device_pixel_ratio': browser.devicePixelRatio,
         'u_extrude_scale': extrudeScale,
-        'u_inv_rot_matrix': identityMatrix,
+        'u_inv_rot_matrix': identityMatrix as Float32Array,
         'u_merc_center': [0, 0] as [number, number],
         'u_tile_id': [0, 0, 0] as [number, number, number],
         'u_zoom_transition': 0,
@@ -87,13 +87,13 @@ const circleUniformValues = (
     };
 
     if (isGlobe) {
-        values['u_inv_rot_matrix'] = invMatrix;
+        values['u_inv_rot_matrix'] = invMatrix as Float32Array;
         values['u_merc_center'] = mercatorCenter;
         values['u_tile_id'] = [coord.canonical.x, coord.canonical.y, 1 << coord.canonical.z];
         values['u_zoom_transition'] = globeToMercatorTransition(transform.zoom);
         const x = mercatorCenter[0] * EXTENT;
         const y = mercatorCenter[1] * EXTENT;
-        values['u_up_dir'] = (transform.projection.upVector(new CanonicalTileID(0, 0, 0), x, y) as any);
+        values['u_up_dir'] = transform.projection.upVector(new CanonicalTileID(0, 0, 0), x, y);
     }
 
     return values;
@@ -104,6 +104,7 @@ const circleDefinesValues = (layer: CircleStyleLayer): CircleDefinesType[] => {
     if (layer.paint.get('circle-pitch-alignment') === 'map') values.push('PITCH_WITH_MAP');
     if (layer.paint.get('circle-pitch-scale') === 'map') values.push('SCALE_WITH_MAP');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return values;
 };
 

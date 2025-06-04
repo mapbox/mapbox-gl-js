@@ -1,7 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {describe, test, expect} from '../../util/vitest';
-import {Aabb, Frustum, Ray} from '../../../src/util/primitives';
-import {mat4, vec3} from 'gl-matrix';
+import {Aabb, Frustum, Ray, Ray2D} from '../../../src/util/primitives';
+import {mat4, vec2, vec3} from 'gl-matrix';
 import {fixedVec3} from '../../util/fixed';
 
 describe('primitives', () => {
@@ -263,7 +264,7 @@ describe('primitives', () => {
                 expect(vec3.fromValues(0.8, 0, 0.60000050)).toEqual(point);
 
                 r.pos = vec3.fromValues(1, 1, 1);
-                r.dir = vec3.normalize([] as any, vec3.fromValues(-1, -1, -1));
+                r.dir = vec3.normalize([] as unknown as vec3, vec3.fromValues(-1, -1, -1));
                 intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1.0, point);
                 expect(intersection).toBeTruthy();
                 expect(vec3.fromValues(0.57735026, 0.57735026, 0.57735026)).toEqual(point);
@@ -325,6 +326,45 @@ describe('primitives', () => {
                 const intersection = r.closestPointOnSphere(vec3.fromValues(0, 0, 0), 1, point);
                 expect(intersection).toBeTruthy();
                 expect(vec3.fromValues(1, 0, 0)).toEqual(point);
+            });
+        });
+    });
+
+    describe('ray2D', () => {
+        describe('intersectsPlane', () => {
+            test('parallel', () => {
+                const r = new Ray2D(vec2.fromValues(0, 1), vec2.fromValues(1, 1));
+                expect(
+                    r.intersectsPlane(vec2.fromValues(0, 0), vec2.fromValues(-1, 1), vec2.create())
+                ).toBeFalsy();
+            });
+
+            test('orthogonal', () => {
+                const r = new Ray2D(vec2.fromValues(10, 20), vec2.fromValues(0, -1));
+                const out = vec2.create();
+                expect(r.intersectsPlane(vec2.fromValues(0, 5), vec2.fromValues(0, 1), out)).toBeTruthy();
+                assertAlmostEqual(out[0], 10);
+                assertAlmostEqual(out[1], 5);
+            });
+
+            test('angled down', () => {
+                const r = new Ray2D(vec2.fromValues(-10, -10), vec2.fromValues(0.7071, -0.7071));
+                const out = vec2.create();
+                expect(
+                    r.intersectsPlane(vec2.fromValues(0, 10), vec2.fromValues(0, 1), out)
+                ).toBeTruthy();
+                assertAlmostEqual(out[0], -30);
+                assertAlmostEqual(out[1], 10);
+            });
+
+            test('angled up', () => {
+                const r = new Ray2D(vec2.fromValues(-10, -10), vec2.fromValues(0.7071, 0.7071));
+                const out = vec2.create();
+                expect(
+                    r.intersectsPlane(vec2.fromValues(0, 10), vec2.fromValues(0, 1), out)
+                ).toBeTruthy();
+                assertAlmostEqual(out[0], 10);
+                assertAlmostEqual(out[1], 10);
             });
         });
     });

@@ -18,7 +18,7 @@ import type Transform from '../geo/transform';
  *
  * @private
  */
-export default function(lngLat: LngLat, priorPos: Point | null | undefined, transform: Transform): LngLat {
+export default function (lngLat: LngLat, priorPos: Point | null | undefined, transform: Transform): LngLat {
     lngLat = new LngLat(lngLat.lng, lngLat.lat);
 
     // First, try shifting one world in either direction, and see if either is closer to the
@@ -26,16 +26,16 @@ export default function(lngLat: LngLat, priorPos: Point | null | undefined, tran
     // This preserves object constancy when the map center is auto-wrapped during animations,
     // but don't allow it to run away on horizon (points towards horizon get closer and closer).
     if (priorPos) {
-        const left  = new LngLat(lngLat.lng - 360, lngLat.lat);
+        const left = new LngLat(lngLat.lng - 360, lngLat.lat);
         const right = new LngLat(lngLat.lng + 360, lngLat.lat);
         // Unless offscreen, keep the marker within same wrap distance to center. This is to prevent
         // running it to infinity `lng` near horizon when bearing is ~90°.
-        const withinWrap =  Math.ceil(Math.abs(lngLat.lng - transform.center.lng) / 360) * 360;
-        const delta = transform.locationPoint(lngLat).distSqr(priorPos);
+        const withinWrap = Math.ceil(Math.abs(lngLat.lng - transform.center.lng) / 360) * 360;
+        const delta = transform.locationPoint3D(lngLat).distSqr(priorPos);
         const offscreen = priorPos.x < 0 || priorPos.y < 0 || priorPos.x > transform.width || priorPos.y > transform.height;
-        if (transform.locationPoint(left).distSqr(priorPos) < delta && (offscreen || Math.abs(left.lng - transform.center.lng) < withinWrap)) {
+        if (transform.locationPoint3D(left).distSqr(priorPos) < delta && (offscreen || Math.abs(left.lng - transform.center.lng) < withinWrap)) {
             lngLat = left;
-        } else if (transform.locationPoint(right).distSqr(priorPos) < delta && (offscreen || Math.abs(right.lng - transform.center.lng) < withinWrap)) {
+        } else if (transform.locationPoint3D(right).distSqr(priorPos) < delta && (offscreen || Math.abs(right.lng - transform.center.lng) < withinWrap)) {
             lngLat = right;
         }
     }
@@ -43,7 +43,7 @@ export default function(lngLat: LngLat, priorPos: Point | null | undefined, tran
     // Second, wrap toward the center until the new position is on screen, or we can't get
     // any closer.
     while (Math.abs(lngLat.lng - transform.center.lng) > 180) {
-        const pos = transform.locationPoint(lngLat);
+        const pos = transform.locationPoint3D(lngLat);
         if (pos.x >= 0 && pos.y >= 0 && pos.x <= transform.width && pos.y <= transform.height) {
             break;
         }

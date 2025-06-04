@@ -46,6 +46,7 @@ class ScrollZoomHandler implements Handler {
     _timeout?: number; // used for delayed-handling of a single wheel movement
     _finishTimeout: number; // used to delay final '{move,zoom}end' events
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _lastWheelEvent: any;
     _lastWheelEventTime: number;
 
@@ -96,13 +97,13 @@ class ScrollZoomHandler implements Handler {
     }
 
     /**
-    * Sets the zoom rate of a mouse wheel.
+     * Sets the zoom rate of a mouse wheel.
      *
-    * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
-    * @example
-    * // Slow down zoom of mouse wheel
-    * map.scrollZoom.setWheelZoomRate(1 / 600);
-    */
+     * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
+     * @example
+     * // Slow down zoom of mouse wheel
+     * map.scrollZoom.setWheelZoomRate(1 / 600);
+     */
     setWheelZoomRate(wheelZoomRate: number) {
         this._wheelZoomRate = wheelZoomRate;
     }

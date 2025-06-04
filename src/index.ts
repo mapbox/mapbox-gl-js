@@ -21,7 +21,7 @@ import {isSafari} from './util/util';
 import {setRTLTextPlugin, getRTLTextPluginStatus} from './source/rtl_text_plugin';
 import WorkerPool from './util/worker_pool';
 import WorkerClass from './util/worker_class';
-import {prewarm, clearPrewarmedResources} from './util/global_worker_pool';
+import {prewarm, clearPrewarmedResources} from './util/worker_pool_factory';
 import {clearTileCache} from './util/tile_request_cache';
 import {WorkerPerformanceUtils} from './util/worker_performance_utils';
 import {FreeCameraOptions} from './ui/free_camera';
@@ -40,7 +40,8 @@ export type {PointLike} from './types/point-like';
 export type {PluginStatus} from './source/rtl_text_plugin';
 
 export type {Event, ErrorEvent} from './util/evented';
-export type {GeoJSONFeature} from './util/vectortile_to_geojson';
+export type {GeoJSONFeature, TargetFeature} from './util/vectortile_to_geojson';
+export type {InteractionEvent} from './ui/interactions';
 export type {PaddingOptions} from './geo/edge_insets';
 export type {RequestParameters} from './util/ajax';
 export type {RequestTransformFunction, ResourceType} from './util/mapbox';
@@ -49,6 +50,7 @@ export type {LngLatLike, LngLatBoundsLike} from './geo/lng_lat';
 export type {FeatureSelector} from './style/style';
 export type {StyleImageInterface} from './style/style_image';
 export type {CustomLayerInterface} from './style/style_layer/custom_style_layer';
+export type {CustomSourceInterface} from './source/custom_source';
 
 export type {Anchor} from './ui/anchor';
 export type {PopupOptions} from './ui/popup';
@@ -228,7 +230,7 @@ const exported = {
      * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
      * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
      *
-     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/guides/browsers/#csp-directives) for more details.
      *
      * @var {string} workerUrl
      * @returns {string} A URL hosting a JavaScript bundle for mapbox-gl's WebWorker.
@@ -283,7 +285,7 @@ const exported = {
      * This is useful if your site needs to operate in a strict CSP (Content Security Policy) environment
      * wherein you are not allowed to load JavaScript code from a [`Blob` URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL), which is default behavior.
      *
-     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/api/#csp-directives) for more details.
+     * See our documentation on [CSP Directives](https://docs.mapbox.com/mapbox-gl-js/guides/browsers/#csp-directives) for more details.
      *
      * @var {string} dracoUrl
      * @returns {string} A URL hosting Google Draco decoding library (`draco_wasm_wrapper_gltf.js` and `draco_decoder_gltf.wasm`).
@@ -344,7 +346,7 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * the function will return `false` if the performance of Mapbox GL JS would
  * be dramatically worse than expected (for example, a software WebGL renderer
  * would be used).
- * @return {boolean}
+ * @returns {boolean}
  * @example
  * // Show an alert if the browser does not support Mapbox GL
  * if (!mapboxgl.supported()) {
@@ -368,14 +370,14 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  */
 
 /**
-  * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
-  * The status can be `unavailable` (not requested or removed), `loading`, `loaded`, or `error`.
-  * If the status is `loaded` and the plugin is requested again, an error will be thrown.
-  *
-  * @function getRTLTextPluginStatus
-  * @example
-  * const pluginStatus = mapboxgl.getRTLTextPluginStatus();
-  */
+ * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
+ * The status can be `unavailable` (not requested or removed), `loading`, `loaded`, or `error`.
+ * If the status is `loaded` and the plugin is requested again, an error will be thrown.
+ *
+ * @function getRTLTextPluginStatus
+ * @example
+ * const pluginStatus = mapboxgl.getRTLTextPluginStatus();
+ */
 
 export default exported;
 

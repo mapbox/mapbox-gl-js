@@ -34,6 +34,8 @@ export type ModelTexture = {
     gfxTexture?: Texture;
     uploaded: boolean;
     offsetScale?: [number, number, number, number];
+    index?: number;
+    extensions?: Record<string, {offset: [number, number], scale: [number, number]}>;
 };
 
 export type PbrMetallicRoughness = {
@@ -44,12 +46,24 @@ export type PbrMetallicRoughness = {
     metallicRoughnessTexture: ModelTexture | null | undefined;
 };
 
+export type MaterialDescription = {
+    emissiveFactor: [number, number, number];
+    alphaMode: string;
+    alphaCutoff: number;
+    normalTexture: ModelTexture;
+    occlusionTexture: ModelTexture;
+    emissiveTexture: ModelTexture;
+    doubleSided: boolean;
+    pbrMetallicRoughness: PbrMetallicRoughness;
+    defined?: boolean;
+};
+
 export type Material = {
     normalTexture: ModelTexture | null | undefined;
     occlusionTexture: ModelTexture | null | undefined;
     emissionTexture: ModelTexture | null | undefined;
     pbrMetallicRoughness: PbrMetallicRoughness;
-    emissiveFactor: [number, number, number];
+    emissiveFactor: Color;
     alphaMode: string;
     alphaCutoff: number;
     doubleSided: boolean;
@@ -91,11 +105,11 @@ export type AreaLight = {
     points: vec4;
 };
 
-export type Node = {
+export type ModelNode = {
     id: string;
     matrix: mat4;
     meshes: Array<Mesh>;
-    children: Array<Node>;
+    children: Array<ModelNode>;
     footprint: Footprint | null | undefined;
     lights: Array<AreaLight>;
     lightMeshIndex: number;
@@ -105,9 +119,9 @@ export type Node = {
 };
 
 export const ModelTraits = {
-    CoordinateSpaceTile : 1,
-    CoordinateSpaceYUp : 2, // not used yet.
-    HasMapboxMeshFeatures : 1 << 2,
+    CoordinateSpaceTile: 1,
+    CoordinateSpaceYUp: 2, // not used yet.
+    HasMapboxMeshFeatures: 1 << 2,
     HasMeshoptCompression: 1 << 3
 } as const;
 
@@ -174,16 +188,14 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
             if (state.elevation) {
                 elevation = state.elevation.getAtPointOrZero(new MercatorCoordinate(projectedPoint.x / worldSize, projectedPoint.y / worldSize), 0.0);
             }
-            // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-            const mercProjPos = vec4.transformMat4([] as any, [projectedPoint.x, projectedPoint.y, elevation, 1.0], state.projMatrix);
+            const mercProjPos = vec4.transformMat4([] as unknown as vec4, [projectedPoint.x, projectedPoint.y, elevation, 1.0], state.projMatrix);
             const mercProjectionScale = mercProjPos[3] / state.cameraToCenterDistance;
             const viewMetersPerPixel = getMetersPerPixelAtLatitude(state.center.lat, zoom);
             scaleXY = mercProjectionScale;
             scaleZ = mercProjectionScale * viewMetersPerPixel;
         } else if (state.projection.name === 'globe') {
             const globeMatrix = convertModelMatrixForGlobe(matrix, state);
-            // @ts-expect-error - TS2345 - Argument of type 'number[] | Float32Array | Float64Array' is not assignable to parameter of type 'ReadonlyMat4'.
-            const worldViewProjection = mat4.multiply([] as any, state.projMatrix, globeMatrix);
+            const worldViewProjection = mat4.multiply([] as unknown as mat4, state.projMatrix, globeMatrix);
             const globeProjPos =  [0, 0, 0, 1];
             vec4.transformMat4(globeProjPos as [number, number, number, number], globeProjPos as [number, number, number, number], worldViewProjection);
             const globeProjectionScale = globeProjPos[3] / state.cameraToCenterDistance;
@@ -209,32 +221,30 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
 
     // When applying physics (rotation) we need to insert rotation matrix
     // between model rotation and transforms above. Keep the intermediate results.
-    const modelMatrixBeforeRotationScaleYZFlip = [...matrix];
+    const modelMatrixBeforeRotationScaleYZFlip = [...matrix] as mat4;
 
     const orientation = model.orientation;
 
-    // @ts-expect-error - TS2322 - Type '[]' is not assignable to type 'mat4'.
-    const rotationScaleYZFlip: mat4 = [];
-    rotationScaleYZFlipMatrix(rotationScaleYZFlip,
-                          [orientation[0] + rotation[0],
-                              orientation[1] + rotation[1],
-                              orientation[2] + rotation[2]],
-                           scale);
-    // @ts-expect-error - TS2345 - Argument of type '[number]' is not assignable to parameter of type 'ReadonlyMat4'. | TS2352 - Conversion of type 'mat4' to type '[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-    mat4.multiply(matrix, modelMatrixBeforeRotationScaleYZFlip as [number], rotationScaleYZFlip as []);
+    const rotationScaleYZFlip = [] as unknown as mat4;
+    rotationScaleYZFlipMatrix(
+        rotationScaleYZFlip,
+        [
+            orientation[0] + rotation[0],
+            orientation[1] + rotation[1],
+            orientation[2] + rotation[2]
+        ],
+        scale
+    );
+    mat4.multiply(matrix, modelMatrixBeforeRotationScaleYZFlip, rotationScaleYZFlip);
 
     if (applyElevation && state.elevation) {
         let elevate = 0;
-        const rotateOnTerrain = [];
+        const rotateOnTerrain = [] as unknown as quat;
         if (followTerrainSlope && state.elevation) {
-            // @ts-expect-error - TS2345 - Argument of type 'any[]' is not assignable to parameter of type 'quat'.
             elevate = positionModelOnTerrain(rotateOnTerrain, state, model.aabb, matrix, position);
-            // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'ReadonlyQuat'.
-            const rotationOnTerrain = mat4.fromQuat([] as any, rotateOnTerrain as []);
-            // @ts-expect-error - TS2345 - Argument of type '[]' is not assignable to parameter of type 'ReadonlyMat4'. | TS2352 - Conversion of type 'mat4' to type '[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
-            const appendRotation = mat4.multiply([] as any, rotationOnTerrain, rotationScaleYZFlip as []);
-            // @ts-expect-error - TS2345 - Argument of type '[number]' is not assignable to parameter of type 'ReadonlyMat4'.
-            mat4.multiply(matrix, modelMatrixBeforeRotationScaleYZFlip as [number], appendRotation);
+            const rotationOnTerrain = mat4.fromQuat([] as unknown as mat4, rotateOnTerrain);
+            const appendRotation = mat4.multiply([] as unknown as mat4, rotationOnTerrain, rotationScaleYZFlip);
+            mat4.multiply(matrix, modelMatrixBeforeRotationScaleYZFlip, appendRotation);
         } else {
             elevate = state.elevation.getAtPointOrZero(new MercatorCoordinate(projectedPoint.x / worldSize, projectedPoint.y / worldSize), 0.0);
         }
@@ -248,12 +258,12 @@ export default class Model {
     id: string;
     position: LngLat;
     orientation: [number, number, number];
-    nodes: Array<Node>;
+    nodes: Array<ModelNode>;
     matrix: mat4;
     uploaded: boolean;
     aabb: Aabb;
 
-    constructor(id: string, position: [number, number] | null | undefined, orientation: [number, number, number] | null | undefined, nodes: Array<Node>) {
+    constructor(id: string, position: [number, number] | null | undefined, orientation: [number, number, number] | null | undefined, nodes: Array<ModelNode>) {
         this.id = id;
         this.position = position != null ? new LngLat(position[0], position[1]) : new LngLat(0, 0);
 
@@ -261,11 +271,10 @@ export default class Model {
         this.nodes = nodes;
         this.uploaded = false;
         this.aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
-        // @ts-expect-error - TS2322 - Type '[]' is not assignable to type 'mat4'.
-        this.matrix = [];
+        this.matrix = [] as unknown as mat4;
     }
 
-    _applyTransformations(node: Node, parentMatrix: mat4) {
+    _applyTransformations(node: ModelNode, parentMatrix: mat4) {
         // update local matrix
         mat4.multiply(node.matrix, parentMatrix, node.matrix);
         // apply local transform to bounding volume
@@ -283,7 +292,7 @@ export default class Model {
     }
 
     computeBoundsAndApplyParent() {
-        const localMatrix =  mat4.identity([] as any);
+        const localMatrix = mat4.identity([] as unknown as mat4);
         for (const node of this.nodes) {
             this._applyTransformations(node, localMatrix);
         }
@@ -316,12 +325,12 @@ export default class Model {
 }
 
 export function uploadTexture(texture: ModelTexture, context: Context, useSingleChannelTexture: boolean = false) {
-    const textureFormat = useSingleChannelTexture ? context.gl.R8 : context.gl.RGBA;
+    const textureFormat = useSingleChannelTexture ? context.gl.R8 : context.gl.RGBA8;
     if (!texture.uploaded) {
         const useMipmap = texture.sampler.minFilter >= context.gl.NEAREST_MIPMAP_NEAREST;
         texture.gfxTexture = new Texture(context, texture.image, textureFormat, {useMipmap});
         texture.uploaded = true;
-        texture.image = (null as any);
+        texture.image = null;
     }
 }
 
@@ -364,7 +373,7 @@ export function uploadMesh(mesh: Mesh, context: Context, useSingleChannelOcclusi
     }
 }
 
-export function uploadNode(node: Node, context: Context, useSingleChannelOcclusionTexture?: boolean) {
+export function uploadNode(node: ModelNode, context: Context, useSingleChannelOcclusionTexture?: boolean) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             uploadMesh(mesh, context, useSingleChannelOcclusionTexture);
@@ -377,7 +386,7 @@ export function uploadNode(node: Node, context: Context, useSingleChannelOcclusi
     }
 }
 
-export function destroyNodeArrays(node: Node) {
+export function destroyNodeArrays(node: ModelNode) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             mesh.indexArray.destroy();
@@ -415,7 +424,7 @@ export function destroyTextures(material: Material) {
     }
 }
 
-export function destroyBuffers(node: Node) {
+export function destroyBuffers(node: ModelNode) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (!mesh.vertexBuffer) continue;

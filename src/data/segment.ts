@@ -32,12 +32,12 @@ class SegmentVector {
         let segment: Segment = this.segments[this.segments.length - 1];
         if (numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH) warnOnce(`Max vertices per segment is ${SegmentVector.MAX_VERTEX_ARRAY_LENGTH}: bucket requested ${numVertices}`);
         if (!segment || segment.vertexLength + numVertices > SegmentVector.MAX_VERTEX_ARRAY_LENGTH || segment.sortKey !== sortKey) {
-            segment = ({
+            segment = {
                 vertexOffset: vertexArrayLength,
                 primitiveOffset: indexArrayLength,
                 vertexLength: 0,
                 primitiveLength: 0
-            } as any);
+            } as Segment;
             if (sortKey !== undefined) segment.sortKey = sortKey;
             this.segments.push(segment);
         }

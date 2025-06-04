@@ -72,6 +72,9 @@ function seamPadding(n: number) {
     else return 0;
 }
 
+/**
+ * @private
+ */
 export default function getTileMesh(canonical: CanonicalTileID, projection: Projection): TileMesh {
     const cs = tileTransform(canonical, projection);
     const z2 = Math.pow(2, canonical.z);

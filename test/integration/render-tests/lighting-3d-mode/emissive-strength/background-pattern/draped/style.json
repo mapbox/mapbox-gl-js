@@ -2,13 +2,14 @@
   "version": 8,
   "metadata": {
     "test": {
+      "allowed": 0.03289,
+      "pixelRatio": 2,
       "width": 512,
       "height": 512,
-      "allowed": 0.008,
       "operations": [
         [
           "setZoom",
-          15.0
+          15
         ],
         [
           "setCenter",
@@ -70,13 +71,13 @@
     }
   },
   "sources": {},
-  "sprite": "local://sprites/emerald",
+  "sprite": "local://sprites/standard",
   "layers": [
     {
       "id": "background",
       "type": "background",
       "paint": {
-        "background-pattern": "cemetery_icon",
+        "background-pattern": "cemetery",
         "background-emissive-strength": 0.9
       }
     }

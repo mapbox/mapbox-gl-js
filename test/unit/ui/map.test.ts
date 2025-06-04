@@ -1,5 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import {describe, test, beforeEach, afterEach, expect, waitFor, vi, createMap} from '../../util/vitest';
+import {describe, test, beforeEach, afterEach, expect, waitFor, vi, createMap, createStyleJSON} from '../../util/vitest';
 import {createStyle, createStyleSource} from './map/util';
 import {getPNGResponse} from '../../util/network';
 import {extend} from '../../../src/util/util';
@@ -12,6 +13,7 @@ import {ErrorEvent} from '../../../src/util/evented';
 import simulate, {constructTouch} from '../../util/simulate_interaction';
 import {fixedNum} from '../../util/fixed';
 import {makeFQID} from '../../../src/util/fqid';
+import {ImageId} from '../../../src/style-spec/expression/types/image_id';
 
 // Mock implementation of elevation
 const createElevation = (func, exaggeration) => {
@@ -83,7 +85,7 @@ describe('Map', () => {
         const container = window.document.createElement('div');
         Object.defineProperty(container, 'offsetWidth', {value: 512});
         Object.defineProperty(container, 'offsetHeight', {value: 512});
-        createMap({accessToken:'notAToken'});
+        createMap({accessToken: 'notAToken'});
     });
 
     describe('disables handlers', () => {
@@ -327,7 +329,7 @@ describe('Map', () => {
             expect(map.stop.called).toBeFalsy();
         });
 
-        test('fires movestart, move, resize, and moveend events', async () => {
+        test('fires movestart, move, resize, and moveend events', () => {
             const map = createMap(),
                 events: Array<any> = [];
 
@@ -345,10 +347,10 @@ describe('Map', () => {
         });
 
         test('listen to window resize event', () => {
-            window.addEventListener = function(type) {
+            window.addEventListener = function (type) {
                 if (type === 'resize') {
                     //restore empty function not to mess with other tests
-                    window.addEventListener = function() {};
+                    window.addEventListener = function () {};
                 }
             };
 
@@ -552,18 +554,25 @@ describe('Map', () => {
     });
 
     describe('#queryRenderedFeatures', () => {
-        const defaultParams = {scope: '', availableImages: [], serializedLayers: {}};
         test('if no arguments provided', async () => {
             await new Promise(resolve => {
                 createMap({}, (err, map) => {
                     expect(err).toBeFalsy();
                     vi.spyOn(map.style, 'queryRenderedFeatures');
+                    vi.spyOn(map.style, 'queryRenderedFeatureset');
 
                     const output = map.queryRenderedFeatures();
 
-                    const args = map.style.queryRenderedFeatures.mock.calls[0];
-                    expect(args[0]).toBeTruthy();
-                    expect(args[1]).toEqual(defaultParams);
+                    const args1 = map.style.queryRenderedFeatures.mock.calls[0];
+                    expect(args1[0]).toBeTruthy();
+                    expect(args1[1]).toEqual(undefined);
+                    expect(args1[2]).toEqual(map.transform);
+
+                    const args2 = map.style.queryRenderedFeatureset.mock.calls[0];
+                    expect(args2[0]).toBeTruthy();
+                    expect(args2[1]).toEqual(undefined);
+                    expect(args2[2]).toEqual(map.transform);
+
                     expect(output).toEqual([]);
                     resolve();
                 });
@@ -575,13 +584,20 @@ describe('Map', () => {
                 createMap({}, (err, map) => {
                     expect(err).toBeFalsy();
                     vi.spyOn(map.style, 'queryRenderedFeatures');
+                    vi.spyOn(map.style, 'queryRenderedFeatureset');
 
                     const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
-                    const args = map.style.queryRenderedFeatures.mock.calls[0];
-                    expect(args[0]).toEqual({x: 100, y: 100}); // query geometry
-                    expect(args[1]).toEqual(defaultParams); // params
-                    expect(args[2]).toEqual(map.transform); // transform
+                    const args1 = map.style.queryRenderedFeatures.mock.calls[0];
+                    expect(args1[0]).toEqual({x: 100, y: 100}); // query geometry
+                    expect(args1[1]).toEqual(undefined); // options
+                    expect(args1[2]).toEqual(map.transform); // transform
+
+                    const args2 = map.style.queryRenderedFeatureset.mock.calls[0];
+                    expect(args2[0]).toEqual({x: 100, y: 100}); // query geometry
+                    expect(args2[1]).toEqual(undefined); // options
+                    expect(args2[2]).toEqual(map.transform); // transform
+
                     expect(output).toEqual([]);
                     resolve();
                 });
@@ -594,12 +610,67 @@ describe('Map', () => {
                 createMap({}, (err, map) => {
                     expect(err).toBeFalsy();
                     vi.spyOn(map.style, 'queryRenderedFeatures');
+                    vi.spyOn(map.style, 'queryRenderedFeatureset');
 
                     const output = map.queryRenderedFeatures({filter: ['all']});
 
-                    const args = map.style.queryRenderedFeatures.mock.calls[0];
+                    const args1 = map.style.queryRenderedFeatures.mock.calls[0];
+                    expect(args1[0]).toBeTruthy();
+                    expect(args1[1]).toEqual({filter: ['all']});
+
+                    const args2 = map.style.queryRenderedFeatureset.mock.calls[0];
+                    expect(args2[0]).toBeTruthy();
+                    expect(args2[1]).toEqual({filter: ['all']});
+
+                    expect(output).toEqual([]);
+                    resolve();
+                });
+            });
+        });
+
+        test('if there are only "featureset" in "params"', async () => {
+            const style = createStyleJSON({
+                featuresets: {featureset: {selectors: [{layer: 'layer1'}]}},
+                layers: [{type: 'background', id: 'layer1'}]
+            });
+
+            await new Promise(resolve => {
+                createMap({style}, (err, map) => {
+                    expect(err).toBeFalsy();
+                    vi.spyOn(map.style, 'queryRenderedFeatures');
+                    vi.spyOn(map.style, 'queryRenderedFeatureset');
+
+                    const output = map.queryRenderedFeatures({target: {featuresetId: 'featureset'}});
+
+                    expect(map.style.queryRenderedFeatures).toHaveBeenCalledTimes(0);
+
+                    const args = map.style.queryRenderedFeatureset.mock.calls[0];
                     expect(args[0]).toBeTruthy();
-                    expect(args[1]).toEqual({...defaultParams, filter: ['all']});
+                    expect(args[1]).toEqual({target: {featuresetId: 'featureset'}});
+
+                    expect(output).toEqual([]);
+                    resolve();
+                });
+            });
+        });
+
+        test('if there are only "layers" in "params"', async () => {
+            const style = createStyleJSON({layers: [{type: 'background', id: 'layer1'}]});
+
+            await new Promise(resolve => {
+                createMap({style}, (err, map) => {
+                    expect(err).toBeFalsy();
+                    vi.spyOn(map.style, 'queryRenderedFeatures');
+                    vi.spyOn(map.style, 'queryRenderedFeatureset');
+
+                    const output = map.queryRenderedFeatures({layers: ['layer1']});
+
+                    const args0 = map.style.queryRenderedFeatures.mock.calls[0];
+                    expect(args0[0]).toBeTruthy();
+                    expect(args0[1]).toEqual({layers: ['layer1']});
+
+                    expect(map.style.queryRenderedFeatureset).toHaveBeenCalledTimes(0);
+
                     expect(output).toEqual([]);
                     resolve();
                 });
@@ -611,13 +682,20 @@ describe('Map', () => {
                 createMap({}, (err, map) => {
                     expect(err).toBeFalsy();
                     vi.spyOn(map.style, 'queryRenderedFeatures');
+                    vi.spyOn(map.style, 'queryRenderedFeatureset');
 
                     const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)), {filter: ['all']});
 
-                    const args = map.style.queryRenderedFeatures.mock.calls[0];
-                    expect(args[0]).toEqual({x: 100, y: 100});
-                    expect(args[1]).toEqual({...defaultParams, filter: ['all']});
-                    expect(args[2]).toEqual(map.transform);
+                    const args1 = map.style.queryRenderedFeatures.mock.calls[0];
+                    expect(args1[0]).toEqual({x: 100, y: 100});
+                    expect(args1[1]).toEqual({filter: ['all']});
+                    expect(args1[2]).toEqual(map.transform);
+
+                    const args2 = map.style.queryRenderedFeatureset.mock.calls[0];
+                    expect(args2[0]).toEqual({x: 100, y: 100});
+                    expect(args2[1]).toEqual({filter: ['all']});
+                    expect(args2[2]).toEqual(map.transform);
+
                     expect(output).toEqual([]);
                     resolve();
                 });
@@ -629,10 +707,13 @@ describe('Map', () => {
                 createMap({}, (err, map) => {
                     expect(err).toBeFalsy();
                     vi.spyOn(map.style, 'queryRenderedFeatures');
+                    vi.spyOn(map.style, 'queryRenderedFeatureset');
 
                     map.queryRenderedFeatures(map.project(new LngLat(360, 0)));
 
                     expect(map.style.queryRenderedFeatures.mock.calls[0][0]).toEqual({x: 612, y: 100});
+                    expect(map.style.queryRenderedFeatureset.mock.calls[0][0]).toEqual({x: 612, y: 100});
+
                     resolve();
                 });
             });
@@ -951,8 +1032,8 @@ describe('Map', () => {
             const [index] = Object.entries(window.document.styleSheets[0].cssRules).find(([, rule]: [any, any]) => {
                 return rule.selectorText === '.mapboxgl-canary';
             });
-            try { window.document.body.removeChild(container); } catch (err: any) { /* noop */ }
-            try { window.document.styleSheets[0].deleteRule(index); } catch (err: any) { /* noop */ }
+            try { window.document.body.removeChild(container); } catch (err) { /* noop */ }
+            try { window.document.styleSheets[0].deleteRule(index); } catch (err) { /* noop */ }
         });
 
         test('should not warn when CSS is present', async () => {
@@ -991,9 +1072,9 @@ describe('Map', () => {
     test('map fires `styleimagemissing` for missing icons', async () => {
         const map = createMap();
 
-        const id = "missing-image";
+        const id = ImageId.from('missing-image');
 
-        let called: any;
+        let called: string;
 
         await new Promise(resolve => {
             map.on("styleimagemissing", e => {
@@ -1003,7 +1084,7 @@ describe('Map', () => {
             });
             expect(map.hasImage(id)).toBeFalsy();
             map.style.imageManager.getImages([id], '', () => {
-                expect(called).toEqual(id);
+                expect(called).toEqual(id.name);
                 expect(map.hasImage(id)).toBeTruthy();
             });
         });
@@ -1219,6 +1300,16 @@ describe('Map', () => {
             expect(map.isPointOnSurface([100, 85])).toEqual(false);
         });
     });
+
+    test('#getGlyphsUrl/setGlyphsUrl', async () => {
+        const map = createMap();
+
+        await waitFor(map, 'style.load');
+        expect(map.getGlyphsUrl()).toEqual(undefined);
+
+        map.setGlyphsUrl('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+        expect(map.getGlyphsUrl()).toEqual('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+    });
 });
 
 test('Disallow usage of FQID separator in the public APIs', async () => {
@@ -1231,39 +1322,43 @@ test('Disallow usage of FQID separator in the public APIs', async () => {
     map.getLayer(null);
     map.getSource(undefined);
 
-    map.getLayer(makeFQID('id', 'scope'));
-    map.addLayer({id: makeFQID('id', 'scope')});
-    map.moveLayer(makeFQID('id', 'scope'));
-    map.removeLayer(makeFQID('id', 'scope'));
+    const fqid = makeFQID('id', 'scope');
 
-    map.getLayoutProperty(makeFQID('id', 'scope'));
-    map.setLayoutProperty(makeFQID('id', 'scope'));
+    map.getLayer(fqid);
+    map.addLayer({id: fqid});
+    map.moveLayer(fqid);
+    map.removeLayer(fqid);
 
-    map.getPaintProperty(makeFQID('id', 'scope'));
-    map.setPaintProperty(makeFQID('id', 'scope'));
+    map.getLayoutProperty(fqid);
+    map.setLayoutProperty(fqid);
 
-    map.setLayerZoomRange(makeFQID('id', 'scope'));
+    map.getPaintProperty(fqid);
+    map.setPaintProperty(fqid);
 
-    map.getFilter(makeFQID('id', 'scope'));
-    map.setFilter(makeFQID('id', 'scope'));
+    map.setLayerZoomRange(fqid);
 
-    map.getSource(makeFQID('id', 'scope'));
-    map.addSource(makeFQID('id', 'scope'));
-    map.removeSource(makeFQID('id', 'scope'));
-    map.isSourceLoaded(makeFQID('id', 'scope'));
+    map.getFilter(fqid);
+    map.setFilter(fqid);
 
-    map.getFeatureState({source: makeFQID('id', 'scope')});
-    map.setFeatureState({source: makeFQID('id', 'scope')});
-    map.removeFeatureState({source: makeFQID('id', 'scope')});
+    map.getSource(fqid);
+    map.addSource(fqid);
+    map.removeSource(fqid);
+    map.isSourceLoaded(fqid);
 
-    map.querySourceFeatures(makeFQID('id', 'scope'));
-    map.queryRenderedFeatures([0, 0], {layers: [makeFQID('id', 'scope')]});
+    map.getFeatureState({source: fqid});
+    map.setFeatureState({source: fqid});
+    map.removeFeatureState({source: fqid});
 
-    map.on('click', makeFQID('id', 'scope'), () => {});
-    map.once('click', makeFQID('id', 'scope'), () => {});
-    map.off('click', makeFQID('id', 'scope'));
+    map.querySourceFeatures(fqid);
+    map.queryRenderedFeatures([0, 0], {layers: [fqid]});
+    map.queryRenderedFeatures([0, 0], {target: {layerId: fqid}});
+    map.queryRenderedFeatures([0, 0], {target: {featuresetId: fqid, importId: fqid}});
 
-    const callCount = 24;
+    map.on('click', fqid, () => {});
+    map.once('click', fqid, () => {});
+    map.off('click', fqid);
+
+    const callCount = 26;
     expect(spy.mock.calls.length).toEqual(callCount);
 
     const event0 = spy.mock.calls[0][0];

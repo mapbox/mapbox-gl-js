@@ -26,7 +26,7 @@ import EvaluationParameters from '../../style/evaluation_parameters';
 import Point from '@mapbox/point-geometry';
 import {number as interpolate} from '../../style-spec/util/interpolate';
 import {lngFromMercatorX, latFromMercatorY, mercatorYfromLat, tileToMeter} from '../../geo/mercator_coordinate';
-import {subdividePolygons} from '../../util/polygon_clipping';
+import {gridSubdivision} from '../../util/polygon_clipping';
 import {regionsEquals, footprintTrianglesIntersect} from '../../../3d-style/source/replacement_source';
 import {clamp, warnOnce} from '../../util/util';
 import {earthRadius} from '../../geo/lng_lat';
@@ -35,7 +35,7 @@ import {dropBufferConnectionLines, createLineWallGeometry} from '../../geo/line_
 
 import type {Elevation} from '../../terrain/elevation';
 import type {Frustum} from '../../util/primitives';
-import type {ReplacementSource} from '../../../3d-style/source/replacement_source';
+import type {Region, ReplacementSource} from '../../../3d-style/source/replacement_source';
 import type {Feature} from "../../style-spec/expression";
 import type {ClippedPolygon} from '../../util/polygon_clipping';
 import type {vec3} from 'gl-matrix';
@@ -59,6 +59,8 @@ import type {TileTransform} from '../../geo/projection/tile_transform';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {WallGeometry} from '../../geo/line_geometry';
+import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
+import type {ImageId} from '../../style-spec/expression/types/image_id';
 
 export const fillExtrusionDefaultDataDrivenProperties: Array<string> = [
     'fill-extrusion-base',
@@ -66,7 +68,8 @@ export const fillExtrusionDefaultDataDrivenProperties: Array<string> = [
     'fill-extrusion-color',
     'fill-extrusion-pattern',
     'fill-extrusion-flood-light-wall-radius',
-    'fill-extrusion-line-width'
+    'fill-extrusion-line-width',
+    'fill-extrusion-emissive-strength'
 ];
 
 export const fillExtrusionGroundDataDrivenProperties: Array<string> = [
@@ -403,7 +406,7 @@ export class GroundEffect {
         this.regionSegments[4] = new SegmentVector();
     }
 
-    getDefaultSegment(): any {
+    getDefaultSegment(): SegmentVector {
         return this.regionSegments[4];
     }
 
@@ -515,12 +518,12 @@ export class GroundEffect {
                         segmentVector = this.regionSegments[k] = new SegmentVector();
                     }
 
-                    const nSegment: any = {
+                    const nSegment = {
                         vertexOffset: segment.vertexOffset,
                         primitiveOffset: segment.primitiveOffset + regionTriCountOffset,
                         vertexLength: segment.vertexLength,
                         primitiveLength: triCount
-                    };
+                    } as Segment;
                     segmentVector.get().push(nSegment);
                 }
 
@@ -535,15 +538,15 @@ export class GroundEffect {
         }
 
         // Free up memory as we no longer need these.
-        this._segmentToGroundQuads = (null as any);
-        this._segmentToRegionTriCounts = (null as any);
+        this._segmentToGroundQuads = null;
+        this._segmentToRegionTriCounts = null;
         this._segments.destroy();
-        this._segments = (null as any);
+        this._segments = null;
     }
 
-    addPaintPropertiesData(feature: Feature, index: number, imagePositions: SpritePositions, availableImages: Array<string>, canonical: CanonicalTileID, brightness?: number | null) {
+    addPaintPropertiesData(feature: Feature, index: number, imagePositions: SpritePositions, availableImages: ImageId[], canonical: CanonicalTileID, brightness?: number | null, worldview?: string) {
         if (!this.hasData()) return;
-        this.programConfigurations.populatePaintArrays(this.vertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
+        this.programConfigurations.populatePaintArrays(this.vertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness, undefined, worldview);
     }
 
     upload(context: Context) {
@@ -557,9 +560,9 @@ export class GroundEffect {
         this.programConfigurations.upload(context);
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, layers: any, availableImages: Array<string>, imagePositions: SpritePositions, brightness?: number | null) {
+    update(states: FeatureStates, vtLayer: VectorTileLayer, layers: ReadonlyArray<TypedStyleLayer>, availableImages: ImageId[], imagePositions: SpritePositions, isBrightnessChanged: boolean, brightness?: number | null, worldview?: string) {
         if (!this.hasData()) return;
-        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
+        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, worldview);
     }
 
     updateHiddenByLandmark(data: PartData) {
@@ -635,6 +638,7 @@ class FillExtrusionBucket implements Bucket {
     layerIds: Array<string>;
     stateDependentLayers: Array<FillExtrusionStyleLayer>;
     stateDependentLayerIds: Array<string>;
+    pixelRatio: number;
 
     layoutVertexArray: FillExtrusionLayoutArray;
     layoutVertexBuffer: VertexBuffer;
@@ -668,10 +672,12 @@ class FillExtrusionBucket implements Bucket {
     centroidData: Array<PartData>;
     // borders / borderDoneWithNeighborZ: 0 - left, 1, right, 2 - top, 3 - bottom
     borderDoneWithNeighborZ: Array<number>;
+    selfDEMTileTimestamp: number;
+    borderDEMTileTimestamp: Array<number>;
     needsCentroidUpdate: boolean;
     tileToMeter: number; // cache conversion.
     projection: ProjectionSpecification;
-    activeReplacements: Array<any>;
+    activeReplacements: Array<Region>;
     replacementUpdateTime: number;
 
     groundEffect: GroundEffect;
@@ -684,11 +690,14 @@ class FillExtrusionBucket implements Bucket {
     triangleSubSegments: Array<TriangleSubSegment>;
     polygonSegments: Array<PolygonSegment>;
 
+    worldview: string;
+
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
         this.canonical = options.canonical;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
+        this.pixelRatio = options.pixelRatio;
         this.layerIds = this.layers.map(layer => layer.fqid);
         this.index = options.index;
         this.hasPattern = false;
@@ -716,6 +725,8 @@ class FillExtrusionBucket implements Bucket {
         this.partLookup = {};
         this.triangleSubSegments = [];
         this.polygonSegments = [];
+
+        this.worldview = options.worldview;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
@@ -723,10 +734,12 @@ class FillExtrusionBucket implements Bucket {
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
         this.features = [];
-        this.hasPattern = hasPattern('fill-extrusion', this.layers, options);
+        this.hasPattern = hasPattern('fill-extrusion', this.layers, this.pixelRatio, options);
         this.featuresOnBorder = [];
         this.borderFeatureIndices = [[], [], [], []];
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
+        this.selfDEMTileTimestamp = Number.MAX_VALUE;
+        this.borderDEMTileTimestamp = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
         this.tileToMeter = tileToMeter(canonical);
 
         this.edgeRadius = this.layers[0].layout.get('fill-extrusion-edge-radius') / this.tileToMeter;
@@ -735,16 +748,14 @@ class FillExtrusionBucket implements Bucket {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
 
-            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
+            if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview}), evaluationFeature, canonical))
                 continue;
             const bucketFeature: BucketFeature = {
                 id,
                 sourceLayerIndex,
                 index,
-                // @ts-expect-error - TS2345 - Argument of type 'VectorTileFeature' is not assignable to parameter of type 'FeatureWithGeometry'.
                 geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
                 properties: feature.properties,
-                // @ts-expect-error - TS2322 - Type '0 | 2 | 1 | 3' is not assignable to type '2 | 1 | 3'.
                 type: feature.type,
                 patterns: {}
             };
@@ -752,7 +763,7 @@ class FillExtrusionBucket implements Bucket {
             const vertexArrayOffset = this.layoutVertexArray.length;
             const featureIsPolygon = vectorTileFeatureTypes[bucketFeature.type] === 'Polygon';
             if (this.hasPattern) {
-                this.features.push(addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, options));
+                this.features.push(addPatternDependencies('fill-extrusion', this.layers, bucketFeature, this.zoom, this.pixelRatio, options));
             } else {
                 if (this.wallMode) {
                     for (const polygon of bucketFeature.geometry) {
@@ -776,7 +787,7 @@ class FillExtrusionBucket implements Bucket {
         this.polygonSegments.length = 0;
     }
 
-    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform, brightness?: number | null) {
+    addFeatures(options: PopulateParameters, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], tileTransform: TileTransform, brightness?: number | null) {
         for (const feature of this.features) {
             const featureIsPolygon = vectorTileFeatureTypes[feature.type] === 'Polygon';
             const {geometry} = feature;
@@ -796,12 +807,9 @@ class FillExtrusionBucket implements Bucket {
         }
     }
 
-    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<string>, imagePositions: SpritePositions, brightness?: number | null) {
-        const withStateUpdates = Object.keys(states).length !== 0;
-        if (withStateUpdates && !this.stateDependentLayers.length) return;
-        const layers = withStateUpdates ? this.stateDependentLayers : this.layers;
-        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, brightness);
-        this.groundEffect.update(states, vtLayer, layers, availableImages, imagePositions, brightness);
+    update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
+        this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, this.worldview);
+        this.groundEffect.update(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness, this.worldview);
     }
 
     isEmpty(): boolean {
@@ -858,12 +866,12 @@ class FillExtrusionBucket implements Bucket {
         this.segments.destroy();
     }
 
-    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: Array<string>, tileTransform: TileTransform, brightness?: number | null) {
+    addFeature(feature: BucketFeature, geometry: Array<Array<Point>>, index: number, canonical: CanonicalTileID, imagePositions: SpritePositions, availableImages: ImageId[], tileTransform: TileTransform, brightness?: number | null) {
 
         const floodLightRadius = this.layers[0].paint.get('fill-extrusion-flood-light-ground-radius').evaluate(feature, {});
         const maxRadius = floodLightRadius / this.tileToMeter;
 
-        const tileBounds = [new Point(0, 0), new Point(EXTENT, EXTENT)];
+        const tileBounds: [Point, Point] = [new Point(0, 0), new Point(EXTENT, EXTENT)];
         const projection = tileTransform.projection;
         const isGlobe = projection.name === 'globe';
         // If wallMode is used, LineString geometries will be converted into polygons
@@ -923,12 +931,10 @@ class FillExtrusionBucket implements Bucket {
             // for a tile depends on the zoom level. For example tile with z=0 requires 2⁴
             // subdivisions, tile with z=1 2³ etc. The subdivision is done in polar coordinates
             // instead of tile coordinates.
-            // @ts-expect-error - TS2345 - Argument of type 'Point[]' is not assignable to parameter of type '[Point, Point]'.
             clippedPolygons = resampleFillExtrusionPolygonsForGlobe(polygons, tileBounds, canonical);
         } else {
             clippedPolygons = [];
             for (const polygon of polygons) {
-                // @ts-expect-error - TS2322 - Type 'Point[]' is not assignable to type '[Point, Point]'.
                 clippedPolygons.push({polygon, bounds: tileBounds});
             }
         }
@@ -1036,7 +1042,7 @@ class FillExtrusionBucket implements Bucket {
                         flattened.push(p1.x, p1.y);
 
                         if (isGlobe) {
-                            const array: any = this.layoutVertexExtArray;
+                            const array = this.layoutVertexExtArray;
                             const projectedP = projection.projectTilePoint(q.x, q.y, canonical);
                             const n = projection.upVector(canonical, q.x, q.y);
                             addGlobeExtVertex(array, projectedP, n);
@@ -1221,7 +1227,7 @@ class FillExtrusionBucket implements Bucket {
                     }
 
                     if (isGlobe) {
-                        const array: any = this.layoutVertexExtArray;
+                        const array = this.layoutVertexExtArray;
 
                         const projectedP0 = projection.projectTilePoint(p0.x, p0.y, canonical);
                         const projectedP1 = projection.projectTilePoint(p1.x, p1.y, canonical);
@@ -1268,15 +1274,15 @@ class FillExtrusionBucket implements Bucket {
             assert(borderCentroidData.centroidDataIndex === this.centroidData.length - 1);
             this.featuresOnBorder.push(borderCentroidData);
             const borderIndex = this.featuresOnBorder.length - 1;
-            for (let i = 0; i < (borderCentroidData.borders as any).length; i++) {
-                if ((borderCentroidData.borders as any)[i][0] !== Number.MAX_VALUE) {
+            for (let i = 0; i < borderCentroidData.borders.length; i++) {
+                if (borderCentroidData.borders[i][0] !== Number.MAX_VALUE) {
                     this.borderFeatureIndices[i].push(borderIndex);
                 }
             }
         }
 
-        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness);
-        this.groundEffect.addPaintPropertiesData(feature, index, imagePositions, availableImages, canonical, brightness);
+        this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, imagePositions, availableImages, canonical, brightness, undefined, this.worldview);
+        this.groundEffect.addPaintPropertiesData(feature, index, imagePositions, availableImages, canonical, brightness, this.worldview);
         // compute maximum height of the bucket
         this.maxHeight = Math.max(this.maxHeight, height);
     }
@@ -1284,7 +1290,7 @@ class FillExtrusionBucket implements Bucket {
     sortBorders() {
         for (let i = 0; i < this.borderFeatureIndices.length; i++) {
             const borders = this.borderFeatureIndices[i];
-            borders.sort((a, b) => (this.featuresOnBorder[a].borders as any)[i][0] - (this.featuresOnBorder[b].borders as any)[i][0]);
+            borders.sort((a, b) => this.featuresOnBorder[a].borders[i][0] - this.featuresOnBorder[b].borders[i][0]);
         }
     }
 
@@ -1578,12 +1584,11 @@ class FillExtrusionBucket implements Bucket {
 
         // Hide all centroids that are overlapping with footprints from the replacement source
         for (const region of this.activeReplacements) {
-            // if ((region.order < layerIndex) || (region.order !== ReplacementOrderLandmark && region.order > layerIndex && !(region.clipMask & LayerTypeMask.FillExtrusion))) continue;
             if ((region.order < layerIndex)) continue; // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
 
-            // Apply slight padding (one unit) to fill extrusion footprints. This reduces false positives where
-            // two adjacent lines would be reported overlapping due to limited precision (16 bit) of tile units.
-            const padding = Math.pow(2.0, region.footprintTileId.canonical.z - coord.canonical.z);
+            // Apply slight padding to fill extrusion footprints. This reduces false positives where two adjacent lines
+            // would be reported overlapping due to limited precision (16 bit) of tile units.
+            const padding = Math.max(1.0, Math.pow(2.0, region.footprintTileId.canonical.z - coord.canonical.z));
 
             for (const centroid of this.centroidData) {
                 if (centroid.flags & HIDDEN_BY_REPLACEMENT) {
@@ -1799,7 +1804,7 @@ export function resampleFillExtrusionPolygonsForGlobe(polygons: Point[][][], til
         }
     };
 
-    return subdividePolygons(polygons, tileBounds, cellCountOnXAxis, cellCountOnYAxis, 1.0, splitFn);
+    return gridSubdivision(polygons, tileBounds, cellCountOnXAxis, cellCountOnYAxis, 1.0, splitFn);
 }
 
 function transformFootprintVertices(vertices: PosArray, offset: number, count: number, footprintId: CanonicalTileID, centroidId: CanonicalTileID, out: Array<Point>) {

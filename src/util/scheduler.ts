@@ -4,9 +4,9 @@ import {PerformanceUtils} from './performance';
 
 import type {Cancelable} from '../types/cancelable';
 
-type TaskMetadata = {
+export type TaskMetadata = {
     type: 'message' | 'maybePrepare' | 'parseTile';
-    isSymbolTile: boolean | null | undefined;
+    isSymbolTile?: boolean;
     zoom?: number;
 };
 
@@ -43,7 +43,7 @@ class Scheduler {
 
         if (priority === 0) {
             // Process tasks with priority 0 immediately. Do not yield to the event loop.
-            const m = isWorker() ? PerformanceUtils.beginMeasure('workerTask') : undefined;
+            const m = isWorker(self) ? PerformanceUtils.beginMeasure('workerTask') : undefined;
             try {
                 fn();
             } finally {
@@ -64,7 +64,7 @@ class Scheduler {
     }
 
     process() {
-        const m = isWorker() ? PerformanceUtils.beginMeasure('workerTask') : undefined;
+        const m = isWorker(self) ? PerformanceUtils.beginMeasure('workerTask') : undefined;
         try {
             this.taskQueue = this.taskQueue.filter(id => !!this.tasks[id]);
 
@@ -94,7 +94,7 @@ class Scheduler {
     }
 
     pick(): null | number {
-        let minIndex = null;
+        let minIndex: number = null;
         let minPriority = Infinity;
         for (let i = 0; i < this.taskQueue.length; i++) {
             const id = this.taskQueue[i];
@@ -115,13 +115,7 @@ class Scheduler {
     }
 }
 
-function getPriority(
-    {
-        type,
-        isSymbolTile,
-        zoom,
-    }: TaskMetadata,
-): number {
+function getPriority({type, isSymbolTile, zoom}: TaskMetadata): number {
     zoom = zoom || 0;
     if (type === 'message') return 0;
     if (type === 'maybePrepare' && !isSymbolTile) return 100 - zoom;

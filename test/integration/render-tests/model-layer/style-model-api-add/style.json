@@ -5,12 +5,12 @@
       "height": 512,
       "allowed": 0.00025,
       "operations": [
-        ["addModel", "tree-diffuse", "./models/tree.glb"],
+        ["addModel", "tree-diffuse", "/models/tree.glb"],
         ["wait"],
-        ["addModel", "tree", "./models/tree-metallic.glb"],
+        ["addModel", "tree", "/models/tree-metallic.glb"],
         ["wait"],
         ["removeModel", "tree-diffuse"],
-        ["addModel", "tree-diffuse", "./models/tree-no-material.glb"],
+        ["addModel", "tree-diffuse", "/models/tree-no-material.glb"],
         ["wait"],
         ["setPaintProperty", "tree-layer-combined", "model-opacity", 0.0],
         ["wait"]

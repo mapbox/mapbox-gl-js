@@ -1,0 +1,120 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "allowed": 0.00025,
+      "operations": [
+        ["addModel", "tree-diffuse", "./models/tree.glb"],
+        ["wait"],
+        ["removeModel", "tree-diffuse"],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 15,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "trees": {
+      "type": "geojson",
+      "data": "local://data/trees.geojson"
+    }
+  },
+  "pitch": 60,
+  "bearing": 0,
+  "zoom": 15,
+  "center": [
+    -122.40784,
+    37.78432
+  ],
+  "light": {
+    "intensity": 1,
+    "position": [1, 90, 45],
+    "anchor": "map"
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#aaaaaa"
+      }
+    },
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "lightblue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+          "line-color": "lightyellow",
+          "line-width": 10
+      }
+    },
+    {
+      "id": "tree-layer",
+      "type": "model",
+      "source": "trees",
+      "paint": {
+          "model-scale": [ 70.0, 50.0, 50.0],
+          "model-rotation": ["match", ["%", ["get", "id"], 4],
+          0, ["literal", [0.0, 0.0, 0.0]],
+          1, ["literal", [0.0, 0.0, 60.0]],
+          2, ["literal", [10.0, 0.0, 180.0]],
+          ["literal", [0.0, -3.0, -90]]]
+      },
+      "layout": {
+        "model-id": "tree"
+      }
+    },
+    {
+      "id": "tree-layer-diffuse",
+      "type": "model",
+      "source": "trees",
+      "layout": {
+        "model-id": "tree-diffuse"
+      },
+      "paint": {
+        "model-rotation": ["match", ["%", ["get", "id"], 4],
+          0, ["literal", [0.0, 0.0, 0.0]],
+          1, ["literal", [0.0, 0.0, 60.0]],
+          2, ["literal", [10.0, 0.0, 180.0]],
+          ["literal", [0.0, -3.0, -90]]],
+        "model-scale": [ 70.0, 50.0, 50.0],
+        "model-translation": [0, 0, 0]
+      }
+    },
+    {
+      "id": "tree-layer-combined",
+      "type": "model",
+      "source": "trees",
+      "layout": {
+        "model-id": ["match", ["%", ["get", "id"], 13],
+            0, "tree-diffuse",
+            "tree"]
+      },
+      "paint": {
+        "model-rotation": ["match", ["%", ["get", "id"], 4],
+          0, ["literal", [0.0, 0.0, 0.0]],
+          1, ["literal", [0.0, 0.0, 60.0]],
+          2, ["literal", [10.0, 0.0, 180.0]],
+          ["literal", [0.0, -3.0, -90]]],
+        "model-scale": [ 70.0, 50.0, 50.0],
+        "model-translation": [0, 0, 100]
+      }
+    }
+  ]
+}

@@ -23,7 +23,7 @@ class Literal implements Expression {
         if (!isValue(args[1]))
             return context.error(`invalid value`);
 
-        const value = (args[1] as any);
+        const value = args[1] as Value;
         let type = typeOf(value);
 
         // special case: infer the item type if possible for zero-length arrays
@@ -58,8 +58,7 @@ class Literal implements Expression {
             // Constant-folding can generate Literal expressions that you
             // couldn't actually generate with a "literal" expression,
             // so we have to implement an equivalent serialization here
-            // @ts-expect-error - TS2769 - No overload matches this call.
-            return ["rgba"].concat(this.value.toRenderColor(null).toArray());
+            return ["rgba" as SerializedExpression].concat(this.value.toNonPremultipliedRenderColor(null).toArray());
         } else if (this.value instanceof Formatted) {
             // Same as Color
             return this.value.serialize();
@@ -68,7 +67,7 @@ class Literal implements Expression {
                 typeof this.value === 'string' ||
                 typeof this.value === 'number' ||
                 typeof this.value === 'boolean');
-            return this.value as any;
+            return this.value as SerializedExpression;
         }
     }
 }

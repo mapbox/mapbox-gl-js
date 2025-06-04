@@ -4,6 +4,7 @@ import hillshade from './style_layer/hillshade_style_layer';
 import fill from './style_layer/fill_style_layer';
 import clip from './style_layer/clip_style_layer';
 import fillExtrusion from './style_layer/fill_extrusion_style_layer';
+import building from '../../3d-style/style/style_layer/building_style_layer';
 import line from './style_layer/line_style_layer';
 import symbol from './style_layer/symbol_style_layer';
 import background from './style_layer/background_style_layer';
@@ -14,18 +15,19 @@ import sky from './style_layer/sky_style_layer';
 import slot from './style_layer/slot_style_layer';
 import model from '../../3d-style/style/style_layer/model_style_layer';
 
-import type {CustomLayerInterface} from './style_layer/custom_style_layer';
-import type StyleLayer from './style_layer';
-import type {LayerSpecification} from '../style-spec/types';
+import type {LUT} from '../util/lut';
 import type {ConfigOptions} from './properties';
-import type {LUT} from "../util/lut";
+import type {TypedStyleLayer, TypedStyleLayerConstructor} from './style_layer/typed_style_layer';
+import type {LayerSpecification} from '../style-spec/types';
+import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 
-const subclasses = {
+const subclasses: Record<Exclude<TypedStyleLayer['type'], 'custom'>, TypedStyleLayerConstructor> = {
     circle,
     heatmap,
     hillshade,
     fill,
     'fill-extrusion': fillExtrusion,
+    building,
     line,
     symbol,
     background,
@@ -34,15 +36,15 @@ const subclasses = {
     sky,
     slot,
     model,
-    clip
+    clip,
 };
 
 export default function createStyleLayer(
     layer: LayerSpecification | CustomLayerInterface,
     scope: string,
-    lut: LUT | null,
+    lut?: LUT | null,
     options?: ConfigOptions | null,
-): StyleLayer | CustomStyleLayer {
+): TypedStyleLayer {
     if (layer.type === 'custom') {
         return new CustomStyleLayer(layer, scope);
     } else {
