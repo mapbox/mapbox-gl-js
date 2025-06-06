@@ -1,0 +1,434 @@
+name: CI
+
+on:
+  push:
+    paths-ignore:
+      - 'debug/**'
+      - '**.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: |
+        npm run codegen
+        npm run build-typed-style-spec
+        git add -A && git diff --staged --exit-code
+    - run: npm run tsc
+    - run: npm run test-style-spec
+    - run: npm run test-expressions
+    - run: npm run lint
+    - run: npm run lint-css
+
+  test-build:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: npm run build-dev
+    - run: npm run build-prod
+    - run: npm run build-prod-min
+    - run: npm run build-style-spec
+    - run: npm run test-build
+    - run: npm run build-css
+    - run: npm run size
+    - run: npm run prepare-release-pages
+      if: ${{ always() }}
+    - id: upload
+      uses: ./.github/actions/upload
+      if: ${{ always() }}
+      with:
+        file-path: ./test/release
+        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
+    - run: echo "## 📦 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+      if: ${{ always() }}
+
+  test-typings:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: npm run build-dts
+    - run: (cd ./test/build/typings && npm ci && npm run tsc)
+
+  test-webpack:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: npm run build-csp
+    - run: (cd ./test/build/transpilation && npm ci && npm run build)
+
+  test-unit:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    timeout-minutes: 5
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chrome --with-deps
+    - run: xvfb-run -a npm run test-unit
+    - id: upload
+      uses: ./.github/actions/upload
+      if: ${{ always() }}
+      with:
+        file-path: ./test/unit/vitest/
+        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
+    - run: echo "## 🧪 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+      if: ${{ always() }}
+
+  test-usvg:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
+    - run: tar xvzf test/usvg/test-suite.tar.gz -C test/usvg/
+    - run: xvfb-run -a npm run test-usvg
+
+  test-csp:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
+    - run: npm run build-prod-min
+    - run: npm run build-csp
+    - run: xvfb-run -a npm run test-csp
+
+  test-query:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    timeout-minutes: 5
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
+    - run: npm run build-dev
+    - run: xvfb-run -a npm run test-query
+    - id: upload
+      uses: ./.github/actions/upload
+      if: ${{ always() }}
+      with:
+        file-path: ./test/integration/query-tests/query-tests.html
+        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
+    - run: echo "## 🔍 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+      if: ${{ always() }}
+
+  test-render-linux-chrome-dev:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
+    - run: npm run build-dev
+    - run: xvfb-run -a npm run test-render-chromium
+    - id: upload
+      uses: ./.github/actions/upload
+      if: ${{ always() }}
+      with:
+        file-path: ./test/integration/render-tests/render-tests.html
+        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
+    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+      if: ${{ always() }}
+
+  test-render-linux-chrome-prod:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
+    - run: npm run build-prod-min
+    - run: xvfb-run -a npm run test-render-chromium-prod
+    - id: upload
+      uses: ./.github/actions/upload
+      if: ${{ always() }}
+      with:
+        file-path: ./test/integration/render-tests/render-tests.html
+        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
+    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+      if: ${{ always() }}
+
+  test-render-linux-chrome-csp:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
+    - run: npm run build-csp
+    - run: xvfb-run -a npm run test-render-chromium-csp
+    - id: upload
+      uses: ./.github/actions/upload
+      if: ${{ always() }}
+      with:
+        file-path: ./test/integration/render-tests/render-tests.html
+        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
+    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+      if: ${{ always() }}
+
+  test-render-linux-firefox-dev:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install firefox --with-deps --no-shell
+    - run: npm run build-dev
+    - run: xvfb-run -a npm run test-render-firefox
+    - id: upload
+      uses: ./.github/actions/upload
+      if: ${{ always() }}
+      with:
+        file-path: ./test/integration/render-tests/render-tests.html
+        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
+    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+      if: ${{ always() }}
+
+  test-render-mac-safari-dev:
+    runs-on: ['self-hosted', 'macos-sequoia-xcode:16.2']
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: npx playwright install webkit --with-deps --no-shell
+    - run: npm run build-dev
+    - run: npm run test-render-safari
+    - id: upload
+      uses: ./.github/actions/upload
+      if: ${{ always() }}
+      with:
+        file-path: ./test/integration/render-tests/render-tests.html
+        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
+    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+      if: ${{ always() }}
+
+  test-render-mac-chrome-dev:
+    runs-on: ['self-hosted', 'macos-sequoia-xcode:16.2']
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - run: npx playwright install chromium --with-deps --no-shell
+    - run: npm run build-dev
+    - run: npm run test-render-chromium
+    - id: upload
+      uses: ./.github/actions/upload
+      if: ${{ always() }}
+      with:
+        file-path: ./test/integration/render-tests/render-tests.html
+        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
+    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+      if: ${{ always() }}
+
+  test-render-windows-chrome-dev:
+    runs-on: runs-on=${{ github.run_id }}/image=windows22-base-x64/cpu=8/ram=32/family=m7i/spot=false
+    timeout-minutes: 20
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+          shard: [0, 1, 2, 3]
+    steps:
+    # Patch Windows to enable long paths in Windows 10 on RunsOn windows22-base-x64
+    # https://github.com/runs-on/runner-images-for-aws/issues/15
+    # https://github.com/actions/checkout/issues/1985#issuecomment-2489125043
+    # https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
+    - name: Patch long paths in Windows 10
+      shell: powershell
+      run: |
+        New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force;
+    - id: scoop-cache
+      uses: actions/cache@v4
+      with:
+        path: ~\scoop
+        key: scoop-v1
+        restore-keys: scoop-v1
+    - name: Install Git and AWS CLI
+      if: steps.scoop-cache.outputs.cache-hit != 'true'
+      run: |
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+        Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+        $env:Path = "$env:USERPROFILE\scoop\shims;$env:Path"
+        scoop install git aws
+    - run: |
+        $env:Path = "$env:USERPROFILE\scoop\apps\git\current\bin;$env:Path"
+        $env:Path = "$env:USERPROFILE\scoop\apps\aws\current;$env:Path"
+        echo "PATH=$env:Path" >> $env:GITHUB_ENV
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+        cache-dependency-path: 'package-lock.json'
+    - run: npm ci --no-audit --no-fund
+    - id: playwright-version
+      run: |
+        $version = npx playwright --version
+        Write-Output "version=$version" >> $env:GITHUB_OUTPUT
+    - id: playwright-cache
+      uses: actions/cache@v4
+      with:
+        path: ~\AppData\Local\ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+        restore-keys: |
+          playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+          playwright-${{ runner.os }}-
+    - run: npx playwright install chromium --with-deps --no-shell
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+    - run: npm run build-dev
+    - run: npm run test-render-chromium
+      env:
+        POOL_SHARDS: 4
+        POOL_SHARD_ID: ${{ matrix.shard }}
+    - id: upload
+      uses: ./.github/actions/upload
+      if: ${{ always() }}
+      with:
+        shard: ${{ matrix.shard }}
+        file-path: ./test/integration/render-tests/render-tests.html
+        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
+    - run: Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '## 📸 [${{ github.job }}-${{ matrix.shard }}](${{ steps.upload.outputs.artifact-url }})'
+      if: ${{ always() }}
+
+  trigger-performance-tests:
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        sha=$(git rev-parse HEAD)
+        response_code=$(curl --location --write-out "%{http_code}" --output response.json --request POST 'https://circleci.com/api/v2/project/github/mapbox/mapbox-gl-js-performance-internal/pipeline' --header 'Content-Type: application/json' -u $CIRCLECI_API_TOKEN: -d "{ \"parameters\": { \"setup_sha\": \"$sha\", \"setup_source_branch\": \"internal\" } }")
+        if [[ "$response_code" =~ ^2 ]]; then
+          pipeline_number=$(cat response.json | jq -r '.number' 2>/dev/null)
+          echo "## 🚀 [${{ github.job }}](https://app.circleci.com/pipelines/github/mapbox/mapbox-gl-js-performance-internal/$pipeline_number)" >> $GITHUB_STEP_SUMMARY
+          echo "Success: HTTP 2xx response"
+        else
+          echo "Error: Non-2xx response code - $response_code"
+          exit 1
+        fi
+      env:
+        CIRCLECI_API_TOKEN: ${{ secrets.CIRCLECI_API_TOKEN }}

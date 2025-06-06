@@ -1,37 +1,44 @@
 // Use linux 'path' syntax on all operating systems to preserve compatability with 'glob'
-import {posix as path} from "path";
 import fs from 'fs';
+import {posix as path} from 'path';
 import {globSync} from 'glob';
 import localizeURLs from './localize-urls.js';
 
-const ignoreStylePaths = [
-    '**/actual.json',
-    '**/expected*.json',
-];
+/**
+ * Returns a list of all style fixture paths for the specified root and suite directories.
+ *
+ * @param {string} suiteDir - The specific suite directory.
+ * @returns {string[]} An array of sorted style fixture paths.
+ */
+export function getAllStyleFixturePaths(suiteDir) {
+    const ignoreStylePaths = [
+        '**/actual.json',
+        '**/expected*.json',
+    ];
+
+    const jsonGlob = path.join(suiteDir, '/**/*.json');
+    const stylePaths = globSync(jsonGlob, {ignore: ignoreStylePaths, posix: true}).sort((a, b) => a.localeCompare(b, 'en'));
+    if (!stylePaths.length) throw new Error(`No style fixture files found in ${jsonGlob}`);
+    return stylePaths;
+}
 
 /**
- * Analyzes the contents of the specified `path.join(rootDirectory, suiteDirectory)`, and inlines
- * the contents into a single json file which can then be imported and built into a bundle
- * to be shipped to the browser.
+ * Inlines the content of style fixture paths into a single json file which can then be imported into a bundle to be shipped to the browser.
  *
- * @param {string} rootDirectory
- * @param {string} suiteDirectory
- * @param {boolean} includeImages
+ * @param {string[]} stylePaths - An array of style fixture paths to process.
+ * @param {boolean} includeImages - Whether to include image files in the output JSON.
  */
-export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirectory = 'test/integration/dist', includeImages = false, stylePaths = []) {
-    if (!stylePaths.length) {
-        const pathGlob = getAllFixtureGlobs(rootDirectory, suiteDirectory)[0];
-        stylePaths = globSync(pathGlob, {ignore: ignoreStylePaths}).sort((a, b) => a.localeCompare(b, 'en'));
-        if (!stylePaths.length) {
-            console.error(`Found no tests matching the pattern ${pathGlob}`);
-        }
+export function generateFixtureJson(stylePaths, includeImages = false) {
+    if (!stylePaths || !Array.isArray(stylePaths) || stylePaths.length === 0) {
+        throw new Error('No style paths provided to generateFixtureJson');
     }
 
     const testCases = {};
 
     for (const stylePath of stylePaths) {
         const dirName = path.dirname(stylePath);
-        const testName = dirName.replace(rootDirectory, '');
+        const rootDir = 'test/integration/';
+        const testName = dirName.replace(rootDir, '');
         try {
             const json = parseJsonFromFile(stylePath);
 
@@ -73,16 +80,6 @@ export function generateFixtureJson(rootDirectory, suiteDirectory, outputDirecto
     }
 
     return testCases;
-}
-
-export function getAllFixtureGlobs(rootDirectory, suiteDirectory) {
-    const basePath = path.join(rootDirectory, suiteDirectory);
-    const jsonPaths = path.join(basePath, '/**/*.json');
-    const imagePaths = path.join(basePath, '/**/*.png');
-    const modelPaths = path.join(basePath, '/**/*.gltf');
-    const landmarkPaths = path.join(basePath, '/**/*.b3dm');
-
-    return [jsonPaths, imagePaths, modelPaths, landmarkPaths];
 }
 
 function parseJsonFromFile(filePath) {

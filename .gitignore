@@ -16,8 +16,13 @@ coverage
 *_generated.js.map
 tests-to-run.txt
 test/**/__screenshots__/
+test/unit/**/vitest
+test/release/dist/**/*.js
+test/release/dist/**/*.json
 test/integration/**/vitest
 test/integration/**/index*.html
+test/integration/**/query-tests.html
+test/integration/**/render-tests.html
 test/integration/**/actual.png
 test/integration/**/actual.json
 test/integration/**/diff.png
