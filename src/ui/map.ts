@@ -5216,18 +5216,18 @@ export class Map extends Camera {
 
 /**
  * A [`Point` geometry](https://github.com/mapbox/point-geometry) object, which has
- * `x` and `y` properties representing screen coordinates in pixels.
+ * `x` and `y` screen coordinates in pixels, or other units.
  *
  * @typedef {Point} Point
  * @example
- * const point = new mapboxgl.Point(-77, 38);
+ * const point = new mapboxgl.Point(400, 525);
  */
 
 /**
- * A {@link Point} or an array of two numbers representing `x` and `y` screen coordinates in pixels.
+ * A {@link Point} or an array of two numbers representing `x` and `y` screen coordinates in pixels, or other units.
  *
  * @typedef {(Point | Array<number>)} PointLike
  * @example
- * const p1 = new mapboxgl.Point(-77, 38); // a PointLike which is a Point
- * const p2 = [-77, 38]; // a PointLike which is an array of two numbers
+ * const p1 = new mapboxgl.Point(400, 525); // a PointLike which is a Point
+ * const p2 = [400, 525]; // a PointLike which is an array of two numbers
  */
