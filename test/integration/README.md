@@ -42,7 +42,7 @@ npm run test-expressions
 
 To run a subset of tests or an individual test, you can pass a specific subdirectory to the `test-render` script. For example, to run all the tests for a given property, e.g. `circle-radius`:
 ```
-$ npm run test-render -- -t circle-radius
+$ npm run test-render -- -t "render-tests/circle-radius"
 ...
 * circle-radius/antimeridian
 * circle-radius/default
@@ -55,7 +55,7 @@ $ npm run test-render -- -t circle-radius
 
 Or to run a single test:
 ```
-$ npm run test-render -- -t circle-radius/literal
+$ npm run test-render -- -t "render-tests/circle-radius/literal"
 ...
 * circle-radius/literal
 ...
@@ -97,7 +97,7 @@ To add a new render test:
 
 3. Generate an `expected.png` image from the given style by running the new test with the `UPDATE` flag enabled:
    ```
-   $ UPDATE=1 npm run test-render tests=<property-name>/<new-test-name>
+   $ UPDATE=1 npm run test-render -t render-tests/<property-name>/<new-test-name>
    ```
    The test will appear to fail, but you'll now see a new `expected.png` in the test directory.
 

@@ -16,12 +16,12 @@ npx playwright install chromium
 ```
 
 To run individual tests:
- - Unit tests: `npm run test-unit path/to/file.test.js`
-   - e.g. `npm run test-unit test/unit/ui/handler/scroll_zoom.test.js`
- - Render tests: `npm run test-render tests=render-test-name` where the render test name can be any substring in the `test/integration/render-tests/` subdirectories
-   - e.g. `npm run test-render tests=background-color/default` or `npm run test-render tests=line`
+ - Unit tests: `npm run test-unit -- path/to/file.test.js`
+   - e.g. `npm run test-unit -- test/unit/ui/handler/scroll_zoom.test.js`
+ - Render tests: `npm run test-render -- -t "render-tests/render-test-name"` where the `render-test-name` can be any substring in the `test/integration/render-tests/` subdirectories
+   - e.g. `npm run test-render -- -t "render-tests/background-color/default"` or `npm run test-render -- -t "render-tests/line"`
 
-See [`test/integration/README.md#running-specific-tests`](./integration/README.md#running-specific-tests).
+See [`test/integration/README.md#running-specific-tests`](./integration/README.md#running-specific-tests) and [Vitest documentation](https://vitest.dev/guide/cli.html#testnamepattern).
 
 ## Integration Tests
 
