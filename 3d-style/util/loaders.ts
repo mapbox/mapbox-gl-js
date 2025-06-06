@@ -6,10 +6,12 @@ import Dispatcher from '../../src/util/dispatcher';
 import {getGlobalWorkerPool as getWorkerPool} from '../../src/util/worker_pool_factory';
 import {Evented} from '../../src/util/evented';
 import {isWorker, warnOnce} from '../../src/util/util';
+import {loadBuildingGen} from './building_gen';
 import assert from 'assert';
 import {DracoDecoderModule} from './draco_decoder_gltf';
 import {MeshoptDecoder} from './meshopt_decoder';
 
+import type {BuildingGen} from './building_gen';
 import type {Class} from '../../src/types/class';
 
 let dispatcher: Dispatcher | null = null;
@@ -22,6 +24,9 @@ let draco: any;
 let meshoptUrl: string | null | undefined;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let meshopt: any;
+let buildingGenLoading: Promise<unknown> | null = null;
+let buildingGenError: Error = null;
+let buildingGen: BuildingGen | null = null;
 
 export function getDracoUrl(): string {
     if (isWorker(self) && self.worker.dracoUrl) {
@@ -90,6 +95,27 @@ function waitForMeshopt() {
     return decoder.ready.then(() => {
         meshopt = decoder;
     });
+}
+
+export function waitForBuildingGen(): Promise<unknown> {
+    if (buildingGen != null || buildingGenError != null) return null;
+    if (buildingGenLoading != null) return buildingGenLoading;
+
+    const wasmData = fetch(config.BUILDING_GEN_URL);
+    buildingGenLoading = loadBuildingGen(wasmData).then((instance) => {
+        buildingGenLoading = null;
+        buildingGen = instance;
+        return buildingGen;
+    }).catch((error) => {
+        warnOnce('Could not load building-gen');
+        buildingGenLoading = null;
+        buildingGenError = error;
+    });
+    return buildingGenLoading;
+}
+
+export function getBuildingGen(): BuildingGen {
+    return buildingGen;
 }
 
 export const GLTF_BYTE = 5120;

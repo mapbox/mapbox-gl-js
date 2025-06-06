@@ -1,4 +1,5 @@
 import {register} from '../../../src/util/web_worker_transfer';
+import {waitForBuildingGen} from '../../../3d-style/util/loaders';
 
 import type {CanonicalTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import type {
@@ -34,6 +35,10 @@ class BuildingBucket implements Bucket {
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
 
+    }
+
+    prepare(): Promise<unknown> {
+        return waitForBuildingGen();
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
