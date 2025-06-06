@@ -26,7 +26,6 @@
     ],
     "types": [
       "node",
-      "jest",
       "geojson",
       "offscreencanvas"
     ],

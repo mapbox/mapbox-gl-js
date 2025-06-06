@@ -55,6 +55,8 @@ type ImageDataWithCanvas = {
     canvas: HTMLCanvasElement;
 }
 
+const basePath = 'test/integration/render-tests';
+
 async function base64PngToImageDataWithCanvas(base64Png: string): Promise<ImageDataWithCanvas> {
     return new Promise((resolve, reject) => {
         const image = new Image();
@@ -81,7 +83,7 @@ async function getExpectedImages(currentTestName: string, renderTest: Record<str
 
     for (const prop in renderTest) {
         if (prop.indexOf('expected') > -1) {
-            expectedPaths.push(`${currentTestName}/${prop}.png`);
+            expectedPaths.push(`${basePath}/${currentTestName}/${prop}.png`);
         }
     }
 
@@ -141,8 +143,8 @@ const getTest = (renderTestName) => async () => {
             const imgDiff = diffCanvas.toDataURL();
 
             if (!import.meta.env.VITE_CI) {
-                await server.commands.writeFile(`${testName}/actual.png`, actual.split(',')[1], {encoding: 'base64'});
-                await server.commands.writeFile(`${testName}/diff.png`, imgDiff.split(',')[1], {encoding: 'base64'});
+                await server.commands.writeFile(`${basePath}/${testName}/actual.png`, actual.split(',')[1], {encoding: 'base64'});
+                await server.commands.writeFile(`${basePath}/${testName}/diff.png`, imgDiff.split(',')[1], {encoding: 'base64'});
             }
 
             testMetaData.actual = actual;

@@ -8,7 +8,7 @@ describe('MapboxRasterTile', () => {
         MapboxRasterTile.setPbf(Pbf);
     });
     test('parses an MRT with an icon set', async () => {
-        const arrayBuffer = await readArrayBuffer('../../fixtures/iconset-0-0-0.mrt');
+        const arrayBuffer = await readArrayBuffer('test/fixtures/iconset-0-0-0.mrt');
 
         const mrt = new MapboxRasterTile();
         mrt.parseHeader(arrayBuffer);

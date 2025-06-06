@@ -72,6 +72,8 @@ let map;
 
 let reportFragment: string | undefined;
 
+const basePath = 'test/integration/query-tests';
+
 const getTest = (queryTestName) => async () => {
     let errorMessage: string | undefined;
     try {
@@ -156,10 +158,10 @@ const getTest = (queryTestName) => async () => {
         testMetaData.status = success ? 'passed' : 'failed';
 
         if (!import.meta.env.VITE_CI && import.meta.env.VITE_UPDATE) {
-            await server.commands.writeFile(`${testName}/expected.json`, jsonDiff.replace('+ ', '').trim());
+            await server.commands.writeFile(`${basePath}/${testName}/expected.json`, jsonDiff.replace('+ ', '').trim());
         } else if (!import.meta.env.VITE_CI) {
-            await server.commands.writeFile(`${testName}/actual.png`, testMetaData.actual!.split(',')[1], {encoding: 'base64'});
-            await server.commands.writeFile(`${testName}/actual.json`, jsonDiff.trim());
+            await server.commands.writeFile(`${basePath}/${testName}/actual.png`, testMetaData.actual!.split(',')[1], {encoding: 'base64'});
+            await server.commands.writeFile(`${basePath}/${testName}/actual.json`, jsonDiff.trim());
         }
 
         reportFragment = updateHTML(testMetaData);

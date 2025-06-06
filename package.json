@@ -60,14 +60,13 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-virtual": "^3.0.2",
     "@tweakpane/core": "^2.0.5",
-    "@types/jest": "^29.5.14",
     "@types/murmurhash-js": "^1.0.6",
     "@types/node": "^22.15.29",
     "@types/offscreencanvas": "^2019.7.3",
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^8.33.1",
-    "@vitest/browser": "^3.1.4",
-    "@vitest/ui": "^3.1.4",
+    "@vitest/browser": "^3.2.2",
+    "@vitest/ui": "^3.2.2",
     "address": "^2.0.3",
     "browserify": "^17.0.1",
     "browserslist-to-esbuild": "^2.1.1",
@@ -90,7 +89,6 @@
     "express": "^5.1.0",
     "glob": "^11.0.2",
     "is-builtin-module": "^5.0.0",
-    "jest-extended": "^5.0.3",
     "json-stringify-pretty-compact": "^4.0.0",
     "lodash": "^4.17.21",
     "mapbox-gl-styles": "^2.0.2",
@@ -120,7 +118,7 @@
     "typescript-eslint": "^8.33.1",
     "utility-types": "^3.11.0",
     "vite-plugin-arraybuffer": "^0.1.0",
-    "vitest": "^3.1.4"
+    "vitest": "^3.2.2"
   },
   "scripts": {
     "build-dev": "rollup -c --environment BUILD:dev",

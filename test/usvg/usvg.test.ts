@@ -6,17 +6,12 @@ import {describe, test, expect, afterEach, afterAll, onTestFailed, onTestFinishe
 import {readIconSet} from '../../src/data/usvg/usvg_pb_decoder';
 import {renderIcon} from '../../src/data/usvg/usvg_pb_renderer';
 import {allowed, ignores, scales, formatName} from './utils';
+import {readArrayBuffer} from '../util/read_array_buffer';
 // @ts-expect-error - virtual modules are not typed
 import {fixtures} from 'virtual:usvg-fixtures';
 
 async function getIconSet(iconsetPath) {
-    const data = await server.commands.readFile(iconsetPath, 'binary');
-    const arrayBuffer = new ArrayBuffer(data.length);
-    const view = new Uint8Array(arrayBuffer);
-    for (let i = 0; i < data.length; i++) {
-        view[i] = data.charCodeAt(i);
-    }
-    const pbf = new Pbf(arrayBuffer);
+    const pbf = new Pbf(await readArrayBuffer(iconsetPath));
     const iconSet = readIconSet(pbf);
     return iconSet;
 }
@@ -64,10 +59,10 @@ describe('uSVG', async () => {
         }
         html += `<div><h2>Failed (${failed.length})</h2><pre>${JSON.stringify(failed, null, 2)}</pre></div>`;
         html += `<div><h2>Ignored (${ignores.length})</h2><pre>${JSON.stringify(ignores, null, 2)}</pre></div>`;
-        await server.commands.writeFile('./vitest/index.html', html);
+        await server.commands.writeFile('test/usvg/vitest/index.html', html);
     });
 
-    const iconset = await getIconSet('./test-suite/test-suite.iconset');
+    const iconset = await getIconSet('test/usvg/test-suite/test-suite.iconset');
     for (const icon of iconset.icons.sort((a, b) => a.name.localeCompare(b.name))) {
         for (const scale of scales) {
             if (ignores.some(ignore => icon.name.startsWith(ignore))) {
