@@ -386,7 +386,6 @@ export class ShadowRenderer {
         const painter = this.painter;
         const style = painter.style;
         const context = painter.context;
-        const gl = context.gl;
         const directionalLight = style.directionalLight;
         const ambientLight = style.ambientLight;
 
@@ -406,8 +405,7 @@ export class ShadowRenderer {
 
         const shadowColor = calculateGroundShadowFactor(style, directionalLight, ambientLight);
 
-        const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
-        const stencilMode = new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0x00, 0xFF, gl.KEEP, gl.KEEP, gl.KEEP);
+        const depthMode = new DepthMode(context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
 
         for (const id of this._groundShadowTiles) {
             const unwrapped = id.toUnwrapped();
@@ -420,7 +418,7 @@ export class ShadowRenderer {
 
             const uniformValues = groundShadowUniformValues(painter.transform.calculateProjMatrix(unwrapped), shadowColor);
 
-            program.draw(painter, gl.TRIANGLES, depthMode, stencilMode, ColorMode.multiply, CullFaceMode.disabled,
+            program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, ColorMode.multiply, CullFaceMode.disabled,
                 uniformValues, "ground_shadow", painter.tileExtentBuffer, painter.quadTriangleIndexBuffer,
                 painter.tileExtentSegments, null, painter.transform.zoom,
                 null, null);

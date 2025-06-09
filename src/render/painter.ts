@@ -25,7 +25,7 @@ import circle from './draw_circle';
 import assert from 'assert';
 import heatmap from './draw_heatmap';
 import line, {prepare as prepareLine} from './draw_line';
-import fill, {drawDepthPrepass as fillDepthPrepass, drawGroundShadowMask as fillGroundShadowMask} from './draw_fill';
+import fill, {drawDepthPrepass as fillDepthPrepass} from './draw_fill';
 import fillExtrusion from './draw_fill_extrusion';
 import building from '../../3d-style/render/draw_building';
 import hillshade from './draw_hillshade';
@@ -157,9 +157,6 @@ const prepare = {
 
 const depthPrepass = {
     fill: fillDepthPrepass
-};
-const groundShadowMask = {
-    fill: fillGroundShadowMask
 };
 
 /**
@@ -1300,19 +1297,6 @@ class Painter {
 
             // Render ground shadows after the last shadow caster layer
             if (!this.terrain && shadowRenderer && shadowLayers > 0 && layer.hasShadowPass() && --shadowLayers === 0) {
-                // Draw ground shadow mask
-                {
-                    this.clearStencil();
-                    const saveCurrentLayer = this.currentLayer;
-                    for (this.currentLayer = 0; this.currentLayer < orderedLayers.length; this.currentLayer++) {
-                        const maskLayer = orderedLayers[this.currentLayer];
-                        if (groundShadowMask[maskLayer.type]) {
-                            const sourceCache = this.style.getLayerSourceCache(maskLayer);
-                            groundShadowMask[maskLayer.type](this, sourceCache, maskLayer, coordsForTranslucentLayer(maskLayer, sourceCache));
-                        }
-                    }
-                    this.currentLayer = saveCurrentLayer;
-                }
                 shadowRenderer.drawGroundShadows();
 
                 if (this.firstLightBeamLayer <= this.currentLayer) { // render light beams for 3D models (all are before ground shadows)
