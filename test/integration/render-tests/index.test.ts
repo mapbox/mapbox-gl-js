@@ -154,7 +154,7 @@ const getTest = (renderTestName) => async () => {
         }
 
         if (!pass && import.meta.env.VITE_UPDATE) {
-            await server.commands.writeFile(`${testName}/expected.png`, actual.split(',')[1], {encoding: 'base64'});
+            await server.commands.writeFile(`${basePath}/${testName}/expected.png`, actual.split(',')[1], {encoding: 'base64'});
         } else if (!pass) {
             errorMessage = `Render test ${renderTestName} failed with ${minDiff} diff`;
         }
