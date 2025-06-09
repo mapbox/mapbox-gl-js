@@ -431,9 +431,8 @@ function scaleShapedIconImage(outImagePosition: ImagePosition, image: StyleImage
 
     const beforeFitIconSize = getPositionedIconSize(beforeFitIcon);
     const afterFitIconSize = getPositionedIconSize(afterFitIcon);
-    // Multipliers should be bigger than 1 because we want to at least, keep the size we computed before
-    const widthMultiplier = (iconTextFit === 'both' || iconTextFit === 'width') && isFullyStretchableX(beforeFitIcon) ? Math.max(1, afterFitIconSize.width / beforeFitIconSize.width) : 1;
-    const heightMultiplier = (iconTextFit === 'both' || iconTextFit === 'height') && isFullyStretchableY(beforeFitIcon) ?  Math.max(1, afterFitIconSize.height / beforeFitIconSize.height) : 1;
+    const widthMultiplier = (iconTextFit === 'both' || iconTextFit === 'width') && isFullyStretchableX(beforeFitIcon) ? (afterFitIconSize.width / beforeFitIconSize.width) : 1;
+    const heightMultiplier = (iconTextFit === 'both' || iconTextFit === 'height') && isFullyStretchableY(beforeFitIcon) ?  (afterFitIconSize.height / beforeFitIconSize.height) : 1;
     variant.scaleSelf(widthMultiplier, heightMultiplier);
 
     const scaledIconId = variant.toString();

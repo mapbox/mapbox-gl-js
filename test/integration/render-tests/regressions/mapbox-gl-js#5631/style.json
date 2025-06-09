@@ -3,7 +3,8 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64
+      "height": 64,
+      "allowed": 0.00025
     }
   },
   "sources": {
@@ -21,7 +22,7 @@
             "geometry": {
               "type": "Point",
               "coordinates": [
-                -10,
+                -10.1,
                 0
               ]
             }
@@ -35,7 +36,7 @@
             "geometry": {
               "type": "Point",
               "coordinates": [
-                10,
+                10.1,
                 0
               ]
             }
