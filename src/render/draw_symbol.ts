@@ -453,7 +453,7 @@ function drawLayerSymbols(
             const texSize: [number, number] = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
             const sizeData = bucket.iconSizeData;
             const size = evaluateSizeForZoom(sizeData, tr.zoom);
-            const transformed = iconPitchWithMap || tr.pitch !== 0;
+            const transformed = iconPitchWithMap || !tr.isOrthographic;
 
             const labelPlaneMatrixRendering = symbolProjection.getLabelPlaneMatrixForRendering(tileMatrix, tile.tileID.canonical, iconPitchWithMap, iconRotateWithMap, tr, bucket.getProjection(), s);
 
@@ -572,7 +572,7 @@ function drawLayerSymbols(
             if (bucket.iconsInText) {
                 texSizeIcon = tile.imageAtlasTexture ? tile.imageAtlasTexture.size : [0, 0];
                 atlasTextureIcon = tile.imageAtlasTexture ? tile.imageAtlasTexture : null;
-                const transformed = textPitchWithMap || tr.pitch !== 0;
+                const transformed = textPitchWithMap || !tr.isOrthographic;
                 const zoomDependentSize = sizeData.kind === 'composite' || sizeData.kind === 'camera';
                 atlasInterpolationIcon = transformed || painter.options.rotating || painter.options.zooming || zoomDependentSize ? gl.LINEAR : gl.NEAREST;
             }

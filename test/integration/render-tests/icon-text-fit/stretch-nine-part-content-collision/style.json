@@ -6,6 +6,7 @@
       "height": 150
     }
   },
+  "camera": {"camera-projection": "orthographic"},
   "sources": {
     "geojson": {
       "type": "geojson",

@@ -8,6 +8,7 @@
       "collisionDebug": true
     }
   },
+  "camera": {"camera-projection": "orthographic"},
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sources": {
     "geojson": {

@@ -10,6 +10,7 @@
     },
     "center": [ 24.966764371588624, 60.318679633550005],
     "zoom": 21,
+    "camera": {"camera-projection": "orthographic"},
     "sources": {
       "places": {
             "type": "geojson",

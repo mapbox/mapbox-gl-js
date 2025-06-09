@@ -7,6 +7,7 @@
       "pixelRatio": 2
     }
   },
+  "camera": {"camera-projection": "orthographic"},
   "sources": {
     "geojson": {
       "type": "geojson",

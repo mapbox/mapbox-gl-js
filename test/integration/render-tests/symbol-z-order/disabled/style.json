@@ -12,6 +12,7 @@
         0
     ],
     "zoom": 0,
+    "camera": {"camera-projection": "orthographic"},
     "sources": {
         "icon-source": {
             "type": "geojson",

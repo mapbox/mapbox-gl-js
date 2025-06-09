@@ -12,6 +12,7 @@
   ],
   "zoom": 14,
   "bearing": 90,
+  "camera": {"camera-projection": "orthographic"},
   "sources": {
     "mapbox": {
       "type": "vector",
