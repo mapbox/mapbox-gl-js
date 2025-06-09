@@ -7,6 +7,7 @@
       "allowed": 0.003
     }
   },
+  "camera": {"camera-projection": "orthographic"},
   "sources": {
     "geojson": {
       "type": "geojson",

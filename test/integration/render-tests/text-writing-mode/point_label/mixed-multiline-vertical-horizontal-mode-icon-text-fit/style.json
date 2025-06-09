@@ -9,6 +9,7 @@
   },
   "center": [ 0, 0 ],
   "zoom": 0,
+  "camera": {"camera-projection": "orthographic"},
   "sources": {
     "point": {
       "type": "geojson",

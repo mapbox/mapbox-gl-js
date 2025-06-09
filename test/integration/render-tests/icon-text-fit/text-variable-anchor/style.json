@@ -11,6 +11,7 @@
     52.502
   ],
   "zoom": 14,
+  "camera": {"camera-projection": "orthographic"},
   "sources": {
     "mapbox": {
       "type": "vector",
