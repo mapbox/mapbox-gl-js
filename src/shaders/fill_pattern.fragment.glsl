@@ -22,6 +22,10 @@ in highp vec4 v_pos_light_view_1;
 in highp float v_depth;
 #endif
 
+#ifdef ELEVATED_ROADS
+in highp float v_road_z_offset;
+#endif
+
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern
 #ifdef FILL_PATTERN_TRANSITION
@@ -55,7 +59,11 @@ void main() {
     out_color = apply_lighting_with_emission_ground(out_color, u_emissive_strength);
 #ifdef RENDER_SHADOWS
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
+#ifdef ELEVATED_ROADS
+    out_color.rgb *= mix(v_road_z_offset != 0.0 ? u_ground_shadow_factor : vec3(1.0), vec3(1.0), light);
+#else
     out_color.rgb *= mix(u_ground_shadow_factor, vec3(1.0), light);
+#endif
 #endif // RENDER_SHADOWS
 #endif // LIGHTING_3D_MODE
 

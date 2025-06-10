@@ -4,6 +4,7 @@
 in vec2 a_pos;
 #ifdef ELEVATED_ROADS
 in float a_road_z_offset;
+out highp float v_road_z_offset;
 #endif
 
 #ifdef RENDER_SHADOWS
@@ -32,6 +33,7 @@ void main() {
 
 #ifdef ELEVATED_ROADS
     z_offset += a_road_z_offset;
+    v_road_z_offset = z_offset;
 #endif
     float hidden = float(opacity == 0.0);
     gl_Position = mix(u_matrix * vec4(a_pos, z_offset, 1), AWAY, hidden);

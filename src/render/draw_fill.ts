@@ -230,6 +230,42 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache, lay
     }
 }
 
+export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<OverscaledTileID>) {
+    if (!layer.layout || layer.layout.get('fill-elevation-reference') === 'none') {
+        return;
+    }
+
+    assert(!(painter.terrain && painter.terrain.enabled));
+
+    const gl = painter.context.gl;
+    const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
+    const stencilMode = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
+    const cameraMercPos = painter.transform.getFreeCameraOptions().position;
+    const program = painter.getOrCreateProgram('elevatedStructuresDepthReconstruct', {defines: ['DEPTH_RECONSTRUCTION']});
+
+    for (const coord of coords) {
+        const tile = sourceCache.getTile(coord);
+        const bucket = tile.getBucket(layer) as FillBucket;
+        if (!bucket) continue;
+
+        const elevatedStructures = bucket.elevatedStructures;
+        if (!elevatedStructures || elevatedStructures.maskSegments.segments[0].primitiveLength === 0) {
+            continue;
+        }
+
+        const unwrappedTileID = coord.toUnwrapped();
+        const cameraTilePos = computeCameraPositionInTile(unwrappedTileID, cameraMercPos);
+        const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
+            layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
+
+        const uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, 0.0, 0.0, 0.0);
+        program.draw(painter, gl.TRIANGLES, depthMode,
+            stencilMode, ColorMode.disabled, CullFaceMode.disabled, uniformValues,
+            layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.maskSegments,
+            layer.paint, painter.transform.zoom);
+    }
+}
+
 function drawElevatedStructures(params: DrawFillParams) {
     const {painter, sourceCache, layer, coords, colorMode} = params;
     const gl = painter.context.gl;
