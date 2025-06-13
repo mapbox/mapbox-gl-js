@@ -470,7 +470,7 @@ export class ShadowRenderer {
             mat4.multiply(lightMatrix, this._cascades[i].matrix, tileMatrix);
             uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = Float32Array.from(lightMatrix);
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
-            this._cascades[i].texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            this._cascades[i].texture.bindExtraParam(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.GREATER);
         }
 
         this.useNormalOffset = !!normalOffsetMode;
@@ -509,7 +509,7 @@ export class ShadowRenderer {
             mat4.multiply(lightMatrix, this._cascades[i].matrix, worldMatrix);
             uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = Float32Array.from(lightMatrix);
             context.activeTexture.set(gl.TEXTURE0 + TextureSlots.ShadowMap0 + i);
-            this._cascades[i].texture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
+            this._cascades[i].texture.bindExtraParam(gl.LINEAR, gl.LINEAR, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.GREATER);
         }
 
         this.useNormalOffset = normalOffset;

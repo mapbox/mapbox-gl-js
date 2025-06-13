@@ -2,7 +2,8 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 512,
+      "width": 400,
+      "height": 400,
       "allowed": 0.0015,
       "operations": [
         ["wait"],
@@ -50,9 +51,9 @@
     "oak2": "local://models/oak2.glb",
     "oak3": "local://models/oak3.glb"
   },
-  "pitch": 60,
-  "bearing": 0,
-  "zoom": 15,
+  "pitch": 55,
+  "bearing": -20,
+  "zoom": 15.2,
   "center": [
     -122.40784,
     37.78432
