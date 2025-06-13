@@ -153,18 +153,18 @@ const getTest = (queryTestName) => async () => {
             testMetaData['jsonDiff'] = jsonDiff;
         }
 
-        assert.ok(success, queryTestName);
-
         testMetaData.status = success ? 'passed' : 'failed';
 
         if (!import.meta.env.VITE_CI && import.meta.env.VITE_UPDATE) {
             await server.commands.writeFile(`${basePath}/${testName}/expected.json`, jsonDiff.replace('+ ', '').trim());
         } else if (!import.meta.env.VITE_CI) {
             await server.commands.writeFile(`${basePath}/${testName}/actual.png`, testMetaData.actual!.split(',')[1], {encoding: 'base64'});
-            await server.commands.writeFile(`${basePath}/${testName}/actual.json`, jsonDiff.trim());
+            await server.commands.writeFile(`${basePath}/${testName}/actual.json`, JSON.stringify(actual, undefined, 2));
         }
 
         reportFragment = updateHTML(testMetaData);
+
+        if (!success) errorMessage = `Query test ${queryTestName} failed`;
     } catch (error) {
         reportFragment = updateHTML({
             name: queryTestName,
