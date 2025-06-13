@@ -36,6 +36,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -59,8 +61,9 @@ jobs:
       with:
         file-path: ./test/release
         aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - run: echo "## 📦 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
-      if: ${{ always() }}
+    - name: 📎 Log artifact URL
+      run: echo "${{ steps.upload.outputs.artifact-url }}"
+      if: ${{ steps.upload.outputs.artifact-url }}
 
   test-typings:
     runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
@@ -94,6 +97,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -112,8 +117,9 @@ jobs:
       with:
         file-path: ./test/unit/vitest/
         aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - run: echo "## 🧪 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
-      if: ${{ always() }}
+    - name: 📎 Log artifact URL
+      run: echo "${{ steps.upload.outputs.artifact-url }}"
+      if: ${{ steps.upload.outputs.artifact-url }}
 
   test-usvg:
     runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
@@ -156,6 +162,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -175,15 +183,18 @@ jobs:
       with:
         file-path: ./test/integration/query-tests/query-tests.html
         aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - run: echo "## 🔍 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
-      if: ${{ always() }}
+    - name: 📎 Log artifact URL
+      run: echo "${{ steps.upload.outputs.artifact-url }}"
+      if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-linux-chrome-dev:
     runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       id-token: write
       contents: read
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -203,15 +214,18 @@ jobs:
       with:
         file-path: ./test/integration/render-tests/render-tests.html
         aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
-      if: ${{ always() }}
+    - name: 📎 Log artifact URL
+      run: echo "${{ steps.upload.outputs.artifact-url }}"
+      if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-linux-chrome-prod:
     runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       id-token: write
       contents: read
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -231,15 +245,18 @@ jobs:
       with:
         file-path: ./test/integration/render-tests/render-tests.html
         aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
-      if: ${{ always() }}
+    - name: 📎 Log artifact URL
+      run: echo "${{ steps.upload.outputs.artifact-url }}"
+      if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-linux-chrome-csp:
     runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       id-token: write
       contents: read
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -259,15 +276,18 @@ jobs:
       with:
         file-path: ./test/integration/render-tests/render-tests.html
         aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
-      if: ${{ always() }}
+    - name: 📎 Log artifact URL
+      run: echo "${{ steps.upload.outputs.artifact-url }}"
+      if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-linux-firefox-dev:
     runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       id-token: write
       contents: read
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -287,15 +307,18 @@ jobs:
       with:
         file-path: ./test/integration/render-tests/render-tests.html
         aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
-      if: ${{ always() }}
+    - name: 📎 Log artifact URL
+      run: echo "${{ steps.upload.outputs.artifact-url }}"
+      if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-mac-safari-dev:
     runs-on: ['self-hosted', 'macos-sequoia-xcode:16.2']
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       id-token: write
       contents: read
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -313,15 +336,18 @@ jobs:
       with:
         file-path: ./test/integration/render-tests/render-tests.html
         aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
-      if: ${{ always() }}
+    - name: 📎 Log artifact URL
+      run: echo "${{ steps.upload.outputs.artifact-url }}"
+      if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-mac-chrome-dev:
     runs-on: ['self-hosted', 'macos-sequoia-xcode:16.2']
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       id-token: write
       contents: read
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -339,8 +365,9 @@ jobs:
       with:
         file-path: ./test/integration/render-tests/render-tests.html
         aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - run: echo "## 📸 [${{ github.job }}](${{ steps.upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
-      if: ${{ always() }}
+    - name: 📎 Log artifact URL
+      run: echo "${{ steps.upload.outputs.artifact-url }}"
+      if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-windows-chrome-dev:
     runs-on: runs-on=${{ github.run_id }}/image=windows22-base-x64/cpu=8/ram=32/family=m7i/spot=false
@@ -348,6 +375,11 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    outputs:
+      artifact-url-0: ${{ steps.set-output-0.outputs.url }}
+      artifact-url-1: ${{ steps.set-output-1.outputs.url }}
+      artifact-url-2: ${{ steps.set-output-2.outputs.url }}
+      artifact-url-3: ${{ steps.set-output-3.outputs.url }}
     strategy:
       fail-fast: false
       matrix:
@@ -411,11 +443,24 @@ jobs:
         shard: ${{ matrix.shard }}
         file-path: ./test/integration/render-tests/render-tests.html
         aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - run: Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value '## 📸 [${{ github.job }}-${{ matrix.shard }}](${{ steps.upload.outputs.artifact-url }})'
-      if: ${{ always() }}
+    - name: 📎 Log artifact URL (Shard ${{ matrix.shard }})
+      run: echo "${{ steps.upload.outputs.artifact-url }}"
+      if: ${{ steps.upload.outputs.artifact-url }}
+    - id: set-output-0
+      if: matrix.shard == 0
+      run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
+    - id: set-output-1
+      if: matrix.shard == 1
+      run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
+    - id: set-output-2
+      if: matrix.shard == 2
+      run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
+    - id: set-output-3
+      if: matrix.shard == 3
+      run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
 
   trigger-performance-tests:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=1cpu-linux-arm64/spot=false
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
     steps:
     - uses: actions/checkout@v4
@@ -432,3 +477,86 @@ jobs:
         fi
       env:
         CIRCLECI_API_TOKEN: ${{ secrets.CIRCLECI_API_TOKEN }}
+
+  report:
+    runs-on: runs-on=${{ github.run_id }}/runner=1cpu-linux-arm64/spot=false
+    if: ${{ !cancelled() }}
+    permissions:
+      pull-requests: write
+    needs: [
+      check,
+      test-build,
+      test-typings,
+      test-webpack,
+      test-unit,
+      test-usvg,
+      test-csp,
+      test-query,
+      test-render-linux-chrome-dev,
+      test-render-linux-chrome-prod,
+      test-render-linux-chrome-csp,
+      test-render-linux-firefox-dev,
+      test-render-mac-safari-dev,
+      test-render-mac-chrome-dev,
+      test-render-windows-chrome-dev
+    ]
+    steps:
+    - id: report
+      run: |
+        status_emoji() {
+          case "$1" in
+            success) echo "✅" ;;
+            failure) echo "❌" ;;
+            cancelled) echo "🚫" ;;
+            skipped) echo "⏭️" ;;
+            *) echo "❓" ;;
+          esac
+        }
+
+        artifact_link() {
+          [[ -n "$1" ]] && echo "[View]($1)" || echo "-"
+        }
+
+        overall_status="✅ All Passed"
+        if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
+          overall_status="❌ Some Failed"
+        elif [[ "${{ contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+          overall_status="🚫 Some Cancelled"
+        fi
+
+        windows_links=""
+        urls=(
+          "${{ needs.test-render-windows-chrome-dev.outputs.artifact-url-0 }}"
+          "${{ needs.test-render-windows-chrome-dev.outputs.artifact-url-1 }}"
+          "${{ needs.test-render-windows-chrome-dev.outputs.artifact-url-2 }}"
+          "${{ needs.test-render-windows-chrome-dev.outputs.artifact-url-3 }}"
+        )
+        for i in 0 1 2 3; do
+          [[ -n "${urls[$i]}" ]] && {
+            [[ -n "$windows_links" ]] && windows_links="$windows_links / "
+            windows_links="${windows_links}[View $((i+1))](${urls[$i]})"
+          }
+        done
+        [[ -z "$windows_links" ]] && windows_links="-"
+
+        cat >> $GITHUB_STEP_SUMMARY << EOF
+        ## $overall_status
+
+        | Job | Status | Artifacts |
+        |-----|--------|-----------|
+        | check | $(status_emoji "${{ needs.check.result }}") | - |
+        | test-build | $(status_emoji "${{ needs.test-build.result }}") | $(artifact_link "${{ needs.test-build.outputs.artifact-url }}") |
+        | test-typings | $(status_emoji "${{ needs.test-typings.result }}") | - |
+        | test-webpack | $(status_emoji "${{ needs.test-webpack.result }}") | - |
+        | test-unit | $(status_emoji "${{ needs.test-unit.result }}") | $(artifact_link "${{ needs.test-unit.outputs.artifact-url }}") |
+        | test-usvg | $(status_emoji "${{ needs.test-usvg.result }}") | - |
+        | test-csp | $(status_emoji "${{ needs.test-csp.result }}") | - |
+        | test-query | $(status_emoji "${{ needs.test-query.result }}") | $(artifact_link "${{ needs.test-query.outputs.artifact-url }}") |
+        | test-render-linux-chrome-dev | $(status_emoji "${{ needs.test-render-linux-chrome-dev.result }}") | $(artifact_link "${{ needs.test-render-linux-chrome-dev.outputs.artifact-url }}") |
+        | test-render-linux-chrome-prod | $(status_emoji "${{ needs.test-render-linux-chrome-prod.result }}") | $(artifact_link "${{ needs.test-render-linux-chrome-prod.outputs.artifact-url }}") |
+        | test-render-linux-chrome-csp | $(status_emoji "${{ needs.test-render-linux-chrome-csp.result }}") | $(artifact_link "${{ needs.test-render-linux-chrome-csp.outputs.artifact-url }}") |
+        | test-render-linux-firefox-dev | $(status_emoji "${{ needs.test-render-linux-firefox-dev.result }}") | $(artifact_link "${{ needs.test-render-linux-firefox-dev.outputs.artifact-url }}") |
+        | test-render-mac-safari-dev | $(status_emoji "${{ needs.test-render-mac-safari-dev.result }}") | $(artifact_link "${{ needs.test-render-mac-safari-dev.outputs.artifact-url }}") |
+        | test-render-mac-chrome-dev | $(status_emoji "${{ needs.test-render-mac-chrome-dev.result }}") | $(artifact_link "${{ needs.test-render-mac-chrome-dev.outputs.artifact-url }}") |
+        | test-render-windows-chrome-dev | $(status_emoji "${{ needs.test-render-windows-chrome-dev.result }}") | $windows_links |
+        EOF
