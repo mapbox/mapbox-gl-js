@@ -1,20 +1,30 @@
 [
   {
+    "type": "Feature",
+    "state": {},
     "geometry": {
+      "type": "Point",
       "coordinates": [
-        -122.39312142133713,
-        37.79248811488655
-        ],
-      "type": "Point"
+        -79.38385158777237,
+        43.65333978500476
+      ]
     },
-    "id": "44106213",
     "properties": {
-      "height": 29.037949727615928
+      "height": 101.98259478035217
     },
-    "source": "file-system-tiles",
-    "state": {
-      "hover": true
+    "id": "1985007610",
+    "layer": {
+      "id": "landmark2",
+      "type": "model",
+      "source": "landmark",
+      "minzoom": 14,
+      "maxzoom": 22,
+      "paint": {
+        "model-color": "green",
+        "model-color-mix-intensity": 1,
+        "model-opacity": 1
+      }
     },
-    "type": "Feature"
+    "source": "landmark"
   }
 ]

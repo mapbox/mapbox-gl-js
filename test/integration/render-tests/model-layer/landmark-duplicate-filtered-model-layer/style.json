@@ -1,16 +1,11 @@
 {
   "version": 8,
-   "metadata": {
-    "skipLayerDelete": true,
+  "metadata": {
     "test": {
-      "width": 512,
+      "allowed": 0.0005,
       "height": 512,
       "operations": [
         ["wait"]
-      ],
-      "queryGeometry": [
-        290,
-        176
       ]
     }
   },
@@ -39,9 +34,9 @@
       }
     }
   ],
-  "pitch": 0,
+  "pitch": 42,
   "bearing": -49.18,
-  "zoom": 14,
+  "zoom": 16.5,
   "center": [-79.38215509399942, 43.6510820887318],
   "layers": [
     {
@@ -61,7 +56,23 @@
         "model-opacity": 1
       },
       "minzoom": 0,
-      "maxzoom": 22
+      "maxzoom": 22,
+      "filter": [
+        "in",
+        [
+          "id"
+        ],
+        [
+          "literal",
+          [
+            "1416933340",
+            "3665687290",
+            "3035654650",
+            "1985007610",
+            "320230770"
+          ]
+        ]
+      ]
     },
     {
       "id": "landmark2",
@@ -73,7 +84,25 @@
         "model-opacity": 1
       },
       "minzoom": 14,
-      "maxzoom": 22
+      "maxzoom": 22,
+      "filter": [
+        "!", [
+          "in",
+          [
+            "id"
+          ],
+          [
+            "literal",
+            [
+              "1416933340",
+              "3665687290",
+              "3035654650",
+              "1985007610",
+              "320230770"
+            ]
+          ]
+        ]
+      ]
     }
   ]
 }

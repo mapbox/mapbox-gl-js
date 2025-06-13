@@ -25,15 +25,7 @@ function stringify(obj: any) {
 function getKey(layer: LayerSpecification) {
     let key = '';
     for (const k of refProperties) {
-        // Ignore minzoom and maxzoom for model layers so that multiple model layers
-        // referencing the same source (but with different zoom ranges) produce the same
-        // key. This ensures they get grouped into a single bucket, preventing a scenario
-        // where shared node data is serialized twice and triggers an assert in struct_array.ts.
-        if (layer.type === 'model' && (k === 'minzoom' || k === 'maxzoom')) {
-            continue;
-        } else {
-            key += `/${stringify(layer[k])}`;
-        }
+        key += `/${stringify(layer[k])}`;
     }
     return key;
 }

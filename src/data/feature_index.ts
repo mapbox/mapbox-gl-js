@@ -286,77 +286,84 @@ class FeatureIndex {
         transform: Transform,
         worldview: string | undefined,
     ): void {
-        // 3D tile is a single bucket tile.
-        const layerId = this.bucketLayerIDs[0][0];
+        const {featureIndex, bucketIndex} = featureIndexData;
+
+        const layerIDs = this.bucketLayerIDs[bucketIndex];
         const queryLayers = query.layers;
-        if (!queryLayers[layerId]) return;
-
-        const {styleLayer, targets} = queryLayers[layerId];
-        if (styleLayer.type !== 'model') return;
-
-        const tile = tilespaceGeometry.tile;
-        const featureIndex = featureIndexData.featureIndex;
-
-        const bucket = tile.getBucket(styleLayer);
-        if (!bucket || !(bucket instanceof Tiled3dModelBucket)) return;
-
-        const model = loadMatchingModelFeature(bucket, featureIndex, tilespaceGeometry, transform);
-        if (!model) return;
-
-        const {z, x, y} = tile.tileID.canonical;
-        const {feature, intersectionZ, position} = model;
-
-        let featureState: FeatureState = {};
-        if (feature.id !== undefined) {
-            featureState = query.sourceCache.getFeatureState(styleLayer.sourceLayer, feature.id);
+        const queryLayerIDs = Object.keys(queryLayers);
+        if (queryLayerIDs.length && !arraysIntersect(queryLayerIDs, layerIDs)) {
+            return;
         }
 
-        const geojsonFeature = new Feature({} as unknown as VectorTileFeature, z, x, y, feature.id);
-        geojsonFeature.tile = this.tileID.canonical;
-        geojsonFeature.state = featureState;
+        for (let l = 0; l < layerIDs.length; l++) {
+            const layerId = layerIDs[l];
 
-        geojsonFeature.properties = feature.properties;
-        geojsonFeature.geometry = {type: 'Point', coordinates: [position.lng, position.lat]};
+            const {styleLayer, targets} = queryLayers[layerId];
+            if (styleLayer.type !== 'model') continue;
 
-        let serializedLayer = this.serializedLayersCache.get(layerId);
-        if (!serializedLayer) {
-            serializedLayer = styleLayer.serialize();
-            serializedLayer.id = layerId;
-            this.serializedLayersCache.set(layerId, serializedLayer);
-        }
+            const tile = tilespaceGeometry.tile;
 
-        geojsonFeature.source = serializedLayer.source;
-        geojsonFeature.sourceLayer = serializedLayer['source-layer'];
+            const bucket = tile.getBucket(styleLayer);
+            if (!bucket || !(bucket instanceof Tiled3dModelBucket)) continue;
 
-        geojsonFeature.layer = extend({}, serializedLayer);
+            const model = loadMatchingModelFeature(bucket, featureIndex, tilespaceGeometry, transform);
+            if (!model) continue;
 
-        // Iterate over all targets to check if the feature should be included and add feature variants if necessary
-        let shouldInclude = false;
-        for (const target of targets) {
-            this.updateFeatureProperties(geojsonFeature, target);
-            const {filter} = target;
-            if (filter) {
-                feature.properties = geojsonFeature.properties;
-                if (filter.needGeometry) {
-                    if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature, this.tileID.canonical)) {
+            const {z, x, y} = tile.tileID.canonical;
+            const {feature, intersectionZ, position} = model;
+
+            let featureState: FeatureState = {};
+            if (feature.id !== undefined) {
+                featureState = query.sourceCache.getFeatureState(styleLayer.sourceLayer, feature.id);
+            }
+
+            const geojsonFeature = new Feature({} as unknown as VectorTileFeature, z, x, y, feature.id);
+            geojsonFeature.tile = this.tileID.canonical;
+            geojsonFeature.state = featureState;
+
+            geojsonFeature.properties = feature.properties;
+            geojsonFeature.geometry = {type: 'Point', coordinates: [position.lng, position.lat]};
+
+            let serializedLayer = this.serializedLayersCache.get(layerId);
+            if (!serializedLayer) {
+                serializedLayer = styleLayer.serialize();
+                serializedLayer.id = layerId;
+                this.serializedLayersCache.set(layerId, serializedLayer);
+            }
+
+            geojsonFeature.source = serializedLayer.source;
+            geojsonFeature.sourceLayer = serializedLayer['source-layer'];
+
+            geojsonFeature.layer = extend({}, serializedLayer);
+
+            // Iterate over all targets to check if the feature should be included and add feature variants if necessary
+            let shouldInclude = false;
+            for (const target of targets) {
+                this.updateFeatureProperties(geojsonFeature, target);
+                const {filter} = target;
+                if (filter) {
+                    feature.properties = geojsonFeature.properties;
+                    if (filter.needGeometry) {
+                        if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature, this.tileID.canonical)) {
+                            continue;
+                        }
+                    } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature)) {
                         continue;
                     }
-                } else if (!filter.filter(new EvaluationParameters(this.tileID.overscaledZ, {worldview}), feature)) {
-                    continue;
+                }
+
+                // Feature passes at least one target filter
+                shouldInclude = true;
+
+                // If the target has associated interaction id, add a feature variant for it
+                if (target.targetId) {
+                    this.addFeatureVariant(geojsonFeature, target);
                 }
             }
 
-            // Feature passes at least one target filter
-            shouldInclude = true;
-
-            // If the target has associated interaction id, add a feature variant for it
-            if (target.targetId) {
-                this.addFeatureVariant(geojsonFeature, target);
+            if (shouldInclude) {
+                this.appendToResult(result, layerId, featureIndex, geojsonFeature, intersectionZ);
             }
-        }
-
-        if (shouldInclude) {
-            this.appendToResult(result, layerId, featureIndex, geojsonFeature, intersectionZ);
         }
     }
 

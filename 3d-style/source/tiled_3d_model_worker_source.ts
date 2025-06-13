@@ -72,7 +72,6 @@ class Tiled3dWorkerTile {
         load3DTile(data)
             .then(gltf => {
                 if (!gltf) return callback(new Error('Could not parse tile'));
-                const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
                 const hasMapboxMeshFeatures = (gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features')) ||
                                             (gltf.json.asset.extras && gltf.json.asset.extras['MAPBOX_mesh_features']);
                 const hasMeshoptCompression = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression');
@@ -83,6 +82,8 @@ class Tiled3dWorkerTile {
                         const layer = family[0] as ModelStyleLayer;
                         featureIndex.bucketLayerIDs.push(family.map((l) => makeFQID(l.id, l.scope)));
                         layer.recalculate(parameters, []);
+                        // Nodes are created per layer which allows styling when multiple model layers are referencing the same source
+                        const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
                         const bucket = new Tiled3dModelBucket(family as Array<ModelStyleLayer>, nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex, this.worldview);
                         // Upload to GPU without waiting for evaluation if we are in diffuse path
                         if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
