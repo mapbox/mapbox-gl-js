@@ -98,7 +98,7 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chromium --with-deps --no-shell
+    - run: npx playwright install chrome --with-deps
     - run: xvfb-run -a npm run test-unit
     - id: upload
       uses: ./.github/actions/upload
