@@ -7,8 +7,8 @@ function handleOperation(map, operations, opIndex, doneCb) {
     const opName = operation[0];
     //Delegate to special handler if one is available
     if (opName in operationHandlers) {
-        operationHandlers[opName](map, operation.slice(1), () => {
-            doneCb(opIndex);
+        operationHandlers[opName](map, operation.slice(1), (promise) => {
+            doneCb(opIndex, promise);
         });
     } else {
         map[opName](...operation.slice(1));
@@ -243,8 +243,12 @@ export const operationHandlers = {
         doneCb();
     },
     on(map, params, doneCb) {
-        map.on(params[0], () => applyOperations(map, {operations: params[1]}, params[0]));
-        doneCb();
+        doneCb(new Promise((resolve) => {
+            map.on(params[0], async () => {
+                await applyOperations(map, {operations: params[1]}, params[0]);
+                resolve();
+            });
+        }));
     },
     showCollisionBoxes(map, params, doneCb) {
         map.showCollisionBoxes = true;
@@ -254,14 +258,19 @@ export const operationHandlers = {
 
 export async function applyOperations(map, {operations}, currentTestName) {
     if (!operations) return Promise.resolve();
+    const pending = [];
 
     return new Promise((resolve, reject) => {
         let currentOperation = null;
         // Start recursive chain
-        const scheduleNextOperation = (lastOpIndex) => {
+        const scheduleNextOperation = (lastOpIndex, promise) => {
+            if (promise) {
+                pending.push(promise);
+            }
             if (lastOpIndex === operations.length - 1) {
                 // Stop recusive chain when at the end of the operations
-                resolve();
+                // Also wait for all pending operations
+                Promise.all(pending).then(() => resolve());
                 return;
             }
             currentOperation = operations[lastOpIndex + 1];

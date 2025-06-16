@@ -280,9 +280,6 @@ const skip = [
     // Flaky model tests
     "render-tests/model-layer/style-model-api-remove",
     "render-tests/model-layer/vector-layer-external-models-import",
-
-    // Flaky image test
-    "render-tests/image/styleimagemissing"
 ];
 
 export default {todo, skip};
