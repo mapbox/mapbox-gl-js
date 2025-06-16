@@ -46,11 +46,15 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
+    - run: npx playwright install chromium --with-deps --no-shell
     - run: npm run build-dev
     - run: npm run build-prod
     - run: npm run build-prod-min
     - run: npm run build-style-spec
+    - run: npm run build-csp
     - run: npm run test-build
+    - run: (cd ./test/build/transpilation && npm ci && npm run build)
+    - run: xvfb-run -a npm run test-csp
     - run: npm run build-css
     - run: npm run size
     - run: npm run prepare-release-pages
@@ -78,19 +82,6 @@ jobs:
     - run: npm run build-dts
     - run: (cd ./test/build/typings && npm ci && npm run tsc)
 
-  test-webpack:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: npm run build-csp
-    - run: (cd ./test/build/transpilation && npm ci && npm run build)
-
   test-unit:
     runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
     timeout-minutes: 5
@@ -107,9 +98,7 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chrome --with-deps
+    - run: npx playwright install chromium --with-deps --no-shell
     - run: xvfb-run -a npm run test-unit
     - id: upload
       uses: ./.github/actions/upload
@@ -132,29 +121,9 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
+    - run: npx playwright install chromium --with-deps --no-shell
     - run: tar xvzf test/usvg/test-suite.tar.gz -C test/usvg/
     - run: xvfb-run -a npm run test-usvg
-
-  test-csp:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
-    timeout-minutes: 5
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
-    - run: npm run build-prod-min
-    - run: npm run build-csp
-    - run: xvfb-run -a npm run test-csp
 
   test-query:
     runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
@@ -172,9 +141,7 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
+    - run: npx playwright install chromium --with-deps --no-shell
     - run: npm run build-dev
     - run: xvfb-run -a npm run test-query
     - id: upload
@@ -203,9 +170,7 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
+    - run: npx playwright install chromium --with-deps --no-shell
     - run: npm run build-dev
     - run: xvfb-run -a npm run test-render-chromium
     - id: upload
@@ -234,9 +199,7 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
+    - run: npx playwright install chromium --with-deps --no-shell
     - run: npm run build-prod-min
     - run: xvfb-run -a npm run test-render-chromium-prod
     - id: upload
@@ -265,9 +228,7 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
+    - run: npx playwright install chromium --with-deps --no-shell
     - run: npm run build-csp
     - run: xvfb-run -a npm run test-render-chromium-csp
     - id: upload
@@ -296,9 +257,7 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install firefox --with-deps --no-shell
+    - run: npx playwright install firefox --with-deps --no-shell
     - run: npm run build-dev
     - run: xvfb-run -a npm run test-render-firefox
     - id: upload
@@ -383,7 +342,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-          shard: [0, 1, 2, 3]
+          shard: [0, 1, 2]
     steps:
     # Patch Windows to enable long paths in Windows 10 on RunsOn windows22-base-x64
     # https://github.com/runs-on/runner-images-for-aws/issues/15
@@ -434,7 +393,7 @@ jobs:
     - run: npm run build-dev
     - run: npm run test-render-chromium
       env:
-        POOL_SHARDS: 4
+        POOL_SHARDS: 3
         POOL_SHARD_ID: ${{ matrix.shard }}
     - id: upload
       uses: ./.github/actions/upload
@@ -454,9 +413,6 @@ jobs:
       run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
     - id: set-output-2
       if: matrix.shard == 2
-      run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
-    - id: set-output-3
-      if: matrix.shard == 3
       run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
 
   trigger-performance-tests:
@@ -487,10 +443,8 @@ jobs:
       check,
       test-build,
       test-typings,
-      test-webpack,
       test-unit,
       test-usvg,
-      test-csp,
       test-query,
       test-render-linux-chrome-dev,
       test-render-linux-chrome-prod,
@@ -547,10 +501,8 @@ jobs:
         | check | $(status_emoji "${{ needs.check.result }}") | - |
         | test-build | $(status_emoji "${{ needs.test-build.result }}") | $(artifact_link "${{ needs.test-build.outputs.artifact-url }}") |
         | test-typings | $(status_emoji "${{ needs.test-typings.result }}") | - |
-        | test-webpack | $(status_emoji "${{ needs.test-webpack.result }}") | - |
         | test-unit | $(status_emoji "${{ needs.test-unit.result }}") | $(artifact_link "${{ needs.test-unit.outputs.artifact-url }}") |
         | test-usvg | $(status_emoji "${{ needs.test-usvg.result }}") | - |
-        | test-csp | $(status_emoji "${{ needs.test-csp.result }}") | - |
         | test-query | $(status_emoji "${{ needs.test-query.result }}") | $(artifact_link "${{ needs.test-query.outputs.artifact-url }}") |
         | test-render-linux-chrome-dev | $(status_emoji "${{ needs.test-render-linux-chrome-dev.result }}") | $(artifact_link "${{ needs.test-render-linux-chrome-dev.outputs.artifact-url }}") |
         | test-render-linux-chrome-prod | $(status_emoji "${{ needs.test-render-linux-chrome-prod.result }}") | $(artifact_link "${{ needs.test-render-linux-chrome-prod.outputs.artifact-url }}") |

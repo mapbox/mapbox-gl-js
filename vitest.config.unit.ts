@@ -33,7 +33,7 @@ export default mergeConfig(baseConfig, defineConfig({
     test: {
         browser: {
             instances: [
-                {browser: 'chromium', launch: {channel: 'chrome'}},
+                {browser: 'chromium', launch: {channel: isCI ? 'chromium' : 'chrome'}},
             ],
         },
         include: ['test/unit/**/*.test.ts'],
