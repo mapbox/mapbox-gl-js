@@ -87,7 +87,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsdoc": "^50.7.1",
     "express": "^5.1.0",
-    "glob": "^11.0.2",
+    "glob": "^11.0.3",
     "is-builtin-module": "^5.0.0",
     "json-stringify-pretty-compact": "^4.0.0",
     "lodash": "^4.17.21",
