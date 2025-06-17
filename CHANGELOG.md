@@ -1,4 +1,4 @@
-## 3.13.0-beta.1
+## 3.13.0
 
 ### Breaking changes ⚠️
 - `interpolate` expression will interpolate between non-alpha-premultiplied colors. The change might affect `raster-particle-color`, `line-gradient`, and `heatmap-color`.
@@ -11,9 +11,14 @@
 - Add support of gradient transforms in the fill style of vector icons.
 
 ### Bug fixes 🐞
+- Fix querying and styling issues with multiple model layers referencing the same source.
+- Fix `mapbox-gl-rtl-text` v0.3.0 plugin not loading in certain configurations.
 - Fix icons with `text-variable-anchor` disappearing.
+- Fix minor distortions on vector icons in some cases.
 - Fix zooming over terrain with negative altitude values.
 - Fix interactions to not throw on `mouseleave` without `mouseenter`.
+- Fix shadow rendering issues on underground structures.
+- Fix striping artifacts when rendering shadows on some GPU configurations.
 - Fix errors when viewing a style with filtered model layers.
 - Fix parsing of `color-use-theme` property of 3D lights.
 - Fix feature-dependent `config` expressions (h/t [@brncsk](https://github.com/brncsk)) [#13453](https://github.com/mapbox/mapbox-gl-js/pull/13453).
@@ -21,6 +26,10 @@
 - Fix excessive rerendering of the map after `setStyle` with the same URL of an import.
 - Fix source reloading during mercator-globe transition with terrain.
 - Fix color of semi-transparent vector icons.
+
+### Workflow 🛠️
+
+- Switched from CircleCI to GitHub Actions for continuous integration tests.
 
 ## 3.12.0
 
