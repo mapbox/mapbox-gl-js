@@ -27,10 +27,9 @@ describe('querySourceFeatures', () => {
         tile.querySourceFeatures(result, {});
         expect(result.length).toEqual(0);
 
-        const geojsonWrapper = new GeoJSONWrapper(features);
-        geojsonWrapper.name = '_geojsonTileLayer';
+        const geojsonWrapper = new GeoJSONWrapper({_geojsonTileLayer: features});
         tile.loadVectorData(
-            createVectorData({rawTileData: vtpbf({layers: {'_geojsonTileLayer': geojsonWrapper}})}),
+            createVectorData({rawTileData: vtpbf(geojsonWrapper)}),
             createPainter()
         );
 
@@ -62,9 +61,8 @@ describe('querySourceFeatures', () => {
         tile.querySourceFeatures(result, {});
         expect(result.length).toEqual(0);
 
-        const geojsonWrapper = new GeoJSONWrapper([]);
-        geojsonWrapper.name = '_geojsonTileLayer';
-        tile.rawTileData = vtpbf({layers: {'_geojsonTileLayer': geojsonWrapper}});
+        const geojsonWrapper = new GeoJSONWrapper({_geojsonTileLayer: []});
+        tile.rawTileData = vtpbf(geojsonWrapper);
         result = [];
         expect(() => { tile.querySourceFeatures(result); }).not.toThrowError();
         expect(result.length).toEqual(0);

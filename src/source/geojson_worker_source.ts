@@ -1,6 +1,6 @@
 import {getJSON} from '../util/ajax';
 import {getPerformanceMeasurement} from '../util/performance';
-import GeoJSONWrapper, {LayeredGeoJSONWrapper} from './geojson_wrapper';
+import GeoJSONWrapper from './geojson_wrapper';
 import GeoJSONRT from './geojson_rt';
 import vtpbf from 'vt-pbf';
 import Supercluster from 'supercluster';
@@ -82,12 +82,14 @@ function loadGeoJSONTile(params: WorkerSourceVectorTileRequest, callback: LoadVe
     if (elevationFeatures.length > 0) {
         const nonElevationFeatures = geoJSONTile.features.filter(f => !isElevationfeature(f));
 
-        geojsonWrapper = new LayeredGeoJSONWrapper({
-            '_geojsonTileLayer': nonElevationFeatures,
+        geojsonWrapper = new GeoJSONWrapper({
+            _geojsonTileLayer: nonElevationFeatures,
             'hd_road_elevation': elevationFeatures
         });
     } else {
-        geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
+        geojsonWrapper = new GeoJSONWrapper({
+            _geojsonTileLayer: geoJSONTile.features
+        });
     }
 
     // Encode the geojson-vt tile into binary vector tile form.  This

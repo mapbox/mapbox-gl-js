@@ -81,29 +81,7 @@ class FeatureWrapper implements VectorTileFeature {
     }
 }
 
-class GeoJSONWrapper implements VectorTile, VectorTileLayer {
-    layers: {
-        [_: string]: VectorTileLayer;
-    };
-    name: string;
-    extent: number;
-    length: number;
-    _features: Array<Feature>;
-
-    constructor(features: Array<Feature>) {
-        this.layers = {'_geojsonTileLayer': this};
-        this.name = '_geojsonTileLayer';
-        this.extent = EXTENT;
-        this.length = features.length;
-        this._features = features;
-    }
-
-    feature(i: number): VectorTileFeature {
-        return new FeatureWrapper(this._features[i]);
-    }
-}
-
-class LayeredGeoJSONTileLayerWrapper implements VectorTileLayer {
+class LayerWrapper implements VectorTileLayer {
     name: string;
     extent: number;
     length: number;
@@ -121,16 +99,18 @@ class LayeredGeoJSONTileLayerWrapper implements VectorTileLayer {
     }
 }
 
-export class LayeredGeoJSONWrapper extends GeoJSONWrapper {
-    override layers: {[_: string]: VectorTileLayer};
+class GeoJSONWrapper implements VectorTile {
+    layers: {
+        [_: string]: VectorTileLayer;
+    };
+    extent: number;
 
-    constructor(featureLayers: {[_: string]: Array<Feature>}) {
-        super([]);
-
+    constructor(layers: {[_: string]: Array<Feature>}) {
         this.layers = {};
+        this.extent = EXTENT;
 
-        for (const key in featureLayers) {
-            this.layers[key] = new LayeredGeoJSONTileLayerWrapper(key, featureLayers[key]);
+        for (const name of Object.keys(layers)) {
+            this.layers[name] = new LayerWrapper(name, layers[name]);
         }
     }
 }

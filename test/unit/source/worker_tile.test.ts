@@ -23,11 +23,11 @@ function createWorkerTile(params = {}) {
 }
 
 function createWrapper() {
-    return new Wrapper([{
+    return new Wrapper({_geojsonTileLayer: [{
         type: 1,
         geometry: [0, 0],
         tags: {}
-    }]);
+    }]});
 }
 
 test('WorkerTile#parse', () => {
@@ -100,13 +100,13 @@ test('WorkerTile#parse warns once when encountering a v1 vector tile layer', () 
 });
 
 test('WorkerTile#parse adds $localized property and filters features based on the worldview', async () => {
-    const vt = new Wrapper([
+    const vt = new Wrapper({_geojsonTileLayer: [
         {type: 1, geometry: [0, 0], tags: {worldview: 'all'}},
         {type: 1, geometry: [0, 0], tags: {worldview: 'CN'}},
         {type: 1, geometry: [0, 0], tags: {worldview: 'US,CN'}},
         {type: 1, geometry: [0, 0], tags: {worldview: 'JP,TR'}},
         {type: 1, geometry: [0, 0], tags: {worldview: 'US'}},
-    ]);
+    ]});
 
     const bucketPopulateSpy = vi.fn();
     const layerIndex = new StyleLayerIndex([{id: '', source: 'source', type: 'symbol'}]);

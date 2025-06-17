@@ -11,8 +11,8 @@ describe('geojsonwrapper', () => {
             tags: {hello: 'world'}
         }];
 
-        const wrap = new Wrapper(features);
-        const feature = wrap.feature(0);
+        const wrap = new Wrapper({test: features});
+        const feature = wrap.layers.test.feature(0);
 
         expect(feature).toBeTruthy();
         expect(feature.loadGeometry()).toEqual([[{x: 0, y: 0}, {x: 10, y: 10}]]);
@@ -27,8 +27,8 @@ describe('geojsonwrapper', () => {
             tags: {}
         }];
 
-        const wrap = new Wrapper(features);
-        const feature = wrap.feature(0);
+        const wrap = new Wrapper({test: features});
+        const feature = wrap.layers.test.feature(0);
         expect(feature.loadGeometry()).toEqual([[{x: 0, y: 1}]]);
     });
 });
