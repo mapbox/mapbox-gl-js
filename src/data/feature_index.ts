@@ -465,8 +465,8 @@ class FeatureIndex {
         return false;
     }
 
-    getId(feature: VectorTileFeature, sourceLayerId: string): string | number {
-        let id: string | number = feature.id;
+    getId(feature: VectorTileFeature, sourceLayerId: string): string | number | undefined {
+        let id: string | number | undefined = feature.id;
         if (this.promoteId) {
             const propName = !Array.isArray(this.promoteId) && typeof this.promoteId === 'object' ? this.promoteId[sourceLayerId] : this.promoteId;
             if (propName != null) {

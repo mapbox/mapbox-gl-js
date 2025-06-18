@@ -1,6 +1,7 @@
 import assert from 'assert';
 import Grid from 'grid-index';
 import Color from '../style-spec/util/color';
+import Point from '@mapbox/point-geometry';
 import {StylePropertyFunction, StyleExpression, ZoomDependentExpression, ZoomConstantExpression} from '../style-spec/expression/index';
 import CompoundExpression from '../style-spec/expression/compound_expression';
 import expressions from '../style-spec/expression/definitions/index';
@@ -99,6 +100,9 @@ Grid.deserialize = function deserialize(serialized: SerializedGrid): GridIndex {
 Object.defineProperty(Grid, 'name', {value: 'Grid'});
 
 register(Grid as Class<Grid>, 'Grid');
+
+// serialize points as objects
+delete Point.prototype.constructor;
 
 if (typeof DOMMatrix !== 'undefined') {
     register(DOMMatrix, 'DOMMatrix');

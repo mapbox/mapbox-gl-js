@@ -184,10 +184,10 @@ export abstract class ElevationFeatureParser {
         for (let index = 0; index < featureCount; index++) {
             const feature = data.feature(index);
 
-            const version = feature.properties.hasOwnProperty("version") ? String(feature.properties["version"]) : undefined;
+            const version = feature.properties.version;
 
             // Get correct schema for the version. undefined == no version defined -> use default schema
-            const getVersionSchema = (version: string | undefined) => {
+            const getVersionSchema = (version: unknown) => {
                 if (!version) {
                     return schemaV100;
                 }

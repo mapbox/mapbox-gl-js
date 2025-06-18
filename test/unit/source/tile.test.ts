@@ -5,7 +5,7 @@ import {createSymbolBucket} from '../../util/create_symbol_layer';
 import Tile from '../../../src/source/tile';
 import GeoJSONWrapper from '../../../src/source/geojson_wrapper';
 import {OverscaledTileID} from '../../../src/source/tile_id';
-import vtpbf from 'vt-pbf';
+import writePbf from '../../../src/source/vector_tile_to_pbf';
 import FeatureIndex from '../../../src/data/feature_index';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {extend} from '../../../src/util/util';
@@ -15,7 +15,7 @@ import rawTileData from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 describe('querySourceFeatures', () => {
     const features = [{
         type: 1,
-        geometry: [0, 0],
+        geometry: [[0, 0]],
         tags: {oneway: true}
     }];
 
@@ -27,16 +27,17 @@ describe('querySourceFeatures', () => {
         tile.querySourceFeatures(result, {});
         expect(result.length).toEqual(0);
 
-        const geojsonWrapper = new GeoJSONWrapper({_geojsonTileLayer: features});
+        const layers = {_geojsonTileLayer: features};
+        const geojsonWrapper = new GeoJSONWrapper(layers);
         tile.loadVectorData(
-            createVectorData({rawTileData: vtpbf(geojsonWrapper)}),
+            createVectorData({rawTileData: writePbf(layers)}),
             createPainter()
         );
 
         result = [];
         tile.querySourceFeatures(result);
         expect(result.length).toEqual(1);
-        expect(result[0].geometry.coordinates[0]).toEqual([-90, 0]);
+        expect(result[0].geometry.coordinates).toEqual([-90, 0]);
         result = [];
         tile.querySourceFeatures(result, {});
         expect(result.length).toEqual(1);
@@ -61,8 +62,9 @@ describe('querySourceFeatures', () => {
         tile.querySourceFeatures(result, {});
         expect(result.length).toEqual(0);
 
-        const geojsonWrapper = new GeoJSONWrapper({_geojsonTileLayer: []});
-        tile.rawTileData = vtpbf(geojsonWrapper);
+        const layers = {_geojsonTileLayer: []};
+        const geojsonWrapper = new GeoJSONWrapper(layers);
+        tile.rawTileData = writePbf(layers);
         result = [];
         expect(() => { tile.querySourceFeatures(result); }).not.toThrowError();
         expect(result.length).toEqual(0);

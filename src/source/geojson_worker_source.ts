@@ -2,7 +2,7 @@ import {getJSON} from '../util/ajax';
 import {getPerformanceMeasurement} from '../util/performance';
 import GeoJSONWrapper from './geojson_wrapper';
 import GeoJSONRT from './geojson_rt';
-import vtpbf from 'vt-pbf';
+import writePbf from './vector_tile_to_pbf';
 import Supercluster from 'supercluster';
 import geojsonvt from 'geojson-vt';
 import assert from 'assert';
@@ -15,7 +15,8 @@ import type {
 } from '../source/worker_source';
 import type Actor from '../util/actor';
 import type StyleLayerIndex from '../style/style_layer_index';
-import type {Feature} from '../style-spec/expression/index';
+import type {Feature} from './geojson_wrapper';
+import type {Feature as ExpressionFeature} from '../style-spec/expression/index';
 import type {LoadVectorDataCallback} from './load_vector_tile';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {Callback} from '../types/callback';
@@ -77,34 +78,25 @@ function loadGeoJSONTile(params: WorkerSourceVectorTileRequest, callback: LoadVe
     const isElevationfeature = (f) => f.tags && '3d_elevation_id' in f.tags && 'source' in f.tags && f.tags.source === 'elevation';
     const elevationFeatures = geoJSONTile.features.filter(f => isElevationfeature(f));
 
-    let geojsonWrapper: GeoJSONWrapper;
+    let layers: Record<string, Feature[]> = {
+        _geojsonTileLayer: geoJSONTile.features
+    };
 
     if (elevationFeatures.length > 0) {
         const nonElevationFeatures = geoJSONTile.features.filter(f => !isElevationfeature(f));
-
-        geojsonWrapper = new GeoJSONWrapper({
+        layers = {
             _geojsonTileLayer: nonElevationFeatures,
             'hd_road_elevation': elevationFeatures
-        });
-    } else {
-        geojsonWrapper = new GeoJSONWrapper({
-            _geojsonTileLayer: geoJSONTile.features
-        });
+        };
     }
+    const vectorTile = new GeoJSONWrapper(layers);
 
     // Encode the geojson-vt tile into binary vector tile form.  This
     // is a convenience that allows `FeatureIndex` to operate the same way
     // across `VectorTileSource` and `GeoJSONSource` data.
-    let pbf = vtpbf(geojsonWrapper);
-    if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
-        // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
-        pbf = new Uint8Array(pbf);
-    }
+    const rawData = writePbf(layers).buffer as ArrayBuffer;
 
-    callback(null, {
-        vectorTile: geojsonWrapper,
-        rawData: pbf.buffer
-    });
+    callback(null, {vectorTile, rawData});
 }
 
 /**
@@ -168,7 +160,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                         if (compiled.result === 'error')
                             throw new Error(compiled.value.map(err => `${err.key}: ${err.message}`).join(', '));
 
-                        (data as GeoJSON.FeatureCollection).features = (data as GeoJSON.FeatureCollection).features.filter(feature => compiled.value.evaluate({zoom: 0}, feature as unknown as Feature));
+                        (data as GeoJSON.FeatureCollection).features = (data as GeoJSON.FeatureCollection).features.filter(feature => compiled.value.evaluate({zoom: 0}, feature as unknown as ExpressionFeature));
                     }
 
                     // for GeoJSON sources that are marked as dynamic, we retain the GeoJSON data

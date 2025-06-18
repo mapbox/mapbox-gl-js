@@ -23,6 +23,7 @@ export type Feature = {
     geometry: Array<Array<[number, number]>>;
 };
 
+// @ts-expect-error TS2739
 class FeatureWrapper implements VectorTileFeature {
     _feature: Feature;
 
@@ -81,28 +82,28 @@ class FeatureWrapper implements VectorTileFeature {
     }
 }
 
+// @ts-expect-error TS2739
 class LayerWrapper implements VectorTileLayer {
     name: string;
     extent: number;
     length: number;
-    _features: Array<Feature>;
+    _jsonFeatures: Array<Feature>;
 
     constructor(name: string, features: Array<Feature>) {
         this.name = name;
         this.extent = EXTENT;
         this.length = features.length;
-        this._features = features;
+        this._jsonFeatures = features;
     }
 
     feature(i: number): VectorTileFeature {
-        return new FeatureWrapper(this._features[i]);
+        // @ts-expect-error TS2739: Type 'FeatureWrapper' is missing the following properties from type 'VectorTileFeature': _pbf, _geometry, _keys, _values, bbox
+        return new FeatureWrapper(this._jsonFeatures[i]);
     }
 }
 
 class GeoJSONWrapper implements VectorTile {
-    layers: {
-        [_: string]: VectorTileLayer;
-    };
+    layers: Record<string, VectorTileLayer>;
     extent: number;
 
     constructor(layers: {[_: string]: Array<Feature>}) {
@@ -110,6 +111,7 @@ class GeoJSONWrapper implements VectorTile {
         this.extent = EXTENT;
 
         for (const name of Object.keys(layers)) {
+            // @ts-expect-error TS2739
             this.layers[name] = new LayerWrapper(name, layers[name]);
         }
     }

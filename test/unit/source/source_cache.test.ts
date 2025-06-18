@@ -1432,11 +1432,11 @@ describe('SourceCache#tilesIn', () => {
 
                     expect(tiles[0].tile.tileID.key).toEqual(16);
                     expect(tiles[0].tile.tileSize).toEqual(512);
-                    expect(round(tiles[0].bufferedTilespaceBounds)).toStrictEqual({min: {x: 4080, y: 4034}, max: {x: 8192, y: 8162}});
+                    expect(round(tiles[0].bufferedTilespaceBounds)).toStrictEqual({min: new Point(4080, 4034), max: new Point(8192, 8162)});
 
                     expect(tiles[1].tile.tileID.key).toEqual(528);
                     expect(tiles[1].tile.tileSize).toEqual(512);
-                    expect(round(tiles[1].bufferedTilespaceBounds)).toStrictEqual({min: {x: 0, y: 4034}, max: {x: 4112, y: 8162}});
+                    expect(round(tiles[1].bufferedTilespaceBounds)).toStrictEqual({min: new Point(0, 4034), max: new Point(4112, 8162)});
 
                     resolve();
                 }
@@ -1483,11 +1483,11 @@ describe('SourceCache#tilesIn', () => {
 
                     expect(tiles[0].tile.tileID.key).toEqual(17);
                     expect(tiles[0].tile.tileSize).toEqual(1024);
-                    expect(round(tiles[0].bufferedTilespaceBounds)).toStrictEqual({min: {x: 4088, y: 4042}, max: {x: 8192, y: 8154}});
+                    expect(round(tiles[0].bufferedTilespaceBounds)).toStrictEqual({min: new Point(4088, 4042), max: new Point(8192, 8154)});
 
                     expect(tiles[1].tile.tileID.key).toEqual(529);
                     expect(tiles[1].tile.tileSize).toEqual(1024);
-                    expect(round(tiles[1].bufferedTilespaceBounds)).toStrictEqual({min: {x: 0, y: 4042}, max: {x: 4104, y: 8154}});
+                    expect(round(tiles[1].bufferedTilespaceBounds)).toStrictEqual({min: new Point(0, 4042), max: new Point(4104, 8154)});
 
                     resolve();
                 }

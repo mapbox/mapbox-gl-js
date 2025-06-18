@@ -141,7 +141,7 @@ export function getIconQuads(
         if (angle) {
             const sin = Math.sin(angle),
                 cos = Math.cos(angle),
-                matrix = [cos, -sin, sin, cos];
+                matrix: [number, number, number, number] = [cos, -sin, sin, cos];
 
             tl._matMult(matrix);
             tr._matMult(matrix);

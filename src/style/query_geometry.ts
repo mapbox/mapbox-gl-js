@@ -69,12 +69,12 @@ export class QueryGeometry {
         let aboveHorizon;
 
         if (geometry instanceof Point || typeof geometry[0] === 'number') {
-            const pt = Point.convert(geometry) as Point;
+            const pt = Point.convert(geometry as PointLike);
             screenGeometry = [pt];
             aboveHorizon = transform.isPointAboveHorizon(pt);
         } else {
             const tl = Point.convert(geometry[0]);
-            const br = Point.convert(geometry[1]) as Point;
+            const br = Point.convert(geometry[1] as PointLike);
             const center = tl.add(br)._div(2);
             screenGeometry = [tl, br];
             aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p)) && transform.isPointAboveHorizon(center);
