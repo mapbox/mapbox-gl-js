@@ -578,6 +578,10 @@ class ImageManager extends Evented {
             }
         }
     }
+
+    destroy() {
+        if (this.imageRasterizerDispatcher) this.imageRasterizerDispatcher.remove();
+    }
 }
 
 export default ImageManager;

@@ -12,8 +12,6 @@ import EXTENT from '../style-spec/data/extent';
 import {clamp, warnOnce} from '../util/util';
 import assert from 'assert';
 import {vec3, mat4, vec4} from 'gl-matrix';
-import {getGlobalWorkerPool as getWorkerPool} from '../util/worker_pool_factory';
-import Dispatcher from '../util/dispatcher';
 import ImageSource from '../source/image_source';
 import RasterTileSource from '../source/raster_tile_source';
 import VectorTileSource from '../source/vector_tile_source';
@@ -102,8 +100,7 @@ type ElevationUniformsType =
 class MockSourceCache extends SourceCache {
     constructor(map: Map) {
         const sourceSpec: SourceSpecification = {type: 'raster-dem', maxzoom: map.transform.maxZoom};
-        const sourceDispatcher = new Dispatcher(getWorkerPool(), null);
-        const source = createSource('mock-dem', sourceSpec, sourceDispatcher, map.style);
+        const source = createSource('mock-dem', sourceSpec, map.style.dispatcher, map.style);
 
         super('mock-dem', source, false);
 
@@ -138,7 +135,7 @@ class ProxySourceCache extends SourceCache {
         const source = createSource('proxy', {
             type: 'geojson',
             maxzoom: map.transform.maxZoom
-        }, new Dispatcher(getWorkerPool(), null), map.style);
+        }, map.style.dispatcher, map.style);
 
         super('proxy', source, false);
 

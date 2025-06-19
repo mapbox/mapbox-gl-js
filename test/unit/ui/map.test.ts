@@ -14,6 +14,8 @@ import simulate, {constructTouch} from '../../util/simulate_interaction';
 import {fixedNum} from '../../util/fixed';
 import {makeFQID} from '../../../src/util/fqid';
 import {ImageId} from '../../../src/style-spec/expression/types/image_id';
+import {createConstElevationDEM, setMockElevationTerrain} from '../../util/dem_mock';
+import {getGlobalWorkerPool, getImageRasterizerWorkerPool} from '../../../src/util/worker_pool_factory';
 
 // Mock implementation of elevation
 const createElevation = (func, exaggeration) => {
@@ -1309,6 +1311,21 @@ describe('Map', () => {
 
         map.setGlyphsUrl('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
         expect(map.getGlyphsUrl()).toEqual('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
+    });
+
+    test('#remove cleans up all workers on maps with terrain or vector icons', async () => {
+        const pool = getGlobalWorkerPool();
+        const pool2 = getImageRasterizerWorkerPool();
+        const numActive = pool.numActive() + pool2.numActive();
+        const map = createMap();
+        const TILE_SIZE = 128;
+        const zeroDem = createConstElevationDEM(0, TILE_SIZE);
+        await waitFor(map, 'style.load');
+        setMockElevationTerrain(map, zeroDem, TILE_SIZE);
+        await waitFor(map, 'render');
+        expect(pool.numActive() + pool2.numActive()).toEqual(numActive + 2);
+        map.remove();
+        expect(pool.numActive() + pool2.numActive()).toEqual(numActive);
     });
 });
 

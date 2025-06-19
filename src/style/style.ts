@@ -3841,6 +3841,7 @@ class Style extends Evented<MapEvents> {
         // Shared managers should be removed only on removing the root style
         if (this.isRootStyle()) {
             this.imageManager.setEventedParent(null);
+            this.imageManager.destroy();
             this.modelManager.setEventedParent(null);
             this.modelManager.destroy();
             this.dispatcher.remove();
