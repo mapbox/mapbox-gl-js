@@ -131,9 +131,9 @@
         "building-color": [
           "match",
           ["get", "building-part"],
-          "walls",
+          "wall",
           ["hsl", 41, 90, 90],
-          "rooftop",
+          "roof",
           ["hsl", 25, 43, 80],
           ["hsl", 41, 90, 90]
         ],

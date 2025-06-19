@@ -2037,6 +2037,72 @@
       },
       "property-type": "constant"
     },
+    "building-facade": {
+      "type": "boolean",
+      "default": false,
+      "doc": "Whether to render facade details on the buildings.",
+      "experimental": true,
+      "private": true,
+      "sdk-support": {
+        "basic functionality": {
+        },
+        "data-driven styling": {
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "feature"
+        ]
+      },
+      "property-type": "data-driven"
+    },
+    "building-facade-floors": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 3,
+      "doc": "Number of floors created when building-facade is enabled.",
+      "experimental": true,
+      "property-type": "data-driven",
+      "sdk-support": {
+        "basic functionality": {},
+        "data-driven styling": {}
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "feature"
+        ]
+      },
+      "requires": [
+        "building-facade"
+      ]
+    },
+    "building-facade-window": {
+      "type": "array",
+      "length": 2,
+      "value": "number",
+      "minimum": 0.1,
+      "maximum": 1.0,
+      "default": [0.9, 0.9],
+      "doc": "Given as fractions, specifies the percentage of floor area covered by windows when building-facade is enabled",
+      "experimental": true,
+      "property-type": "data-driven",
+      "sdk-support": {
+        "basic functionality": {},
+        "data-driven styling": {}
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "feature"
+        ]
+      },
+      "requires": [
+        "building-facade"
+      ]
+    },
     "building-roof-shape": {
       "type": "enum",
       "values": {
@@ -7676,6 +7742,25 @@
         ]
       },
       "property-type": "data-driven"
+    },
+    "building-facade-emissive-chance": {
+      "type": "number",
+      "default": 0.35,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "Given as a fraction specifies the likelihood for the facades to be emissive when building-facade is enabled. A value of 0.0 means the window will never be emissive, while a value of 1.0 means the window will always be emissive. This can be used to create variations on a building where some windows are lit and some are not.",
+      "experimental": true,
+      "property-type": "data-constant",
+      "sdk-support": {
+        "basic functionality": {}
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "measure-light",
+          "zoom"
+        ]
+      }
     }
   },
   "paint_line": {

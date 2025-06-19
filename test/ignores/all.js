@@ -276,6 +276,12 @@ const skip = [
     "render-tests/building/vertical-scale",
     "render-tests/building/with-shadows",
     "render-tests/building/opacity",
+    "render-tests/building/faux-facade/building-facade",
+    "render-tests/building/faux-facade/emissive-chance",
+    "render-tests/building/faux-facade/property-update",
+    "render-tests/building/faux-facade/shadows-supported",
+    "render-tests/building/faux-facade/skillion-unsupported",
+
 
     // Flaky model tests
     "render-tests/model-layer/style-model-api-remove",

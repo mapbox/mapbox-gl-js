@@ -2,10 +2,22 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.0001,
+      "allowed": 0.0018,
       "height": 256,
       "width": 256,
-      "operations": []
+      "operations": [
+        ["wait"],
+        ["setPaintProperty", "building", "building-color", 
+          [
+            "match",
+            ["get", "building-part"],
+            "window",
+            ["hsl", 52, 86.3, 62.7],
+            ["hsl", 41, 90, 90]
+          ]
+        ],
+        ["wait"]
+      ]
     }
   },
   "lights": [
@@ -21,7 +33,10 @@
       "id": "sun_light",
       "properties": {
         "intensity": 0.6,
-        "cast-shadows": true
+        "direction": [
+          15,
+          30
+        ]
       }
     }
   ],
@@ -34,8 +49,6 @@
           {
             "type": "Feature",
             "properties": {
-              "extrude": "true",
-              "underground": "false"
             },
             "geometry": {
               "coordinates": [
@@ -69,10 +82,13 @@
       }
     }
   },
-  "bearing": 45,
-  "pitch": 40,
+  "bearing": -45,
+  "pitch": 60,
   "zoom": 18,
-  "center": [11.5690998, 48.1323676],
+  "center": [
+    11.5690308,
+    48.1324576
+  ],
   "layers": [
     {
       "id": "background",
@@ -85,23 +101,53 @@
       "id": "building",
       "type": "building",
       "source": "geojson",
-      "minzoom": 16,
+      "minzoom": 17,
       "layout": {
+        "building-facade": true,
         "building-roof-shape": "parapet",
+        "building-facade-floors": 4,
+        "building-facade-window": [
+          0.9,
+          0.8
+        ],
         "building-base": 0,
-        "building-height": 10
+        "building-height": 20
       },
       "paint": {
         "building-color": [
           "match",
-          ["get", "building-part"],
+          [
+            "get",
+            "building-part"
+          ],
           "wall",
-          ["hsl", 41, 90, 90],
+          [
+            "hsl",
+            41,
+            90,
+            90
+          ],
           "roof",
-          ["hsl", 25, 43, 80],
-          ["hsl", 41, 90, 90]
-        ],
-        "building-ambient-occlusion-wall-intensity": 1
+          [
+            "hsl",
+            25,
+            43,
+            80
+          ],
+          "window",
+          [
+            "hsl",
+            186,
+            35.3,
+            67.3
+          ],
+          [
+            "hsl",
+            41,
+            90,
+            90
+          ]
+        ]
       }
     }
   ]

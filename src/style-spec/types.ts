@@ -1081,6 +1081,18 @@ export type BuildingLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
+        "building-facade"?: DataDrivenPropertyValueSpecification<boolean>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-facade-floors"?: DataDrivenPropertyValueSpecification<number>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-facade-window"?: DataDrivenPropertyValueSpecification<[number, number]>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
         "building-roof-shape"?: DataDrivenPropertyValueSpecification<"flat" | "hipped" | "gabled" | "parapet" | "mansard" | "skillion" | "pyramidal">,
         /**
          * @experimental This property is experimental and subject to change in future versions.
@@ -1136,7 +1148,11 @@ export type BuildingLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "building-emissive-strength"?: DataDrivenPropertyValueSpecification<number>
+        "building-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-facade-emissive-chance"?: PropertyValueSpecification<number>
     }
 }
 
