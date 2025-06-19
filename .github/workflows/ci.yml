@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   check:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -32,7 +32,7 @@ jobs:
     - run: npm run lint-css
 
   test-build:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
     permissions:
       id-token: write
       contents: read
@@ -70,7 +70,7 @@ jobs:
       if: ${{ steps.upload.outputs.artifact-url }}
 
   test-typings:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -83,7 +83,7 @@ jobs:
     - run: (cd ./test/build/typings && npm ci && npm run tsc)
 
   test-unit:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
     timeout-minutes: 5
     permissions:
       id-token: write
@@ -111,7 +111,7 @@ jobs:
       if: ${{ steps.upload.outputs.artifact-url }}
 
   test-usvg:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
     timeout-minutes: 5
     steps:
     - uses: actions/checkout@v4
@@ -126,7 +126,7 @@ jobs:
     - run: xvfb-run -a npm run test-usvg
 
   test-query:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
     timeout-minutes: 5
     permissions:
       id-token: write
@@ -155,7 +155,7 @@ jobs:
       if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-linux-chrome-dev:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
     timeout-minutes: 15
     permissions:
       id-token: write
@@ -184,7 +184,7 @@ jobs:
       if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-linux-chrome-prod:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
     timeout-minutes: 15
     permissions:
       id-token: write
@@ -213,7 +213,7 @@ jobs:
       if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-linux-chrome-csp:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
     timeout-minutes: 15
     permissions:
       id-token: write
@@ -242,7 +242,7 @@ jobs:
       if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-linux-firefox-dev:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
     timeout-minutes: 15
     permissions:
       id-token: write
@@ -329,7 +329,7 @@ jobs:
       if: ${{ steps.upload.outputs.artifact-url }}
 
   test-render-windows-chrome-dev:
-    runs-on: runs-on=${{ github.run_id }}/image=windows22-base-x64/cpu=8/ram=32/family=m7i/spot=false
+    runs-on: runs-on=${{ github.run_id }}/image=windows22-base-x64/cpu=8/ram=32/family=m7i
     timeout-minutes: 20
     permissions:
       id-token: write
@@ -416,7 +416,7 @@ jobs:
       run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
 
   trigger-performance-tests:
-    runs-on: runs-on=${{ github.run_id }}/runner=1cpu-linux-arm64/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=1cpu-linux-arm64
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
     steps:
     - uses: actions/checkout@v4
@@ -435,7 +435,7 @@ jobs:
         CIRCLECI_API_TOKEN: ${{ secrets.CIRCLECI_API_TOKEN }}
 
   report:
-    runs-on: runs-on=${{ github.run_id }}/runner=1cpu-linux-arm64/spot=false
+    runs-on: runs-on=${{ github.run_id }}/runner=1cpu-linux-arm64
     if: ${{ !cancelled() }}
     permissions:
       pull-requests: write
