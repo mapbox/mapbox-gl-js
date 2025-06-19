@@ -47,6 +47,9 @@ float fog_opacity(float t) {
 
 float globe_glow_progress() {
     highp vec2 uv = gl_FragCoord.xy / u_viewport;
+    #ifdef FLIP_Y
+        uv.y = 1.0 - uv.y;
+    #endif
     highp vec3 ray_dir = mix(
         mix(u_frustum_tl, u_frustum_tr, uv.x),
         mix(u_frustum_bl, u_frustum_br, uv.x),

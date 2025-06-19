@@ -13,7 +13,11 @@ uniform mediump vec3 u_shadow_direction;
 uniform highp vec3 u_shadow_bias;
 
 float shadow_sample(sampler2DShadow shadowmap, highp vec3 pos, highp float bias) {
+#ifdef CLIP_ZERO_TO_ONE
+    highp vec3 coord = vec3(pos.xy * 0.5 + 0.5, pos.z - bias);
+#else
     highp vec3 coord = vec3(pos.xy * 0.5 + 0.5, pos.z * 0.5 + 0.5 - bias);
+#endif
     return texture(shadowmap, coord);
 }
 
@@ -39,7 +43,7 @@ float shadow_occlusion(highp vec4 light_view_pos0, highp vec4 light_view_pos1, f
     }
 
     float occlusion1 = shadow_sample(u_shadowmap_1, light_view_pos1.xyz, bias);
-        
+
     // If view_depth is within end fade range, fade out
     return clamp(mix(occlusion1, 0.0, smoothstep(u_fade_range.x, u_fade_range.y, view_depth)), 0.0, 1.0);
 #endif  // SHADOWS_SINGLE_CASCADE
