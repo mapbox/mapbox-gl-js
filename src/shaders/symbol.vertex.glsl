@@ -33,10 +33,8 @@ uniform float u_normal_scale;
 #ifdef INDICATOR_CUTOUT
 out highp float v_z_offset;
 #else
-#ifdef Z_OFFSET
 #ifdef RENDER_SHADOWS
 out highp float v_z_offset;
-#endif
 #endif
 #endif
 
@@ -89,7 +87,6 @@ out float is_sdf;
 out vec2 v_tex_a_icon;
 #endif
 
-#ifdef Z_OFFSET
 #ifdef RENDER_SHADOWS
 uniform mat4 u_light_matrix_0;
 uniform mat4 u_light_matrix_1;
@@ -97,7 +94,6 @@ uniform mat4 u_light_matrix_1;
 out highp vec4 v_pos_light_view_0;
 out highp vec4 v_pos_light_view_1;
 out highp float v_depth;
-#endif
 #endif
 
 #pragma mapbox: define highp vec4 fill_color
@@ -295,7 +291,6 @@ void main() {
     v_tex_b = a_texb / u_texsize;
 #endif
 
-#ifdef Z_OFFSET
 #ifdef RENDER_SHADOWS
     vec4 shd_pos = u_inv_matrix * vec4(pos, 1.0);
     vec3 shd_pos0 = shd_pos.xyz;
@@ -309,15 +304,12 @@ void main() {
     v_pos_light_view_1 = u_light_matrix_1 * vec4(shd_pos1, 1);
     v_depth = gl_Position.w;
 #endif
-#endif
 
 #ifdef INDICATOR_CUTOUT
     v_z_offset = e;
 #else
-#ifdef Z_OFFSET
 #ifdef RENDER_SHADOWS
     v_z_offset = e;
-#endif
 #endif
 #endif
 }

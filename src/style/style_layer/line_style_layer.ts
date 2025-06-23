@@ -198,7 +198,7 @@ class LineStyleLayer extends StyleLayer {
     }
 
     override isDraped(_?: SourceCache | null): boolean {
-        return !this.hasElevatedBuckets;
+        return !this.hasElevatedBuckets || (this.layout && this.layout.get('line-elevation-reference') === 'hd-road-markup');
     }
 
     override hasElevation(): boolean {

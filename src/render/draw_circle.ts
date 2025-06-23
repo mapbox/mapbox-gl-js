@@ -95,7 +95,7 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
             definesValues.push('DEPTH_OCCLUSION');
         }
 
-        if (bucket.hasElevation) {
+        if (bucket.hasElevation && !painter.terrain) {
             definesValues.push('ELEVATED_ROADS');
             assert(bucket.elevatedLayoutVertexBuffer);
             dynamicBuffers.push(bucket.elevatedLayoutVertexBuffer);

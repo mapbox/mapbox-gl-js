@@ -407,12 +407,12 @@ function drawLayerSymbols(
 
             const projectedPosOnLabelSpace = alongLine || updateTextFitIcon;
 
-            const renderElevatedRoads = bucket.elevationType === 'road' && iconPitchWithMap;
+            const renderElevatedRoads = bucket.elevationType === 'road';
             const shadowRenderer = painter.shadowRenderer;
-            const renderWithShadows = renderElevatedRoads && !!shadowRenderer && shadowRenderer.enabled;
+            const renderWithShadows = renderElevatedRoads && iconPitchWithMap && !!shadowRenderer && shadowRenderer.enabled;
             const groundShadowFactor = getGroundShadowFactor(renderWithShadows);
 
-            const depthMode = renderElevatedRoads ? depthModeFor3D : depthModeForLayer;
+            const depthMode = renderElevatedRoads && iconPitchWithMap && !painter.terrain ? depthModeFor3D : depthModeForLayer;
 
             const transitionProgress = layer.paint.get('icon-image-cross-fade');
             if (painter.terrainRenderModeElevated() && iconPitchWithMap) {
@@ -427,7 +427,7 @@ function drawLayerSymbols(
             if (transitionProgress > 0.0) {
                 baseDefines.push('ICON_TRANSITION');
             }
-            if (bucket.icon.zOffsetVertexBuffer) {
+            if (bucket.icon.zOffsetVertexBuffer && (!renderElevatedRoads || !painter.terrain)) {
                 baseDefines.push('Z_OFFSET');
             }
 
@@ -443,7 +443,7 @@ function drawLayerSymbols(
                 baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
             }
 
-            if (renderElevatedRoads && bucket.icon.orientationVertexBuffer) {
+            if (renderElevatedRoads && iconPitchWithMap && !painter.terrain && bucket.icon.orientationVertexBuffer) {
                 baseDefines.push('ELEVATED_ROADS');
             }
 
@@ -524,12 +524,12 @@ function drawLayerSymbols(
             const baseDefines: DynamicDefinesType[] = [];
             const projectedPosOnLabelSpace = alongLine || variablePlacement || updateTextFitIcon;
 
-            const renderElevatedRoads = bucket.elevationType === 'road' && textPitchWithMap;
+            const renderElevatedRoads = bucket.elevationType === 'road';
             const shadowRenderer = painter.shadowRenderer;
-            const renderWithShadows = renderElevatedRoads && !!shadowRenderer && shadowRenderer.enabled;
+            const renderWithShadows = renderElevatedRoads && textPitchWithMap && !!shadowRenderer && shadowRenderer.enabled;
             const groundShadowFactor = getGroundShadowFactor(renderWithShadows);
 
-            const depthMode = renderElevatedRoads ? depthModeFor3D : depthModeForLayer;
+            const depthMode = renderElevatedRoads && textPitchWithMap && !painter.terrain ? depthModeFor3D : depthModeForLayer;
 
             if (painter.terrainRenderModeElevated() && textPitchWithMap) {
                 baseDefines.push('PITCH_WITH_MAP_TERRAIN');
@@ -540,7 +540,7 @@ function drawLayerSymbols(
                     baseDefines.push('PROJECTED_POS_ON_VIEWPORT');
                 }
             }
-            if (bucket.text.zOffsetVertexBuffer) {
+            if (bucket.text.zOffsetVertexBuffer && (!renderElevatedRoads || !painter.terrain)) {
                 baseDefines.push('Z_OFFSET');
             }
 
@@ -554,7 +554,7 @@ function drawLayerSymbols(
                 baseDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
             }
 
-            if (renderElevatedRoads && bucket.text.orientationVertexBuffer) {
+            if (renderElevatedRoads && textPitchWithMap && !painter.terrain && bucket.text.orientationVertexBuffer) {
                 baseDefines.push('ELEVATED_ROADS');
             }
 
