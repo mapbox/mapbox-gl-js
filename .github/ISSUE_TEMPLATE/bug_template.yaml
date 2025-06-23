@@ -1,0 +1,64 @@
+name: Bug report
+about: Report a bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Hello! Thanks for contributing. For the fastest response and resolution, please: |
+        - Make the issue title a succinct but specific description of the unexpected behavior. Bad: "Map rotation is broken". Good: "map.setBearing(...) throws a TypeError for negative values" |
+        - Include a link to a minimal demonstration of the bug. We recommend using https://jsbin.com. |
+        - Ensure you can reproduce the bug using the latest release. |
+        - Check the console for relevant errors and warnings |
+        - Only post to report a bug. For feature requests, please use https://github.com/mapbox/mapbox-gl-js/issues/new?template=Feature_request.md instead.  Direct all other questions to https://stackoverflow.com/questions/tagged/mapbox-gl-js |
+  - type: input
+    id: version
+    attributes:
+      label: mapbox-gl-js version
+      description: Which Mapbox GL JS version are you using?
+      placeholder: ex. v3.13.0
+    validations:
+      required: false
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      description: Which browser and version are you using?
+      placeholder: ex. Chrome 137.0.7151.104
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: Tell us what you think should happen
+    validations:
+      required: false
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: Tell us what happens instead
+    validations:
+      required: false
+  - type: input
+    id: link
+    attributes:
+      label: Link to the demonstration
+      description: Please provide a link to a minimal demonstration of the bug. We recommend using https://jsbin.com. |
+        Providing a minimal, complete, verifiable demonstration *dramatically* improves maintainers' and other community members' ability to understand and address the problem you're reporting. (See https://stackoverflow.com/help/mcve for guidelines on creating an effective example.)
+      placeholder: ex. https://jsbin.com/...
+    validations:
+      required: false
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to trigger the unexpected behavior
+      placeholder: Tell us how to reproduce the bug
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
