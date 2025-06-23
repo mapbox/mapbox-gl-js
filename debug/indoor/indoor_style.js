@@ -1,39 +1,24 @@
-function getLevelHeight() {
-    // Returns the top height of the feature's level
-    return ["get", ["get", "floor_id"], ["config", "mbx-indoor-level-height"]]
-}
-
-function getLevelBase() {
-    // Returns the base height of the feature's level
-    return ["get", ["get", "floor_id"], ["config", "mbx-indoor-level-base"]]
-}
-
-function getLevelSelected() {
+function isSelectedFloor() {
     // True if the current level is selected
-    return ["==", ["get", ["get", "floor_id"], ["config", "mbx-indoor-level-selected"]], "true"]
+    return ["in", ["get", "floor_id"], ["config", "mbx-indoor-level-selected"]]
 }
 
-function getFloorplanSelected() {
+function isSelectedFloorVisible() {
     // True if the current level is selected
-    return ["in", ["get", "venue"], ["config", "mbx-indoor-active-floorplans"]]
-}
-
-function getLevelOverlapped() {
-    // True if the level is below the current selected one
-    return ["==", ["get", ["get", "floor_id"], ["config", "mbx-indoor-level-overlapped"]], "true"]
+    return ["!=", ["length", ["config", "mbx-indoor-level-selected"]], 0]
 }
 
 const indoorLayers = [
     {
         "type": "clip",
         "id": "clip-area",
-        "source": "indoor-data",
+        "source": "indoor-source",
+        "source-layer": "indoor_structure",
         "minzoom": 16.0,
         "filter": [
             "all",
-            ["==", ["geometry-type"], "Polygon"],
-            ["==", ["get", "shape_type"], "venue"],
-            ["!=", 0, ["length", ["array", ["config", "mbx-indoor-loaded-levels"]]]]
+            ["==", ["get", "shape_type"], "building"],
+            isSelectedFloorVisible()
         ],
         "layout": {
             "clip-layer-types": ["model", "symbol"]
@@ -41,76 +26,203 @@ const indoorLayers = [
     },
     {
         "type": "fill",
-        "id": "query-area",
-        "source": "indoor-data",
+        "id": "building-outline-non-transparent",
+        "source": "indoor-source",
+        "source-layer": "indoor_structure",
+        "minzoom": 16.0,
         "slot": "middle",
         "filter": [
             "all",
             ["==", ["geometry-type"], "Polygon"],
-            ["==", ["get", "shape_type"], "venue"]
+            ["in", ["get", "shape_type"], ["literal", ["building"]]],
+            isSelectedFloorVisible()
         ],
         "paint": {
             // Note: We should keep opacity above zero to enable queries of the footprint
-            "fill-opacity": 0.03,
-            "fill-color": "#800080"
+            "fill-opacity": 1,
+            "fill-color": "#e8a5b8"
         }
     },
     {
-        "type": "background",
-        "id": "dimming-bg",
-        "minzoom": 16,
-        "paint": {
-            "background-pitch-alignment": "viewport",
-            "background-opacity": [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                16.5,
-                0.0,
-                17.0,
-                [
-                    "case",
-                    ["config", "mbx-indoor-underground"],
-                    0.4,
-                    0.0
-                ]
-            ],
-            "background-color": ["hsla", 0, 0, 0, 0.5]
-        }
-    },
-    {
-        "type": "fill-extrusion",
-        "id": "areas",
-        "source": "indoor-data",
+        "type": "fill",
+        "id": "building-outline",
+        "source": "indoor-source",
+        "source-layer": "indoor_structure",
         "minzoom": 16.0,
+        "slot": "middle",
         "filter": [
             "all",
-            ["in", ["get", "floor_id"], ["config", "mbx-indoor-loaded-levels"]],
-            ["!=", ["geometry-type"], "Point"],
-            ["==", ["get", "shape_type"], "area"]
+            ["==", ["geometry-type"], "Polygon"],
+            ["in", ["get", "shape_type"], ["literal", ["building"]]],
         ],
         "paint": {
-            "fill-extrusion-opacity": 1,
-            "fill-extrusion-cast-shadows": false,
-            "fill-extrusion-color": [
-                "case",
-                getLevelSelected(),
-                "#f2ede2",
-                ["rgba", 0, 0, 0, 0]
-            ],
-            "fill-extrusion-height": getLevelBase(),
-            "fill-extrusion-base": getLevelBase()
+            // Note: We should keep opacity above zero to enable queries of the footprint
+            "fill-opacity": 0.01,
+            "fill-color": "#e8a5b8"
         }
     },
     {
-        "type": "fill-extrusion",
-        "id": "walls",
-        "source": "indoor-data",
+        "type": "fill",
+        "id": "floor-outline",
+        "source": "indoor-source",
+        "source-layer": "indoor_floor",
+        "minzoom": 16.0,
+        "slot": "middle",
+        "filter": [
+            "all",
+            ["in", ["get", "shape_type"], ["literal", ["floor"]]],
+        ],
+        "paint": {
+            // Note: We should keep opacity above zero to enable queries of the footprint
+            "fill-opacity": 0.01,
+            "fill-color": "#803080"
+        }
+    },
+    {
+        "type": "fill",
+        "id": "rooms-accessible",
+        "source": "indoor-source",
+        "source-layer": "indoor_floorplan",
         "minzoom": 16.0,
         "filter": [
             "all",
-            ["in", ["get", "floor_id"], ["config", "mbx-indoor-loaded-levels"]],
-            ["!=", ["geometry-type"], "Point"],
+            isSelectedFloor(),
+            ["==", ["get", "shape_type"], "room"],
+            ["!=", ["get", "type"], "inaccessible"]
+        ],
+        "paint": {
+            "fill-opacity": 1,
+            "fill-color": [
+                "case",
+                isSelectedFloor(),
+                "#367dc9",
+                ["rgba", 0, 0, 0, 0]
+            ],
+        }
+    },
+    {
+        "type": "fill",
+        "id": "rooms-misc",
+        "source": "indoor-source",
+        "source-layer": "indoor_floorplan",
+        "minzoom": 16.0,
+        "filter": [
+            "all",
+            isSelectedFloor(),
+            ["==", ["get", "shape_type"], "room"],
+            ["in", ["get", "type"], ["literal", ["fast_casual", "casual_dining", "experiences", "cards_gifts_and_books", "health_and_beauty", "uncategorized"]]]
+        ],
+        "paint": {
+            "fill-opacity": 1,
+            "fill-color": [
+                "case",
+                isSelectedFloor(),
+                "#267510",
+                ["rgba", 0, 0, 0, 0]
+            ],
+        }
+    },
+    {
+        "type": "fill",
+        "id": "rooms-inaccessible",
+        "source": "indoor-source",
+        "source-layer": "indoor_floorplan",
+        "minzoom": 16.0,
+        "filter": [
+            "all",
+            isSelectedFloor(),
+            ["==", ["get", "shape_type"], "room"],
+            ["==", ["get", "type"], "inaccessible"]
+        ],
+        "paint": {
+            "fill-opacity": 1,
+            "fill-color": [
+                "case",
+                isSelectedFloor(),
+                "#bf303e",
+                ["rgba", 0, 0, 0, 0]
+            ],
+        }
+    },
+    {
+        "type": "fill",
+        "id": "occupants",
+        "source": "indoor-source",
+        "source-layer": "indoor_floorplan",
+        "minzoom": 16.0,
+        "filter": [
+            "all",
+            isSelectedFloor(),
+            ["==", ["get", "shape_type"], "occupant"],
+        ],
+        "paint": {
+            "fill-opacity": 1,
+            "fill-color": [
+                "case",
+                isSelectedFloor(),
+                "#3bd9c6",
+                ["rgba", 0, 0, 0, 0]
+            ],
+        }
+    },
+    {
+        "id": "gates",
+        "type": "symbol",
+        "source": "indoor-source",
+        "source-layer": "indoor_label",
+        "minzoom": 16,
+        "filter": [
+            "all",
+            isSelectedFloor(),
+            ["in", ["get", "shape_type"], ["literal", ["gate", "Gate"]]]
+        ],
+        "layout": {
+            "text-size": 16,
+            "icon-text-fit": "width",
+            "icon-image": "gate-label",
+            "icon-text-fit-padding": [0, 5, 0, 5],
+            "text-font": [ "Arial Unicode MS Bold"],
+            "text-color": "#000000",
+            "text-offset": [0, 0],
+            "icon-size": 0.9,
+            "text-field": [
+                "case",
+                ["has", "name"],
+                [
+                    "let",
+                    "gateName",
+                    ["get", "name"],
+                    [
+                        "case",
+                        [
+                            "==",
+                            ["slice", ["var", "gateName"], 0, 5],
+                            "Gate "
+                        ],
+                        ["slice", ["var", "gateName"], 5],
+                        ["var", "gateName"]
+                    ]
+                ],
+                ""
+            ],
+            "text-letter-spacing": 0.04,
+            "icon-padding": 12
+        },
+        "paint": {
+            "text-halo-color": "#ffffff",
+            "text-color": "#000000",
+            "text-translate": [0, 1]
+        }
+    },
+    {
+        "type": "line",
+        "id": "walls",
+        "source": "indoor-source",
+        "source-layer": "indoor_floorplan",
+        "minzoom": 16.0,
+        "filter": [
+            "all",
+            isSelectedFloor(),
             [
                 "any",
                 ["==", ["get", "shape_type"], "room"],
@@ -118,66 +230,74 @@ const indoorLayers = [
             ]            
         ],
         "paint": {
-            "fill-extrusion-line-width": ["interpolate", ["linear"], ["zoom"], 17, 0.3, 19, 0.1],
-            "fill-extrusion-color": [
+            "line-width": ["interpolate", ["linear"], ["zoom"], 17, 0.5, 19, 0.3],
+            "line-color": [
                 "case",
-                getLevelSelected(),
+                isSelectedFloor(),
                 'hsl(40, 43%, 93%)',
                 ["rgba", 0, 0, 0, 0]
             ],
-            "fill-extrusion-height": getLevelHeight(),
-            "fill-extrusion-base": getLevelBase(),
-        }
-    },
-    {
-        "type": "fill-extrusion",
-        "id": "rooms",
-        "source": "indoor-data",
-        "minzoom": 16.0,
-        "filter": [
-            "all",
-            ["in", ["get", "floor_id"], ["config", "mbx-indoor-loaded-levels"]],
-            ["==", ["geometry-type"], "Polygon"],
-            ["==", ["get", "shape_type"], "room"]
-        ],
-        "paint": {
-            "fill-extrusion-opacity": 1,
-            "fill-extrusion-cast-shadows": false,
-            "fill-extrusion-color": [
-                "case",
-                getLevelSelected(),
-                "#d8caca",
-                ["rgba", 0, 0, 0, 0]
-            ],
-            "fill-extrusion-height": getLevelHeight(),
-            "fill-extrusion-base": getLevelBase()
-        }
-    },
-    {
-        "type": "symbol",
-        "id": "indoor-symbols",
-        "source": "indoor-data",
-        "filter": [
-            "all",
-            ["in", ["get", "floor_id"], ["config", "mbx-indoor-loaded-levels"]],
-            ["==", ["get", "shape_type"], "room"]
-        ],
-        "layout": {
-            "text-field": ["get", "name"],
-            "text-size": 14,
-            "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"]
-        },
-        "paint": {
-            "text-color": "black",
-            "text-opacity": [
-                "case",
-                getLevelSelected(),
-                1.0,
-                0.0
-            ],
-            "symbol-z-offset": getLevelHeight(),
-            "text-halo-color": "white",
-            "text-halo-width": 2
         }
     },
 ];
+
+
+const style = {
+    version: 8,
+    imports: [{
+        id: 'standard',
+        url: 'mapbox://styles/mapbox/standard'
+    }, {
+        id: 'indoor',
+        url: '',
+        data: {
+            version: 8,
+            featuresets: {
+                "building-outline": {
+                    "selectors": [
+                        {
+                            "layer": "building-outline",
+                            "properties": {
+                                "id": ["get", "id"],
+                                "building_id": ["get", "building_id"],
+                                "shape_type": ["get", "shape_type"],
+                                "name": ["get", "name"],
+                                "numeric_name": ["get", "numeric_name"],
+                                "floor_level": ["get", "floor_level"]
+                            }
+                        }
+                    ]
+                },
+                "floor-outline": {
+                    "selectors": [
+                        {
+                            "layer": "floor-outline",
+                            "properties": {
+                                "id": ["get", "id"],
+                                "building_id": ["get", "building_id"],
+                                "shape_type": ["get", "shape_type"],
+                                "name": ["get", "name"],
+                                "numeric_name": ["get", "numeric_name"],
+                                "floor_level": ["get", "floor_level"]
+                            }
+                        }
+                    ]
+                },
+            },
+            sources: {
+                "indoor-source": {
+                    "type": "vector",
+                    "url": "mapbox://mapbox.indoor-v2"
+                }
+            },
+            indoor: {
+                floorplanFeaturesetId: "floorplan-detection",
+                buildingFeaturesetId: "building-entry"
+            },
+            layers: indoorLayers,
+            glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
+        }
+    }],
+    sources: {},
+    layers: []
+};

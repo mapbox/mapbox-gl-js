@@ -27,6 +27,7 @@ import LngLat, {LngLatBounds} from '../geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import AttributionControl from './control/attribution_control';
 import LogoControl from './control/logo_control';
+import IndoorControl from './control/indoor_control';
 import {supported} from '@mapbox/mapbox-gl-supported';
 import {RGBAImage} from '../util/image';
 import {Event, ErrorEvent} from '../util/evented';
@@ -490,6 +491,7 @@ export class Map extends Camera {
     _markers: Array<Marker>;
     _popups: Array<Popup>;
     _logoControl: IControl;
+    _indoorControl: IControl;
     _mapId: number;
     _localIdeographFontFamily: string;
     _localFontFamily?: string;
@@ -4069,6 +4071,33 @@ export class Map extends Camera {
         }
 
         return this.style.getFeatureState(feature);
+    }
+
+    /**
+     * *This API is experimental and subject to change in future versions*.
+     *
+     * @experimental
+     * @param {string} floorId The id of the floor to select.
+     * @example
+     * map._selectIndoorFloor('floor-1');
+     */
+    _selectIndoorFloor(floorId: string) {
+        this.indoor.selectFloor(floorId);
+    }
+
+    _addIndoorControl() {
+        if (!this._indoorControl) {
+            this._indoorControl = new IndoorControl();
+        }
+
+        this.addControl(this._indoorControl, 'right');
+    }
+
+    _removeIndoorControl() {
+        if (!this._indoorControl) {
+            return;
+        }
+        this.removeControl(this._indoorControl);
     }
 
     _updateContainerDimensions() {

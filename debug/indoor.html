@@ -17,307 +17,47 @@
         #map {
             height: 100%;
         }
-
-        #mapboxgl-ctrl-indoor {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            font: 12px/20px "Helvetica Neue", Arial, Helvetica, sans-serif;
-        }
-
-        .mapboxgl-ctrl-indoor-building-selector, .mapboxgl-ctrl-indoor-level-selector {
-            align-items: center;
-            justify-content: space-between;
-            height: 54px;
-            padding: 12px 20px;
-            border-radius: 20px;
-            border: 1px solid rgba(255 255 255 / 5%);
-            background: rgba(141 141 141 / 40%);
-            backdrop-filter: blur(10px);
-            cursor: pointer;
-            margin-bottom: 16px;
-        }
-
-        .mapboxgl-ctrl-indoor-level-selector-form {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .mapboxgl-ctrl-indoor-level-selector-row {
-            position: relative;
-            padding: 10px 20px;
-            border: 2px solid transparent;
-            border-radius: 15px;
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: rgba(141 141 141 / 40%);
-            backdrop-filter: blur(10px);
-        }
-
-        .mapboxgl-ctrl-indoor-level-selector-row input[type="radio"] {
-            display: none;
-        }
-
-        .mapboxgl-ctrl-indoor-level-selector-row .mapboxgl-ctrl-indoor-level-selector-label {
-            color: #333;
-        }
-
-        .mapboxgl-ctrl-indoor-level-selector-row input[type="radio"]:checked+.mapboxgl-ctrl-indoor-level-selector-label {
-            font-weight: bold;
-            color: #fff;
-        }
-
-        .mapboxgl-ctrl-indoor-level-selector-row input[type="radio"]:checked+.mapboxgl-ctrl-indoor-level-selector-label::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-color: #4264FB;
-            border-radius: 15px;
-            z-index: -1;
-            border: 2px solid #4264FB;
-        }
-
     </style>
 </head>
 
 <body>
     <div id='map'></div>
-
-    <div id="mapboxgl-ctrl-indoor"></div>
-
     <script src='../dist/mapbox-gl-dev.js'></script>
     <script src='../debug/access_token_generated.js'></script>
     <script src='/debug/indoor/indoor_data.js'></script>
     <script src='/debug/indoor/indoor_style.js'></script>
     <script>
-        class IndoorControl {
-            _map = undefined;
-            _container = undefined;
-            _buildingSelector = undefined;
-            _levelSelector = undefined;
-            _flattenedLevelSelector = false;
-        
-            constructor(map) {
-                [
-                    '_onFloorplanSelected',
-                    '_onFloorplanGone',
-                    '_onBuildingSelected',
-                    '_onLevelSelected',
-                    '_checkFloorplanVisible',
-                    '_buildingSelectedFromGUI',
-                    '_levelSelectedFromGUI'
-                ].forEach((fn) => {
-                    if (!this[fn]) { return; }
-                    this[fn] = this[fn].bind(this);
-                });
 
-                this._map = map;
-                this._container = document.getElementById("mapboxgl-ctrl-indoor");
+        // Create a container div for the partial screen rectangle
+        var smallSquareContainer = document.createElement('div');
+        smallSquareContainer.style.position = 'absolute';
+        smallSquareContainer.style.left = '50%';
+        smallSquareContainer.style.top = '50%';
+        smallSquareContainer.style.transform = 'translate(-50%, -50%)';
+        const minDimension = Math.min(window.innerWidth, window.innerHeight);
+        smallSquareContainer.style.width = `${minDimension * 0.125}px`;  // 1/10 of the minimum screen dimension
+        smallSquareContainer.style.height = `${minDimension * 0.125}px`; // 1/10 of the minimum screen dimension
+        smallSquareContainer.style.border = '2px solid rgba(255, 165, 0, 0.5)'; // Orange border
+        smallSquareContainer.style.backgroundColor = 'rgba(255, 165, 0, 0.2)'; // Very light orange background
+        smallSquareContainer.style.pointerEvents = 'none';
+        smallSquareContainer.style.zIndex = '999';
+        document.body.appendChild(smallSquareContainer);
 
-                this._map.indoor.on('floorplanselected', this._onFloorplanSelected);
-                this._map.indoor.on('floorplangone', this._onFloorplanGone);
-                this._map.indoor.on('buildingselected', this._onBuildingSelected);
-                this._map.indoor.on('levelselected', this._onLevelSelected);
-            }
+        // Create a container div for the partial screen rectangle
+        var partialScreenContainer = document.createElement('div');
+        partialScreenContainer.style.position = 'absolute';
+        partialScreenContainer.style.left = '50%';
+        partialScreenContainer.style.top = '50%';
+        partialScreenContainer.style.transform = 'translate(-50%, -50%)';
+        partialScreenContainer.style.width = '66.67%';  // 2/3 of the screen width
+        partialScreenContainer.style.height = '66.67%'; // 2/3 of the screen height
+        partialScreenContainer.style.border = '2px solid rgba(255, 165, 0, 0.5)'; // Orange border
+        partialScreenContainer.style.backgroundColor = 'rgba(255, 165, 0, 0.2)'; // Very light orange background
+        partialScreenContainer.style.pointerEvents = 'none';
+        partialScreenContainer.style.zIndex = '999';
+        document.body.appendChild(partialScreenContainer);
 
-            _createElement(tagName, className, container) {
-                const el = document.createElement(tagName);
-                if (className !== undefined && className !== null) el.className = className;
-                if (container) container.appendChild(el);
-                return el;
-            }
-
-            _onFloorplanSelected(eventData) {
-                console.log('eventData', eventData,  this._container);
-                // Create GUI elements
-                // TODO: hide them when indoor is deselected
-                if (!this._buildingSelector && !this._flattenedLevelSelector) {
-                    this._buildingSelector = this._createElement('select', 'mapboxgl-ctrl-indoor-building-selector', this._container);
-                    this._buildingSelector.addEventListener("change", this._buildingSelectedFromGUI);
-                    
-                }
-                if (!this._levelSelector) {
-                    this._levelSelector = this._createElement('form', 'mapboxgl-ctrl-indoor-level-selector-form', this._container);    
-                }
-
-                if (this._buildingSelector) {
-                    Array.from(this._buildingSelector.children).forEach(c => c.remove());
-                }
-                if (this._levelSelector) {
-                    Array.from(this._levelSelector.children).forEach(c => c.remove());
-                }
-
-                if (this._flattenedLevelSelector) {
-                    const levels = eventData.levels;
-                    for (let i = 0; i < eventData.buildings.length; i++) {
-                        const building = eventData.buildings[i];
-                        if (!building || !building.name) continue;
-                        
-                        const buildingOption = this._createElement('optgroup', 'mapboxgl-ctrl-indoor-level-selector-building', this._levelSelector);
-                        buildingOption.setAttribute('label', building.name);
-
-                        // Get matching levels and sort them in respect to floor order with assumption that each level height is 3.
-                        const buildingLevels = building.levels.map(levelId => levels.find(l => l.id === levelId)).sort((a, b) => a.sortOrder - b.sortOrder).reverse();
-                        for (const level of buildingLevels) {
-                            const levelOption = this._createElement('option', 'mapboxgl-ctrl-indoor-level-selector-level', buildingOption);
-                            levelOption.innerText = level.name;
-                            if (level.default) {
-                                levelOption.setAttribute('selected', "true");
-                            }
-                            levelOption.setAttribute('value', `${level.id}`);
-                        }
-                    }
-                } else {
-                    for (let i = 0; i < eventData.buildings.length; i++) {
-                        const building = eventData.buildings[i];
-                        if (!building || !building.name) continue;
-                        
-                        const buildingOption = this._createElement('option', 'mapboxgl-ctrl-indoor-building-selector-building', this._buildingSelector);
-                        buildingOption.innerText = building.name;
-                        buildingOption.setAttribute('value', `${building.id}`);
-                    }
-                }
-
-                this._selectLevelOnLevelSelector(eventData.selectedLevelId);
-            }
-
-            _selectLevelOnLevelSelector(id) {
-                if (!this._levelSelector) {
-                    return;
-                }
-                Array.from(this._levelSelector.children).forEach(row => {
-                    Array.from(row.children).forEach(e => {
-                        if (e.value === id) {
-                            e.checked = true;
-                        }
-                    });
-                });
-            }
-
-            _onFloorplanGone() {
-                if (this._levelSelector) {
-                    this._levelSelector.remove();
-                    this._levelSelector = undefined;
-                }
-                if (this._buildingSelector) {
-                    this._buildingSelector.remove();
-                    this._buildingSelector = undefined;
-                }
-            }
-
-            _onBuildingSelected(eventData) {
-                if (this._flattenedLevelSelector) {
-                    return;
-                }
-                Array.from(this._levelSelector.children).forEach(c => c.remove());
-
-                // Calculate floor levels and sort levels
-                const levelsWithFloor = eventData.levels.map(level => ({
-                    ...level,
-                })).sort((a, b) => a.levelOrder - b.levelOrder);
-
-                let addOption = (id, name, checked) => {
-                    const levelSelectorRow = this._createElement('label', 'mapboxgl-ctrl-indoor-level-selector-row', this._levelSelector);
-                    const levelOption = this._createElement('input', 'mapboxgl-ctrl-indoor-level-selector-radio', levelSelectorRow);
-                    levelOption.setAttribute('value', `${id}`);
-                    levelOption.setAttribute('type', 'radio');
-                    levelOption.setAttribute('name', 'level');
-                    if (checked) {
-                        levelOption.setAttribute('checked', 'checked');
-                    }
-                    levelOption.addEventListener("click", this._levelSelectedFromGUI);    
-                    const levelLabel = this._createElement('span', 'mapboxgl-ctrl-indoor-level-selector-label', levelSelectorRow);
-                    levelLabel.setAttribute('for', `${id}`);
-                    levelLabel.innerText =  name;
-                };
-
-                const groundFloor = levelsWithFloor.find(level => level.levelOrder === 0);                
-
-                for (let i = 0; i < levelsWithFloor.length; i++) {
-                    const level = levelsWithFloor[i];
-                    // Select the ground floor by default, or the first level if no ground floor exists
-                    const isDefault = (groundFloor && level.id === groundFloor.id) || (!groundFloor && i === 0);
-                    const displayName = `${level.name} (${level.levelOrder})`;
-                    addOption(level.id, displayName, isDefault);
-                    
-                    if (isDefault) {
-                        this._map.indoor.selectLevel(level.id);
-                    }
-                }
-
-                if (this._buildingSelector && eventData.buildingId) {
-                    this._buildingSelector.value = eventData.buildingId;
-                }
-            }
-
-            _onLevelSelected(eventData) {
-                this._selectLevelOnLevelSelector(eventData.levelId);
-            }
-
-            _buildingSelectedFromGUI() {
-                this._map.indoor.selectBuilding(this._buildingSelector.value);
-            }
-
-            _levelSelectedFromGUI(event) {
-                this._map.indoor.selectLevel(event.target.value);
-            }
-        }
-        const style = {
-            version: 8,
-            imports: [{
-                id: 'standard',
-                url: 'mapbox://styles/mapbox/standard'
-            }, {
-                id: 'indoor',
-                url: '',
-                data: {
-                    version: 8,
-                    featuresets: {
-                        "floorplan-detection": {
-                            "selectors": [
-                                {
-                                    "layer": "query-area",
-                                    "properties": {
-                                        "id": ["get", "id"],
-                                        "indoor-data": ["get", "indoor-data"]
-                                    }
-                                }
-                            ]
-                        },
-                        "building-entry": {
-                            "selectors": [
-                                {
-                                    "layer": "indoor-building-entry-symbol",
-                                    "properties": {
-                                        "id": ["get", "id"],
-                                        "floorplan": ["get", "floorplan"]
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    sources: {
-                        "indoor-data": {
-                            "type": "geojson",
-                            "data": indoorData
-                        }
-                    },
-                    indoor: {
-                        floorplanFeaturesetId: "floorplan-detection",
-                        buildingFeaturesetId: "building-entry"
-                    },
-                    layers: indoorLayers,
-                    glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
-                }
-            }],
-            sources: {},
-            layers: []
-        };
-
+        // Create the map
         var map = window.map = new mapboxgl.Map({
             container: 'map',
             devtools: true,
@@ -329,11 +69,8 @@
             style: style
         });
 
-        let indoorControl = new IndoorControl(map);
-
-        function levelSelectedFromGUI(target) {
-            map.indoor.selectLevel(target.value);
-        }
+        map.addControl(new mapboxgl.NavigationControl());
+        map.addControl(new mapboxgl.AttributionControl());
     </script>
 </body>
 

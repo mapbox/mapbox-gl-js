@@ -824,3 +824,31 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 .mapboxgl-canvas-container.mapboxgl-touch-pan-blocker-override.mapboxgl-scrollable-page .mapboxgl-canvas {
     touch-action: pan-x pan-y;
 }
+
+.mapboxgl-ctrl button.mapboxgl-ctrl-level-button {
+    width: auto;
+    height: auto;
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 2px;
+    cursor: pointer;
+}
+
+.mapboxgl-ctrl button.mapboxgl-ctrl-level-button:hover {
+    background-color: #f0f0f0;
+}
+
+.mapboxgl-ctrl button.mapboxgl-ctrl-level-button-selected {
+    background-color: #4264FB;
+    color: #fff;
+    border-color: #4264FB;
+}
+
+.mapboxgl-ctrl button.mapboxgl-ctrl-level-button-selected:hover {
+    background-color: #3151d9;
+}
