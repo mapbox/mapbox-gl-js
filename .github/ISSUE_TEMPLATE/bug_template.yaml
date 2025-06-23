@@ -1,5 +1,5 @@
 name: Bug report
-about: Report a bug
+description: Report a bug
 body:
   - type: markdown
     attributes:
