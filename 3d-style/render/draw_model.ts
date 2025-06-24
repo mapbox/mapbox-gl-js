@@ -706,7 +706,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
                 );
                 if (shadowRenderer) {
                     if (!renderData.shadowUniformsInitialized) {
-                        shadowRenderer.setupShadows(coord.toUnwrapped(), program, 'model-tile', coord.overscaledZ);
+                        shadowRenderer.setupShadows(coord.toUnwrapped(), program, 'model-tile');
                         renderData.shadowUniformsInitialized = true;
                     } else {
                         program.setShadowUniformValues(context, shadowRenderer.getShadowUniformValues());

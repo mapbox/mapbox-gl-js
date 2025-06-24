@@ -723,7 +723,7 @@ function drawLayerSymbols(
         }
 
         if (state.renderWithShadows) {
-            painter.shadowRenderer.setupShadows(state.tile.tileID.toUnwrapped(), state.program, 'vector-tile', state.tile.tileID.overscaledZ);
+            painter.shadowRenderer.setupShadows(state.tile.tileID.toUnwrapped(), state.program, 'vector-tile');
         }
 
         painter.uploadCommonLightUniforms(painter.context, state.program as unknown as Program<LightsUniformsType>);

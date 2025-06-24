@@ -322,7 +322,7 @@ function drawElevatedStructures(params: DrawFillParams) {
                 layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
             if (renderWithShadows) {
-                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
+                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile');
             }
 
             const uniformValues = elevatedStructuresUniformValues(tileMatrix, groundShadowFactor);
@@ -441,7 +441,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
                 layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
             if (renderWithShadows) {
-                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
+                shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile');
             }
 
             const emissiveStrength = layer.paint.get('fill-emissive-strength');

@@ -400,7 +400,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         }
 
         if (!isShadowPass && shadowRenderer) {
-            shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile', tile.tileID.overscaledZ);
+            shadowRenderer.setupShadows(tile.tileID.toUnwrapped(), program, 'vector-tile');
         }
 
         if (image) {

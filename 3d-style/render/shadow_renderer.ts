@@ -74,6 +74,11 @@ const shadowParameters = {
     shadowMapResolution: 2048
 };
 
+function lerpClamp(x: number, x1: number, x2: number, y1: number, y2: number) {
+    const t = clamp((x - x1) / (x2 - x1), 0, 1);
+    return (1 - t) * y1 + t * y2;
+}
+
 class ShadowReceiver {
     constructor(aabb: Aabb, lastCascade?: number | null) {
         this.aabb = aabb;
@@ -453,7 +458,7 @@ export class ShadowRenderer {
         return Float32Array.from(matrix);
     }
 
-    setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<ShadowsUniformsType>, normalOffsetMode?: ShadowNormalOffsetMode | null, tileOverscaledZ: number = 0) {
+    setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<ShadowsUniformsType>, normalOffsetMode?: ShadowNormalOffsetMode | null) {
         if (!this.enabled) {
             return;
         }
@@ -484,11 +489,14 @@ export class ShadowRenderer {
             // and this is why it is needed to increase the offset. 3.0 in case of model-tile could be alternatively replaced by
             // 2.0 if normal would not get scaled by dotScale in shadow_normal_offset().
             const tileTypeMultiplier = (normalOffsetMode === 'vector-tile') ? 1.0 : 3.0;
-            const scale = tileTypeMultiplier / Math.pow(2, tileOverscaledZ - unwrappedTileID.canonical.z - (1 - transform.zoom + Math.floor(transform.zoom)));
+            // Scale is applied differently depending on zoom level to avoid shadow acne
+            // These values were determined empirically over the whole zoom range to be
+            // consistent with the old formula (see file history).
+            const scale = tileTypeMultiplier * lerpClamp(transform.zoom, 22, 0, 0.125, 4);
             const offset0 = shadowTexelInTileCoords0 * scale;
             const offset1 = shadowTexelInTileCoords1 * scale;
             uniforms["u_shadow_normal_offset"] = [meterInTiles, offset0, offset1];
-            uniforms["u_shadow_bias"] = [0.00006, 0.0012, 0.012]; // Reduce constant offset
+            uniforms["u_shadow_bias"] = [0.00010, 0.0012, 0.012]; // Reduce constant offset
         } else {
             uniforms["u_shadow_bias"] = [0.00036, 0.0012, 0.012];
         }
