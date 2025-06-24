@@ -64,7 +64,7 @@
     "@types/offscreencanvas": "^2019.7.3",
     "@typescript-eslint/eslint-plugin": "^8.34.1",
     "@typescript-eslint/parser": "^8.34.1",
-    "@vitest/browser": "^3.2.3",
+    "@vitest/browser": "^3.2.4",
     "@vitest/ui": "^3.2.2",
     "address": "^2.0.3",
     "browserify": "^17.0.1",
