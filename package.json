@@ -172,8 +172,5 @@
     "dist/style-spec/",
     "dist/package.json",
     "LICENSE.txt"
-  ],
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  ]
 }
