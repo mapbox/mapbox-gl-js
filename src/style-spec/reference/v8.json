@@ -4433,6 +4433,17 @@
           }
         }
       },
+      "split": {
+        "doc": "Returns an array of substrings from a string, split by a delimiter parameter.",
+        "group": "Lookup",
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.14.0",
+            "android": "11.14.0",
+            "ios": "11.14.0"
+          }
+        }
+      },
       "case": {
         "doc": "Selects the first output whose corresponding test condition evaluates to true, or the fallback value otherwise.",
         "group": "Decision",

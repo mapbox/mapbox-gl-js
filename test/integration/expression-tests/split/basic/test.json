@@ -1,0 +1,42 @@
+{
+  "expression": ["split", ["get", "str"], ["get", "deliminator"]],
+  "inputs": [
+    [{}, { "properties": { "str": "word,second,,,new,", "deliminator": "," } }],
+    [{}, { "properties": { "str": "3;4;5", "deliminator": ";" } }],
+    [{}, { "properties": { "str": "-2;-1;0;3;4;5", "deliminator": ";" } }],
+    [{}, { "properties": { "str": null, "deliminator": ";" } }],
+    [{}, { "properties": { "str": 0, "deliminator": ";" } }],
+    [{}, { "properties": { "str": "0", "deliminator": ";" } }],
+    [{}, { "properties": { "str": "", "deliminator": ";" } }],
+    [{}, {"properties": {"str": "横test浜test市,鶴test見区", "deliminator": "test"}}],
+    [{}, { "properties": { "str": "low", "deliminator": 0 } }],
+    [{}, { "properties": { "str": "low", "deliminator": null } }]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "object"
+    },
+    "outputs": [
+      ["word","second","","","new",""],
+      ["3", "4", "5"],
+      ["-2","-1","0","3","4","5"],
+      [],
+      {
+        "error": "Expected first argument to be of type boolean, string, number or null, but found number instead."
+      },
+      ["0"],
+      [],
+      ["横","浜","市,鶴","見区"],
+      {
+        "error": "Expected second argument to be of type string, but found number instead."
+      },
+      {
+        "error": "Expected second argument to be of type string, but found null instead."
+      }
+    ],
+    "serialized": ["split", ["get", "str"], ["get", "deliminator"]]
+  }
+}
