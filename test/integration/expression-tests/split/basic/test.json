@@ -8,7 +8,7 @@
     [{}, { "properties": { "str": 0, "deliminator": ";" } }],
     [{}, { "properties": { "str": "0", "deliminator": ";" } }],
     [{}, { "properties": { "str": "", "deliminator": ";" } }],
-    [{}, {"properties": {"str": "横test浜test市,鶴test見区", "deliminator": "test"}}],
+    [{}, { "properties": { "str": "横test浜test市,鶴test見区", "deliminator": "test" } }],
     [{}, { "properties": { "str": "low", "deliminator": 0 } }],
     [{}, { "properties": { "str": "low", "deliminator": null } }]
   ],
@@ -17,26 +17,28 @@
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "object"
+      "type": "array<string>"
     },
     "outputs": [
       ["word","second","","","new",""],
       ["3", "4", "5"],
       ["-2","-1","0","3","4","5"],
-      [],
       {
-        "error": "Expected first argument to be of type boolean, string, number or null, but found number instead."
+        "error": "The expression [\"get\",\"str\"] evaluated to null but was expected to be of type string."
+      },
+      {
+        "error": "The expression [\"get\",\"str\"] evaluated to number but was expected to be of type string."
       },
       ["0"],
-      [],
+      [""],
       ["横","浜","市,鶴","見区"],
       {
-        "error": "Expected second argument to be of type string, but found number instead."
+        "error": "The expression [\"get\",\"deliminator\"] evaluated to number but was expected to be of type string."
       },
       {
-        "error": "Expected second argument to be of type string, but found null instead."
+        "error": "The expression [\"get\",\"deliminator\"] evaluated to null but was expected to be of type string."
       }
     ],
-    "serialized": ["split", ["get", "str"], ["get", "deliminator"]]
+    "serialized": ["split", ["string", ["get", "str"]], ["string", ["get", "deliminator"]]]
   }
 }

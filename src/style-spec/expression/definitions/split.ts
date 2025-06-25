@@ -1,14 +1,7 @@
 import {
     StringType,
-    ValueType,
-    NullType,
-    toString,
-    isValidType,
-    isValidNativeType,
-    ObjectType,
+    array,
 } from '../types';
-import RuntimeError from '../runtime_error';
-import {typeOf} from '../values';
 
 import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -21,44 +14,29 @@ class Split implements Expression {
     delimiter: Expression;
 
     constructor(str: Expression, delimiter: Expression) {
-        this.type = ObjectType;
+        this.type = array(StringType);
         this.str = str;
         this.delimiter = delimiter;
     }
 
-    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Split | null | undefined {
+    static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Split | void {
         if (args.length !== 3) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Split'.
-            return context.error(`Expected 3 arguments, but found ${args.length - 1} instead.`);
+            return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`);
         }
 
-        const str = context.parse(args[1], 1, ValueType);
-        const delimiter = context.parse(args[2], 2, ValueType);
+        const str = context.parse(args[1], 1, StringType);
+        const delimiter = context.parse(args[2], 2, StringType);
 
-        if (!str || !delimiter) return null;
-        if (!isValidType(str.type, [StringType, NullType, ValueType])) {
-            // @ts-expect-error - TS2322 - Type 'void' is not assignable to type 'Split'.
-            return context.error(`Expected first argument to be of type string or null, but found ${toString(str.type)} instead`);
-        }
+        if (!str || !delimiter) return;
+
         return new Split(str, delimiter);
     }
 
     evaluate(ctx: EvaluationContext): string[] {
-        const str = (this.str.evaluate(ctx));
-        const delimiter = (this.delimiter.evaluate(ctx));
-        if (!isValidNativeType(str, ['string', 'null'])) {
-            throw new RuntimeError(`Expected first argument to be of type boolean, string, number or null, but found ${toString(typeOf(str))} instead.`);
-        }
+        const str = (this.str.evaluate(ctx) as string);
+        const delimiter = (this.delimiter.evaluate(ctx) as string);
 
-        if (!str) {
-            return [];
-        }
-
-        if (!isValidNativeType(delimiter, ['string'])) {
-            throw new RuntimeError(`Expected second argument to be of type string, but found ${toString(typeOf(delimiter))} instead.`);
-        }
-
-        return (str as string).split(delimiter);
+        return str.split(delimiter);
     }
 
     eachChild(fn: (_: Expression) => void) {
