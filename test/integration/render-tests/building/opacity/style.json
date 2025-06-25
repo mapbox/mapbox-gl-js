@@ -204,7 +204,8 @@
             90
           ]
         ],
-        "building-ambient-occlusion-wall-intensity": 1,
+        "building-ambient-occlusion-intensity": 1,
+        "building-ambient-occlusion-window-intensity": 1,
         "building-opacity": 0.5
       }
     }

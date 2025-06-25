@@ -101,7 +101,8 @@
           ["hsl", 25, 43, 80],
           ["hsl", 41, 90, 90]
         ],
-        "building-ambient-occlusion-wall-intensity": 1
+        "building-ambient-occlusion-intensity": 1,
+        "building-ambient-occlusion-window-intensity": 1
       }
     }
   ]

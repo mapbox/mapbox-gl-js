@@ -7592,7 +7592,7 @@
       },
       "property-type": "data-constant"
     },
-    "building-ambient-occlusion-wall-intensity": {
+    "building-ambient-occlusion-intensity": {
       "property-type": "data-constant",
       "type": "number",
       "default": 0,
@@ -7601,13 +7601,12 @@
       "experimental": true,
       "private": true,
       "expression": {
-        "interpolated": true,
+        "interpolated": false,
         "parameters": [
-          "zoom"
         ]
       },
       "transition": true,
-      "doc": "Controls the intensity of shading concave angles between walls and building elements, such as facades and rooftop.",
+      "doc": "Controls the intensity of ambinet occlusion when shading concave angles between walls and roof crevices.",
       "sdk-support": {
         "basic functionality": {
         }
@@ -7770,6 +7769,23 @@
         "parameters": [
           "measure-light",
           "zoom"
+        ]
+      }
+    },
+    "building-ambient-occlusion-window-intensity": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "Controls the intensity of ambient occlusion applied to the windows of the buildings. A value of 0.0 means no ambient occlusion is applied, while a value of 1.0 means full ambient occlusion is applied.",
+      "experimental": true,
+      "property-type": "data-constant",
+      "sdk-support": {
+        "basic functionality": {}
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
         ]
       }
     }

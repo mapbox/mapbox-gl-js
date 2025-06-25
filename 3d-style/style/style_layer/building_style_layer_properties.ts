@@ -38,7 +38,7 @@ export const getLayoutProperties = (): Properties<LayoutProps> => layout || (lay
 
 export type PaintProps = {
     "building-opacity": DataConstantProperty<number>;
-    "building-ambient-occlusion-wall-intensity": DataConstantProperty<number>;
+    "building-ambient-occlusion-intensity": DataConstantProperty<number>;
     "building-ambient-occlusion-ground-intensity": DataConstantProperty<number>;
     "building-ambient-occlusion-ground-radius": DataConstantProperty<number>;
     "building-ambient-occlusion-ground-attenuation": DataConstantProperty<number>;
@@ -47,13 +47,14 @@ export type PaintProps = {
     "building-color": DataDrivenProperty<Color>;
     "building-emissive-strength": DataDrivenProperty<number>;
     "building-facade-emissive-chance": DataConstantProperty<number>;
+    "building-ambient-occlusion-window-intensity": DataConstantProperty<number>;
     "building-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
 export const getPaintProperties = (): Properties<PaintProps> => paint || (paint = new Properties({
     "building-opacity": new DataConstantProperty(styleSpec["paint_building"]["building-opacity"]),
-    "building-ambient-occlusion-wall-intensity": new DataConstantProperty(styleSpec["paint_building"]["building-ambient-occlusion-wall-intensity"]),
+    "building-ambient-occlusion-intensity": new DataConstantProperty(styleSpec["paint_building"]["building-ambient-occlusion-intensity"]),
     "building-ambient-occlusion-ground-intensity": new DataConstantProperty(styleSpec["paint_building"]["building-ambient-occlusion-ground-intensity"]),
     "building-ambient-occlusion-ground-radius": new DataConstantProperty(styleSpec["paint_building"]["building-ambient-occlusion-ground-radius"]),
     "building-ambient-occlusion-ground-attenuation": new DataConstantProperty(styleSpec["paint_building"]["building-ambient-occlusion-ground-attenuation"]),
@@ -62,5 +63,6 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "building-color": new DataDrivenProperty(styleSpec["paint_building"]["building-color"]),
     "building-emissive-strength": new DataDrivenProperty(styleSpec["paint_building"]["building-emissive-strength"]),
     "building-facade-emissive-chance": new DataConstantProperty(styleSpec["paint_building"]["building-facade-emissive-chance"]),
+    "building-ambient-occlusion-window-intensity": new DataConstantProperty(styleSpec["paint_building"]["building-ambient-occlusion-window-intensity"]),
     "building-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

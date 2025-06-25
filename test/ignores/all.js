@@ -281,7 +281,7 @@ const skip = [
     "render-tests/building/faux-facade/property-update",
     "render-tests/building/faux-facade/shadows-supported",
     "render-tests/building/faux-facade/skillion-unsupported",
-
+    "render-tests/building/faux-facade/window-ao",
 
     // Flaky model tests
     "render-tests/model-layer/style-model-api-remove",

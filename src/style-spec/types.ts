@@ -1114,8 +1114,8 @@ export type BuildingLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "building-ambient-occlusion-wall-intensity"?: PropertyValueSpecification<number>,
-        "building-ambient-occlusion-wall-intensity-transition"?: TransitionSpecification,
+        "building-ambient-occlusion-intensity"?: ExpressionSpecification,
+        "building-ambient-occlusion-intensity-transition"?: TransitionSpecification,
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
@@ -1152,7 +1152,11 @@ export type BuildingLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "building-facade-emissive-chance"?: PropertyValueSpecification<number>
+        "building-facade-emissive-chance"?: PropertyValueSpecification<number>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-ambient-occlusion-window-intensity"?: ExpressionSpecification
     }
 }
 

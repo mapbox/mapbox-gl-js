@@ -19,6 +19,7 @@ in highp vec3 v_tbn_0;
 in highp vec3 v_tbn_1;
 in highp vec3 v_tbn_2;
 in highp vec4 v_faux_color_emissive;
+uniform float u_faux_facade_ao_intensity;
 #endif
 
 #ifdef RENDER_SHADOWS
@@ -105,10 +106,6 @@ vec3 get_shade_info(in vec3 v,
     }
     out_emissive = 1.0;
 #else
-    float ao = 1.0;
-    const vec3 ao_range = vec3(0.59, 0.45, 0.1); // todo: Make depedent on window size and depth.
-    ao *= smoothstep(-ao_range.x, -ao_range.y, v.y) * (1.0 - smoothstep(ao_range.y, ao_range.x, v.y));
-    ao *= smoothstep(-ao_range.x, -ao_range.y, v.x) * (1.0 - smoothstep(ao_range.y, ao_range.x, v.x));
     if (x_major) {
         out_normal = sign(v.x) * tbn[0];
     } else if (y_major) {
@@ -117,6 +114,27 @@ vec3 get_shade_info(in vec3 v,
         out_color = v_faux_color_emissive.rgb;
         out_emissive = v.z <= 0.0 ? get_emissive(id) : out_emissive;
     }
+
+    float ao = 1.0;
+    if (u_faux_facade_ao_intensity > 0.0) {
+        const float ao_radius = 0.04; // todo: could make this configurable in future.
+        const float ao_radius_z = 0.01;
+        const vec2 ao_range_x = vec2(0.5, 0.5 - ao_radius / v_aspect);
+        const vec2 ao_range_y = vec2(0.5, 0.5 - ao_radius);
+        const vec2 ao_range_z = vec2(0.5, 0.5 - ao_radius_z);
+        if (x_major) {
+            ao *= smoothstep(-ao_range_y.x, -ao_range_y.y, v.y) * (1.0 - smoothstep(ao_range_y.y, ao_range_y.x, v.y));
+            ao *= smoothstep(-ao_range_z.x, -ao_range_z.y, v.z);
+        } else if (y_major) {
+            ao *= smoothstep(-ao_range_x.x, -ao_range_x.y, v.x) * (1.0 - smoothstep(ao_range_x.y, ao_range_x.x, v.x));
+            ao *= smoothstep(-ao_range_z.x, -ao_range_z.y, v.z);
+        } else if (z_major) {
+            ao *= smoothstep(-ao_range_x.x, -ao_range_x.y, v.x) * (1.0 - smoothstep(ao_range_x.y, ao_range_x.x, v.x));
+            ao *= smoothstep(-ao_range_y.x, -ao_range_y.y, v.y) * (1.0 - smoothstep(ao_range_y.y, ao_range_y.x, v.y));
+        }
+        ao = mix(1.0, ao, u_faux_facade_ao_intensity);
+    }
+
     out_color *= ao;
 #endif
     return out_color;
