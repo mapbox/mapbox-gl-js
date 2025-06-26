@@ -25,6 +25,7 @@ import IndexOf from './index_of';
 import Match from './match';
 import Case from './case';
 import Slice from './slice';
+import Split from './split';
 import Step from './step';
 import Interpolate from './interpolate';
 import Coalesce from './coalesce';
@@ -91,7 +92,8 @@ const expressions: ExpressionRegistry = {
     'var': Var,
     'within': Within,
     'distance': Distance,
-    'config': Config
+    'config': Config,
+    'split': Split
 };
 
 function rgba(ctx: EvaluationContext, [r, g, b, a]: Expression[]) {

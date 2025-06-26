@@ -1,0 +1,44 @@
+{
+  "expression": ["split", ["get", "str"], ["get", "deliminator"]],
+  "inputs": [
+    [{}, { "properties": { "str": "word,second,,,new,", "deliminator": "," } }],
+    [{}, { "properties": { "str": "3;4;5", "deliminator": ";" } }],
+    [{}, { "properties": { "str": "-2;-1;0;3;4;5", "deliminator": ";" } }],
+    [{}, { "properties": { "str": null, "deliminator": ";" } }],
+    [{}, { "properties": { "str": 0, "deliminator": ";" } }],
+    [{}, { "properties": { "str": "0", "deliminator": ";" } }],
+    [{}, { "properties": { "str": "", "deliminator": ";" } }],
+    [{}, { "properties": { "str": "横test浜test市,鶴test見区", "deliminator": "test" } }],
+    [{}, { "properties": { "str": "low", "deliminator": 0 } }],
+    [{}, { "properties": { "str": "low", "deliminator": null } }]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "array<string>"
+    },
+    "outputs": [
+      ["word","second","","","new",""],
+      ["3", "4", "5"],
+      ["-2","-1","0","3","4","5"],
+      {
+        "error": "The expression [\"get\",\"str\"] evaluated to null but was expected to be of type string."
+      },
+      {
+        "error": "The expression [\"get\",\"str\"] evaluated to number but was expected to be of type string."
+      },
+      ["0"],
+      [""],
+      ["横","浜","市,鶴","見区"],
+      {
+        "error": "The expression [\"get\",\"deliminator\"] evaluated to number but was expected to be of type string."
+      },
+      {
+        "error": "The expression [\"get\",\"deliminator\"] evaluated to null but was expected to be of type string."
+      }
+    ],
+    "serialized": ["split", ["string", ["get", "str"]], ["string", ["get", "deliminator"]]]
+  }
+}
