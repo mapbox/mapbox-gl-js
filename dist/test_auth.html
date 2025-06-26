@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Authentication</title>
+    <link rel="stylesheet" href="./mapbox-gl.css">
+    <script src="./mapbox-gl.js"></script>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    #map {
+        width: 100vw;
+        height: 100vh;
+    }
+</style>
+<body>
+<div id="map"></div>
+</body>
+<script>
+    mapboxgl.accessToken = ""
+    const map = new mapboxgl.Map({
+        container: 'map',
+        center: [108, 34],
+        zoom: 2,
+        jumpAuthToken: true,
+        style: {
+            version: 8,
+            name: 'dark',
+            layers: [
+                {
+                    id: 'background',
+                    type: 'background',
+                    paint: {
+                        'background-color': 'transparent'
+                    }
+                }
+            ]
+        },
+        projection: "globe"
+    });
+    map.on('load', function () {
+        map.setFog({
+            "range": [0.5, 10],
+            "horizon-blend": 0.02,
+            "color": "rgb(186, 210, 235)",
+            "high-color": "rgb(36, 92, 223)",
+            "star-intensity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                5,
+                0.35,
+                6,
+                0
+            ],
+            "space-color": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                4,
+                "#010b19",
+                7,
+                "#367ab9"
+            ]
+        });
+        //  map.addSource("terrain", {
+        //      "type": "raster-dem",
+        //      "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
+        //      "tileSize": 512,
+        //      "maxzoom": 14,
+        //      // tiles: [
+        //      //     "https://tiles1.geovisearth.com/base/v1/terrain-rgb/{z}/{x}/{y}?format=png&sign=b9444b105fce205efa8e6ba2dcf5c346c746d4fb159abf9780b95ac69fa32b92&clientId=nldvsT1tKcGiSOMhF7wL_&secretId=35MHZujwHzmAHejOczfQeaZLnrw&expireTime=1749887745",
+        //      //     "https://tiles2.geovisearth.com/base/v1/terrain-rgb/{z}/{x}/{y}?format=png&sign=b9444b105fce205efa8e6ba2dcf5c346c746d4fb159abf9780b95ac69fa32b92&clientId=nldvsT1tKcGiSOMhF7wL_&secretId=35MHZujwHzmAHejOczfQeaZLnrw&expireTime=1749887745",
+        //      //     "https://tiles3.geovisearth.com/base/v1/terrain-rgb/{z}/{x}/{y}?format=png&sign=b9444b105fce205efa8e6ba2dcf5c346c746d4fb159abf9780b95ac69fa32b92&clientId=nldvsT1tKcGiSOMhF7wL_&secretId=35MHZujwHzmAHejOczfQeaZLnrw&expireTime=1749887745"
+        //      // ],
+        //      // tileSize: 256,
+        //      // maxzoom: 13,
+        //  });
+        // map.setTerrain({"source": "terrain", "exaggeration": 1});
+
+        map.addSource("base", {
+            type: "raster",
+            tiles: [
+                "https://mt0.google.com/vt/lyrs=s&gl=cn&x={x}&y={y}&z={z}",
+                "https://mt1.google.com/vt/lyrs=s&gl=cn&x={x}&y={y}&z={z}",
+                "https://mt2.google.com/vt/lyrs=s&gl=cn&x={x}&y={y}&z={z}",
+                "https://mt3.google.com/vt/lyrs=s&gl=cn&x={x}&y={y}&z={z}",
+            ]
+        })
+        map.addLayer({
+            id: "base",
+            type: "raster",
+            source: "base"
+        })
+    })
+    console.log(map)
+</script>
+</html>

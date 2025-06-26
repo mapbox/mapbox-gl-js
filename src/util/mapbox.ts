@@ -631,7 +631,9 @@ export class MapSessionAPI extends TelemetryEvent {
         });
     }
 
-    getSessionAPI(mapId: number, skuToken: string, customAccessToken: string | null | undefined, callback: EventCallback) {
+    getSessionAPI(mapId: number, skuToken: string, customAccessToken: string | null | undefined, callback: EventCallback, jumpAuthToken: boolean) {
+        if (jumpAuthToken) return;
+
         this.skuToken = skuToken;
         this.errorCb = callback;
 
@@ -758,6 +760,7 @@ export const getMapSessionAPI: (
     arg2: string,
     arg3: string | null | undefined,
     arg4: EventCallback,
+    arg5: boolean
 ) => void = mapSessionAPI.getSessionAPI.bind(mapSessionAPI);
 
 const authenticatedMaps = new Set();

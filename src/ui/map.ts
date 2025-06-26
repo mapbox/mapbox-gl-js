@@ -155,6 +155,7 @@ export type MapOptions = {
     config?: {
         [key: string]: ConfigSpecification;
     };
+    jumpAuthToken?: boolean;
     hash?: boolean | string;
     interactive?: boolean;
     container: HTMLElement | string;
@@ -228,6 +229,8 @@ const defaultOptions = {
     zoom: 0,
     bearing: 0,
     pitch: 0,
+
+    jumpAuthToken: false,
 
     minZoom: defaultMinZoom,
     maxZoom: defaultMaxZoom,
@@ -437,7 +440,7 @@ export class Map extends Camera {
     style: Style;
     indoor: IndoorManager;
     painter: Painter;
-
+    jumpAuthToken: boolean;
     _container: HTMLElement;
     _missingCSSCanary: HTMLElement;
     _canvasContainer: HTMLElement;
@@ -609,6 +612,7 @@ export class Map extends Camera {
         const transform = new Transform(options.minZoom, options.maxZoom, options.minPitch, options.maxPitch, options.renderWorldCopies, null, null);
         super(transform, options);
 
+        this.jumpAuthToken = options.jumpAuthToken;
         this._repaint = !!options.repaint;
         this._interactive = options.interactive;
         this._minTileCacheSize = options.minTileCacheSize;
@@ -4673,6 +4677,9 @@ export class Map extends Camera {
 
     _authenticate() {
         getMapSessionAPI(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, (err: AJAXError) => {
+
+            if (this.jumpAuthToken) return;
+
             if (err) {
                 // throwing an error here will cause the callback to be called again unnecessarily
                 if (err.message === AUTH_ERR_MSG || err.status === 401) {
@@ -4688,7 +4695,7 @@ export class Map extends Camera {
                     }
                 }
             }
-        });
+        }, this.jumpAuthToken);
 
         postMapLoadEvent(this._getMapId(), this._requestManager._skuToken, this._requestManager._customAccessToken, () => {});
     }
