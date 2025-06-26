@@ -119,7 +119,7 @@ vec3 get_shade_info(in vec3 v,
     if (u_faux_facade_ao_intensity > 0.0) {
         const float ao_radius = 0.04; // todo: could make this configurable in future.
         const float ao_radius_z = 0.01;
-        const vec2 ao_range_x = vec2(0.5, 0.5 - ao_radius / v_aspect);
+        vec2 ao_range_x = vec2(0.5, 0.5 - ao_radius / v_aspect);
         const vec2 ao_range_y = vec2(0.5, 0.5 - ao_radius);
         const vec2 ao_range_z = vec2(0.5, 0.5 - ao_radius_z);
         if (x_major) {
