@@ -24,6 +24,15 @@ export class CanonicalTileID {
         return this.z === id.z && this.x === id.x && this.y === id.y;
     }
 
+    isChildOf(parent: CanonicalTileID): boolean {
+        const zDifference = this.z - parent.z;
+        // We're first testing for z == 0, to avoid a 32 bit shift, which is undefined.
+        return parent.z === 0 || (
+            parent.z < this.z &&
+                parent.x === (this.x >> zDifference) &&
+                parent.y === (this.y >> zDifference));
+    }
+
     // given a list of urls, choose a url template and return a tile URL
     url(urls: Array<string>, scheme?: string | null): string {
         const bbox = getTileBBox(this.x, this.y, this.z);

@@ -149,7 +149,7 @@ class ClipBucket implements Bucket {
                 indices,
                 grid,
                 min,
-                max
+                max,
             });
         }
     }

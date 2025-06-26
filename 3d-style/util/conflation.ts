@@ -8,6 +8,7 @@ export type Footprint = {
     grid: TriangleGridIndex;
     min: Point;
     max: Point;
+    buildingId?: number;
 };
 
 export type TileFootprint = {

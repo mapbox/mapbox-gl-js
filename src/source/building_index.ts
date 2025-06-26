@@ -1,4 +1,5 @@
 import EXTENT from '../style-spec/data/extent';
+import {PerformanceUtils} from '../util/performance';
 
 import type FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
@@ -65,6 +66,8 @@ class BuildingIndex {
 
     updateZOffset(symbolBucket: SymbolBucket, tileID: OverscaledTileID) {
         // prepare lookup from bucket to overlapping buckets of all building layers.
+        const m = PerformanceUtils.beginMeasure("updateZOffset");
+
         this.currentBuildingBuckets = [];
         for (const l of this.layers) {
             const layer = l.layer;
@@ -79,12 +82,13 @@ class BuildingIndex {
 
             let tile = sourceCache ? sourceCache.getTile(tileID) : null;
 
-            if (!tile && sourceCache && tileID.canonical.z > sourceCache.getSource().minzoom) {
-                let id = tileID.scaledTo(Math.min(sourceCache.getSource().maxzoom, tileID.overscaledZ - 1));
-                while (id.overscaledZ >= sourceCache.getSource().minzoom) {
-                    tile = sourceCache.getTile(id);
-                    if (tile || id.overscaledZ === 0) break;
-                    id = id.scaledTo(id.overscaledZ - 1);
+            if (!tile && sourceCache) {
+                for (const cachedTileKey in sourceCache._tiles) {
+                    const cachedTile = sourceCache._tiles[cachedTileKey];
+                    if (tileID.canonical.isChildOf(cachedTile.tileID.canonical)) {
+                        tile = cachedTile;
+                        break;
+                    }
                 }
             }
             this.currentBuildingBuckets.push({bucket: tile ? tile.getBucket(layer) : null, tileID: tile ? tile.tileID : tileID, verticalScale});
@@ -111,6 +115,8 @@ class BuildingIndex {
             symbolBucket.zOffsetBuffersNeedUpload = true;
             symbolBucket.zOffsetSortDirty = true;
         }
+
+        PerformanceUtils.endMeasure(m);
     }
 
     _mapCoordToOverlappingTile(

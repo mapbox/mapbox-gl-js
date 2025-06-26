@@ -107,7 +107,7 @@ const todo = [
     // https://mapbox.atlassian.net/browse/MAPSNAT-2636
     "render-tests/icon-text-fit/stretch-nine-part-content-interpolate-text-size",
     // https://mapbox.atlassian.net/browse/GLJS-1189
-    "render-tests/background-pattern/image-update/delayed/same-size-before-color-theme-change",
+    "render-tests/background-pattern/image-update/delayed/same-size-before-color-theme-change"
 ];
 
 const skip = [
@@ -258,23 +258,6 @@ const skip = [
     // https://mapbox.atlassian.net/browse/MAPS3D-1659
     "render-tests/3d-intersections/elevated-wireframe",
 
-    // Procedural buildings gl-js port
-    // https://mapbox.atlassian.net/browse/MAPS3D-1664
-    "render-tests/building/conflation",
-    "render-tests/building/emissive-strength",
-    "render-tests/building/facades",
-    "render-tests/building/gabled",
-    "render-tests/building/ground-ao",
-    "render-tests/building/hipped",
-    "render-tests/building/mansard",
-    "render-tests/building/parapet",
-    "render-tests/building/property-update",
-    "render-tests/building/pyramidal",
-    "render-tests/building/skillion",
-    "render-tests/building/symbol-z-offset",
-    "render-tests/building/tile-border",
-    "render-tests/building/vertical-scale",
-    "render-tests/building/with-shadows",
     "render-tests/building/opacity",
     "render-tests/building/faux-facade/building-facade",
     "render-tests/building/faux-facade/emissive-chance",

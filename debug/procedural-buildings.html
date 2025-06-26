@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+
+        #radius {
+            position: absolute;
+            width: 700px;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <script>
+
+        var map = window.map = new mapboxgl.Map({
+            container: 'map',
+            devtools: true,
+            zoom: 12.5,
+            center: [11.57478, 48.136917],
+            style: 'procedural-buildings.style.json',
+            hash: true
+        });
+
+        var dbgTrackedParams = map._tp;
+
+        var params = {
+            ambientColor: [255, 255, 255],
+            ambientIntensity: 0.5,
+            sunColor: [255, 255, 255],
+            sunIntensity: 0.5,
+            sunBearing: 160,
+            sunPolarAngle: 50,
+            castShadows: true,
+            shadowIntensity: 1.0,
+            lightPreset: "day"
+        };
+
+        function updateSunLight() {
+            map.setLights([
+                {
+                    'type': 'ambient',
+                    'id': 'ambient_light',
+                    'properties': {
+                        'color': `rgba(${params.ambientColor[0]}, ${params.ambientColor[1]}, ${params.ambientColor[2]}, 1.0)`,
+                        'intensity': params.ambientIntensity
+                    }
+                },
+                {
+                    'type': 'directional',
+                    'id': 'directional_light',
+                    'properties': {
+                        'color': `rgba(${params.sunColor[0]}, ${params.sunColor[1]}, ${params.sunColor[2]}, 1.0)`,
+                        'intensity': params.sunIntensity,
+                        'direction': [
+                        params.sunBearing,
+                        params.sunPolarAngle
+                        ],
+                        'cast-shadows': params.castShadows,
+                        'shadow-intensity': params.shadowIntensity
+                    }
+                }
+            ]);
+            map.triggerRepaint();
+        };
+
+        dbgTrackedParams.registerParameter(params, ["Sun"], "sunBearing", { label: "Bearing Angle", min: 0, max: 360 }, () => {
+            updateSunLight();
+            map.triggerRepaint();
+        });
+        dbgTrackedParams.registerParameter(params, ["Sun"], "sunPolarAngle", { label: "Polar Angle", min: 0, max: 90 }, () => {
+            updateSunLight();
+            map.triggerRepaint();
+        });
+
+        map.on('load', () => {
+            map.showTileBoundaries = true;
+        });
+
+        map.on('style.load', () => {
+            // Store the original style so we can restore it - e.g. if someone
+            // changed the lighting using one of the other debug options.
+            let styleLights = map.getLights();
+            
+            dbgTrackedParams.registerParameter(params, ["Sun"], "lightPreset", {
+                label: "Light Preset",
+                options: {
+                    Dawn: "dawn",
+                    Day: "day",
+                    Dusk: "dusk",
+                    Night: "night",
+                }
+            }, () => {                
+                map.setLights(styleLights);
+                map.setConfigProperty("basemap", "lightPreset", params.lightPreset);
+            });
+            map.setConfigProperty("basemap", "lightPreset", params.lightPreset);
+        });
+    </script>
+</body>
+
+</html>

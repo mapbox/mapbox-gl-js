@@ -36,13 +36,14 @@ import {default as drawDebug, drawDebugPadding, drawDebugQueryGeometry} from './
 import custom from './draw_custom';
 import sky from './draw_sky';
 import Atmosphere from './draw_atmosphere';
+import {BuildingTileBorderManager} from '../../3d-style/render/building_tile_border_manager';
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util';
 import {Terrain, defaultTerrainUniforms} from '../terrain/terrain';
 import {Debug} from '../util/debug';
 import Tile from '../source/tile';
 import {RGBAImage} from '../util/image';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
-import {ReplacementSource, ReplacementOrderLandmark} from '../../3d-style/source/replacement_source';
+import {ReplacementSource, ReplacementOrderLandmark, ReplacementOrderBuilding} from '../../3d-style/source/replacement_source';
 import model, {prepare as modelPrepare} from '../../3d-style/render/draw_model';
 import {lightsUniformValues} from '../../3d-style/render/lights';
 import {ShadowRenderer} from '../../3d-style/render/shadow_renderer';
@@ -194,6 +195,7 @@ class Painter {
     imageManager: ImageManager;
     glyphManager: GlyphManager;
     modelManager: ModelManager;
+    buildingTileBorderManager: BuildingTileBorderManager;
     depthRangeFor3D: DepthRangeType;
     depthOcclusion: boolean;
     opaquePassCutoff: number;
@@ -785,15 +787,16 @@ class Painter {
 
         let layersRequireTerrainDepth = false;
         let layersRequireFinalDepth = false;
+        let buildingLayer = null;
 
         for (const id of layerIds) {
             const layer = layers[id];
 
             if (layer.type === 'circle') {
                 layersRequireTerrainDepth = true;
-            }
-
-            if (layer.type === 'symbol') {
+            } else if (layer.type === 'building') {
+                buildingLayer = layer;
+            } else if (layer.type === 'symbol') {
                 if (layer.hasInitialOcclusionOpacityProperties) {
                     layersRequireFinalDepth = true;
                 } else {
@@ -894,7 +897,7 @@ class Painter {
                     const sourceCache = this.style.getLayerSourceCache(layer);
 
                     // @ts-expect-error - TS2339 - Property 'usedInConflation' does not exist on type 'Source'.
-                    if (!sourceCache || !sourceCache.used || (!sourceCache.getSource().usedInConflation && layer.type !== 'clip')) {
+                    if (!sourceCache || !sourceCache.used || (!sourceCache.getSource().usedInConflation && layer.type !== 'clip' && layer.type !== 'building')) {
                         continue;
                     }
 
@@ -902,26 +905,29 @@ class Painter {
                     let clipMask = LayerTypeMask.None;
                     const clipScope: string[] = [];
                     let addToSources = true;
-                    if (layer.type === 'clip') {
+                    if (layer.type === 'building') {
+                        order = ReplacementOrderBuilding;
+                    } else
+                        if (layer.type === 'clip') {
                         // Landmarks have precedence over fill extrusions regardless of order in the style.
                         // A clip layer however, is taken into account by 3D layers (i.e. fill-extrusion, landmarks, instance trees)
                         // only if those layers appear below the said clip layer.
                         // Therefore to keep the existing behaviour for landmarks we set the order to ReplacementOrderLandmark.
                         // This order is later used by fill-extrusion and instanced tree's rendering code to know
                         // how to deal with landmarks.
-                        order = layerIdx;
-                        for (const mask of layer.layout.get('clip-layer-types')) {
-                            clipMask |= (mask === 'model' ? LayerTypeMask.Model : (mask === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
+                            order = layerIdx;
+                            for (const mask of layer.layout.get('clip-layer-types')) {
+                                clipMask |= (mask === 'model' ? LayerTypeMask.Model : (mask === 'symbol' ? LayerTypeMask.Symbol : LayerTypeMask.FillExtrusion));
+                            }
+                            for (const scope of layer.layout.get('clip-layer-scope')) {
+                                clipScope.push(scope);
+                            }
+                            if (layer.isHidden(this.transform.zoom)) {
+                                addToSources = false;
+                            } else {
+                                clippingActiveThisFrame = true;
+                            }
                         }
-                        for (const scope of layer.layout.get('clip-layer-scope')) {
-                            clipScope.push(scope);
-                        }
-                        if (layer.isHidden(this.transform.zoom)) {
-                            addToSources = false;
-                        } else {
-                            clippingActiveThisFrame = true;
-                        }
-                    }
 
                     if (addToSources) {
                         conflationSources.push({layer: layer.fqid, cache: sourceCache, order, clipMask, clipScope});
@@ -1059,6 +1065,14 @@ class Painter {
         }
         if (this._rain) {
             this._rain.update(this);
+        }
+
+        if (buildingLayer) {
+            if (!this.buildingTileBorderManager) {
+                this.buildingTileBorderManager = new BuildingTileBorderManager();
+            }
+            const buildingLayerSourceCache = this.style.getLayerSourceCache(buildingLayer);
+            this.buildingTileBorderManager.updateBorders(buildingLayerSourceCache, buildingLayer);
         }
 
         // Following line is billing related code. Do not change. See LICENSE.txt
@@ -1849,6 +1863,10 @@ class Painter {
             return true;
         }
 
+        if (layer.type === "building") {
+            return true;
+        }
+
         if (layer.minzoom && layer.minzoom > this.transform.zoom) {
             return false;
         }
@@ -1857,7 +1875,7 @@ class Painter {
         // conflation both fill-extrusion and landmarks must be present.
         // In short this is just an optimisation and we intend to keep the existing behaviour intact.
         if (!this.style._clipLayerPresent) {
-            if (layer.sourceLayer === "building") {
+            if (layer.sourceLayer === "building" || layer.sourceLayer === "procedural_buildings") {
                 return true;
             }
         }

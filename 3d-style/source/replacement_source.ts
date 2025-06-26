@@ -9,6 +9,7 @@ import type {Footprint, TileFootprint} from '../util/conflation';
 import type SourceCache from '../../src/source/source_cache';
 
 export const ReplacementOrderLandmark = Number.MAX_SAFE_INTEGER;
+export const ReplacementOrderBuilding = ReplacementOrderLandmark - 1;
 
 // Abstract interface that acts as a source for footprints used in the replacement process
 interface FootprintSource {

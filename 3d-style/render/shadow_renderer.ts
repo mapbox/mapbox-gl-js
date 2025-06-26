@@ -36,7 +36,7 @@ import type {
     FillExtrusionDepthUniformsType,
     FillExtrusionPatternUniformsType
 } from '../../src/render/program/fill_extrusion_program';
-import type {BuildingUniformsType} from './program/building_program';
+import type {BuildingUniformsType, BuildingDepthUniformsType} from './program/building_program';
 
 type ShadowsUniformsType =
     | ShadowUniformsType
@@ -46,7 +46,8 @@ type ShadowsUniformsType =
     | ModelDepthUniformsType
     | FillExtrusionDepthUniformsType
     | FillExtrusionPatternUniformsType
-    | BuildingUniformsType;
+    | BuildingUniformsType
+    | BuildingDepthUniformsType;
 
 type ShadowCascade = {
     framebuffer: Framebuffer;
