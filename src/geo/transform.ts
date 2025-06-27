@@ -7,7 +7,7 @@ import {wrap, clamp, pick, radToDeg, degToRad, getAABBPointSquareDist, furthestT
 import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../style-spec/data/extent';
 import {vec4, mat4, mat2, vec3, quat} from 'gl-matrix';
-import {Frustum, FrustumCorners, Ray} from '../util/primitives';
+import {FAR_BL, FAR_BR, Frustum, FrustumCorners, NEAR_BL, NEAR_BR, Ray} from '../util/primitives';
 import EdgeInsets from './edge_insets';
 import {FreeCamera, FreeCameraOptions, orientationFromFrame} from '../ui/free_camera';
 import assert from 'assert';
@@ -25,6 +25,7 @@ import {
     aabbForTileOnGlobe,
 } from '../geo/projection/globe_util';
 import {projectClamped} from '../symbol/projection';
+import {edgeIntersectsBox} from '../util/intersection_tests';
 
 import type {Aabb} from '../util/primitives';
 import type Projection from '../geo/projection/projection';
@@ -1003,6 +1004,97 @@ class Transform {
 
         return out;
     }
+
+    /**
+     * Extend tile coverage to include tiles that are below the view frustum.
+     * @param {Array<OverscaledTileID>} tiles tile cover that is extended
+     * @param {Frustum} frustum view frustum
+     * @param {number} maxZoom maximum zoom level
+     * @returns {Array<OverscaledTileID>} a set of extension tiles
+     */
+    extendTileCoverToNearPlane(tiles: Array<OverscaledTileID>, frustum: Frustum, maxZoom: number): Array<OverscaledTileID> {
+        const out: OverscaledTileID[] = [];
+
+        const addedTiles = new Set<number>();
+        // Add existing tile keys to prevent having to remove duplicates later
+        for (const tile of tiles) {
+            addedTiles.add(tile.key);
+        }
+        const addTileId = (overscaledZ: number, wrap: number, z: number, x: number, y: number) => {
+            const key = calculateKey(wrap, overscaledZ, z, x, y);
+            if (!addedTiles.has(key)) {
+                out.push(new OverscaledTileID(overscaledZ, wrap, z, x, y));
+                addedTiles.add(key);
+            }
+        };
+
+        const overscaledZ = tiles.reduce((overscaledZ, tile) => {
+            return Math.max(overscaledZ, tile.overscaledZ);
+        }, maxZoom);
+
+        const numTiles = 1 << maxZoom;
+
+        const tileCorners = [
+            new Point(0, 0),
+            new Point(EXTENT, 0),
+            new Point(EXTENT, EXTENT),
+            new Point(0, EXTENT)
+        ];
+
+        const p1 = new Point(0, 0);
+        const p2 = new Point(0, 0);
+
+        const findTileIntersections = (e1: vec3, e2: vec3) => {
+            const e1X = Math.floor(e1[0]);
+            const e1Y = Math.floor(e1[1]);
+            const e1TileX = (e1[0] - e1X) * EXTENT;
+            const e1TileY = (e1[1] - e1Y) * EXTENT;
+
+            const e2X = Math.floor(e2[0]);
+            const e2Y = Math.floor(e2[1]);
+            const e2TileX = (e2[0] - e2X) * EXTENT;
+            const e2TileY = (e2[1] - e2Y) * EXTENT;
+
+            // Find tile intersections from a 3x3 grid around the starting point.
+            // This is enough to find the tiles needed for the tile cover extension.
+            for (let dx = -1; dx <= 1; dx++) {
+                const x = e1X + dx;
+                if (x < 0 || x >= numTiles) continue;
+
+                // Convert e1 and e2 (x coord) to the coordinate space of the current tile
+                p1.x = e1TileX - dx * EXTENT;
+                p2.x = e2TileX - (x - e2X) * EXTENT;
+
+                for (let dy = -1; dy <= 1; dy++) {
+                    const y = e1Y + dy;
+
+                    // Convert e1 and e2 (y coord) to the coordinate space of the current tile
+                    p1.y = e1TileY - dy * EXTENT;
+                    p2.y = e2TileY - (y - e2Y) * EXTENT;
+
+                    if (edgeIntersectsBox(p1, p2, tileCorners)) {
+                        addTileId(overscaledZ, 0, maxZoom, x, y);
+                    }
+                }
+            }
+        };
+
+        const points = frustum.points;
+        const nearBl = points[NEAR_BL];
+        const nearBr = points[NEAR_BR];
+        const farBl = this._projectToGround(nearBl, points[FAR_BL]);
+        const farBr = this._projectToGround(nearBr, points[FAR_BR]);
+
+        findTileIntersections(nearBl, farBl);
+        findTileIntersections(nearBr, farBr);
+
+        return out;
+    }
+
+    _projectToGround(near: vec3, far: vec3) {
+        assert(far[2] < near[2]);
+        return vec3.lerp(vec3.create(), near, far, near[2] / (near[2] - far[2]));
+    };
 
     /**
      * Return all coordinates that could cover this transform for a covering

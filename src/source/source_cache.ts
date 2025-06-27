@@ -600,8 +600,8 @@ class SourceCache extends Evented {
                     idealTileIDs.push(id);
                 }
             } else if (elevatedLayers) {
-                const batchedModelTileIDs = transform.extendTileCover(idealTileIDs, idealZoom, this.transform._camera.forward());
-                for (const id of batchedModelTileIDs) {
+                const elevatedTileIDs = transform.extendTileCoverToNearPlane(idealTileIDs, this.transform.getFrustum(idealZoom), idealZoom);
+                for (const id of elevatedTileIDs) {
                     idealTileIDs.push(id);
                 }
             } else if (this.castsShadows && directionalLight) {

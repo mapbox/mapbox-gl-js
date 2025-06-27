@@ -590,5 +590,13 @@ export {
     Frustum,
     FrustumCorners,
     Ray,
-    Ray2D
+    Ray2D,
+    NEAR_TL,
+    NEAR_TR,
+    NEAR_BR,
+    NEAR_BL,
+    FAR_TL,
+    FAR_TR,
+    FAR_BR,
+    FAR_BL
 };
