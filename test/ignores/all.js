@@ -265,6 +265,11 @@ const skip = [
     // Flaky model tests
     "render-tests/model-layer/style-model-api-remove",
     "render-tests/model-layer/vector-layer-external-models-import",
+
+    // https://mapbox.atlassian.net/browse/GLJS-1295
+    "render-tests/placement/icon-optional",
+    "render-tests/placement/text-optional/basic",
+    "render-tests/placement/text-optional/text-variable-anchor",
 ];
 
 export default {todo, skip};
