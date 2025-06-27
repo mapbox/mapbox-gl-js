@@ -254,10 +254,6 @@ const skip = [
     "render-tests/background-pattern/image-update/delayed/different-size-before-color-theme-change",
     "render-tests/background-pattern/image-update/delayed/different-size-with-color-theme",
 
-    // 3D intersections gl-js port
-    // https://mapbox.atlassian.net/browse/MAPS3D-1659
-    "render-tests/3d-intersections/elevated-wireframe",
-
     "render-tests/building/opacity",
     "render-tests/building/faux-facade/building-facade",
     "render-tests/building/faux-facade/emissive-chance",
