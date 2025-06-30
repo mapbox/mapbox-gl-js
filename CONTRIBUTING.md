@@ -53,7 +53,7 @@ npm install
 
 ### Windows
 
-Install [git](https://git-scm.com/), [npm and node-gyp](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules) and [nvm](https://github.com/nvm-sh/nvm) 
+Install [git](https://git-scm.com/), [npm and node-gyp](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules) and [nvm](https://github.com/nvm-sh/nvm)
 
 Clone the repository
 ```bash
