@@ -54,7 +54,11 @@ void main() {
 
     v_pos = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, display_size, u_tile_units_to_pixels, a_pos);
 
+#ifdef FLIP_Y
+    v_pos_world = (vec2(gl_Position.x, -gl_Position.y) / gl_Position.w + 1.0) / 2.0 * u_world;
+#else
     v_pos_world = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world;
+#endif
 
 #ifdef RENDER_SHADOWS
     vec3 shd_pos0 = vec3(a_pos, z_offset);

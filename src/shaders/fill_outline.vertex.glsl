@@ -34,7 +34,11 @@ void main() {
 #endif
     float hidden = float(opacity == 0.0);
     gl_Position = mix(u_matrix * vec4(a_pos, z_offset, 1), AWAY, hidden);
+#ifdef FLIP_Y
+    v_pos = (vec2(gl_Position.x, -gl_Position.y) / gl_Position.w + 1.0) / 2.0 * u_world;
+#else
     v_pos = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world;
+#endif
 
 #ifdef RENDER_SHADOWS
     vec3 shd_pos0 = vec3(a_pos, z_offset);
