@@ -60,7 +60,7 @@
     "@size-limit/file": "^11.2.0",
     "@tweakpane/core": "^2.0.5",
     "@types/murmurhash-js": "^1.0.6",
-    "@types/node": "^24.0.3",
+    "@types/node": "^24.0.8",
     "@types/offscreencanvas": "^2019.7.3",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
     "@typescript-eslint/parser": "^8.35.1",
