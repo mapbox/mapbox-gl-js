@@ -1317,6 +1317,7 @@ class Painter {
                 // Draw ground shadow mask
                 {
                     this.clearStencil();
+                    this.resetStencilClippingMasks();
                     const saveCurrentLayer = this.currentLayer;
                     for (this.currentLayer = 0; this.currentLayer < orderedLayers.length; this.currentLayer++) {
                         const maskLayer = orderedLayers[this.currentLayer];
