@@ -1966,7 +1966,9 @@ class Style extends Evented<MapEvents> {
         if (!this.hasModel(id)) {
             return this.fire(new ErrorEvent(new Error('No model with this ID exists.')));
         }
-        this.modelManager.removeModel(id, this.scope);
+        const keepModelURI = false;
+        const forceRemoval = true;
+        this.modelManager.removeModel(id, this.scope, keepModelURI, forceRemoval);
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }

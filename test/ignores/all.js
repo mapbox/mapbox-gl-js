@@ -263,7 +263,6 @@ const skip = [
     "render-tests/building/faux-facade/window-ao",
 
     // Flaky model tests
-    "render-tests/model-layer/style-model-api-remove",
     "render-tests/model-layer/vector-layer-external-models-import",
 
     // https://mapbox.atlassian.net/browse/GLJS-1295

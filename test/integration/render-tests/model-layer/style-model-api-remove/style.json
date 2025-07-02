@@ -7,8 +7,7 @@
       "operations": [
         ["addModel", "tree-diffuse", "./models/tree.glb"],
         ["wait"],
-        ["removeModel", "tree-diffuse"],
-        ["wait"]
+        ["removeModel", "tree-diffuse"]
       ]
     }
   },

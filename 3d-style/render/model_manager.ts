@@ -196,10 +196,10 @@ class ModelManager extends Evented {
         return this.modelByURL[url] !== undefined;
     }
 
-    removeModel(id: string, scope: string, keepModelURI = false) {
+    removeModel(id: string, scope: string, keepModelURI = false, forceRemoval = false) {
         if (!this.models[scope] || !this.models[scope][id]) return;
         this.models[scope][id].numReferences--;
-        if (this.models[scope][id].numReferences === 0) {
+        if (this.models[scope][id].numReferences === 0 || forceRemoval) {
             const modelURI = this.modelUris[scope][id];
             if (!keepModelURI) delete this.modelUris[scope][id];
             delete this.modelByURL[modelURI];
