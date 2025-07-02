@@ -46,7 +46,9 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chromium --with-deps --no-shell
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
     - run: npm run build-dev
     - run: npm run build-prod
     - run: npm run build-prod-min
@@ -98,7 +100,9 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chrome --with-deps
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chrome --with-deps
     - run: xvfb-run -a npm run test-unit
     - id: upload
       uses: ./.github/actions/upload
@@ -121,7 +125,9 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chromium --with-deps --no-shell || pstree
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
     - run: tar xvzf test/usvg/test-suite.tar.gz -C test/usvg/
     - run: xvfb-run -a npm run test-usvg
 
@@ -141,7 +147,9 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chromium --with-deps --no-shell
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
     - run: npm run build-dev
     - run: xvfb-run -a npm run test-query
     - id: upload
@@ -170,7 +178,9 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chromium --with-deps --no-shell
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
     - run: npm run build-dev
     - run: xvfb-run -a npm run test-render-chromium
     - id: upload
@@ -199,7 +209,9 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chromium --with-deps --no-shell
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
     - run: npm run build-prod-min
     - run: xvfb-run -a npm run test-render-chromium-prod
     - id: upload
@@ -228,7 +240,9 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chromium --with-deps --no-shell
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install chromium --with-deps --no-shell
     - run: npm run build-csp
     - run: xvfb-run -a npm run test-render-chromium-csp
     - id: upload
@@ -257,7 +271,9 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install firefox --with-deps --no-shell
+    - run: |
+        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
+        npx playwright install firefox --with-deps --no-shell
     - run: npm run build-dev
     - run: xvfb-run -a npm run test-render-firefox
     - id: upload
