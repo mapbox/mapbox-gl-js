@@ -643,6 +643,7 @@ function shapeLines(shaping: Shaping,
             let image = null;
             let verticalAdvance = ONE_EM;
             let glyphOffset = 0;
+            let glyphWritingMode = writingMode;
 
             // In vertical writing mode, glyphs are rotated 90 degrees counterclockwise when preparing the glyph quads.
             //
@@ -651,11 +652,11 @@ function shapeLines(shaping: Shaping,
             // However, they are still inserted into the vertical shaping process,
             // which ultimately results in the same effect as rotating them 90 degrees clockwise during glyph quad
             // preparation.
-            if (writingMode === WritingMode.vertical && needsRotationInVerticalMode(codePoint)) {
-                writingMode = WritingMode.horizontal;
+            if (glyphWritingMode === WritingMode.vertical && needsRotationInVerticalMode(codePoint)) {
+                glyphWritingMode = WritingMode.horizontal;
             }
 
-            const vertical = !(writingMode === WritingMode.horizontal ||
+            const vertical = !(glyphWritingMode === WritingMode.horizontal ||
                 // Don't verticalize glyphs that have no upright orientation if vertical placement is disabled.
                 (!allowVerticalPlacement && !charHasUprightVerticalOrientation(codePoint)) ||
                 // If vertical placement is enabled, don't verticalize glyphs that

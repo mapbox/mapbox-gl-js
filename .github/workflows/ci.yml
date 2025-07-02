@@ -121,7 +121,7 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chromium --with-deps --no-shell
+    - run: npx playwright install chromium --with-deps --no-shell || pstree
     - run: tar xvzf test/usvg/test-suite.tar.gz -C test/usvg/
     - run: xvfb-run -a npm run test-usvg
 
