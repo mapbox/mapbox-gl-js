@@ -14,4 +14,8 @@ export const buildingColorAttributes: StructArrayLayout = createLayout([
     {name: 'a_part_color_emissive', components: 2, type: 'Uint16'}
 ]);
 
+export const buildingBloomAttenuationAttributes: StructArrayLayout = createLayout([
+    {name: 'a_bloom_attenuation',  components: 4, type: 'Float32'}
+]);
+
 export const {members, size, alignment} = buildingPositionAttributes;

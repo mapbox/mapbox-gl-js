@@ -1725,5 +1725,6 @@ export {
     StructArrayLayout3f12 as BuildingPositionArray,
     StructArrayLayout3i6 as BuildingNormalArray,
     StructArrayLayout2ui4 as BuildingColorArray,
+    StructArrayLayout4f16 as BuildingBloomAttenuationArray,
     StructArrayLayout6i12 as CircleGlobeExtArray
 };

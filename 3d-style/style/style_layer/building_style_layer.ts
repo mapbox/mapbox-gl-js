@@ -33,6 +33,10 @@ class BuildingStyleLayer extends StyleLayer {
         return this.paint.get('building-cast-shadows');
     }
 
+    override hasLightBeamPass(): boolean {
+        return true;
+    }
+
     override canCastShadows(): boolean {
         return true;
     }

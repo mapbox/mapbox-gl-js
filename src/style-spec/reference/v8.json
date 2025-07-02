@@ -7725,7 +7725,8 @@
         "interpolated": true,
         "parameters": [
           "feature",
-          "feature-state"
+          "feature-state",
+          "measure-light"
         ]
       },
       "property-type": "data-driven"
@@ -7734,7 +7735,9 @@
       "type": "number",
       "default": 0,
       "minimum": 0,
-      "doc": "Controls the intensity of light emitted on the source features.",
+      "maximum": 5,
+      "units": "intensity",
+      "doc": "Controls the intensity of light emitted on the source features. There is no emission for value 0. For value 1.0, only emissive component (no shading) is displayed and values above 1.0 produce light contribution to surrounding area, for some of the parts (e.g. doors).",
       "experimental": true,
       "private": true,
       "sdk-support": {

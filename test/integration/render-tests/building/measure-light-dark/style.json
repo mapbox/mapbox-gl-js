@@ -1,0 +1,224 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.0001,
+      "height": 512,
+      "width": 512,
+      "operations": []
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {}
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(65.0, 60.0, 50.0, 1.0)",
+        "intensity": 1.0,
+        "direction": [
+          200.0,
+          40.0
+        ],
+        "cast-shadows": true
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "extrude": "true",
+              "underground": "false",
+              "source_id": 127046656
+            },
+            "id": 127046656,
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "min_height": 0,
+              "cross_perc": 0,
+              "source_id": 127046656,
+              "entrances": "[0.3]",
+              "distance_to_road": 33.34
+            },
+            "id": 127046656,
+            "geometry": {
+              "type": "LineString",
+              "coordinates": 
+                [
+                  [
+                    11.568937291974436,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.132286810394845
+                  ]
+                ]
+              }
+          }
+        ]
+      }
+    }
+  },
+  "bearing": 25,
+  "pitch": 65,
+  "zoom": 19.45,
+  "center": [11.5691398, 48.1323676],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "grey"
+      }
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "geojson",
+      "minzoom": 16,
+      "layout": {
+        "building-roof-shape": "parapet",
+        "building-base": 0,
+        "building-height": 10
+      },
+      "paint": {
+        "building-color": [
+          "match",
+          ["get", "building-part"],
+          "wall",
+          [
+            "case",
+            [
+              "<",
+              [
+                "measure-light",
+                "brightness"
+              ],
+              0.5
+            ],
+            ["hsl", 38, 28, 19],
+            ["hsl", 41, 90, 90]
+          ],
+          "roof",
+          [
+            "case",
+            [
+              "<",
+              [
+                "measure-light",
+                "brightness"
+              ],
+              0.5
+            ],
+            ["hsl", 38, 30, 11],
+            ["hsl", 25, 43, 80]
+          ],
+          "window",
+          [
+            "case",
+            [
+              "<",
+              [
+                "measure-light",
+                "brightness"
+              ],
+              0.5
+            ],
+            ["hsl", 38, 1, 44],
+            ["hsl", 198, 22.4, 64.1]
+          ],
+          "door",
+          [
+            "case",
+            [
+              "<",
+              [
+                "measure-light",
+                "brightness"
+              ],
+              0.5
+            ],
+            ["hsl", 38, 39, 94],
+            ["hsl", 0, 100, 100]
+          ],
+          ["hsl", 41, 90, 90]
+        ],
+        "building-emissive-strength": [
+          "match",
+          ["get", "building-part"],
+          "window",
+          [
+            "case",
+            [
+              "<",
+              [
+                "measure-light",
+                "brightness"
+              ],
+              0.5
+            ],
+            1.0,
+            0.3
+          ],
+          "door",
+          [
+            "case",
+            [
+              "<",
+              [
+                "measure-light",
+                "brightness"
+              ],
+              0.5
+            ],
+            2.0,
+            2.5
+          ],
+          0
+        ],
+        "building-ambient-occlusion-intensity": 1,
+        "building-ambient-occlusion-window-intensity": 1
+      }
+    }
+  ]
+}

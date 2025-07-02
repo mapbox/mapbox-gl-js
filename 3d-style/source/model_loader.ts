@@ -565,16 +565,12 @@ function parseHeightmap(mesh: Mesh) {
     }
 }
 
-function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
-    const mesh = {} as Mesh;
-    mesh.indexArray = new TriangleIndexArray();
-    mesh.indexArray.reserve(4 * lights.length);
-    mesh.vertexArray = new ModelLayoutArray();
-    mesh.vertexArray.reserve(10 * lights.length);
-    mesh.colorArray = new Color4fLayoutArray();
-    mesh.vertexArray.reserve(10 * lights.length);
+export function calculateLightsMesh(lights: Array<AreaLight>, zScale: number, indexArray: TriangleIndexArray, vertexArray: ModelLayoutArray, colorArray: Color4fLayoutArray) {
+    indexArray.reserve(indexArray.length + 4 * lights.length);
+    vertexArray.reserve(vertexArray.length + 10 * lights.length);
+    colorArray.reserve(colorArray.length + 10 * lights.length);
 
-    let currentVertex = 0;
+    let currentVertex = vertexArray.length;
     // Model layer color4 attribute is used for light offset: first three components are light's offset in tile space (z
     // also in tile space) and 4th parameter is a decimal number that carries 2 parts: the distance to full light
     // falloff is in the integer part, and the decimal part represents the ratio of distance where the falloff starts (saturated
@@ -609,18 +605,18 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
 
         v1[2] += 0.1;
         v2[2] += 0.1;
-        mesh.vertexArray.emplaceBack(v1extrusion[0], v1extrusion[1], v1extrusion[2]);
-        mesh.vertexArray.emplaceBack(v2extrusion[0], v2extrusion[1], v2extrusion[2]);
-        mesh.vertexArray.emplaceBack(v1[0], v1[1], v1[2]);
-        mesh.vertexArray.emplaceBack(v2[0], v2[1], v2[2]);
+        vertexArray.emplaceBack(v1extrusion[0], v1extrusion[1], v1extrusion[2]);
+        vertexArray.emplaceBack(v2extrusion[0], v2extrusion[1], v2extrusion[2]);
+        vertexArray.emplaceBack(v1[0], v1[1], v1[2]);
+        vertexArray.emplaceBack(v2[0], v2[1], v2[2]);
         // side: top
-        mesh.vertexArray.emplaceBack(v0[0], v0[1], v0[2]);
-        mesh.vertexArray.emplaceBack(v3[0], v3[1], v3[2]);
+        vertexArray.emplaceBack(v0[0], v0[1], v0[2]);
+        vertexArray.emplaceBack(v3[0], v3[1], v3[2]);
         // side
-        mesh.vertexArray.emplaceBack(v1[0], v1[1], v1[2]);
-        mesh.vertexArray.emplaceBack(v2[0], v2[1], v2[2]);
-        mesh.vertexArray.emplaceBack(v1extrusion[0], v1extrusion[1], v1extrusion[2]);
-        mesh.vertexArray.emplaceBack(v2extrusion[0], v2extrusion[1], v2extrusion[2]);
+        vertexArray.emplaceBack(v1[0], v1[1], v1[2]);
+        vertexArray.emplaceBack(v2[0], v2[1], v2[2]);
+        vertexArray.emplaceBack(v1extrusion[0], v1extrusion[1], v1extrusion[2]);
+        vertexArray.emplaceBack(v2extrusion[0], v2extrusion[1], v2extrusion[2]);
         // Light doesnt include light coordinates - instead it includes offset to light area segment. Distances are
         // normalized by dividing by fallOff. Normalized lighting coordinate system is used where center of
         // coord system is on half of door and +Y is direction of extrusion.
@@ -630,28 +626,38 @@ function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
         const halfWidth = width / fallOff / 2.0;
         // right ground extruded looking out from door
         // x Coordinate is used to model angle (for spot)
-        mesh.colorArray.emplaceBack(-halfWidth - horizontalSpread, -1, halfWidth, 0.8);
-        mesh.colorArray.emplaceBack(halfWidth + horizontalSpread, -1, halfWidth, 0.8);
+        colorArray.emplaceBack(-halfWidth - horizontalSpread, -1, halfWidth, 0.8);
+        colorArray.emplaceBack(halfWidth + horizontalSpread, -1, halfWidth, 0.8);
         // keep shine at bottom of door even for reduced emissive strength
-        mesh.colorArray.emplaceBack(-halfWidth, 0, halfWidth, 1.3);
-        mesh.colorArray.emplaceBack(halfWidth, 0, halfWidth, 1.3);
+        colorArray.emplaceBack(-halfWidth, 0, halfWidth, 1.3);
+        colorArray.emplaceBack(halfWidth, 0, halfWidth, 1.3);
         // for all vertices on the side, push the light origin behind the door top
-        mesh.colorArray.emplaceBack(halfWidth + horizontalSpread, -0.8, halfWidth, 0.7);
-        mesh.colorArray.emplaceBack(halfWidth + horizontalSpread, -0.8, halfWidth, 0.7);
+        colorArray.emplaceBack(halfWidth + horizontalSpread, -0.8, halfWidth, 0.7);
+        colorArray.emplaceBack(halfWidth + horizontalSpread, -0.8, halfWidth, 0.7);
         // side at door, ground
-        mesh.colorArray.emplaceBack(0, 0, halfWidth, 1.3);
-        mesh.colorArray.emplaceBack(0, 0, halfWidth, 1.3);
+        colorArray.emplaceBack(0, 0, halfWidth, 1.3);
+        colorArray.emplaceBack(0, 0, halfWidth, 1.3);
         // extruded side
-        mesh.colorArray.emplaceBack(halfWidth + horizontalSpread, -1.2, halfWidth, 0.8);
-        mesh.colorArray.emplaceBack(halfWidth + horizontalSpread, -1.2, halfWidth, 0.8);
+        colorArray.emplaceBack(halfWidth + horizontalSpread, -1.2, halfWidth, 0.8);
+        colorArray.emplaceBack(halfWidth + horizontalSpread, -1.2, halfWidth, 0.8);
 
         // Finally, the triangle indices
-        mesh.indexArray.emplaceBack(6 + currentVertex, 4 + currentVertex, 8 + currentVertex);
-        mesh.indexArray.emplaceBack(7 + currentVertex, 9 + currentVertex, 5 + currentVertex);
-        mesh.indexArray.emplaceBack(0 + currentVertex, 1 + currentVertex, 2 + currentVertex);
-        mesh.indexArray.emplaceBack(1 + currentVertex, 3 + currentVertex, 2 + currentVertex);
+        indexArray.emplaceBack(6 + currentVertex, 4 + currentVertex, 8 + currentVertex);
+        indexArray.emplaceBack(7 + currentVertex, 9 + currentVertex, 5 + currentVertex);
+        indexArray.emplaceBack(0 + currentVertex, 1 + currentVertex, 2 + currentVertex);
+        indexArray.emplaceBack(1 + currentVertex, 3 + currentVertex, 2 + currentVertex);
         currentVertex += 10;
     }
+}
+
+function createLightsMesh(lights: Array<AreaLight>, zScale: number): Mesh {
+    const mesh = {} as Mesh;
+    mesh.indexArray = new TriangleIndexArray();
+    mesh.vertexArray = new ModelLayoutArray();
+    mesh.colorArray = new Color4fLayoutArray();
+
+    calculateLightsMesh(lights, zScale, mesh.indexArray, mesh.vertexArray, mesh.colorArray);
+
     const material = {} as Material;
     material.defined = true;
     material.emissiveFactor = Color.black;

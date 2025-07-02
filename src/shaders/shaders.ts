@@ -17,6 +17,10 @@ import buildingFrag from '../../3d-style/shaders/building.fragment.glsl';
 // @ts-expect-error - GLSL import
 import buildingVert from '../../3d-style/shaders/building.vertex.glsl';
 // @ts-expect-error - GLSL import
+import buildingBloomFrag from '../../3d-style/shaders/building_bloom.fragment.glsl';
+// @ts-expect-error - GLSL import
+import buildingBloomVert from '../../3d-style/shaders/building_bloom.vertex.glsl';
+// @ts-expect-error - GLSL import
 import buildingDepthFrag from '../../3d-style/shaders/building_depth.fragment.glsl';
 // @ts-expect-error - GLSL import
 import buildingDepthVert from '../../3d-style/shaders/building_depth.vertex.glsl';
@@ -247,6 +251,7 @@ export default {
     background: compile(backgroundFrag, backgroundVert),
     backgroundPattern: compile(backgroundPatternFrag, backgroundPatternVert),
     building: compile(buildingFrag, buildingVert),
+    buildingBloom: compile(buildingBloomFrag, buildingBloomVert),
     buildingDepth: compile(buildingDepthFrag, buildingDepthVert),
     circle: compile(circleFrag, circleVert),
     clippingMask: compile(clippingMaskFrag, clippingMaskVert),

@@ -1,4 +1,4 @@
-import {buildingDepthUniformValues, buildingUniformValues} from '../render/program/building_program';
+import {buildingBloomUniformValues, buildingDepthUniformValues, buildingUniformValues} from '../render/program/building_program';
 import CullFaceMode from '../../src/gl/cull_face_mode';
 import DepthMode from '../../src/gl/depth_mode';
 import {mat4} from 'gl-matrix';
@@ -36,6 +36,7 @@ function drawTiles(params: DrawParams) {
     const context = painter.context;
 
     const isShadowPass = painter.renderPass === 'shadow';
+    const isBloomPass = painter.renderPass === 'light-beam';
     const shadowRenderer = painter.shadowRenderer;
     let singleCascadeDefines;
 
@@ -82,7 +83,7 @@ function drawTiles(params: DrawParams) {
 
             program = painter.getOrCreateProgram('buildingDepth',
                 {config: programConfiguration, defines: singleCascade ? singleCascadeDefines : defines, overrideFog: false});
-        } else {
+        } else if (!isBloomPass) {
 
             const tileMatrix = painter.transform.calculatePosMatrix(coord.toUnwrapped(), painter.transform.worldSize);
             mat4.scale(tileMatrix, tileMatrix, [1, 1, params.verticalScale]);
@@ -102,17 +103,31 @@ function drawTiles(params: DrawParams) {
             if (shadowRenderer) {
                 shadowRenderer.setupShadowsFromMatrix(tileMatrix, program, true);
             }
+        } else {
+            program =  painter.getOrCreateProgram('buildingBloom',
+            {config: programConfiguration, defines: singleCascade ? singleCascadeDefines : defines, overrideFog: false});
+
+            uniformValues = buildingBloomUniformValues(matrix);
         }
 
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), null, null);
 
-        const segments = bucket.segments;
-        const dynamicBuffers = [bucket.layoutNormalBuffer, bucket.layoutColorBuffer];
-        const stencilMode = StencilMode.disabled;
-        program.draw(painter, context.gl.TRIANGLES, params.depthMode, stencilMode, params.blendMode, isShadowPass ? CullFaceMode.disabled : CullFaceMode.backCW,
-            uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
-            segments, layer.paint, painter.transform.zoom,
-            programConfiguration, dynamicBuffers);
+        if (!isBloomPass) {
+            const segments = bucket.segments;
+            const dynamicBuffers = [bucket.layoutNormalBuffer, bucket.layoutColorBuffer];
+            const stencilMode = StencilMode.disabled;
+            program.draw(painter, context.gl.TRIANGLES, params.depthMode, stencilMode, params.blendMode, isShadowPass ? CullFaceMode.disabled : CullFaceMode.backCW,
+                uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
+                segments, layer.paint, painter.transform.zoom,
+                programConfiguration, dynamicBuffers);
+        } else {
+            const bloomGeometry = bucket.bloomGeometry;
+            const dynamicBuffers = [bloomGeometry.layoutAttenuationBuffer, bloomGeometry.layoutColorBuffer];
+            program.draw(painter, context.gl.TRIANGLES, params.depthMode, StencilMode.disabled, params.blendMode, CullFaceMode.disabled,
+                uniformValues, layer.id, bloomGeometry.layoutVertexBuffer, bloomGeometry.indexBuffer,
+                bloomGeometry.segmentsBucket, layer.paint, painter.transform.zoom,
+                programConfiguration, dynamicBuffers);
+        }
     }
 }
 
@@ -210,6 +225,10 @@ function updateBuildingReplacementsAndTileBorderVisibility(painter: Painter, sou
 function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, coords: Array<OverscaledTileID>) {
     const m = PerformanceUtils.beginMeasure(`Building:draw[${painter.renderPass}]`);
 
+    if (painter.currentLayer < painter.firstLightBeamLayer) {
+        painter.firstLightBeamLayer = painter.currentLayer;
+    }
+
     const aoIntensity = layer.paint.get('building-ambient-occlusion-ground-intensity');
     const aoRadius = layer.paint.get('building-ambient-occlusion-ground-radius');
     const aoGroundAttenuation = layer.paint.get('building-ambient-occlusion-ground-attenuation');
@@ -291,6 +310,25 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
 
         const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
         const blendMode = painter.colorModeForRenderPass();
+
+        drawTiles({
+            painter,
+            source,
+            layer,
+            coords,
+            defines: definesForPass,
+            blendMode,
+            depthMode,
+            verticalScale
+        });
+    } else if (painter.renderPass === 'light-beam' && drawLayer) {
+        const definesForPass: Array<DynamicDefinesType> = [
+            "HAS_ATTRIBUTE_a_part_color_emissive",
+            "HAS_ATTRIBUTE_a_bloom_attenuation"
+        ];
+
+        const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
+        const blendMode = ColorMode.alphaBlended;
 
         drawTiles({
             painter,

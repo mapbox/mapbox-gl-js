@@ -17721,6 +17721,19 @@
           0.2,
           "roof",
           0.1,
+          "window",
+          [
+            "match",
+            [
+              "config",
+              "lightPreset"
+            ],
+            "day",
+            0.2,
+            0.6
+          ],
+          "door",
+          2.5,
           0
         ],
         "building-color": [
@@ -17731,80 +17744,53 @@
           ],
           "wall",
           [
-            "match",
-            [
-              "config",
-              "lightPreset"
-            ],
-            "day",
-            [
-              "hsl",
-              41,
-              90,
-              90
-            ],
-            [
-              "hsl",
-              64,
-              100,
-              90
-            ]
+            "interpolate",
+            ["linear"],
+            ["get", "height"],
+            0,
+            "hsl(40, 43%, 97%)",
+            200,
+            "hsl(23, 60%, 97%)"
           ],
           "roof",
           [
-            "case",
-            [
-              "match",
+            "match",
+            ["get", "roof_type"],
+            ["gabled", "hipped", "mansard", "pyramidal"],
+            ["hsl", [
+                "at",
+                ["round", ["random", 0, 9, ["id"]]],
+                [23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+              ], 
+              65,
               [
-                "get",
-                "roof_type"
-              ],
-              [
-                "parapet"
-              ],
-              true,
-              false
-            ],
-            [
-              "match",
-              [
-                "config",
-                "lightPreset"
-              ],
-              "day",
-              [
-                "hsl",
-                41,
-                26,
-                80
-              ],
-              [
-                "hsl",
-                45,
-                30,
-                87
+                "at",
+                ["round", ["random", 0, 9, ["id"]]],
+                [95, 91, 95, 91, 95, 91, 95, 91, 95, 91]
               ]
             ],
-            [
-              "match",
-              [
-                "config",
-                "lightPreset"
-              ],
-              "day",
-              [
-                "hsl",
-                25,
-                43,
-                80
-              ],
-              [
-                "hsl",
-                26,
-                64,
-                87
-              ]
+            ["hsl", [
+                "at",
+                ["round", ["random", 0, 9, ["id"]]],
+                [22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+              ], 
+              50,
+              93
             ]
+          ],
+          "window",
+          [
+            "hsl",
+            202.2,
+            28.9,
+            81.1
+          ],
+          "door",
+          [
+            "hsl",
+            41.0,
+            0.0,
+            100.0
           ],
           [
             "hsl",
@@ -17815,7 +17801,7 @@
         ],
         "building-vertical-scale": 1,
         "building-ambient-occlusion-ground-intensity": 0.15,
-        "building-ambient-occlusion-wall-intensity": 1,
+        "building-ambient-occlusion-intensity": 1,
         "building-opacity": [
           "interpolate",
           [
@@ -17889,20 +17875,6 @@
               "id"
             ]
           ]
-        ],
-        "fill-extrusion-flood-light-intensity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "measure-light",
-            "brightness"
-          ],
-          0.0,
-          0.3,
-          0.05,
-          0
         ],
         "fill-extrusion-flood-light-wall-radius": [
           "case",
