@@ -3,6 +3,8 @@
 
 in vec3 a_pos_3f;
 in vec3 a_normal_3;
+in vec3 a_centroid_3;
+
 in vec4 a_faux_facade_data;
 in vec2 a_faux_facade_vertical_range;
 
@@ -63,6 +65,8 @@ void main() {
 
     vec3 a_normal_3f = a_normal_3 / MAX_INT_16;
     v_normal = vec3(u_normal_matrix * vec4(a_normal_3f, 0.0));
+
+    float hidden = 0.0;
     
 #ifdef BUILDING_FAUX_FACADE
     v_faux_facade = a_faux_facade_data.x;
@@ -80,7 +84,7 @@ void main() {
 
         v_aspect = v_faux_facade_window.x / v_faux_facade_window.y;
 
-        mat3 tbn = get_tbn(v_normal);
+        mat3 tbn = get_tbn(normalize(v_normal));
         v_tbn_0 = tbn[0];
         v_tbn_1 = tbn[1];
         v_tbn_2 = tbn[2];
@@ -90,10 +94,16 @@ void main() {
     }
 #endif
     v_pos = a_pos_3f;
-    gl_Position = u_matrix * vec4(a_pos_3f, 1.0);
+
+#ifdef RENDER_CUTOFF
+    vec4 ground = u_matrix * vec4(a_centroid_3, 1.0);
+    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, ground.z);
+    hidden = float(v_cutoff_opacity == 0.0);
+    v_pos.z *= v_cutoff_opacity;
+#endif
 
 #ifdef RENDER_SHADOWS
-    vec3 shadow_pos = a_pos_3f;
+    vec3 shadow_pos = v_pos;
 #ifdef NORMAL_OFFSET
     vec3 offset = shadow_normal_offset_model(v_normal);
     shadow_pos += offset * shadow_normal_offset_multiplier0();
@@ -104,10 +114,8 @@ void main() {
 #endif
 
 #ifdef FOG
-    v_fog_pos = fog_position(a_pos_3f);
+    v_fog_pos = fog_position(v_pos);
 #endif
 
-#ifdef RENDER_CUTOFF
-    v_cutoff_opacity = cutoff_opacity(u_cutoff_params, gl_Position.z);
-#endif
+    gl_Position = mix(u_matrix * vec4(v_pos, 1), AWAY, hidden);
 }

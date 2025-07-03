@@ -48,6 +48,7 @@ export type PaintProps = {
     "building-emissive-strength": DataDrivenProperty<number>;
     "building-facade-emissive-chance": DataConstantProperty<number>;
     "building-ambient-occlusion-window-intensity": DataConstantProperty<number>;
+    "building-cutoff-fade-range": DataConstantProperty<number>;
     "building-color-use-theme": DataDrivenProperty<string>;
 };
 
@@ -64,5 +65,6 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "building-emissive-strength": new DataDrivenProperty(styleSpec["paint_building"]["building-emissive-strength"]),
     "building-facade-emissive-chance": new DataConstantProperty(styleSpec["paint_building"]["building-facade-emissive-chance"]),
     "building-ambient-occlusion-window-intensity": new DataConstantProperty(styleSpec["paint_building"]["building-ambient-occlusion-window-intensity"]),
+    "building-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_building"]["building-cutoff-fade-range"]),
     "building-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

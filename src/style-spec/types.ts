@@ -1156,7 +1156,8 @@ export type BuildingLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
-        "building-ambient-occlusion-window-intensity"?: ExpressionSpecification
+        "building-ambient-occlusion-window-intensity"?: ExpressionSpecification,
+        "building-cutoff-fade-range"?: ExpressionSpecification
     }
 }
 

@@ -210,10 +210,6 @@ void main() {
     color.rgb = linearTosRGB(color.rgb);
     color *= u_opacity;
 
-#ifdef RENDER_CUTOFF
-    color *= v_cutoff_opacity;
-#endif
-
 #ifdef INDICATOR_CUTOUT
     color = applyCutout(color, v_pos.z);
 #endif
