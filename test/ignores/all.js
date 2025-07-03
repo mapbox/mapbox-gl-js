@@ -262,9 +262,6 @@ const skip = [
     "render-tests/building/faux-facade/skillion-unsupported",
     "render-tests/building/faux-facade/window-ao",
 
-    // Flaky model tests
-    "render-tests/model-layer/vector-layer-external-models-import",
-
     // https://mapbox.atlassian.net/browse/GLJS-1295
     "render-tests/placement/icon-optional",
     "render-tests/placement/text-optional/basic",
