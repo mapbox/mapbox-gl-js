@@ -109,7 +109,7 @@ vec3 get_shade_info(in vec3 v,
     if (x_major) {
         out_normal = sign(v.x) * tbn[0];
     } else if (y_major) {
-        out_normal = sign(v.y) * tbn[1];
+        out_normal = vec3(0.0, 0.0, -sign(v.y));
     } else if (z_major) {
         out_color = v_faux_color_emissive.rgb;
         out_emissive = v.z <= 0.0 ? get_emissive(id) : out_emissive;
