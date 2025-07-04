@@ -119,6 +119,12 @@ const getTest = (renderTestName) => async () => {
         const expectedImages = await getExpectedImages(testName, renderTest);
         const {actualImageData, w, h} = await getActualImage(style, options, renderTestName);
 
+        const actual = getActualImageDataURL(actualImageData, mapRef.current, {w, h}, options);
+
+        if (!import.meta.env.VITE_CI) {
+            await server.commands.writeFile(`${basePath}/${testName}/actual.png`, actual.split(',')[1], {encoding: 'base64'});
+        }
+
         if (expectedImages.length === 0 && !import.meta.env.VITE_UPDATE) {
             throw new Error(`No expected images found for ${renderTestName}. Please run the test with UPDATE=true to generate expected images.`);
         }
@@ -132,8 +138,6 @@ const getTest = (renderTestName) => async () => {
             errors
         };
 
-        const actual = getActualImageDataURL(actualImageData, mapRef.current, {w, h}, options);
-
         if (minDiffImage && expectedIndex !== -1 && (!import.meta.env.VITE_CI || !pass)) {
             diffCanvas.width = w;
             diffCanvas.height = h;
@@ -143,7 +147,6 @@ const getTest = (renderTestName) => async () => {
             const imgDiff = diffCanvas.toDataURL();
 
             if (!import.meta.env.VITE_CI) {
-                await server.commands.writeFile(`${basePath}/${testName}/actual.png`, actual.split(',')[1], {encoding: 'base64'});
                 await server.commands.writeFile(`${basePath}/${testName}/diff.png`, imgDiff.split(',')[1], {encoding: 'base64'});
             }
 
