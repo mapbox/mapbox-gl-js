@@ -1,32 +1,33 @@
-import CollisionIndex from './collision_index';
+import Point from '@mapbox/point-geometry';
+import assert from 'assert';
+import {mat4} from 'gl-matrix';
+import {pointInFootprint, skipClipping, transformPointToTile} from '../../3d-style/source/replacement_source';
+import {LayerTypeMask} from '../../3d-style/util/conflation';
+import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
+import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util';
 import EXTENT from '../style-spec/data/extent';
+import {clamp, warnOnce} from '../util/util';
+import CollisionIndex from './collision_index';
 import ONE_EM from './one_em';
 import * as projection from './projection';
-import {getAnchorJustification, evaluateVariableOffset} from './symbol_layout';
 import {getAnchorAlignment, WritingMode} from './shaping';
-import {mat4} from 'gl-matrix';
-import assert from 'assert';
-import Point from '@mapbox/point-geometry';
-import {getSymbolPlacementTileProjectionMatrix} from '../geo/projection/projection_util';
-import {clamp, warnOnce} from '../util/util';
-import {transformPointToTile, pointInFootprint, skipClipping} from '../../3d-style/source/replacement_source';
-import {LayerTypeMask} from '../../3d-style/util/conflation';
+import {evaluateVariableOffset, getAnchorJustification} from './symbol_layout';
 import {evaluateSizeForFeature, evaluateSizeForZoom} from './symbol_size';
 
-import type BuildingIndex from '../source/building_index';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
-import type Transform from '../geo/transform';
-import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
-import type Tile from '../source/tile';
-import type SymbolBucket from '../data/bucket/symbol_bucket';
-import type {SymbolBuffers, CollisionArrays, SingleCollisionBox} from '../data/bucket/symbol_bucket';
 import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types';
+import type SymbolBucket from '../data/bucket/symbol_bucket';
+import type {CollisionArrays, SingleCollisionBox, SymbolBuffers} from '../data/bucket/symbol_bucket';
 import type FeatureIndex from '../data/feature_index';
+import type Transform from '../geo/transform';
+import type BuildingIndex from '../source/building_index';
+import type Tile from '../source/tile';
 import type {OverscaledTileID} from '../source/tile_id';
-import type {TextAnchor} from './symbol_layout';
 import type {FogState} from '../style/fog_helpers';
+import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 import type {PlacedCollisionBox} from './collision_index';
 import type {Orientation} from './shaping';
+import type {TextAnchor} from './symbol_layout';
 
 // PlacedCollisionBox with all fields optional
 type PartialPlacedCollisionBox = Partial<PlacedCollisionBox>;
@@ -305,6 +306,7 @@ export class Placement {
                 pixelsToTiles);
 
         let labelToScreenMatrix = null;
+        const invMatrix = symbolBucket.getProjection().createInversionMatrix(this.transform, tile.tileID.canonical);
 
         if (pitchWithMap) {
             const glMatrix = projection.getGlCoordMatrix(
@@ -344,12 +346,18 @@ export class Placement {
         const textScaleFactor = clamp(scaleFactor, textSizeScaleRangeMin, textSizeScaleRangeMax);
         const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
         const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
+        const mercatorCenter: [number, number] = [
+            mercatorXfromLng(this.transform.center.lng),
+            mercatorYfromLat(this.transform.center.lat)
+        ];
 
         const parameters = {
             bucket: symbolBucket,
             layout,
             paint,
             posMatrix,
+            invMatrix,
+            mercatorCenter,
             textLabelPlaneMatrix,
             labelToScreenMatrix,
             clippingData,
@@ -380,6 +388,9 @@ export class Placement {
     attemptAnchorPlacement(
         anchor: TextAnchor,
         textBox: SingleCollisionBox,
+        mercatorCenter: [number, number],
+        invMatrix: mat4,
+        projectedPosOnLabelSpace: boolean,
         width: number,
         height: number,
         textScale: number,
@@ -408,13 +419,13 @@ export class Placement {
         const shift = calculateVariableLayoutShift(anchor, width, height, textOffset, textScale);
 
         const placedGlyphBoxes = this.collisionIndex.placeCollisionBox(
-            bucket, textScale, textBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
+            bucket, textScale, textBox, mercatorCenter, invMatrix, projectedPosOnLabelSpace, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
             textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
         if (iconBox) {
             const size = bucket.getSymbolInstanceIconSize(iconSize, this.transform.zoom, symbolInstance.placedIconSymbolIndex);
             const placedIconBoxes = this.collisionIndex.placeCollisionBox(
                 bucket, size,
-                iconBox, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
+                iconBox, mercatorCenter, invMatrix, projectedPosOnLabelSpace, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
                 textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
             if (placedIconBoxes.box.length === 0) return;
         }
@@ -461,6 +472,8 @@ export class Placement {
             labelToScreenMatrix,
             clippingData,
             textPixelRatio,
+            mercatorCenter,
+            invMatrix,
             holdingForFade,
             collisionBoxArray,
             partiallyEvaluatedTextSize,
@@ -473,16 +486,27 @@ export class Placement {
         const iconOptional = layout.get('icon-optional');
         const textAllowOverlap = layout.get('text-allow-overlap');
         const iconAllowOverlap = layout.get('icon-allow-overlap');
-        const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
+        const textRotateWithMap = layout.get('text-rotation-alignment') === 'map';
+        const iconRotateWithMap = layout.get('icon-rotation-alignment') === 'map';
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
         const symbolZOffset = paint.get('symbol-z-offset');
         const elevationFromSea = layout.get('symbol-elevation-reference') === 'sea';
+        const symbolPlacement = layout.get('symbol-placement');
         const [textSizeScaleRangeMin, textSizeScaleRangeMax] = layout.get('text-size-scale-range');
         const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
         const textScaleFactor = clamp(scaleFactor, textSizeScaleRangeMin, textSizeScaleRangeMax);
         const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
+        const textVariableAnchor = layout.get('text-variable-anchor');
+
+        const isTextPlacedAlongLine = textRotateWithMap && symbolPlacement !== 'point';
+        const isIconPlacedAlongLine = iconRotateWithMap && symbolPlacement !== 'point';
+        const hasVariableAnchors = textVariableAnchor && bucket.hasTextData();
+        const updateTextFitIcon = bucket.hasIconTextFit() && hasVariableAnchors && bucket.hasIconData();
 
         this.transform.setProjection(bucket.projection);
+
+        const textProjectedPosOnLabelSpace = hasVariableAnchors || isTextPlacedAlongLine;
+        const iconProjectedPosOnLabelSpace = isIconPlacedAlongLine || updateTextFitIcon;
 
         // This logic is similar to the "defaultOpacityState" logic below in updateBucketOpacities
         // If we know a symbol is always supposed to show, force it to be marked visible even if
@@ -618,10 +642,10 @@ export class Placement {
                     }
                 };
 
-                if (!layout.get('text-variable-anchor')) {
+                if (!textVariableAnchor) {
                     const placeBox = (collisionTextBox: SingleCollisionBox, orientation: Orientation) => {
                         const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, boxIndex, scaleFactor);
-                        const placedFeature = this.collisionIndex.placeCollisionBox(bucket, textScale, collisionTextBox,
+                        const placedFeature = this.collisionIndex.placeCollisionBox(bucket, textScale, collisionTextBox, mercatorCenter, invMatrix, textProjectedPosOnLabelSpace,
                             new Point(0, 0), textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                         if (placedFeature && placedFeature.box && placedFeature.box.length) {
                             this.markUsedOrientation(bucket, orientation, symbolInstance);
@@ -652,7 +676,7 @@ export class Placement {
                     updatePreviousOrientationIfNotPlaced(!!isPlaced);
 
                 } else {
-                    let anchors = layout.get('text-variable-anchor');
+                    let anchors = textVariableAnchor;
 
                     // If this symbol was in the last placement, shift the previously used
                     // anchor to the front of the anchor list, only if the previous anchor
@@ -679,7 +703,7 @@ export class Placement {
                             const anchor = anchors[i % anchors.length];
                             const allowOverlap = (i >= anchors.length);
                             const result = this.attemptAnchorPlacement(
-                                anchor, collisionTextBox, width, height, textScale, rotateWithMap,
+                                anchor, collisionTextBox, mercatorCenter, invMatrix, textProjectedPosOnLabelSpace, width, height, textScale, textRotateWithMap,
                                 pitchWithMap, textPixelRatio, posMatrix, collisionGroup, allowOverlap,
                                 symbolInstance, boxIndex, bucket, orientation, variableIconBox,
                                 partiallyEvaluatedTextSize, partiallyEvaluatedIconSize);
@@ -787,10 +811,10 @@ export class Placement {
                 const placeIconFeature = (iconBox: SingleCollisionBox) => {
                     updateBoxData(iconBox);
                     const shiftPoint: Point = symbolInstance.hasIconTextFit && shift ?
-                        offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle) :
+                        offsetShift(shift.x, shift.y, textRotateWithMap, pitchWithMap, this.transform.angle) :
                         new Point(0, 0);
                     const iconScale = bucket.getSymbolInstanceIconSize(partiallyEvaluatedIconSize, this.transform.zoom, symbolInstance.placedIconSymbolIndex);
-                    return this.collisionIndex.placeCollisionBox(bucket, iconScale, iconBox, shiftPoint,
+                    return this.collisionIndex.placeCollisionBox(bucket, iconScale, iconBox, mercatorCenter, invMatrix, iconProjectedPosOnLabelSpace, shiftPoint,
                         iconAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                 };
 

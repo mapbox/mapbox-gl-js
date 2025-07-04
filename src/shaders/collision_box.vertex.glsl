@@ -14,13 +14,28 @@ uniform mat4 u_matrix;
 uniform vec2 u_extrude_scale;
 uniform float u_camera_to_center_distance;
 
+#ifdef PROJECTION_GLOBE_VIEW
+uniform vec3 u_tile_id;
+uniform mat4 u_inv_rot_matrix;
+uniform vec2 u_merc_center;
+uniform float u_zoom_transition;
+#endif
+
 out float v_placed;
 out float v_notUsed;
 
 void main() {
     float feature_elevation = a_elevation_from_sea.x + a_auto_z_offset;
     float terrain_elevation = (a_elevation_from_sea.y == 1.0 ? 0.0 : elevation(a_anchor_pos));
-    vec4 projectedPoint = u_matrix * vec4(a_pos + elevationVector(a_anchor_pos) * (feature_elevation + terrain_elevation), 1);
+    vec3 proj_pos = a_pos + elevationVector(a_anchor_pos) * (feature_elevation + terrain_elevation);
+#ifdef PROJECTION_GLOBE_VIEW
+#ifndef PROJECTED_POS_ON_VIEWPORT
+    vec3 globe_pos = proj_pos;
+    vec3 mercator_pos = mercator_tile_position(u_inv_rot_matrix, a_anchor_pos, u_tile_id, u_merc_center);
+    proj_pos = mix_globe_mercator(globe_pos, mercator_pos, u_zoom_transition);
+#endif
+#endif
+    vec4 projectedPoint = u_matrix * vec4(proj_pos, 1);
 
     highp float camera_to_anchor_distance = projectedPoint.w;
     highp float collision_perspective_ratio = clamp(

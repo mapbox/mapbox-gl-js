@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "collisionDebug": true
+    }
+  },
+  "center": [
+    0,
+    40
+  ],
+  "projection": {
+    "name": "globe"
+  },
+  "zoom": 5.5,
+  "pitch": 60,
+  "bearing": 100,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/places.geojson"
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "point",
+        "text-field": "test test test",
+        "text-size": 40,
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 2048,
+      "height": 128,
+      "collisionDebug": true,
+      "queryGeometry": [
+        [270, 56],
+        [270, 60]
+      ]
+    }
+  },
+  "projection": {
+    "name": "globe"
+  },
+  "center": [
+    34.96,
+    -35.18
+  ],
+  "zoom": 5.4,
+  "pitch": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/places.geojson"
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "point",
+        "text-field": "{name}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

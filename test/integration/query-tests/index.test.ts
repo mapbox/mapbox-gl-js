@@ -121,6 +121,10 @@ const getTest = (queryTestName) => async () => {
             performanceMetricsCollection: false
         });
 
+        if (options.collisionDebug) {
+            map.showCollisionBoxes = true;
+        }
+
         map.repaint = true;
         map._authenticate = () => {};
 

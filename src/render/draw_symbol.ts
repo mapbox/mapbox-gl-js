@@ -4,7 +4,6 @@ import SegmentVector from '../data/segment';
 import * as symbolProjection from '../symbol/projection';
 import {mat4, vec3, vec4} from 'gl-matrix';
 import {clamp} from '../util/util';
-const identityMat4 = mat4.create();
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
 import CullFaceMode from '../gl/cull_face_mode';
@@ -65,6 +64,8 @@ type SymbolTileRenderState = {
 };
 
 type Alignment = 'auto' | 'map' | 'viewport';
+
+const identityMat4 = mat4.create();
 
 function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolStyleLayer, coords: Array<OverscaledTileID>, variableOffsets: Partial<Record<CrossTileID, VariableOffset>>) {
     if (painter.renderPass !== 'translucent') return;

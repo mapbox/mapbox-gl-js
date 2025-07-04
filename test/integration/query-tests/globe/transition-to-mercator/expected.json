@@ -1,0 +1,23 @@
+[
+  {
+    "type": "Feature",
+    "state": {},
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        18.4405517578125,
+        -34.30714385628803
+      ]
+    },
+    "properties": {
+      "scalerank": 3,
+      "name": "Cape of Good Hope",
+      "lat_y": -34.307311,
+      "long_x": 18.441206,
+      "region": "Africa",
+      "featureclass": "cape"
+    },
+    "id": 179,
+    "source": "geojson"
+  }
+]

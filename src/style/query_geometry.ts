@@ -45,9 +45,9 @@ export class QueryGeometry {
 
     isAboveHorizon: boolean;
 
-    constructor(screenBounds: Point[], cameraPoint: Point, aboveHorizon: boolean, transform: Transform) {
+    constructor(screenBounds: Point[], aboveHorizon: boolean, transform: Transform) {
         this.screenBounds = screenBounds;
-        this.cameraPoint = cameraPoint;
+        this.cameraPoint = transform.getCameraPoint();
         this._screenRaycastCache = {};
         this._cameraRaycastCache = {};
         this.isAboveHorizon = aboveHorizon;
@@ -80,7 +80,7 @@ export class QueryGeometry {
             aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p)) && transform.isPointAboveHorizon(center);
         }
 
-        return new QueryGeometry(screenGeometry, transform.getCameraPoint(), aboveHorizon, transform);
+        return new QueryGeometry(screenGeometry, aboveHorizon, transform);
     }
 
     /**
