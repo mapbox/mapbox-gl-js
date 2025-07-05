@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   check:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -32,12 +32,9 @@ jobs:
     - run: npm run lint-css
 
   test-build:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
+    runs-on: ubuntu-latest
     permissions:
-      id-token: write
       contents: read
-    outputs:
-      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -46,9 +43,7 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
+    - run: npx playwright install chromium --with-deps --no-shell
     - run: npm run build-dev
     - run: npm run build-prod
     - run: npm run build-prod-min
@@ -61,18 +56,9 @@ jobs:
     - run: npm run size
     - run: npm run prepare-release-pages
       if: ${{ always() }}
-    - id: upload
-      uses: ./.github/actions/upload
-      if: ${{ always() }}
-      with:
-        file-path: ./test/release
-        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - name: 📎 Log artifact URL
-      run: echo "${{ steps.upload.outputs.artifact-url }}"
-      if: ${{ steps.upload.outputs.artifact-url }}
 
   test-typings:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -85,13 +71,10 @@ jobs:
     - run: (cd ./test/build/typings && npm ci && npm run tsc)
 
   test-unit:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      id-token: write
       contents: read
-    outputs:
-      artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -100,358 +83,11 @@ jobs:
         cache: npm
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chrome --with-deps
+    - run: npx playwright install chrome --with-deps
     - run: xvfb-run -a npm run test-unit
-    - id: upload
-      uses: ./.github/actions/upload
-      if: ${{ always() }}
-      with:
-        file-path: ./test/unit/vitest/
-        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - name: 📎 Log artifact URL
-      run: echo "${{ steps.upload.outputs.artifact-url }}"
-      if: ${{ steps.upload.outputs.artifact-url }}
-
-  test-usvg:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
-    timeout-minutes: 5
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
-    - run: tar xvzf test/usvg/test-suite.tar.gz -C test/usvg/
-    - run: xvfb-run -a npm run test-usvg
-
-  test-query:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
-    timeout-minutes: 5
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      artifact-url: ${{ steps.upload.outputs.artifact-url }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
-    - run: npm run build-dev
-    - run: xvfb-run -a npm run test-query
-    - id: upload
-      uses: ./.github/actions/upload
-      if: ${{ always() }}
-      with:
-        file-path: ./test/integration/query-tests/query-tests.html
-        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - name: 📎 Log artifact URL
-      run: echo "${{ steps.upload.outputs.artifact-url }}"
-      if: ${{ steps.upload.outputs.artifact-url }}
-
-  test-render-linux-chrome-dev:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
-    timeout-minutes: 15
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      artifact-url: ${{ steps.upload.outputs.artifact-url }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
-    - run: npm run build-dev
-    - run: xvfb-run -a npm run test-render-chromium
-    - id: upload
-      uses: ./.github/actions/upload
-      if: ${{ always() }}
-      with:
-        file-path: ./test/integration/render-tests/render-tests.html
-        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - name: 📎 Log artifact URL
-      run: echo "${{ steps.upload.outputs.artifact-url }}"
-      if: ${{ steps.upload.outputs.artifact-url }}
-
-  test-render-linux-chrome-prod:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
-    timeout-minutes: 15
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      artifact-url: ${{ steps.upload.outputs.artifact-url }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
-    - run: npm run build-prod-min
-    - run: xvfb-run -a npm run test-render-chromium-prod
-    - id: upload
-      uses: ./.github/actions/upload
-      if: ${{ always() }}
-      with:
-        file-path: ./test/integration/render-tests/render-tests.html
-        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - name: 📎 Log artifact URL
-      run: echo "${{ steps.upload.outputs.artifact-url }}"
-      if: ${{ steps.upload.outputs.artifact-url }}
-
-  test-render-linux-chrome-csp:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
-    timeout-minutes: 15
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      artifact-url: ${{ steps.upload.outputs.artifact-url }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install chromium --with-deps --no-shell
-    - run: npm run build-csp
-    - run: xvfb-run -a npm run test-render-chromium-csp
-    - id: upload
-      uses: ./.github/actions/upload
-      if: ${{ always() }}
-      with:
-        file-path: ./test/integration/render-tests/render-tests.html
-        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - name: 📎 Log artifact URL
-      run: echo "${{ steps.upload.outputs.artifact-url }}"
-      if: ${{ steps.upload.outputs.artifact-url }}
-
-  test-render-linux-firefox-dev:
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/family=m7a
-    timeout-minutes: 15
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      artifact-url: ${{ steps.upload.outputs.artifact-url }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: |
-        while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
-        npx playwright install firefox --with-deps --no-shell
-    - run: npm run build-dev
-    - run: xvfb-run -a npm run test-render-firefox
-    - id: upload
-      uses: ./.github/actions/upload
-      if: ${{ always() }}
-      with:
-        file-path: ./test/integration/render-tests/render-tests.html
-        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - name: 📎 Log artifact URL
-      run: echo "${{ steps.upload.outputs.artifact-url }}"
-      if: ${{ steps.upload.outputs.artifact-url }}
-
-  test-render-mac-safari-dev:
-    runs-on: ['self-hosted', 'macos-sequoia-xcode:16.2']
-    timeout-minutes: 15
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      artifact-url: ${{ steps.upload.outputs.artifact-url }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: npx playwright install webkit --with-deps --no-shell
-    - run: npm run build-dev
-    - run: npm run test-render-safari
-    - id: upload
-      uses: ./.github/actions/upload
-      if: ${{ always() }}
-      with:
-        file-path: ./test/integration/render-tests/render-tests.html
-        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - name: 📎 Log artifact URL
-      run: echo "${{ steps.upload.outputs.artifact-url }}"
-      if: ${{ steps.upload.outputs.artifact-url }}
-
-  test-render-mac-chrome-dev:
-    runs-on: ['self-hosted', 'macos-sequoia-xcode:16.2']
-    timeout-minutes: 15
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      artifact-url: ${{ steps.upload.outputs.artifact-url }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - run: npx playwright install chromium --with-deps --no-shell
-    - run: npm run build-dev
-    - run: npm run test-render-chromium
-    - id: upload
-      uses: ./.github/actions/upload
-      if: ${{ always() }}
-      with:
-        file-path: ./test/integration/render-tests/render-tests.html
-        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - name: 📎 Log artifact URL
-      run: echo "${{ steps.upload.outputs.artifact-url }}"
-      if: ${{ steps.upload.outputs.artifact-url }}
-
-  test-render-windows-chrome-dev:
-    runs-on: runs-on=${{ github.run_id }}/image=windows22-base-x64/cpu=8/ram=32/family=m7i
-    timeout-minutes: 20
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      artifact-url-0: ${{ steps.set-output-0.outputs.url }}
-      artifact-url-1: ${{ steps.set-output-1.outputs.url }}
-      artifact-url-2: ${{ steps.set-output-2.outputs.url }}
-      artifact-url-3: ${{ steps.set-output-3.outputs.url }}
-    strategy:
-      fail-fast: false
-      matrix:
-          shard: [0, 1, 2]
-    steps:
-    # Patch Windows to enable long paths in Windows 10 on RunsOn windows22-base-x64
-    # https://github.com/runs-on/runner-images-for-aws/issues/15
-    # https://github.com/actions/checkout/issues/1985#issuecomment-2489125043
-    # https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
-    - name: Patch long paths in Windows 10
-      shell: powershell
-      run: |
-        New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force;
-    - id: scoop-cache
-      uses: actions/cache@v4
-      with:
-        path: ~\scoop
-        key: scoop-v1
-        restore-keys: scoop-v1
-    - name: Install Git and AWS CLI
-      if: steps.scoop-cache.outputs.cache-hit != 'true'
-      run: |
-        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-        Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-        $env:Path = "$env:USERPROFILE\scoop\shims;$env:Path"
-        scoop install git aws
-    - run: |
-        $env:Path = "$env:USERPROFILE\scoop\apps\git\current\bin;$env:Path"
-        $env:Path = "$env:USERPROFILE\scoop\apps\aws\current;$env:Path"
-        echo "PATH=$env:Path" >> $env:GITHUB_ENV
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version-file: '.nvmrc'
-        cache: npm
-        cache-dependency-path: 'package-lock.json'
-    - run: npm ci --no-audit --no-fund
-    - id: playwright-version
-      run: |
-        $version = npx playwright --version
-        Write-Output "version=$version" >> $env:GITHUB_OUTPUT
-    - id: playwright-cache
-      uses: actions/cache@v4
-      with:
-        path: ~\AppData\Local\ms-playwright
-        key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-        restore-keys: |
-          playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-          playwright-${{ runner.os }}-
-    - run: npx playwright install chromium --with-deps --no-shell
-      if: steps.playwright-cache.outputs.cache-hit != 'true'
-    - run: npm run build-dev
-    - run: npm run test-render-chromium
-      env:
-        POOL_SHARDS: 3
-        POOL_SHARD_ID: ${{ matrix.shard }}
-    - id: upload
-      uses: ./.github/actions/upload
-      if: ${{ always() }}
-      with:
-        shard: ${{ matrix.shard }}
-        file-path: ./test/integration/render-tests/render-tests.html
-        aws-account-id: ${{ vars.AWS_ACCOUNT_ID_DEFAULT }}
-    - name: 📎 Log artifact URL (Shard ${{ matrix.shard }})
-      run: echo "${{ steps.upload.outputs.artifact-url }}"
-      if: ${{ steps.upload.outputs.artifact-url }}
-    - id: set-output-0
-      if: matrix.shard == 0
-      run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
-    - id: set-output-1
-      if: matrix.shard == 1
-      run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
-    - id: set-output-2
-      if: matrix.shard == 2
-      run: echo "url=${{ steps.upload.outputs.artifact-url }}" >> $env:GITHUB_OUTPUT
-
-  trigger-performance-tests:
-    runs-on: runs-on=${{ github.run_id }}/runner=1cpu-linux-arm64
-    if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
-    steps:
-    - uses: actions/checkout@v4
-    - run: |
-        sha=$(git rev-parse HEAD)
-        response_code=$(curl --location --write-out "%{http_code}" --output response.json --request POST 'https://circleci.com/api/v2/project/github/mapbox/mapbox-gl-js-performance-internal/pipeline' --header 'Content-Type: application/json' -u $CIRCLECI_API_TOKEN: -d "{ \"parameters\": { \"setup_sha\": \"$sha\", \"setup_source_branch\": \"internal\" } }")
-        if [[ "$response_code" =~ ^2 ]]; then
-          pipeline_number=$(cat response.json | jq -r '.number' 2>/dev/null)
-          echo "## 🚀 [${{ github.job }}](https://app.circleci.com/pipelines/github/mapbox/mapbox-gl-js-performance-internal/$pipeline_number)" >> $GITHUB_STEP_SUMMARY
-          echo "Success: HTTP 2xx response"
-        else
-          echo "Error: Non-2xx response code - $response_code"
-          exit 1
-        fi
-      env:
-        CIRCLECI_API_TOKEN: ${{ secrets.CIRCLECI_API_TOKEN }}
 
   report:
-    runs-on: runs-on=${{ github.run_id }}/runner=1cpu-linux-arm64
+    runs-on: ubuntu-latest
     if: ${{ !cancelled() }}
     permissions:
       pull-requests: write
@@ -459,16 +95,7 @@ jobs:
       check,
       test-build,
       test-typings,
-      test-unit,
-      test-usvg,
-      test-query,
-      test-render-linux-chrome-dev,
-      test-render-linux-chrome-prod,
-      test-render-linux-chrome-csp,
-      test-render-linux-firefox-dev,
-      test-render-mac-safari-dev,
-      test-render-mac-chrome-dev,
-      test-render-windows-chrome-dev
+      test-unit
     ]
     steps:
     - id: report
@@ -483,10 +110,6 @@ jobs:
           esac
         }
 
-        artifact_link() {
-          [[ -n "$1" ]] && echo "[View]($1)" || echo "-"
-        }
-
         overall_status="✅ All Passed"
         if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
           overall_status="❌ Some Failed"
@@ -494,37 +117,13 @@ jobs:
           overall_status="🚫 Some Cancelled"
         fi
 
-        windows_links=""
-        urls=(
-          "${{ needs.test-render-windows-chrome-dev.outputs.artifact-url-0 }}"
-          "${{ needs.test-render-windows-chrome-dev.outputs.artifact-url-1 }}"
-          "${{ needs.test-render-windows-chrome-dev.outputs.artifact-url-2 }}"
-          "${{ needs.test-render-windows-chrome-dev.outputs.artifact-url-3 }}"
-        )
-        for i in 0 1 2 3; do
-          [[ -n "${urls[$i]}" ]] && {
-            [[ -n "$windows_links" ]] && windows_links="$windows_links / "
-            windows_links="${windows_links}[View $((i+1))](${urls[$i]})"
-          }
-        done
-        [[ -z "$windows_links" ]] && windows_links="-"
-
         cat >> $GITHUB_STEP_SUMMARY << EOF
         ## $overall_status
 
-        | Job | Status | Artifacts |
-        |-----|--------|-----------|
-        | check | $(status_emoji "${{ needs.check.result }}") | - |
-        | test-build | $(status_emoji "${{ needs.test-build.result }}") | $(artifact_link "${{ needs.test-build.outputs.artifact-url }}") |
-        | test-typings | $(status_emoji "${{ needs.test-typings.result }}") | - |
-        | test-unit | $(status_emoji "${{ needs.test-unit.result }}") | $(artifact_link "${{ needs.test-unit.outputs.artifact-url }}") |
-        | test-usvg | $(status_emoji "${{ needs.test-usvg.result }}") | - |
-        | test-query | $(status_emoji "${{ needs.test-query.result }}") | $(artifact_link "${{ needs.test-query.outputs.artifact-url }}") |
-        | test-render-linux-chrome-dev | $(status_emoji "${{ needs.test-render-linux-chrome-dev.result }}") | $(artifact_link "${{ needs.test-render-linux-chrome-dev.outputs.artifact-url }}") |
-        | test-render-linux-chrome-prod | $(status_emoji "${{ needs.test-render-linux-chrome-prod.result }}") | $(artifact_link "${{ needs.test-render-linux-chrome-prod.outputs.artifact-url }}") |
-        | test-render-linux-chrome-csp | $(status_emoji "${{ needs.test-render-linux-chrome-csp.result }}") | $(artifact_link "${{ needs.test-render-linux-chrome-csp.outputs.artifact-url }}") |
-        | test-render-linux-firefox-dev | $(status_emoji "${{ needs.test-render-linux-firefox-dev.result }}") | $(artifact_link "${{ needs.test-render-linux-firefox-dev.outputs.artifact-url }}") |
-        | test-render-mac-safari-dev | $(status_emoji "${{ needs.test-render-mac-safari-dev.result }}") | $(artifact_link "${{ needs.test-render-mac-safari-dev.outputs.artifact-url }}") |
-        | test-render-mac-chrome-dev | $(status_emoji "${{ needs.test-render-mac-chrome-dev.result }}") | $(artifact_link "${{ needs.test-render-mac-chrome-dev.outputs.artifact-url }}") |
-        | test-render-windows-chrome-dev | $(status_emoji "${{ needs.test-render-windows-chrome-dev.result }}") | $windows_links |
+        | Job | Status |
+        |-----|--------|
+        | check | $(status_emoji "${{ needs.check.result }}") |
+        | test-build | $(status_emoji "${{ needs.test-build.result }}") |
+        | test-typings | $(status_emoji "${{ needs.test-typings.result }}") |
+        | test-unit | $(status_emoji "${{ needs.test-unit.result }}") |
         EOF
