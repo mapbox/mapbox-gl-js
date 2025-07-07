@@ -1,0 +1,38 @@
+name: PR notify
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.draft == false &&
+      github.repository == 'mapbox/mapbox-gl-js' &&
+      github.event.pull_request.base.ref == github.event.repository.default_branch
+    steps:
+      - name: Setup GH writer-private token
+        uses: mapbox/setup-github-tokens@v2.0.1
+        with:
+          scope-type: 'writer'
+          repo-type: 'private'
+
+      - name: Notify upstream
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ env.GITHUB_WRITER_PRIVATE_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'mapbox',
+              repo: 'mapbox-sdk',
+              workflow_id: 'gl-js-import-public-pr.yml',
+              ref: 'main',
+              inputs: {
+                pr_number: '${{ github.event.pull_request.number }}'
+              }
+            });

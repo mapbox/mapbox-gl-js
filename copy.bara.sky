@@ -1,0 +1,85 @@
+SOT_REPO = "https://github.com/mapbox/mapbox-sdk.git"
+SOT_BRANCH = "main"
+
+DESTINATION_REPO = "https://github.com/mapbox/mapbox-gl-js.git"
+DESTINATION_BRANCH = "main"
+
+COMMITTER = "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+
+PROJECT_DIR = "projects/gl-js"
+
+# what can be pushed to the destination repo
+PUSH_INCLUDE = [PROJECT_DIR + "/**"]
+PUSH_EXCLUDE = [PROJECT_DIR + "/copy.bara.sky"]
+
+# what can be read in the destination PR
+PR_ORIGIN_INCLUDE = ["**"]
+PR_ORIGIN_EXCLUDE = []
+
+# what can be modified in SoT repo via PR
+PR_DESTINATION_INCLUDE = [PROJECT_DIR + "/**"]
+PR_DESTINATION_EXCLUDE = [PROJECT_DIR + "/copy.bara.sky"]
+
+# Push workflow: monorepo to public repo
+core.workflow(
+    name = "push",
+    origin = git.origin(
+        url = SOT_REPO,
+        ref = SOT_BRANCH
+    ),
+    destination = git.github_destination(
+        url = DESTINATION_REPO,
+        push = DESTINATION_BRANCH
+    ),
+    mode = "ITERATIVE",
+    authoring = authoring.pass_thru(COMMITTER),
+    origin_files = glob(PUSH_INCLUDE, exclude = PUSH_EXCLUDE),
+    transformations = [
+        core.move(PROJECT_DIR, ""),
+        metadata.restore_author("Author", separator=": ", search_all_changes = True),
+        metadata.scrubber("\\(#", replacement = "(internal-"), # replace "(#PR)" with "(internal-PR)"
+        metadata.scrubber("\\(public-", replacement = "(#"), # replace "(public-PR)" with "(#PR)"
+        metadata.scrubber('^(?:\n|.)*<public>((?:\n|.)*)</public>(?:\n|.)*$', msg_if_no_match = 'Internal Change', replacement = '$1')
+    ]
+)
+
+# Pull Request workflow: public repo to monorepo
+GITHUB_PR_TEMPLATE = """
+${GITHUB_PR_BODY}
+
+--
+
+> [!NOTE]
+> This PR was imported from the public repo and closes: ${GITHUB_PR_URL}
+> ```
+> <public>${GITHUB_PR_TITLE} (h/t @${GITHUB_PR_USER}) (#${GITHUB_PR_NUMBER})</public>
+> ```
+"""
+
+core.workflow(
+    name = "pr",
+    origin = git.github_pr_origin(
+        url = DESTINATION_REPO,
+        branch = DESTINATION_BRANCH,
+        use_merge = True,
+    ),
+    destination = git.github_pr_destination(
+        url = SOT_REPO,
+        destination_ref = SOT_BRANCH,
+        integrates = [],
+        title = "[EXT] ${GITHUB_PR_TITLE}",
+        update_description = True,
+    ),
+    mode = "CHANGE_REQUEST",
+    set_rev_id = False,
+    authoring = authoring.pass_thru(COMMITTER),
+    origin_files = glob(PR_ORIGIN_INCLUDE, exclude = PR_ORIGIN_EXCLUDE),
+    destination_files = glob(PR_DESTINATION_INCLUDE, exclude = PR_DESTINATION_EXCLUDE),
+    transformations = [
+        core.move("", PROJECT_DIR),
+        metadata.replace_message(GITHUB_PR_TEMPLATE),
+        metadata.scrubber("\\(#", replacement = "(public-"), # replace "(#PR)" with "(public-PR)"
+        metadata.scrubber("\\(internal-", replacement = "(#"), # replace "(internal-PR)" with "(#PR)"
+        metadata.save_author("Author", separator=": "),
+    ]
+)
