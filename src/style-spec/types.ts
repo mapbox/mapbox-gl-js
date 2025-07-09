@@ -1322,7 +1322,8 @@ export type ModelLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "visibility"?: "visible" | "none" | ExpressionSpecification,
-        "model-id"?: DataDrivenPropertyValueSpecification<string>
+        "model-id"?: DataDrivenPropertyValueSpecification<string>,
+        "model-allow-density-reduction"?: boolean
     },
     "paint"?: {
         "model-opacity"?: DataDrivenPropertyValueSpecification<number>,
