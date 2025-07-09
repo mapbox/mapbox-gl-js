@@ -204,27 +204,6 @@ const skip = [
     // Dithering of fog is always enabled in GL-JS
     "render-tests/fog/dithering-runtime-off",
 
-    // Needs updated model fixtures
-    "render-tests/model-layer/landmark-conflation-border-overlapping-extrusion",
-    "render-tests/model-layer/landmark-conflation-borders",
-    "render-tests/model-layer/landmark-conflation-borders-add-layer",
-    "render-tests/model-layer/landmark-conflation-borders-terrain",
-    "render-tests/model-layer/landmark-conflation-multiple-model-layers",
-    "render-tests/model-layer/landmark-shadows-terrain",
-    "render-tests/model-layer/landmark-shadows-opacity",
-    "render-tests/model-layer/landmark-terrain",
-    "render-tests/model-layer/lighting-3d-mode/shadow",
-    "render-tests/model-layer/landmark-conflation-multiple-sources",
-    "render-tests/model-layer/landmark-shadow-skip-render",
-    "render-tests/model-layer/landmark-multiple-model-layers-z-offset-hide-evaluated",
-    "render-tests/model-layer/landmark-shadows-opacity-cutoff-range",
-    "render-tests/model-layer/landmark-front-cutoff",
-    "render-tests/model-layer/landmark-front-cutoff-disabled",
-    "render-tests/model-layer/landmark-front-cutoff-no-fade",
-    "render-tests/model-layer/landmark-front-cutoff-opacity",
-    "render-tests/model-layer/landmark-front-cutoff-terrain",
-    "render-tests/clip-layer/clip-layer-default-below-one-batched-model",
-
     // Not implemented in gl-js
     "render-tests/fill-extrusion-partial-rendering/partial-rendering-0",
     "render-tests/fill-extrusion-partial-rendering/partial-rendering-1",
@@ -240,9 +219,6 @@ const skip = [
 
     // The algorithm for raster colour gradient texels stretching needs an adjustment
     "render-tests/raster-color/categorical",
-
-    // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
-    "render-tests/clip-layer/clip-layer-keep-fill-extrusions",
 
     // Not working correctly
     // https://github.com/mapbox/mapbox-gl-js-internal/pull/1909
