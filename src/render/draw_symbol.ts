@@ -425,7 +425,7 @@ function drawLayerSymbols(
                     baseDefines.push('PROJECTED_POS_ON_VIEWPORT');
                 }
             }
-            if (transitionProgress > 0.0) {
+            if (transitionProgress > 0.0 && bucket.hasAnySecondaryIcon) {
                 baseDefines.push('ICON_TRANSITION');
             }
             if (bucket.icon.zOffsetVertexBuffer && (!renderElevatedRoads || !painter.terrain)) {

@@ -431,6 +431,7 @@ class SymbolBucket implements Bucket {
     lineVertexArray: SymbolLineVertexArray;
     features: Array<SymbolFeature>;
     symbolInstances: SymbolInstanceArray;
+    hasAnySecondaryIcon: boolean;
     collisionArrays: Array<CollisionArrays>;
     sortKeyRanges: Array<SortKeyRange>;
     pixelRatio: number;
@@ -537,7 +538,7 @@ class SymbolBucket implements Bucket {
 
         this.activeReplacements = [];
         this.replacementUpdateTime = 0;
-
+        this.hasAnySecondaryIcon = false;
     }
 
     createArrays() {
@@ -718,6 +719,7 @@ class SymbolBucket implements Bucket {
                 }
 
                 if (iconSecondary) {
+                    this.hasAnySecondaryIcon = true;
                     const iconSecondaryId = iconSecondary.id.toString();
                     if (icons.has(iconSecondaryId)) {
                         icons.get(iconSecondaryId).push(iconSecondary);
