@@ -38,7 +38,9 @@
         "text-offset": [0, 2],
         "text-size": 20,
         "text-field": ["format", ["image", "london-overground"],
+                                 " ",
                                  ["image", "london-underground"],
+                                 "   ",
                                  ["image", "gb-national-rail.london-dlr"],
                                  ["image", "de-s-bahn.de-u-bahn"]
                                 ],

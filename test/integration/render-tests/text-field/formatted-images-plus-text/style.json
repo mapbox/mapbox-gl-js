@@ -3,7 +3,7 @@
   "metadata": {
     "test": {
       "pixelRatio": 2,
-      "height": 32,
+      "height": 64,
       "width": 128
     }
   },
@@ -20,7 +20,7 @@
             "type": "Feature",
             "geometry": {
               "type": "Point",
-              "coordinates": [ 0, 27 ]
+              "coordinates": [ 0, 15 ]
             }
           }
         ]
@@ -30,6 +30,20 @@
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sprite": "local://sprites/standard",
   "layers": [
+    {
+      "id": "text",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": ["image", "london-overground"],
+        "icon-offset": [0, -20],
+        "text-field": ["format", "London", ["image", "london-underground"]],
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    },
     {
       "id": "images",
       "type": "symbol",
