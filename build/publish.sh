@@ -1,5 +1,13 @@
 #!/bin/bash
 
+dry_run=false
+
+for arg in "$@"; do
+    if [[ "$arg" == "--dry-run" ]]; then
+        dry_run=true
+    fi
+done
+
 # run npm publish for every tag; run as part of CI on AWS CodeBuild
 git tag --points-at HEAD | while read tag; do
 
@@ -15,24 +23,48 @@ git tag --points-at HEAD | while read tag; do
 
     if [[ $tag =~ ^style-spec@ ]]; then
         cd src/style-spec
-        spec_version=$(node -p "require('./package.json').version")
+        spec_version="${tag#style-spec@}"
         echo "Publishing style-spec: $spec_version"
+
+        current_version=$(node -p "require('./package.json').version")
+        if [[ "$spec_version" != "$current_version" ]]; then
+            echo "npm version $spec_version --no-git-tag-version"
+            if [[ $dry_run == false ]]; then
+                npm version "$spec_version" --no-git-tag-version
+            fi
+        else
+            echo "Version already set to $spec_version, skipping version update"
+        fi
 
         if [[ -z $(npm view .@$spec_version) ]]; then
             echo "npm publish --tag $disttag"
-            npm publish --tag $disttag
+            if [[ $dry_run == false ]]; then
+                npm publish --tag "$disttag"
+            fi
         else
             echo "Already published."
         fi
         cd ../..
 
     elif [[ $tag =~ ^v[0-9] ]]; then
-        version=$(node -p "require('./package.json').version")
+        version="${tag#v}"
         echo "Publishing mapbox-gl: $version"
+
+        current_version=$(node -p "require('./package.json').version")
+        if [[ "$version" != "$current_version" ]]; then
+            echo "npm version $version --no-git-tag-version"
+            if [[ $dry_run == false ]]; then
+                npm version "$version" --no-git-tag-version
+            fi
+        else
+            echo "Version already set to $version, skipping version update"
+        fi
 
         if [[ -z $(npm view .@$version) ]]; then
             echo "npm publish --tag $disttag"
-            npm publish --tag $disttag
+            if [[ $dry_run == false ]]; then
+                npm publish --tag "$disttag"
+            fi
         else
             echo "Already published."
         fi

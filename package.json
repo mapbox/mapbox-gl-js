@@ -171,7 +171,7 @@
     "codegen": "tsx ./build/generate-style-code.ts && tsx ./build/generate-struct-arrays.ts",
     "build-typed-style-spec": "tsx ./build/generate-typed-style-spec.ts",
     "tsc": "tsc --project tsconfig.json",
-    "pushish-alpha": "./build/tag-alpha.sh"
+    "publish-alpha": "./build/tag-alpha.sh"
   },
   "files": [
     "dist/mapbox-gl*",
