@@ -3,9 +3,15 @@
 # run npm publish for every tag; run as part of CI on AWS CodeBuild
 git tag --points-at HEAD | while read tag; do
 
-    disttag=$(echo $tag | grep -oP '^(v|style-spec@)\d+\.\d+\.\d+-?\K(\w+)?')
-    disttag=${disttag:+next}
-    disttag=${disttag:-latest}
+    disttag=$(echo $tag | grep -oP '^(v|style-spec@)\d+\.\d+\.\d+-?\K([\w\.]+)?')
+
+    if [[ $disttag == alpha.* ]]; then
+        disttag="dev"
+    elif [[ -n $disttag ]]; then
+        disttag="next"
+    else
+        disttag="latest"
+    fi
 
     if [[ $tag =~ ^style-spec@ ]]; then
         cd src/style-spec
