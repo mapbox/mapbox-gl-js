@@ -104,7 +104,6 @@
         ],
         "building-ambient-occlusion-ground-intensity": 0.5,
         "building-ambient-occlusion-intensity": 1,
-        "building-ambient-occlusion-window-intensity": 1,
         "building-ambient-occlusion-ground-radius": 30
       }
     }

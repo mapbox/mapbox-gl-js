@@ -37,9 +37,11 @@
         var map = window.map = new mapboxgl.Map({
             container: 'map',
             devtools: true,
-            zoom: 12.5,
-            center: [11.57478, 48.136917],
-            style: 'procedural-buildings.style.json',
+            zoom: 18,
+            center: [11.576073, 48.135578],
+            pitch: 54,
+            bearing: -55.2,
+            style: 'mapbox://styles/mapbox/standard',
             hash: true
         });
 
@@ -99,6 +101,8 @@
         });
 
         map.on('style.load', () => {
+            map.addImport({id: 'procedural-buildings', url: 'procedural-buildings.fragment.json'});
+            
             // Store the original style so we can restore it - e.g. if someone
             // changed the lighting using one of the other debug options.
             let styleLights = map.getLights();
@@ -111,7 +115,7 @@
                     Dusk: "dusk",
                     Night: "night",
                 }
-            }, () => {                
+            }, () => {
                 map.setLights(styleLights);
                 map.setConfigProperty("basemap", "lightPreset", params.lightPreset);
             });

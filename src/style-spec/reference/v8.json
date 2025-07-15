@@ -2107,7 +2107,7 @@
       "type": "enum",
       "values": {
         "flat": {
-          "doc": "Use regular extruded buildings with flat roofs."
+          "doc": "Use flat roof for the procedurally generated buildings."
         },
         "hipped": {
           "doc": "Use hipped roof for the procedurally generated buildings."
@@ -7606,7 +7606,7 @@
         ]
       },
       "transition": true,
-      "doc": "Controls the intensity of ambinet occlusion when shading concave angles between walls and roof crevices.",
+      "doc": "Controls the intensity of ambient occlusion when shading concave angles between walls and roof crevices and windows.",
       "sdk-support": {
         "basic functionality": {
         }
@@ -7710,7 +7710,7 @@
     "building-color": {
       "type": "color",
       "default": "rgba(193, 154, 127, 1)",
-      "doc": "Color buildings. This can be styled using different building parts (e.g. windows, wall, roof, etc.). This won't be used if `building-roof-shape` has a value `flat`.",
+      "doc": "Color buildings. This can be styled using different building parts (e.g. window, wall, roof).",
       "experimental": true,
       "private": true,
       "use-theme": true,
@@ -7772,23 +7772,6 @@
         "parameters": [
           "measure-light",
           "zoom"
-        ]
-      }
-    },
-    "building-ambient-occlusion-window-intensity": {
-      "type": "number",
-      "default": 0,
-      "minimum": 0,
-      "maximum": 1,
-      "doc": "Controls the intensity of ambient occlusion applied to the windows of the buildings. A value of 0.0 means no ambient occlusion is applied, while a value of 1.0 means full ambient occlusion is applied.",
-      "experimental": true,
-      "property-type": "data-constant",
-      "sdk-support": {
-        "basic functionality": {}
-      },
-      "expression": {
-        "interpolated": false,
-        "parameters": [
         ]
       }
     },

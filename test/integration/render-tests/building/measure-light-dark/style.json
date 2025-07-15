@@ -216,8 +216,7 @@
           ],
           0
         ],
-        "building-ambient-occlusion-intensity": 1,
-        "building-ambient-occlusion-window-intensity": 1
+        "building-ambient-occlusion-intensity": 1
       }
     }
   ]

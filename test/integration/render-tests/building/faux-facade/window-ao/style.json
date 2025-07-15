@@ -136,8 +136,7 @@
             90
           ]
         ],
-        "building-ambient-occlusion-intensity": 1,
-        "building-ambient-occlusion-window-intensity": 0.8
+        "building-ambient-occlusion-intensity": 1
       }
     }
   ]

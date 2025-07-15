@@ -2,7 +2,8 @@
 #include "_prelude_shadow.fragment.glsl"
 #include "_prelude_lighting.glsl"
 
-const float window_depth = 0.13;
+const float window_depth = 0.5; // meters
+const float ao_radius = 0.2; // meters
 
 in vec4 v_color;
 in highp vec3 v_normal;
@@ -84,15 +85,19 @@ float get_emissive(in vec2 id) {
     return 0.0;
 }
 
-// v is in [-0.5, 0.5]^3 space.
+// v.x is in [-v_faux_facade_window.x / 2, v_faux_facade_window.x / 2] range.
+// v.y is in [-v_faux_facade_window.y / 2, v_faux_facade_window.y / 2] range.
+// v.z is in [-window_depth / 2, window_depth / 2] range.
+// All values are in meters.
 vec3 get_shade_info(in vec3 v,
+                    in vec3 v_normalized,
                     in vec3 color,
                     in vec2 id,
                     in mat3 tbn,
                     inout vec3 out_normal,
                     inout float out_emissive) {
     vec3 out_color = color;
-    vec3 abs_v = abs(v);
+    vec3 abs_v = abs(v_normalized);
     bool x_major = abs_v.x >= abs_v.y && abs_v.x >= abs_v.z;
     bool y_major = abs_v.y >= abs_v.x && abs_v.y >= abs_v.z;
     bool z_major = abs_v.z >= abs_v.x && abs_v.z >= abs_v.y;
@@ -117,22 +122,15 @@ vec3 get_shade_info(in vec3 v,
 
     float ao = 1.0;
     if (u_faux_facade_ao_intensity > 0.0) {
-        const float ao_radius = 0.04; // todo: could make this configurable in future.
-        const float ao_radius_z = 0.01;
-        vec2 ao_range_x = vec2(0.5, 0.5 - ao_radius / v_aspect);
-        const vec2 ao_range_y = vec2(0.5, 0.5 - ao_radius);
-        const vec2 ao_range_z = vec2(0.5, 0.5 - ao_radius_z);
-        if (x_major) {
-            ao *= smoothstep(-ao_range_y.x, -ao_range_y.y, v.y) * (1.0 - smoothstep(ao_range_y.y, ao_range_y.x, v.y));
-            ao *= smoothstep(-ao_range_z.x, -ao_range_z.y, v.z);
-        } else if (y_major) {
-            ao *= smoothstep(-ao_range_x.x, -ao_range_x.y, v.x) * (1.0 - smoothstep(ao_range_x.y, ao_range_x.x, v.x));
+        vec4 ao_range = v_faux_facade_window.xxyy * 0.5 - vec4(0, ao_radius, 0, ao_radius);
+        vec2 ao_range_z = vec2(window_depth * 0.5) - vec2(0.0, ao_radius);
+        if (x_major || y_major) {
             ao *= smoothstep(-ao_range_z.x, -ao_range_z.y, v.z);
         } else if (z_major) {
-            ao *= smoothstep(-ao_range_x.x, -ao_range_x.y, v.x) * (1.0 - smoothstep(ao_range_x.y, ao_range_x.x, v.x));
-            ao *= smoothstep(-ao_range_y.x, -ao_range_y.y, v.y) * (1.0 - smoothstep(ao_range_y.y, ao_range_y.x, v.y));
+            ao *= smoothstep(-ao_range.x, -ao_range.y, v.x) * (1.0 - smoothstep(ao_range.y, ao_range.x, v.x));
+            ao *= smoothstep(-ao_range.z, -ao_range.w, v.y) * (1.0 - smoothstep(ao_range.w, ao_range.z, v.y));
         }
-        ao = mix(1.0, ao, u_faux_facade_ao_intensity);
+        ao = mix(1.0, min(1.0, ao + 0.25), u_faux_facade_ao_intensity);
     }
 
     out_color *= ao;
@@ -166,23 +164,23 @@ void main() {
         float mask = 0.0;
         vec2 id = vec2(0.0);
         vec2 uv = get_uv_mask_id(q, mask, id);
+        uv *= v_faux_facade_window;
 
         // Perform ray intersection with a box defined by bmin and bmax.
-        vec3 bmin = vec3(0.0, 0.0, -1.0);
-        vec3 bmax = bmin + vec3(v_aspect, 1.0, 1.0);
-        vec3 ray_o = vec3(uv * vec2(v_aspect, 1.0), window_depth * min(v_aspect, 1.0 / v_aspect) - 1.0);
+        vec3 bmin = vec3(0.0, 0.0, -window_depth);
+        vec3 bmax = bmin + vec3(v_faux_facade_window, window_depth);
+        vec3 ray_o = vec3(uv, 0.0);
         vec3 ray_d = normalize(view_tangent);
         float t_min = ray_unit_box(ray_o, ray_d, bmin, bmax);
         vec3 hit = ray_o + t_min * ray_d;
 
-        // Normalize the hit position taking into account the aspect ratio.
-        vec3 bmid = vec3(0.5 * v_aspect, 0.5, -0.5);
-        hit = hit - bmid;
-        hit.x /= v_aspect;
+        vec3 r = vec3(v_faux_facade_window, -window_depth);
+        hit -= r * 0.5;
+        vec3 normalized = hit / r;
 
         vec3 out_normal = normal;
         float out_emissive = emissive;
-        vec3 room_color = get_shade_info(hit, base_color, id, tbn, out_normal, out_emissive);
+        vec3 room_color = get_shade_info(hit, normalized, base_color, id, tbn, out_normal, out_emissive);
 
         base_color = mix(base_color, room_color, mask);
         normal = mix(normal, out_normal, mask);

@@ -149,7 +149,7 @@
         "building-height": 20
       },
       "paint": {
-        "building-emissive-chance": 0,
+        "building-facade-emissive-chance": 0,
         "building-color": [
           "match",
           [
