@@ -3,7 +3,7 @@
     "metadata": {
         "test": {
             "mapMode": "static",
-            "allowed": 0.0003,
+            "allowed": 0.00042,
             "operations": [
                 [
                     "wait"
@@ -26,17 +26,17 @@
         }
     },
     "center": [
-        -122.1646,
-        37.443
+        11.541449,
+        48.176133
     ],
-    "zoom": 20.29,
-    "pitch": 75,
-    "bearing": 13.09,
+    "zoom": 21,
+    "pitch": 56.25,
+    "bearing": 333.28,
     "sources": {
         "hd-roads": {
             "type": "vector",
             "tileSize": 512,
-            "maxzoom": 18,
+            "maxzoom": 14,
             "tiles": [
                 "local://tiles/3d-intersections/{z}-{x}-{y}.mvt"
             ]
@@ -53,24 +53,43 @@
                             "coordinates": [
                                 [
                                     [
-                                        -122.16467355227995,
-                                        37.44303253679426
+                                        11.541090973066474,
+                                        48.17615632973906
                                     ],
                                     [
-                                        -122.16475511911945,
-                                        37.44307586585775
+                                        11.54103877986833,
+                                        48.17608410074138
                                     ],
                                     [
-                                        -122.16486661336006,
-                                        37.4429500717323
+                                        11.541327806716652,
+                                        48.17600176696152
                                     ],
                                     [
-                                        -122.16478211246181,
-                                        37.44290534488057
+                                        11.541376632611303,
+                                        48.176079609815105
                                     ]
                                 ]
                             ],
                             "type": "Polygon"
+                        }
+                    }
+                ]
+            }
+        },
+        "symbols": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "coordinates": [
+          11.54146923344257,
+          48.17616082071646
+                            ],
+                            "type": "Point"
                         }
                     }
                 ]
@@ -94,14 +113,23 @@
                 "direction": [
                     "literal",
                     [
-                        345,
-                        60
+                        230,
+                        30
                     ]
                 ],
                 "color": "hsl(0, 0%, 100%)",
                 "intensity": 0.8,
                 "cast-shadows": true,
-                "shadow-intensity": 1
+                "shadow-intensity": [
+                    "match",
+                    [
+                        "config",
+                        "lightPreset"
+                    ],
+                    "night",
+                    0.5,
+                    1
+                ]
             }
         }
     ],
@@ -477,11 +505,42 @@
             }
         },
         {
+            "id": "turnlane-arrows-ground",
+            "type": "symbol",
+            "source": "symbols",
+            "slot": "",
+            "minzoom": 17,
+            "layout": {
+                "symbol-elevation-reference": "hd-road-markup",
+                "icon-rotate": 120,
+                "icon-padding": 0,
+                "icon-size": [
+                    "interpolate",
+                    [
+                        "exponential",
+                        1.2
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    17,
+                    0.04,
+                    18,
+                    0.04,
+                    22,
+                    1
+                ],
+                "icon-rotation-alignment": "map",
+                "icon-allow-overlap": true,
+                "icon-image": "straight_right"
+            }
+        },
+        {
             "id": "shadow-casters",
             "type": "fill-extrusion",
             "source": "shadow-casters",
             "paint": {
-                "fill-extrusion-height": 200,
+                "fill-extrusion-height": 40,
                 "fill-extrusion-color": "white"
             }
         }

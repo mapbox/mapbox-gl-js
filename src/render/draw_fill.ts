@@ -241,7 +241,7 @@ export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache,
     const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadOnly, painter.depthRangeFor3D);
     const stencilMode = new StencilMode({func: gl.ALWAYS, mask: 0xFF}, 0xFF, 0xFF, gl.KEEP, gl.KEEP, gl.REPLACE);
     const cameraMercPos = painter.transform.getFreeCameraOptions().position;
-    const program = painter.getOrCreateProgram('elevatedStructuresDepthReconstruct', {defines: ['DEPTH_RECONSTRUCTION']});
+    const program = painter.getOrCreateProgram('elevatedStructuresDepthReconstruct');
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -249,7 +249,7 @@ export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache,
         if (!bucket) continue;
 
         const elevatedStructures = bucket.elevatedStructures;
-        if (!elevatedStructures || elevatedStructures.maskSegments.segments[0].primitiveLength === 0) {
+        if (!elevatedStructures || elevatedStructures.depthSegments.segments[0].primitiveLength === 0) {
             continue;
         }
 
@@ -258,10 +258,10 @@ export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache,
         const tileMatrix = painter.translatePosMatrix(coord.projMatrix, tile,
             layer.paint.get('fill-translate'), layer.paint.get('fill-translate-anchor'));
 
-        const uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, 0.0, 0.0, 0.0);
+        const uniformValues = elevatedStructuresDepthReconstructUniformValues(tileMatrix, cameraTilePos, 0.0, 1.0, 0.0);
         program.draw(painter, gl.TRIANGLES, depthMode,
             stencilMode, ColorMode.disabled, CullFaceMode.disabled, uniformValues,
-            layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.maskSegments,
+            layer.id, elevatedStructures.vertexBuffer, elevatedStructures.indexBuffer, elevatedStructures.depthSegments,
             layer.paint, painter.transform.zoom);
     }
 }
