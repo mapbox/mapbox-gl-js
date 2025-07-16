@@ -1,0 +1,212 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.0025,
+      "width": 512,
+      "height": 512,
+      "operations" : [
+        [
+        "setRuntimeSettingBool",
+        "com.mapbox.maps.experimental.limit_fill_holes_per_zoom_level",
+        true
+        ]
+      ]
+    }
+  },
+  "center": [
+    27.4238,
+    61.9391
+  ],
+  "zoom": 8,
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 8,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+     {
+      "id": "landuse",
+      "type": "fill",
+      "metadata": { "mapbox:group": "land & water" },
+      "source": "composite",
+      "source-layer": "landuse",
+      "minzoom": 8,
+      "filter": [
+        "all",
+        [">=", ["to-number", ["get", "sizerank"]], 0],
+        [
+          "<=",
+          [
+            "-",
+            ["to-number", ["get", "sizerank"]],
+            ["interpolate", ["exponential", 1.5], ["zoom"], 12, 0, 18, 14]
+          ],
+          14
+        ],
+        [
+          "match",
+          ["get", "type"],
+          ["skateboard", "playground", "parking", "surface", "sand"],
+          false,
+          true
+        ]
+      ],
+      "paint": {
+        "fill-emissive-strength": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          12,
+          ["match", ["config", "theme"], "monochrome", 0.05, 0.25],
+          14,
+          ["match", ["config", "theme"], "monochrome", 0, 0.25]
+        ],
+        "fill-color": [
+          "interpolate",
+          ["linear"],
+          ["measure-light", "brightness"],
+          0.1,
+          [
+            "match",
+            ["get", "class"],
+            "wood",
+            "hsla(115, 55%, 74%, 0.8)",
+            "scrub",
+            "hsla(110, 52%, 82%, 0.6)",
+            "agriculture",
+            "hsla(110, 55%, 88%, 0.6)",
+            "park",
+            "hsl(110, 60%, 80%)",
+            "grass",
+            "hsla(110, 55%, 88%, 0.6)",
+            "airport",
+            "hsl(225, 35%, 70%)",
+            "cemetery",
+            "hsl(110, 30%, 75%)",
+            "glacier",
+            "hsl(200, 70%, 95%)",
+            "hospital",
+            "hsl(0, 30%, 70%)",
+            "pitch",
+            "hsl(100, 70%, 80%)",
+            "sand",
+            "hsl(52, 65%, 75%)",
+            "school",
+            "hsl(40, 10%, 60%)",
+            "commercial_area",
+            "hsl(324, 27%, 70%)",
+            "residential",
+            "hsl(20, 7%, 97%)",
+            ["facility", "industrial"],
+            "hsl(230, 20%, 70%)",
+            "hsl(20, 22%, 86%)"
+          ],
+          0.4,
+          [
+            "match",
+            ["get", "class"],
+            "wood",
+            "hsla(115, 55%, 74%, 0.8)",
+            "scrub",
+            "hsla(110, 52%, 82%, 0.6)",
+            "agriculture",
+            "hsla(110, 55%, 88%, 0.6)",
+            "park",
+            "hsl(110, 60%, 80%)",
+            "grass",
+            "hsla(110, 55%, 88%, 0.6)",
+            "airport",
+            "hsl(225, 60%, 92%)",
+            "cemetery",
+            "hsl(110, 48%, 85%)",
+            "glacier",
+            "hsl(200, 70%, 90%)",
+            "hospital",
+            "hsl(0, 50%, 92%)",
+            "pitch",
+            "hsl(100, 70%, 85%)",
+            "sand",
+            "hsl(52, 65%, 86%)",
+            "school",
+            "hsl(40, 50%, 88%)",
+            "commercial_area",
+            "hsl(24, 100%, 94%)",
+            "residential",
+            "hsl(20, 7%, 97%)",
+            ["facility", "industrial"],
+            "hsl(230, 15%, 92%)",
+            "hsl(20, 22%, 86%)"
+          ]
+        ],
+        "fill-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          9,
+          ["match", ["get", "class"], ["airport"], 0.8, 0.2],
+          10,
+          [
+            "match",
+            ["config", "theme"],
+            "monochrome",
+            [
+              "match",
+              ["get", "class"],
+              [
+                "residential",
+                "industrial",
+                "hospital",
+                "parking",
+                "school",
+                "facility",
+                "commercial_area"
+              ],
+              0,
+              ["grass", "scrub", "glacier", "pitch", "sand", "airport"],
+              1,
+              [
+                "interpolate",
+                ["linear"],
+                ["measure-light", "brightness"],
+                0.1,
+                0.8,
+                0.4,
+                1
+              ]
+            ],
+            [
+              "match",
+              ["get", "class"],
+              ["residential"],
+              0,
+              ["grass", "scrub", "glacier", "pitch", "sand", "airport"],
+              1,
+              [
+                "interpolate",
+                ["linear"],
+                ["measure-light", "brightness"],
+                0.1,
+                0.8,
+                0.4,
+                1
+              ]
+            ]
+          ]
+        ],
+        "fill-antialias": false
+      }
+    }
+  ]
+}

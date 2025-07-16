@@ -264,6 +264,8 @@ const skip = [
     "render-tests/placement/icon-optional",
     "render-tests/placement/text-optional/basic",
     "render-tests/placement/text-optional/text-variable-anchor",
+    // limit number of holes experimental for native
+    "render-tests/fill-limit-number-holes"
 ];
 
 export default {todo, skip};
