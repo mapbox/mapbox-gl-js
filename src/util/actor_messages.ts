@@ -65,7 +65,7 @@ export type ActorMessages = {
     };
 
     'getGlyphs': {
-        params: {scope: string; stacks: FontStacks; uid?: number};
+        params: {stacks: FontStacks; uid?: number};
         callback: ActorCallback<GlyphMap>;
     };
 

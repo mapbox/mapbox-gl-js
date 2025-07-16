@@ -72,7 +72,7 @@ class GlyphManager {
     // Multiple fontstacks may share the same local glyphs, so keep an index
     // into the glyphs based soley on font weight
     localGlyphs: Record<FontWeight, GlyphRange>;
-    urls: {[scope: string]: string};
+    url: string;
 
     // exposed as statics to enable stubbing in unit tests
     static loadGlyphRange: typeof loadGlyphRange;
@@ -82,7 +82,7 @@ class GlyphManager {
         this.requestManager = requestManager;
         this.localGlyphMode = localGlyphMode;
         this.localFontFamily = localFontFamily;
-        this.urls = {};
+        this.url = '';
         this.entries = {};
         this.localGlyphs = {
             '200': {},
@@ -92,15 +92,15 @@ class GlyphManager {
         };
     }
 
-    setURL(url: string, scope: string) {
-        this.urls[scope] = url;
+    setURL(url: string) {
+        this.url = url;
     }
 
-    getGlyphs(glyphs: FontStacks, scope: string, callback: Callback<GlyphMap>) {
+    getGlyphs(glyphs: FontStacks, callback: Callback<GlyphMap>) {
         const all: Array<{id: number, stack: FontStack}> = [];
 
         // Fallback to the default glyphs URL if none is specified
-        const url = this.urls[scope] || config.GLYPHS_URL;
+        const url = this.url || config.GLYPHS_URL;
 
         for (const stack in glyphs) {
             for (const id of glyphs[stack]) {

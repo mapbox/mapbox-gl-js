@@ -363,7 +363,7 @@ class WorkerTile {
             if (!this.extraShadowCaster) {
                 const stacks = mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
                 if (Object.keys(stacks).length) {
-                    actor.send('getGlyphs', {uid: this.uid, stacks, scope: this.scope}, (err, result: GlyphMap) => {
+                    actor.send('getGlyphs', {uid: this.uid, stacks}, (err, result: GlyphMap) => {
                         if (!error) {
                             error = err;
                             glyphMap = result;

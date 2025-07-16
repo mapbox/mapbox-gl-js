@@ -2280,7 +2280,48 @@ describe('Glyphs', () => {
             expect(style.serialize().glyphs).toEqual(undefined);
         });
 
-        style.glyphManager.getGlyphs({'Arial Unicode MS': [55]}, '');
+        style.glyphManager.getGlyphs({'Arial Unicode MS': [55]});
+    });
+
+    test('uses root style glyph url even if fragment provides its own', async () => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            fragment: true,
+            glyphs: 'mapbox://fonts/foo/{fontstack}/{range}.pbf',
+            imports: [{
+                id: 'bar',
+                url: './standard.json',
+                data: createStyleJSON({glyphs: 'mapbox://fonts/bar/{fontstack}/{range}.pbf'})
+            }]
+        }));
+
+        await waitFor(style, "style.load");
+        vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
+            expect(urlTemplate).toEqual('mapbox://fonts/foo/{fontstack}/{range}.pbf');
+        });
+
+        style.glyphManager.getGlyphs({'Arial Unicode MS': [55]});
+    });
+
+    test('uses glyph url from import if there is one and no glyph url in root style', async () => {
+        const style = new Style(new StubMap());
+
+        style.loadJSON(createStyleJSON({
+            fragment: true,
+            imports: [{
+                id: 'bar',
+                url: './standard.json',
+                data: createStyleJSON({glyphs: 'mapbox://fonts/bar/{fontstack}/{range}.pbf'})
+            }]
+        }));
+
+        await waitFor(style, "style.load");
+        vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate) => {
+            expect(urlTemplate).toEqual('mapbox://fonts/bar/{fontstack}/{range}.pbf');
+        });
+
+        style.glyphManager.getGlyphs({'Arial Unicode MS': [55]});
     });
 });
 

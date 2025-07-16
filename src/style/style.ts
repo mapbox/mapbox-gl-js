@@ -782,7 +782,8 @@ class Style extends Evented<MapEvents> {
                 this.dispatcher.broadcast('spriteLoaded', {scope: this.scope, isLoaded: true});
             }
 
-            this.setGlyphsUrl(json.glyphs);
+            // for style fragments, only set a glyphs url if it's not already set by the root style (GLJS-1345)
+            if (!this.glyphManager.url && json.glyphs) this.glyphManager.setURL(json.glyphs);
 
             const layers: Array<LayerSpecification> = deref(this.stylesheet.layers);
             this._order = layers.map((layer) => layer.id);
@@ -4296,7 +4297,7 @@ class Style extends Evented<MapEvents> {
 
     setGlyphsUrl(url: string) {
         this.stylesheet.glyphs = url;
-        this.glyphManager.setURL(url, this.scope);
+        this.glyphManager.setURL(url);
     }
 
     // Callbacks from web workers
@@ -4331,7 +4332,7 @@ class Style extends Evented<MapEvents> {
     }
 
     getGlyphs(mapId: string, params: ActorMessages['getGlyphs']['params'], callback: ActorMessages['getGlyphs']['callback']) {
-        this.glyphManager.getGlyphs(params.stacks, params.scope, callback);
+        this.glyphManager.getGlyphs(params.stacks, callback);
     }
 
     getResource(mapId: string, params: ActorMessages['getResource']['params'], callback: ActorMessages['getResource']['callback']): Cancelable {
