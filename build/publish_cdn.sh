@@ -8,58 +8,62 @@
 # The tag should be in the form of vx.x.x:
 # ./upload.sh v2.0.0
 # You can test your setup with a dry run that prints the s3 command for each file:
-# .upload.sh v2.0.0 dry-run
+# .upload.sh v2.0.0 --dry-run
 
 # exit immediately if any error is encountered
 set -e
 
-# use $CIRCLE_TAG on CircleCI
-# else a tag must be supplied by user
-if [ -n "$CIRCLE_TAG" ]
+tag=$1
+
+if [ -z "$tag" ]
 then
-	tag=$CIRCLE_TAG
-elif [ -n "$1" ]
-then
-	tag=$1
-else
-	echo "Error: A tag must be set to upload to s3. If running this script manually, pass the tag as an argument: ./upload.sh vx.x.x"
+	echo "Error: No tag provided. Please provide a tag in the form of vx.x.x."
+	echo "Example: ./upload.sh v2.0.0"
 	exit 1
 fi
 
+if [ "$2" = "--dry-run" ]
+then
+	dry_run=true
+else
+	dry_run=false
+fi
+
 declare -a files=(
-    "mapbox-gl.js"
-    "mapbox-gl.js.map"
-    "mapbox-gl-dev.js"
-    "mapbox-gl.css"
-    "mapbox-gl-unminified.js"
-    "mapbox-gl-unminified.js.map"
-    "mapbox-gl-csp.js"
-    "mapbox-gl-csp.js.map"
-    "mapbox-gl-csp-worker.js"
-    "mapbox-gl-csp-worker.js.map"
+	"mapbox-gl.js"
+	"mapbox-gl.js.map"
+	"mapbox-gl-dev.js"
+	"mapbox-gl.css"
+	"mapbox-gl-unminified.js"
+	"mapbox-gl-unminified.js.map"
+	"mapbox-gl-csp.js"
+	"mapbox-gl-csp.js.map"
+	"mapbox-gl-csp-worker.js"
+	"mapbox-gl-csp-worker.js.map"
 )
 
 # ensure the dist folder exists
-if [ ! -d "./dist" ]
-then
+if [[ ! -d "./dist" && "$dry_run" = "false" ]]; then
 	echo "Error: dist folder does not exist. Make sure you build the bundle before running this script."
 	echo: "Run: npm run build-prod-min && npm run build-prod && npm run build-csp && npm run build-dev && npm run build-css"
 	exit 1
 fi
 
-# ensure the desired files all exist
-# do this before uploading any files to avoid partial uploads
-for i in "${files[@]}"
-do
-	file=$i
+if [[ "$dry_run" == "false" ]]; then
+	# ensure the desired files all exist
+	# do this before uploading any files to avoid partial uploads
+	for i in "${files[@]}"
+	do
+		file=$i
 
-	if [ ! -f "./dist/${file}" ]
-	then
-		echo "Error: File ${file} does not exist in dist folder. Make sure you build the bundle before running this script."
-		echo "Run: npm run build-prod-min && npm run build-prod && npm run build-csp && npm run build-dev && npm run build-css"
-		exit 1;
-	fi
-done
+		if [ ! -f "./dist/${file}" ]
+		then
+			echo "Error: File ${file} does not exist in dist folder. Make sure you build the bundle before running this script."
+			echo "Run: npm run build-prod-min && npm run build-prod && npm run build-csp && npm run build-dev && npm run build-css"
+			exit 1;
+		fi
+	done
+fi
 
 for i in "${files[@]}"
 do
@@ -81,8 +85,7 @@ do
 		mimetype="text/css"
 	fi
 
-	if [ "$2" = "dry-run" ]
-	then
+	if [[ "$2" = "--dry-run" ]]; then
 		echo "aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file}"
 	else
 		aws s3 cp --acl public-read --content-type ${mimetype} ./dist/${file} s3://mapbox-gl-js/${tag}/${file}

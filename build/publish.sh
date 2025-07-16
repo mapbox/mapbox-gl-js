@@ -11,7 +11,7 @@ done
 # run npm publish for every tag; run as part of CI on AWS CodeBuild
 git tag --points-at HEAD | while read tag; do
 
-    disttag=$(echo $tag | grep -oP '^(v|style-spec@)\d+\.\d+\.\d+-?\K([\w\.]+)?')
+    disttag=$(echo $tag | grep -oP '^gl-js/(v|style-spec@)\d+\.\d+\.\d+-?\K([\w\.]+)?')
 
     if [[ $disttag == alpha.* ]]; then
         disttag="dev"
@@ -20,6 +20,8 @@ git tag --points-at HEAD | while read tag; do
     else
         disttag="latest"
     fi
+
+    tag=$(echo $tag | sed 's/^gl-js\///')
 
     if [[ $tag =~ ^style-spec@ ]]; then
         cd src/style-spec
@@ -64,6 +66,13 @@ git tag --points-at HEAD | while read tag; do
             echo "npm publish --tag $disttag"
             if [[ $dry_run == false ]]; then
                 npm publish --tag "$disttag"
+            fi
+
+            echo "Publishing to CDN"
+            if [[ $dry_run == false ]]; then
+                ./build/publish_cdn.sh v$version
+            else
+                ./build/publish_cdn.sh v$version --dry-run
             fi
         else
             echo "Already published."

@@ -2,7 +2,8 @@
 
 if [ "$1" = "--help" ]; then
     echo "usage: $0"
-    echo "Tag current commit with alpha version in format <semver>-alpha.<sha>."
+    echo "Tag current commit with alpha version in format gl-js/v<semver>-alpha.<sha>."
+    echo "Also tags style-spec with gl-js/style-spec@<semver>-alpha.<sha>."
     exit 0
 fi
 
@@ -18,8 +19,8 @@ if [ $branch != "main" ]; then
     exit 1
 fi
 
-tag=v$next_version-alpha.$(git rev-parse --short HEAD)
-style_spec_tag=style-spec@$style_spec_next_version-alpha.$(git rev-parse --short HEAD)
+tag=gl-js/v$next_version-alpha.$(git rev-parse --short HEAD)
+style_spec_tag=gl-js/style-spec@$style_spec_next_version-alpha.$(git rev-parse --short HEAD)
 
 printf "Tags $tag and $style_spec_tag will be published.\n$commit\n\n"
 
