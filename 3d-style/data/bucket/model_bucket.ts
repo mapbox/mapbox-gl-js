@@ -347,6 +347,7 @@ class ModelBucket implements Bucket {
     ): string {
         const layer = this.layers[0];
         const modelIdProperty = layer.layout.get('model-id');
+        const modelAllowDensityReductionProperty = layer.layout.get('model-allow-density-reduction');
         assert(modelIdProperty);
 
         const modelId = modelIdProperty.evaluate(evaluationFeature, {}, this.canonical);
@@ -380,14 +381,16 @@ class ModelBucket implements Bucket {
                 if (point.x < 0 || point.x >= EXTENT || point.y < 0 || point.y >= EXTENT) {
                     continue; // Clip on tile borders to prevent duplicates
                 }
-                // reduce density
-                const tileToLookup = (this.lookupDim - 1.0) / EXTENT;
-                const lookupIndex = this.lookupDim * ((point.y * tileToLookup) | 0) + (point.x * tileToLookup) | 0;
-                if (this.lookup) {
-                    if (this.lookup[lookupIndex] !== 0) {
-                        continue;
+                if (modelAllowDensityReductionProperty) {
+                    // reduce density
+                    const tileToLookup = (this.lookupDim - 1.0) / EXTENT;
+                    const lookupIndex = this.lookupDim * ((point.y * tileToLookup) | 0) + (point.x * tileToLookup) | 0;
+                    if (this.lookup) {
+                        if (this.lookup[lookupIndex] !== 0) {
+                            continue;
+                        }
+                        this.lookup[lookupIndex] = 1;
                     }
-                    this.lookup[lookupIndex] = 1;
                 }
                 this.instanceCount++;
                 const i = instancedDataArray.length;
