@@ -239,27 +239,6 @@ const skip = [
     "render-tests/building/faux-facade/window-ao",
     "render-tests/building/cutoff-fade",
 
-    // Temporarily disable until https://github.com/mapbox/mapbox-sdk/pull/5098 is back-ported to v0.14 branch.
-    "render-tests/building/conflation",
-    "render-tests/building/emissive-strength",
-    "render-tests/building/facade_conflation",
-    "render-tests/building/facades",
-    "render-tests/building/gabled",
-    "render-tests/building/ground-ao",
-    "render-tests/building/hipped",
-    "render-tests/building/mansard",
-    "render-tests/building/measure-light-bright",
-    "render-tests/building/measure-light-dark",
-    "render-tests/building/parapet",
-    "render-tests/building/parapet-facade",
-    "render-tests/building/property-update",
-    "render-tests/building/pyramidal",
-    "render-tests/building/skillion",
-    "render-tests/building/symbol-z-offset",
-    "render-tests/building/tile-border",
-    "render-tests/building/vertical-scale",
-    "render-tests/building/with-shadows",
-
     // https://mapbox.atlassian.net/browse/GLJS-1295
     "render-tests/placement/icon-optional",
     "render-tests/placement/text-optional/basic",

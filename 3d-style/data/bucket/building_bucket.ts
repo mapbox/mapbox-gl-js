@@ -252,7 +252,11 @@ class BuildingBucket implements BucketWithGroundEffect {
         };
         buildingGen.setStyle(style);
         buildingGen.setAOOptions(false, 0.3);
-        buildingGen.setFacadeOptions(0.01, 50.0, 3.0);
+        buildingGen.setMetricOptions(false, 16);
+        buildingGen.setStructuralOptions(true);
+        buildingGen.setFacadeOptions(4.0, true);
+        buildingGen.setFauxFacadeOptions(false, false, 1.0);
+        buildingGen.setFacadeClassifierOptions(3.0);
 
         // First, we process facade data
         const facadeDataForFeature = new Map<number, Facade[]>();

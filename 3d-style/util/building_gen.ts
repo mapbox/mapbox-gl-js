@@ -32,6 +32,8 @@ export interface MeshBuffer {
     normals?: Float32Array;
     colors?: Uint8Array;
     ao?: Float32Array;
+    uv?: Float32Array;
+    isFauxFacade?: Uint8Array;
     indices?: Int32Array;
     buildingPart?: string;
 }
@@ -111,8 +113,20 @@ export class BuildingGen {
         this.module.setMetricOptions(convertToMeters ? 1 : 0, tileZoom);
     }
 
-    setFacadeOptions(crossPercThreshold: number, roadDistanceThreshold: number, classificationDistance: number) {
-        this.module.setFacadeOptions(crossPercThreshold, roadDistanceThreshold, classificationDistance);
+    setStructuralOptions(simplifyInput: boolean) {
+        this.module.setStructuralOptions(simplifyInput ? 1 : 0);
+    }
+
+    setFacadeOptions(facadeHeight: number, createEaves: boolean) {
+        this.module.setFacadeOptions(facadeHeight, createEaves ? 1 : 0);
+    }
+
+    setFauxFacadeOptions(hasFacade: boolean, useUvXModifier: boolean, uvXModifier: number) {
+        this.module.setFauxFacadeOptions(hasFacade ? 1 : 0, useUvXModifier ? 1 : 0, uvXModifier);
+    }
+
+    setFacadeClassifierOptions(classificationDistance: number) {
+        this.module.setFacadeClassifierOptions(classificationDistance);
     }
 
     generateMesh(features: Feature[], facades: Facade[]): MeshCollection | string {
@@ -197,6 +211,14 @@ export class BuildingGen {
             const aoLength = this.module.getAOLength(i);
             const aoArray = new Float32Array(this.module.heapF32.buffer, aoPtr, aoLength);
 
+            const uvPtr = this.module.getUVPtr(i);
+            const uvLength = this.module.getUVLength(i);
+            const uvArray = new Float32Array(this.module.heapF32.buffer, uvPtr, uvLength);
+
+            const fauxFacadePtr = this.module.getFauxFacadePtr(i);
+            const fauxFacadeLength = this.module.getFauxFacadeLength(i);
+            const isFauxFacadeArray = new Uint8Array(this.module.heapU8.buffer, fauxFacadePtr, fauxFacadeLength);
+
             const indicesPtr = this.module.getIndicesPtr(i);
             const indicesLength = this.module.getIndicesLength(i);
             const indicesArray = new Int32Array(this.module.heap32.buffer, indicesPtr, indicesLength);
@@ -209,6 +231,8 @@ export class BuildingGen {
                 normals: normalsArray,
                 colors: colorsArray,
                 ao: aoArray,
+                uv: uvArray,
+                isFauxFacade: isFauxFacadeArray,
                 indices: indicesArray,
                 buildingPart
             };
@@ -237,7 +261,10 @@ type SetStyleFunction = (
     tileToMeters: number) => void;
 type SetAOOptionsFunction = (bakeToVertices: number, parapetOcclusionDistance: number) => void;
 type SetMetricOptionsFunction = (convertToMeters: number, tileZoom: number) => void;
-type SetFacadeOptionsFunction = (crossPercThreshold: number, roadDistanceThreshold: number, classificationDistance: number) => void;
+type SetStructuralOptionsFunction = (simplifyInput: number) => void;
+type SetFacadeOptionsFunction = (facadeHeight: number, createEaves: number) => void;
+type SetFauxFacadeOptionsFunction = (hasFacade: number, useUvXModifier: number, uvXModifier: number) => void;
+type SetFacadeClassifierOptionsFunction = (classificationDistance: number) => void;
 type AddFeatureFunction = (id: number, sourceId: number, minHeight: number, height: number, roofShape: number,
     roofShapeLength: number, coords: number, ringIndices: number, numRings: number) => void;
 type AddFacadeFunction = (id: number, crossPerc: number, distanceToRoad: number, entrances: number, entrancesLength: number,
@@ -253,6 +280,10 @@ type GetColorsPtrFunction = (meshIndex: number) => number;
 type GetColorsLengthFunction = (meshIndex: number) => number;
 type GetAOPtrFunction = (meshIndex: number) => number;
 type GetAOLengthFunction = (meshIndex: number) => number;
+type GetUVPtrFunction = (meshIndex: number) => number;
+type GetUVLengthFunction = (meshIndex: number) => number;
+type GetFauxFacadePtrFunction = (meshIndex: number) => number;
+type GetFauxFacadeLengthFunction = (meshIndex: number) => number;
 type GetIndicesPtrFunction = (meshIndex: number) => number;
 type GetIndicesLengthFunction = (meshIndex: number) => number;
 type GetBuildingPartFunction = (meshIndex: number) => number;
@@ -269,7 +300,10 @@ interface BuildingGenModule {
     setStyle: SetStyleFunction;
     setAOOptions: SetAOOptionsFunction;
     setMetricOptions: SetMetricOptionsFunction;
+    setStructuralOptions: SetStructuralOptionsFunction;
     setFacadeOptions: SetFacadeOptionsFunction;
+    setFauxFacadeOptions: SetFauxFacadeOptionsFunction;
+    setFacadeClassifierOptions: SetFacadeClassifierOptionsFunction;
     addFeature: AddFeatureFunction;
     addFacade: AddFacadeFunction;
     generateMesh: GenerateMeshFunction;
@@ -283,6 +317,10 @@ interface BuildingGenModule {
     getColorsLength: GetColorsLengthFunction;
     getAOPtr: GetAOPtrFunction;
     getAOLength: GetAOLengthFunction;
+    getUVPtr: GetUVPtrFunction;
+    getUVLength: GetUVLengthFunction;
+    getFauxFacadePtr: GetFauxFacadePtrFunction;
+    getFauxFacadeLength: GetFauxFacadeLengthFunction;
     getIndicesPtr: GetIndicesPtrFunction;
     getIndicesLength: GetIndicesLengthFunction;
     getBuildingPart: GetBuildingPartFunction;
@@ -360,28 +398,35 @@ export function loadBuildingGen(wasmPromise: Promise<Response>): Promise<Buildin
             setStyle: exports.h as SetStyleFunction,
             setAOOptions: exports.i as SetAOOptionsFunction,
             setMetricOptions: exports.j as SetMetricOptionsFunction,
-            setFacadeOptions: exports.k as SetFacadeOptionsFunction,
-            addFeature: exports.l as AddFeatureFunction,
-            addFacade: exports.m as AddFacadeFunction,
-            generateMesh: exports.n as GenerateMeshFunction,
-            getLastError: exports.o as GetLastErrorFunction,
-            getMeshCount: exports.p as GetMeshCountFunction,
-            getPositionsPtr: exports.q as GetPositionsPtrFunction,
-            getPositionsLength: exports.r as GetPositionsLengthFunction,
-            getNormalsPtr: exports.s as GetNormalsPtrFunction,
-            getNormalsLength: exports.t as GetNormalsLengthFunction,
-            getColorsPtr: exports.u as GetColorsPtrFunction,
-            getColorsLength: exports.v as GetColorsLengthFunction,
-            getAOPtr: exports.w as GetAOPtrFunction,
-            getAOLength: exports.x as GetAOLengthFunction,
-            getIndicesPtr: exports.y as GetIndicesPtrFunction,
-            getIndicesLength: exports.z as GetIndicesLengthFunction,
-            getBuildingPart: exports.A as GetBuildingPartFunction,
-            getRingCount: exports.B as GetRingCountFunction,
-            getRingPtr: exports.C as GetRingPtrFunction,
-            getRingLength: exports.D as GetRingLengthFunction,
-            free: exports.E as FreeFunction,
-            malloc: exports.F as MallocFunction,
+            setStructuralOptions: exports.k as SetStructuralOptionsFunction,
+            setFacadeOptions: exports.l as SetFacadeOptionsFunction,
+            setFauxFacadeOptions: exports.m as SetFauxFacadeOptionsFunction,
+            setFacadeClassifierOptions: exports.n as SetFacadeClassifierOptionsFunction,
+            addFeature: exports.o as AddFeatureFunction,
+            addFacade: exports.p as AddFacadeFunction,
+            generateMesh: exports.q as GenerateMeshFunction,
+            getLastError: exports.r as GetLastErrorFunction,
+            getMeshCount: exports.s as GetMeshCountFunction,
+            getPositionsPtr: exports.t as GetPositionsPtrFunction,
+            getPositionsLength: exports.u as GetPositionsLengthFunction,
+            getNormalsPtr: exports.v as GetNormalsPtrFunction,
+            getNormalsLength: exports.w as GetNormalsLengthFunction,
+            getColorsPtr: exports.x as GetColorsPtrFunction,
+            getColorsLength: exports.y as GetColorsLengthFunction,
+            getAOPtr: exports.z as GetAOPtrFunction,
+            getAOLength: exports.A as GetAOLengthFunction,
+            getUVPtr: exports.B as GetUVPtrFunction,
+            getUVLength: exports.C as GetUVLengthFunction,
+            getFauxFacadePtr: exports.D as GetFauxFacadePtrFunction,
+            getFauxFacadeLength: exports.E as GetFauxFacadeLengthFunction,
+            getIndicesPtr: exports.F as GetIndicesPtrFunction,
+            getIndicesLength: exports.G as GetIndicesLengthFunction,
+            getBuildingPart: exports.H as GetBuildingPartFunction,
+            getRingCount: exports.I as GetRingCountFunction,
+            getRingPtr: exports.J as GetRingPtrFunction,
+            getRingLength: exports.K as GetRingLengthFunction,
+            free: exports.L as FreeFunction,
+            malloc: exports.M as MallocFunction,
             heapU8,
             heap32,
             heapF32
