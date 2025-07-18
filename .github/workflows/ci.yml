@@ -23,7 +23,6 @@ jobs:
     - run: npm ci --no-audit --no-fund
     - run: |
         npm run codegen
-        npm run build-typed-style-spec
         git add -A && git diff --staged --exit-code
     - run: npm run tsc
     - run: npm run test-style-spec

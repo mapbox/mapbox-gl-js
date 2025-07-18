@@ -1,0 +1,21 @@
+{
+  "env": {
+    "ENABLE_BACKGROUND_TASKS": "1",
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(rg:*)",
+      "Bash(ls:*)",
+      "Bash(cp:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+      "WebFetch(domain:docs.mapbox.com)",
+      "WebFetch(domain:developer.mozilla.org)"
+    ],
+    "deny": [],
+    "defaultMode": "plan"
+  }
+}
