@@ -190,7 +190,7 @@ const empty = emptyStyle();
 
 type AnyLayerSource = {
     source?: LayerSpecification['source'] | SourceSpecification
-}
+};
 
 /**
  * Helper type that represents user provided layer in addLayer method.
@@ -202,13 +202,13 @@ export type FeatureSelector = {
     id: string | number;
     source: string;
     sourceLayer?: string;
-}
+};
 
 export type SourceSelector = {
     id?: string | number;
     source: string;
     sourceLayer?: string;
-}
+};
 
 export type StyleOptions = {
     validate?: boolean;
@@ -2262,7 +2262,7 @@ class Style extends Evented<MapEvents> {
     setFeaturesetSelectors(featuresets?: FeaturesetsSpecification) {
         if (!featuresets) return;
 
-        const sourceInfoMap: { [sourceInfo: string]: string } = {};
+        const sourceInfoMap: {[sourceInfo: string]: string} = {};
         // Helper to create consistent keys
         const createKey = (sourceId: string, sourcelayerId: string = '') => `${sourceId}::${sourcelayerId}`;
 

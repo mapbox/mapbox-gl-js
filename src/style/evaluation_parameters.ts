@@ -10,7 +10,7 @@ type EvaluationParametersOptions = {
     transition?: TransitionSpecification;
     brightness?: number;
     worldview?: string;
-}
+};
 
 class EvaluationParameters {
     zoom: number;

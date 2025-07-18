@@ -40,7 +40,7 @@ export type PopupOptions = {
 type PopupEvents = {
     'open': void;
     'close': void;
-}
+};
 
 const focusQuerySelector = [
     "a[href]",

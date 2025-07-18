@@ -14,7 +14,7 @@ type PatternStyleLayers = Array<LineStyleLayer> | Array<FillStyleLayer> | Array<
 type AddPatternResult = {
     primary: string | null;
     secondary: string | null;
-}
+};
 
 function addPattern(pattern: string | ResolvedImage, patterns: ImageDependenciesMap, pixelRatio: number = 1): AddPatternResult {
     if (!pattern) {

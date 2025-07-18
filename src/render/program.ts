@@ -67,7 +67,7 @@ const debugWireframe3DLayerProgramNames = [
 
 type InstancingUniformType = {
     ['u_instanceID']: Uniform1i;
-}
+};
 
 const instancingUniforms = (context: Context): InstancingUniformType => ({
     'u_instanceID': new Uniform1i(context)});

@@ -26,7 +26,7 @@ export type FillExtrusionDefinesType =
     | 'RENDER_WALL_MODE'
     | 'SDF_SUBPASS'
     | 'ZERO_ROOF_RADIUS'
-    | 'FILL_EXTRUSION_PATTERN_TRANSITION'
+    | 'FILL_EXTRUSION_PATTERN_TRANSITION';
 
 const fillExtrusionAlignmentType = {
     'terrain': 0,

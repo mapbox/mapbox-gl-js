@@ -41,7 +41,7 @@ type PropertyCallback = (
     arg1: {
         path: [string, 'paint' | 'layout', string] // [layerid, paint/layout, property key];
         key: string;
-        value: PropertyValueSpecification<unknown>  ;
+        value: PropertyValueSpecification<unknown>;
         reference: StylePropertySpecification;
         set: (
             arg1: PropertyValueSpecification<unknown>,

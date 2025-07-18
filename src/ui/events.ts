@@ -470,9 +470,9 @@ export type MapSourceDataEvent = {
  * @see [Example: Change a map's style](https://docs.mapbox.com/mapbox-gl-js/example/setstyle/)
  * @see [Example: Add a GeoJSON line](https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/)
  */
-export type MapDataEvent = MapStyleDataEvent | MapSourceDataEvent
+export type MapDataEvent = MapStyleDataEvent | MapSourceDataEvent;
 
-export type MapContextEvent = MapEventOf<'webglcontextlost' | 'webglcontextrestored'>
+export type MapContextEvent = MapEventOf<'webglcontextlost' | 'webglcontextrestored'>;
 
 export type MapEvents = {
     /** @section Interaction */
@@ -1622,7 +1622,7 @@ export type MapEvents = {
      * @private
      */
     'gpu-timing-deferred-render': {gpuTime: number};
-}
+};
 
 /**
  * Utility type that represents all possible Map event types.

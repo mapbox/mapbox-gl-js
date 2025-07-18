@@ -19,7 +19,7 @@ export type StringifiedImageVariant = Brand<string, 'ImageVariant'>;
 export type RasterizationOptions = {
     params?: Record<string, Color>;
     transform?: DOMMatrix;
-}
+};
 
 /**
  * `ImageVariant` is a component of {@link ResolvedImage}

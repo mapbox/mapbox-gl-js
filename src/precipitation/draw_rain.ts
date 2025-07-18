@@ -43,7 +43,7 @@ export class Rain extends PrecipitationBase {
             affectedRatio: number,
             particleOffset: number
         },
-        color: { r: number, g: number, b: number, a: number },
+        color: {r: number, g: number, b: number, a: number},
         direction: {x: number, y: number},
         shapeDirPower: number;
         shapeNormalPower: number;

@@ -14,7 +14,7 @@ export type IconsetParams = {id: string};
 export type ImageOptions = {
     params?: ImageParams;
     iconset?: IconsetParams;
-}
+};
 
 type SerializedImageOptions = {
     params?: Record<string, SerializedExpression>;

@@ -32,7 +32,7 @@ class ModelManager extends Evented {
         [scope: string]: number;
     };
     requestManager: RequestManager;
-    modelByURL: Record<string, { modelId: string, scope: string}>;
+    modelByURL: Record<string, {modelId: string, scope: string}>;
 
     constructor(requestManager: RequestManager) {
         super();

@@ -10,7 +10,7 @@ export class BuildingTileBorderManager {
 
     public updateBorders(source: SourceCache, layer: BuildingStyleLayer) {
         const visibleTiles: Array<number> = [];
-        const buckets: Array<{ bucket: BuildingBucket, tileID: CanonicalTileID }> = [];
+        const buckets: Array<{bucket: BuildingBucket, tileID: CanonicalTileID}> = [];
 
         const coords = source._getRenderableCoordinates(false, true);
         for (const coord of coords) {

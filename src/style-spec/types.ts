@@ -45,19 +45,19 @@ export type FunctionSpecification<T> = {
 };
 
 export type CameraFunctionSpecification<T> =
-    | { type: 'exponential', stops: Array<[number, T]> }
-    | { type: 'interval',    stops: Array<[number, T]> };
+    | {type: 'exponential', stops: Array<[number, T]>}
+    | {type: 'interval',    stops: Array<[number, T]>};
 
 export type SourceFunctionSpecification<T> =
-    | { type: 'exponential', stops: Array<[number, T]>, property: string, default?: T }
-    | { type: 'interval',    stops: Array<[number, T]>, property: string, default?: T }
-    | { type: 'categorical', stops: Array<[string | number | boolean, T]>, property: string, default?: T }
-    | { type: 'identity', property: string, default?: T };
+    | {type: 'exponential', stops: Array<[number, T]>, property: string, default?: T}
+    | {type: 'interval',    stops: Array<[number, T]>, property: string, default?: T}
+    | {type: 'categorical', stops: Array<[string | number | boolean, T]>, property: string, default?: T}
+    | {type: 'identity', property: string, default?: T};
 
 export type CompositeFunctionSpecification<T> =
-    | { type: 'exponential', stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T }
-    | { type: 'interval',    stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T }
-    | { type: 'categorical', stops: Array<[{zoom: number, value: string | number | boolean}, T]>, property: string, default?: T };
+    | {type: 'exponential', stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T}
+    | {type: 'interval',    stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T}
+    | {type: 'categorical', stops: Array<[{zoom: number, value: string | number | boolean}, T]>, property: string, default?: T};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ExpressionSpecification = [string, ...any[]];
@@ -120,19 +120,19 @@ export type StyleSpecification = {
      * @experimental This property is experimental and subject to change in future versions.
      */
     "featuresets"?: FeaturesetsSpecification
-}
+};
 
 export type SourcesSpecification = {
     [_: string]: SourceSpecification
-}
+};
 
 export type ModelsSpecification = {
     [_: string]: ModelSpecification
-}
+};
 
 export type IconsetsSpecification = {
     [_: string]: IconsetSpecification
-}
+};
 
 export type LightSpecification = {
     "anchor"?: PropertyValueSpecification<"map" | "viewport">,
@@ -143,13 +143,13 @@ export type LightSpecification = {
     "color-use-theme"?: PropertyValueSpecification<string>,
     "intensity"?: PropertyValueSpecification<number>,
     "intensity-transition"?: TransitionSpecification
-}
+};
 
 export type TerrainSpecification = {
     "source": string,
     "exaggeration"?: PropertyValueSpecification<number>,
     "exaggeration-transition"?: TransitionSpecification
-}
+};
 
 export type FogSpecification = {
     "range"?: PropertyValueSpecification<[number, number]>,
@@ -169,7 +169,7 @@ export type FogSpecification = {
     "star-intensity-transition"?: TransitionSpecification,
     "vertical-range"?: PropertyValueSpecification<[number, number]>,
     "vertical-range-transition"?: TransitionSpecification
-}
+};
 
 export type SnowSpecification = {
     /**
@@ -219,7 +219,7 @@ export type SnowSpecification = {
      */
     "flake-size"?: PropertyValueSpecification<number>,
     "flake-size-transition"?: TransitionSpecification
-}
+};
 
 export type RainSpecification = {
     /**
@@ -274,22 +274,22 @@ export type RainSpecification = {
      */
     "distortion-strength"?: PropertyValueSpecification<number>,
     "distortion-strength-transition"?: TransitionSpecification
-}
+};
 
 export type CameraSpecification = {
     "camera-projection"?: PropertyValueSpecification<"perspective" | "orthographic">,
     "camera-projection-transition"?: TransitionSpecification
-}
+};
 
 export type ColorThemeSpecification = {
     "data"?: ExpressionSpecification
-}
+};
 
 export type ProjectionSpecification = {
     "name": "albers" | "equalEarth" | "equirectangular" | "lambertConformalConic" | "mercator" | "naturalEarth" | "winkelTripel" | "globe",
     "center"?: [number, number],
     "parallels"?: [number, number]
-}
+};
 
 export type ImportSpecification = {
     "id": string,
@@ -297,7 +297,7 @@ export type ImportSpecification = {
     "config"?: ConfigSpecification,
     "data"?: StyleSpecification,
     "color-theme"?: ColorThemeSpecification | null | undefined
-}
+};
 
 export type IndoorSpecification = {
     /**
@@ -308,15 +308,15 @@ export type IndoorSpecification = {
      * @experimental This property is experimental and subject to change in future versions.
      */
     "buildingFeaturesetId"?: ExpressionSpecification
-}
+};
 
 export type ConfigSpecification = {
     [_: string]: unknown
-}
+};
 
 export type SchemaSpecification = {
     [_: string]: OptionSpecification
-}
+};
 
 export type OptionSpecification = {
     "default": ExpressionSpecification,
@@ -327,14 +327,14 @@ export type OptionSpecification = {
     "stepValue"?: number,
     "values"?: Array<unknown>,
     "metadata"?: unknown
-}
+};
 
 /**
  * @experimental This is experimental and subject to change in future versions.
  */
 export type FeaturesetsSpecification = {
     [_: string]: FeaturesetSpecification
-}
+};
 
 /**
  * @experimental This is experimental and subject to change in future versions.
@@ -348,7 +348,7 @@ export type FeaturesetSpecification = {
      * @experimental This property is experimental and subject to change in future versions.
      */
     "selectors"?: Array<SelectorSpecification>
-}
+};
 
 /**
  * @experimental This is experimental and subject to change in future versions.
@@ -370,7 +370,7 @@ export type SelectorSpecification = {
      * @experimental This property is experimental and subject to change in future versions.
      */
     "_uniqueFeatureID"?: boolean
-}
+};
 
 /**
  * @experimental This is experimental and subject to change in future versions.
@@ -380,7 +380,7 @@ export type SelectorPropertySpecification = {
      * @experimental This property is experimental and subject to change in future versions.
      */
     [_: string]: unknown
-}
+};
 
 export type VectorSourceSpecification = {
     "type": "vector",
@@ -398,7 +398,7 @@ export type VectorSourceSpecification = {
     "promoteId"?: PromoteIdSpecification,
     "volatile"?: boolean,
     [_: string]: unknown
-}
+};
 
 export type RasterSourceSpecification = {
     "type": "raster",
@@ -416,7 +416,7 @@ export type RasterSourceSpecification = {
     "attribution"?: string,
     "volatile"?: boolean,
     [_: string]: unknown
-}
+};
 
 export type RasterDEMSourceSpecification = {
     "type": "raster-dem",
@@ -434,7 +434,7 @@ export type RasterDEMSourceSpecification = {
     "encoding"?: "terrarium" | "mapbox",
     "volatile"?: boolean,
     [_: string]: unknown
-}
+};
 
 /**
  * @experimental This is experimental and subject to change in future versions.
@@ -455,7 +455,7 @@ export type RasterArraySourceSpecification = {
     "rasterLayers"?: unknown,
     "volatile"?: boolean,
     [_: string]: unknown
-}
+};
 
 export type GeoJSONSourceSpecification = {
     "type": "geojson",
@@ -475,26 +475,26 @@ export type GeoJSONSourceSpecification = {
     "generateId"?: boolean,
     "promoteId"?: PromoteIdSpecification,
     "dynamic"?: boolean
-}
+};
 
 export type VideoSourceSpecification = {
     "type": "video",
     "urls": Array<string>,
     "coordinates": [[number, number], [number, number], [number, number], [number, number]]
-}
+};
 
 export type ImageSourceSpecification = {
     "type": "image",
     "url"?: string,
     "coordinates": [[number, number], [number, number], [number, number], [number, number]]
-}
+};
 
 export type ModelSourceSpecification = {
     "type": "model" | "batched-model",
     "maxzoom"?: number,
     "minzoom"?: number,
     "tiles"?: Array<string>
-}
+};
 
 export type SourceSpecification =
     | VectorSourceSpecification
@@ -504,7 +504,7 @@ export type SourceSpecification =
     | GeoJSONSourceSpecification
     | VideoSourceSpecification
     | ImageSourceSpecification
-    | ModelSourceSpecification
+    | ModelSourceSpecification;
 
 export type IconsetSpecification =
     | {
@@ -514,7 +514,7 @@ export type IconsetSpecification =
     | {
         "type": "source",
         "source": string
-    }
+    };
 
 export type ModelSpecification = string;
 
@@ -528,7 +528,7 @@ export type AmbientLightSpecification = {
         "intensity-transition"?: TransitionSpecification
     },
     "type": "ambient"
-}
+};
 
 export type DirectionalLightSpecification = {
     "id": string,
@@ -549,7 +549,7 @@ export type DirectionalLightSpecification = {
         "shadow-intensity-transition"?: TransitionSpecification
     },
     "type": "directional"
-}
+};
 
 export type FlatLightSpecification = {
     "id": string,
@@ -564,7 +564,7 @@ export type FlatLightSpecification = {
         "intensity-transition"?: TransitionSpecification
     },
     "type": "flat"
-}
+};
 
 export type LightsSpecification =
     | AmbientLightSpecification
@@ -628,7 +628,7 @@ export type FillLayerSpecification = {
         "fill-tunnel-structure-color-transition"?: TransitionSpecification,
         "fill-tunnel-structure-color-use-theme"?: PropertyValueSpecification<string>
     }
-}
+};
 
 /**
  * @deprecated Use `FillLayerSpecification['layout']` instead.
@@ -717,7 +717,7 @@ export type LineLayerSpecification = {
         "line-occlusion-opacity"?: PropertyValueSpecification<number>,
         "line-occlusion-opacity-transition"?: TransitionSpecification
     }
-}
+};
 
 /**
  * @deprecated Use `LineLayerSpecification['layout']` instead.
@@ -846,7 +846,7 @@ export type SymbolLayerSpecification = {
         "symbol-z-offset"?: DataDrivenPropertyValueSpecification<number>,
         "symbol-z-offset-transition"?: TransitionSpecification
     }
-}
+};
 
 /**
  * @deprecated Use `SymbolLayerSpecification['layout']` instead.
@@ -901,7 +901,7 @@ export type CircleLayerSpecification = {
         "circle-emissive-strength"?: PropertyValueSpecification<number>,
         "circle-emissive-strength-transition"?: TransitionSpecification
     }
-}
+};
 
 /**
  * @deprecated Use `CircleLayerSpecification['layout']` instead.
@@ -937,7 +937,7 @@ export type HeatmapLayerSpecification = {
         "heatmap-opacity"?: PropertyValueSpecification<number>,
         "heatmap-opacity-transition"?: TransitionSpecification
     }
-}
+};
 
 /**
  * @deprecated Use `HeatmapLayerSpecification['layout']` instead.
@@ -1054,7 +1054,7 @@ export type FillExtrusionLayerSpecification = {
         "fill-extrusion-line-width-transition"?: TransitionSpecification,
         "fill-extrusion-cast-shadows"?: boolean
     }
-}
+};
 
 /**
  * @deprecated Use `FillExtrusionLayerSpecification['layout']` instead.
@@ -1155,7 +1155,7 @@ export type BuildingLayerSpecification = {
         "building-facade-emissive-chance"?: PropertyValueSpecification<number>,
         "building-cutoff-fade-range"?: ExpressionSpecification
     }
-}
+};
 
 /**
  * @deprecated Use `BuildingLayerSpecification['layout']` instead.
@@ -1213,7 +1213,7 @@ export type RasterLayerSpecification = {
         "raster-elevation"?: PropertyValueSpecification<number>,
         "raster-elevation-transition"?: TransitionSpecification
     }
-}
+};
 
 /**
  * @deprecated Use `RasterLayerSpecification['layout']` instead.
@@ -1252,7 +1252,7 @@ export type RasterParticleLayerSpecification = {
         "raster-particle-elevation"?: PropertyValueSpecification<number>,
         "raster-particle-elevation-transition"?: TransitionSpecification
     }
-}
+};
 
 /**
  * @deprecated Use `RasterParticleLayerSpecification['layout']` instead.
@@ -1294,7 +1294,7 @@ export type HillshadeLayerSpecification = {
         "hillshade-emissive-strength"?: PropertyValueSpecification<number>,
         "hillshade-emissive-strength-transition"?: TransitionSpecification
     }
-}
+};
 
 /**
  * @deprecated Use `HillshadeLayerSpecification['layout']` instead.
@@ -1348,7 +1348,7 @@ export type ModelLayerSpecification = {
         "model-cutoff-fade-range"?: ExpressionSpecification,
         "model-front-cutoff"?: PropertyValueSpecification<[number, number, number]>
     }
-}
+};
 
 /**
  * @deprecated Use `ModelLayerSpecification['layout']` instead.
@@ -1387,7 +1387,7 @@ export type BackgroundLayerSpecification = {
         "background-emissive-strength"?: PropertyValueSpecification<number>,
         "background-emissive-strength-transition"?: TransitionSpecification
     }
-}
+};
 
 /**
  * @deprecated Use `BackgroundLayerSpecification['layout']` instead.
@@ -1427,7 +1427,7 @@ export type SkyLayerSpecification = {
         "sky-opacity"?: PropertyValueSpecification<number>,
         "sky-opacity-transition"?: TransitionSpecification
     }
-}
+};
 
 /**
  * @deprecated Use `SkyLayerSpecification['layout']` instead.
@@ -1451,7 +1451,7 @@ export type SlotLayerSpecification = {
     "filter"?: never,
     "layout"?: never,
     "paint"?: never
-}
+};
 
 export type ClipLayerSpecification = {
     "id": string,
@@ -1468,7 +1468,7 @@ export type ClipLayerSpecification = {
         "clip-layer-scope"?: ExpressionSpecification
     },
     "paint"?: never
-}
+};
 
 /**
  * @deprecated Use `ClipLayerSpecification['layout']` instead.

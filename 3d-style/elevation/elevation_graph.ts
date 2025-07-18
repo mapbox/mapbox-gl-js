@@ -27,7 +27,7 @@ export interface ElevationPortalEdge {
 export type LeveledPolygon = {
     geometry: Point[][];
     zLevel: number;
-}
+};
 
 export class ElevationPolygons {
     polygons: Map<number, Array<LeveledPolygon>> = new Map();

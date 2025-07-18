@@ -1,13 +1,13 @@
 type TTypedArray =
-  Float32Array |
-  Float64Array |
-  Int8Array |
-  Int16Array |
-  Int32Array |
-  Uint8Array |
-  Uint8ClampedArray |
-  Uint16Array |
-  Uint32Array;
+  | Float32Array
+  | Float64Array
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint8ClampedArray
+  | Uint16Array
+  | Uint32Array;
 
 type TArrayLike = number[] | TTypedArray;
 
@@ -16,7 +16,7 @@ type TDataRange = {
   firstByte: number;
   lastByte: number;
   blockIndices: Array<number>;
-}
+};
 
 type TPixelFormat = 'uint8' | 'uint16' | 'uint32';
 
@@ -26,7 +26,7 @@ type TBlockReference = {
   bandIndex: number;
   blockIndex: number;
   blockBandIndex: number;
-}
+};
 
 type TProcessingTask = {
   layerName: string;
@@ -38,17 +38,17 @@ type TProcessingTask = {
   buffer: number;
   codec: TCodec;
   filters: string[];
-}
+};
 
 type TProcessingBatch = {
   tasks: TProcessingTask[];
-}
+};
 
 type TDecodingResult = {
   layerName: string;
   blockIndex: number;
   data: ArrayBufferLike;
-}
+};
 
 type TBandViewRGBA = {
   data: TTypedArray;
@@ -63,11 +63,11 @@ type TBandViewRGBA = {
 
 type TPbfFilter = {
   filter: string;
-}
+};
 
 type TPbfCodec = {
   codec: TCodec;
-}
+};
 
 type TPbfDataIndexEntry = {
   bands: Array<string>
@@ -77,11 +77,11 @@ type TPbfDataIndexEntry = {
   lastByte: number;
   filters: TPbfFilter[];
   codec: TPbfCodec;
-}
+};
 
 type TRasterLayerConfig = {
   cacheSize: number;
-}
+};
 
 type TPbfRasterTileData = {
   headerLength: number;
@@ -89,7 +89,7 @@ type TPbfRasterTileData = {
   y: number;
   z: number;
   layers: TPbfRasterLayerData[];
-}
+};
 
 type TPbfRasterLayerData = {
   version: number;
@@ -99,7 +99,7 @@ type TPbfRasterLayerData = {
   buffer: number;
   dataIndex: TPbfDataIndexEntry[];
   pixelFormat: number;
-}
+};
 
 export type {
     TArrayLike,

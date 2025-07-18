@@ -44,7 +44,7 @@ export default function validateLights(options: Options): Array<ValidationError>
         for (let i = 0; i < options.arrayIndex; i++) {
             const lightType = unbundle(light.type);
             // const otherLight = lights[i];
-            const otherLight = lights[i] as LightsSpecification & { id: { __line__: number } };
+            const otherLight = lights[i] as LightsSpecification & {id: {__line__: number}};
             if (unbundle(otherLight.type) === lightType) {
                 errors.push(new ValidationError(key, light.id, `duplicate light type "${light.type}", previously defined at line ${otherLight.id.__line__}`));
             }

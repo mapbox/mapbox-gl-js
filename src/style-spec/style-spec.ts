@@ -5,7 +5,7 @@ export type ExpressionSpecification = {
     interpolated: boolean,
     parameters?: ExpressionParameters,
     relaxZoomRestriction?: boolean
-}
+};
 
 export type StylePropertySpecification = {
     type: 'number',

@@ -217,11 +217,18 @@ export default tseslint.config(
     // Stylistic rules
     {
         rules: {
-            '@stylistic/js/no-confusing-arrow': ['error', {onlyOneSimpleParam: true}],
+            '@stylistic/no-confusing-arrow': ['error', {onlyOneSimpleParam: true}],
 
-            '@stylistic/js/arrow-parens': 'off',
-            '@stylistic/js/indent': 'off',
-            '@stylistic/js/quotes': 'off',
+            '@stylistic/arrow-parens': 'off',
+            '@stylistic/indent': 'off',
+            '@stylistic/quotes': 'off',
+
+            // Override operator-linebreak to allow | before line breaks for union types
+            '@stylistic/operator-linebreak': ['error', 'after', {
+                overrides: {
+                    '|': 'before'
+                }
+            }],
         }
     },
 

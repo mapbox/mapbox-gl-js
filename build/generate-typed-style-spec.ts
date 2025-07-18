@@ -90,7 +90,7 @@ function tsObjectDeclaration(key, properties, overrides = {}) {
         experimentalTag = tag('@experimental', 'This is experimental and subject to change in future versions.');
     }
 
-    const objectDeclaration = `export type ${key} = ${tsObject(properties, '', overrides)}`;
+    const objectDeclaration = `export type ${key} = ${tsObject(properties, '', overrides)};`;
     return experimentalTag ? [experimentalTag, objectDeclaration].join('\n') : objectDeclaration;
 }
 
@@ -281,19 +281,19 @@ export type FunctionSpecification<T> = {
 };
 
 export type CameraFunctionSpecification<T> =
-    | { type: 'exponential', stops: Array<[number, T]> }
-    | { type: 'interval',    stops: Array<[number, T]> };
+    | {type: 'exponential', stops: Array<[number, T]>}
+    | {type: 'interval',    stops: Array<[number, T]>};
 
 export type SourceFunctionSpecification<T> =
-    | { type: 'exponential', stops: Array<[number, T]>, property: string, default?: T }
-    | { type: 'interval',    stops: Array<[number, T]>, property: string, default?: T }
-    | { type: 'categorical', stops: Array<[string | number | boolean, T]>, property: string, default?: T }
-    | { type: 'identity', property: string, default?: T };
+    | {type: 'exponential', stops: Array<[number, T]>, property: string, default?: T}
+    | {type: 'interval',    stops: Array<[number, T]>, property: string, default?: T}
+    | {type: 'categorical', stops: Array<[string | number | boolean, T]>, property: string, default?: T}
+    | {type: 'identity', property: string, default?: T};
 
 export type CompositeFunctionSpecification<T> =
-    | { type: 'exponential', stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T }
-    | { type: 'interval',    stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T }
-    | { type: 'categorical', stops: Array<[{zoom: number, value: string | number | boolean}, T]>, property: string, default?: T };
+    | {type: 'exponential', stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T}
+    | {type: 'interval',    stops: Array<[{zoom: number, value: number}, T]>, property: string, default?: T}
+    | {type: 'categorical', stops: Array<[{zoom: number, value: string | number | boolean}, T]>, property: string, default?: T};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ExpressionSpecification = [string, ...any[]];
@@ -364,10 +364,10 @@ ${spec.source.map(key => {
     }).join('\n\n')}
 
 export type SourceSpecification =
-${spec.source.map(key => `    | ${tsSourceSpecificationTypeName(key)}`).join('\n')}
+${spec.source.map(key => `    | ${tsSourceSpecificationTypeName(key)}`).join('\n')};
 
 export type IconsetSpecification =
-${spec.iconset.map(key => `    | ${tsObject(spec[key], '    ')}`).join('\n')}
+${spec.iconset.map(key => `    | ${tsObject(spec[key], '    ')}`).join('\n')};
 
 export type ModelSpecification = ${tsType(spec.model)};
 

@@ -187,7 +187,7 @@ type PlacedTextShift = {
     y: number,
     z: number,
     angle: number
-}
+};
 
 function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boolean, pitchWithMap: boolean, variableOffsets: Partial<Record<CrossTileID, VariableOffset>>, transform: Transform, labelPlaneMatrix: Float32Array, coord: OverscaledTileID, tileScale: number, size: InterpolatedSize, updateTextFitIcon: boolean) {
     const placedSymbols = bucket.text.placedSymbolArray;

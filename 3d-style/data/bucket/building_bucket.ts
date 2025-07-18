@@ -81,7 +81,7 @@ interface BuildingFootprint extends Footprint {
 type BuildingFeatureOnBorder = {
     featureId: number;
     footprintIndex: number;
-}
+};
 type BuildingPartName = "roof" | "wall" | "facade_glazing" | "entrance";
 
 interface BuildingFeaturePart {

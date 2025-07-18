@@ -11,12 +11,12 @@ import type Painter from '../render/painter';
 import type IndexBuffer from '../gl/index_buffer';
 import type VertexBuffer from '../gl/vertex_buffer';
 
-export type VignetteParams={
+export type VignetteParams = {
     strength: number,
     start: number,
     range: number,
     fadePower: number,
-    color: { r: number, g: number, b: number, a: number },
+    color: {r: number, g: number, b: number, a: number},
 };
 
 export function createTpBindings(params: VignetteParams, painter: Painter, scope: string[]) {

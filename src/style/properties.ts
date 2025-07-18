@@ -162,9 +162,9 @@ class TransitionablePropertyValue<T, R> {
  * @private
  */
 type TransitionablePropertyValues<Properties> = {
-    [Key in keyof Properties]: Properties[Key] extends Property<infer T, infer R>
-    ? TransitionablePropertyValue<T, R>
-    : never;
+    [Key in keyof Properties]: Properties[Key] extends Property<infer T, infer R> ?
+    TransitionablePropertyValue<T, R> :
+    never;
 };
 
 /**
@@ -342,9 +342,9 @@ class TransitioningPropertyValue<T, R> {
  * @private
  */
 type TransitioningPropertyValues<Properties> = {
-    [Key in keyof Properties]: Properties[Key] extends Property<infer T, infer R>
-    ? TransitioningPropertyValue<T, R>
-    : never;
+    [Key in keyof Properties]: Properties[Key] extends Property<infer T, infer R> ?
+    TransitioningPropertyValue<T, R> :
+    never;
 };
 
 /**

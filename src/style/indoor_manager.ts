@@ -17,7 +17,7 @@ type IndoorEvents = {
             levelOrder: number;
         }>;
     };
-}
+};
 
 const indoorSchemaExtension: SchemaSpecification = {
     "mbx-indoor-level-selected": {

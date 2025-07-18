@@ -34,8 +34,19 @@ export type ResolvedImageTypeT = {
 
 export type EvaluationKind = 'constant' | 'source' | 'camera' | 'composite';
 
-export type Type = NullTypeT | NumberTypeT | StringTypeT | BooleanTypeT | ColorTypeT | ObjectTypeT | ValueTypeT |
-ArrayType | ErrorTypeT | CollatorTypeT | FormattedTypeT | ResolvedImageTypeT;
+export type Type =
+    | NullTypeT
+    | NumberTypeT
+    | StringTypeT
+    | BooleanTypeT
+    | ColorTypeT
+    | ObjectTypeT
+    | ValueTypeT
+    | ArrayType
+    | ErrorTypeT
+    | CollatorTypeT
+    | FormattedTypeT
+    | ResolvedImageTypeT;
 
 export type ArrayType = {
     kind: 'array';

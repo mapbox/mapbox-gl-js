@@ -26,7 +26,7 @@ type Rect = {
 type ImagePositionScale = {
     x: number;
     y: number;
-}
+};
 
 export type ImagePositionMap = Map<StringifiedImageVariant, ImagePosition>;
 

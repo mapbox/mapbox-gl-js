@@ -163,7 +163,7 @@ export function evaluateVariableOffset(anchor: TextAnchor, [offsetX, offsetY]: [
     return [x, y];
 }
 
-type ShapedTextOrientations = { horizontal: Partial<Record<PlacementTypes, Shaping>>, vertical?: Shaping};
+type ShapedTextOrientations = {horizontal: Partial<Record<PlacementTypes, Shaping>>, vertical?: Shaping};
 export type SymbolFeatureData = {
     feature: SymbolFeature,
     shapedTextOrientations: ShapedTextOrientations,
@@ -185,7 +185,7 @@ export type SymbolBucketData = {
     hasAnySecondaryIcon: boolean,
     textAlongLine: boolean,
     symbolPlacement: "point" | "line" | "line-center"
-}
+};
 
 export function performSymbolLayout(bucket: SymbolBucket,
                              glyphMap: GlyphMap,
@@ -571,7 +571,7 @@ type IconTextFit = "none" | "height" | "width" | "both";
 
 function fitIconsToText(bucket: SymbolBucket, shapedIcon: PositionedIcon | undefined, layout: PossiblyEvaluated<LayoutProps>, feature: SymbolFeature,
     canonical: CanonicalTileID, shapedTextOrientations: ShapedTextOrientations, fontScale: number,
-    iconOffset: [number, number], iconTextFit: IconTextFit): { defaultShapedIcon: PositionedIcon, verticallyShapedIcon: PositionedIcon | undefined} {
+    iconOffset: [number, number], iconTextFit: IconTextFit): {defaultShapedIcon: PositionedIcon, verticallyShapedIcon: PositionedIcon | undefined} {
     const defaultShaping = getDefaultHorizontalShaping(shapedTextOrientations.horizontal) || shapedTextOrientations.vertical;
     const iconTextFitPadding = layout.get('icon-text-fit-padding').evaluate(feature, {}, canonical);
     const hasIconTextFit = iconTextFit !== 'none';

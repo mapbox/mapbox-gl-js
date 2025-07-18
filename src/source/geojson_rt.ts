@@ -10,7 +10,7 @@ type BBox = {
     minY: number,
     maxX: number,
     maxY: number
-}
+};
 
 type InternalFeature = BBox & {
     id: string | number,

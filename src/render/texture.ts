@@ -60,7 +60,7 @@ class Texture {
         this.update(image, {premultiply: options && options.premultiply});
     }
 
-    update(image: TextureImage, options?: { premultiply?: boolean; position?: {x: number; y: number;} } | null) {
+    update(image: TextureImage, options?: {premultiply?: boolean; position?: {x: number; y: number;}} | null) {
         const srcWidth = (image && image instanceof HTMLVideoElement && image.width === 0) ? image.videoWidth : image.width;
         const srcHeight = (image && image instanceof HTMLVideoElement && image.height === 0) ? image.videoHeight : image.height;
         const {context} = this;

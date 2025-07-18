@@ -44,7 +44,7 @@ import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';
 
-type RasterizationStatus = { iconsPending: boolean, patternsPending: boolean};
+type RasterizationStatus = {iconsPending: boolean, patternsPending: boolean};
 class WorkerTile {
     tileID: OverscaledTileID;
     uid: number;

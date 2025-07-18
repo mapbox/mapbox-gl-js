@@ -1,4 +1,4 @@
-/* eslint-disable camelcase, @stylistic/js/brace-style */
+/* eslint-disable camelcase, @stylistic/brace-style */
 
 import Color from "../../style-spec/util/color";
 
@@ -81,7 +81,7 @@ function readIconSetField(tag: number, obj: IconSet, pbf: Pbf) {
     if (tag === 1) obj.icons.push(readIcon(pbf, pbf.readVarint() + pbf.pos));
 }
 
-export function buildStretchedAreas(metadata: { stretch_x?: number[]; stretch_y?: number[] }, axis: "x" | "y"): void {
+export function buildStretchedAreas(metadata: {stretch_x?: number[]; stretch_y?: number[]}, axis: "x" | "y"): void {
     const areas = [];
     const stretch = metadata[`stretch_${axis}`];
     let left = null;

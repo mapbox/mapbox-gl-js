@@ -10,8 +10,8 @@ export const PerformanceMarkers = {
 } as const;
 
 export type PerformanceMarker =
-    typeof PerformanceMarkers[keyof typeof PerformanceMarkers] |
-    typeof LivePerformanceMarkers[keyof typeof LivePerformanceMarkers];
+    | typeof PerformanceMarkers[keyof typeof PerformanceMarkers]
+    | typeof LivePerformanceMarkers[keyof typeof LivePerformanceMarkers];
 
 export type PerformanceMetrics = {
     loadTime: number;

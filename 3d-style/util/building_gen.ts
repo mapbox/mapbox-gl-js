@@ -17,7 +17,7 @@ export type Feature = {
     minHeight: number,
     roofType: string,
     sourceId: number
-}
+};
 
 export type Facade = {
     coordinates: {x: number, y: number}[],
