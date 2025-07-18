@@ -1,0 +1,154 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.0018,
+      "height": 256,
+      "width": 256,
+      "operations": [
+        ["wait"],
+        [
+          "setFeatureState", 
+          { 
+              "source": "geojson",
+              "id": 0
+          },
+          { 
+              "window-color": "rgba(255, 0, 0, 1)"
+          }
+        ],
+        ["wait"]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "direction": [
+          15,
+          30
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": 0,
+            "type": "Feature",
+            "properties": {
+            },
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "bearing": -45,
+  "pitch": 60,
+  "zoom": 18,
+  "center": [
+    11.5690308,
+    48.1324576
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "geojson",
+      "minzoom": 17,
+      "layout": {
+        "building-facade": true,
+        "building-roof-shape": "parapet",
+        "building-facade-floors": 4,
+        "building-facade-window": [
+          0.9,
+          0.8
+        ],
+        "building-base": 0,
+        "building-height": 20
+      },
+      "paint": {
+        "building-color": [
+          "match",
+          [
+            "get",
+            "building-part"
+          ],
+          "wall",
+          [
+            "hsl",
+            41,
+            90,
+            90
+          ],
+          "roof",
+          [
+            "hsl",
+            41,
+            90,
+            90
+          ],
+          "window",
+          [
+            "feature-state",
+            "window-color"
+          ],
+          [
+            "hsl",
+            41,
+            90,
+            90
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -237,6 +237,8 @@ const skip = [
     "render-tests/building/faux-facade/shadows-supported",
     "render-tests/building/faux-facade/skillion-unsupported",
     "render-tests/building/faux-facade/window-ao",
+    "render-tests/building/faux-facade/building-facade-true-with-facade-hint",
+    "render-tests/building/faux-facade/feature-state",
     "render-tests/building/cutoff-fade",
 
     // https://mapbox.atlassian.net/browse/GLJS-1295
