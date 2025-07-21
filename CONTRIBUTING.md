@@ -134,6 +134,23 @@ Here is a recommended way to get setup:
 6. Write code, open a PR from your branch when you're ready
 7. If you need to rebase your fork's PR branch onto main to resolve conflicts: `git fetch upstream`, `git rebase upstream/main` and force push to Github `git push --force origin your-branch`
 
+### Syncing with Mapbox Internal Codebase
+
+* We use [Copybara](https://github.com/google/copybara) to sync changes between this public GitHub repository and the Mapbox internal codebase
+* After your PR is approved and reviewed, the GL JS team manually merges it into the Mapbox internal codebase
+* Once merged internally, Copybara automatically syncs the changes back to this public repository
+* **Note:** Your PR will appear as "Closed" rather than "Merged" on GitHub after it has been merged internally. This is expected - the changes are included via the Copybara sync process
+
+```mermaid
+flowchart TB
+    A[New PR] --> B[Review]
+    B --> C[Approved]
+    C --> D[Merge to Internal]
+    D --> E[Copybara Sync]
+    E --> F[Public Repo]
+    F --> G[PR Closed]
+```
+
 ## Changelog Conventions
 
 `CHANGELOG.md` is a valuable document many people read. It contains a formatted, lightly editorialized history of changes in the project. Pull requests are the unit of change and are normally categorized and summarized when reviewed. The changelog is manually curated from the list of commits that go into a release.
