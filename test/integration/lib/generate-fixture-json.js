@@ -23,22 +23,37 @@ export function getAllStyleFixturePaths(suiteDir) {
 }
 
 /**
+ * @typedef {Object} TestFixture
+ * @property {string} path - Absolute path to the test directory
+ * @property {Object} [style] - The style.json content
+ * @property {boolean} [PARSE_ERROR] - Indicates an error occurred while parsing
+ * @property {string} [message] - Error message if PARSE_ERROR is true
+ */
+
+/**
  * Inlines the content of style fixture paths into a single json file which can then be imported into a bundle to be shipped to the browser.
  *
+ * @param {string} suiteDir - The suite directory to strip from paths.
  * @param {string[]} stylePaths - An array of style fixture paths to process.
  * @param {boolean} includeImages - Whether to include image files in the output JSON.
+ * @returns {Object<string, TestFixture>} An object mapping test names to their fixtures
  */
-export function generateFixtureJson(stylePaths, includeImages = false) {
+export function generateFixtureJson(suiteDir, stylePaths, includeImages = false) {
+    if (!suiteDir || typeof suiteDir !== 'string') {
+        throw new Error('Invalid suite directory provided to generateFixtureJson');
+    }
+
     if (!stylePaths || !Array.isArray(stylePaths) || stylePaths.length === 0) {
         throw new Error('No style paths provided to generateFixtureJson');
     }
 
+    /** @type {Object<string, TestFixture>} */
     const testCases = {};
 
     for (const stylePath of stylePaths) {
         const dirName = path.dirname(stylePath);
-        const rootDir = 'test/integration/';
-        const testName = dirName.replace(rootDir, '');
+
+        const testName = path.relative(suiteDir, dirName);
         try {
             const json = parseJsonFromFile(stylePath);
 
@@ -47,7 +62,9 @@ export function generateFixtureJson(stylePaths, includeImages = false) {
             // https://vitest.dev/guide/browser/config.html#browser-api
             localizeURLs(json, 63315);
 
-            const testObject = {};
+            const testObject = {
+                path: dirName
+            };
 
             const filenames = fs.readdirSync(dirName);
             for (const file of filenames) {
@@ -75,7 +92,7 @@ export function generateFixtureJson(stylePaths, includeImages = false) {
         } catch (e) {
             console.log(`Error reading directory: ${dirName}`);
             console.log(e.message);
-            testCases[testName] = {PARSE_ERROR: true, message: e.message};
+            testCases[testName] = {PARSE_ERROR: true, message: e.message, path: dirName};
         }
     }
 

@@ -246,7 +246,31 @@ const skip = [
     "render-tests/placement/text-optional/basic",
     "render-tests/placement/text-optional/text-variable-anchor",
     // limit number of holes experimental for native
-    "render-tests/fill-limit-number-holes"
+    "render-tests/fill-limit-number-holes",
+
+    // Needs updated model fixtures
+    "render-tests/model-layer/landmark-conflation-border-overlapping-extrusion",
+    "render-tests/model-layer/landmark-conflation-borders",
+    "render-tests/model-layer/landmark-conflation-borders-add-layer",
+    "render-tests/model-layer/landmark-conflation-borders-terrain",
+    "render-tests/model-layer/landmark-conflation-multiple-model-layers",
+    "render-tests/model-layer/landmark-shadows-terrain",
+    "render-tests/model-layer/landmark-shadows-opacity",
+    "render-tests/model-layer/landmark-terrain",
+    "render-tests/model-layer/lighting-3d-mode/shadow",
+    "render-tests/model-layer/landmark-conflation-multiple-sources",
+    "render-tests/model-layer/landmark-shadow-skip-render",
+    "render-tests/model-layer/landmark-multiple-model-layers-z-offset-hide-evaluated",
+    "render-tests/model-layer/landmark-shadows-opacity-cutoff-range",
+    "render-tests/model-layer/landmark-front-cutoff",
+    "render-tests/model-layer/landmark-front-cutoff-disabled",
+    "render-tests/model-layer/landmark-front-cutoff-no-fade",
+    "render-tests/model-layer/landmark-front-cutoff-opacity",
+    "render-tests/model-layer/landmark-front-cutoff-terrain",
+    "render-tests/clip-layer/clip-layer-default-below-one-batched-model",
+
+    // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
+    "render-tests/clip-layer/clip-layer-keep-fill-extrusions",
 ];
 
 export default {todo, skip};

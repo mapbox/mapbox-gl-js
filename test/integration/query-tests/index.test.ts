@@ -72,13 +72,11 @@ let map;
 
 let reportFragment: string | undefined;
 
-const basePath = 'test/integration/query-tests';
-
 const getTest = (queryTestName) => async () => {
     let errorMessage: string | undefined;
     try {
-        const testName = queryTestName.replace('query-tests/', '');
         const queryTest = integrationTests[queryTestName];
+        const testPath = queryTest.path;
         const {style, expected} = queryTest;
 
         if (!style) {
@@ -160,10 +158,10 @@ const getTest = (queryTestName) => async () => {
         testMetaData.status = success ? 'passed' : 'failed';
 
         if (!import.meta.env.VITE_CI && import.meta.env.VITE_UPDATE) {
-            await server.commands.writeFile(`${basePath}/${testName}/expected.json`, jsonDiff.replace('+ ', '').trim());
+            await server.commands.writeFile(`${testPath}/expected.json`, jsonDiff.replace('+ ', '').trim());
         } else if (!import.meta.env.VITE_CI) {
-            await server.commands.writeFile(`${basePath}/${testName}/actual.png`, testMetaData.actual!.split(',')[1], {encoding: 'base64'});
-            await server.commands.writeFile(`${basePath}/${testName}/actual.json`, JSON.stringify(actual, undefined, 2));
+            await server.commands.writeFile(`${testPath}/actual.png`, testMetaData.actual!.split(',')[1], {encoding: 'base64'});
+            await server.commands.writeFile(`${testPath}/actual.json`, JSON.stringify(actual, undefined, 2));
         }
 
         reportFragment = updateHTML(testMetaData);
@@ -185,13 +183,14 @@ const getTest = (queryTestName) => async () => {
 
 const {ignores, timeout} = getEnvironmentParams();
 
-Object.keys(integrationTests).forEach((queryTestName) => {
+Object.keys(integrationTests).forEach((testName) => {
+    const queryTestName = `query-tests/${testName}`;
     if (ignores.skip.includes(queryTestName)) {
-        test.skip(queryTestName, getTest(queryTestName));
+        test.skip(testName, getTest(testName));
     } else if (ignores.todo.includes(queryTestName)) {
-        test.todo(queryTestName, getTest(queryTestName));
+        test.todo(testName, getTest(testName));
     } else {
-        test(queryTestName, {timeout}, getTest(queryTestName));
+        test(testName, {timeout}, getTest(testName));
     }
 });
 

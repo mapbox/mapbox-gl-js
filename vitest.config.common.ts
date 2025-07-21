@@ -1,4 +1,5 @@
 import {resolve} from 'node:path';
+import {existsSync} from 'node:fs';
 import {writeFile} from 'node:fs/promises';
 import serveStatic from 'serve-static';
 import {tilesets, staticFolders} from './test/integration/lib/middlewares.js';
@@ -21,12 +22,30 @@ function getShardedTests(suiteDir: string): string[] {
     return shardedTests;
 }
 
-export function integrationTests({suiteDir, includeImages}: {suiteDir: string, includeImages?: boolean}): Plugin {
-    const testFiles = getShardedTests(suiteDir);
+export function integrationTests({suiteDirs, includeImages}: {suiteDirs: string[], includeImages?: boolean}): Plugin {
+    if (!suiteDirs || suiteDirs.length === 0) {
+        throw new Error('No suite directories specified');
+    }
 
     const virtualModuleId = 'virtual:integration-tests';
     const resolvedVirtualModuleId = `\0${virtualModuleId}`;
-    const allRenderTests = generateFixtureJson(testFiles, includeImages);
+
+    const allRenderTests = {};
+    for (const dir of suiteDirs) {
+        const testFiles = getShardedTests(dir);
+        const dirTests = generateFixtureJson(dir, testFiles, includeImages);
+
+        // Merge test cases, checking for conflicts
+        for (const [testName, testData] of Object.entries(dirTests)) {
+            if (allRenderTests[testName]) {
+                throw new Error(
+                    `Test name conflict: "${testName}" exists in multiple directories: ` +
+                    `"${allRenderTests[testName].path}" and "${testData.path}"`
+                );
+            }
+            allRenderTests[testName] = testData;
+        }
+    }
 
     return {
         name: 'integration-tests',
@@ -37,7 +56,7 @@ export function integrationTests({suiteDir, includeImages}: {suiteDir: string, i
         },
         load(id) {
             if (id === resolvedVirtualModuleId) {
-                return `export const integrationTests = ${JSON.stringify(allRenderTests)}`;
+                return `export const integrationTests = ${JSON.stringify(allRenderTests)};`;
             }
         }
     };
@@ -50,6 +69,8 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
             const reportFragmentsMap = new Map<number, string>();
             staticFolders.forEach((folder) => {
                 server.middlewares.use(`/${folder}`, serveStatic(resolve(__dirname, `test/integration/${folder}`)));
+                const internalPath = resolve(__dirname, `internal/test/integration/${folder}`);
+                if (existsSync(internalPath)) server.middlewares.use(`/${folder}`, serveStatic(internalPath));
             });
             server.middlewares.use('/report-html/send-fragment', (req, res) => {
                 let body = '';
