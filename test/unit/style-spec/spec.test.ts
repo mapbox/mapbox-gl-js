@@ -95,14 +95,16 @@ function validSchema(k, name, obj, ref, version, kind) {
         'sdk-support',
         'overridable',
         'private',
-        'experimental'
+        'experimental',
+        'appearance',
+        'supported-layer-types'
     ];
 
     // Schema object.
     if (Array.isArray(obj.type) || typeof obj.type === 'string') {
         // schema must have only known keys
         for (const attr in obj) {
-            expect(keys.indexOf(attr) !== -1).toBeTruthy();
+            expect(keys.includes(attr), `Unknown key "${attr}" in "${k}"`).toBeTruthy();
         }
 
         // schema type must be js native, 'color', or present in ref root object.

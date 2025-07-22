@@ -382,6 +382,12 @@ export type SelectorPropertySpecification = {
     [_: string]: unknown
 };
 
+export type AppearanceSpecification = {
+    "condition"?: ExpressionSpecification,
+    "name"?: string,
+    "properties"?: unknown
+};
+
 export type VectorSourceSpecification = {
     "type": "vector",
     "url"?: string,
@@ -627,7 +633,8 @@ export type FillLayerSpecification = {
         "fill-tunnel-structure-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "fill-tunnel-structure-color-transition"?: TransitionSpecification,
         "fill-tunnel-structure-color-use-theme"?: PropertyValueSpecification<string>
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -716,7 +723,8 @@ export type LineLayerSpecification = {
         "line-border-color-use-theme"?: PropertyValueSpecification<string>,
         "line-occlusion-opacity"?: PropertyValueSpecification<number>,
         "line-occlusion-opacity-transition"?: TransitionSpecification
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -845,7 +853,8 @@ export type SymbolLayerSpecification = {
          */
         "symbol-z-offset"?: DataDrivenPropertyValueSpecification<number>,
         "symbol-z-offset-transition"?: TransitionSpecification
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -900,7 +909,8 @@ export type CircleLayerSpecification = {
         "circle-stroke-opacity-transition"?: TransitionSpecification,
         "circle-emissive-strength"?: PropertyValueSpecification<number>,
         "circle-emissive-strength-transition"?: TransitionSpecification
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -936,7 +946,8 @@ export type HeatmapLayerSpecification = {
         "heatmap-color-use-theme"?: PropertyValueSpecification<string>,
         "heatmap-opacity"?: PropertyValueSpecification<number>,
         "heatmap-opacity-transition"?: TransitionSpecification
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -1053,7 +1064,8 @@ export type FillExtrusionLayerSpecification = {
         "fill-extrusion-line-width"?: DataDrivenPropertyValueSpecification<number>,
         "fill-extrusion-line-width-transition"?: TransitionSpecification,
         "fill-extrusion-cast-shadows"?: boolean
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -1154,7 +1166,8 @@ export type BuildingLayerSpecification = {
          */
         "building-facade-emissive-chance"?: PropertyValueSpecification<number>,
         "building-cutoff-fade-range"?: ExpressionSpecification
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -1212,7 +1225,8 @@ export type RasterLayerSpecification = {
          */
         "raster-elevation"?: PropertyValueSpecification<number>,
         "raster-elevation-transition"?: TransitionSpecification
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -1251,7 +1265,8 @@ export type RasterParticleLayerSpecification = {
         "raster-particle-reset-rate-factor"?: number,
         "raster-particle-elevation"?: PropertyValueSpecification<number>,
         "raster-particle-elevation-transition"?: TransitionSpecification
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -1293,7 +1308,8 @@ export type HillshadeLayerSpecification = {
         "hillshade-accent-color-use-theme"?: PropertyValueSpecification<string>,
         "hillshade-emissive-strength"?: PropertyValueSpecification<number>,
         "hillshade-emissive-strength-transition"?: TransitionSpecification
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -1347,7 +1363,8 @@ export type ModelLayerSpecification = {
         "model-height-based-emissive-strength-multiplier-transition"?: TransitionSpecification,
         "model-cutoff-fade-range"?: ExpressionSpecification,
         "model-front-cutoff"?: PropertyValueSpecification<[number, number, number]>
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -1386,7 +1403,8 @@ export type BackgroundLayerSpecification = {
         "background-opacity-transition"?: TransitionSpecification,
         "background-emissive-strength"?: PropertyValueSpecification<number>,
         "background-emissive-strength-transition"?: TransitionSpecification
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -1426,7 +1444,8 @@ export type SkyLayerSpecification = {
         "sky-atmosphere-color-use-theme"?: PropertyValueSpecification<string>,
         "sky-opacity"?: PropertyValueSpecification<number>,
         "sky-opacity-transition"?: TransitionSpecification
-    }
+    },
+    "appearances"?: Array<AppearanceSpecification>
 };
 
 /**
@@ -1449,6 +1468,7 @@ export type SlotLayerSpecification = {
     "minzoom"?: never,
     "maxzoom"?: never,
     "filter"?: never,
+    "appearances"?: Array<AppearanceSpecification>,
     "layout"?: never,
     "paint"?: never
 };
@@ -1467,6 +1487,7 @@ export type ClipLayerSpecification = {
         "clip-layer-types"?: ExpressionSpecification,
         "clip-layer-scope"?: ExpressionSpecification
     },
+    "appearances"?: Array<AppearanceSpecification>,
     "paint"?: never
 };
 

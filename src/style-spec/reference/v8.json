@@ -1553,6 +1553,27 @@
     "paint": {
       "type": "paint",
       "doc": "Default paint properties for this layer."
+    },
+    "appearances": {
+      "type": "array",
+      "value": "appearance",
+      "supported-layer-types": ["symbol"],
+      "private": true,
+      "doc": "Conditional styling applied to layer features based on dynamic conditions. If multiple conditions are true, only the first matching appearance will be applied. Only properties marked with 'Can be used in appearances' are supported."
+    }
+  },
+  "appearance": {
+    "condition": {
+      "type": "expression",
+      "doc": "A boolean expression that determines when this appearance should be applied."
+    },
+    "name": {
+      "type": "string",
+      "doc": "Optional name for this appearance. Non-empty names should be unique within a layer."
+    },
+    "properties": {
+      "type": "*",
+      "doc": "Style properties to apply when the condition is met."
     }
   },
   "layout": [
@@ -2789,6 +2810,7 @@
       "minimum": 0,
       "units": "factor of the original icon size",
       "doc": "Scales the original size of the icon by the provided factor. The new pixel size of the image will be the original pixel size multiplied by `icon-size`. 1 is the original size; 3 triples the size of the image.",
+      "appearance": true,
       "requires": [
         "icon-image"
       ],
@@ -2932,6 +2954,7 @@
       "type": "resolvedImage",
       "doc": "Name of image in sprite to use for drawing an image background.",
       "tokens": true,
+      "appearance": true,
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -2959,6 +2982,7 @@
       "period": 360,
       "units": "degrees",
       "doc": "Rotates the icon clockwise.",
+      "appearance": true,
       "requires": [
         "icon-image"
       ],
@@ -3047,6 +3071,7 @@
         0
       ],
       "doc": "Offset distance of icon from its anchor. Positive values indicate right and down, while negative values indicate left and up. Each component is multiplied by the value of `icon-size` to obtain the final offset in pixels. When combined with `icon-rotate` the offset will be as if the rotated direction was up.",
+      "appearance": true,
       "requires": [
         "icon-image"
       ],

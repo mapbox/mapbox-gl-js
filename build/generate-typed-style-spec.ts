@@ -354,6 +354,8 @@ ${tsObjectDeclaration('SelectorSpecification', spec.selector)}
 
 ${tsObjectDeclaration('SelectorPropertySpecification', spec.selectorProperty)}
 
+${tsObjectDeclaration('AppearanceSpecification', spec.appearance)}
+
 ${spec.source.map(key => {
         const sourceSpecName = tsSourceSpecificationTypeName(key);
         if (sourceSpecName === 'GeoJSONSourceSpecification') {
