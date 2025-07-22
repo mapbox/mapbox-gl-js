@@ -1,4 +1,3 @@
-import Texture from '../render/texture';
 import RasterTileSource from './raster_tile_source';
 import {extend} from '../util/util';
 import {RGBAImage} from '../util/image';
@@ -6,10 +5,12 @@ import {ErrorEvent} from '../util/evented';
 import {ResourceType} from '../util/ajax';
 import RasterStyleLayer from '../style/style_layer/raster_style_layer';
 import RasterParticleStyleLayer from '../style/style_layer/raster_particle_style_layer';
+
 // Import MRTData as a module with side effects to ensure
 // it's registered as a serializable class on the main thread
 import '../data/mrt_data';
 
+import type Texture from '../render/texture';
 import type Dispatcher from '../util/dispatcher';
 import type RasterArrayTile from './raster_array_tile';
 import type {Map as MapboxMap} from '../ui/map';
@@ -138,33 +139,22 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
     }
 
     override unloadTile(tile: RasterArrayTile, _?: Callback<undefined> | null) {
-        const texture = tile.texture;
-        if (texture && texture instanceof Texture) {
+        const textures = tile.texturePerLayer;
+
+        tile.flushAllQueues();
+
+        if (textures.size) {
             // Clean everything else up owned by the tile, but preserve the texture.
             // Destroy first to prevent racing with the texture cache being popped.
             tile.destroy(true);
-
-            // Save the texture to the cache
-            this.map.painter.saveTileTexture(texture);
+            // Preserve the textures in the cache
+            for (const texture of textures.values()) {
+                // Save the texture to the cache
+                this.map.painter.saveTileTexture(texture);
+            }
         } else {
             tile.destroy();
-            tile.flushQueues();
-            tile._isHeaderLoaded = false;
-
-            delete tile._mrt;
-            delete tile.textureDescriptor;
         }
-
-        if (tile.fbo) {
-            tile.fbo.destroy();
-            delete tile.fbo;
-        }
-
-        delete tile.request;
-        delete tile.requestParams;
-
-        delete tile.neighboringTiles;
-        tile.state = 'unloaded';
     }
 
     /**
@@ -172,7 +162,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
      * for the requested band, fetch and repaint once it's acquired.
      * @private
      */
-    prepareTile(tile: RasterArrayTile, sourceLayer: string, band: string | number) {
+    prepareTile(tile: RasterArrayTile, sourceLayer: string, layerId: string, band: string | number) {
         // Skip if tile is not yet loaded or if no update is needed
         if (!tile._isHeaderLoaded) return;
 
@@ -180,7 +170,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         if (tile.state !== 'empty') tile.state = 'reloading';
 
         // Fetch data for band and then repaint once data is acquired.
-        tile.fetchBand(sourceLayer, band, (error, data) => {
+        tile.fetchBand(sourceLayer, layerId, band, (error, data) => {
             if (error) {
                 tile.state = 'errored';
                 this.fire(new ErrorEvent(error));
@@ -190,7 +180,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
             if (data) {
                 tile._isHeaderLoaded = true;
-                tile.setTexture(data, this.map.painter);
+                tile.setTexturePerLayer(layerId, data, this.map.painter);
                 tile.state = 'loaded';
                 this.triggerRepaint(tile);
             }
@@ -236,15 +226,17 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         const band = layerBand || this.getInitialBand(sourceLayer);
         if (band == null) return;
 
-        if (!tile.textureDescriptor) {
-            this.prepareTile(tile, sourceLayer, band);
+        if (!tile.textureDescriptorPerLayer.get(layer.id)) {
+            this.prepareTile(tile, sourceLayer, layer.id, band);
             return;
         }
 
         // Fallback to previous texture even if update is needed
-        if (tile.updateNeeded(sourceLayer, band) && !fallbackToPrevious) return;
+        if (tile.updateNeeded(layer.id, band) && !fallbackToPrevious) return;
 
-        return Object.assign({}, tile.textureDescriptor, {texture: tile.texture});
+        const textureDescriptor = tile.textureDescriptorPerLayer.get(layer.id);
+
+        return Object.assign({}, textureDescriptor, {texture: tile.texturePerLayer.get(layer.id)});
     }
 
     /**

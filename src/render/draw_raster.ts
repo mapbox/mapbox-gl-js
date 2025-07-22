@@ -416,8 +416,8 @@ export function prepare(layer: RasterStyleLayer, sourceCache: SourceCache, _: Pa
 
     const tiles = sourceCache.getIds().map(id => sourceCache.getTileByID(id) as RasterArrayTile);
     for (const tile of tiles) {
-        if (tile.updateNeeded(sourceLayer, band)) {
-            source.prepareTile(tile, sourceLayer, band);
+        if (tile.updateNeeded(layer.id, band)) {
+            source.prepareTile(tile, sourceLayer, layer.id, band);
         }
     }
 }

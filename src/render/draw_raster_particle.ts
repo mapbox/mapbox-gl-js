@@ -565,8 +565,8 @@ export function prepare(layer: RasterParticleStyleLayer, sourceCache: SourceCach
     // @ts-expect-error - TS2322 - Type 'Tile[]' is not assignable to type 'RasterArrayTile[]'.
     const tiles: Array<RasterArrayTile> = sourceCache.getIds().map(id => sourceCache.getTileByID(id));
     for (const tile of tiles) {
-        if (tile.updateNeeded(sourceLayer, band)) {
-            source.prepareTile(tile, sourceLayer, band);
+        if (tile.updateNeeded(layer.id, band)) {
+            source.prepareTile(tile, sourceLayer, layer.id, band);
         }
     }
 }
