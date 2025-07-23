@@ -4243,6 +4243,8 @@ export class Map extends Camera {
         this.painter.resize(Math.ceil(this._containerWidth), Math.ceil(this._containerHeight));
         this._updateTerrain();
         if (this.style) {
+            this.style.clearLayers();
+            this.style.imageManager.destroyAtlasTextures();
             this.style.reloadModels();
             this.style.clearSources();
         }

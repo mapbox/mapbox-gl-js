@@ -42,6 +42,21 @@ class RasterParticleStyleLayer extends StyleLayer {
         this.lastInvalidatedAt = browser.now();
     }
 
+    override _clear() {
+        if (this.colorRampTexture) {
+            this.colorRampTexture.destroy();
+            this.colorRampTexture = null;
+        }
+        if (this.tileFramebuffer) {
+            this.tileFramebuffer.destroy();
+            this.tileFramebuffer = null;
+        }
+        if (this.particleFramebuffer) {
+            this.particleFramebuffer.destroy();
+            this.particleFramebuffer = null;
+        }
+    }
+
     override onRemove(_: MapboxMap): void {
         if (this.colorRampTexture) {
             this.colorRampTexture.destroy();

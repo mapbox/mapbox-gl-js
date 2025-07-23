@@ -75,6 +75,13 @@ class RasterStyleLayer extends StyleLayer {
         }
     }
 
+    override _clear() {
+        if (this.colorRampTexture) {
+            this.colorRampTexture.destroy();
+            this.colorRampTexture = null;
+        }
+    }
+
     updateColorRamp(overrideRange?: [number, number] | null) {
         if (!this.hasColorMap()) return;
         if (!this._curRampRange) return;

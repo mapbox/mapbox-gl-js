@@ -1588,6 +1588,9 @@ class Painter {
      * @private
      */
     saveTileTexture(texture: Texture) {
+        if (texture.context !== this.context) {
+            return; // Texture is not from this context, cannot cache it.
+        }
         const tileSize = texture.size[0];
         const textures = this._tileTextures[tileSize];
         if (!textures) {

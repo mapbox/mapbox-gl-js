@@ -3864,6 +3864,15 @@ class Style extends Evented<MapEvents> {
         }
     }
 
+    clearLayers() {
+        for (const id in this._mergedLayers) {
+            const layer = this._mergedLayers[id];
+            if (layer._clear) {
+                layer._clear();
+            }
+        }
+    }
+
     reloadSource(id: string) {
         const sourceCaches = this.getSourceCaches(id);
         for (const sourceCache of sourceCaches) {

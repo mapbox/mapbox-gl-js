@@ -343,6 +343,10 @@ class StyleLayer extends Evented {
         // noop
     }
 
+    _clear() {
+        // noop
+    }
+
     isStateDependent(): boolean {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         for (const property in (this as any).paint._values) {

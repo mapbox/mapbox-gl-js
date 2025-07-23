@@ -511,6 +511,11 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
     }
 
     _clear() {
+        if (this.texture && !(this.texture instanceof UserManagedTexture)) {
+            this.texture.destroy();
+            this._dirty = true;
+        }
+        this.texture = null;
         this._boundsArray = undefined;
         this._unsupportedCoords = false;
     }

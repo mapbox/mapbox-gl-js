@@ -54,6 +54,18 @@ class SkyLayer extends StyleLayer {
         this._updateColorRamp();
     }
 
+    override _clear() {
+        if (this.skyboxFbo) {
+            this.skyboxFbo.destroy();
+            this.skyboxFbo = null;
+        }
+        if (this.colorRampTexture) {
+            this.colorRampTexture.destroy();
+            this.colorRampTexture = null;
+        }
+        this._skyboxInvalidated = true;
+    }
+
     override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'sky-gradient') {
             this._updateColorRamp();

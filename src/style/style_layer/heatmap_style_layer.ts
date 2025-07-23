@@ -73,6 +73,17 @@ class HeatmapStyleLayer extends StyleLayer {
         }
     }
 
+    override _clear() {
+        if (this.heatmapFbo) {
+            this.heatmapFbo.destroy();
+            this.heatmapFbo = null;
+        }
+        if (this.colorRampTexture) {
+            this.colorRampTexture.destroy();
+            this.colorRampTexture = null;
+        }
+    }
+
     override queryRadius(bucket: Bucket): number {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getMaximumPaintValue('heatmap-radius', this, (bucket as CircleBucket<any>));

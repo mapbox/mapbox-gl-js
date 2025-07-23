@@ -1,0 +1,78 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "operations": [
+        ["wait"],
+        ["forceContextRestart"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 16,
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    },
+    "point": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [13.417, 52.498717]
+            },
+            "properties": {}
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/standard",
+  "layers": [
+    {
+      "id": "raster-visible",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-opacity": 1,
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      "id": "symbol-point",
+      "type": "symbol",
+      "source": "point",
+      "layout": {
+        "icon-image": "restaurant",
+        "icon-allow-overlap": true,
+        "text-field": "Restaurant",
+        "text-offset": [0, 1],
+        "text-anchor": "top",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      },
+      "paint": {
+        "text-color": "black",
+        "text-halo-color": "white",
+        "text-halo-width": 1
+      }
+    }
+  ]
+}
