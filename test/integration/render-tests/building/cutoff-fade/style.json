@@ -6,6 +6,8 @@
       "width": 512,
       "height": 512,
       "operations": [
+        ["wait"],
+        ["wait"],
         ["wait"]
       ]
     }

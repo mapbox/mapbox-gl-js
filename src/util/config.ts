@@ -75,7 +75,7 @@ const config: Config = {
     DRACO_URL: 'https://api.mapbox.com/mapbox-gl-js/draco_decoder_gltf_v1.5.6.wasm',
     MESHOPT_URL: 'https://api.mapbox.com/mapbox-gl-js/meshopt_base_v0.20.wasm',
     MESHOPT_SIMD_URL: 'https://api.mapbox.com/mapbox-gl-js/meshopt_simd_v0.20.wasm',
-    BUILDING_GEN_URL: 'https://api.mapbox.com/mapbox-gl-js/building-gen/building_gen_v1.2.0.wasm',
+    BUILDING_GEN_URL: 'https://api.mapbox.com/mapbox-gl-js/building-gen/building_gen_v1.2.1.wasm',
     GLYPHS_URL: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
     TILES3D_URL_PREFIX: '3dtiles/v1',
 };

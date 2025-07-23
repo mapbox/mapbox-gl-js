@@ -52,7 +52,7 @@ export const BUILDING_HIDDEN_BY_TILE_BORDER_DEDUPLICATION: number = 0x2;
 const MAX_INT_16 = 32767.0;
 
 // Refer to https://github.com/mapbox/geodata-exports/blob/e863d358e04ade6301db95c6f96d1340560f7b93/pipelines/export_map_data/dags/mts_recipes/procedural_buildings_v1/procedural_buildings.json#L62
-const BUILDING_TILE_PADDING = 66; // ~= 0.8% * 8192 according to the buffer_size used to generate the tile set.
+const BUILDING_TILE_PADDING = 163; // ~= 2.0% * 8192 according to the buffer_size used to generate the tile set.
 
 function geometryFullyInsideTile(geometry: Point[][], padding: number): boolean {
     const extentWithPadding = EXTENT + padding;
@@ -259,7 +259,7 @@ class BuildingBucket implements BucketWithGroundEffect {
         buildingGen.setFacadeClassifierOptions(3.0);
 
         // First, we process facade data
-        const facadeDataForFeature = new Map<number, Facade[]>();
+        const facadeDataForFeature = new Map<string | number | boolean, Facade[]>();
         for (const {feature} of features) {
             const isFacade = vectorTileFeatureTypes[feature.type] === 'LineString';
             if (!isFacade) {
@@ -281,15 +281,15 @@ class BuildingBucket implements BucketWithGroundEffect {
                 }
             }
 
-            const sourceId = Number(feature.properties.source_id);
             const facadeProperties: Facade = {
                 coordinates,
                 crossPerc: feature.properties.cross_perc as number,
                 distanceToRoad: feature.properties.distance_to_road as number,
                 entrances: feature.properties.entrances as string,
-                sourceId
+                sourceId: 0
             };
 
+            const sourceId = feature.properties.source_id;
             let facades = facadeDataForFeature.get(sourceId);
             if (!facades) {
                 facades = [];
@@ -338,9 +338,10 @@ class BuildingBucket implements BucketWithGroundEffect {
                 continue;
             }
 
+            const sourceId = feature.properties.source_id;
             let facades: Facade[];
-            if (facadeDataForFeature.has(feature.id)) {
-                facades = facadeDataForFeature.get(feature.id);
+            if (facadeDataForFeature.has(sourceId)) {
+                facades = facadeDataForFeature.get(sourceId);
             } else {
                 facades = [];
             }
@@ -373,7 +374,7 @@ class BuildingBucket implements BucketWithGroundEffect {
                         id: feature.id,
                         height,
                         minHeight: base,
-                        sourceId: feature.properties.source_id as number,
+                        sourceId: 0,
                         roofType: buildingRoofShape,
                         coordinates
                     };
