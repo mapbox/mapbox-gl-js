@@ -1,3 +1,9 @@
+## 3.14.0-beta.2
+
+### Bug fixes 🐞
+- Fix rendering of multiple `raster` layers from a single `raster-array` source.
+- Fix restoration of maps with background patterns, heatmap, image, video, or raster sources after WebGL context loss.
+
 ## 3.14.0-beta.1
 
 ## Breaking changes ⚠️
