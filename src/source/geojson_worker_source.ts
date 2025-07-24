@@ -146,6 +146,8 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         const requestParam = params && params.request;
         const perf = requestParam && requestParam.collectResourceTiming;
 
+        this._geoJSONIndex = null;
+
         this.loadGeoJSON(params, (err?: Error, data?: FeatureCollectionOrFeature) => {
             if (err || !data) {
                 return callback(err);
@@ -247,11 +249,14 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         if (params.request) {
             getJSON(params.request, callback);
         } else if (typeof params.data === 'string') {
-            try {
-                return callback(null, JSON.parse(params.data));
-            } catch (e) {
-                return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
-            }
+            // delay loading by one tick to hopefully let GC clean up the previous index (if present)
+            setTimeout(() => {
+                try {
+                    return callback(null, JSON.parse(params.data));
+                } catch (e) {
+                    return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
+                }
+            }, 0);
         } else {
             return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
         }
