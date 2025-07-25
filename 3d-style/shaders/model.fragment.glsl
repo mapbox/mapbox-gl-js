@@ -209,6 +209,11 @@ highp mat3 cotangentFrame(highp vec3 N, highp vec3 p, highp vec2 uv ) {
     highp vec3 dp1perp = cross( N, dp1 );
     highp vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
     highp vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+#ifdef FLIP_Y
+    T = -T;
+    B = -B;
+#endif
+
     // construct a scale-invariant frame
     // Some Adrenos GPU needs to set explicitely highp
     highp float lengthT = dot(T,T);
@@ -232,7 +237,11 @@ highp vec3 getNormal(){
     highp vec3 fdx = vec3(dFdx(v_position_height.x), dFdx(v_position_height.y), dFdx(v_position_height.z));
     highp vec3 fdy = vec3(dFdy(v_position_height.x), dFdy(v_position_height.y), dFdy(v_position_height.z));
     // Z flipped so it is towards the camera.
+#ifdef FLIP_Y
+    n = normalize(cross(fdx,fdy));
+#else
     n = normalize(cross(fdx,fdy)) * -1.0;
+#endif
 #endif
 
 #if defined(HAS_TEXTURE_u_normalTexture) && defined(HAS_ATTRIBUTE_a_uv_2f)
