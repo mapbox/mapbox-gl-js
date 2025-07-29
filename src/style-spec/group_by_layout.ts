@@ -2,8 +2,7 @@ import refProperties from './util/ref_properties';
 
 import type {LayerSpecification} from './types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function stringify(obj: any) {
+function stringify(obj: unknown) {
     if (typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'string' || obj === undefined || obj === null)
         return JSON.stringify(obj);
 
@@ -30,8 +29,7 @@ function getKey(layer: LayerSpecification) {
     return key;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function containsKey(obj: any, key: string) {
+function containsKey(obj: unknown, key: string) {
     function recursiveSearch(item) {
         if (typeof item === 'string' && item === key) {
             return true;
@@ -106,12 +104,11 @@ export default function groupByLayout(
         group.push(layer);
     }
 
-    const result = [];
+    const result: LayerSpecification[][] = [];
 
     for (const k in groups) {
         result.push(groups[k]);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return result;
 }

@@ -2,11 +2,11 @@ import {isValue} from '../values';
 import {BooleanType} from '../types';
 import {updateBBox, boxWithinBox, pointWithinPolygon, segmentIntersectSegment} from '../../util/geometry_util';
 
+import type Point from '@mapbox/point-geometry';
 import type {Type} from '../types';
 import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
 import type EvaluationContext from '../evaluation_context';
-import type Point from '@mapbox/point-geometry';
 import type {CanonicalTileID} from '../../types/tile_id';
 import type {BBox} from '../../util/geometry_util';
 
@@ -74,10 +74,10 @@ function lineStringWithinPolygons(line: Array<GeoJSON.Position>, polygons: Array
     return false;
 }
 
-function getTilePolygon(coordinates: Array<Array<GeoJSON.Position>>, bbox: BBox, canonical: CanonicalTileID) {
-    const polygon = [];
+function getTilePolygon(coordinates: Array<Array<GeoJSON.Position>>, bbox: BBox, canonical: CanonicalTileID): Array<Array<number[]>> {
+    const polygon: Array<Array<number[]>> = [];
     for (let i = 0; i < coordinates.length; i++) {
-        const ring = [];
+        const ring: number[][] = [];
         for (let j = 0; j < coordinates[i].length; j++) {
             const coord = getTileCoordinates(coordinates[i][j], canonical);
             updateBBox(bbox, coord);
@@ -85,17 +85,17 @@ function getTilePolygon(coordinates: Array<Array<GeoJSON.Position>>, bbox: BBox,
         }
         polygon.push(ring);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return polygon;
 }
 
-function getTilePolygons(coordinates: Array<Array<Array<GeoJSON.Position>>>, bbox: BBox, canonical: CanonicalTileID) {
-    const polygons = [];
+function getTilePolygons(coordinates: Array<Array<Array<GeoJSON.Position>>>, bbox: BBox, canonical: CanonicalTileID): Array<Array<Array<number[]>>> {
+    const polygons: Array<Array<Array<number[]>>> = [];
     for (let i = 0; i < coordinates.length; i++) {
         const polygon = getTilePolygon(coordinates[i], bbox, canonical);
         polygons.push(polygon);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return polygons;
 }
 
@@ -116,11 +116,10 @@ function resetBBox(bbox: BBox) {
     bbox[2] = bbox[3] = -Infinity;
 }
 
-function getTilePoints(geometry: Array<Array<Point>> | null | undefined, pointBBox: BBox, polyBBox: Array<number>, canonical: CanonicalTileID) {
+function getTilePoints(geometry: Array<Array<Point>> | null | undefined, pointBBox: BBox, polyBBox: Array<number>, canonical: CanonicalTileID): Array<number[]> {
     const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
-    const tilePoints = [];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    const tilePoints: Array<number[]> = [];
     if (!geometry) return tilePoints;
     for (const points of geometry) {
         for (const point of points) {
@@ -129,11 +128,11 @@ function getTilePoints(geometry: Array<Array<Point>> | null | undefined, pointBB
             tilePoints.push(p);
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return tilePoints;
 }
 
-function getTileLines(geometry: Array<Array<Point>> | null | undefined, lineBBox: BBox, polyBBox: Array<number>, canonical: CanonicalTileID) {
+function getTileLines(geometry: Array<Array<Point>> | null | undefined, lineBBox: BBox, polyBBox: Array<number>, canonical: CanonicalTileID): Array<Array<GeoJSON.Position>> {
     const worldSize = Math.pow(2, canonical.z) * EXTENT;
     const shifts = [canonical.x * EXTENT, canonical.y * EXTENT];
     const tileLines: Array<Array<GeoJSON.Position>> = [];
@@ -158,7 +157,7 @@ function getTileLines(geometry: Array<Array<Point>> | null | undefined, lineBBox
     return tileLines;
 }
 
-function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons) {
+function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons): boolean {
     const pointBBox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
     const polyBBox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
 
@@ -189,7 +188,7 @@ function pointsWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPo
     return true;
 }
 
-function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons) {
+function linesWithinPolygons(ctx: EvaluationContext, polygonGeometry: GeoJSONPolygons): boolean {
     const lineBBox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
     const polyBBox: BBox = [Infinity, Infinity, -Infinity, -Infinity];
 

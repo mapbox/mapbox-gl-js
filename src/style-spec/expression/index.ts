@@ -355,8 +355,7 @@ export function createPropertyExpression(
 ): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, scope, options);
     if (expression.result === 'error') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return expression;
+        return expression as Result<StylePropertyExpression, Array<ParsingError>>;
     }
 
     const parsed = expression.value.expression;
@@ -476,7 +475,7 @@ export function normalizePropertyExpression<T>(
 // expression (collectively referred to as a "curve"). The curve may be wrapped in one or more "let" or
 // "coalesce" expressions.
 function findZoomCurve(expression: Expression): Step | Interpolate | ParsingError | null {
-    let result = null;
+    let result: Step | Interpolate | ParsingError | null = null;
     if (expression instanceof Let) {
         result = findZoomCurve(expression.result);
 
@@ -508,7 +507,6 @@ function findZoomCurve(expression: Expression): Step | Interpolate | ParsingErro
         }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return result;
 }
 

@@ -4,20 +4,18 @@ import getType from '../util/get_type';
 
 import type {ValidationOptions} from './validate';
 
-export default function validateFog(options: ValidationOptions): Array<ValidationError> {
+export default function validateFog(options: ValidationOptions): ValidationError[] {
     const fog = options.value;
     const style = options.style;
     const styleSpec = options.styleSpec;
     const fogSpec = styleSpec.fog;
-    let errors = [];
+    let errors: ValidationError[] = [];
 
     const rootType = getType(fog);
     if (fog === undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else if (rootType !== 'object') {
         errors = errors.concat([new ValidationError('fog', fog, `object expected, ${rootType} found`)]);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
@@ -54,6 +52,5 @@ export default function validateFog(options: ValidationOptions): Array<Validatio
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

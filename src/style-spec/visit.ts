@@ -11,14 +11,12 @@ import type {
 function getPropertyReference(propertyName: string): StylePropertySpecification {
     for (let i = 0; i < Reference.layout.length; i++) {
         for (const key in Reference[Reference.layout[i]]) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            if (key === propertyName) return Reference[Reference.layout[i]][key];
+            if (key === propertyName) return Reference[Reference.layout[i]][key] as StylePropertySpecification;
         }
     }
     for (let i = 0; i < Reference.paint.length; i++) {
         for (const key in Reference[Reference.paint[i]]) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            if (key === propertyName) return Reference[Reference.paint[i]][key];
+            if (key === propertyName) return Reference[Reference.paint[i]][key] as StylePropertySpecification;
         }
     }
 

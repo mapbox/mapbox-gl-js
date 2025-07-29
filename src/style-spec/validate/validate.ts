@@ -30,10 +30,8 @@ import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
 import type ValidationError from '../error/validation_error';
 
-const VALIDATORS = {
-    '*'() {
-        return [];
-    },
+const VALIDATORS: Record<string, (unknown) => ValidationError[]> = {
+    '*': () => [],
     'array': validateArray,
     'boolean': validateBoolean,
     'number': validateNumber,
@@ -79,6 +77,9 @@ export type ValidationOptions = {
     objectKey?: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     objectElementValidators?: Record<string, (...args: any[]) => Array<ValidationError>>;
+    propertyKey?: string
+    propertyType?: string
+    expressionContext?: 'property';
 };
 
 export default function validate(options: ValidationOptions, arrayAsExpression: boolean = false): Array<ValidationError> {
@@ -87,7 +88,6 @@ export default function validate(options: ValidationOptions, arrayAsExpression: 
     const styleSpec = options.styleSpec;
 
     if (valueSpec.expression && isFunction(unbundle(value))) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return validateFunction(options);
     } else if (valueSpec.expression && isExpression(deepUnbundle(value))) {
         return validateExpression(options);
@@ -97,7 +97,6 @@ export default function validate(options: ValidationOptions, arrayAsExpression: 
             // Try to validate as an expression
             return validateExpression(options);
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return valid;
         }
     } else {

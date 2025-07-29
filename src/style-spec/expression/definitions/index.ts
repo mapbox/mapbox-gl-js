@@ -120,30 +120,16 @@ function hsla(ctx: EvaluationContext, [h, s, l, a]: Expression[]) {
     return color;
 }
 
-function has(
-    key: string,
-    obj: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [key: string]: any;
-    },
-): boolean {
+function has<T extends object>(key: keyof T, obj: T): boolean {
     return key in obj;
 }
 
-function get(key: string, obj: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
-}) {
+function get<T extends object>(key: keyof T, obj: T): T[keyof T] | null {
     const v = obj[key];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return typeof v === 'undefined' ? null : v;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function binarySearch(v: any, a: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: number]: any;
-}, i: number, j: number) {
+function binarySearch(v: unknown, a: Record<number, unknown>, i: number, j: number): boolean {
     while (i <= j) {
         const m = (i + j) >> 1;
         if (a[m] === v)
@@ -237,7 +223,6 @@ CompoundExpression.register(expressions, {
         overloads: [
             [
                 [StringType],
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 (ctx, [key]) => get(key.evaluate(ctx), ctx.properties())
             ], [
                 [StringType, ObjectType],
@@ -249,8 +234,7 @@ CompoundExpression.register(expressions, {
     'feature-state': [
         ValueType,
         [StringType],
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        (ctx, [key]) => get(key.evaluate(ctx), ctx.featureState || {})
+        (ctx, [key]) => get(key.evaluate(ctx), ctx.featureState || {}) as Value
     ],
     'properties': [
         ObjectType,

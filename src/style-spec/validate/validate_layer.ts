@@ -16,7 +16,7 @@ type Options = ValidationOptions & {
 };
 
 export default function validateLayer(options: Options): Array<ValidationError> {
-    let errors = [];
+    let errors: ValidationError[] = [];
 
     const layer = options.value;
     const key = options.key;
@@ -146,6 +146,5 @@ export default function validateLayer(options: Options): Array<ValidationError> 
         }
     }));
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

@@ -62,7 +62,7 @@ export function disallowedFilterParameters(e: Expression, options: any): Array<V
     if (disallowedParameters.size === 0) {
         return [];
     }
-    const errors = [];
+    const errors: ValidationError[] = [];
 
     if (e instanceof CompoundExpression) {
         if (disallowedParameters.has(e.name)) {
@@ -73,6 +73,5 @@ export function disallowedFilterParameters(e: Expression, options: any): Array<V
         errors.push(...disallowedFilterParameters(arg, options));
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

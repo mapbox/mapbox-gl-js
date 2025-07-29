@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
+import type {StyleSpecification} from './types';
 
-export default function (style) {
-    const styleIDs = [];
-    const sourceIDs = [];
-    const compositedSourceLayers = [];
+export default function (style: StyleSpecification): StyleSpecification {
+    const styleIDs: string[] = [];
+    const sourceIDs: string[] = [];
+    const compositedSourceLayers: string[] = [];
 
     for (const id in style.sources) {
         const source = style.sources[id];
@@ -21,7 +20,6 @@ export default function (style) {
     }
 
     if (styleIDs.length < 2)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return style;
 
     styleIDs.forEach((id) => {
@@ -49,6 +47,5 @@ export default function (style) {
         }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return style;
 }

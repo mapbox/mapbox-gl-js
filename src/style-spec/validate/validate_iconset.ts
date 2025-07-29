@@ -16,7 +16,7 @@ export default function validateIconset(options: ValidationOptions): Array<Valid
 
     const type = unbundle(iconset.type) as string;
 
-    let errors = [];
+    let errors: ValidationError[] = [];
 
     errors = errors.concat(validateObject({
         key,
@@ -36,6 +36,5 @@ export default function validateIconset(options: ValidationOptions): Array<Valid
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

@@ -14,8 +14,7 @@ import {
 
 import type {ValidationOptions} from './validate';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function validateFunction(options: ValidationOptions): any {
+export default function validateFunction(options: ValidationOptions): ValidationError[] {
     const functionValueSpec = options.valueSpec;
     const functionType = unbundle(options.value.type);
     let stopKeyType;
@@ -68,12 +67,12 @@ export default function validateFunction(options: ValidationOptions): any {
 
     return errors;
 
-    function validateFunctionStops(options: ValidationOptions) {
+    function validateFunctionStops(options: ValidationOptions): ValidationError[] {
         if (functionType === 'identity') {
             return [new ValidationError(options.key, options.value, 'identity function may not have a "stops" property')];
         }
 
-        let errors = [];
+        let errors: ValidationError[] = [];
         const value = options.value;
 
         errors = errors.concat(validateArray({
@@ -89,12 +88,11 @@ export default function validateFunction(options: ValidationOptions): any {
             errors.push(new ValidationError(options.key, value, 'array must have at least one stop'));
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
-    function validateFunctionStop(options: ValidationOptions) {
-        let errors = [];
+    function validateFunctionStop(options: ValidationOptions): ValidationError[] {
+        let errors: ValidationError[] = [];
         const value = options.value;
         const key = options.key;
 
@@ -149,11 +147,9 @@ export default function validateFunction(options: ValidationOptions): any {
         }
 
         if (isExpression(deepUnbundle(value[1]))) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return errors.concat([new ValidationError(`${key}[1]`, value[1], 'expressions are not allowed in function stops.')]);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors.concat(validate({
             key: `${key}[1]`,
             value: value[1],
@@ -164,7 +160,7 @@ export default function validateFunction(options: ValidationOptions): any {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function validateStopDomainValue(options: ValidationOptions, stop: any) {
+    function validateStopDomainValue(options: ValidationOptions, stop: any): ValidationError[] {
         const type = getType(options.value);
         const value = unbundle(options.value);
 

@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
 import migrateToV8 from './migrate/v8';
 import migrateToExpressions from './migrate/expressions';
+
+import type {StyleSpecification} from './types';
 
 /**
  * Migrate a Mapbox GL Style to the latest version.
@@ -17,7 +16,7 @@ import migrateToExpressions from './migrate/expressions';
  * var style = fs.readFileSync('./style.json', 'utf8');
  * fs.writeFileSync('./style.json', JSON.stringify(migrate(style)));
  */
-export default function (style) {
+export default function (style: {version: 7} | StyleSpecification): StyleSpecification {
     let migrated = false;
 
     if (style.version === 7) {
@@ -26,14 +25,13 @@ export default function (style) {
     }
 
     if (style.version === 8) {
-        migrated = migrateToExpressions(style);
+        style = migrateToExpressions(style);
         migrated = true;
     }
 
     if (!migrated) {
-        throw new Error('cannot migrate from', style.version);
+        throw new Error(`Cannot migrate from ${style.version}`);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return style;
+    return style as StyleSpecification;
 }

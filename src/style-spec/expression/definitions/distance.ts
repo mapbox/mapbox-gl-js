@@ -142,12 +142,11 @@ function getLngLatPoint(coord: Point, canonical: CanonicalTileID) {
     return [lngFromMercatorX(x), latFromMercatorY(y)];
 }
 
-function getLngLatPoints(coordinates: Array<Point>, canonical: CanonicalTileID) {
-    const coords = [];
+function getLngLatPoints(coordinates: Array<Point>, canonical: CanonicalTileID): number[][] {
+    const coords: number[][] = [];
     for (let i = 0; i < coordinates.length; ++i) {
         coords.push(getLngLatPoint(coordinates[i], canonical));
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return coords;
 }
 

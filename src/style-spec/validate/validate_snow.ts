@@ -9,15 +9,13 @@ export default function validateSnow(options: ValidationOptions): Array<Validati
     const style = options.style;
     const styleSpec = options.styleSpec;
     const snowSpec = styleSpec.snow;
-    let errors = [];
+    let errors: ValidationError[] = [];
 
     const rootType = getType(snow);
     if (snow === undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else if (rootType !== 'object') {
         errors = errors.concat([new ValidationError('snow', snow, `object expected, ${rootType} found`)]);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
@@ -45,6 +43,5 @@ export default function validateSnow(options: ValidationOptions): Array<Validati
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

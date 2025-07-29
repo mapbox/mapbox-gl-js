@@ -6,8 +6,7 @@ import type {StyleSpecification} from './types';
 export default function readStyle(style: string | Buffer | StyleSpecification): StyleSpecification {
     if (style instanceof String || typeof style === 'string' || ArrayBuffer.isView(style)) {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return jsonlint.parse(style.toString());
+            return jsonlint.parse(style.toString()) as StyleSpecification;
         } catch (e) {
             throw new ParsingError(e);
         }

@@ -31,7 +31,7 @@ export function classifyRings(rings: Array<Ring>, maxRings: number): Array<Array
 
     if (len <= 1) return [rings];
 
-    const polygons = [];
+    const polygons: Array<Array<Ring>> = [];
     let polygon,
         ccw;
 
@@ -63,7 +63,6 @@ export function classifyRings(rings: Array<Ring>, maxRings: number): Array<Array
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return polygons;
 }
 

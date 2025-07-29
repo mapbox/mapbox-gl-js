@@ -28,8 +28,7 @@ export default function validateStyle(style: StyleSpecification | string | Buffe
     try {
         s = readStyle(s);
     } catch (e) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return [e];
+        return [e] as ValidationErrors;
     }
 
     return validateStyleMin(s, styleSpec);

@@ -109,15 +109,14 @@ export default function validateSource(options: ValidationOptions): Array<Valida
     }
 }
 
-function getSourceTypeValues(styleSpec: StyleReference) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+function getSourceTypeValues(styleSpec: StyleReference): string[] {
     return styleSpec.source.reduce((memo: string[], source: string) => {
         const sourceType = styleSpec[source];
         if (sourceType.type.type === 'enum') {
             memo = memo.concat(Object.keys(sourceType.type.values));
         }
         return memo;
-    }, []);
+    }, []) as string[];
 }
 
 function validatePromoteId({

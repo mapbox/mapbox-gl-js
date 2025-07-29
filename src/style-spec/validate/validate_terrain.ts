@@ -11,18 +11,15 @@ export default function validateTerrain(options: ValidationOptions): Array<Valid
     const style = options.style;
     const styleSpec = options.styleSpec;
     const terrainSpec = styleSpec.terrain;
-    let errors = [];
+    let errors: ValidationError[] = [];
 
     const rootType = getType(terrain);
     if (terrain === undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else if (rootType === 'null') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else if (rootType !== 'object') {
         errors = errors.concat([new ValidationError('terrain', terrain, `object expected, ${rootType} found`)]);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
@@ -71,6 +68,5 @@ export default function validateTerrain(options: ValidationOptions): Array<Valid
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

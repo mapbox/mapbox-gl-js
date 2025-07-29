@@ -45,7 +45,7 @@ export default function validateArray(options: Options): Array<ValidationError> 
         arrayElementSpec = arraySpec.value;
     }
 
-    let errors = [];
+    let errors: ValidationError[] = [];
     for (let i = 0; i < array.length; i++) {
         errors = errors.concat(validateArrayElement({
             array,
@@ -57,6 +57,6 @@ export default function validateArray(options: Options): Array<ValidationError> 
             key: `${key}[${i}]`
         }, true));
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return errors;
 }

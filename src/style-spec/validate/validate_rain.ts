@@ -9,15 +9,13 @@ export default function validateRain(options: ValidationOptions): Array<Validati
     const style = options.style;
     const styleSpec = options.styleSpec;
     const rainSpec = styleSpec.rain;
-    let errors = [];
+    let errors: ValidationError[] = [];
 
     const rootType = getType(rain);
     if (rain === undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     } else if (rootType !== 'object') {
         errors = errors.concat([new ValidationError('rain', rain, `object expected, ${rootType} found`)]);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return errors;
     }
 
@@ -45,6 +43,5 @@ export default function validateRain(options: ValidationOptions): Array<Validati
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }

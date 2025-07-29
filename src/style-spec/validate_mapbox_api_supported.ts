@@ -139,7 +139,7 @@ function getImportErrors(imports: ImportSpecification[] = []): {errors: Array<Va
 }
 
 function getRootErrors(style: MapboxStyleSpecification, specKeys: string[]): Array<ValidationError> {
-    const errors = [];
+    const errors: ValidationError[] = [];
 
     /*
      * The following keys are optional but fully managed by the Mapbox Styles
@@ -204,7 +204,6 @@ function getRootErrors(style: MapboxStyleSpecification, specKeys: string[]): Arr
         errors.push(new ValidationError('protected', style.protected, 'Style protection must be true or false'));
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return errors;
 }
 
@@ -223,8 +222,7 @@ export default function validateMapboxApiSupported(style: MapboxStyleSpecificati
     try {
         s = readStyle(s);
     } catch (e) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return [e];
+        return [e] as ValidationErrors;
     }
 
     let errors = validateStyle(s, styleSpec)

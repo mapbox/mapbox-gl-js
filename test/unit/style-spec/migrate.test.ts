@@ -9,13 +9,13 @@ import * as spec from '../../../src/style-spec/style-spec';
 test('does not migrate from version 5', () => {
     expect(() => {
         migrate({version: 5, layers: []});
-    }).toThrowError('cannot migrate from');
+    }).toThrowError(/Cannot migrate from/);
 });
 
 test('does not migrate from version 6', () => {
     expect(() => {
         migrate({version: 6, layers: []});
-    }).toThrowError('cannot migrate from');
+    }).toThrowError(/Cannot migrate from/);
 });
 
 test('migrates to latest version from version 7', () => {

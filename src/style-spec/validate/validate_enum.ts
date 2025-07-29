@@ -7,7 +7,7 @@ export default function validateEnum(options: ValidationOptions): Array<Validati
     const key = options.key;
     const value = options.value;
     const valueSpec = options.valueSpec;
-    const errors = [];
+    const errors: ValidationError[] = [];
 
     if (Array.isArray(valueSpec.values)) { // <=v7
         if (valueSpec.values.indexOf(unbundle(value)) === -1) {
@@ -18,6 +18,6 @@ export default function validateEnum(options: ValidationOptions): Array<Validati
             errors.push(new ValidationError(key, value, `expected one of [${Object.keys(valueSpec.values).join(', ')}], ${JSON.stringify(value)} found`));
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return errors;
 }

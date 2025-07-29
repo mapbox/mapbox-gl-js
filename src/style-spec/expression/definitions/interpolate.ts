@@ -157,20 +157,17 @@ class Interpolate implements Expression {
         const outputs = this.outputs;
 
         if (labels.length === 1) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return outputs[0].evaluate(ctx);
+            return outputs[0].evaluate(ctx) as Color;
         }
 
-        const value = (this.input.evaluate(ctx) as number);
+        const value: number = this.input.evaluate(ctx);
         if (value <= labels[0]) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return outputs[0].evaluate(ctx);
+            return outputs[0].evaluate(ctx) as Color;
         }
 
         const stopCount = labels.length;
         if (value >= labels[stopCount - 1]) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return outputs[stopCount - 1].evaluate(ctx);
+            return outputs[stopCount - 1].evaluate(ctx) as Color;
         }
 
         const index = findStopLessThanOrEqualTo(labels, value);
@@ -178,8 +175,8 @@ class Interpolate implements Expression {
         const upper = labels[index + 1];
         const t = Interpolate.interpolationFactor(this.interpolation, value, lower, upper);
 
-        const outputLower = outputs[index].evaluate(ctx);
-        const outputUpper = outputs[index + 1].evaluate(ctx);
+        const outputLower: Color = outputs[index].evaluate(ctx);
+        const outputUpper: Color = outputs[index + 1].evaluate(ctx);
 
         if (this.operator === 'interpolate') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return

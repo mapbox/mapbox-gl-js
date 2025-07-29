@@ -26,12 +26,11 @@ export default function validateFilter(options: Options): Array<ValidationError>
             valueSpec: options.styleSpec[`filter_${layerType}`]
         }));
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return validateNonExpressionFilter(options);
     }
 }
 
-function validateNonExpressionFilter(options: Options) {
+function validateNonExpressionFilter(options: Options): ValidationError[] {
     const value = options.value;
     const key = options.key;
 
@@ -42,7 +41,7 @@ function validateNonExpressionFilter(options: Options) {
     const styleSpec = options.styleSpec;
     let type;
 
-    let errors = [];
+    let errors: ValidationError[] = [];
 
     if (value.length < 1) {
         return [new ValidationError(key, value, 'filter array must have at least 1 element')];
@@ -120,6 +119,6 @@ function validateNonExpressionFilter(options: Options) {
         }
         break;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return errors;
 }
