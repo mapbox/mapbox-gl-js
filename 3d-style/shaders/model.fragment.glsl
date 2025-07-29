@@ -553,6 +553,10 @@ vec4 finalColor;
     finalColor = applyCutout(finalColor, v_position_height.w);
 #endif
 
+#ifdef FEATURE_CUTOUT
+    finalColor = apply_feature_cutout(finalColor, gl_FragCoord);
+#endif
+
     glFragColor = finalColor;
 
 #ifdef OVERDRAW_INSPECTOR

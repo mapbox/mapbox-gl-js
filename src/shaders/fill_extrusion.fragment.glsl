@@ -133,6 +133,10 @@ float flood_radiance = 0.0;
     color = applyCutout(color, h);
 #endif
 
+#ifdef FEATURE_CUTOUT
+    color = apply_feature_cutout(color, gl_FragCoord);
+#endif
+
     glFragColor = color;
 
 #ifdef OVERDRAW_INSPECTOR

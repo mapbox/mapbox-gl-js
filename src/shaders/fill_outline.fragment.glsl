@@ -37,6 +37,10 @@ void main() {
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
 
+#ifdef FEATURE_CUTOUT
+    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+#endif
+
     glFragColor = out_color * (alpha * opacity);
 
 #ifdef OVERDRAW_INSPECTOR

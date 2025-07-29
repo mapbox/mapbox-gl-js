@@ -66,6 +66,11 @@ void main() {
 #ifdef INDICATOR_CUTOUT
     out_color = applyCutout(out_color, v_height);
 #endif
+
+#ifdef FEATURE_CUTOUT
+    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+#endif
+
     glFragColor = out_color;
 
     HANDLE_WIREFRAME_DEBUG;

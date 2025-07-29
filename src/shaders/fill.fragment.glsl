@@ -50,6 +50,10 @@ void main() {
     }
 #endif
 
+#ifdef FEATURE_CUTOUT
+    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+#endif
+
     glFragColor = out_color;
 
 #ifdef OVERDRAW_INSPECTOR

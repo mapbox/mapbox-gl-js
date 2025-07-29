@@ -135,11 +135,15 @@ void main() {
     out_color = applyCutout(out_color, v_z_offset);
 #endif
 
+#ifdef FEATURE_CUTOUT
+    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+#endif
+
     glFragColor = out_color;
 
-    #ifdef OVERDRAW_INSPECTOR
-        glFragColor = vec4(1.0);
-    #endif
+#ifdef OVERDRAW_INSPECTOR
+    glFragColor = vec4(1.0);
+#endif
 
     HANDLE_WIREFRAME_DEBUG;
 }

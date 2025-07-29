@@ -67,6 +67,10 @@ void main() {
 #endif // RENDER_SHADOWS
 #endif // LIGHTING_3D_MODE
 
+#ifdef FEATURE_CUTOUT
+    out_color = apply_feature_cutout(out_color, gl_FragCoord);
+#endif
+
 #ifdef FOG
     out_color = fog_dither(fog_apply_premultiplied(out_color, v_fog_pos));
 #endif
