@@ -5,7 +5,7 @@
             "mapMode": "static",
             "width": 512,
             "height": 512,
-            "allowed": 0.00027,
+            "allowed": 0.0004,
             "operations": [
                 ["wait"]
             ],

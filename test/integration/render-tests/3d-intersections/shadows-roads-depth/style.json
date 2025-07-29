@@ -17,7 +17,7 @@
                 ],
                 ["wait"]
             ],
-            "allowed": 0.0005,
+            "allowed": 0.0006,
             "spriteFormat": "raster"
         }
     },

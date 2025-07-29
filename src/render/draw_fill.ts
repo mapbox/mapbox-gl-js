@@ -533,7 +533,7 @@ function drawShadows(params: DrawFillParams) {
 
         painter.uploadCommonUniforms(painter.context, program, coord.toUnwrapped());
 
-        const uniformValues = elevatedStructuresDepthUniformValues(tileMatrix, 0.001);
+        const uniformValues = elevatedStructuresDepthUniformValues(tileMatrix, 0.0);
 
         program.draw(painter, gl.TRIANGLES, shadowRenderer.getShadowPassDepthMode(),
             StencilMode.disabled, shadowRenderer.getShadowPassColorMode(), CullFaceMode.disabled, uniformValues,
