@@ -1890,6 +1890,9 @@ class Style extends Evented<MapEvents> {
      * @returns {Style}
      */
     addImages(images: StyleImageMap<ImageId>): this {
+        if (images.size === 0) {
+            return this;
+        }
         for (const [id, image] of images.entries()) {
             if (this.getImage(id)) {
                 return this.fire(new ErrorEvent(new Error(`An image with the name "${id.name}" already exists.`)));
@@ -4334,6 +4337,13 @@ class Style extends Evented<MapEvents> {
         const fqid = makeFQID(params.source, params.scope);
         setDependencies(this._mergedOtherSourceCaches[fqid]);
         setDependencies(this._mergedSymbolSourceCaches[fqid]);
+
+        if (params.images.some(id => id.iconsetId)) {
+            // If the image is an iconset, we need another render cycle
+            // to mark the raster-array tiles as used so we will
+            // request them during Style#updateImageProviders
+            this.fire(new Event('data', {dataType: 'style'}));
+        }
     }
 
     rasterizeImages(mapId: string, params: ActorMessages['rasterizeImages']['params'], callback: ActorMessages['rasterizeImages']['callback']) {
