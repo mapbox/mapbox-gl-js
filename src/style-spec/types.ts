@@ -770,6 +770,7 @@ export type SymbolLayerSpecification = {
         "icon-text-fit"?: DataDrivenPropertyValueSpecification<"none" | "width" | "height" | "both">,
         "icon-text-fit-padding"?: DataDrivenPropertyValueSpecification<[number, number, number, number]>,
         "icon-image"?: DataDrivenPropertyValueSpecification<ResolvedImageSpecification>,
+        "icon-image-use-theme"?: PropertyValueSpecification<string>,
         "icon-rotate"?: DataDrivenPropertyValueSpecification<number>,
         "icon-padding"?: PropertyValueSpecification<number>,
         "icon-keep-upright"?: PropertyValueSpecification<boolean>,

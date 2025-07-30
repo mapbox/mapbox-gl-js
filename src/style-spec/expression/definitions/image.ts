@@ -2,9 +2,9 @@ import ResolvedImage from '../types/resolved_image';
 import {ImageId} from '../types/image_id';
 import {ColorType, ResolvedImageType, StringType} from '../types';
 
+import type EvaluationContext from '../evaluation_context';
 import type Color from '../../util/color';
 import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
 import type {Type} from '../types';
 import type {Expression, SerializedExpression} from '../expression';
 

@@ -23,6 +23,8 @@ import {
 import {getSymbolTileProjectionMatrix} from '../geo/projection/projection_util';
 import {evaluateSizeForFeature, evaluateSizeForZoom, type InterpolatedSize} from '../symbol/symbol_size';
 import EXTENT from '../style-spec/data/extent';
+import {Texture3D} from '../render/texture';
+import TextureSlots from '../../3d-style/render/texture_slots';
 
 import type Tile from '../source/tile';
 import type Transform from '../geo/transform';
@@ -311,6 +313,7 @@ function drawLayerSymbols(
     const iconBrightnessMin = layer.paint.get('icon-color-brightness-min');
     const iconBrightnessMax = layer.paint.get('icon-color-brightness-max');
     const elevationFromSea = layer.layout.get('symbol-elevation-reference') === 'sea';
+    const ignoreLut = layer.layout.get('icon-image-use-theme') === 'none';
 
     const context = painter.context;
     const gl = context.gl;
@@ -399,12 +402,29 @@ function drawLayerSymbols(
             }
         };
 
+        const setLutDefines = (defines: DynamicDefinesType[]) => {
+            if (!layer.lut || ignoreLut) {
+                return;
+            }
+
+            if (!layer.lut.texture) {
+                layer.lut.texture = new Texture3D(painter.context, layer.lut.image, [layer.lut.image.height, layer.lut.image.height, layer.lut.image.height], context.gl.RGBA8);
+            }
+            context.activeTexture.set(context.gl.TEXTURE0 + TextureSlots.LUT);
+            if (layer.lut.texture) {
+                layer.lut.texture.bind(context.gl.LINEAR, context.gl.CLAMP_TO_EDGE);
+            }
+            defines.push('APPLY_LUT_ON_GPU');
+
+        };
+
         const getIconState = () => {
             const alongLine = iconRotateWithMap && layer.layout.get('symbol-placement') !== 'point';
 
             const baseDefines: DynamicDefinesType[] = [];
 
             setOcclusionDefines(baseDefines);
+            setLutDefines(baseDefines);
 
             const projectedPosOnLabelSpace = alongLine || updateTextFitIcon;
 

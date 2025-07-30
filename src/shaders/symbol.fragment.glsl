@@ -48,6 +48,10 @@ in highp vec4 v_pos_light_view_1;
 in highp float v_depth;
 #endif
 
+#ifdef APPLY_LUT_ON_GPU
+uniform highp sampler3D u_lutTexture;
+#endif
+
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity
@@ -110,6 +114,10 @@ void main() {
         out_color = (a + b);
     #else
         out_color = texture(u_texture, v_tex_a);
+    #endif
+
+    #ifdef APPLY_LUT_ON_GPU
+        out_color = applyLUT(u_lutTexture, out_color);
     #endif
 
     #ifdef COLOR_ADJUSTMENT

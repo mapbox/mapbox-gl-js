@@ -72,10 +72,10 @@ export class StyleExpression {
     _enumValues?: {[_: string]: unknown};
     configDependencies: Set<string>;
 
-    constructor(expression: Expression, propertySpec?: StylePropertySpecification, scope?: string, options?: ConfigOptions) {
+    constructor(expression: Expression, propertySpec?: StylePropertySpecification, scope?: string, options?: ConfigOptions, iconImageUseTheme?: string) {
         this.expression = expression;
         this._warningHistory = {};
-        this._evaluator = new EvaluationContext(scope, options);
+        this._evaluator = new EvaluationContext(scope, options, iconImageUseTheme);
         this._defaultValue = propertySpec ? getDefaultValue(propertySpec) : null;
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
         this.configDependencies = isConstant.getConfigDependencies(expression);
@@ -113,6 +113,7 @@ export class StyleExpression {
         formattedSection?: FormattedSection,
         featureTileCoord?: Point,
         featureDistanceData?: FeatureDistanceData,
+        iconImageUseTheme?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         this._evaluator.globals = globals;
@@ -123,6 +124,7 @@ export class StyleExpression {
         this._evaluator.formattedSection = formattedSection || null;
         this._evaluator.featureTileCoord = featureTileCoord || null;
         this._evaluator.featureDistanceData = featureDistanceData || null;
+        this._evaluator.iconImageUseTheme = iconImageUseTheme || null;
 
         try {
             const val = this.expression.evaluate(this._evaluator);
@@ -165,8 +167,9 @@ export function createExpression(
     propertySpec?: StylePropertySpecification | null,
     scope?: string | null,
     options?: ConfigOptions | null,
+    iconImageUseTheme?: string | null
 ): Result<StyleExpression, Array<ParsingError>> {
-    const parser = new ParsingContext(definitions, [], propertySpec ? getExpectedType(propertySpec) : undefined, undefined, undefined, scope, options);
+    const parser = new ParsingContext(definitions, [], propertySpec ? getExpectedType(propertySpec) : undefined, undefined, undefined, scope, options, iconImageUseTheme);
 
     // For string-valued properties, coerce to string at the top level rather than asserting.
     const parsed = parser.parse(expression, undefined, undefined, undefined,
@@ -177,7 +180,7 @@ export function createExpression(
         return error(parser.errors);
     }
 
-    return success(new StyleExpression(parsed, propertySpec, scope, options));
+    return success(new StyleExpression(parsed, propertySpec, scope, options, iconImageUseTheme));
 }
 
 export class ZoomConstantExpression<Kind extends EvaluationKind> {
@@ -216,9 +219,10 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+        iconImageUseTheme?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
-        return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection);
+        return this._styleExpression.evaluate(globals, feature, featureState, canonical, availableImages, formattedSection, undefined, undefined, iconImageUseTheme);
     }
 }
 
@@ -286,6 +290,8 @@ export type ConstantExpression = {
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
+        formattedSection?: FormattedSection,
+        iconImageUseTheme?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) => any;
 };
@@ -337,6 +343,7 @@ export interface CompositeExpression {
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
+        iconImageUseTheme?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ) => any;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;
@@ -352,8 +359,9 @@ export function createPropertyExpression(
     propertySpec: StylePropertySpecification,
     scope?: string | null,
     options?: ConfigOptions | null,
+    iconImageUseTheme?: string | null
 ): Result<StylePropertyExpression, Array<ParsingError>> {
-    expression = createExpression(expression, propertySpec, scope, options);
+    expression = createExpression(expression, propertySpec, scope, options, iconImageUseTheme);
     if (expression.result === 'error') {
         return expression as Result<StylePropertyExpression, Array<ParsingError>>;
     }
@@ -446,12 +454,13 @@ export function normalizePropertyExpression<T>(
     specification: StylePropertySpecification,
     scope?: string | null,
     options?: ConfigOptions | null,
+    iconImageUseTheme?: string | null
 ): StylePropertyExpression {
     if (isFunction(value)) {
         return new StylePropertyFunction(value, specification) as unknown as StylePropertyExpression;
 
     } else if (isExpression(value) || (Array.isArray(value) && value.length > 0)) {
-        const expression = createPropertyExpression(value, specification, scope, options);
+        const expression = createPropertyExpression(value, specification, scope, options, iconImageUseTheme);
         if (expression.result === 'error') {
             // this should have been caught in validation
             throw new Error(expression.value.map(err => `${err.key}: ${err.message}`).join(', '));

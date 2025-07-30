@@ -21,12 +21,13 @@ class EvaluationContext {
     featureDistanceData: FeatureDistanceData | null | undefined;
     scope: string | null | undefined;
     options: ConfigOptions | null | undefined;
+    iconImageUseTheme: string | null | undefined;
 
     _parseColorCache: {
         [_: string]: Color | null | undefined;
     };
 
-    constructor(scope?: string | null, options?: ConfigOptions | null) {
+    constructor(scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string) {
         this.globals = null;
         this.feature = null;
         this.featureState = null;
@@ -38,6 +39,7 @@ class EvaluationContext {
         this.featureDistanceData = null;
         this.scope = scope;
         this.options = options;
+        this.iconImageUseTheme = iconImageUseTheme;
     }
 
     id(): string | number | null {

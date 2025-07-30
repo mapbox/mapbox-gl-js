@@ -85,7 +85,7 @@ class CompoundExpression implements Expression {
 
             // Use a fresh context for each attempted signature so that, if
             // we eventually succeed, we haven't polluted `context.errors`.
-            signatureContext = new ParsingContext(context.registry, context.path, null, context.scope, undefined, context._scope, context.options);
+            signatureContext = new ParsingContext(context.registry, context.path, null, context.scope, undefined, context._scope, context.options, context.iconImageUseTheme);
 
             // First parse all the args, potentially coercing to the
             // types expected by this overload.

@@ -146,7 +146,8 @@ export default class ImageAtlas {
             // For SDF icons, we override the RGB channels with white.
             // This is because we read the red channel in the shader and RGB channels will get alpha-premultiplied on upload.
             const overrideRGB = src.sdf;
-            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + ICON_PADDING, y: bin.y + ICON_PADDING}, src.data, lut, overrideRGB);
+            // We don't use the LUT here because it's applied on the GPU
+            RGBAImage.copy(src.data, image, {x: 0, y: 0}, {x: bin.x + ICON_PADDING, y: bin.y + ICON_PADDING}, src.data, null, overrideRGB);
         }
 
         for (const [id, src] of patterns.entries()) {

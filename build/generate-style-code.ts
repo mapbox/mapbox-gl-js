@@ -151,6 +151,17 @@ const layers = Object.keys(spec.layer.type.values).map((type) => {
         layoutSpec[name].name = name;
         layoutSpec[name].type_ = type;
         memo.push(layoutSpec[name]);
+
+        if (name === 'icon-image') {
+            memo.push({
+                'type': 'string',
+                'type_': type,
+                'default': 'default',
+                'property-type': 'data-constant',
+                'name': 'icon-image-use-theme'
+            });
+        }
+
         return memo;
     }, []);
 

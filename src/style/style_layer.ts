@@ -58,6 +58,7 @@ class StyleLayer extends Evented {
     filter: FilterSpecification | undefined;
     visibility: 'visible' | 'none' | undefined;
     configDependencies: Set<string>;
+    iconImageUseTheme: string | null | undefined;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _unevaluatedLayout: Layout<any>;
@@ -83,7 +84,8 @@ class StyleLayer extends Evented {
         properties: Readonly<{layout?: Properties<any>; paint?: Properties<any>;}>,
         scope: string,
         lut: LUT | null,
-        options?: ConfigOptions | null
+        options?: ConfigOptions | null,
+        iconImageUseTheme?: string | null
     ) {
         super();
 
@@ -93,6 +95,7 @@ class StyleLayer extends Evented {
         this.scope = scope;
         this.lut = lut;
         this.options = options;
+        this.iconImageUseTheme = iconImageUseTheme;
 
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
         this._filterCompiled = false;
@@ -120,7 +123,7 @@ class StyleLayer extends Evented {
         if (layer.slot) this.slot = layer.slot;
 
         if (properties.layout) {
-            this._unevaluatedLayout = new Layout(properties.layout, this.scope, options);
+            this._unevaluatedLayout = new Layout(properties.layout, this.scope, options, this.iconImageUseTheme);
             this.configDependencies = new Set([...this.configDependencies, ...this._unevaluatedLayout.configDependencies]);
         }
 
@@ -265,7 +268,7 @@ class StyleLayer extends Evented {
     recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         if (this._unevaluatedLayout) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this as any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages);
+            (this as any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages, this.iconImageUseTheme);
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

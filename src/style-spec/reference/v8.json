@@ -2955,6 +2955,7 @@
       "doc": "Name of image in sprite to use for drawing an image background.",
       "tokens": true,
       "appearance": true,
+      "use-theme": true,
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",

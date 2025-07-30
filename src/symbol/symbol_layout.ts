@@ -177,7 +177,8 @@ export type SymbolFeatureData = {
     textOffset: [number, number],
     isSDFIcon: boolean,
     iconTextFit: "none" | "width" | "height" | "both",
-    iconOffset: [number, number]};
+    iconOffset: [number, number]
+};
 
 export type SymbolBucketData = {
     featureData: SymbolFeatureData[],

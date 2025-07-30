@@ -2,6 +2,7 @@ import {Uniform1i, Uniform1f, Uniform2f, Uniform3f, UniformMatrix4f} from '../un
 import {mat4} from 'gl-matrix';
 import browser from '../../util/browser';
 import {globeECEFOrigin} from '../../geo/projection/globe_util';
+import TextureSlots from '../../../3d-style/render/texture_slots';
 
 import type {OverscaledTileID} from '../../source/tile_id';
 import type Context from '../../gl/context';
@@ -46,6 +47,7 @@ export type SymbolUniformsType = {
     ['u_ground_shadow_factor']: Uniform3f;
     ['u_inv_matrix']: UniformMatrix4f;
     ['u_normal_scale']: Uniform1f;
+    ['u_lutTexture']: Uniform1i;
 };
 
 export type SymbolDefinesType =
@@ -55,7 +57,8 @@ export type SymbolDefinesType =
     | 'PROJECTED_POS_ON_VIEWPORT'
     | 'RENDER_SDF'
     | 'RENDER_TEXT_AND_SYMBOL'
-    | 'Z_OFFSET';
+    | 'Z_OFFSET'
+    | 'APPLY_LUT_ON_GPU';
 
 const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_is_size_zoom_constant': new Uniform1i(context),
@@ -92,7 +95,8 @@ const symbolUniforms = (context: Context): SymbolUniformsType => ({
     'u_scale_factor': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
     'u_inv_matrix': new UniformMatrix4f(context),
-    'u_normal_scale': new Uniform1f(context)
+    'u_normal_scale': new Uniform1f(context),
+    'u_lutTexture': new Uniform1i(context),
 });
 
 const identityMatrix = mat4.create();
@@ -160,7 +164,8 @@ const symbolUniformValues = (
         'u_scale_factor': scaleFactor ? scaleFactor : 1.0,
         'u_ground_shadow_factor': groundShadowFactor,
         'u_inv_matrix': mat4.invert(mat4.create(), labelPlaneMatrix) as Float32Array,
-        'u_normal_scale': normalScale
+        'u_normal_scale': normalScale,
+        'u_lutTexture': TextureSlots.LUT,
     };
 
     if (projection.name === 'globe') {

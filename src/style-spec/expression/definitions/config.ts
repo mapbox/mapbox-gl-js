@@ -12,7 +12,7 @@ import type EvaluationContext from '../evaluation_context';
 
 const FQIDSeparator = '\u001F';
 
-function makeConfigFQID(id: string, ownScope?: string | null, contextScope?: string | null): string {
+export function makeConfigFQID(id: string, ownScope?: string | null, contextScope?: string | null): string {
     return [id, ownScope, contextScope].filter(Boolean).join(FQIDSeparator);
 }
 

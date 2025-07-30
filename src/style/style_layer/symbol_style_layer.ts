@@ -80,7 +80,7 @@ class SymbolStyleLayer extends StyleLayer {
     hasInitialOcclusionOpacityProperties: boolean;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
-        super(layer, getProperties(), scope, lut, options);
+        super(layer, getProperties(), scope, lut, options, layer.layout ? layer.layout['icon-image-use-theme'] : null);
         this._colorAdjustmentMatrix = mat4.identity([] as unknown as mat4);
         this.hasInitialOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
     }
@@ -189,7 +189,7 @@ class SymbolStyleLayer extends StyleLayer {
             }
             const overriden = this.paint.get(overridable) as unknown as PossiblyEvaluatedPropertyValue<PaintProps>;
             const override = new FormatSectionOverride(overriden);
-            const styleExpression = new StyleExpression(override, overriden.property.specification, this.scope, this.options);
+            const styleExpression = new StyleExpression(override, overriden.property.specification, this.scope, this.options, this.layout.get('icon-image-use-theme'));
             let expression = null;
             // eslint-disable-next-line no-warning-comments
             // TODO: check why were the `isLightConstant` values omitted from the construction of these expressions

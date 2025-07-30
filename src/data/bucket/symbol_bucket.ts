@@ -482,7 +482,6 @@ class SymbolBucket implements Bucket {
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
         this.zoom = options.zoom;
-        this.lut = options.lut;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.fqid);
@@ -511,6 +510,9 @@ class SymbolBucket implements Bucket {
         const layout = this.layers[0].layout;
         const sortKey = layout.get('symbol-sort-key');
         const zOrder = layout.get('symbol-z-order');
+        const ignoreLut = layout.get('icon-image-use-theme') === 'none';
+
+        this.lut = ignoreLut ? null : options.lut;
 
         this.canOverlap =
             layout.get('text-allow-overlap') ||
