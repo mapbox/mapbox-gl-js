@@ -157,6 +157,14 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             const parentTile = sourceCache.findLoadedParent(coord, 0);
 
             const fade = rasterFade(tile, parentTile, sourceCache, painter.transform, rasterFadeDuration);
+
+            if (!fade.isFading && tile.refreshedUponExpiration) {
+                // we don't crossfade tiles that were just refreshed upon expiring:
+                // once they are not fading anymore, unset the `refreshedUponExpiration` flag so we don't
+                // incorrectly fail to crossfade them
+                tile.refreshedUponExpiration = false;
+            }
+
             if (painter.terrain) painter.terrain.prepareDrawTile();
 
             let parentScaleBy: number, parentTL: [number, number];

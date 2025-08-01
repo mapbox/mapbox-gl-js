@@ -105,9 +105,9 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
                 tile.setExpiryData({cacheControl, expires});
             }
 
-            if (this.partial) {
+            if (this.partial && tile.state !== 'expired') {
                 tile.state = 'empty';
-            } else {
+            } else if (!this.partial) {
                 if (!data) return callback(null);
 
                 tile.state = 'loaded';

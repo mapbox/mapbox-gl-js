@@ -8,6 +8,7 @@ import type Transform from '../geo/transform';
 export type RasterFade = {
     opacity: number;
     mix: number;
+    isFading: boolean;
 };
 
 function rasterFade(
@@ -33,27 +34,24 @@ function rasterFade(
 
         const childOpacity = (fadeIn && tile.refreshedUponExpiration) ? 1 : clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
 
-        // we don't crossfade tiles that were just refreshed upon expiring:
-        // once they're old enough to pass the crossfading threshold
-        // (fadeDuration), unset the `refreshedUponExpiration` flag so we don't
-        // incorrectly fail to crossfade them when zooming
-        if (tile.refreshedUponExpiration && sinceTile >= 1) tile.refreshedUponExpiration = false;
-
         if (parentTile) {
             return {
                 opacity: 1,
-                mix: 1 - childOpacity
+                mix: 1 - childOpacity,
+                isFading: sinceTile < 1
             };
         } else {
             return {
                 opacity: childOpacity,
-                mix: 0
+                mix: 0,
+                isFading: sinceTile < 1
             };
         }
     } else {
         return {
             opacity: 1,
-            mix: 0
+            mix: 0,
+            isFading: false
         };
     }
 }

@@ -284,7 +284,8 @@ class RasterArrayTile extends Tile implements Tile {
 
     updateNeeded(layerId: string, band: string | number): boolean {
         const textureUpdateNeeded = !this.textureDescriptorPerLayer.get(layerId) ||
-            this.textureDescriptorPerLayer.get(layerId).band !== band;
+            this.textureDescriptorPerLayer.get(layerId).band !== band ||
+            this.refreshedUponExpiration;
 
         return textureUpdateNeeded && this.state !== 'errored';
     }
