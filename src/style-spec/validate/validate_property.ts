@@ -28,7 +28,7 @@ export default function validateProperty(options: PropertyValidationOptions, pro
     if (!layerSpec) return [];
 
     const useThemeMatch = propertyKey.match(/^(.*)-use-theme$/);
-    if (propertyType === 'paint' && useThemeMatch && layerSpec[useThemeMatch[1]]) {
+    if (useThemeMatch && layerSpec[useThemeMatch[1]]) {
         if (isExpression(value)) {
             const errors: ValidationError[] = [];
             return errors.concat(validate({

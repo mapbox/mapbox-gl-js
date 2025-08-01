@@ -42,7 +42,7 @@ npm run test-expressions
 
 To run a subset of tests or an individual test, you can pass a specific subdirectory to the `test-render` script. For example, to run all the tests for a given property, e.g. `circle-radius`:
 ```
-$ npm run test-render -- -t "render-tests/circle-radius"
+$ npm run test-render -- -t "circle-radius"
 ...
 * circle-radius/antimeridian
 * circle-radius/default
@@ -55,7 +55,7 @@ $ npm run test-render -- -t "render-tests/circle-radius"
 
 Or to run a single test:
 ```
-$ npm run test-render -- -t "render-tests/circle-radius/literal"
+$ npm run test-render -- -t "circle-radius/literal"
 ...
 * circle-radius/literal
 ...

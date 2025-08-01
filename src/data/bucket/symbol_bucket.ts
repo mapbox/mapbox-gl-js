@@ -510,9 +510,8 @@ class SymbolBucket implements Bucket {
         const layout = this.layers[0].layout;
         const sortKey = layout.get('symbol-sort-key');
         const zOrder = layout.get('symbol-z-order');
-        const ignoreLut = layout.get('icon-image-use-theme') === 'none';
 
-        this.lut = ignoreLut ? null : options.lut;
+        this.lut = options.lut;
 
         this.canOverlap =
             layout.get('text-allow-overlap') ||
