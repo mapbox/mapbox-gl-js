@@ -807,9 +807,9 @@ export type MapEvents = {
      * @example
      * // Initialize the map.
      * const map = new mapboxgl.Map({});
-     * // Set an event listener that fires when a `touchstart` event occurs within the map.
-     * map.on('touchstart', () => {
-     *     console.log('A touchstart event occurred.');
+     * // Set an event listener that fires when a `touchend` event occurs within the map.
+     * map.on('touchend', () => {
+     *     console.log('A touchend event occurred.');
      * });
      * @see [Example: Create a draggable point](https://docs.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
