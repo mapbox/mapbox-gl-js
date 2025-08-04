@@ -37,7 +37,7 @@ git tag --points-at HEAD | while read tag; do
             echo "Version already set to $spec_version, skipping version update"
         fi
 
-        if [[ -z $(npm view .@$spec_version) ]]; then
+        if [[ -z $(npm view .@$spec_version -w src/style-spec) ]]; then
             echo "npm publish --tag $disttag -w src/style-spec"
             if [[ $dry_run == false ]]; then
                 npm publish --tag "$disttag" -w src/style-spec
