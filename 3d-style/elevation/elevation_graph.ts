@@ -33,10 +33,11 @@ export class ElevationPolygons {
     polygons: Map<number, Array<LeveledPolygon>> = new Map();
 
     add(key: number, ...values: LeveledPolygon[]) {
-        if (!this.polygons.has(key)) {
+        const poly = this.polygons.get(key);
+        if (!poly) {
             this.polygons.set(key, values);
         } else {
-            this.polygons.get(key).push(...values);
+            poly.push(...values);
         }
     }
 
@@ -49,6 +50,10 @@ export class ElevationPolygons {
 
 export class ElevationPortalGraph {
     portals: ElevationPortalEdge[] = [];
+
+    private static isOnBorder(a: number, b: number) {
+        return (a <= 0 && b <= 0) || (a >= EXTENT && b >= EXTENT);
+    }
 
     // Constructs a single graph by combining portals of multiple graphs
     static evaluate(unevaluatedPortals: ElevationPortalGraph[]): ElevationPortalGraph {
@@ -67,14 +72,13 @@ export class ElevationPortalGraph {
         //  a) it is result of the border clip operation
         //  b) it is on the ground acting as an "entrance" to the polygon
         //  c) it belongs to multiple polygons
-        const isOnBorder = (a: number, b: number) => (a <= 0 && b <= 0) || (a >= EXTENT && b >= EXTENT);
 
         // Tag all border portals
         for (const portal of portals) {
             const a = portal.va;
             const b = portal.vb;
 
-            if (isOnBorder(a.x, b.x) || isOnBorder(a.y, b.y)) {
+            if (ElevationPortalGraph.isOnBorder(a.x, b.x) || ElevationPortalGraph.isOnBorder(a.y, b.y)) {
                 portal.type = 'border';
             }
         }

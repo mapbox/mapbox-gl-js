@@ -71,17 +71,13 @@ class MeshBuilder {
     private outPositions: FillIntersectionsLayoutArray;
     private outNormals: FillIntersectionsNormalLayoutArray;
     private outIndices: TriangleIndexArray;
-    private vertexLookup: Map<bigint, number>;
-    private buffer: ArrayBuffer;
-    private view: DataView;
+    private vertexLookup: Map<string, number>;
 
     constructor(vertices: FillIntersectionsLayoutArray, normals: FillIntersectionsNormalLayoutArray, indices: TriangleIndexArray) {
         this.outPositions = vertices;
         this.outNormals = normals;
         this.outIndices = indices;
         this.vertexLookup = new Map();
-        this.buffer = new ArrayBuffer(4);
-        this.view = new DataView(this.buffer);
     }
 
     addVertex(vertex: vec3, normal: vec3, tileToMeter?: number): number {
@@ -90,7 +86,7 @@ class MeshBuilder {
             height *= tileToMeter;
         }
 
-        const lookup = (this.getVec3Bits(vertex) << 96n) | this.getVec3Bits(normal);
+        const lookup = `${vertex[0]},${vertex[1]},${vertex[2]},${normal[0]},${normal[1]},${normal[2]}`;
         const result = this.vertexLookup.get(lookup);
         if (result != null) {
             return result;
@@ -156,19 +152,6 @@ class MeshBuilder {
 
     clearVertexLookup(): void {
         this.vertexLookup.clear();
-    }
-
-    private getBits(val: number): bigint {
-        this.view.setFloat32(0, val);
-        return BigInt(this.view.getUint32(0));
-    }
-
-    private getVec3Bits(vec: vec3): bigint {
-        const b0 = this.getBits(vec[0]);
-        const b1 = this.getBits(vec[1]);
-        const b2 = this.getBits(vec[2]);
-
-        return (b0 << 64n) | (b1 << 32n) | b2;
     }
 }
 

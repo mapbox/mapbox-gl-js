@@ -187,7 +187,7 @@ export class ElevationFeature {
         vec3.cross(norm, norm, edgeVec);
         const len = vec3.length(norm);
 
-        return len > 0.0 ? vec3.scale(norm, norm, 1.0 / len) : vec3.fromValues(0, 0, 1);
+        return len > 0.0 ? vec3.scale(norm, norm, 1.0 / len) : vec3.set(norm, 0, 0, 1);
     }
 
     // Safe area describes original tile boundaries of the elevation curve scaled to the current zoom level.
@@ -202,6 +202,8 @@ export class ElevationFeature {
         return this.heightRange.max <= -TUNNEL_THRESHOLD_METERS;
     }
 
+    private  _tmpVec2 = [vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create(), vec2.create()];
+
     private getClosestEdge(point: Point): [number, number] | undefined {
         if (this.edges.length === 0) {
             return undefined;
@@ -211,20 +213,22 @@ export class ElevationFeature {
         let closestDist = Number.POSITIVE_INFINITY;
         let closestT = 0.0;
 
-        const pointVec = vec2.fromValues(point.x, point.y);
+        const [pa, pb, papb, paPoint, aPoint, perpDir, pointVec] = this._tmpVec2;
+
+        vec2.set(pointVec, point.x, point.y);
+        // The ray direction will be updated for each iteration of the loop.
+        const ray = new Ray2D(pointVec, null);
 
         for (let i = 0; i < this.edges.length; i++) {
             const edge = this.edges[i];
             const edgeDir = this.edgeProps[i].dir;
-            const ray = new Ray2D(pointVec, this.edgeProps[i].dir);
+            ray.dir = edgeDir;
 
             // Both end points of the edge have "direction" property which is the average direction
             // of the connected edges. For this reason a simplified quadrilateral interpolation is required.
             const a = this.vertices[edge.a].position;
             const b = this.vertices[edge.b].position;
 
-            const pa = vec2.create();
-            const pb = vec2.create();
             const paResult = ray.intersectsPlane(a, this.vertexProps[edge.a].dir, pa);
             const pbResult = ray.intersectsPlane(b, this.vertexProps[edge.b].dir, pb);
 
@@ -232,16 +236,17 @@ export class ElevationFeature {
                 continue;
             }
 
-            const papb = vec2.subtract(vec2.create(), pb, pa);
-            const paPoint = vec2.subtract(vec2.create(), pointVec, pa);
+            vec2.subtract(papb, pb, pa);
+            vec2.subtract(paPoint, pointVec, pa);
             const papbLen = vec2.dot(papb, papb);
             const t = papbLen > 0 ? vec2.dot(paPoint, papb) / papbLen : 0.0;
             const clampedT = clamp(t, 0.0, 1.0);
 
             // Use manhattan distance instead of euclidean one in order to distinguish the correct line.
             const distAlongLine = Math.abs((t - clampedT) * this.edgeProps[i].len);
-            const aPoint = vec2.subtract(vec2.create(), pointVec, a);
-            const perpDist = Math.abs(vec2.dot(aPoint, vec2.fromValues(edgeDir[1], -edgeDir[0])));
+            vec2.subtract(aPoint, pointVec, a);
+            vec2.set(perpDir, edgeDir[1], -edgeDir[0]);
+            const perpDist = Math.abs(vec2.dot(aPoint, perpDir));
             const dist = distAlongLine + perpDist;
 
             if (dist < closestDist) {
@@ -258,6 +263,11 @@ export class ElevationFeature {
         // Treshold value in meters after which an edge is split into two.
         const splitDistanceThreshold = MARKUP_ELEVATION_BIAS;
 
+        const aPos = vec3.create();
+        const bPos = vec3.create();
+        const aPerp = vec3.create();
+        const bPerp = vec3.create();
+
         for (let i = this.edges.length - 1; i >= 0; --i) {
             const a = this.edges[i].a;
             const b = this.edges[i].b;
@@ -273,11 +283,11 @@ export class ElevationFeature {
             const aDir = this.vertexProps[a].dir;
             const bDir = this.vertexProps[b].dir;
 
-            const aPos = vec3.fromValues(aTilePos[0] / metersToTile, aTilePos[1] / metersToTile, aHeight);
-            const bPos = vec3.fromValues(bTilePos[0] / metersToTile, bTilePos[1] / metersToTile, bHeight);
-            const aPerp = vec3.fromValues(aDir[1], -aDir[0], 0.0);
+            vec3.set(aPos, aTilePos[0] / metersToTile, aTilePos[1] / metersToTile, aHeight);
+            vec3.set(bPos, bTilePos[0] / metersToTile, bTilePos[1] / metersToTile, bHeight);
+            vec3.set(aPerp, aDir[1], -aDir[0], 0.0);
             vec3.scale(aPerp, aPerp, aExtent);
-            const bPerp = vec3.fromValues(bDir[1], -bDir[0], 0.0);
+            vec3.set(bPerp, bDir[1], -bDir[0], 0.0);
             vec3.scale(bPerp, bPerp, bExtent);
 
             const lineDistSq = this.distSqLines(
@@ -342,15 +352,15 @@ export class ElevationFeature {
         if (det === 0.0) {
             // parallel lines
             const t = vec3.dot(abVec, bVec) / vec3.dot(bVec, bVec);
-            const vec = vec3.lerp(vec3.create(), bStart, bEnd, t);
+            const vec = vec3.lerp(aVec, bStart, bEnd, t);
             return vec3.squaredDistance(vec, aStart);
         }
 
         const s = (b * e - c * d) / det;
         const t = (a * e - b * c) / det;
 
-        const vecA = vec3.lerp(vec3.create(), aStart, aEnd, s);
-        const vecB = vec3.lerp(vec3.create(), bStart, bEnd, t);
+        const vecA = vec3.lerp(aVec, aStart, aEnd, s);
+        const vecB = vec3.lerp(bVec, bStart, bEnd, t);
         return vec3.squaredDistance(vecA, vecB);
     }
 }
@@ -421,8 +431,7 @@ export abstract class ElevationFeatures {
         }
 
         // Ensure that features are sorted by id
-        assert(elevationFeatures.every((feature, index, array) => index === 0 || array[index - 1].id <= feature.id
-        ));
+        assert(elevationFeatures.every((feature, index, array) => index === 0 || array[index - 1].id <= feature.id));
 
         return elevationFeatures;
     }

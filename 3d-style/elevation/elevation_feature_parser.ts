@@ -170,6 +170,18 @@ export abstract class ElevationFeatureParser {
         return height * scaler;
     }
 
+    static getVersionSchema(version: unknown) {
+        if (!version) {
+            return schemaV100;
+        }
+
+        if (version === '1.0.1') {
+            return schemaV101;
+        }
+
+        return undefined;
+    };
+
     static parse(data: VectorTileLayer): Result {
         const vertices: Vertex[] = [];
         const features: Feature[] = [];
@@ -187,37 +199,27 @@ export abstract class ElevationFeatureParser {
             const version = feature.properties.version;
 
             // Get correct schema for the version. undefined == no version defined -> use default schema
-            const getVersionSchema = (version: unknown) => {
-                if (!version) {
-                    return schemaV100;
-                }
-
-                if (version === '1.0.1') {
-                    return schemaV101;
-                }
-
-                return undefined;
-            };
-
-            const schema = getVersionSchema(version);
+            const schema = ElevationFeatureParser.getVersionSchema(version);
             if (schema === undefined) {
                 warnOnce(`Unknown elevation feature version number ${version || '(unknown)'}`);
                 continue;
             }
 
-            const type = feature.properties.hasOwnProperty('type') ? feature.properties['type'] : undefined;
+            const type = feature.properties['type'];
             if (!type) {
                 continue;
             }
 
+            const featureType = VectorTileFeature.types[feature.type];
+
             // Expect to find only "curve_meta" and "curve_point" features
-            if (VectorTileFeature.types[feature.type] === 'Point' && type === 'curve_point') {
+            if (featureType === 'Point' && type === 'curve_point') {
                 const out = {} as Vertex;
 
                 if (schema.parseVertex(parser, feature, out)) {
                     vertices.push(out);
                 }
-            } else if (VectorTileFeature.types[feature.type] === 'Polygon' && type === 'curve_meta') {
+            } else if (featureType === 'Polygon' && type === 'curve_meta') {
                 const out = {} as Feature;
 
                 if (schema.parseFeature(parser, feature, out)) {

@@ -200,8 +200,9 @@ export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: 
     // Perform clipping temporarily in a 32bit space where few unit wide polygons are just
     // lines when scaled back to 16bit.
     const scale = 1 << 16;
-
     let polygons = toMultiPolygon(subjectPolygon, scale);
+
+    const clipGeometry: martinez.Polygon[] = [];
 
     // Split the polygon using edges from the iterator
     for (; subdivisionEdges.valid(); subdivisionEdges.next()) {
@@ -215,12 +216,13 @@ export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: 
         const dx = bx - ax;
         const dy = by - ay;
         const len = Math.hypot(dx, dy);
+        if (len === 0) continue;
 
         // Expand the polygon towards the perpendicular vector by few units
         const shiftX = Math.trunc(dy / len * 3.0);
         const shiftY = -Math.trunc(dx / len * 3.0);
 
-        const clipLine: martinez.Polygon = [
+        clipGeometry.push([
             [
                 [ax, ay],
                 [bx, by],
@@ -228,9 +230,11 @@ export function polygonSubdivision(subjectPolygon: Point[][], subdivisionEdges: 
                 [ax + shiftX, ay + shiftY],
                 [ax, ay]
             ]
-        ];
+        ]);
+    }
 
-        polygons = martinez.diff(polygons, clipLine) as martinez.MultiPolygon;
+    if (clipGeometry.length > 0) {
+        polygons = martinez.diff(polygons, clipGeometry) as martinez.MultiPolygon;
     }
 
     return fromMultiPolygon(polygons, 1 / scale);
