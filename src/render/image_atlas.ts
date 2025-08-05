@@ -203,7 +203,8 @@ export default class ImageAtlas {
                 const imageVariant = ImageVariant.parse(id);
                 if (ImageId.isEqual(imageVariant.id, imageId)) {
                     const image = imageManager.getImage(imageId, scope);
-                    this.patchUpdatedImage(this.iconPositions.get(id), image, texture);
+                    // We don't use the LUT here because it's applied on the GPU
+                    this.patchUpdatedImage(this.iconPositions.get(id), image, texture, null);
                 }
             }
 
@@ -211,13 +212,13 @@ export default class ImageAtlas {
                 const imageVariant = ImageVariant.parse(id);
                 if (ImageId.isEqual(imageVariant.id, imageId)) {
                     const image = imageManager.getImage(imageId, scope);
-                    this.patchUpdatedImage(this.patternPositions.get(id), image, texture);
+                    this.patchUpdatedImage(this.patternPositions.get(id), image, texture, this.lut);
                 }
             }
         }
     }
 
-    patchUpdatedImage(position: ImagePosition | null | undefined, image: StyleImage | null | undefined, texture: Texture) {
+    patchUpdatedImage(position: ImagePosition | null | undefined, image: StyleImage | null | undefined, texture: Texture, lut: LUT | null = null) {
         if (!position || !image) return;
 
         if (position.version === image.version) return;
@@ -228,7 +229,7 @@ export default class ImageAtlas {
         if (this.lut || overrideRGBWithWhite) {
             const size = {width: image.data.width, height: image.data.height};
             const imageToUpload = new RGBAImage(size);
-            RGBAImage.copy(image.data, imageToUpload, {x: 0, y: 0}, {x: 0, y: 0}, size, this.lut, overrideRGBWithWhite);
+            RGBAImage.copy(image.data, imageToUpload, {x: 0, y: 0}, {x: 0, y: 0}, size, lut, overrideRGBWithWhite);
             texture.update(imageToUpload, {position: {x, y}});
         } else {
             texture.update(image.data, {position: {x, y}});
