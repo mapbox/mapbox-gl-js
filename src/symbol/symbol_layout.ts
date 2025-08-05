@@ -462,7 +462,7 @@ export function checkCrossFadeImagePositions(primary: ImageVariant, secondary: I
     const primaryPosition = iconPositions.get(primary.toString());
     const secondaryPosition = iconPositions.get(secondary.toString());
 
-    if (!secondaryPosition) {
+    if (!primaryPosition || !secondaryPosition) {
         return;
     }
 
