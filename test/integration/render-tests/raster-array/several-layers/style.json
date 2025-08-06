@@ -63,7 +63,6 @@
       "source": "precipitations",
       "source-layer": "Total Precip",
       "type": "raster",
-      "slot": "top",
       "layout": {},
       "paint": {
         "raster-opacity": 0.5,
@@ -86,7 +85,6 @@
       "source": "precipitations",
       "source-layer": "Total Precip",
       "type": "raster",
-      "slot": "top",
       "layout": {},
       "paint": {
         "raster-opacity": 0.5,
