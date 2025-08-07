@@ -43,32 +43,32 @@
                         "false"
                     ],
                     [
-                        "==",
+                        "any",
                         [
-                            "get",
-                            "mbx_commercial"
+                            "<=",
+                            [
+                                "get",
+                                "distance_to_landmark"
+                            ],
+                            200
                         ],
-                        true
+                        [
+                            "==",
+                            [
+                                "get",
+                                "mbx_commercial"
+                            ],
+                            true
+                        ]
                     ]
                 ],
                 [
-                    "all",
+                    "<",
                     [
-                        "<",
-                        [
-                            "get",
-                            "cross_perc"
-                        ],
-                        0.5
+                        "get",
+                        "cross_perc"
                     ],
-                    [
-                        "<",
-                        [
-                            "get",
-                            "distance_to_road"
-                        ],
-                        50.0
-                    ]
+                    0.5
                 ]
             ],
             "layout": {
@@ -155,7 +155,7 @@
                     ],
                     [
                         "random",
-                        20,
+                        2,
                         30,
                         [
                             "id"
@@ -165,8 +165,8 @@
                 "building-facade-window": [
                     [
                         "random",
-                        0.5,
-                        0.9,
+                        0.7,
+                        0.95,
                         [
                             "id"
                         ]
@@ -223,7 +223,7 @@
                             ]
                         ],
                         0.4,
-                        0.3
+                        0.8
                     ],
                     "door",
                     0.5,
@@ -242,19 +242,12 @@
                         [
                             "random",
                             10,
-                            40,
+                            20,
                             [
                                 "id"
                             ]
                         ],
-                        [
-                            "random",
-                            85,
-                            95,
-                            [
-                                "id"
-                            ]
-                        ]
+                        90
                     ],
                     "wall",
                     "hsl(38, 40%, 96%)",
@@ -300,6 +293,13 @@
                                     96
                                 ]
                             ]
+                        ],
+                        "skillion",
+                        [
+                            "hsl",
+                            32,
+                            80,
+                            95
                         ],
                         [
                             "hsl",
@@ -365,7 +365,7 @@
                 "building-ambient-occlusion-ground-intensity": 0.1,
                 "building-ambient-occlusion-ground-radius": 10,
                 "building-ambient-occlusion-ground-attenuation": 1,
-                "building-ambient-occlusion-intensity": 0.4
+                "building-ambient-occlusion-intensity": 0.6
             }
         }
     ]
