@@ -11,6 +11,7 @@ import {
 import type Context from '../gl/context';
 import type {UniformValues} from '../render/uniform_binding';
 import type {mat4} from 'gl-matrix';
+import type {NonPremultipliedRenderColor} from '../style-spec/util/color';
 
 export type GlobeRasterUniformsType = {
     ['u_proj_matrix']: UniformMatrix4f;
@@ -40,7 +41,7 @@ export type AtmosphereUniformsType = {
     ['u_horizon']: Uniform1f;
     ['u_transition']: Uniform1f;
     ['u_fadeout_range']: Uniform1f;
-    ['u_color']: Uniform4f;
+    ['u_atmosphere_fog_color']: Uniform4f;
     ['u_high_color']: Uniform4f;
     ['u_space_color']: Uniform4f;
     ['u_temporal_offset']: Uniform1f;
@@ -75,7 +76,7 @@ const atmosphereUniforms = (context: Context): AtmosphereUniformsType => ({
     'u_horizon': new Uniform1f(context),
     'u_transition': new Uniform1f(context),
     'u_fadeout_range': new Uniform1f(context),
-    'u_color': new Uniform4f(context),
+    'u_atmosphere_fog_color': new Uniform4f(context),
     'u_high_color': new Uniform4f(context),
     'u_space_color': new Uniform4f(context),
     'u_temporal_offset': new Uniform1f(context),
@@ -127,9 +128,9 @@ const atmosphereUniformValues = (
     horizon: number,
     transitionT: number,
     fadeoutRange: number,
-    color: [number, number, number, number],
-    highColor: [number, number, number, number],
-    spaceColor: [number, number, number, number],
+    atmosphereFogColor: NonPremultipliedRenderColor,
+    highColor: NonPremultipliedRenderColor,
+    spaceColor: NonPremultipliedRenderColor,
     temporalOffset: number,
     horizonAngle: number,
 ): UniformValues<AtmosphereUniformsType> => ({
@@ -140,9 +141,9 @@ const atmosphereUniformValues = (
     'u_horizon': horizon,
     'u_transition': transitionT,
     'u_fadeout_range': fadeoutRange,
-    'u_color': color,
-    'u_high_color': highColor,
-    'u_space_color': spaceColor,
+    'u_atmosphere_fog_color': atmosphereFogColor.toArray01(),
+    'u_high_color': highColor.toArray01(),
+    'u_space_color': spaceColor.toArray01(),
     'u_temporal_offset': temporalOffset,
     'u_horizon_angle': horizonAngle
 });
