@@ -8,7 +8,7 @@ import baseConfig from './vitest.config.base';
 const isCI = process.env.CI === 'true';
 
 // base64 encoded PNG fixtures
-const fixtures = globSync('./test/usvg/test-suite/*.png').reduce((acc, pngPath) => {
+const fixtures = globSync(['./test/usvg/test-suite/*.png', './test/usvg/mapbox_usvg_pb_test_suite/*.png']).reduce((acc, pngPath) => {
     const name = basename(pngPath, '.png');
     const base64Data = readFileSync(pngPath, 'base64');
     acc[name] = base64Data;

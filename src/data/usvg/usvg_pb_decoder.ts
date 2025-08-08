@@ -117,6 +117,10 @@ export function postProcessIcon(icon: Icon): Icon {
     if (metadata.content_area) {
         const {content_area: contentArea} = metadata;
 
+        if (contentArea.left == null) {
+            contentArea.left = 0;
+        }
+
         if (contentArea.top == null) {
             contentArea.top = contentArea.left;
         }
@@ -127,6 +131,18 @@ export function postProcessIcon(icon: Icon): Icon {
 
         if (contentArea.height == null) {
             contentArea.height = contentArea.width;
+        }
+    }
+
+    if (metadata.text_placeholder) {
+        const {text_placeholder: textPlaceholder} = metadata;
+
+        if (textPlaceholder.top == null) {
+            textPlaceholder.top = textPlaceholder.left;
+        }
+
+        if (textPlaceholder.height == null) {
+            textPlaceholder.height = textPlaceholder.width;
         }
     }
 
@@ -163,7 +179,8 @@ export interface IconMetadata {
     stretch_x_areas: [number, number][] | null | undefined;
     stretch_y: number[] | null | undefined;
     stretch_y_areas: [number, number][] | null | undefined;
-    content_area?: ContentArea;
+    content_area?: NonEmptyArea;
+    text_placeholder?: NonEmptyArea;
     variables: Variable[];
 }
 
@@ -180,22 +197,23 @@ export function readIconMetadata(pbf: Pbf, end?: number): IconMetadata {
 function readIconMetadataField(tag: number, obj: IconMetadata, pbf: Pbf) {
     if (tag === 1) obj.stretch_x = pbf.readPackedVarint();
     else if (tag === 2) obj.stretch_y = pbf.readPackedVarint();
-    else if (tag === 3) obj.content_area = readContentArea(pbf, pbf.readVarint() + pbf.pos);
+    else if (tag === 3) obj.content_area = readNonEmptyArea(pbf, pbf.readVarint() + pbf.pos);
     else if (tag === 4) obj.variables.push(readVariable(pbf, pbf.readVarint() + pbf.pos));
+    else if (tag === 5) obj.text_placeholder = readNonEmptyArea(pbf, pbf.readVarint() + pbf.pos);
 }
 
-export interface ContentArea {
+export interface NonEmptyArea {
     left: number;
     width: number;
     top: number;
     height: number;
 }
 
-export function readContentArea(pbf: Pbf, end?: number): ContentArea {
-    return pbf.readFields(readContentAreaField, {left: 0} as ContentArea, end);
+export function readNonEmptyArea(pbf: Pbf, end?: number): NonEmptyArea {
+    return pbf.readFields(readNonEmptyAreaField, {} as NonEmptyArea, end);
 }
 
-function readContentAreaField(tag: number, obj: ContentArea, pbf: Pbf) {
+function readNonEmptyAreaField(tag: number, obj: NonEmptyArea, pbf: Pbf) {
     if (tag === 1) obj.left = pbf.readVarint();
     else if (tag === 2) obj.width = pbf.readVarint();
     else if (tag === 3) obj.top = pbf.readVarint();
