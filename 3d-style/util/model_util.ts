@@ -224,38 +224,43 @@ export function queryGeometryIntersectsProjectedAabb(
     const corners = Aabb.projectAabbCorners(aabb, worldViewProjection);
     // convert to screen points
     let minDepth = Number.MAX_VALUE;
-    let closestCornerIndex = -1;
     for (let c = 0; c < corners.length; ++c) {
         const corner = corners[c];
         corner[0] = (0.5 * corner[0] + 0.5) * transform.width;
         corner[1] = (0.5 - 0.5 * corner[1]) * transform.height;
         if (corner[2] < minDepth) {
-            closestCornerIndex = c;
             minDepth = corner[2]; // This is a rough aabb intersection check for now and no need to interpolate over aabb sides.
         }
     }
-    const p = (i: number): Point => new Point(corners[i][0], corners[i][1]);
+    const polygonPoints = corners.map(corner => new Point(corner[0], corner[1]));
+    // Compute convex hull of all projected corners
+    const convexPolygon = convexHull(polygonPoints);
 
-    let convexPolygon;
-    switch (closestCornerIndex) {
-    case 0:
-    case 6:
-        convexPolygon = [p(1), p(5), p(4), p(7), p(3), p(2), p(1)];
-        break;
-    case 1:
-    case 7:
-        convexPolygon = [p(0), p(4), p(5), p(6), p(2), p(3), p(0)];
-        break;
-    case 3:
-    case 5:
-        convexPolygon = [p(1), p(0), p(4), p(7), p(6), p(2), p(1)];
-        break;
-    default:
-        convexPolygon = [p(1), p(5), p(6), p(7), p(3), p(0), p(1)];
-        break;
-    }
-
-    if (polygonIntersectsPolygon(queryGeometry, convexPolygon)) {
+    if (convexPolygon.length > 0 && polygonIntersectsPolygon(queryGeometry, convexPolygon)) {
         return minDepth;
     }
+    return null;
+}
+
+function convexHull(points: Point[]): Point[] {
+    // Andrew's monotone chain algorithm (2D convex hull)
+    points = points.slice().sort((a, b) => a.x - b.x || a.y - b.y);
+    const lower: Point[] = [];
+    for (const p of points) {
+        while (lower.length >= 2 && ((lower[lower.length - 1].x - lower[lower.length - 2].x) * (p.y - lower[lower.length - 2].y) - (lower[lower.length - 1].y - lower[lower.length - 2].y) * (p.x - lower[lower.length - 2].x)) <= 0) {
+            lower.pop();
+        }
+        lower.push(p);
+    }
+    const upper: Point[] = [];
+    for (let i = points.length - 1; i >= 0; i--) {
+        const p = points[i];
+        while (upper.length >= 2 && ((upper[upper.length - 1].x - upper[upper.length - 2].x) * (p.y - upper[upper.length - 2].y) - (upper[upper.length - 1].y - upper[upper.length - 2].y) * (p.x - upper[upper.length - 2].x)) <= 0) {
+            upper.pop();
+        }
+        upper.push(p);
+    }
+    upper.pop();
+    lower.pop();
+    return lower.concat(upper);
 }

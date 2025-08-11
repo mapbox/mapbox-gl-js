@@ -3,11 +3,10 @@ import ModelBucket from '../../data/bucket/model_bucket';
 import {getLayoutProperties, getPaintProperties} from './model_style_layer_properties';
 import {ZoomDependentExpression} from '../../../src/style-spec/expression/index';
 import {mat4} from 'gl-matrix';
-import {calculateModelMatrix} from '../../data/model';
 import LngLat from '../../../src/geo/lng_lat';
 import {latFromMercatorY, lngFromMercatorX} from '../../../src/geo/mercator_coordinate';
 import EXTENT from '../../../src/style-spec/data/extent';
-import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '../../util/model_util';
+import {queryGeometryIntersectsProjectedAabb, rotationScaleYZFlipMatrix} from '../../util/model_util';
 import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
 
 import type {vec3} from 'gl-matrix';
@@ -99,9 +98,6 @@ class ModelStyleLayer extends StyleLayer {
                 const model = modelManager.getModel(modelId, this.scope);
                 if (!model) return false;
 
-                let matrix: mat4 = mat4.create();
-                const position = new LngLat(0, 0);
-                const id = bucket.canonical;
                 let minDepth = Number.MAX_VALUE;
                 for (let i = 0; i < modelFeature.instancedDataCount; ++i) {
                     const instanceOffset = modelFeature.instancedDataOffset + i;
@@ -109,28 +105,69 @@ class ModelStyleLayer extends StyleLayer {
 
                     const va = instances.instancedDataArray.float32;
                     const translation: vec3 = [va[offset + 4], va[offset + 5], va[offset + 6]];
-                    const pointX = va[offset];
-                    const pointY = va[offset + 1] | 0; // point.y stored in integer part
 
-                    tileToLngLat(id, position, pointX, pointY);
+                    const rawPointX = va[offset];
+                    const rawPointY = va[offset + 1];
+                    const pointX = rawPointX | 0; // Use bitwise OR to match rendering path
+                    const pointY = rawPointY | 0; // point.y stored in integer part
 
-                    calculateModelMatrix(matrix,
-                                         model,
-                                         transform,
-                                         position,
-                                         modelFeature.rotation,
-                                         modelFeature.scale,
-                                         translation,
-                                         false,
-                                         false,
-                                         false);
-                    if (transform.projection.name === 'globe') {
-                        matrix = convertModelMatrixForGlobe(matrix, transform);
-                    }
-                    const worldViewProjection = mat4.multiply([] as unknown as mat4, transform.projMatrix, matrix);
-                    // Collision checks are performed in screen space. Corners are in ndc space.
+                    // Build model matrix in tile space (0-8192 range)
+                    const modelMatrix = mat4.create();
+                    mat4.identity(modelMatrix);
+
+                    // Calculate scale based on the zoom level and tile size
+                    // At zoom 16, EXTENT (8192) represents about 40 meters (depending on latitude)
+                    // Scale the model to match its real-world size
+                    const pixelsPerMeter = transform.pixelsPerMeter;
+                    const tileWorldSize = transform.worldSize / Math.pow(2, queryGeometry.tile.tileID.canonical.z);
+
+                    // Assume the model is in meters (common for 3D models)
+                    // Convert from meters to tile units
+                    const metersToPixels = pixelsPerMeter;
+                    const pixelsToTileUnits = EXTENT / tileWorldSize;
+                    const metersToTileUnits = metersToPixels * pixelsToTileUnits;
+
+                    // Convert translation from meters to appropriate units
+                    // X and Y need conversion to tile units, but Z stays in meters
+                    const translationInTileUnits: vec3 = [
+                        translation[0] * metersToTileUnits,  // Convert X translation to tile units
+                        translation[1] * metersToTileUnits,  // Convert Y translation to tile units
+                        translation[2]                        // Z stays in meters (no conversion needed)
+                    ];
+
+                    // First translate to position within tile
+                    mat4.translate(modelMatrix, modelMatrix, [
+                        pointX + translationInTileUnits[0],  // X position + X translation in tile units
+                        pointY + translationInTileUnits[1],  // Y position + Y translation in tile units
+                        translationInTileUnits[2]            // Z translation in meters
+                    ]);
+
+                    // For proper rotation, we need consistent units
+                    // Apply rotation with the original scale, then apply unit conversion
+                    const rotationMatrix = mat4.create();
+
+                    // First apply rotation with uniform scale
+                    rotationScaleYZFlipMatrix(rotationMatrix, modelFeature.rotation, modelFeature.scale);
+
+                    // Then apply the unit conversion as a separate scale
+                    const unitConversionMatrix = mat4.create();
+                    mat4.scale(unitConversionMatrix, unitConversionMatrix, [metersToTileUnits, metersToTileUnits, 1]);
+
+                    // Combine: rotation * unitConversion
+                    mat4.multiply(modelMatrix, modelMatrix, unitConversionMatrix);
+                    mat4.multiply(modelMatrix, modelMatrix, rotationMatrix);
+                    // Get the tile matrix for this specific tile
+                    const tileID = queryGeometry.tile.tileID;
+                    const posMatrix = transform.calculatePosMatrix(tileID.toUnwrapped(), transform.worldSize);
+
+                    // Combine: tile * model
+                    const tileModelMatrix = mat4.multiply([] as unknown as mat4, posMatrix, modelMatrix);
+
+                    // Apply projection
+                    const worldViewProjection = mat4.multiply([] as unknown as mat4, transform.projMatrix, tileModelMatrix);
                     const screenQuery = queryGeometry.queryGeometry;
                     const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
+
                     const depth = queryGeometryIntersectsProjectedAabb(projectedQueryGeometry, transform, worldViewProjection, model.aabb);
                     if (depth != null) {
                         minDepth = Math.min(depth, minDepth);
