@@ -23,7 +23,7 @@ export function mockFetch(config: Record<string, (req: Request) => Promise<Respo
 }
 
 export function getPNGResponse() {
-    return new Promise((resolve, reject) => {
+    return new Promise<Blob | null>((resolve, reject) => {
         try {
             canvasElement.toBlob(resolve, 'image/png');
         } catch (err) {

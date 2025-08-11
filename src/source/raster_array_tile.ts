@@ -3,6 +3,7 @@ import Tile from './tile';
 import Texture from '../render/texture';
 import {RGBAImage} from '../util/image';
 import {getArrayBuffer} from '../util/ajax';
+import {makeFQID} from '../util/fqid';
 import {MapboxRasterTile} from '../data/mrt/mrt.esm.js';
 
 import type Painter from '../render/painter';
@@ -35,8 +36,9 @@ class RasterArrayTile extends Tile implements Tile {
     entireBuffer: ArrayBuffer | null | undefined;
     requestParams: RequestParameters | null | undefined;
 
-    _workQueuePerLayer: Map<string, Array<() => void>>;
-    _fetchQueuePerLayer: Map<string, Array<() => void>>;
+    _workQueuePerLayer: Map<string | symbol, Array<() => void>>;
+    _fetchQueuePerLayer: Map<string | symbol, Array<() => void>>;
+    _taskQueue: Map<string | symbol, Set<Callback<TDecodingResult[] | null | undefined>>>;
 
     fbo: Framebuffer | null | undefined;
     textureDescriptorPerLayer: Map<string, TextureDescriptor | null | undefined>;
@@ -54,6 +56,7 @@ class RasterArrayTile extends Tile implements Tile {
 
         this._workQueuePerLayer = new Map();
         this._fetchQueuePerLayer = new Map();
+        this._taskQueue = new Map();
         this._isHeaderLoaded = false;
         this.textureDescriptorPerLayer = new Map();
         this.texturePerLayer = new Map();
@@ -101,7 +104,7 @@ class RasterArrayTile extends Tile implements Tile {
      * Stops existing fetches
      * @private
      */
-    flushQueues(sourceLayer: string) {
+    flushQueues(sourceLayer: string | symbol) {
         const workQueue = this._workQueuePerLayer.get(sourceLayer) || [];
         const fetchQueue = this._fetchQueuePerLayer.get(sourceLayer) || [];
 
@@ -181,7 +184,21 @@ class RasterArrayTile extends Tile implements Tile {
         return this.request;
     }
 
-    fetchBand(sourceLayer: string, layerId: string, band: string | number, callback: Callback<TextureImage | null | undefined>) {
+    fetchBandForRender(sourceLayer: string, layerId: string, band: string | number, callback: Callback<TextureImage | null | undefined>) {
+        this.fetchBand(sourceLayer, layerId, band, (err) => {
+            if (err) {
+                callback(err);
+                return;
+            }
+
+            this.updateTextureDescriptor(sourceLayer, layerId, band);
+
+            const textureDescriptor = this.textureDescriptorPerLayer.get(layerId);
+            callback(null, textureDescriptor ? textureDescriptor.img : null);
+        });
+    }
+
+    fetchBand(sourceLayer: string, layerId: string | null, band: string | number, callback: Callback<TDecodingResult[] | null | undefined>, cancelable: boolean = true): Cancelable {
         // If header is not loaded, bail out of rendering.
         // Repaint on reload is handled by appropriate callbacks.
         const mrt = this._mrt;
@@ -199,6 +216,18 @@ class RasterArrayTile extends Tile implements Tile {
         // eslint-disable-next-line prefer-const
         let task: MRTDecodingBatch;
 
+        const taskQueueId = makeFQID(String(band), makeFQID(this.tileID.key, sourceLayer));
+
+        let taskInQueue = this._taskQueue.get(taskQueueId);
+
+        if (!taskInQueue) {
+            taskInQueue = new Set();
+            taskInQueue.add(callback);
+            this._taskQueue.set(taskQueueId, taskInQueue);
+        } else {
+            taskInQueue.add(callback);
+        }
+
         const onDataDecoded = (err?: Error | null, result?: TDecodingResult[]) => {
             task.complete(err, result);
             if (err) {
@@ -206,9 +235,8 @@ class RasterArrayTile extends Tile implements Tile {
                 return;
             }
 
-            this.updateTextureDescriptor(sourceLayer, layerId, band);
-            const textureDescriptor = this.textureDescriptorPerLayer.get(layerId);
-            callback(null, textureDescriptor && textureDescriptor.img);
+            taskInQueue.values().forEach((cb) => cb(null, result));
+            this._taskQueue.delete(taskQueueId);
         };
 
         const onDataLoaded = (err?: Error | null, buffer?: ArrayBuffer | null) => {
@@ -225,15 +253,18 @@ class RasterArrayTile extends Tile implements Tile {
             };
 
             const workerJob = actor.send('decodeRasterArray', params, onDataDecoded, undefined, true);
-            const workQueue = this._workQueuePerLayer.get(layerId) || [];
 
-            workQueue.push(() => {
-                if (workerJob) workerJob.cancel();
-                task.cancel();
-            });
+            if (layerId !== null) {
+                const workQueue = this._workQueuePerLayer.get(layerId) || [];
 
-            if (!this._workQueuePerLayer.has(layerId)) {
-                this._workQueuePerLayer.set(layerId, workQueue);
+                workQueue.push(() => {
+                    if (workerJob) workerJob.cancel();
+                    task.cancel();
+                });
+
+                if (!this._workQueuePerLayer.has(layerId)) {
+                    this._workQueuePerLayer.set(layerId, workQueue);
+                }
             }
         };
 
@@ -244,9 +275,8 @@ class RasterArrayTile extends Tile implements Tile {
         }
 
         if (mrtLayer.hasDataForBand(band)) {
-            this.updateTextureDescriptor(sourceLayer, layerId, band);
-            const textureDescriptor = this.textureDescriptorPerLayer.get(layerId);
-            callback(null, textureDescriptor ? textureDescriptor.img : null);
+            taskInQueue.values().forEach((cb) => cb(null, null));
+            this._taskQueue.delete(taskQueueId);
             return;
         }
 
@@ -257,12 +287,13 @@ class RasterArrayTile extends Tile implements Tile {
         // out but not completed. If the resulting task has no work, we presume it is in
         // progress. (This makes it very important to correctly cancel aborted decoding tasks.)
         if (task && !task.tasks.length) {
-            callback(null);
             return;
         }
 
         // Stop existing fetches and decodes
-        this.flushQueues(layerId);
+        if (layerId !== null) {
+            this.flushQueues(layerId);
+        }
 
         if (this.entireBuffer) {
             // eslint-disable-next-line no-warning-comments
@@ -271,13 +302,16 @@ class RasterArrayTile extends Tile implements Tile {
         } else {
             const rangeRequestParams = Object.assign({}, this.requestParams, {headers: {Range: `bytes=${range.firstByte}-${range.lastByte}`}});
             const request = getArrayBuffer(rangeRequestParams, onDataLoaded);
-            const fetchQueue = this._fetchQueuePerLayer.get(layerId) || [];
-            fetchQueue.push(() => {
-                request.cancel();
-                task.cancel();
-            });
-            if (!this._fetchQueuePerLayer.has(layerId)) {
-                this._fetchQueuePerLayer.set(layerId, fetchQueue);
+
+            if (layerId !== null) {
+                const fetchQueue = this._fetchQueuePerLayer.get(layerId) || [];
+                fetchQueue.push(() => {
+                    request.cancel();
+                    task.cancel();
+                });
+                if (!this._fetchQueuePerLayer.has(layerId)) {
+                    this._fetchQueuePerLayer.set(layerId, fetchQueue);
+                }
             }
         }
     }

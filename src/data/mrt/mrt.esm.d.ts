@@ -21,6 +21,8 @@ import type {
     TPixelFormat
 } from './types';
 
+export type {TBandViewRGBA};
+
 export namespace MapboxRasterTile {
     function setPbf(_Pbf: typeof Pbf): void;
     function performDecoding(buf: ArrayBufferLike, decodingBatch: TProcessingBatch): Promise<TDecodingResult[]>;

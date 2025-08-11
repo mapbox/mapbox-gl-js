@@ -30,10 +30,10 @@ export function doneAsync() {
         doneRef.reject = reject;
     });
 
-    const withAsync = (fn): void => {
-        return async (...args) => {
+    const withAsync = (fn) => {
+        return (...args) => {
             try {
-                await fn(...args, doneRef);
+                return fn(...args, doneRef);
             } catch (err) {
                 doneRef.reject(err);
             }
@@ -47,7 +47,7 @@ export function doneAsync() {
     };
 }
 
-export function createMap(options, callback?: (err: any, map: Map) => void) {
+export function createMap(options?, callback?: (err: any, map: Map) => void) {
     const container = window.document.createElement('div');
     const defaultOptions = {
         container,

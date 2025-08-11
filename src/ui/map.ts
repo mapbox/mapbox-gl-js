@@ -51,7 +51,6 @@ import {ImageId} from '../style-spec/expression/types/image_id';
 import type Marker from '../ui/marker';
 import type Popup from '../ui/popup';
 import type SourceCache from '../source/source_cache';
-import type {Evented} from '../util/evented';
 import type {MapEventType, MapEventOf} from './events';
 import type {PointLike} from '../types/point-like';
 import type {FeatureState} from '../style-spec/expression/index';
@@ -106,6 +105,7 @@ import type {SpriteFormat} from '../render/image_manager';
 import type {PitchRotateKey} from './handler_manager';
 import type {CanvasSourceOptions} from '../source/canvas_source';
 import type {CustomSourceInterface} from '../source/custom_source';
+import type {RasterQueryParameters, RasterQueryResult} from '../source/raster_array_tile_source';
 
 export type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
 
@@ -2133,6 +2133,30 @@ export class Map extends Camera {
         }
 
         return this.style.querySourceFeatures(sourceId, parameters);
+    }
+
+    /**
+     * Returns the value of a raster source at a given coordinate.
+     * Currently, this API only supports raster array sources.
+     *
+     * @experimental
+     * @param {string} sourceId The ID of the raster source to query.
+     * @param {LngLatLike} lnglat The mercator coordinates at which to query the raster.
+     * @param {RasterQueryParameters} [parameters] (optional) Parameters of the query.
+     * @param {string} [parameters.layerName] (optional) The name of the layer to query raster array source. If not provided, all layers in the source will be queried.
+     * @param {string} [parameters.bands] (optional) The IDs of the band to query raster array source.
+     * @returns {Promise<RasterQueryResult | null>} Promise which resolves to the result of the raster array query, containing the value at the specified point. If not specified all bands of the raster array source layers will be queried.
+     *
+     * @example
+     * const value = await map.queryRasterValue('my-raster-source', {lng: -122.4194, lat: 37.7749}, {bands: ['1000']});
+     * console.log(value['Layer']) // {1000: [0.34]}
+     */
+    queryRasterValue(sourceId: string, lnglat: LngLatLike, parameters: RasterQueryParameters): Promise<RasterQueryResult | null> {
+        if (!this._isValidId(sourceId)) {
+            return Promise.resolve(null);
+        }
+
+        return this.style.queryRasterValue(sourceId, lnglat, parameters);
     }
 
     /**

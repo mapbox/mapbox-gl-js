@@ -69,7 +69,6 @@ import {loadIconset} from './load_iconset';
 import {ImageId} from '../style-spec/expression/types/image_id';
 import {ImageProvider} from '../render/image_provider';
 
-import type {GeoJSON} from 'geojson';
 import type Tile from '../source/tile';
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
@@ -125,6 +124,8 @@ import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {CustomSourceInterface} from '../source/custom_source';
 import type {StyleModelMap} from './style_mode';
 import type {TypedStyleLayer} from './style_layer/typed_style_layer';
+import type {LngLatLike} from '../geo/lng_lat';
+import type {RasterQueryParameters, RasterQueryResult} from '../source/raster_array_tile_source';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -3177,6 +3178,22 @@ class Style extends Evented<MapEvents> {
         }
 
         return features;
+    }
+
+    queryRasterValue(sourceId: string, lnglat: LngLatLike, parameters: RasterQueryParameters): Promise<RasterQueryResult | null> {
+        const source = this.getOwnSource(sourceId);
+
+        if (!source) {
+            this.fire(new ErrorEvent(new Error(`Source with id "${sourceId}" does not exist in the style.`)));
+            return Promise.resolve(null);
+        }
+
+        if (source.type !== 'raster-array') {
+            this.fire(new ErrorEvent(new Error(`queryRasterValue support only "raster-array" sources.`)));
+            return Promise.resolve(null);
+        }
+
+        return source.queryRasterArrayValue(lnglat, parameters);
     }
 
     queryRenderedFeatures(queryGeometry: PointLike | [PointLike, PointLike], params: QueryRenderedFeaturesParams | undefined, transform: Transform): GeoJSONFeature[] {

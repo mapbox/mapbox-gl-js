@@ -22,12 +22,27 @@
             top: 1em;
             left: 1em;
         }
+        #hover {
+            display: none;
+            font-size: 13px;
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            z-index: 20;
+            background-color: rgb(255 255 255/80%);
+            border-radius: 2px;
+            padding: 3px 6px;
+            color: black;
+            box-shadow: 0 0 2px rgb(0 0 0/50%);
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body>
     <div id='map'></div>
     <div id='pane'></div>
+    <div id='hover'></div>
     <script src='../dist/mapbox-gl-dev.js'></script>
     <script src='../debug/access_token_generated.js'></script>
     <script src='https://unpkg.com/d3@7.8.5/dist/d3.min.js'></script>
@@ -37,6 +52,7 @@
 
         const PARAMS = {
             bandIndex: 0,
+            projection: 'mercator',
             colorScale: 'Spectral',
         };
 
@@ -69,13 +85,14 @@
 
         var map = window.map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/satellite-v9',
+            style: 'mapbox://styles/mapbox/standard-satellite',
             center: [135.0053045734985, 36.00653610439714],
             zoom: 1,
             hash: true,
         });
 
         map.addControl(new mapboxgl.NavigationControl());
+
 
         map.on('style.load', () => {
             map.addSource('precipitations', {
@@ -120,6 +137,7 @@
                 });
             });
 
+
             map.addLayer({
                 'id': 'precipitations',
                 'source': 'precipitations',
@@ -137,7 +155,49 @@
                 }
             });
 
+            const hover = document.getElementById('hover');
+            hover.style.display = 'none';
+
+            map.on('mousemove', async ({lngLat, point}) => {
+                hover.style.display = 'none';
+                const sourceLayer = map.getLayer('precipitations')['source-layer'];
+                const band = map.getPaintProperty('precipitations', 'raster-array-band') ?? map.getSource('precipitations').rasterLayers?.find(({id}) => id === sourceLayer).fields.bands[0];
+                const queried = await map.queryRasterValue('precipitations', lngLat, {
+                    layerName: "Total Precip",
+                });
+
+                if (!queried) {
+                    return;
+                }
+
+                const value = queried[sourceLayer] && queried[sourceLayer][band] && queried[sourceLayer][band][0];
+
+                if (!value) {
+                    return;
+                }
+
+                hover.style.display = 'block';
+                hover.style.transform = `translate(${point.x}px,${point.y}px)`;
+                hover.textContent = value.toFixed(5);
+            });
+
             const colorScaleOptions = Object.keys(colorScales).reduce((acc, item) => ({...acc, [item]: item}), {});
+            pane.addBinding(PARAMS, 'projection', {
+                label: 'Projection',
+                value: PARAMS.projection,
+                options: {
+                    'Mercator': 'mercator',
+                    'Globe': 'globe',
+                    'Equal Earth': 'equalEarth',
+                    'Albers': 'albers',
+                    'Lambert Conformal Conic': 'lambertConformalConic',
+                    'Winkel Tripel': 'winkelTripel',
+                    'Natural Earth': 'naturalEarth',
+                    'Equirectangular': 'equirectangular',
+                }
+            }).on('change', (e) => {
+                map.setProjection(e.value);
+            });
             pane.addBinding(PARAMS, 'colorScale', {label: 'Color scale', options: colorScaleOptions})
                 .on('change', (e) => map.setPaintProperty('precipitations', 'raster-color', getRasterColor(e.value)));
         });
