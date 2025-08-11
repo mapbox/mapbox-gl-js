@@ -1,16 +1,15 @@
-import getType from '../util/get_type';
+import {getType, isString} from '../util/get_type';
 import ValidationError from '../error/validation_error';
 
-import type {ValidationOptions} from './validate';
+type StringValidatorOptions = {
+    key: string;
+    value: unknown;
+};
 
-export default function validateString(options: Partial<ValidationOptions>): Array<ValidationError> {
-    const value = options.value;
-    const key = options.key;
-    const type = getType(value);
-
-    if (type !== 'string') {
-        return [new ValidationError(key, value, `string expected, ${type} found`)];
+export default function validateString({key, value}: StringValidatorOptions): ValidationError[] {
+    if (isString(value)) {
+        return [];
     }
 
-    return [];
+    return [new ValidationError(key, value, `string expected, ${getType(value)} found`)];
 }

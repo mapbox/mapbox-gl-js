@@ -1,16 +1,15 @@
 import ValidationError from '../error/validation_error';
-import getType from '../util/get_type';
+import {getType, isString} from '../util/get_type';
 import {parseCSSColor} from 'csscolorparser';
 
-import type {ValidationOptions} from './validate';
+type ColorValidatorOptions = {
+    key: string;
+    value: unknown;
+};
 
-export default function validateColor(options: ValidationOptions): Array<ValidationError> {
-    const key = options.key;
-    const value = options.value;
-    const type = getType(value);
-
-    if (type !== 'string') {
-        return [new ValidationError(key, value, `color expected, ${type} found`)];
+export default function validateColor({key, value}: ColorValidatorOptions): ValidationError[] {
+    if (!isString(value)) {
+        return [new ValidationError(key, value, `color expected, ${getType(value)} found`)];
     }
 
     if (parseCSSColor(value) === null) {

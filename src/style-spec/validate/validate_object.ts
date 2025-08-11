@@ -1,29 +1,42 @@
 import {default as ValidationError, ValidationWarning} from '../error/validation_error';
-import getType from '../util/get_type';
+import {getType, isObject} from '../util/get_type';
 import validateSpec from './validate';
 
-import type {ValidationOptions} from './validate';
-import type {LayerSpecification} from '../types';
+import type {StyleReference} from '../reference/latest';
+import type {StyleSpecification, LayerSpecification} from '../types';
 
-type Options = ValidationOptions & {
-    layer?: LayerSpecification;
-    objectElementValidators?: object;
+type ObjectElementValidatorOptions = {
+    key: string;
+    value: unknown;
+    style: Partial<StyleSpecification>;
+    styleSpec: StyleReference;
 };
 
-export default function validateObject(options: Options): Array<ValidationError> {
+type ObjectValidatorOptions = {
+    key: string;
+    value: unknown;
+    valueSpec?: object;
+    style: Partial<StyleSpecification>;
+    styleSpec: StyleReference;
+    object?: object;
+    objectKey?: string;
+    layer?: LayerSpecification;
+    objectElementValidators?: Record<string, (options: ObjectElementValidatorOptions) => ValidationError[]>;
+};
+
+export default function validateObject(options: ObjectValidatorOptions): ValidationError[] {
     const key = options.key;
     const object = options.value;
     const elementSpecs = options.valueSpec || {};
     const elementValidators = options.objectElementValidators || {};
     const style = options.style;
     const styleSpec = options.styleSpec;
-    let errors: ValidationError[] = [];
 
-    const type = getType(object);
-    if (type !== 'object') {
-        return [new ValidationError(key, object, `object expected, ${type} found`)];
+    if (!isObject(object)) {
+        return [new ValidationError(key, object, `object expected, ${getType(object)} found`)];
     }
 
+    let errors: ValidationError[] = [];
     for (const objectKey in object) {
         const elementSpecKey = objectKey.split('.')[0]; // treat 'paint.*' as 'paint'
         const elementSpec = elementSpecs[elementSpecKey] || elementSpecs['*'];

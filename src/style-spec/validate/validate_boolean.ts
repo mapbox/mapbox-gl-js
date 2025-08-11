@@ -1,15 +1,16 @@
-import getType from '../util/get_type';
+import {getType, isBoolean} from '../util/get_type';
 import ValidationError from '../error/validation_error';
 
-import type {ValidationOptions} from './validate';
+type BooleanValidatorOptions = {
+    key: string;
+    value: unknown;
+};
 
-export default function validateBoolean(options: ValidationOptions): Array<ValidationError> {
+export default function validateBoolean(options: BooleanValidatorOptions): ValidationError[] {
     const value = options.value;
     const key = options.key;
-    const type = getType(value);
-
-    if (type !== 'boolean') {
-        return [new ValidationError(key, value, `boolean expected, ${type} found`)];
+    if (!isBoolean(value)) {
+        return [new ValidationError(key, value, `boolean expected, ${getType(value)} found`)];
     }
 
     return [];

@@ -12,7 +12,7 @@
     "line": 29
   },
   {
-    "message": "light-3d: missing property type on light",
+    "message": "lights[3]: missing property \"type\"",
     "line": 31
   },
   {

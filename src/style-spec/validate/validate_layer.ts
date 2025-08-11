@@ -6,16 +6,20 @@ import validatePaintProperty from './validate_paint_property';
 import validateLayoutProperty from './validate_layout_property';
 import validateSpec from './validate';
 import extend from '../util/extend';
+import {isObject, isString} from '../util/get_type';
 
-import type {ValidationOptions} from './validate';
-import type {LayerSpecification, GeoJSONSourceSpecification} from '../types';
+import type {StyleReference} from '../reference/latest';
+import type {StyleSpecification, LayerSpecification, GeoJSONSourceSpecification} from '../types';
 
-type Options = ValidationOptions & {
-    value: LayerSpecification;
+type LayerValidatorOptions = {
+    key: string;
+    value: unknown;
+    style: Partial<StyleSpecification>;
+    styleSpec: StyleReference;
     arrayIndex: number;
 };
 
-export default function validateLayer(options: Options): Array<ValidationError> {
+export default function validateLayer(options: LayerValidatorOptions): ValidationError[] {
     let errors: ValidationError[] = [];
 
     const layer = options.value;
@@ -23,18 +27,23 @@ export default function validateLayer(options: Options): Array<ValidationError> 
     const style = options.style;
     const styleSpec = options.styleSpec;
 
+    if (!isObject(layer)) {
+        return [new ValidationError(key, layer, `object expected`)];
+    }
+
     if (!layer.type && !layer.ref) {
         errors.push(new ValidationError(key, layer, 'either "type" or "ref" is required'));
     }
+
     let type = unbundle(layer.type) as string;
     const ref = unbundle(layer.ref);
 
     if (layer.id) {
-        const layerId = unbundle(layer.id);
+        const layerId = unbundle(layer.id) as string;
         for (let i = 0; i < options.arrayIndex; i++) {
-            const otherLayer = style.layers[i] as LayerSpecification & {id: {__line__: number}};
+            const otherLayer = style.layers[i];
             if (unbundle(otherLayer.id) === layerId) {
-                errors.push(new ValidationError(key, layer.id, `duplicate layer id "${layer.id}", previously used at line ${otherLayer.id.__line__}`));
+                errors.push(new ValidationError(key, layer.id, `duplicate layer id "${layerId}", previously used at line ${(otherLayer.id as {__line__?: number}).__line__}`));
             }
         }
     }
@@ -63,26 +72,28 @@ export default function validateLayer(options: Options): Array<ValidationError> 
     } else if (!(type === 'background' || type === 'sky' || type === 'slot')) {
         if (!layer.source) {
             errors.push(new ValidationError(key, layer, 'missing required property "source"'));
+        } else if (!isString(layer.source)) {
+            errors.push(new ValidationError(`${key}.source`, layer.source, '"source" must be a string'));
         } else {
             const source = style.sources && style.sources[layer.source];
             const sourceType = source && unbundle(source.type);
             if (!source) {
                 errors.push(new ValidationError(key, layer.source, `source "${layer.source}" not found`));
             } else if (sourceType === 'vector' && type === 'raster') {
-                errors.push(new ValidationError(key, layer.source, `layer "${layer.id}" requires a raster source`));
+                errors.push(new ValidationError(key, layer.source, `layer "${layer.id as string}" requires a raster source`));
             } else if (sourceType === 'raster' && type !== 'raster') {
-                errors.push(new ValidationError(key, layer.source, `layer "${layer.id}" requires a vector source`));
+                errors.push(new ValidationError(key, layer.source, `layer "${layer.id as string}" requires a vector source`));
             } else if (sourceType === 'vector' && !layer['source-layer']) {
-                errors.push(new ValidationError(key, layer, `layer "${layer.id}" must specify a "source-layer"`));
+                errors.push(new ValidationError(key, layer, `layer "${layer.id as string}" must specify a "source-layer"`));
             } else if (sourceType === 'raster-dem' && type !== 'hillshade') {
                 errors.push(new ValidationError(key, layer.source, 'raster-dem source can only be used with layer type \'hillshade\'.'));
             } else if (sourceType === 'raster-array' && !['raster', 'raster-particle'].includes(type)) {
                 errors.push(new ValidationError(key, layer.source, `raster-array source can only be used with layer type \'raster\'.`));
             } else if (type === 'line' && layer.paint && (layer.paint['line-gradient'] || layer.paint['line-trim-offset']) &&
                     (sourceType === 'geojson' && !(source as GeoJSONSourceSpecification).lineMetrics)) {
-                errors.push(new ValidationError(key, layer, `layer "${layer.id}" specifies a line-gradient, which requires the GeoJSON source to have \`lineMetrics\` enabled.`));
+                errors.push(new ValidationError(key, layer, `layer "${layer.id as string}" specifies a line-gradient, which requires the GeoJSON source to have \`lineMetrics\` enabled.`));
             } else if (type === 'raster-particle' && sourceType !== 'raster-array') {
-                errors.push(new ValidationError(key, layer.source, `layer "${layer.id}" requires a \'raster-array\' source.`));
+                errors.push(new ValidationError(key, layer.source, `layer "${layer.id as string}" requires a \'raster-array\' source.`));
             }
         }
     }
@@ -115,7 +126,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
             },
             layout(options) {
                 return validateObject({
-                    layer,
+                    layer: layer as LayerSpecification,
                     key: options.key,
                     value: options.value,
                     valueSpec: {},
@@ -130,7 +141,7 @@ export default function validateLayer(options: Options): Array<ValidationError> 
             },
             paint(options) {
                 return validateObject({
-                    layer,
+                    layer: layer as LayerSpecification,
                     key: options.key,
                     value: options.value,
                     valueSpec: {},

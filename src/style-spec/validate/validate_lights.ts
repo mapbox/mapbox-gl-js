@@ -1,56 +1,62 @@
 import {default as ValidationError, ValidationWarning} from '../error/validation_error';
-import getType from '../util/get_type';
+import {getType, isObject, isString} from '../util/get_type';
 import validate from './validate';
 import {unbundle} from '../util/unbundle_jsonlint';
 
-import type {ValidationOptions} from './validate';
-import type {LightsSpecification} from '../types';
+import type {StyleReference} from '../reference/latest';
+import type {StyleSpecification} from '../types';
 
-type Options = ValidationOptions & {
+type LightsValidatorOptions = {
+    key: string;
+    value: unknown;
+    style: Partial<StyleSpecification>;
+    styleSpec: StyleReference;
     arrayIndex: number;
 };
 
-export default function validateLights(options: Options): Array<ValidationError> {
+export default function validateLights(options: LightsValidatorOptions): ValidationError[] {
     const light = options.value;
-    let errors: ValidationError[] = [];
 
     if (!light) {
-        return errors;
+        return [];
     }
 
-    const type = getType(light);
-    if (type !== 'object') {
-        errors = errors.concat([new ValidationError('light-3d', light, `object expected, ${type} found`)]);
-        return errors;
+    const key = options.key;
+    if (!isObject(light)) {
+        return [new ValidationError(key, light, `object expected, ${getType(light)} found`)];
     }
 
+    let errors: ValidationError[] = [];
     const styleSpec = options.styleSpec;
     const lightSpec = styleSpec['light-3d'];
-    const key = options.key;
     const style = options.style;
     const lights = options.style.lights;
 
-    for (const key of ['type', 'id']) {
-        if (!(key in light)) {
-            errors = errors.concat([new ValidationError('light-3d', light, `missing property ${key} on light`)]);
+    for (const prop of ['type', 'id'] as const) {
+        if (!(prop in light)) {
+            errors = errors.concat([new ValidationError(key, light, `missing property "${prop}"`)]);
             return errors;
         }
     }
 
-    if (light.type && lights) {
+    if (!isString(light.type)) {
+        errors = errors.concat([new ValidationError(`${key}.type`, light.type, `string expected`)]);
+        return errors;
+    }
+
+    if (lights) {
         for (let i = 0; i < options.arrayIndex; i++) {
             const lightType = unbundle(light.type);
-            // const otherLight = lights[i];
-            const otherLight = lights[i] as LightsSpecification & {id: {__line__: number}};
+            const otherLight = lights[i];
             if (unbundle(otherLight.type) === lightType) {
-                errors.push(new ValidationError(key, light.id, `duplicate light type "${light.type}", previously defined at line ${otherLight.id.__line__}`));
+                errors.push(new ValidationError(key, light.id, `duplicate light type "${light.type}", previously defined at line ${(otherLight.id as {__line__?: number}).__line__}`));
             }
         }
     }
 
-    const lightType = `properties_light_${light['type']}`;
+    const lightType = `properties_light_${light.type}`;
     if (!(lightType in styleSpec)) {
-        errors = errors.concat([new ValidationError('light-3d', light, `Invalid light type ${light['type']}`)]);
+        errors = errors.concat([new ValidationError(`${key}.type`, light, `Invalid light type ${light.type}`)]);
         return errors;
     }
 
@@ -59,9 +65,8 @@ export default function validateLights(options: Options): Array<ValidationError>
     for (const key in light) {
         if (key === 'properties') {
             const properties = light[key];
-            const propertiesType = getType(properties);
-            if (propertiesType !== 'object') {
-                errors = errors.concat([new ValidationError('properties', properties, `object expected, ${propertiesType} found`)]);
+            if (!isObject(properties)) {
+                errors = errors.concat([new ValidationError('properties', properties, `object expected, ${getType(properties)} found`)]);
                 return errors;
             }
             for (const propertyKey in properties) {

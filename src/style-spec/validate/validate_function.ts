@@ -1,5 +1,5 @@
 import ValidationError from '../error/validation_error';
-import getType from '../util/get_type';
+import {getType, isObject} from '../util/get_type';
 import validate from './validate';
 import validateObject from './validate_object';
 import validateArray from './validate_array';
@@ -12,22 +12,41 @@ import {
     supportsInterpolation
 } from '../util/properties';
 
-import type {ValidationOptions} from './validate';
+import type {StyleReference} from '../reference/latest';
+import type {StyleSpecification} from '../types';
+import type {StylePropertySpecification} from '../style-spec';
 
-export default function validateFunction(options: ValidationOptions): ValidationError[] {
+function hasObjectStops(value: object): value is {stops: Array<Record<PropertyKey, unknown>>} {
+    const stops = value['stops'];
+    return Array.isArray(stops) && Array.isArray(stops[0]) && isObject(stops[0][0]);
+}
+
+export type FunctionValidatorOptions = {
+    key: string;
+    value: unknown;
+    valueSpec: unknown;
+    style: Partial<StyleSpecification>;
+    styleSpec: StyleReference;
+};
+
+export default function validateFunction(options: FunctionValidatorOptions): ValidationError[] {
+    const key = options.key;
+    const value = options.value;
+
+    if (!isObject(value)) {
+        return [new ValidationError(key, value, `object expected, ${getType(value)} found`)];
+    }
+
     const functionValueSpec = options.valueSpec;
-    const functionType = unbundle(options.value.type);
+    const functionType = unbundle(value.type);
     let stopKeyType;
     let stopDomainValues: Partial<Record<string | number, boolean>> = {};
     let previousStopDomainValue: unknown;
     let previousStopDomainZoom;
 
-    const isZoomFunction = functionType !== 'categorical' && options.value.property === undefined;
+    const isZoomFunction = functionType !== 'categorical' && value.property === undefined;
     const isPropertyFunction = !isZoomFunction;
-    const isZoomAndPropertyFunction =
-        getType(options.value.stops) === 'array' &&
-        getType(options.value.stops[0]) === 'array' &&
-        getType(options.value.stops[0][0]) === 'object';
+    const isZoomAndPropertyFunction = hasObjectStops(value);
 
     const errors = validateObject({
         key: options.key,
@@ -45,29 +64,29 @@ export default function validateFunction(options: ValidationOptions): Validation
         errors.push(new ValidationError(options.key, options.value, 'missing required property "property"'));
     }
 
-    if (functionType !== 'identity' && !options.value.stops) {
+    if (functionType !== 'identity' && !value.stops) {
         errors.push(new ValidationError(options.key, options.value, 'missing required property "stops"'));
     }
 
-    if (functionType === 'exponential' && options.valueSpec.expression && !supportsInterpolation(options.valueSpec)) {
+    if (functionType === 'exponential' && (functionValueSpec as {expression?: unknown}).expression && !supportsInterpolation(functionValueSpec as StylePropertySpecification)) {
         errors.push(new ValidationError(options.key, options.value, 'exponential functions not supported'));
     }
 
     if (options.styleSpec.$version >= 8) {
-        if (isPropertyFunction && !supportsPropertyExpression(options.valueSpec)) {
+        if (isPropertyFunction && !supportsPropertyExpression(functionValueSpec as StylePropertySpecification)) {
             errors.push(new ValidationError(options.key, options.value, 'property functions not supported'));
-        } else if (isZoomFunction && !supportsZoomExpression(options.valueSpec)) {
+        } else if (isZoomFunction && !supportsZoomExpression(functionValueSpec as StylePropertySpecification)) {
             errors.push(new ValidationError(options.key, options.value, 'zoom functions not supported'));
         }
     }
 
-    if ((functionType === 'categorical' || isZoomAndPropertyFunction) && options.value.property === undefined) {
+    if ((functionType === 'categorical' || isZoomAndPropertyFunction) && (value as {property?: string}).property === undefined) {
         errors.push(new ValidationError(options.key, options.value, '"property" property is required'));
     }
 
     return errors;
 
-    function validateFunctionStops(options: ValidationOptions): ValidationError[] {
+    function validateFunctionStops(options: FunctionValidatorOptions): ValidationError[] {
         if (functionType === 'identity') {
             return [new ValidationError(options.key, options.value, 'identity function may not have a "stops" property')];
         }
@@ -78,25 +97,25 @@ export default function validateFunction(options: ValidationOptions): Validation
         errors = errors.concat(validateArray({
             key: options.key,
             value,
-            valueSpec: options.valueSpec,
+            valueSpec: options.valueSpec as Extract<StylePropertySpecification, {type: 'array'}>,
             style: options.style,
             styleSpec: options.styleSpec,
             arrayElementValidator: validateFunctionStop
         }));
 
-        if (getType(value) === 'array' && value.length === 0) {
+        if (Array.isArray(value) && value.length === 0) {
             errors.push(new ValidationError(options.key, value, 'array must have at least one stop'));
         }
 
         return errors;
     }
 
-    function validateFunctionStop(options: ValidationOptions): ValidationError[] {
+    function validateFunctionStop(options: FunctionValidatorOptions): ValidationError[] {
         let errors: ValidationError[] = [];
         const value = options.value;
         const key = options.key;
 
-        if (getType(value) !== 'array') {
+        if (!Array.isArray(value)) {
             return [new ValidationError(key, value, `array expected, ${getType(value)} found`)];
         }
 
@@ -105,23 +124,25 @@ export default function validateFunction(options: ValidationOptions): Validation
         }
 
         if (isZoomAndPropertyFunction) {
-            if (getType(value[0]) !== 'object') {
+            if (!isObject(value[0])) {
                 return [new ValidationError(key, value, `object expected, ${getType(value[0])} found`)];
             }
-            if (value[0].zoom === undefined) {
+
+            const stopKey = value[0];
+            if (stopKey.zoom === undefined) {
                 return [new ValidationError(key, value, 'object stop key must have zoom')];
             }
-            if (value[0].value === undefined) {
+            if (stopKey.value === undefined) {
                 return [new ValidationError(key, value, 'object stop key must have value')];
             }
 
-            const nextStopDomainZoom = unbundle(value[0].zoom);
+            const nextStopDomainZoom = unbundle(stopKey.zoom);
             if (typeof nextStopDomainZoom !== 'number') {
-                return [new ValidationError(key, value[0].zoom, 'stop zoom values must be numbers')];
+                return [new ValidationError(key, stopKey.zoom, 'stop zoom values must be numbers')];
             }
 
             if (previousStopDomainZoom && previousStopDomainZoom > nextStopDomainZoom) {
-                return [new ValidationError(key, value[0].zoom, 'stop zoom values must appear in ascending order')];
+                return [new ValidationError(key, stopKey.zoom, 'stop zoom values must appear in ascending order')];
             }
             if (nextStopDomainZoom !== previousStopDomainZoom) {
                 previousStopDomainZoom = nextStopDomainZoom;
@@ -159,8 +180,7 @@ export default function validateFunction(options: ValidationOptions): Validation
         }));
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function validateStopDomainValue(options: ValidationOptions, stop: any): ValidationError[] {
+    function validateStopDomainValue(options: FunctionValidatorOptions, stop?: unknown[]): ValidationError[] {
         const type = getType(options.value);
         const value = unbundle(options.value);
 
@@ -178,7 +198,7 @@ export default function validateFunction(options: ValidationOptions): Validation
 
         if (type !== 'number' && functionType !== 'categorical') {
             let message = `number expected, ${type} found`;
-            if (supportsPropertyExpression(functionValueSpec) && functionType === undefined) {
+            if (supportsPropertyExpression(functionValueSpec as StylePropertySpecification) && functionType === undefined) {
                 message += '\nIf you intended to use a categorical function, specify `"type": "categorical"`.';
             }
             return [new ValidationError(options.key, reportValue, message)];
@@ -203,7 +223,7 @@ export default function validateFunction(options: ValidationOptions): Validation
         return [];
     }
 
-    function validateFunctionDefault(options: ValidationOptions) {
+    function validateFunctionDefault(options: FunctionValidatorOptions) {
         return validate({
             key: options.key,
             value: options.value,

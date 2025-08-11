@@ -1,14 +1,19 @@
 import ValidationError from '../error/validation_error';
 import validateExpression from './validate_expression';
 import validateEnum from './validate_enum';
-import getType from '../util/get_type';
+import {getType, isString, isNumber, isBoolean} from '../util/get_type';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import extend from '../util/extend';
 import {isExpressionFilter} from '../feature_filter/index';
 
-import type {ValidationOptions} from './validate';
+import type {StyleReference} from '../reference/latest';
+import type {StyleSpecification} from '../types';
 
-type Options = ValidationOptions & {
+type FilterValidatorOptions = {
+    key: string;
+    value: unknown;
+    style: Partial<StyleSpecification>;
+    styleSpec: StyleReference;
     layerType?: string;
     object?: {
         type?: string,
@@ -16,7 +21,7 @@ type Options = ValidationOptions & {
     }
 };
 
-export default function validateFilter(options: Options): Array<ValidationError> {
+export default function validateFilter(options: FilterValidatorOptions): ValidationError[] {
     if (isExpressionFilter(deepUnbundle(options.value))) {
         // We default to a layerType of `fill` because that points to a non-dynamic filter definition within the style-spec.
         const layerType = options.layerType || 'fill';
@@ -30,30 +35,24 @@ export default function validateFilter(options: Options): Array<ValidationError>
     }
 }
 
-function validateNonExpressionFilter(options: Options): ValidationError[] {
+function validateNonExpressionFilter(options: FilterValidatorOptions): ValidationError[] {
     const value = options.value;
     const key = options.key;
 
-    if (getType(value) !== 'array') {
+    if (!Array.isArray(value)) {
         return [new ValidationError(key, value, `array expected, ${getType(value)} found`)];
     }
-
-    const styleSpec = options.styleSpec;
-    let type;
-
-    let errors: ValidationError[] = [];
 
     if (value.length < 1) {
         return [new ValidationError(key, value, 'filter array must have at least 1 element')];
     }
 
-    errors = errors.concat(validateEnum({
+    const styleSpec = options.styleSpec;
+    let errors: ValidationError[] = validateEnum({
         key: `${key}[0]`,
         value: value[0],
-        valueSpec: styleSpec.filter_operator,
-        style: options.style,
-        styleSpec: options.styleSpec
-    }));
+        valueSpec: styleSpec.filter_operator
+    });
 
     switch (unbundle(value[0])) {
     case '<':
@@ -75,23 +74,19 @@ function validateNonExpressionFilter(options: Options): ValidationError[] {
     case 'in':
     case '!in':
         if (value.length >= 2) {
-            type = getType(value[1]);
-            if (type !== 'string') {
-                errors.push(new ValidationError(`${key}[1]`, value[1], `string expected, ${type} found`));
+            if (!isString(value[1])) {
+                errors.push(new ValidationError(`${key}[1]`, value[1], `string expected, ${getType(value[1])} found`));
             }
         }
         for (let i = 2; i < value.length; i++) {
-            type = getType(value[i]);
             if (unbundle(value[1]) === '$type') {
                 errors = errors.concat(validateEnum({
                     key: `${key}[${i}]`,
                     value: value[i],
-                    valueSpec: styleSpec.geometry_type,
-                    style: options.style,
-                    styleSpec: options.styleSpec
+                    valueSpec: styleSpec.geometry_type
                 }));
-            } else if (type !== 'string' && type !== 'number' && type !== 'boolean') {
-                errors.push(new ValidationError(`${key}[${i}]`, value[i], `string, number, or boolean expected, ${type} found`));
+            } else if (!isString(value[i]) && !isNumber(value[i]) && !isBoolean(value[i])) {
+                errors.push(new ValidationError(`${key}[${i}]`, value[i], `string, number, or boolean expected, ${getType(value[i])} found.`));
             }
         }
         break;
@@ -111,11 +106,10 @@ function validateNonExpressionFilter(options: Options): ValidationError[] {
 
     case 'has':
     case '!has':
-        type = getType(value[1]);
         if (value.length !== 2) {
             errors.push(new ValidationError(key, value, `filter array for "${value[0]}" operator must have 2 elements`));
-        } else if (type !== 'string') {
-            errors.push(new ValidationError(`${key}[1]`, value[1], `string expected, ${type} found`));
+        } else if (!isString(value[1])) {
+            errors.push(new ValidationError(`${key}[1]`, value[1], `string expected, ${getType(value[1])} found`));
         }
         break;
     }

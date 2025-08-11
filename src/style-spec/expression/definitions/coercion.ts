@@ -6,7 +6,7 @@ import Formatted from '../types/formatted';
 import FormatExpression from '../definitions/format';
 import ImageExpression from '../definitions/image';
 import ResolvedImage from '../types/resolved_image';
-import getType from '../../util/get_type';
+import {getType} from '../../util/get_type';
 
 import type {Expression, SerializedExpression} from '../expression';
 import type ParsingContext from '../parsing_context';
@@ -63,7 +63,7 @@ class Coercion implements Expression {
             for (let i = 0; i < arrayLength; i++) {
                 const member = args[1][i];
                 let parsedMember;
-                if (getType(member) === 'array') {
+                if (Array.isArray(member)) {
                     parsedMember = context.parse(member, undefined, type.itemType);
                 } else {
                     const memberType = getType(member);

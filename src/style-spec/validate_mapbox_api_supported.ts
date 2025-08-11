@@ -2,7 +2,7 @@ import {validateStyle} from './validate_style.min';
 import {v8} from './style-spec';
 import readStyle from './read_style';
 import ValidationError from './error/validation_error';
-import getType from './util/get_type';
+import {isString, isBoolean} from './util/get_type';
 
 import type {StyleReference} from './reference/latest';
 import type {ValidationErrors} from './validate_style.min';
@@ -22,7 +22,7 @@ const SUPPORTED_SPEC_VERSION = 8;
 const MAX_SOURCES_IN_STYLE = 15;
 
 function isValid(value: string | null | undefined, regex: RegExp): boolean {
-    if (!value || getType(value) !== 'string') return true;
+    if (!value || !isString(value)) return true;
     return !!value.match(regex);
 }
 
@@ -200,7 +200,7 @@ function getRootErrors(style: MapboxStyleSpecification, specKeys: string[]): Arr
         errors.push(new ValidationError('visibility', style.visibility, 'Style visibility must be public or private'));
     }
 
-    if (style.protected !== undefined && getType(style.protected) !== 'boolean') {
+    if (style.protected !== undefined && !isBoolean(style.protected)) {
         errors.push(new ValidationError('protected', style.protected, 'Style protection must be true or false'));
     }
 

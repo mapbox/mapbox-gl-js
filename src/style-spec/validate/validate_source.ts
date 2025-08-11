@@ -4,24 +4,35 @@ import validateObject from './validate_object';
 import validateEnum from './validate_enum';
 import validateExpression from './validate_expression';
 import validateString from './validate_string';
-import getType from '../util/get_type';
+import {getType, isObject, isString} from '../util/get_type';
 import {createExpression} from '../expression/index';
 import * as isConstant from '../expression/is_constant';
 
 import type {StyleReference} from '../reference/latest';
-import type {ValidationOptions} from './validate';
+import type {StyleSpecification} from '../types';
 
 const objectElementValidators = {
     promoteId: validatePromoteId
 };
 
-export default function validateSource(options: ValidationOptions): Array<ValidationError> {
+type SourceValidatorOptions = {
+    key: string;
+    value: unknown;
+    style: Partial<StyleSpecification>;
+    styleSpec: StyleReference;
+};
+
+export default function validateSource(options: SourceValidatorOptions): ValidationError[] {
     const value = options.value;
     const key = options.key;
     const styleSpec = options.styleSpec;
     const style = options.style;
 
-    if (!value.type) {
+    if (!isObject(value)) {
+        return [new ValidationError(key, value, `object expected, ${getType(value)} found`)];
+    }
+
+    if (!('type' in value)) {
         return [new ValidationError(key, value, '"type" is required')];
     }
 
@@ -29,7 +40,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
     let errors: ValidationError[] = [];
 
     if (['vector', 'raster', 'raster-dem', 'raster-array'].includes(type)) {
-        if (!value.url && !value.tiles) {
+        if (!('url' in value) && !('tiles' in value)) {
             errors.push(new ValidationWarning(key, value, 'Either "url" or "tiles" is required.'));
         }
     }
@@ -58,9 +69,18 @@ export default function validateSource(options: ValidationOptions): Array<Valida
             objectElementValidators
         });
 
-        if (value.cluster) {
+        if ('cluster' in value && 'clusterProperties' in value) {
+            if (!isObject(value.clusterProperties)) {
+                return [new ValidationError(`${key}.clusterProperties`, value, `object expected, ${getType(value)} found`)];
+            }
+
             for (const prop in value.clusterProperties) {
-                const [operator, mapExpr] = value.clusterProperties[prop];
+                const propValue = value.clusterProperties[prop];
+                if (!Array.isArray(propValue)) {
+                    return [new ValidationError(`${key}.clusterProperties.${prop}`, propValue, 'array expected')];
+                }
+
+                const [operator, mapExpr] = propValue;
                 const reduceExpr = typeof operator === 'string' ? [operator, ['accumulated'], ['get', prop]] : operator;
 
                 errors.push(...validateExpression({
@@ -68,6 +88,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
                     value: mapExpr,
                     expressionContext: 'cluster-map'
                 }));
+
                 errors.push(...validateExpression({
                     key: `${key}.${prop}.reduce`,
                     value: reduceExpr,
@@ -101,7 +122,7 @@ export default function validateSource(options: ValidationOptions): Array<Valida
     default:
         return validateEnum({
             key: `${key}.type`,
-            value: value.type,
+            value: (value as {type: unknown}).type,
             valueSpec: {values: getSourceTypeValues(styleSpec)},
             style,
             styleSpec
@@ -119,13 +140,17 @@ function getSourceTypeValues(styleSpec: StyleReference): string[] {
     }, []) as string[];
 }
 
-function validatePromoteId({
-    key,
-    value,
-}: Partial<ValidationOptions>) {
-    if (getType(value) === 'string') {
+type PromoteIdValidatorOptions = {
+    key: string;
+    value: unknown;
+};
+
+function validatePromoteId({key, value}: PromoteIdValidatorOptions) {
+    if (isString(value)) {
         return validateString({key, value});
-    } else if (Array.isArray(value)) {
+    }
+
+    if (Array.isArray(value)) {
         const errors: ValidationError[] = [];
         const unbundledValue = deepUnbundle(value);
         const expression = createExpression(unbundledValue);
@@ -143,12 +168,16 @@ function validatePromoteId({
         }
 
         return errors;
-    } else {
-        const errors: ValidationError[] = [];
-        for (const prop in value) {
-            errors.push(...validatePromoteId({key: `${key}.${prop}`, value: value[prop]}));
-        }
-
-        return errors;
     }
+
+    if (!isObject(value)) {
+        return [new ValidationError(key, value, `string, expression or object expected, "${getType(value)}" found`)];
+    }
+
+    const errors: ValidationError[] = [];
+    for (const prop in (value as object)) {
+        errors.push(...validatePromoteId({key: `${key}.${prop}`, value: value[prop]}));
+    }
+
+    return errors;
 }

@@ -5,10 +5,23 @@ import {isStateConstant, isGlobalPropertyConstant, isFeatureConstant} from '../e
 import CompoundExpression from '../expression/compound_expression';
 
 import type {Expression} from '../expression/expression';
+import type {StyleReference} from '../reference/latest';
+import type {StyleSpecification} from '../types';
+import type {StylePropertySpecification} from '../style-spec';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function validateExpression(options: any): Array<ValidationError> {
-    const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(deepUnbundle(options.value), options.valueSpec);
+export type ExpressionValidatorOptions = {
+    key: string;
+    value: unknown;
+    valueSpec?: Partial<StylePropertySpecification>;
+    propertyKey?: 'text-font';
+    propertyType?: 'layout' | 'paint' | 'filter';
+    style?: Partial<StyleSpecification>;
+    styleSpec?: StyleReference;
+    expressionContext?: 'property' | 'filter' | 'cluster-initial' | 'cluster-reduce' | 'cluster-map';
+};
+
+export default function validateExpression(options: ExpressionValidatorOptions): ValidationError[] {
+    const expression = (options.expressionContext === 'property' ? createPropertyExpression : createExpression)(deepUnbundle(options.value), options.valueSpec as StylePropertySpecification);
     if (expression.result === 'error') {
         return expression.value.map((error) => {
             return new ValidationError(`${options.key}${error.key}`, options.value, error.message);
@@ -45,7 +58,7 @@ export default function validateExpression(options: any): Array<ValidationError>
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function disallowedFilterParameters(e: Expression, options: any): Array<ValidationError> {
+export function disallowedFilterParameters(e: Expression, options: any): ValidationError[] {
     const disallowedParameters = new Set([
         'zoom',
         'feature-state',

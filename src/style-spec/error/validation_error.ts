@@ -5,12 +5,12 @@ export default class ValidationError {
     identifier: string | null | undefined;
     line: number | null | undefined;
 
-    constructor(key: string | null | undefined, value: (string | number | boolean) & {__line__?: number} | null | undefined, message: string, identifier?: string | null) {
+    constructor(key: string | null | undefined, value: unknown, message: string, identifier?: string | null) {
         this.message = (key ? `${key}: ` : '') + message;
         if (identifier) this.identifier = identifier;
 
-        if (value !== null && value !== undefined && value.__line__) {
-            this.line = value.__line__;
+        if (value !== null && value !== undefined && (value as {__line__?: number}).__line__) {
+            this.line = (value as {__line__?: number}).__line__;
         }
     }
 }

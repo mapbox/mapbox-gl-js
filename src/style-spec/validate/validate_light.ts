@@ -1,25 +1,32 @@
 import ValidationError from '../error/validation_error';
-import getType from '../util/get_type';
+import {getType, isObject} from '../util/get_type';
 import validate from './validate';
 
-import type {ValidationOptions} from './validate';
+import type {StyleReference} from '../reference/latest';
+import type {StyleSpecification} from '../types';
 
-export default function validateLight(options: ValidationOptions): Array<ValidationError> {
+type LightValidatorOptions = {
+    key: string;
+    value: unknown;
+    style: Partial<StyleSpecification>;
+    styleSpec: StyleReference;
+};
+
+export default function validateLight(options: LightValidatorOptions): ValidationError[] {
     const light = options.value;
     const styleSpec = options.styleSpec;
     const lightSpec = styleSpec.light;
     const style = options.style;
 
-    let errors: ValidationError[] = [];
-
-    const rootType = getType(light);
     if (light === undefined) {
-        return errors;
-    } else if (rootType !== 'object') {
-        errors = errors.concat([new ValidationError('light', light, `object expected, ${rootType} found`)]);
-        return errors;
+        return [];
     }
 
+    if (!isObject(light)) {
+        return [new ValidationError('light', light, `object expected, ${getType(light)} found`)];
+    }
+
+    let errors: ValidationError[] = [];
     for (const key in light) {
         const transitionMatch = key.match(/^(.*)-transition$/);
         const useThemeMatch = key.match(/^(.*)-use-theme$/);

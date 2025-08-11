@@ -4,7 +4,7 @@
 import * as colorSpaces from '../util/color_spaces';
 import Color from '../util/color';
 import extend from '../util/extend';
-import getType from '../util/get_type';
+import {getType, isNumber} from '../util/get_type';
 import * as interpolate from '../util/interpolate';
 import Interpolate from '../expression/definitions/interpolate';
 import Formatted from '../expression/types/formatted';
@@ -160,7 +160,7 @@ function evaluateCategoricalFunction(parameters, propertySpec, input, hashedStop
 function evaluateIntervalFunction(parameters, propertySpec, input) {
     // Edge cases
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    if (getType(input) !== 'number') return coalesce(parameters.default, propertySpec.default);
+    if (!isNumber(input)) return coalesce(parameters.default, propertySpec.default);
     const n = parameters.stops.length;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (n === 1) return parameters.stops[0][1];
@@ -181,7 +181,7 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 
     // Edge cases
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    if (getType(input) !== 'number') return coalesce(parameters.default, propertySpec.default);
+    if (!isNumber(input)) return coalesce(parameters.default, propertySpec.default);
     const n = parameters.stops.length;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     if (n === 1) return parameters.stops[0][1];

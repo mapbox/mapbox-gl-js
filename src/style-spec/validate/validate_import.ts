@@ -3,11 +3,26 @@ import validateStyle from './validate_style';
 import validateObject from './validate_object';
 import ValidationError from '../error/validation_error';
 import {unbundle} from '../util/unbundle_jsonlint';
+import {isObject} from '../util/get_type';
 
-import type {ValidationOptions} from './validate';
+import type {StyleReference} from '../reference/latest';
+import type {StyleSpecification} from '../types';
 
-export default function validateImport(options: ValidationOptions): ValidationError[] {
+type ImportValidatorOptions = {
+    key: string;
+    value: unknown;
+    style: Partial<StyleSpecification>;
+    styleSpec: StyleReference;
+};
+
+export default function validateImport(options: ImportValidatorOptions): ValidationError[] {
+    const key = options.key;
     const {value, styleSpec} = options;
+
+    if (!isObject(value)) {
+        return [new ValidationError(key, value, `import must be an object`)];
+    }
+
     const {data, ...importSpec} = value;
 
     // Preserve __line__ from the value

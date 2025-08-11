@@ -1,24 +1,32 @@
 import {default as ValidationError, ValidationWarning} from '../error/validation_error';
 import validate from './validate';
-import getType from '../util/get_type';
+import {getType, isObject} from '../util/get_type';
 
-import type {ValidationOptions} from './validate';
+import type {StyleReference} from '../reference/latest';
+import type {StyleSpecification} from '../types';
 
-export default function validateFog(options: ValidationOptions): ValidationError[] {
+type FogValidatorOptions = {
+    key: string;
+    value: unknown;
+    style: Partial<StyleSpecification>;
+    styleSpec: StyleReference;
+};
+
+export default function validateFog(options: FogValidatorOptions): ValidationError[] {
     const fog = options.value;
     const style = options.style;
     const styleSpec = options.styleSpec;
     const fogSpec = styleSpec.fog;
-    let errors: ValidationError[] = [];
 
-    const rootType = getType(fog);
     if (fog === undefined) {
-        return errors;
-    } else if (rootType !== 'object') {
-        errors = errors.concat([new ValidationError('fog', fog, `object expected, ${rootType} found`)]);
-        return errors;
+        return [];
     }
 
+    if (!isObject(fog)) {
+        return [new ValidationError('fog', fog, `object expected, ${getType(fog)} found`)];
+    }
+
+    let errors: ValidationError[] = [];
     for (const key in fog) {
         const transitionMatch = key.match(/^(.*)-transition$/);
         const useThemeMatch = key.match(/^(.*)-use-theme$/);
