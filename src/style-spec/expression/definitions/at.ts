@@ -36,15 +36,15 @@ class At implements Expression {
         const array = (this.input.evaluate(ctx) as Array<Value>);
 
         if (index < 0) {
-            throw new RuntimeError(`Array index out of bounds: ${index} < 0.`);
+            throw new RuntimeError(`Array index out of bounds: negative index`);
         }
 
         if (index >= array.length) {
-            throw new RuntimeError(`Array index out of bounds: ${index} > ${array.length - 1}.`);
+            throw new RuntimeError(`Array index out of bounds: index exceeds array size`);
         }
 
         if (index !== Math.floor(index)) {
-            throw new RuntimeError(`Array index must be an integer, but found ${index} instead. Use at-interpolated to retrieve interpolated result with a fractional index.`);
+            throw new RuntimeError(`Array index must be an integer. Use at-interpolated for fractional indices`);
         }
 
         return array[index];
