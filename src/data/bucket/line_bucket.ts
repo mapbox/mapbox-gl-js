@@ -405,10 +405,22 @@ class LineBucket implements Bucket {
         this.segments.destroy();
     }
 
-    lineFeatureClips(feature: BucketFeature): LineClips | null | undefined {
-        if (!!feature.properties && feature.properties.hasOwnProperty('mapbox_clip_start') && feature.properties.hasOwnProperty('mapbox_clip_end')) {
-            const start = +feature.properties['mapbox_clip_start'];
-            const end = +feature.properties['mapbox_clip_end'];
+    lineFeatureClips(feature: BucketFeature, multiLineMetricsIndex?: number): LineClips | null | undefined {
+        let startProp: string;
+        let endProp: string;
+        if (multiLineMetricsIndex && multiLineMetricsIndex > 0) {
+            // If a single line feature re-enters a tile, it may be split into multiple lines (MultiLineString).
+            // Each line has its own clip start and end keys, with a line index postfix appended
+            // starting from the 1st element in the array, e.g., mapbox_clip_start_1
+            startProp = `mapbox_clip_start_${multiLineMetricsIndex}`;
+            endProp = `mapbox_clip_end_${multiLineMetricsIndex}`;
+        } else {
+            startProp = 'mapbox_clip_start';
+            endProp = 'mapbox_clip_end';
+        }
+        if (!!feature.properties && feature.properties.hasOwnProperty(startProp) && feature.properties.hasOwnProperty(endProp)) {
+            const start = +feature.properties[startProp];
+            const end = +feature.properties[endProp];
             return {start, end};
         }
     }
@@ -423,6 +435,8 @@ class LineBucket implements Bucket {
         const roundLimit = layout.get('line-round-limit');
         this.lineClips = this.lineFeatureClips(feature);
         this.lineFeature = feature;
+        // Flag indicating that the line metrics were calculated for the vector tile feature.
+        const hasMapboxLineMetrics = !!feature.properties && feature.properties.hasOwnProperty('mapbox_line_metrics') ? feature.properties['mapbox_line_metrics'] : false;
         this.zOffsetValue = layout.get('line-z-offset').value;
 
         const paint = this.layers[0].paint;
@@ -450,14 +464,17 @@ class LineBucket implements Bucket {
                         prevDir: this.computeSegPrevDir(info, line)
                     };
 
-                    this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit, subseg);
+                    const multiLineMetricsIndex = hasMapboxLineMetrics && info.parentIndex > 0 ? info.parentIndex : null;
+                    this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit, subseg, multiLineMetricsIndex);
                 }
 
                 this.fillNonElevatedRoadSegment(vertexOffset);
             }
         } else {
-            for (const line of geometry) {
-                this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit);
+            for (let i = 0; i < geometry.length; i++) {
+                const line = geometry[i];
+                const multiLineMetricsIndex = hasMapboxLineMetrics && i > 0 ? i : null;
+                this.addLine(line, feature, canonical, join, cap, miterLimit, roundLimit, undefined, multiLineMetricsIndex);
             }
         }
 
@@ -566,7 +583,7 @@ class LineBucket implements Bucket {
         }
     }
 
-    addLine(vertices: Array<Point>, feature: BucketFeature, canonical: CanonicalTileID, join: string, cap: string, miterLimit: number, roundLimit: number, subsegment?: Subsegment) {
+    addLine(vertices: Array<Point>, feature: BucketFeature, canonical: CanonicalTileID, join: string, cap: string, miterLimit: number, roundLimit: number, subsegment?: Subsegment, multiLineMetricsIndex?: number) {
         this.distance = 0;
         this.prevDistance = 0;
         this.scaledDistance = 0;
@@ -574,6 +591,8 @@ class LineBucket implements Bucket {
         this.totalFeatureLength = 0;
         this.lineSoFar = 0;
         this.currentVertex = undefined;
+
+        this.lineClips = multiLineMetricsIndex ? this.lineFeatureClips(feature, multiLineMetricsIndex) : this.lineClips;
 
         const joinNone = join === 'none';
         this.patternJoinNone = this.hasPattern && joinNone;
