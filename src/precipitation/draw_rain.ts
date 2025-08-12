@@ -16,7 +16,6 @@ import {createTpBindings} from './vignette';
 import {PrecipitationBase, boxWrap, generateUniformDistributedPointsInsideCube, lerpClamp} from './common';
 import {Debug} from '../util/debug';
 
-import type {vec4} from 'gl-matrix';
 import type Painter from '../render/painter';
 import type {VignetteParams} from './vignette';
 
@@ -154,7 +153,7 @@ export class Rain extends PrecipitationBase {
                 const velocityScale = sRand();
                 const directionConeHeading = sRand();
                 const directionConePitch = sRand();
-                const data: vec4 = [angularVelocityScale, velocityScale, directionConeHeading, directionConePitch];
+                const data: [number, number, number, number] = [angularVelocityScale, velocityScale, directionConeHeading, directionConePitch];
 
                 vertices.emplaceBack(p[0], p[1], p[2], -1, -1, ...data);
                 vertices.emplaceBack(p[0], p[1], p[2], 1, -1, ...data);
@@ -239,7 +238,7 @@ export class Rain extends PrecipitationBase {
         context.activeTexture.set(gl.TEXTURE0);
         this.screenTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-        const colorVec: vec4 = [params.color.r, params.color.g, params.color.b, params.color.a];
+        const colorVec: [number, number, number, number] = [params.color.r, params.color.g, params.color.b, params.color.a];
 
         const drawParticlesBox = (boxSize: number, distortionOnly: boolean) => {
             const camPos = boxWrap(this._movement.getPosition(), boxSize);
@@ -247,8 +246,8 @@ export class Rain extends PrecipitationBase {
             const sizeX = params.dropletSizeX;
             const sizeY = params.dropletSizeX * params.dropletSizeYScale;
 
-            const thinningX = painter.width  / 2;
-            const thinningY = painter.height  / 2;
+            const thinningX = painter.width / 2;
+            const thinningY = painter.height / 2;
 
             const thinningStart = lerpClamp(0, params.screenThinning.start, 0, 1, params.screenThinning.intensity);
             const thinningRange = lerpClamp(0.001, params.screenThinning.range, 0, 1, params.screenThinning.intensity);

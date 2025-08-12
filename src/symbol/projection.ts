@@ -311,7 +311,7 @@ function updateLineLabels(bucket: SymbolBucket,
             y += dy;
             z += dz;
         }
-        const anchorPos: vec4 = [x, y, z, 1.0];
+        const anchorPos: [number, number, number, number] = [x, y, z, 1.0];
         vec4.transformMat4(anchorPos, anchorPos, posMatrix);
 
         // Don't bother calculating the correct point for invisible labels.

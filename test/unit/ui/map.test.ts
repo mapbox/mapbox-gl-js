@@ -494,7 +494,7 @@ describe('Map', () => {
             map.transform.fov = 30;
 
             expect(map._queryFogOpacity([0.5, 0])).toEqual(0.5917784571074153);
-            expect(map._queryFogOpacity([0, 0.5])).toEqual(0.2567224170602245);
+            expect(map._queryFogOpacity([0, 0.5])).toEqual(0.2567224170602246);
             expect(map._queryFogOpacity([-0.5, 0])).toEqual(0);
             expect(map._queryFogOpacity([-0.5, -0.5])).toEqual(0.2727527139608868);
         });

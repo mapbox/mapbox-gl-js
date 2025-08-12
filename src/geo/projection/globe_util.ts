@@ -444,7 +444,7 @@ export function tileCoordToECEF(x: number, y: number, id: CanonicalTileID, radiu
 }
 
 export function globeECEFOrigin(tileMatrix: mat4, id: UnwrappedTileID): [number, number, number] {
-    const origin: vec3 = [0, 0, 0];
+    const origin: [number, number, number] = [0, 0, 0];
     const bounds = globeTileBounds(id.canonical);
     const normalizationMatrix = globeNormalizeECEF(bounds);
     vec3.transformMat4(origin, origin, normalizationMatrix);

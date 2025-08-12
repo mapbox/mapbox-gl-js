@@ -233,8 +233,8 @@ function projectExtrusionGlobe(tr: Transform, geometry: Array<Array<Point>>, zBa
     const projectedBase = [];
     const projectedTop = [];
     const elevationScale = tr.projection.upVectorScale(tileID, tr.center.lat, tr.worldSize).metersToTile;
-    const basePoint: vec4 = [0, 0, 0, 1];
-    const topPoint: vec4 = [0, 0, 0, 1];
+    const basePoint: [number, number, number, number] = [0, 0, 0, 1];
+    const topPoint: [number, number, number, number] = [0, 0, 0, 1];
 
     const setPoint = (point: Array<number>, x: number, y: number, z: number) => {
         point[0] = x;

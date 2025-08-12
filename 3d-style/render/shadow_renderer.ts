@@ -641,18 +641,18 @@ export function calculateGroundShadowFactor(
     const ambientColor = ambientLight.properties.get('color');
     const ambientIntensity = ambientLight.properties.get('intensity');
 
-    const groundNormal: vec3 = [0.0, 0.0, 1.0];
+    const groundNormal: [number, number, number] = [0.0, 0.0, 1.0];
     const dirDirectionalFactor = Math.max(vec3.dot(groundNormal, directionVec), 0.0);
-    const ambStrength: vec3 = [0, 0, 0];
-    vec3.scale(ambStrength, ambientColor.toPremultipliedRenderColor(ambientColorIgnoreLut ? null : style.getLut(directionalLight.scope)).toArray01Linear().slice(0, 3) as vec3, ambientIntensity);
-    const dirStrength: vec3 = [0, 0, 0];
-    vec3.scale(dirStrength, dirColor.toPremultipliedRenderColor(dirColorIgnoreLut ? null : style.getLut(ambientLight.scope)).toArray01Linear().slice(0, 3) as vec3, dirDirectionalFactor * dirIntensity);
+    const ambStrength: [number, number, number] = [0, 0, 0];
+    vec3.scale(ambStrength, ambientColor.toPremultipliedRenderColor(ambientColorIgnoreLut ? null : style.getLut(directionalLight.scope)).toArray01Linear().slice(0, 3), ambientIntensity);
+    const dirStrength: [number, number, number] = [0, 0, 0];
+    vec3.scale(dirStrength, dirColor.toPremultipliedRenderColor(dirColorIgnoreLut ? null : style.getLut(ambientLight.scope)).toArray01Linear().slice(0, 3), dirDirectionalFactor * dirIntensity);
 
     // Multiplier X to get from lit surface color L to shadowed surface color S
     // X = A / (A + D)
     // A: Ambient light coming into the surface; taking into account color and intensity
     // D: Directional light coming into the surface; taking into account color, intensity and direction
-    const shadow: vec3 = [
+    const shadow: [number, number, number] = [
         ambStrength[0] > 0.0 ? ambStrength[0] / (ambStrength[0] + dirStrength[0]) : 0.0,
         ambStrength[1] > 0.0 ? ambStrength[1] / (ambStrength[1] + dirStrength[1]) : 0.0,
         ambStrength[2] > 0.0 ? ambStrength[2] / (ambStrength[2] + dirStrength[2]) : 0.0

@@ -125,7 +125,7 @@ function computeGlobeCameraUp(transform: Transform): [number, number, number] {
     const viewToEcef = mat4.multiply([] as unknown as mat4, viewMatrix, transform.globeMatrix);
     mat4.invert(viewToEcef, viewToEcef);
 
-    const cameraUpVector: vec3 = [0, 0, 0];
+    const cameraUpVector: [number, number, number] = [0, 0, 0];
     const up: vec4 = [0, 1, 0, 0];
     vec4.transformMat4(up, up, viewToEcef);
     cameraUpVector[0] = up[0];

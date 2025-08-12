@@ -277,9 +277,7 @@ class CollisionIndex {
             // The path might need to be converted into screen space if a pitched map is used as the label space
             if (labelToScreenMatrix) {
                 assert(pitchWithMap);
-                // @ts-expect-error - TS2322 - Type 'vec4[]' is not assignable to type 'vec3[]'.
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                projectedPath = projectedPath.map(([x, y, z]: [any, any, any], index) => {
+                projectedPath = projectedPath.map(([x, y, z]: [number, number, number], index) => {
                     if (getElevation && !isGlobe) {
                         z = getElevation(index < firstLen - 1 ? first.tilePath[firstLen - 1 - index] : last.tilePath[index - firstLen + 2])[2];
                     }
@@ -489,7 +487,6 @@ class CollisionIndex {
                 behindFog = fogOpacity > FOG_SYMBOL_CLIPPING_THRESHOLD;
             }
         } else {
-            // @ts-expect-error - TS2345 - Argument of type 'number[]' is not assignable to parameter of type 'vec4'.
             symbolProjection.xyTransformMat4(p, p, posMatrix);
         }
         const w = p[3];

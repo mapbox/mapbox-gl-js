@@ -14,7 +14,6 @@ import {createTpBindings} from './vignette';
 import {boxWrap, generateUniformDistributedPointsInsideCube, lerpClamp, PrecipitationBase} from './common';
 import {Debug} from '../util/debug';
 
-import type {vec2, vec4} from 'gl-matrix';
 import type Painter from '../render/painter';
 import type {VignetteParams} from './vignette';
 
@@ -145,8 +144,8 @@ export class Snow extends PrecipitationBase {
                 const velocityScale = sRand();
                 const directionConeHeading = sRand();
                 const directionConePitch = sRand();
-                const data: vec4 = [i / positions.length, velocityScale, directionConeHeading, directionConePitch];
-                const dataHorizontalOscillation: vec2 = [sRand(), sRand()];
+                const data: [number, number, number, number] = [i / positions.length, velocityScale, directionConeHeading, directionConePitch];
+                const dataHorizontalOscillation: [number, number] = [sRand(), sRand()];
 
                 vertices.emplaceBack(p[0], p[1], p[2], -1, -1, ...data, ...dataHorizontalOscillation);
                 vertices.emplaceBack(p[0], p[1], p[2], 1, -1, ...data, ...dataHorizontalOscillation);

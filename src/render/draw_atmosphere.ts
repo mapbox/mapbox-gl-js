@@ -229,10 +229,10 @@ class Atmosphere {
         const modelView3 = mat3.fromMat4([] as unknown as mat3, rotationMatrix);
         const modelviewInv = mat3.invert([] as unknown as mat3, modelView3);
 
-        const camUp: vec3 = [0, 1, 0];
+        const camUp: [number, number, number] = [0, 1, 0];
         vec3.transformMat3(camUp, camUp, modelviewInv);
         vec3.scale(camUp, camUp, this.params.sizeMultiplier);
-        const camRight: vec3 = [1, 0, 0];
+        const camRight: [number, number, number] = [1, 0, 0];
         vec3.transformMat3(camRight, camRight, modelviewInv);
         vec3.scale(camRight, camRight, this.params.sizeMultiplier);
 

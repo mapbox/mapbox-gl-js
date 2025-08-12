@@ -51,17 +51,17 @@ function calculateAmbientDirectionalFactor(dir: vec3, normal: vec3, dirColor: ve
     return verticalFactor * ambientDirectionalFactor;
 }
 
-function calculateGroundRadiance(dir: vec3, dirColor: vec3, ambientColor: vec3): [number, number, number] {
-    const groundNormal: vec3 = [0.0, 0.0, 1.0];
+function calculateGroundRadiance(dir: vec3, dirColor: [number, number, number], ambientColor: [number, number, number]): [number, number, number] {
+    const groundNormal: [number, number, number] = [0.0, 0.0, 1.0];
     const ambientDirectionalFactor = calculateAmbientDirectionalFactor(dir, groundNormal, dirColor);
 
-    const ambientContrib: vec3 = [0, 0, 0];
+    const ambientContrib: [number, number, number] = [0, 0, 0];
     vec3.scale(ambientContrib, ambientColor.slice(0, 3) as vec3, ambientDirectionalFactor);
-    const dirConrib: vec3 = [0, 0, 0];
-    vec3.scale(dirConrib, dirColor.slice(0, 3) as vec3, dir[2]);
+    const dirContrib: [number, number, number] = [0, 0, 0];
+    vec3.scale(dirContrib, dirColor.slice(0, 3) as vec3, dir[2]);
 
-    const radiance: vec3 = [0, 0, 0];
-    vec3.add(radiance, ambientContrib, dirConrib);
+    const radiance: [number, number, number] = [0, 0, 0];
+    vec3.add(radiance, ambientContrib, dirContrib);
 
     return linearVec3TosRGB(radiance);
 }

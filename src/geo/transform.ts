@@ -2144,7 +2144,7 @@ class Transform {
     }
 
     customLayerMatrix(): mat4 {
-        return this.mercatorMatrix.slice() as mat4;
+        return (this.mercatorMatrix as number[]).slice();
     }
 
     globeToMercatorMatrix(): Array<number> | null | undefined {

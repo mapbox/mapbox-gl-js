@@ -165,7 +165,7 @@ describe('camera', () => {
             expect(options.orientation).toBeTruthy();
             frame = rotatedFrame(options.orientation);
             expect(fixedVec3(frame.right)).toEqual([+0, -1, -0]);
-            expect(fixedVec3(frame.up)).toEqual([-cos60, 0, sin60]);
+            expect(fixedVec3(frame.up)).toEqual([-cos60, -0, sin60]);
             expect(fixedVec3(frame.forward)).toEqual([-sin60, -0, -cos60]);
         });
 

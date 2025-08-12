@@ -803,7 +803,6 @@ class Tile {
         const phase = globeToMercatorTransition(transform.zoom);
         let worldToECEFMatrix;
         if (phase > 0.0) {
-            // @ts-expect-error - TS2345 - Argument of type 'Float64Array' is not assignable to parameter of type 'mat4'.
             worldToECEFMatrix = mat4.invert(new Float64Array(16), transform.globeMatrix);
         }
 
