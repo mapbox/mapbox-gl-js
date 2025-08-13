@@ -224,11 +224,17 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
 
             if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
 
-            // ICONEM
-            if (tile.texture && tile.texture instanceof Texture) {
-                tile.previousTexture = tile.texture || null;
-                const perTileFadeDuration = 500;
-                tile.perTileFadeEndTime = browser.now() + perTileFadeDuration; // 300ms fade
+            // --- ICONEM: capture previous GL texture for per-tile fade
+            if (tile.texture) {
+                tile.previousTexture = tile.texture;
+                // Important: prevent setTexture from destroying it implicitly
+                // by clearing the reference before creating the new one.
+                // (setTexture will only delete an existing texture if it's still attached)
+                // @ts-expect-error intentional temporary clear to avoid auto-destroy
+                tile.texture = null;
+                // const perTileFadeDuration = 500;
+                // tile.perTileFadeEndTime = browser.now() + perTileFadeDuration; // 300ms fade
+                tile.perTileFadeStartTime = browser.now(); // 300ms fade
             }
 
             tile.setTexture(data, this.map.painter);
@@ -259,29 +265,24 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         if (tile.texture && tile.texture instanceof Texture) {
             // // Clean everything else up owned by the tile, but preserve the texture.
             // // Destroy first to prevent racing with the texture cache being popped.
-            // tile.destroy(true);
+            tile.destroy(true);
 
             // // Save the texture to the cache
-            // if (tile.texture && tile.texture instanceof Texture) {
-            //     this.map.painter.saveTileTexture(tile.texture);
-            // }
-
-            // ICONEM
-            // Preserve as previous texture if fading
-            if (tile.perTileFadeEndTime && browser.now() < tile.perTileFadeEndTime) {
-                tile.previousTexture = tile.texture;
-            } else {
-                tile.texture.destroy();
+            if (tile.texture && tile.texture instanceof Texture) {
+                this.map.painter.saveTileTexture(tile.texture);
             }
         } else {
             tile.destroy();
         }
 
         // ICONEM Ensure previous fade state cannot leak across lifecycles
-        if (tile.previousTexture && tile.previousTexture instanceof Texture) {
-            tile.previousTexture.destroy();
+        if (tile.previousTexture) {
+            if (tile.previousTexture instanceof Texture) {
+                tile.previousTexture.destroy();
+            }
+            tile.previousTexture = null;
         }
-        tile.previousTexture = null;
+        tile.perTileFadeStartTime = undefined;
 
         if (callback) callback();
     }

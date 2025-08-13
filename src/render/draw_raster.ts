@@ -174,25 +174,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             context.activeTexture.set(gl.TEXTURE0);
             texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
 
-            // ICONEM
-            const perTileFadeMix = (browser.now() - tile.timeAdded) / rasterFadeDuration; // can use same raster-fade-duration layer paint property
-            if (perTileFadeMix >= 1.0) {
-                // tile.previousTexture?.destroy();
-                tile.previousTexture = null;
-            } else {
-            // if (tile.previousTexture && perTileFadeMix < 1.0) {
-                // context.activeTexture.set(gl.TEXTURE3);
-                context.activeTexture.set(gl.TEXTURE0 + PREVIOUS_TILE_TEXTURE_UNIT);
-                tile.previousTexture.bind(textureFilter, gl.CLAMP_TO_EDGE);
-            }
-            /*
-            else {
-                // context.activeTexture.set(gl.TEXTURE3);
-                context.activeTexture.set(gl.TEXTURE0 + PREVIOUS_TILE_TEXTURE_UNIT);
-                texture.bind(textureFilter, gl.CLAMP_TO_EDGE); // same as new
-            }
-            */
-
             context.activeTexture.set(gl.TEXTURE1);
 
             if (parentTile) {
@@ -204,6 +185,24 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
             } else {
                 texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+            }
+
+            // --- ICONEM: bind previous tile texture (if any) on unit 3
+            let perTileFadeMix = 0.5;
+            const perTileFadeDuration = 1000; // because was probably initialLoad, rasterFadeDuration = 0
+            if (tile.previousTexture) {
+                const now = browser.now();
+                // If we missed setting start, treat as fully shown
+                const t0 = tile.perTileFadeStartTime ? tile.perTileFadeStartTime : now;
+                // const t0 = tile.perTileFadeEndTime ? tile.perTileFadeEndTime - perTileFadeDuration : now;
+                perTileFadeMix = Math.max(0, Math.min(1, (now - t0) / perTileFadeDuration));
+                context.activeTexture.set(gl.TEXTURE0 + PREVIOUS_TILE_TEXTURE_UNIT);
+                tile.previousTexture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+                // Optional micro-GC once the fade is done
+                if (perTileFadeMix >= 1 && tile.previousTexture instanceof Texture) {
+                    tile.previousTexture.destroy();
+                    tile.previousTexture = null;
+                }
             }
 
             // Enable trilinear filtering on tiles only beyond 20 degrees pitch,
