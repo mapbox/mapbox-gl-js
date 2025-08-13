@@ -10,7 +10,7 @@ const indoorData = {
         {
             "type": "Feature",
             "properties": {
-                "shape_type": "building",
+                "type": "building",
                 "id": "7451233234",
                 "name": "Central Railway Station",
             },
@@ -46,12 +46,11 @@ const indoorData = {
         {
             "type": "Feature",
             "properties": {
-                "shape_type": "floor",
-                "id": "7451233234-1",
+                "type": "floor",
+                "id": "7451233234",
                 "name": "Central Railway Station Floor 1",
-                "building_id": "7451233234",
-                "floor_level": 1,
-                "floor_display_order": 1
+                "is_default": true,
+                "z_index": 1
             },
             "geometry": {
                 "coordinates": [
@@ -187,6 +186,5 @@ describe('IndoorManager', () => {
         expect(map.indoor._floorSelectionState).toBeTruthy();
         expect(map.indoor._floorSelectionState._selectedFloorId).toEqual(null);
         expect(map.indoor._floorSelectionState._selectedBuildingId).toEqual(null);
-        expect(map.indoor._floorSelectionState._floors).toEqual([]);
     });
 });

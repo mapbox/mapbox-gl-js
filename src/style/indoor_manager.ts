@@ -49,12 +49,11 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         this._queryIndoor();
         this._map.on('load', this._onLoad);
         this._map.on('move', this._onMove);
-
     }
 
     destroy() {
-        this._map.indoor.off('load', this._onLoad);
-        this._map.indoor.off('move', this._onMove);
+        this._map.off('load', this._onLoad);
+        this._map.off('move', this._onMove);
         this._map = null;
         this._floorSelectionState = null;
     }
@@ -88,7 +87,8 @@ export default class IndoorManager extends Evented<IndoorEvents> {
             return;
         }
 
-        if (this._map.transform.zoom < 16.0) {
+        const minimumIndoorZoom = 16.0;
+        if (this._map.transform.zoom < minimumIndoorZoom) {
             this._clearIndoorData();
             return;
         }
@@ -99,69 +99,61 @@ export default class IndoorManager extends Evented<IndoorEvents> {
             return;
         }
 
-        if (!this._floorSelectionState.getSelectedFloorId()) {
-            this._map._addIndoorControl();
+        if (this._floorSelectionState.getActiveFloors().length === 0) {
+            this._selectFloors(indoorData);
         }
 
-        this._selectFloors(indoorData);
+        // If the building has changed, update the indoor selector and selectedBuildingId
+        if (this._floorSelectionState.hasBuildingChanged(indoorData)) {
+            this._selectFloors(indoorData);
+            this._updateIndoorSelector();
+        }
     }
 
     _selectFloors(indoorData: IndoorData) {
         if (indoorData.building) {
-            this._floorSelectionState.setBuildingId(indoorData.building.properties.id as string);
-            this._floorSelectionState.setFloors(indoorData.floors);
+            this._floorSelectionState.setIndoorData(indoorData);
             this._updateUI();
         } else {
-            // Keep the current floor until it's gone from viewport  as we may have just encounter a hole or other big space near the current building
-            // That way it means less flickering in some cases where it's a space between several buildings
-            const selectedFloorId = this._floorSelectionState.getSelectedFloorId();
-            if (selectedFloorId && indoorData.floors.some(floor => floor.properties.id === selectedFloorId)) {
+            if (this._floorSelectionState.getActiveFloors().length > 0) {
                 return;
             }
 
             this._clearIndoorData();
-
         }
     }
 
     _clearIndoorData() {
         this._floorSelectionState.reset();
-        this._map._removeIndoorControl();
+        this._updateIndoorSelector();
         this._map.setConfigProperty(this._scope, "mbx-indoor-level-selected", ["literal", []]);
     };
 
-    _updateUI() {
-        const floors = this._floorSelectionState.getCurrentBuildingFloors().map((floor) => ({
+    _updateIndoorSelector() {
+        const currentBuildingSelection = this._floorSelectionState.getCurrentBuildingSelection();
+        const floors = currentBuildingSelection.floors.map((floor) => ({
             id: floor.properties.id as string,
             name: floor.properties.name as string,
-            shortName: floor.properties.floor_level as string,
-            levelOrder: floor.properties.floor_level as number
+            shortName: floor.properties.z_index as string,
+            levelOrder: floor.properties.z_index as number
         }));
-
-        const selectedFloorId = this._floorSelectionState.getSelectedFloorId();
-        if (!selectedFloorId) {
-            console.warn('IndoorManager: Selected floor is not set');
-            return;
-        }
-
-        this._updateIndoorConfig();
 
         this.fire(new Event('indoorupdate', {
-            selectedFloorId,
+            selectedFloorId: currentBuildingSelection.selectedFloorId,
             floors
         }));
+    }
+
+    _updateUI() {
+        this._updateIndoorConfig();
+        this._updateIndoorSelector();
     }
 
     // eslint-disable-next-line no-warning-comments
     // TODO: Replace use of config with the style expressions
     _updateIndoorConfig() {
-        const selectedFloorId = this._floorSelectionState.getSelectedFloorId();
-        if (!selectedFloorId) {
-            console.warn('IndoorManager: Selected floor is not set');
-            return;
-        }
-
-        this._map.setConfigProperty(this._scope, "mbx-indoor-level-selected", ["literal", [selectedFloorId]]);
+        const activeFloors = this._floorSelectionState.getActiveFloors().map(floor => floor.properties.id as string) || [];
+        this._map.setConfigProperty(this._scope, "mbx-indoor-level-selected", ["literal", activeFloors]);
     }
 
     // Selects a level of based on a provided ID.

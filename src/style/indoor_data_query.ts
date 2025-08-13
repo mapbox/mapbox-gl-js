@@ -37,18 +37,18 @@ export class IndoorDataQuery {
         const buildingsQueryArea = this._makeBuildingsQueryArea(map);
         const floorsQueryArea = this._makeFloorsQueryArea(map);
 
-        const buildingFeatures = map.queryRenderedFeatures(buildingsQueryArea, this._buildingQueryParams).filter(feature => feature.properties.shape_type === "building").reduce((unique, feature) => {
+        const buildingFeatures = map.queryRenderedFeatures(buildingsQueryArea, this._buildingQueryParams).reduce((unique, feature) => {
             const id = feature.properties.id as string;
-            const shapeType = feature.properties.shape_type as string;
+            const shapeType = feature.properties.type as string;
             if (shapeType === "building" && !unique.some(existing => existing.properties.id === id)) {
                 unique.push(feature);
             }
             return unique;
         }, [] as Array<TargetFeature>);
 
-        const floorFeatures = map.queryRenderedFeatures(floorsQueryArea, this._floorQueryParams).filter(feature => feature.properties.shape_type === "floor").reduce((unique, feature) => {
+        const floorFeatures = map.queryRenderedFeatures(floorsQueryArea, this._floorQueryParams).reduce((unique, feature) => {
             const id = feature.properties.id as string;
-            const shapeType = feature.properties.shape_type as string;
+            const shapeType = feature.properties.type as string;
             if (shapeType === "floor" && !unique.some(existing => existing.properties.id === id)) {
                 unique.push(feature);
             }
@@ -69,14 +69,13 @@ export class IndoorDataQuery {
         const width = map.transform.width;
         const height = map.transform.height;
         const minDimension = Math.min(width, height);
-        const partialWidth = minDimension * (1 / 8);
-        const partialHeight = minDimension * (1 / 8);
+        const areaSize = minDimension * (1 / 8); // 1/8 of the screen size as smaller query area for building detection
 
-        const offsetX = 0.5 * (width - partialWidth);
-        const offsetY = 0.5 * (height - partialHeight);
+        const offsetX = 0.5 * (width - areaSize);
+        const offsetY = 0.5 * (height - areaSize);
         const partialScreen: [PointLike, PointLike] = [
             new Point(offsetX, offsetY),
-            new Point(offsetX + partialWidth, offsetY + partialHeight)
+            new Point(offsetX + areaSize, offsetY + areaSize)
         ];
 
         return partialScreen;
@@ -85,17 +84,7 @@ export class IndoorDataQuery {
     _makeFloorsQueryArea(map: Map) : [PointLike, PointLike] {
         const width = map.transform.width;
         const height = map.transform.height;
-        const partialWidth = width * (2 / 3);
-        const partialHeight = height * (2 / 3);
-
-        const offsetX = 0.5 * (width - partialWidth);
-        const offsetY = 0.5 * (height - partialHeight);
-        const partialScreen: [PointLike, PointLike] = [
-            new Point(offsetX, offsetY),
-            new Point(offsetX + partialWidth, offsetY + partialHeight)
-        ];
-
-        return partialScreen;
+        return [new Point(0, 0), new Point(width, height)];
     }
 
     _findBuildingAtCenter(centerPoint: [number, number], buildings: Array<TargetFeature>): TargetFeature | null {
