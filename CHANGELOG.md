@@ -1,3 +1,18 @@
+## 3.15.0-beta.1
+
+### Features and improvements ✨
+
+- Add `queryRasterValue` method for querying values in `raster-array` layers.
+- Add `icon-image-use-theme` property.
+- Add support for Mapbox vector tiles with precalculated line metrics (for line gradients).
+- Improve HD Roads loading performance.
+- Optimize applying LUT when updating images at runtime.
+- Improve TypeScript types in Style Spec validation methods.
+
+### Bug fixes 🐞
+
+- Fix an issue with refreshing expired raster array tiles.
+
 ## 3.14.0
 
 ### Breaking changes ⚠️
