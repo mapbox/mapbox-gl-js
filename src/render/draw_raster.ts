@@ -23,6 +23,7 @@ import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import {COLOR_MIX_FACTOR} from '../style/style_layer/raster_style_layer';
 import RasterArrayTile from '../source/raster_array_tile';
 import RasterArrayTileSource from '../source/raster_array_tile_source';
+import browser from '../util/browser';
 
 import type Transform from '../geo/transform';
 import type {OverscaledTileID} from '../source/tile_id';
@@ -40,6 +41,7 @@ import type {CrossTileID, VariableOffset} from '../symbol/placement';
 export default drawRaster;
 
 const RASTER_COLOR_TEXTURE_UNIT = 2;
+const PREVIOUS_TILE_TEXTURE_UNIT = 3;
 
 type RasterConfig = {
     defines: DynamicDefinesType[];
@@ -173,20 +175,23 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
 
             // ICONEM
-            const elapsed = performance.now() - (tile.fadeStartTime || 0);
-            const fadeDuration = 500; // ms
-            const fadeMix = Math.min(elapsed / fadeDuration, 1.0);
-            if (fadeMix >= 1.0) {
+            const perTileFadeMix = (browser.now() - tile.timeAdded) / rasterFadeDuration; // can use same raster-fade-duration layer paint property
+            if (perTileFadeMix >= 1.0) {
+                // tile.previousTexture?.destroy();
                 tile.previousTexture = null;
-            }
-            if (tile.previousTexture) {
-
-                context.activeTexture.set(gl.TEXTURE2);
-                tile.previousTexture.bind(textureFilter, gl.CLAMP_TO_EDGE);
             } else {
-                context.activeTexture.set(gl.TEXTURE2);
+            // if (tile.previousTexture && perTileFadeMix < 1.0) {
+                // context.activeTexture.set(gl.TEXTURE3);
+                context.activeTexture.set(gl.TEXTURE0 + PREVIOUS_TILE_TEXTURE_UNIT);
+                tile.previousTexture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+            }
+            /*
+            else {
+                // context.activeTexture.set(gl.TEXTURE3);
+                context.activeTexture.set(gl.TEXTURE0 + PREVIOUS_TILE_TEXTURE_UNIT);
                 texture.bind(textureFilter, gl.CLAMP_TO_EDGE); // same as new
             }
+            */
 
             context.activeTexture.set(gl.TEXTURE1);
 
@@ -265,7 +270,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 tileSize,
                 buffer,
                 emissiveStrength,
-                fadeMix
+                perTileFadeMix,
+                (tile.previousTexture && perTileFadeMix < 1.0) ? PREVIOUS_TILE_TEXTURE_UNIT : 0
             );
             const affectedByFog = painter.isTileAffectedByFog(coord);
 

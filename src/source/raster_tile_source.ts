@@ -226,18 +226,13 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
 
             // ICONEM
             if (tile.texture && tile.texture instanceof Texture) {
-                tile.previousTexture = tile.texture;
-                tile.fadeStartTime = performance.now();
-                tile.isFading = true;
+                tile.previousTexture = tile.texture || null;
+                const perTileFadeDuration = 500;
+                tile.perTileFadeEndTime = browser.now() + perTileFadeDuration; // 300ms fade
             }
 
             tile.setTexture(data, this.map.painter);
 
-            // ICONEM
-            tile.previousTexture = tile.texture || null;
-            const textureStartTime = Date.now();
-            tile.fadeEndTime = textureStartTime + 500; // 300ms fade
-            tile.setTexture(data, this.map.painter);
             tile.state = 'loaded';
 
             cacheEntryPossiblyAdded(this.dispatcher);
@@ -250,6 +245,12 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
             tile.request.cancel();
             delete tile.request;
         }
+
+        if (tile.previousTexture && tile.previousTexture instanceof Texture) {
+            tile.previousTexture.destroy();
+        }
+        tile.previousTexture = null;
+
         if (callback) callback();
     }
 
@@ -267,7 +268,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
 
             // ICONEM
             // Preserve as previous texture if fading
-            if (tile.fadeEndTime && Date.now() < tile.fadeEndTime) {
+            if (tile.perTileFadeEndTime && browser.now() < tile.perTileFadeEndTime) {
                 tile.previousTexture = tile.texture;
             } else {
                 tile.texture.destroy();
@@ -276,12 +277,11 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
             tile.destroy();
         }
 
-        // ICONEM
+        // ICONEM Ensure previous fade state cannot leak across lifecycles
         if (tile.previousTexture && tile.previousTexture instanceof Texture) {
             tile.previousTexture.destroy();
         }
         tile.previousTexture = null;
-        tile.fadeEndTime = undefined;
 
         if (callback) callback();
     }

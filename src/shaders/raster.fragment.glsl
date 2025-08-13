@@ -39,7 +39,7 @@ uniform vec2 u_texture_res;
 
 // ICONEM
 uniform sampler2D u_previous_tile;
-uniform float u_fade_mix;
+uniform float u_per_tile_fade_mix;
 
 
 void main() {
@@ -70,7 +70,7 @@ void main() {
     color = mix(texture(u_image0, v_pos0), texture(u_image1, v_pos1), u_fade_t);
 
     // ICONEM
-    color = mix(texture(u_previous_tile, v_pos0), color, u_fade_mix);
+    color = mix(texture(u_previous_tile, v_pos0), color, u_per_tile_fade_mix);
     
     value = vec2(u_colorization_offset + dot(color.rgb, u_colorization_mix.rgb), color.a);
 #endif
@@ -93,8 +93,8 @@ void main() {
 
     // ICONEM
     vec4 previousColor = texture(u_previous_tile, v_pos0);
-    color = mix(previousColor, color, u_fade_mix);
-    // float c = 1. - u_fade_mix;
+    color = mix(previousColor, color, u_per_tile_fade_mix);
+    // float c = 1. - u_per_tile_fade_mix;
     // color = vec4(c, c, c, 1.);
     // color = previousColor;
     // ICONEM

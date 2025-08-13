@@ -186,7 +186,7 @@ class Tile {
     worldview: string | undefined;
 
     // ICONEM
-    fadeStartTime: number | undefined;
+    perTileFadeEndTime: number | undefined;
     previousTexture: Texture | null | undefined | UserManagedTexture;
 
     /**
