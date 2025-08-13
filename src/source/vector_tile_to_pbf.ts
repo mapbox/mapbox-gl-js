@@ -48,7 +48,7 @@ function writeFeature(context: FeatureContext, pbf: Pbf) {
     // vector tile spec only supports integer values for feature ids -
     // allowing non-integer values here results in a non-compliant PBF
     // that causes an exception when it is parsed with vector-tile-js
-    if (feature.id !== undefined && !isNaN(+feature.id)) {
+    if (feature.id !== undefined && Number.isSafeInteger(+feature.id)) {
         pbf.writeVarintField(1, +feature.id);
     }
 
