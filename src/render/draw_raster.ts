@@ -172,6 +172,22 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             context.activeTexture.set(gl.TEXTURE0);
             texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
 
+            // ICONEM
+            const elapsed = performance.now() - (tile.fadeStartTime || 0);
+            const fadeDuration = 500; // ms
+            const fadeMix = Math.min(elapsed / fadeDuration, 1.0);
+            if (fadeMix >= 1.0) {
+                tile.previousTexture = null;
+            }
+            if (tile.previousTexture) {
+
+                context.activeTexture.set(gl.TEXTURE2);
+                tile.previousTexture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+            } else {
+                context.activeTexture.set(gl.TEXTURE2);
+                texture.bind(textureFilter, gl.CLAMP_TO_EDGE); // same as new
+            }
+
             context.activeTexture.set(gl.TEXTURE1);
 
             if (parentTile) {
@@ -248,7 +264,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 rasterConfig.range,
                 tileSize,
                 buffer,
-                emissiveStrength
+                emissiveStrength,
+                fadeMix
             );
             const affectedByFog = painter.isTileAffectedByFog(coord);
 

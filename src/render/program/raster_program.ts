@@ -43,6 +43,8 @@ export type RasterUniformsType = {
     ['u_texture_offset']: Uniform2f;
     ['u_texture_res']: Uniform2f;
     ['u_emissive_strength']: Uniform1f;
+    ['u_fade_mix']: Uniform1f;
+    ['u_previous_tile']: Uniform1i;
 };
 
 export type RasterDefinesType = 'RASTER_COLOR' | 'RENDER_CUTOFF' | 'RASTER_ARRAY' | 'RASTER_ARRAY_LINEAR';
@@ -74,34 +76,16 @@ const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_color_ramp': new Uniform1i(context),
     'u_texture_offset': new Uniform2f(context),
     'u_texture_res': new Uniform2f(context),
-    'u_emissive_strength': new Uniform1f(context)
+    'u_emissive_strength': new Uniform1f(context),
+    'u_fade_mix': new Uniform1f(context),
+    'u_previous_tile': new Uniform1i(context),
 });
 
 const rasterUniformValues = (
-    matrix: Float32Array,
-    normalizeMatrix: Float32Array,
-    globeMatrix: Float32Array,
-    mercMatrix: Float32Array,
-    gridMatrix: Float32Array,
-    parentTL: [number, number],
-    zoomTransition: number,
-    mercatorCenter: [number, number],
-    cutoffParams: [number, number, number, number],
-    parentScaleBy: number,
-    fade: {
-        mix: number;
-        opacity: number;
-    },
-    layer: RasterStyleLayer,
-    perspectiveTransform: [number, number],
-    elevation: number,
-    colorRampUnit: number,
-    colorMix: [number, number, number, number],
-    colorOffset: number,
-    colorRange: [number, number],
-    tileSize: number,
-    buffer: number,
-    emissiveStrength: number,
+matrix: Float32Array, normalizeMatrix: Float32Array, globeMatrix: Float32Array, mercMatrix: Float32Array, gridMatrix: Float32Array, parentTL: [number, number], zoomTransition: number, mercatorCenter: [number, number], cutoffParams: [number, number, number, number], parentScaleBy: number, fade: {
+    mix: number;
+    opacity: number;
+}, layer: RasterStyleLayer, perspectiveTransform: [number, number], elevation: number, colorRampUnit: number, colorMix: [number, number, number, number], colorOffset: number, colorRange: [number, number], tileSize: number, buffer: number, emissiveStrength: number, fadeMix: number,
 ): UniformValues<RasterUniformsType> => ({
     'u_matrix': matrix,
     'u_normalize_matrix': normalizeMatrix,
@@ -136,7 +120,9 @@ const rasterUniformValues = (
         tileSize / (tileSize + 2 * buffer)
     ],
     'u_texture_res': [tileSize + 2 * buffer, tileSize + 2 * buffer],
-    'u_emissive_strength': emissiveStrength
+    'u_emissive_strength': emissiveStrength,
+    'u_fade_mix': fadeMix,
+    'u_previous_tile': 2,
 });
 
 const rasterPoleUniformValues = (
@@ -178,6 +164,7 @@ const rasterPoleUniformValues = (
     1,
     0,
     emissiveStrength,
+    1
 ));
 
 function spinWeights(angle: number): [number, number, number] {

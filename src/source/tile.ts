@@ -185,6 +185,10 @@ class Tile {
 
     worldview: string | undefined;
 
+    // ICONEM
+    fadeStartTime: number | undefined;
+    previousTexture: Texture | null | undefined | UserManagedTexture;
+
     /**
      * @param {OverscaledTileID} tileID
      * @param size

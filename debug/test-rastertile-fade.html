@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mapbox-Raster-Reprojection</title>
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <!--
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
+
+    -->
+    
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+
+
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+
+      html,
+      body,
+      #map {
+        margin: 0;
+        height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+
+    
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+
+    <script>
+      let year = 2015;
+
+      // mapboxgl.accessToken =
+        // "pk.eyJ1IjoiYnJhbnpoYW5nIiwiYSI6ImNqM3FycmVldjAxZTUzM2xqMmllNnBjMHkifQ.Wv3ekbtia0BuUHGWVUGoFg";
+
+      const map = new mapboxgl.Map({
+        container: "map",
+        style: "mapbox://styles/mapbox/streets-v11",
+        center: [0, 55],
+        zoom: 3,
+        hash: true,
+      });
+
+      map.showTileBoundaries = true;
+      map.on("load", () => {
+        map.addSource("custom-source", {
+          scheme: "xyz",
+          type: "raster",
+          tiles: [
+            `https://gibs-b.earthdata.nasa.gov/wmts/epsg3857/all/MODIS_Aqua_CorrectedReflectance_TrueColor/default/${year}-08-02/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+          ],
+          tileSize: 256,
+        });
+        map.addLayer({
+          id: "custom-source-layer",
+          type: "raster",
+          source: "custom-source",
+          paint: {
+            "raster-opacity": 1,
+            "raster-fade-duration": 0,
+            "raster-opacity-transition": { duration: 0 },
+          },
+        });
+
+        launchInterval();
+      });
+
+      function callback() {
+        year += 1;
+        if (year > 2024) {
+          year = 2015;
+        }
+        console.log(year)
+
+        let source = map.getSource("custom-source");
+        let new_url = `https://gibs-b.earthdata.nasa.gov/wmts/epsg3857/all/MODIS_Aqua_CorrectedReflectance_TrueColor/default/${year}-08-02/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`;
+        //source?.setUrl(new_url); // not working
+        source?.setTiles([new_url]);
+      }
+
+      let intervalId;
+      function launchInterval() {
+        intervalId = setInterval(callback, 2000);
+      }
+    </script>
+  </body>
+</html>

@@ -223,6 +223,20 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
             if (!data) return callback(null);
 
             if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
+
+            // ICONEM
+            if (tile.texture && tile.texture instanceof Texture) {
+                tile.previousTexture = tile.texture;
+                tile.fadeStartTime = performance.now();
+                tile.isFading = true;
+            }
+
+            tile.setTexture(data, this.map.painter);
+
+            // ICONEM
+            tile.previousTexture = tile.texture || null;
+            const textureStartTime = Date.now();
+            tile.fadeEndTime = textureStartTime + 500; // 300ms fade
             tile.setTexture(data, this.map.painter);
             tile.state = 'loaded';
 
@@ -242,17 +256,32 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     unloadTile(tile: Tile, callback?: Callback<undefined>) {
         // Cache the tile texture to avoid re-allocating Textures if they'll just be reloaded
         if (tile.texture && tile.texture instanceof Texture) {
-            // Clean everything else up owned by the tile, but preserve the texture.
-            // Destroy first to prevent racing with the texture cache being popped.
-            tile.destroy(true);
+            // // Clean everything else up owned by the tile, but preserve the texture.
+            // // Destroy first to prevent racing with the texture cache being popped.
+            // tile.destroy(true);
 
-            // Save the texture to the cache
-            if (tile.texture && tile.texture instanceof Texture) {
-                this.map.painter.saveTileTexture(tile.texture);
+            // // Save the texture to the cache
+            // if (tile.texture && tile.texture instanceof Texture) {
+            //     this.map.painter.saveTileTexture(tile.texture);
+            // }
+
+            // ICONEM
+            // Preserve as previous texture if fading
+            if (tile.fadeEndTime && Date.now() < tile.fadeEndTime) {
+                tile.previousTexture = tile.texture;
+            } else {
+                tile.texture.destroy();
             }
         } else {
             tile.destroy();
         }
+
+        // ICONEM
+        if (tile.previousTexture && tile.previousTexture instanceof Texture) {
+            tile.previousTexture.destroy();
+        }
+        tile.previousTexture = null;
+        tile.fadeEndTime = undefined;
 
         if (callback) callback();
     }
