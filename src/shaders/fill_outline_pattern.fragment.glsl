@@ -11,6 +11,10 @@ uniform float u_pattern_transition;
 
 uniform float u_emissive_strength;
 
+#ifdef APPLY_LUT_ON_GPU
+uniform highp sampler3D u_lutTexture;
+#endif
+
 #ifdef RENDER_SHADOWS
 uniform vec3 u_ground_shadow_factor;
 
@@ -48,6 +52,10 @@ void main() {
     float alpha = 1.0 - smoothstep(0.0, 1.0, dist);
 
     vec4 out_color = textureLodCustom(u_image, pos, lod_pos);
+
+#ifdef APPLY_LUT_ON_GPU
+    out_color = applyLUT(u_lutTexture, out_color);
+#endif
 
 #ifdef FILL_PATTERN_TRANSITION
     vec2 pattern_b_tl = pattern_b.xy;

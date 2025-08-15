@@ -13,6 +13,10 @@ uniform lowp vec4 u_trim_color;
 
 uniform sampler2D u_image;
 
+#ifdef APPLY_LUT_ON_GPU
+uniform highp sampler3D u_lutTexture;
+#endif
+
 #ifdef LINE_PATTERN_TRANSITION
 uniform float u_pattern_transition;
 #endif
@@ -92,6 +96,10 @@ void main() {
     highp vec2 pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(x, y));
     highp vec2 lod_pos = mix(pattern_tl * texel_size - texel_size, pattern_br * texel_size + texel_size, vec2(pattern_x, y));
     vec4 color = textureLodCustom(u_image, pos, lod_pos);
+
+#ifdef APPLY_LUT_ON_GPU
+    color = applyLUT(u_lutTexture, color);
+#endif
 
 #ifdef LINE_PATTERN_TRANSITION
     vec2 pattern_b_tl = pattern_b.xy;

@@ -26,6 +26,10 @@ in highp float v_depth;
 in highp float v_road_z_offset;
 #endif
 
+#ifdef APPLY_LUT_ON_GPU
+uniform highp sampler3D u_lutTexture;
+#endif
+
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp vec4 pattern
 #ifdef FILL_PATTERN_TRANSITION
@@ -46,6 +50,10 @@ void main() {
     highp vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
     highp vec2 lod_pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, v_pos);
     vec4 out_color = textureLodCustom(u_image, pos, lod_pos);
+
+#ifdef APPLY_LUT_ON_GPU
+    out_color = applyLUT(u_lutTexture, out_color);
+#endif
 
 #ifdef FILL_PATTERN_TRANSITION
     vec2 pattern_b_tl = pattern_b.xy;

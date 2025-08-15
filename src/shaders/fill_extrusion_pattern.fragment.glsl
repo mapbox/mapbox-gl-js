@@ -18,6 +18,10 @@ in vec3 v_ao;
 in vec3 v_normal;
 #endif
 
+#ifdef APPLY_LUT_ON_GPU
+uniform highp sampler3D u_lutTexture;
+#endif
+
 in highp vec2 v_pos;
 in vec4 v_lighting;
 
@@ -47,6 +51,10 @@ void main() {
     highp vec2 pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, imagecoord);
     highp vec2 lod_pos = mix(pattern_tl / u_texsize, pattern_br / u_texsize, v_pos);
     vec4 out_color = textureLodCustom(u_image, pos, lod_pos);
+
+#ifdef APPLY_LUT_ON_GPU
+    out_color = applyLUT(u_lutTexture, out_color);
+#endif
 
 #ifdef FILL_EXTRUSION_PATTERN_TRANSITION
     vec2 pattern_b_tl = pattern_b.xy;
