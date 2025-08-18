@@ -75,7 +75,7 @@ vec4 applyLUT(highp sampler3D lut, vec4 col) {
     vec3 size = vec3(textureSize(lut, 0));
     // Sample from the center of the pixel in the LUT
     vec3 uvw = (col.rbg * float(size - 1.0) + 0.5) / size;
-    return vec4(texture(lut, uvw).rgb,col.a);
+    return vec4(texture(lut, uvw).rgb * col.a, col.a);
 }
 
 vec3 applyLUT(highp sampler3D lut, vec3 col) {
