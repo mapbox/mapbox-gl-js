@@ -188,7 +188,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (mapboxgl.accessToken) {
             params.access_token = mapboxgl.accessToken;
         } else {
-            params.access_token = prompt("Access Token");
+            // This default access token is scoped to localhost and internal mapbox pages
+            params.accessToken = 'pk.eyJ1IjoiZ2wtanMtdGVhbSIsImEiOiJjbTV1d3l0d3AwMThnMmpzZ2M5OTNyeDE1In0.2nygBIo7PXbkFCCt6LEBgw'
         }
     }
 
