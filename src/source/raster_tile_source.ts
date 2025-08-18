@@ -139,19 +139,28 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     /**
      * Reloads the source data and re-renders the map.
      *
+     * @param {boolean} clearSource Optional param to load new source without clearing the tile cache (source from style).
      * @example
      * map.getSource('source-id').reload();
      */
-    reload() {
+    reload(clearSource: boolean = true) {
         this.cancelTileJSONRequest();
-        const fqid = makeFQID(this.id, this.scope);
-        this.load(() => this.map.style.clearSource(fqid));
+        if (clearSource) {
+            // Legacy path: full clear
+            const fqid = makeFQID(this.id, this.scope);
+            this.load(() => this.map.style.clearSource(fqid));
+        } else {
+            // Soft path: keep SourceCache tiles
+            // Note the param could be passed as object like so opts?: {preserveTiles?: boolean}
+            this.load();
+        }
     }
 
     /**
      * Sets the source `tiles` property and re-renders the map.
      *
      * @param {string[]} tiles An array of one or more tile source URLs, as in the TileJSON spec.
+     * @param {boolean} clearSource Optional param to load new source without clearing the tile cache (source from style).
      * @returns {RasterTileSource} Returns itself to allow for method chaining.
      * @example
      * map.addSource('source-id', {
@@ -163,9 +172,10 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
      * // Set the endpoint associated with a raster tile source.
      * map.getSource('source-id').setTiles(['https://another_end_point.net/{z}/{x}/{y}.png']);
      */
-    setTiles(tiles: Array<string>): this {
+    setTiles(tiles: Array<string>, clearSource: boolean = true): this {
         this._options.tiles = tiles;
-        this.reload();
+        // Soft reload: do NOT clear the source cache.
+        this.reload(clearSource);
 
         return this;
     }
@@ -224,17 +234,23 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
 
             if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
 
-            // --- ICONEM: capture previous GL texture for per-tile fade
-            if (tile.texture) {
-                tile.previousTexture = tile.texture;
-                // Important: prevent setTexture from destroying it implicitly
-                // by clearing the reference before creating the new one.
-                // (setTexture will only delete an existing texture if it's still attached)
-                // @ts-expect-error intentional temporary clear to avoid auto-destroy
-                tile.texture = null;
-                // const perTileFadeDuration = 500;
-                // tile.perTileFadeEndTime = browser.now() + perTileFadeDuration; // 300ms fade
-                tile.perTileFadeStartTime = browser.now(); // 300ms fade
+            // // --- ICONEM: capture previous GL texture for per-tile fade
+            // if (tile.texture) {
+            //     tile.previousTexture = tile.texture;
+            //     // Important: prevent setTexture from destroying it implicitly
+            //     // by clearing the reference before creating the new one.
+            //     // (setTexture will only delete an existing texture if it's still attached)
+            //     // @ts-expect-error intentional temporary clear to avoid auto-destroy
+            //     tile.texture = null;
+            //     // const perTileFadeDuration = 500;
+            //     // tile.perTileFadeEndTime = browser.now() + perTileFadeDuration; // 300ms fade
+            //     tile.perTileFadeStartTime = browser.now(); // 300ms fade
+            // }
+            const perTileFadeDuration = 5000;
+            const oldTile = this._tiles[tile.tileID.key];
+
+            if (oldTile && perTileFadeDuration > 0) {
+                oldTile.fadeRetainUntil = Date.now() + perTileFadeDuration;
             }
 
             tile.setTexture(data, this.map.painter);

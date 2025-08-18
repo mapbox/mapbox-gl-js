@@ -88,7 +88,8 @@
         let source = map.getSource("custom-source");
         let new_url = `https://gibs-b.earthdata.nasa.gov/wmts/epsg3857/all/MODIS_Aqua_CorrectedReflectance_TrueColor/default/${year}-08-02/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`;
         //source?.setUrl(new_url); // not working
-        source?.setTiles([new_url]);
+        const clearSource= false
+        source?.setTiles([new_url], clearSource);
       }
 
       let intervalId;

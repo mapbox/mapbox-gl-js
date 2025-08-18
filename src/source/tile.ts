@@ -188,6 +188,7 @@ class Tile {
     // ICONEM
     perTileFadeStartTime: number | undefined;
     previousTexture: Texture | null | undefined | UserManagedTexture;
+    fadeRetainUntil?: number;
 
     /**
      * @param {OverscaledTileID} tileID
