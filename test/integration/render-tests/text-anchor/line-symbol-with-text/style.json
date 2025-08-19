@@ -1,0 +1,66 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 200,
+      "width" : 500
+    }
+  },
+  "center": [
+    0.25,
+    0.25
+  ],
+  "zoom": 12,
+  "bearing": -45,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+            [
+                0,
+                0
+            ],
+            [
+                0.5,
+                0.5
+            ]
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+          "background-color": "white"
+      }
+    },
+    {
+      "id": "translate",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "fav-airport-18",
+        "text-rotation-alignment": "viewport",
+        "text-field": "airport",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "symbol-placement": "line",
+        "symbol-spacing": 50,
+        "text-anchor": "top"
+      },
+      "paint": {
+        "icon-opacity": 1,
+        "text-color": "hsl(0, 82%, 48%)",
+        "text-translate": [0, 8]
+      }
+    }
+  ]
+}
