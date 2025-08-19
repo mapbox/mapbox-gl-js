@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS comparison page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='./dist/mapbox-gl.css' />
+    <style>
+        body {
+            overflow: hidden;
+            margin: 0px !important;
+        }
+
+        body * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .version {
+            font-size: 24px;
+            color: red;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        #latest-version {
+            position: absolute;
+            right: 10px;
+        }
+
+        #this-version {
+            position: absolute;
+            left: 10px;
+        }
+    </style>
+    <link
+        rel="stylesheet"
+        href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.4.0/mapbox-gl-compare.css"
+        type="text/css"
+    />
+</head>
+
+<body>
+    <div id="comparison-container">
+        <div id="this" class="map">
+            <div id="this-version" class="version">This PR</div>
+        </div>
+        <div id="latest" class="map">
+            <div id="latest-version" class="version"></div>
+        </div>
+    </div>
+
+    <script>
+        function getURLParameter(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+        
+        var accessToken = getURLParameter('access_token');
+        if (!accessToken) {
+            // This default access token is scoped to localhost and internal mapbox pages
+            accessToken = 'pk.eyJ1IjoiZ2wtanMtdGVhbSIsImEiOiJjbTV1d3l0d3AwMThnMmpzZ2M5OTNyeDE1In0.2nygBIo7PXbkFCCt6LEBgw'
+        }
+    </script>
+    <script src='./dist/mapbox-gl-dev.js'></script>
+    <script>
+        window.thisMapbox = mapboxgl;
+        window.thisMapbox.accessToken = accessToken;
+    </script>
+    <script src='https://cdn.jsdelivr.net/npm/mapbox-gl@latest/dist/mapbox-gl.min.js'></script>
+    <script>
+        window.latestMapbox = mapboxgl;
+        window.latestMapbox.accessToken = accessToken;
+    </script>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.4.0/mapbox-gl-compare.js"></script>
+    <script>
+        const center = [1.845089, 42.100143];
+        const zoom = 18;
+        const thisMap = new window.thisMapbox.Map({
+            container: 'this',
+            center,
+            zoom,
+            hash: true
+        });
+
+        const latestMap = new window.latestMapbox.Map({
+            container: 'latest',
+            center,
+            zoom,
+            hash: true
+        });
+        const map = new window.latestMapbox.Compare(thisMap, latestMap, '#comparison-container');
+        document.getElementById('latest-version').innerHTML = `${window.latestMapbox.version}`;
+    </script>
+
+</body>
+</html>

@@ -19,3 +19,4 @@ raster-particle-layer.html
 featuresets.html
 precipitation.html
 landmark-icons.html
+compare.html
