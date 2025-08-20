@@ -1,0 +1,63 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1024,
+      "height": 1024,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [ 0, 0 ],
+  "zoom": 5.40,
+  "pitch": 60,
+  "fog": {
+    "star-intensity": 0.0
+  },
+  "sources": {
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0, 0],
+          "orientation": [0, 0, 45]
+        },
+        "model-2" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [0.00000, 20],
+          "orientation": [0, 45, 45]
+        },
+        "model-3" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-5, 5],
+          "orientation": [0, 0, 145]
+        },
+        "model-4" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [5, 5],
+          "orientation": [0, 45, -45]
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+          "background-color": "white"
+      }
+    },
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-scale" : [100000, 100000, 100000]
+      }
+    }
+  ]
+}

@@ -176,7 +176,8 @@ export function mercatorToGlobeMatrix(matrix: mat4, transform: Transform): mat4 
     mat4.translate(m, m, [0, 0, GLOBE_RADIUS]);
     mat4.scale(m, m, [pixelsToEcef, pixelsToEcef, pixelsToEcef * pixelsPerMeter]);
 
-    mat4.translate(m, m, [transform.point.x - 0.5 * worldSize, transform.point.y - 0.5 * worldSize, 0.0]);
+    const transformPoint = transform.point;
+    mat4.translate(m, m, [-transformPoint.x, -transformPoint.y, 0.0]);
     mat4.multiply(m, m, matrix);
     return mat4.multiply(m, transform.globeMatrix, m);
 }
