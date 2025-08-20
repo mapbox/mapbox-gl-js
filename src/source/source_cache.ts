@@ -421,6 +421,19 @@ class SourceCache extends Evented {
         }
     }
 
+    /**
+     * Find a loaded previousTile of the given tile
+     * @private
+     */
+    findPreviousTile(tileID: OverscaledTileID): Tile | null | undefined {
+        const key = String(tileID.key);
+        const tile = this._tiles[key];
+        if (tile && tile.previousTexture) {
+            return tile;
+        }
+        return undefined;
+    }
+
     _getLoadedTile(tileID: OverscaledTileID): Tile | null | undefined {
         const tile = this._tiles[tileID.key];
         if (tile && tile.hasData()) {
@@ -618,6 +631,25 @@ class SourceCache extends Evented {
         // the most ideal tile for the current viewport. This may include tiles like
         // parent or child tiles that are *already* loaded.
         const retain = this._updateRetainedTiles(idealTileIDs);
+
+        // ICONEM: Retain old tiles for crossfade between old/new TMS
+        if (this._tiles) {
+            console.log('cache', this._tiles);
+            for (const id in this._tiles) {
+                const tile = this._tiles[id];
+                console.log('yo', tile);
+
+                // Old texture, not already in retain, and has a fade in progress
+                retain[id] = tile.tileID;
+                // if (!retain[id] && tile.texture && tile.previousTexture) {
+                //     console.log('match');
+                //     const fadeDuration = 2000;
+                //     if (tile.perTileFadeStartTime && Date.now() < tile.perTileFadeStartTime + fadeDuration) {
+                //         retain[id] = tile.tileID; // keep this tile alive
+                //     }
+                // }
+            }
+        }
 
         if (isRasterType(this._source.type) && idealTileIDs.length !== 0) {
             const parentsForFading: Partial<Record<string | number, OverscaledTileID>> = {};

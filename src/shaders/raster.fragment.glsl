@@ -37,6 +37,10 @@ uniform highp float u_colorization_offset;
 uniform vec2 u_texture_res;
 #endif
 
+// ICONEM
+uniform sampler2D u_previous_tile;
+uniform float u_per_tile_fade_mix; // 0: show previous, 1: show current
+
 
 void main() {
     vec4 color0, color1, color;
@@ -64,6 +68,10 @@ void main() {
     if (value.y > 0.0) value.x /= value.y;
 #else
     color = mix(texture(u_image0, v_pos0), texture(u_image1, v_pos1), u_fade_t);
+
+    // ICONEM
+    // color = mix(texture(u_previous_tile, v_pos0), color, u_per_tile_fade_mix);
+    
     value = vec2(u_colorization_offset + dot(color.rgb, u_colorization_mix.rgb), color.a);
 #endif
 
@@ -82,9 +90,36 @@ void main() {
     if (color0.a > 0.0) color0.rgb /= color0.a;
     if (color1.a > 0.0) color1.rgb /= color1.a;
     color = mix(color0, color1, u_fade_t);
+
+    // ICONEM
+    vec4 previousColor = texture(u_previous_tile, v_pos0);
+    color = mix(previousColor, color, u_per_tile_fade_mix);
+    // float c = color0.a;
+    // float c = u_per_tile_fade_mix;
+    // color = vec4(c, 0.,0., 1.);
+    // color = previousColor;
+
+    // 1 Per-tile previous/current crossfade
+    // color = texture(u_image0, v_pos0);
+    // if (u_per_tile_fade_mix < 1.0) {
+    //     // vec4 prevColor = texture(u_previous_tile, v_pos0);
+    //     vec4 previousColor = vec4(1., 0., 0., 1.);
+    //     color = mix(previousColor, color, clamp(u_per_tile_fade_mix, 0.0, 1.0));
+    // }
+    // 2 Existing parent/child crossfade
+    //  parentColor = texture(u_image1, v_pos1);
+    //  color = mix(parentColor, color, u_fade_t);
+
+    // ICONEM
+
 #endif
 
     color.a *= u_opacity;
+
+    // ICONEM
+    color.a = 1.;
+
+
 #ifdef GLOBE_POLES
     color.a *= 1.0 - smoothstep(0.0, 0.05, u_zoom_transition);
 #endif
