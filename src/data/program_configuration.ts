@@ -656,22 +656,21 @@ export default class ProgramConfiguration {
     }
 
     getBinderAttributes(): Array<string> {
-        const result: string[] = [];
+        const result: Set<string> = new Set();
         for (const property in this.binders) {
             const binder = this.binders[property];
             if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder) {
                 for (let i = 0; i < binder.paintVertexAttributes.length; i++) {
-                    result.push(binder.paintVertexAttributes[i].name);
+                    result.add(binder.paintVertexAttributes[i].name);
                 }
             }
-
             if (binder instanceof PatternCompositeBinder) {
                 for (let i = 0; i < patternTransitionAttributes.members.length; i++) {
-                    result.push(patternTransitionAttributes.members[i].name);
+                    result.add(patternTransitionAttributes.members[i].name);
                 }
             }
         }
-        return result;
+        return Array.from(result);
     }
 
     getBinderUniforms(): Array<string> {
