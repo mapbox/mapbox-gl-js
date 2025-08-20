@@ -137,47 +137,95 @@
                             "get",
                             "height"
                         ],
-                        100
+                        5
                     ]
                 ],
                 "building-facade-floors": [
-                    "/",
+                    "case",
                     [
-                        "-",
+                        "<",
                         [
                             "get",
                             "height"
                         ],
+                        20
+                    ],
+                    [
+                        "/",
                         [
-                            "get",
-                            "min_height"
+                            "-",
+                            [
+                                "get",
+                                "height"
+                            ],
+                            [
+                                "get",
+                                "min_height"
+                            ]
+                        ],
+                        [
+                            "random",
+                            6,
+                            8,
+                            [
+                                "id"
+                            ]
                         ]
                     ],
                     [
-                        "random",
-                        2,
-                        30,
+                        "/",
                         [
-                            "id"
+                            "-",
+                            [
+                                "get",
+                                "height"
+                            ],
+                            [
+                                "get",
+                                "min_height"
+                            ]
+                        ],
+                        [
+                            "random",
+                            20,
+                            30,
+                            [
+                                "id"
+                            ]
                         ]
                     ]
                 ],
                 "building-facade-window": [
+                    "case",
                     [
-                        "random",
-                        0.7,
-                        0.95,
+                        "==",
                         [
-                            "id"
+                            "get",
+                            "roof_type"
+                        ],
+                        "parapet"
+                    ],
+                    [
+                        [
+                            "random",
+                            0.7,
+                            0.95,
+                            [
+                                "id"
+                            ]
+                        ],
+                        [
+                            "random",
+                            0.9,
+                            1,
+                            [
+                                "id"
+                            ]
                         ]
                     ],
                     [
-                        "random",
                         0.5,
-                        1,
-                        [
-                            "id"
-                        ]
+                        0.9
                     ]
                 ]
             },
