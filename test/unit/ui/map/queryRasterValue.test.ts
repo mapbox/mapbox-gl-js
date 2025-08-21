@@ -120,7 +120,7 @@ describe('Map#queryRasterValue', () => {
 
         expect(map.queryRasterValue).toHaveResolvedWith({
             'Total Precip': {
-                1708308000: [1.4014901369810104]
+                1708308000: [1.401490136981]
             },
         });
     });
@@ -262,7 +262,7 @@ describe('Map#queryRasterValue', () => {
 
         expect(map.queryRasterValue).toHaveResolvedWith({
             'Total Precip': {
-                1708311600: [0.7014901265501976]
+                1708311600: [0.70149012655]
             }
         });
     });

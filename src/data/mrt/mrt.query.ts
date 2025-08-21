@@ -51,7 +51,9 @@ export function getPointXY([x, y]: [number, number], bandView: TBandViewRGBA, {s
 
     for (let i = 0; i < dimension; i++) {
         const rawValue = data[dimension * pointIndex + i];
-        output[i] = rawValue * scale + offset;
+        const scaledValue = rawValue * scale + offset;
+        // round to 12 decimal digits https://mapbox.atlassian.net/browse/RASTER-2768
+        output[i] = Math.round(1e12 * scaledValue) / 1e12;
     }
 
     return output;
