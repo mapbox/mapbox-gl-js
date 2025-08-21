@@ -2691,6 +2691,11 @@
           "ios": "11.9.0"
         }
       },
+      "requires": [
+        {
+          "symbol-z-elevate": true
+        }
+      ],
       "expression": {
         "interpolated": false,
         "parameters": [
@@ -9576,6 +9581,11 @@
           "ios": "11.7.0"
         }
       },
+      "requires": [
+        {
+          "symbol-z-elevate": true
+        }
+      ],
       "expression": {
         "interpolated": true,
         "parameters": [
