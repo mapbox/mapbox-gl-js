@@ -206,46 +206,41 @@ export abstract class RenderColor {
 
         if (this.premultiplied) {
             if (a === 0) return [0, 0, 0, 0];
-
-            r /= a;
-            g /= a;
-            b /= a;
+            const invA = 1 / a; // Single division, then multiply
+            r *= invA;
+            g *= invA;
+            b *= invA;
         }
 
-        const red = Math.min(Math.max(r, 0.0), 1.0);
-        const green = Math.min(Math.max(g, 0.0), 1.0);
-        const blue = Math.min(Math.max(b, 0.0), 1.0);
+        const red = Math.min(Math.max(r, 0), 1);
+        const green = Math.min(Math.max(g, 0), 1);
+        const blue = Math.min(Math.max(b, 0), 1);
 
         const min = Math.min(red, green, blue);
         const max = Math.max(red, green, blue);
+        const delta = max - min;
 
-        const l = (min + max) / 2;
+        const l = (min + max) * 0.5;
 
-        if (min === max) {
+        if (delta === 0) {
             return [0, 0, l * 100, a];
         }
 
-        const delta = max - min;
-
         const s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min);
 
-        let h = 0;
-        if (max === red) {
-            h = (green - blue) / delta + (green < blue ? 6 : 0);
-        } else if (max === green) {
-            h = (blue - red) / delta + 2;
-        } else if (max === blue) {
-            h = (red - green) / delta + 4;
+        let h: number;
+        switch (max) {
+        case red:
+            h = ((green - blue) / delta + (green < blue ? 6 : 0)) * 60;
+            break;
+        case green:
+            h = ((blue - red) / delta + 2) * 60;
+            break;
+        default: // blue
+            h = ((red - green) / delta + 4) * 60;
         }
 
-        h *= 60;
-
-        return [
-            Math.min(Math.max(h, 0), 360),
-            Math.min(Math.max(s * 100, 0), 100),
-            Math.min(Math.max(l * 100, 0), 100),
-            a
-        ];
+        return [h, s * 100, l * 100, a];
     }
 
     /**
