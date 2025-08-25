@@ -1,3 +1,19 @@
+## 3.15.0-beta.2
+
+### Features and improvements ✨
+
+- Slightly improve `hsla` expression performance.
+- Optimize applying LUT for patterns.
+- Round `queryRasterValue` results to 12 decimal digits to fix precision issues.
+
+### Bug fixes 🐞
+
+- Fix an error on GeoJSON with `"Infinity"`` and similar ids.
+- Fix `GL_INVALID_VALUE` console warning on Mapbox Satellite Standard and a few other styles.
+- Fix model layer positioning during globe to mercator transition.
+- Fix an issue with incorrect transparency for some icons with LUT applied.
+- Fix an issue where updating `*-occlusion-opacity` properties didn't have any effect.
+
 ## 3.15.0-beta.1
 
 ### Features and improvements ✨
