@@ -1141,7 +1141,7 @@ class Style extends Evented<MapEvents> {
             const l1 = mergedLayers[layerName1];
             const l2 = mergedLayers[layerName2];
 
-            if ((l1 as SymbolStyleLayer).hasInitialOcclusionOpacityProperties) {
+            if ((l1 as SymbolStyleLayer).hasOcclusionOpacityProperties) {
                 if (l2.is3D(!!this.terrain)) {
                     return 1;
                 }
@@ -1149,7 +1149,7 @@ class Style extends Evented<MapEvents> {
             }
 
             if (l1.is3D(!!this.terrain)) {
-                if ((l2 as SymbolStyleLayer).hasInitialOcclusionOpacityProperties) {
+                if ((l2 as SymbolStyleLayer).hasOcclusionOpacityProperties) {
                     return -1;
                 }
                 return 0;

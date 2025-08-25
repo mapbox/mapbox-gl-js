@@ -797,7 +797,7 @@ class Painter {
             } else if (layer.type === 'building') {
                 buildingLayer = layer;
             } else if (layer.type === 'symbol') {
-                if (layer.hasInitialOcclusionOpacityProperties) {
+                if (layer.hasOcclusionOpacityProperties) {
                     layersRequireFinalDepth = true;
                 } else {
                     layersRequireTerrainDepth = true;

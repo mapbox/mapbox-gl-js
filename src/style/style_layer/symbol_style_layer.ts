@@ -77,12 +77,18 @@ class SymbolStyleLayer extends StyleLayer {
     _brightnessMin: number;
     _brightnessMax: number;
 
-    hasInitialOcclusionOpacityProperties: boolean;
+    hasOcclusionOpacityProperties: boolean;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         super(layer, getProperties(), scope, lut, options, layer.layout ? layer.layout['icon-image-use-theme'] : null);
         this._colorAdjustmentMatrix = mat4.identity([] as unknown as mat4);
-        this.hasInitialOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
+        this.hasOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
+    }
+
+    override _handleSpecialPaintPropertyUpdate(name: string) {
+        if (name === 'icon-occlusion-opacity' || name === 'text-occlusion-opacity') {
+            this.hasOcclusionOpacityProperties = true;
+        }
     }
 
     override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {

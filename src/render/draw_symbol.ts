@@ -389,7 +389,7 @@ function drawLayerSymbols(
                 return;
             }
 
-            if (!layer.hasInitialOcclusionOpacityProperties) {
+            if (!layer.hasOcclusionOpacityProperties) {
                 // Occlusion against terrain only
                 if (painter.terrain) {
                     defines.push('DEPTH_D24');
