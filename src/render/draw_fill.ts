@@ -18,7 +18,7 @@ import ColorMode from '../gl/color_mode';
 import {vec3} from 'gl-matrix';
 import EXTENT from '../style-spec/data/extent';
 import {altitudeFromMercatorZ} from '../geo/mercator_coordinate';
-import {radToDeg, easeIn} from '../util/util';
+import {easeIn} from '../util/util';
 import {OrthographicPitchTranstionValue} from '../geo/transform';
 import {number as lerp} from '../style-spec/util/interpolate';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
@@ -134,11 +134,10 @@ function computeCameraPositionInTile(id: UnwrappedTileID, cameraMercPos: Mercato
 }
 
 function computeDepthBias(tr: Transform): number {
-    const pitchInDegrees = radToDeg(tr.pitch);
     let bias = 0.01;
 
     if (tr.isOrthographic) {
-        const mixValue = pitchInDegrees >= OrthographicPitchTranstionValue ? 1.0 : pitchInDegrees / OrthographicPitchTranstionValue;
+        const mixValue = tr.pitch >= OrthographicPitchTranstionValue ? 1.0 : tr.pitch / OrthographicPitchTranstionValue;
         bias = lerp(0.0001, bias, easeIn(mixValue));
     }
 
