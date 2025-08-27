@@ -1114,6 +1114,8 @@ class Style extends Evented<MapEvents> {
 
         this._mergedOrder = [];
 
+        let last3DLayerIdx = -1;
+
         const sort = (layers: TypedStyleLayer[] = []) => {
             for (const layer of layers) {
                 if (layer.type === 'slot') {
@@ -1126,7 +1128,10 @@ class Style extends Evented<MapEvents> {
                     mergedLayers[fqid] = layer;
 
                     // Typed layer bookkeeping
-                    if (layer.is3D(!!this.terrain)) this._has3DLayers = true;
+                    if (layer.is3D(!!this.terrain)) {
+                        this._has3DLayers = true;
+                        last3DLayerIdx = this._mergedOrder.length - 1;
+                    }
                     if (layer.type === 'circle') this._hasCircleLayers = true;
                     if (layer.type === 'symbol') this._hasSymbolLayers = true;
                     if (layer.type === 'clip') this._clipLayerPresent = true;
@@ -1136,27 +1141,37 @@ class Style extends Evented<MapEvents> {
 
         sort(mergedOrder);
 
-        // Sort symbols with occlusion opacity to be rendered after all 3D layers
-        this._mergedOrder.sort((layerName1: string, layerName2: string) => {
-            const l1 = mergedLayers[layerName1];
-            const l2 = mergedLayers[layerName2];
+        // Sort symbols with occlusion opacity to be rendered after last 3D layer
+        if (this._has3DLayers) {
+            const priorities: Record<string, number> = {};
 
-            if ((l1 as SymbolStyleLayer).hasOcclusionOpacityProperties) {
-                if (l2.is3D(!!this.terrain)) {
-                    return 1;
+            for (let i = 0; i < this._mergedOrder.length; ++i) {
+                const layerName = this._mergedOrder[i];
+                const layer = mergedLayers[layerName];
+
+                // All layers after last 3D layer are left unchanged
+                // If there are occlusion layers before last 3D layer they are placed tight after it keeping their relative order
+
+                if (i === last3DLayerIdx) {
+                    priorities[layerName] = 1;
+                } else if (i < last3DLayerIdx) {
+                    if ((layer as SymbolStyleLayer).hasOcclusionOpacityProperties) {
+                        priorities[layerName] = 2;
+                    } else {
+                        priorities[layerName] = 0;
+                    }
+                } else {
+                    priorities[layerName] = 4;
                 }
-                return 0;
             }
 
-            if (l1.is3D(!!this.terrain)) {
-                if ((l2 as SymbolStyleLayer).hasOcclusionOpacityProperties) {
-                    return -1;
-                }
-                return 0;
-            }
+            this._mergedOrder.sort((layerName1: string, layerName2: string) => {
+                const p1 = priorities[layerName1];
+                const p2 = priorities[layerName2];
 
-            return 0;
-        });
+                return p1 - p2;
+            });
+        }
 
         this._mergedLayers = mergedLayers;
         this.updateDrapeFirstLayers();

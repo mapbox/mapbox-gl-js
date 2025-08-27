@@ -25,6 +25,7 @@ import Tile from '../../../src/source/tile';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import {ImageId} from '../../../src/style-spec/expression/types/image_id';
 import {StubMap} from './utils';
+import {makeFQID} from '../../../src/util/fqid';
 
 function createStyleJSON(properties) {
     return extend({
@@ -2372,4 +2373,91 @@ test('Style#_updateTilesForChangedImages', async () => {
     expect(style._updateTilesForChangedImages).toHaveBeenCalledTimes(2);
     expect(sourceCache.reloadTilesForDependencies).toHaveBeenCalledTimes(1);
     expect(sourceCache.reloadTilesForDependencies).toHaveBeenCalledWith(['icons', 'patterns'], [imageIdStr]);
+});
+
+test('Occlusion ordering', async () => {
+    const style = new Style(new StubMap());
+
+    const initialStyle = createStyleJSON({
+        sources: {
+            composite: {type: 'vector', tiles: []},
+            'mapbox-dem': {
+                type: 'raster-dem',
+                tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                tileSize: 256,
+                maxzoom: 14
+            }
+        },
+        layers: [
+            {id: 'land-1', type: 'background'},
+            {id: 'symbol-occlusion-1', type: 'symbol', source: 'composite', 'source-layer': 'poi', paint: {"icon-occlusion-opacity": 1.0}},
+            {id: 'symbol', type: 'symbol', source: 'composite', 'source-layer': 'poi'},
+            {id: '3d-building-1', type: 'fill-extrusion', source: 'composite', 'source-layer': 'building'},
+            {id: 'symbol-occlusion-2', type: 'symbol', source: 'composite', 'source-layer': 'poi', paint: {"icon-occlusion-opacity": 1.0}},
+            {id: '3d-building-2', type: 'fill-extrusion', source: 'composite', 'source-layer': 'building'},
+            {id: 'land-2', type: 'background'},
+            {id: 'symbol-occlusion-3', type: 'symbol', source: 'composite', 'source-layer': 'poi', paint: {"icon-occlusion-opacity": 1.0}},
+            {id: 'land-3', type: 'background'},
+        ]
+    });
+
+    style.loadJSON(initialStyle);
+
+    await waitFor(style, "style.load");
+
+    expect(style.order).toEqual([
+        makeFQID('land-1'),
+        makeFQID('symbol'),
+        makeFQID('3d-building-1'),
+        makeFQID('3d-building-2'),
+        makeFQID('symbol-occlusion-1'),
+        makeFQID('symbol-occlusion-2'),
+        makeFQID('land-2'),
+        makeFQID('symbol-occlusion-3'),
+        makeFQID('land-3'),
+    ]);
+});
+
+test('Occlusion ordering & draped layers', async () => {
+    const style = new Style(new StubMap());
+
+    const initialStyle = createStyleJSON({
+        terrain: {source: 'mapbox-dem', exaggeration: 1.5},
+        sources: {
+            composite: {type: 'vector', tiles: []},
+            'mapbox-dem': {
+                type: 'raster-dem',
+                tiles: ['http://example.com/{z}/{x}/{y}.png'],
+                tileSize: 256,
+                maxzoom: 14
+            }
+        },
+        layers: [
+            {id: 'land-1', type: 'background'},
+            {id: 'symbol-occlusion-1', type: 'symbol', source: 'composite', 'source-layer': 'poi', paint: {"icon-occlusion-opacity": 1.0}},
+            {id: 'symbol', type: 'symbol', source: 'composite', 'source-layer': 'poi'},
+            {id: '3d-building-1', type: 'fill-extrusion', source: 'composite', 'source-layer': 'building'},
+            {id: 'symbol-occlusion-2', type: 'symbol', source: 'composite', 'source-layer': 'poi', paint: {"icon-occlusion-opacity": 1.0}},
+            {id: '3d-building-2', type: 'fill-extrusion', source: 'composite', 'source-layer': 'building'},
+            {id: 'land-2', type: 'background'},
+            {id: 'symbol-occlusion-3', type: 'symbol', source: 'composite', 'source-layer': 'poi', paint: {"icon-occlusion-opacity": 1.0}},
+            {id: 'land-3', type: 'background'},
+        ]
+    });
+
+    style.loadJSON(initialStyle);
+
+    await waitFor(style, "style.load");
+
+    expect(style.order).toEqual([
+        makeFQID('land-1'),
+        makeFQID('land-2'),
+        makeFQID('land-3'),
+        makeFQID('symbol'),
+        makeFQID('3d-building-1'),
+        makeFQID('3d-building-2'),
+        makeFQID('symbol-occlusion-1'),
+        makeFQID('symbol-occlusion-2'),
+        makeFQID('symbol-occlusion-3'),
+    ]);
 });
