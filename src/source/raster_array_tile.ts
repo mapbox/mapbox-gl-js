@@ -268,7 +268,20 @@ class RasterArrayTile extends Tile implements Tile {
             }
         };
 
-        const mrtLayer = mrt.getLayer(sourceLayer);
+        let mrtLayer: MapboxRasterLayer;
+        try {
+            mrtLayer = mrt.getLayer(sourceLayer);
+        } catch (err) {
+            if (this.state === 'reloading') {
+                // When a tile is reloading, getLayer might throw an error
+                // due to the layer not existing for a time period
+                // We swallow the error here since that's expected
+                return;
+            }
+            // Re-throw other errors
+            throw err;
+        }
+
         if (!mrtLayer) {
             callback(new Error(`Unknown sourceLayer "${sourceLayer}"`));
             return;
