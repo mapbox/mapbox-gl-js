@@ -1,5 +1,5 @@
 import styleSpec from '../style-spec/reference/latest';
-import {extend, degToRad} from '../util/util';
+import {degToRad} from '../util/util';
 import {Evented} from '../util/evented';
 import {validateStyle, validateSnow, emitValidationErrors} from './validate_style';
 import {Transitionable, PossiblyEvaluated} from './properties';
@@ -74,7 +74,7 @@ class Snow extends Evented {
             return;
         }
 
-        const properties = extend({}, snow);
+        const properties = Object.assign({}, snow);
         for (const name of Object.keys(styleSpec.snow)) {
             // Fallback to use default style specification when the properties wasn't set
             if (properties[name] === undefined) {
@@ -116,7 +116,7 @@ class Snow extends Evented {
             return false;
         }
 
-        return emitValidationErrors(this, validate.call(validateStyle, extend({
+        return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
             value,
             style: {glyphs: true, sprite: true},
             styleSpec

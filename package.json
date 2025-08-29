@@ -114,7 +114,6 @@
     "tweakpane": "^4.0.5",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.36.0",
-    "utility-types": "^3.11.0",
     "vite-plugin-arraybuffer": "^0.1.0",
     "vitest": "^3.2.2"
   },

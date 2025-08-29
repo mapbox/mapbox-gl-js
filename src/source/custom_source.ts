@@ -1,6 +1,6 @@
 import Texture from '../render/texture';
 import TileBounds from './tile_bounds';
-import {extend, pick} from '../util/util';
+import {pick} from '../util/util';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import {makeFQID} from '../util/fqid';
 
@@ -222,7 +222,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
         // @ts-expect-error - TS2339 - Property 'coveringTiles' does not exist on type 'CustomSourceInterface<T>'.
         implementation.coveringTiles = this._coveringTiles.bind(this);
 
-        extend(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
+        Object.assign(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
     }
 
     serialize() {

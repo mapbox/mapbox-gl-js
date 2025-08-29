@@ -1,7 +1,6 @@
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import WorkerTile from './worker_tile';
-import {extend} from '../util/util';
 import {getPerformanceMeasurement} from '../util/performance';
 import {Evented} from '../util/evented';
 import tileTransform from '../geo/projection/tile_transform';
@@ -116,7 +115,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                             resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
                         }
                     }
-                    callback(null, extend({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
+                    callback(null, Object.assign({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
                 };
                 workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, WorkerSourceVectorTileCallback);
             };

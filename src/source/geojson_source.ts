@@ -1,5 +1,4 @@
 import {Event, ErrorEvent, Evented} from '../util/evented';
-import {extend} from '../util/util';
 import EXTENT from '../style-spec/data/extent';
 import {ResourceType} from '../util/ajax';
 import browser from '../util/browser';
@@ -135,7 +134,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         this.setEventedParent(eventedParent);
 
         this._data = options.data;
-        this._options = extend({}, options);
+        this._options = Object.assign({}, options);
 
         this._collectResourceTiming = options.collectResourceTiming;
 
@@ -151,7 +150,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         // so that it can load/parse/index the geojson data
         // extending with `options.workerOptions` helps to make it easy for
         // third-party sources to hack/reuse GeoJSONSource.
-        this.workerOptions = extend({
+        this.workerOptions = Object.assign({
             source: this.id,
             scope: this.scope,
             cluster: options.cluster || false,
@@ -388,7 +387,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
         this._loaded = false;
-        const options: LoadGeoJSONRequest = extend({append}, this.workerOptions);
+        const options: LoadGeoJSONRequest = Object.assign({append}, this.workerOptions);
 
         options.scope = this.scope;
         const data = this._data;
@@ -511,7 +510,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
     }
 
     serialize(): GeoJSONSourceSpecification {
-        return extend({}, this._options, {
+        return Object.assign({}, this._options, {
             type: this.type,
             data: this._data
         });

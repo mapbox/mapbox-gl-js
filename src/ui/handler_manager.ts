@@ -15,7 +15,7 @@ import TapDragZoomHandler from './handler/tap_drag_zoom';
 import DragPanHandler from './handler/shim/drag_pan';
 import DragRotateHandler from './handler/shim/drag_rotate';
 import TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
-import {bindAll, extend} from '../util/util';
+import {bindAll} from '../util/util';
 import Point from '@mapbox/point-geometry';
 import assert from 'assert';
 import {vec3} from 'gl-matrix';
@@ -399,7 +399,7 @@ class HandlerManager {
     mergeHandlerResult(mergedHandlerResult: HandlerResult, eventsInProgress: EventsInProgress, handlerResult: HandlerResult, name: string, e?: InputEvent | RenderFrameEvent) {
         if (!handlerResult) return;
 
-        extend(mergedHandlerResult, handlerResult);
+        Object.assign(mergedHandlerResult, handlerResult);
 
         const eventData = {handlerName: name, originalEvent: handlerResult.originalEvent || e};
 
@@ -433,8 +433,8 @@ class HandlerManager {
             if (change.pinchAround !== undefined) combined.pinchAround = change.pinchAround;
             if (change.noInertia) combined.noInertia = change.noInertia;
 
-            extend(combinedEventsInProgress, eventsInProgress);
-            extend(combinedDeactivatedHandlers, deactivatedHandlers);
+            Object.assign(combinedEventsInProgress, eventsInProgress);
+            Object.assign(combinedDeactivatedHandlers, deactivatedHandlers);
         }
 
         this._updateMapTransform(combined, combinedEventsInProgress, combinedDeactivatedHandlers);

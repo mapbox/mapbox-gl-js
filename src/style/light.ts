@@ -1,5 +1,4 @@
 import styleSpec from '../style-spec/reference/latest';
-import {extend} from '../util/util';
 import {Evented} from '../util/evented';
 import {
     validateStyle,
@@ -90,7 +89,7 @@ class Light extends Evented {
             return false;
         }
 
-        return emitValidationErrors(this, validate.call(validateStyle, extend({
+        return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
             value,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true},

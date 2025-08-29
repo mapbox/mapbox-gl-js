@@ -1,5 +1,5 @@
 import {getImage, ResourceType} from '../util/ajax';
-import {extend, prevPowerOfTwo} from '../util/util';
+import {prevPowerOfTwo} from '../util/util';
 import browser from '../util/browser';
 import offscreenCanvasSupported from '../util/offscreen_canvas_supported';
 import {OverscaledTileID} from './tile_id';
@@ -24,7 +24,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
         super(id, options, dispatcher, eventedParent);
         this.type = 'raster-dem';
         this.maxzoom = 22;
-        this._options = extend({type: 'raster-dem'}, options);
+        this._options = Object.assign({type: 'raster-dem'}, options);
         this.encoding = options.encoding || "mapbox";
     }
 

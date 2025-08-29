@@ -12,7 +12,6 @@ import {getPNGResponse, mockFetch} from '../../util/network';
 import RasterDEMTileSource from '../../../src/source/raster_dem_tile_source';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import {RequestManager} from '../../../src/util/mapbox';
-import {extend} from '../../../src/util/util';
 
 function createSource(options, transformCallback) {
     const source = new RasterDEMTileSource('id', options, {send() {}}, options.eventedParent);
@@ -51,7 +50,7 @@ describe('RasterTileSource', () => {
         };
         const source = createSource(options, transformSpy);
         source.load();
-        expect(source.serialize()).toEqual(extend({type: "raster-dem"}, options));
+        expect(source.serialize()).toEqual(Object.assign({type: "raster-dem"}, options));
         await waitFor(source, 'data');
     });
 

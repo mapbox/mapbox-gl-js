@@ -3,7 +3,6 @@
 
 import * as colorSpaces from '../util/color_spaces';
 import Color from '../util/color';
-import extend from '../util/extend';
 import {getType, isNumber} from '../util/get_type';
 import * as interpolate from '../util/interpolate';
 import Interpolate from '../expression/definitions/interpolate';
@@ -29,7 +28,7 @@ export function createFunction(parameters, propertySpec) {
     const type = parameters.type || (supportsInterpolation(propertySpec) ? 'exponential' : 'interval');
 
     if (isColor) {
-        parameters = extend({}, parameters);
+        parameters = Object.assign({}, parameters);
 
         if (parameters.stops) {
             parameters.stops = parameters.stops.map((stop) => {

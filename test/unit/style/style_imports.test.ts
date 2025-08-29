@@ -10,13 +10,12 @@ import VectorTileSource from '../../../src/source/vector_tile_source';
 import GlyphManager from '../../../src/render/glyph_manager';
 import {Event} from '../../../src/util/evented';
 import {OverscaledTileID} from '../../../src/source/tile_id';
-import {extend} from '../../../src/util/util';
 import {makeFQID} from '../../../src/util/fqid';
 import {ImageId} from '../../../src/style-spec/expression/types/image_id';
 import {StubMap} from './utils';
 
 function createStyleJSON(properties) {
-    return extend({
+    return Object.assign({
         version: 8,
         sources: {},
         layers: []

@@ -1,4 +1,4 @@
-import {extend, warnOnce, isWorker} from './util';
+import {warnOnce, isWorker} from './util';
 import {isMapboxHTTPURL, hasCacheDefeatingSku} from './mapbox_url';
 import config from './config';
 import assert from 'assert';
@@ -260,22 +260,22 @@ export const makeRequest = function (requestParameters: RequestParameters, callb
 };
 
 export const getJSON = function (requestParameters: RequestParameters, callback: ResponseCallback<unknown>): Cancelable {
-    return makeRequest(extend(requestParameters, {type: 'json'}), callback);
+    return makeRequest(Object.assign(requestParameters, {type: 'json'}), callback);
 };
 
 export const getArrayBuffer = function (
     requestParameters: RequestParameters,
     callback: ResponseCallback<ArrayBuffer>,
 ): Cancelable {
-    return makeRequest(extend(requestParameters, {type: 'arrayBuffer'}), callback);
+    return makeRequest(Object.assign(requestParameters, {type: 'arrayBuffer'}), callback);
 };
 
 export const postData = function (requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
-    return makeRequest(extend(requestParameters, {method: 'POST'}), callback);
+    return makeRequest(Object.assign(requestParameters, {method: 'POST'}), callback);
 };
 
 export const getData = function (requestParameters: RequestParameters, callback: ResponseCallback<string>): Cancelable {
-    return makeRequest(extend(requestParameters, {method: 'GET'}), callback);
+    return makeRequest(Object.assign(requestParameters, {method: 'GET'}), callback);
 };
 
 function sameOrigin(url: string) {

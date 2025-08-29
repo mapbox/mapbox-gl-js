@@ -3,7 +3,6 @@
 import {describe, test, expect} from '../../util/vitest';
 import createStyleLayer from '../../../src/style/create_style_layer';
 import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer';
-import {extend} from '../../../src/util/util';
 import Color from '../../../src/style-spec/util/color';
 
 describe('StyleLayer', () => {
@@ -207,7 +206,7 @@ describe('StyleLayer#setLayoutProperty', () => {
 
 describe('StyleLayer#serialize', () => {
     function createSymbolLayer(layer) {
-        return extend({
+        return Object.assign({
             id: 'symbol',
             type: 'symbol',
             paint: {
@@ -274,7 +273,7 @@ describe('StyleLayer#serialize', () => {
 
 describe('StyleLayer#serialize', () => {
     function createSymbolLayer(layer) {
-        return extend({
+        return Object.assign({
             id: 'symbol',
             type: 'symbol',
             paint: {

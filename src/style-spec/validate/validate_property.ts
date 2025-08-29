@@ -13,12 +13,12 @@ import type {StyleSpecification, LayerSpecification} from '../types';
 export type PropertyValidatorOptions = {
     key: string;
     value: unknown;
-    valueSpec: unknown;
+    valueSpec?: unknown;
     style: Partial<StyleSpecification>;
     styleSpec: StyleReference;
-    objectKey: string;
+    objectKey?: string;
     layerType: string;
-    layer: LayerSpecification;
+    layer?: Partial<LayerSpecification>;
 };
 
 export default function validateProperty(options: PropertyValidatorOptions, propertyType: string): ValidationError[] {

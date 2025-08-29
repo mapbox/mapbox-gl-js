@@ -1,4 +1,4 @@
-import {extend, bindAll} from '../util/util';
+import {bindAll} from '../util/util';
 import {Event, Evented} from '../util/evented';
 import * as DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';
@@ -124,7 +124,7 @@ export default class Popup extends Evented<PopupEvents> {
 
     constructor(options?: PopupOptions) {
         super();
-        this.options = extend(Object.create(defaultOptions), options);
+        this.options = Object.assign(Object.create(defaultOptions), options);
         this._altitude = this.options.altitude;
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);
         this._classList = new Set(options && options.className ?

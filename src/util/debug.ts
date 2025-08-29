@@ -1,4 +1,3 @@
-import {extend} from './util';
 import assert from 'assert';
 import {mat4, vec3} from 'gl-matrix';
 import {aabbForTileOnGlobe} from '../geo/projection/globe_util';
@@ -28,7 +27,7 @@ export const Debug: {
 } =
 {
     extend(dest: object, ...sources: Array<object | null | undefined>): object {
-        return extend(dest, ...sources);
+        return Object.assign(dest, ...sources) as object;
     },
 
     run(fn: () => unknown) {

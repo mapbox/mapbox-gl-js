@@ -12,7 +12,6 @@ import {
     doneAsync,
 } from '../../util/vitest';
 import {getPNGResponse} from '../../util/network';
-import {extend} from '../../../src/util/util';
 import DEMData from '../../../src/data/dem_data';
 import {RGBAImage} from '../../../src/util/image';
 import MercatorCoordinate, {MAX_MERCATOR_LATITUDE} from '../../../src/geo/mercator_coordinate';
@@ -317,7 +316,7 @@ describe('Elevation', () => {
             return new window.Response(await getPNGResponse());
         });
         const map = createMap({
-            style: extend(createStyle(), {
+            style: Object.assign(createStyle(), {
                 layers: [{
                     "id": "background",
                     "type": "background",
@@ -419,7 +418,7 @@ describe('Elevation', () => {
             }]
         };
         const map = createMap({
-            style: extend(createStyle(), {
+            style: Object.assign(createStyle(), {
                 projection: {
                     name: 'mercator'
                 },
@@ -1425,7 +1424,7 @@ describe('Marker interaction and raycast', () => {
 
     beforeAll(async () => {
         map = createMap({
-            style: extend(createStyle(), {
+            style: Object.assign(createStyle(), {
                 layers: [{
                     "id": "background",
                     "type": "background",
@@ -1564,7 +1563,7 @@ describe('terrain getBounds', () => {
             return new window.Response(vectorStub);
         });
         const map = createMap({
-            style: extend(createStyle(), {
+            style: Object.assign(createStyle(), {
                 layers: [{
                     "id": "background",
                     "type": "background",

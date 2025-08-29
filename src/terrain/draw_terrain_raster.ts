@@ -19,7 +19,6 @@ import {
     globeUseCustomAntiAliasing,
     getLatitudinalLod
 } from '../geo/projection/globe_util';
-import extend from '../style-spec/util/extend';
 import {calculateGroundShadowFactor} from '../../3d-style/render/shadow_renderer';
 import {getCutoffParams} from '../render/cutoff';
 
@@ -204,7 +203,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const shaderMode = morph ? SHADER_MORPHING : SHADER_DEFAULT;
 
             if (morph) {
-                extend(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
+                Object.assign(elevationOptions, {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}});
             }
 
             const tileBounds = tileCornersToBounds(coord.canonical);

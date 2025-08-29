@@ -1,5 +1,5 @@
 import {Event, ErrorEvent, Evented} from '../util/evented';
-import {extend, pick} from '../util/util';
+import {pick} from '../util/util';
 import loadTileJSON from './load_tilejson';
 import {postTurnstileEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
@@ -104,8 +104,8 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
         this.isTileClipped = true;
         this._loaded = false;
 
-        extend(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
-        this._options = extend({type: 'vector'}, options);
+        Object.assign(this, pick(options, ['url', 'scheme', 'tileSize', 'promoteId']));
+        this._options = Object.assign({type: 'vector'}, options);
 
         this._collectResourceTiming = !!options.collectResourceTiming;
 
@@ -133,7 +133,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
 
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
-                extend(this, tileJSON);
+                Object.assign(this, tileJSON);
 
                 this.hasWorldviews = !!tileJSON.worldview_options;
                 if (tileJSON.worldview_default) {
@@ -242,7 +242,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
     }
 
     serialize(): VectorSourceSpecification {
-        return extend({}, this._options);
+        return Object.assign({}, this._options);
     }
 
     loadTile(tile: Tile, callback: Callback<undefined>) {

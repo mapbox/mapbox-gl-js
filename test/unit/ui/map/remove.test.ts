@@ -3,7 +3,6 @@
 import {describe, test, expect, waitFor, vi, createMap} from '../../../util/vitest';
 import {createStyle} from './util';
 import {Map} from '../../../../src/ui/map';
-import {extend} from '../../../../src/util/util';
 
 describe('Map#remove', () => {
     test('#remove', () => {
@@ -48,7 +47,7 @@ describe('Map#remove', () => {
     });
 
     test('#remove deletes gl resources used by the globe', async () => {
-        const style = extend(createStyle(), {zoom: 1});
+        const style = Object.assign(createStyle(), {zoom: 1});
         const map = createMap({style});
         map.setProjection("globe");
 

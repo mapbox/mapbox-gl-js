@@ -2,7 +2,6 @@
 // @ts-nocheck
 import {describe, test, expect, assert, beforeEach, beforeAll, afterEach, afterAll, vi} from 'vitest';
 import {Map} from '../../src/ui/map';
-import {extend} from '../../src/util/util';
 
 export function waitFor(evented, event) {
     return new Promise(resolve => {
@@ -69,7 +68,7 @@ export function createMap(options?, callback?: (err: any, map: Map) => void) {
     if (!options || !options.skipCSSStub) vi.spyOn(Map.prototype, '_detectMissingCSS').mockImplementation(() => {});
     if (options && options.deleteStyle) delete defaultOptions.style;
 
-    const map = new Map(extend(defaultOptions, options));
+    const map = new Map(Object.assign(defaultOptions, options));
     if (callback) {
         map.on('load', () => {
             callback(null, map);

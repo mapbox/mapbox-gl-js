@@ -1,7 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {test, expect, vi} from '../../../util/vitest';
-import {extend} from '../../../../src/util/util';
 import {Map} from '../../../../src/ui/map';
 import * as DOM from '../../../../src/util/dom';
 import simulate from '../../../util/simulate_interaction';
@@ -9,7 +8,7 @@ import browser from '../../../../src/util/browser';
 
 function createMap(options) {
     vi.spyOn(Map.prototype, '_detectMissingCSS').mockImplementation(() => {});
-    return new Map(extend({container: DOM.create('div', '', window.document.body), testMode: true}, options));
+    return new Map(Object.assign({container: DOM.create('div', '', window.document.body), testMode: true}, options));
 }
 
 test('DragRotateHandler#isActive', () => {

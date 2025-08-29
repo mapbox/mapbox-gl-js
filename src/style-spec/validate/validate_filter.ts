@@ -3,7 +3,6 @@ import validateExpression from './validate_expression';
 import validateEnum from './validate_enum';
 import {getType, isString, isNumber, isBoolean} from '../util/get_type';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
-import extend from '../util/extend';
 import {isExpressionFilter} from '../feature_filter/index';
 
 import type {StyleReference} from '../reference/latest';
@@ -26,8 +25,8 @@ export default function validateFilter(options: FilterValidatorOptions): Validat
         // We default to a layerType of `fill` because that points to a non-dynamic filter definition within the style-spec.
         const layerType = options.layerType || 'fill';
 
-        return validateExpression(extend({}, options, {
-            expressionContext: 'filter',
+        return validateExpression(Object.assign({}, options, {
+            expressionContext: 'filter' as const,
             valueSpec: options.styleSpec[`filter_${layerType}`]
         }));
     } else {

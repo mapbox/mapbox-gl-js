@@ -11,7 +11,7 @@ import Terrain, {DrapeRenderMode} from './terrain';
 import Fog from './fog';
 import Snow from './snow';
 import Rain from './rain';
-import {pick, clone, extend, deepEqual, filterObject, cartesianPositionToSpherical, warnOnce} from '../util/util';
+import {pick, clone, deepEqual, filterObject, cartesianPositionToSpherical, warnOnce} from '../util/util';
 import {getJSON, getReferrer, makeRequest, ResourceType} from '../util/ajax';
 import {isMapboxURL} from '../util/mapbox_url';
 import {stripQueryParameters} from '../util/url';
@@ -378,7 +378,7 @@ class Style extends Evented<MapEvents> {
         this.importsCache = options.importsCache || new Map();
         this.resolvedImports = options.resolvedImports || new Set();
 
-        this.transition = extend({}, defaultTransition);
+        this.transition = Object.assign({}, defaultTransition);
 
         this._buildingIndex = new BuildingIndex(this);
         this.crossTileSymbolIndex = new CrossTileSymbolIndex();
@@ -698,7 +698,7 @@ class Style extends Evented<MapEvents> {
         let config;
         const initialConfig = this._initialConfig && this._initialConfig[scope];
         if (importSpec.config || initialConfig) {
-            config = extend({}, importSpec.config, initialConfig);
+            config = Object.assign({}, importSpec.config, initialConfig);
         }
 
         const style = new Style(this.map, {
@@ -751,7 +751,7 @@ class Style extends Evented<MapEvents> {
         // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
         if (this._isInternalStyle(json)) {
             const basemap = {id: 'basemap', data: json, url: ''};
-            const style = extend({}, empty, {imports: [basemap]});
+            const style = Object.assign({}, empty, {imports: [basemap]});
             this._load(style, validate);
             return;
         }
@@ -973,7 +973,7 @@ class Style extends Evented<MapEvents> {
         // Use perspective camera as a fallback if no camera is specified
         this.camera = camera || {'camera-projection': 'perspective'};
         this.projection = projection || {name: 'mercator'};
-        this.transition = extend({}, defaultTransition, transition);
+        this.transition = Object.assign({}, defaultTransition, transition);
 
         this.mergeSources();
         this.mergeLayers();
@@ -1187,7 +1187,7 @@ class Style extends Evented<MapEvents> {
     }
 
     setCamera(camera: CameraSpecification): Style {
-        this.stylesheet.camera = extend({}, this.stylesheet.camera, camera);
+        this.stylesheet.camera = Object.assign({}, this.stylesheet.camera, camera);
         this.camera = this.stylesheet.camera;
         return this;
     }
@@ -2564,7 +2564,7 @@ class Style extends Evented<MapEvents> {
             if (typeof layerObject.source === 'object') {
                 this.addSource(id, layerObject.source);
                 layerObject = clone(layerObject);
-                layerObject = (extend(layerObject, {source: id}));
+                layerObject = (Object.assign(layerObject, {source: id}));
             }
 
             // this layer is not in the style.layers array, so we pass an impossible array index
@@ -3054,13 +3054,13 @@ class Style extends Evented<MapEvents> {
     }
 
     setTransition(transition?: TransitionSpecification | null): Style {
-        this.stylesheet.transition = extend({}, this.stylesheet.transition, transition);
+        this.stylesheet.transition = Object.assign({}, this.stylesheet.transition, transition);
         this.transition = this.stylesheet.transition;
         return this;
     }
 
     getTransition(): TransitionSpecification {
-        return extend({}, this.stylesheet.transition);
+        return Object.assign({}, this.stylesheet.transition);
     }
 
     serialize(): StyleSpecification {
@@ -3535,10 +3535,10 @@ class Style extends Evented<MapEvents> {
                 const id = 'terrain-dem-src';
                 this.addSource(id, options.source);
                 options = clone(options);
-                options = extend(options, {source: id});
+                options = Object.assign(options, {source: id});
             }
 
-            const validationOptions = extend({}, options);
+            const validationOptions = Object.assign({}, options);
             const validationProps: {style?: StyleSpecification} = {};
 
             if (this.terrain && isUpdating) {
@@ -3763,7 +3763,7 @@ class Style extends Evented<MapEvents> {
     _getTransitionParameters(transition?: TransitionSpecification | null): TransitionParameters {
         return {
             now: browser.now(),
-            transition: extend(this.transition, transition)
+            transition: Object.assign(this.transition, transition)
         };
     }
 
@@ -3834,8 +3834,8 @@ class Style extends Evented<MapEvents> {
         }
 
         // Fallback to the default glyphs URL if none is specified
-        const style = extend({}, this.serialize());
-        return emitValidationErrors(this, validate.call(validateStyle, extend({
+        const style = Object.assign({}, this.serialize());
+        return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
             key,
             style,
             value,

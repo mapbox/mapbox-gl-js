@@ -17,7 +17,7 @@ import webpSupported from './webp_supported';
 import {isMapboxHTTPURL, isMapboxURL} from './mapbox_url';
 import {createSkuToken, SKU_ID} from './sku_token';
 import {version as sdkVersion} from '../../package.json';
-import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce, extend} from './util';
+import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode, warnOnce} from './util';
 import {postData, getData} from './ajax';
 import {getLivePerformanceMetrics} from '../util/live_performance';
 
@@ -394,7 +394,7 @@ class TelemetryEvent {
             created: new Date(timestamp).toISOString()
         };
 
-        const finalPayload = additionalPayload ? extend(payload, additionalPayload) : payload;
+        const finalPayload = additionalPayload ? Object.assign(payload, additionalPayload) : payload;
         const request: RequestParameters = {
             url: formatUrl(eventsUrlObject),
             headers: {

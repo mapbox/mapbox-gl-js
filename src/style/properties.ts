@@ -1,5 +1,5 @@
 import assert from 'assert';
-import {clone, extend, easeCubicInOut, sphericalDirectionToCartesian, sphericalPositionToCartesian} from '../util/util';
+import {clone, easeCubicInOut, sphericalDirectionToCartesian, sphericalPositionToCartesian} from '../util/util';
 import * as interpolate from '../style-spec/util/interpolate';
 import {number as interpolateValue} from '../style-spec/util/interpolate';
 import {normalizePropertyExpression} from '../style-spec/expression/index';
@@ -149,7 +149,7 @@ class TransitionablePropertyValue<T, R> {
 
     transitioned(parameters: TransitionParameters, prior: TransitioningPropertyValue<T, R>): TransitioningPropertyValue<T, R> {
         return new TransitioningPropertyValue(this.property, this.value, prior,
-            extend({}, parameters.transition, this.transition), parameters.now);
+            Object.assign({}, parameters.transition, this.transition), parameters.now);
     }
 
     untransitioned(): TransitioningPropertyValue<T, R> {

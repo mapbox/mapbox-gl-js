@@ -4,7 +4,6 @@ import LineBucket from '../../data/bucket/line_bucket';
 import {polygonIntersectsBufferedMultiLine} from '../../util/intersection_tests';
 import {getMaximumPaintValue, translateDistance, translate} from '../query_utils';
 import {getLayoutProperties, getPaintProperties} from './line_style_layer_properties';
-import {extend} from '../../util/util';
 import EvaluationParameters from '../evaluation_parameters';
 import {PossiblyEvaluated, DataDrivenProperty} from '../properties';
 import ProgramConfiguration from '../../data/program_configuration';
@@ -66,7 +65,7 @@ class LineFloorwidthProperty extends DataDrivenProperty<number> {
         feature: Feature,
         featureState: FeatureState,
     ): number {
-        globals = extend({}, globals, {zoom: Math.floor(globals.zoom)});
+        globals = Object.assign({}, globals, {zoom: Math.floor(globals.zoom)});
         return super.evaluate(value, globals, feature, featureState);
     }
 }

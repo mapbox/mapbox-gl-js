@@ -8,7 +8,6 @@ import {OverscaledTileID} from '../../../src/source/tile_id';
 import writePbf from '../../../src/source/vector_tile_to_pbf';
 import FeatureIndex from '../../../src/data/feature_index';
 import {CollisionBoxArray} from '../../../src/data/array_types';
-import {extend} from '../../../src/util/util';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 import rawTileData from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
@@ -278,7 +277,7 @@ describe('rtl text detection', () => {
 
 function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
-    return extend({
+    return Object.assign({
         collisionBoxArray: deserialize(serialize(collisionBoxArray)),
         featureIndex: deserialize(serialize(new FeatureIndex(new OverscaledTileID(1, 0, 1, 1, 1)))),
         buckets: []

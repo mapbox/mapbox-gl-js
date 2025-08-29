@@ -5,7 +5,6 @@ import validateFilter from './validate_filter';
 import validatePaintProperty from './validate_paint_property';
 import validateLayoutProperty from './validate_layout_property';
 import validateSpec from './validate';
-import extend from '../util/extend';
 import {isObject, isString} from '../util/get_type';
 
 import type {StyleReference} from '../reference/latest';
@@ -122,7 +121,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                 });
             },
             filter(options) {
-                return validateFilter(extend({layerType: type}, options));
+                return validateFilter(Object.assign({layerType: type}, options));
             },
             layout(options) {
                 return validateObject({
@@ -134,7 +133,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
                         '*'(options) {
-                            return validateLayoutProperty(extend({layerType: type}, options));
+                            return validateLayoutProperty(Object.assign({layerType: type}, options));
                         }
                     }
                 });
@@ -149,7 +148,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
                         '*'(options) {
-                            return validatePaintProperty(extend({layerType: type, layer}, options));
+                            return validatePaintProperty(Object.assign({layerType: type, layer}, options));
                         }
                     }
                 });

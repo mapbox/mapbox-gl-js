@@ -1,4 +1,4 @@
-import {extend, pick} from '../util/util';
+import {pick} from '../util/util';
 import {getImage, ResourceType} from '../util/ajax';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import loadTileJSON from './load_tilejson';
@@ -92,8 +92,8 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         this.tileSize = 512;
         this._loaded = false;
 
-        this._options = extend({type: 'raster'}, options);
-        extend(this, pick(options, ['url', 'scheme', 'tileSize']));
+        this._options = Object.assign({type: 'raster'}, options);
+        Object.assign(this, pick(options, ['url', 'scheme', 'tileSize']));
     }
 
     load(callback?: Callback<undefined>) {
@@ -106,7 +106,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
             if (err) {
                 this.fire(new ErrorEvent(err));
             } else if (tileJSON) {
-                extend(this, tileJSON);
+                Object.assign(this, tileJSON);
 
                 if (tileJSON.raster_layers) {
                     this.rasterLayers = tileJSON.raster_layers;
@@ -196,8 +196,8 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         this.cancelTileJSONRequest();
     }
 
-    serialize(): RasterSourceSpecification | RasterDEMSourceSpecification {
-        return extend({}, this._options);
+    serialize(): RasterSourceSpecification | RasterDEMSourceSpecification | RasterArraySourceSpecification {
+        return Object.assign({}, this._options);
     }
 
     hasTile(tileID: OverscaledTileID): boolean {

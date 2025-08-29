@@ -1,5 +1,5 @@
 import browser from '../util/browser';
-import {bezier, clamp, extend} from '../util/util';
+import {bezier, clamp} from '../util/util';
 import Point from '@mapbox/point-geometry';
 
 import type {Map} from './map';
@@ -11,22 +11,22 @@ const defaultInertiaOptions = {
     easing: bezier(0, 0, 0.3, 1),
 };
 
-const defaultPanInertiaOptions = extend({
+const defaultPanInertiaOptions = Object.assign({
     deceleration: 2500,
     maxSpeed: 1400
 }, defaultInertiaOptions);
 
-const defaultZoomInertiaOptions = extend({
+const defaultZoomInertiaOptions = Object.assign({
     deceleration: 20,
     maxSpeed: 1400
 }, defaultInertiaOptions);
 
-const defaultBearingInertiaOptions = extend({
+const defaultBearingInertiaOptions = Object.assign({
     deceleration: 1000,
     maxSpeed: 360
 }, defaultInertiaOptions);
 
-const defaultPitchInertiaOptions = extend({
+const defaultPitchInertiaOptions = Object.assign({
     deceleration: 1000,
     maxSpeed: 90
 }, defaultInertiaOptions);
@@ -109,7 +109,7 @@ export default class HandlerInertia {
         const easeOptions: Record<string, any> = {};
 
         if (deltas.pan.mag()) {
-            const result = calculateEasing(deltas.pan.mag(), duration, extend({}, defaultPanInertiaOptions, panInertiaOptions || {}));
+            const result = calculateEasing(deltas.pan.mag(), duration, Object.assign({}, defaultPanInertiaOptions, panInertiaOptions || {}));
             easeOptions.offset = deltas.pan.mult(result.amount / deltas.pan.mag());
             easeOptions.center = this._map.transform.center;
             extendDuration(easeOptions, result);

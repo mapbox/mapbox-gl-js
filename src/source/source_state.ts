@@ -1,4 +1,3 @@
-import {extend} from '../util/util';
 
 import type Tile from './tile';
 import type Painter from '../render/painter';
@@ -36,7 +35,7 @@ class SourceFeatureState {
         const feature = String(featureId);
         this.stateChanges[sourceLayer] = this.stateChanges[sourceLayer] || {};
         this.stateChanges[sourceLayer][feature] = this.stateChanges[sourceLayer][feature] || {};
-        extend(this.stateChanges[sourceLayer][feature], newState);
+        Object.assign(this.stateChanges[sourceLayer][feature], newState);
 
         if (this.deletedStates[sourceLayer] === null) {
             this.deletedStates[sourceLayer] = {};
@@ -97,7 +96,7 @@ class SourceFeatureState {
 
         if (featureId !== undefined) {
             const feature = String(featureId);
-            const reconciledState = extend({}, base[feature], changes[feature]);
+            const reconciledState = Object.assign({}, base[feature], changes[feature]);
 
             if (deletedStates) {
                 const featureDeletions = deletedStates[featureId];
@@ -108,7 +107,7 @@ class SourceFeatureState {
             return reconciledState;
         }
 
-        const reconciledState = extend({}, base, changes);
+        const reconciledState = Object.assign({}, base, changes);
         if (deletedStates) {
             for (const feature in deletedStates) delete reconciledState[feature];
         }
@@ -129,7 +128,7 @@ class SourceFeatureState {
             const layerStates: Record<string, FeatureState> = {};
             for (const feature in this.stateChanges[sourceLayer]) {
                 if (!this.state[sourceLayer][feature]) this.state[sourceLayer][feature] = {};
-                extend(this.state[sourceLayer][feature], this.stateChanges[sourceLayer][feature]);
+                Object.assign(this.state[sourceLayer][feature], this.stateChanges[sourceLayer][feature]);
                 layerStates[feature] = this.state[sourceLayer][feature];
             }
             featuresChanged[sourceLayer] = layerStates;
@@ -158,7 +157,7 @@ class SourceFeatureState {
             }
 
             featuresChanged[sourceLayer] = featuresChanged[sourceLayer] || {};
-            extend(featuresChanged[sourceLayer], layerStates);
+            Object.assign(featuresChanged[sourceLayer], layerStates);
         }
 
         this.stateChanges = {};

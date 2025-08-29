@@ -1,5 +1,5 @@
 import {version} from '../../package.json';
-import {asyncAll, deepEqual, extend, bindAll, warnOnce, uniqueId, isSafariWithAntialiasingBug} from '../util/util';
+import {asyncAll, deepEqual, bindAll, warnOnce, uniqueId, isSafariWithAntialiasingBug} from '../util/util';
 import browser from '../util/browser';
 import * as DOM from '../util/dom';
 import {getImage, ResourceType} from '../util/ajax';
@@ -584,7 +584,7 @@ export class Map extends Camera {
 
         const initialOptions = options;
 
-        options = extend({}, defaultOptions, options);
+        options = Object.assign({}, defaultOptions, options);
 
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
             throw new Error(`maxZoom must be greater than or equal to minZoom`);
@@ -633,7 +633,7 @@ export class Map extends Camera {
         this._markers = [];
         this._popups = [];
         this._mapId = uniqueId();
-        this._locale = extend({}, defaultLocale, options.locale);
+        this._locale = Object.assign({}, defaultLocale, options.locale);
         this._clickTolerance = options.clickTolerance;
         this._cooperativeGestures = options.cooperativeGestures;
         this._performanceMetricsCollection = options.performanceMetricsCollection;
@@ -784,7 +784,7 @@ export class Map extends Camera {
             const bounds = options.bounds;
             if (bounds) {
                 this.resize();
-                this.fitBounds(bounds, extend({}, options.fitBoundsOptions, {duration: 0}));
+                this.fitBounds(bounds, Object.assign({}, options.fitBoundsOptions, {duration: 0}));
             }
         }
 
@@ -2306,7 +2306,7 @@ export class Map extends Camera {
      * });
      */
     setStyle(style: StyleSpecification | string | null, options?: SetStyleOptions): this {
-        options = extend({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily}, options);
+        options = Object.assign({}, {localIdeographFontFamily: this._localIdeographFontFamily, localFontFamily: this._localFontFamily}, options);
 
         const diffNeeded =
             options.diff !== false &&
@@ -2358,7 +2358,7 @@ export class Map extends Camera {
         if (style) {
             // Move SetStyleOptions's `config` property to
             // StyleOptions's `initialConfig` for internal use
-            const styleOptions: StyleOptions = extend({}, options);
+            const styleOptions: StyleOptions = Object.assign({}, options);
             if (options && options.config) {
                 styleOptions.initialConfig = options.config;
                 delete styleOptions.config;
@@ -4226,7 +4226,7 @@ export class Map extends Camera {
     }
 
     _setupPainter() {
-        const attributes = extend({}, supported.webGLContextAttributes, {
+        const attributes = Object.assign({}, supported.webGLContextAttributes, {
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
             preserveDrawingBuffer: this._preserveDrawingBuffer,
             antialias: this._antialias || false

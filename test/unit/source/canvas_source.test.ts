@@ -4,14 +4,13 @@ import {describe, test, expect, vi} from '../../util/vitest';
 import CanvasSource from '../../../src/source/canvas_source';
 import Transform from '../../../src/geo/transform';
 import {Event, Evented} from '../../../src/util/evented';
-import {extend} from '../../../src/util/util';
 
 function createSource(options) {
     const c = (options && options.canvas) || window.document.createElement('canvas');
     c.width = 20;
     c.height = 20;
 
-    options = extend({
+    options = Object.assign({
         canvas: 'id',
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
     }, options);

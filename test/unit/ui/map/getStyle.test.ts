@@ -2,7 +2,6 @@
 // @ts-nocheck
 import {describe, test, expect, waitFor, vi, createMap} from '../../../util/vitest';
 import {createStyle, createStyleSource} from './util';
-import {extend} from '../../../../src/util/util';
 import {getPNGResponse} from '../../../util/network';
 import styleSpec from '../../../../src/style-spec/reference/latest';
 
@@ -21,7 +20,7 @@ describe('Map#getStyle', () => {
 
         await waitFor(map, "load");
         map.addSource('geojson', createStyleSource());
-        expect(map.getStyle()).toEqual(extend(createStyle(), {
+        expect(map.getStyle()).toEqual(Object.assign(createStyle(), {
             sources: {geojson: createStyleSource()}
         }));
     });
@@ -44,7 +43,7 @@ describe('Map#getStyle', () => {
         });
         map.setTerrain(terrain);
         await waitFor(map, "idle");
-        expect(map.getStyle()).toEqual(extend(createStyle(), {
+        expect(map.getStyle()).toEqual(Object.assign(createStyle(), {
             terrain, 'sources': map.getStyle().sources
         }));
     });
@@ -67,8 +66,8 @@ describe('Map#getStyle', () => {
                 return acc;
             }, {});
 
-        const fogWithDefaults = extend({}, fogDefaults, fog);
-        expect(map.getStyle()).toEqual(extend(createStyle(), {fog: fogWithDefaults}));
+        const fogWithDefaults = Object.assign({}, fogDefaults, fog);
+        expect(map.getStyle()).toEqual(Object.assign(createStyle(), {fog: fogWithDefaults}));
         expect(map.getFog()).toBeTruthy();
     });
 
@@ -110,7 +109,7 @@ describe('Map#getStyle', () => {
 
         await waitFor(map, "load");
         map.addLayer(layer);
-        expect(map.getStyle()).toEqual(extend(createStyle(), {
+        expect(map.getStyle()).toEqual(Object.assign(createStyle(), {
             layers: [layer]
         }));
     });
@@ -143,7 +142,7 @@ describe('Map#getStyle', () => {
         await waitFor(map, "load");
         map.addSource('fill', source);
         map.addLayer(layer);
-        expect(map.getStyle()).toEqual(extend(createStyle(), {
+        expect(map.getStyle()).toEqual(Object.assign(createStyle(), {
             sources: {fill: source},
             layers: [layer]
         }));

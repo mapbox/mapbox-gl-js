@@ -1,5 +1,4 @@
 import assert from 'assert';
-import extend from '../util/extend';
 import ParsingError from './parsing_error';
 import ParsingContext from './parsing_context';
 import EvaluationContext from './evaluation_context';
@@ -426,7 +425,7 @@ export class StylePropertyFunction<T> {
     constructor(parameters: PropertyValueSpecification<T>, specification: StylePropertySpecification) {
         this._parameters = parameters;
         this._specification = specification;
-        extend(this, createFunction(this._parameters, this._specification));
+        Object.assign(this, createFunction(this._parameters, this._specification));
     }
 
     static deserialize<T>(

@@ -7,7 +7,6 @@ import {
     UniformMatrix4f
 } from '../uniform_binding';
 import {mat3, mat4, vec3} from 'gl-matrix';
-import {extend} from '../../util/util';
 import {CanonicalTileID} from '../../source/tile_id';
 import EXTENT from '../../style-spec/data/extent';
 
@@ -297,7 +296,7 @@ const fillExtrusionPatternUniformValues = (
     const heightFactorUniform = {
         'u_height_factor': -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
     };
-    return extend(uniformValues, patternUniformValues(painter, tile, patternTransition), heightFactorUniform);
+    return Object.assign(uniformValues, patternUniformValues(painter, tile, patternTransition), heightFactorUniform);
 };
 
 const fillExtrusionGroundEffectUniformValues = (

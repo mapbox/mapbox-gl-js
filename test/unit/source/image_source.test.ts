@@ -14,13 +14,12 @@ import {mockFetch, getPNGResponse} from '../../util/network';
 import ImageSource from '../../../src/source/image_source';
 import {Evented} from '../../../src/util/evented';
 import Transform from '../../../src/geo/transform';
-import {extend} from '../../../src/util/util';
 import browser from '../../../src/util/browser';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import Context from '../../../src/gl/context';
 
 function createSource(options) {
-    options = extend({
+    options = Object.assign({
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]]
     }, options);
 

@@ -7,7 +7,7 @@ import DictionaryCoder from '../util/dictionary_coder';
 import {VectorTile} from '@mapbox/vector-tile';
 import Protobuf from 'pbf';
 import Feature from '../util/vectortile_to_geojson';
-import {arraysIntersect, mapObject, extend, warnOnce} from '../util/util';
+import {arraysIntersect, mapObject, warnOnce} from '../util/util';
 import {register} from '../util/web_worker_transfer';
 import {polygonIntersectsBox} from '../util/intersection_tests';
 import {PossiblyEvaluated} from '../style/properties';
@@ -242,7 +242,7 @@ class FeatureIndex {
             geojsonFeature.source = serializedLayer.source;
             geojsonFeature.sourceLayer = serializedLayer['source-layer'];
 
-            geojsonFeature.layer = extend({}, serializedLayer);
+            geojsonFeature.layer = Object.assign({}, serializedLayer);
             geojsonFeature.layer.paint = evaluateProperties(serializedLayer.paint, styleLayer.paint, feature, featureState, availableImages);
             geojsonFeature.layer.layout = evaluateProperties(serializedLayer.layout, styleLayer.layout, feature, featureState, availableImages);
 
@@ -334,7 +334,7 @@ class FeatureIndex {
             geojsonFeature.source = serializedLayer.source;
             geojsonFeature.sourceLayer = serializedLayer['source-layer'];
 
-            geojsonFeature.layer = extend({}, serializedLayer);
+            geojsonFeature.layer = Object.assign({}, serializedLayer);
 
             // Iterate over all targets to check if the feature should be included and add feature variants if necessary
             let shouldInclude = false;

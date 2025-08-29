@@ -7,7 +7,6 @@ import {
     UniformMatrix4f,
     type UniformValues
 } from '../uniform_binding';
-import {extend} from '../../util/util';
 
 import type {mat4, vec3} from 'gl-matrix';
 import type Painter from '../painter';
@@ -143,7 +142,7 @@ const fillPatternUniformValues = (
     tile: Tile,
     groundShadowFactor: [number, number, number],
     patternTransition: number = 0
-): UniformValues<FillPatternUniformsType> => extend(
+): UniformValues<FillPatternUniformsType> => Object.assign(
     fillUniformValues(matrix, emissiveStrength, groundShadowFactor),
     patternUniformValues(painter, tile, patternTransition)
 );
@@ -168,7 +167,7 @@ const fillOutlinePatternUniformValues = (
     drawingBufferSize: [number, number],
     groundShadowFactor: [number, number, number],
     patternTransision: number = 0
-): UniformValues<FillOutlinePatternUniformsType> => extend(
+): UniformValues<FillOutlinePatternUniformsType> => Object.assign(
     fillPatternUniformValues(matrix, emissiveStrength, painter, tile, groundShadowFactor, patternTransision),
     {
         'u_world': drawingBufferSize

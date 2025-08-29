@@ -4,7 +4,6 @@
 import {describe, test, expect, waitFor, vi, createMap} from '../../../util/vitest';
 import {createStyle} from './util';
 import {Map} from '../../../../src/ui/map';
-import {extend} from '../../../../src/util/util';
 import {getPNGResponse} from '../../../util/network';
 import {fixedLngLat, fixedNum} from '../../../util/fixed';
 import {Event} from '../../../../src/util/evented';
@@ -251,12 +250,12 @@ describe('Map#setStyle', () => {
     });
 
     test('Setting terrain to null disables the terrain but does not affect draping', async () => {
-        const style = extend(createStyle(), {
+        const style = Object.assign(createStyle(), {
             terrain: null,
             imports: [{
                 id: 'basemap',
                 url: '',
-                data: extend(createStyle(), {
+                data: Object.assign(createStyle(), {
                     projection: {name: 'globe'},
                     terrain: {source: 'dem', exaggeration: 1},
                     sources: {dem: {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']}}
@@ -265,7 +264,7 @@ describe('Map#setStyle', () => {
             {
                 id: 'navigation',
                 url: '',
-                data: extend(createStyle(), {
+                data: Object.assign(createStyle(), {
                     terrain: {source: 'dem', exaggeration: 2},
                     sources: {dem: {type: 'raster-dem', tiles: ['http://example.com/{z}/{x}/{y}.png']}}
                 })

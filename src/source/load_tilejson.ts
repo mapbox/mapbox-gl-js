@@ -1,4 +1,4 @@
-import {pick, extend} from '../util/util';
+import {pick} from '../util/util';
 import {getJSON, ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 
@@ -91,7 +91,7 @@ export default function (
                     // in this version we only support meshopt, we check there is no more different capabilities
                     // so future tileJsons with more capabilities won't break existing sdk's
                     if (variant.capabilities.length === 1 && variant.capabilities[0] === "meshopt") {
-                        tileJSON = extend(tileJSON, variant);
+                        tileJSON = Object.assign(tileJSON, variant);
                         break;
                     }
                 }
@@ -99,7 +99,7 @@ export default function (
 
             const result: TileJSON = pick(
                 // explicit source options take precedence over TileJSON
-                extend({}, tileJSON, options),
+                Object.assign({}, tileJSON as TileJSON, options),
                 ['tilejson', 'tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds', 'extra_bounds', 'scheme', 'tileSize', 'encoding', 'vector_layers', 'raster_layers', 'worldview_options', 'worldview_default', 'worldview']
             );
 

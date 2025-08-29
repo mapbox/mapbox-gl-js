@@ -5,7 +5,6 @@ import assert from 'assert';
 import deepEqual from '../style-spec/util/deep_equal';
 
 import type {vec4} from 'gl-matrix';
-import type {UnionToIntersection} from 'utility-types';
 import type {Range} from '../../3d-style/elevation/elevation_feature';
 import type {Callback} from '../types/callback';
 
@@ -303,26 +302,6 @@ export function keysDifference<S, T>(
         }
     }
     return difference;
-}
-
-/**
- * Given a destination object and optionally many source objects,
- * copy all properties from the source objects into the destination.
- * The last source object given overrides properties from previous
- * source objects.
- *
- * @param dest destination object
- * @param sources sources from which properties are pulled
- * @private
- */
-export function extend<T extends object, U extends Array<object | null | undefined>>(dest: T, ...sources: U): T & UnionToIntersection<U[number]> {
-    for (const src of sources) {
-        for (const k in src) {
-            dest[k] = src[k];
-        }
-    }
-
-    return dest as T & UnionToIntersection<U[number]>;
 }
 
 /**

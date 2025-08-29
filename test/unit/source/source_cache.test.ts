@@ -10,7 +10,6 @@ import Transform from '../../../src/geo/transform';
 import LngLat from '../../../src/geo/lng_lat';
 import Point from '@mapbox/point-geometry';
 import {Event, ErrorEvent, Evented} from '../../../src/util/evented';
-import {extend} from '../../../src/util/util';
 import browser from '../../../src/util/browser';
 
 // Add a mocked source type for use in these tests
@@ -23,7 +22,7 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
             this.id = id;
             this.minzoom = 0;
             this.maxzoom = 22;
-            extend(this, sourceOptions);
+            Object.assign(this, sourceOptions);
             this.setEventedParent(eventedParent);
             if (sourceOptions.hasTile) {
                 this.hasTile = sourceOptions.hasTile;
@@ -66,7 +65,7 @@ export function createSourceCache(options, used) {
     spec['maxzoom'] = spec['maxzoom'] || 14;
 
     const eventedParent = new Evented();
-    const sc = new SourceCache('id', create('id', extend({
+    const sc = new SourceCache('id', create('id', Object.assign({
         tileSize: 512,
         type: 'mock-source-type'
     }, spec), /* dispatcher */ {}, eventedParent));

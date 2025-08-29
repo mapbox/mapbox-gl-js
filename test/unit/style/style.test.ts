@@ -13,7 +13,6 @@ import Style from '../../../src/style/style';
 import SourceCache from '../../../src/source/source_cache';
 import StyleLayer from '../../../src/style/style_layer';
 import Transform from '../../../src/geo/transform';
-import {extend} from '../../../src/util/util';
 import {Event} from '../../../src/util/evented';
 import styleSpec from '../../../src/style-spec/reference/latest';
 import {
@@ -28,7 +27,7 @@ import {StubMap} from './utils';
 import {makeFQID} from '../../../src/util/fqid';
 
 function createStyleJSON(properties) {
-    return extend({
+    return Object.assign({
         "version": 8,
         "sources": {},
         "layers": []
@@ -220,7 +219,7 @@ describe('Style#loadJSON', () => {
     test('creates sources', async () => {
         const style = new Style(new StubMap());
 
-        style.loadJSON(extend(createStyleJSON(), {
+        style.loadJSON(Object.assign(createStyleJSON(), {
             "sources": {
                 "mapbox": {
                     "type": "vector",
@@ -785,7 +784,7 @@ describe('Style#addLayer', () => {
 
     test('reloads source', async () => {
         const style = new Style(new StubMap());
-        style.loadJSON(extend(createStyleJSON(), {
+        style.loadJSON(Object.assign(createStyleJSON(), {
             "sources": {
                 "mapbox": {
                     "type": "vector",
@@ -817,7 +816,7 @@ describe('Style#addLayer', () => {
         '#3895 reloads source (instead of clearing) if adding this layer with the same type, immediately after removing it',
         async () => {
             const style = new Style(new StubMap());
-            style.loadJSON(extend(createStyleJSON(), {
+            style.loadJSON(Object.assign(createStyleJSON(), {
                 "sources": {
                     "mapbox": {
                         "type": "vector",
@@ -857,7 +856,7 @@ describe('Style#addLayer', () => {
         'clears source (instead of reloading) if adding this layer with a different type, immediately after removing it',
         async () => {
             const style = new Style(new StubMap());
-            style.loadJSON(extend(createStyleJSON(), {
+            style.loadJSON(Object.assign(createStyleJSON(), {
                 "sources": {
                     "mapbox": {
                         "type": "vector",
@@ -986,7 +985,7 @@ describe('Style#addLayer', () => {
 
     test('fires an error on non-existant source layer', async () => {
         const style = new Style(new StubMap());
-        style.loadJSON(extend(createStyleJSON(), {
+        style.loadJSON(Object.assign(createStyleJSON(), {
             sources: {
                 dummy: {
                     type: 'geojson',
@@ -1187,7 +1186,7 @@ describe('Style#setPaintProperty', () => {
         '#4738 postpones source reload until layers have been broadcast to workers',
         async () => {
             const style = new Style(new StubMap());
-            style.loadJSON(extend(createStyleJSON(), {
+            style.loadJSON(Object.assign(createStyleJSON(), {
                 "sources": {
                     "geojson": {
                         "type": "geojson",

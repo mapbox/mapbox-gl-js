@@ -6,7 +6,6 @@ import {OverscaledTileID} from '../../../src/source/tile_id';
 import GeoJSONSource from '../../../src/source/geojson_source';
 import Transform from '../../../src/geo/transform';
 import LngLat from '../../../src/geo/lng_lat';
-import {extend} from '../../../src/util/util';
 
 const wrapDispatcher = (dispatcher) => {
     return {
@@ -57,7 +56,7 @@ const hawkHill = {
 describe('GeoJSONSource#setData', () => {
     function createSource(opts) {
         opts = opts || {};
-        opts = extend(opts, {data: {}});
+        opts = Object.assign(opts, {data: {}});
         return new GeoJSONSource('id', opts, wrapDispatcher({
             send(type, data, callback) {
                 if (callback) {

@@ -1,6 +1,6 @@
 import {Event, Evented} from '../../util/evented';
 import * as DOM from '../../util/dom';
-import {extend, bindAll, warnOnce} from '../../util/util';
+import {bindAll, warnOnce} from '../../util/util';
 import assert from 'assert';
 import Marker from '../marker';
 import LngLat from '../../geo/lng_lat';
@@ -118,7 +118,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
     constructor(options: GeolocateControlOptions = {}) {
         super();
         const geolocation = navigator.geolocation;
-        this.options = extend({geolocation}, defaultOptions, options);
+        this.options = Object.assign({geolocation}, defaultOptions, options);
 
         bindAll([
             '_onSuccess',
@@ -312,7 +312,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
         const center = new LngLat(position.coords.longitude, position.coords.latitude);
         const radius = position.coords.accuracy;
         const bearing = this._map.getBearing();
-        const options = extend({bearing}, this.options.fitBoundsOptions);
+        const options = Object.assign({bearing}, this.options.fitBoundsOptions);
 
         this._map.fitBounds(center.toBounds(radius), options, {
             geolocateSource: true // tag this camera change so it won't cause the control to change to background state

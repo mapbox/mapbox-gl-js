@@ -1,6 +1,6 @@
 
 import * as DOM from '../../util/dom';
-import {extend, bindAll} from '../../util/util';
+import {bindAll} from '../../util/util';
 import {MouseRotateHandler, MousePitchHandler} from '../handler/mouse';
 
 import type Point from '@mapbox/point-geometry';
@@ -49,7 +49,7 @@ class NavigationControl implements IControl {
     _handler?: MouseRotateWrapper;
 
     constructor(options: NavigationControlOptions = {}) {
-        this.options = extend({}, defaultOptions, options);
+        this.options = Object.assign({}, defaultOptions, options);
 
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
         this._container.addEventListener('contextmenu', (e: MouseEvent) => e.preventDefault());
@@ -223,7 +223,7 @@ class MouseRotateWrapper {
     }
 
     mousedown(e: MouseEvent) {
-        this.down(extend({}, e, {ctrlKey: true, preventDefault: () => e.preventDefault()}), DOM.mousePos(this.element, e));
+        this.down(Object.assign({}, e, {ctrlKey: true, preventDefault: () => e.preventDefault()}), DOM.mousePos(this.element, e));
         window.addEventListener('mousemove', this.mousemove);
         window.addEventListener('mouseup', this.mouseup);
     }

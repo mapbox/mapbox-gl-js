@@ -1,5 +1,5 @@
 import styleSpec from '../style-spec/reference/latest';
-import {extend, smoothstep} from '../util/util';
+import {smoothstep} from '../util/util';
 import {Evented} from '../util/evented';
 import {validateStyle, validateFog, emitValidationErrors} from './validate_style';
 import {Properties, Transitionable, PossiblyEvaluated, DataConstantProperty} from './properties';
@@ -96,7 +96,7 @@ class Fog extends Evented {
             return;
         }
 
-        const properties = extend({}, fog);
+        const properties = Object.assign({}, fog);
         for (const name of Object.keys(styleSpec.fog)) {
             // Fallback to use default style specification when the properties wasn't set
             if (properties[name] === undefined) {
@@ -201,7 +201,7 @@ class Fog extends Evented {
             return false;
         }
 
-        return emitValidationErrors(this, validate.call(validateStyle, extend({
+        return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
             value,
             style: {glyphs: true, sprite: true},
             styleSpec

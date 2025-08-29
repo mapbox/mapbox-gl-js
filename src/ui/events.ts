@@ -1,7 +1,6 @@
 import {Event} from '../util/evented';
 import * as DOM from '../util/dom';
 import Point from '@mapbox/point-geometry';
-import {extend} from '../util/util';
 
 import type Tile from '../source/tile';
 import type LngLat from '../geo/lng_lat';
@@ -158,7 +157,7 @@ export class MapMouseEvent extends Event<MapEvents, MapMouseEventType> {
     constructor(type: MapMouseEventType, map: Map, originalEvent: MouseEvent, data: EventData = {}) {
         const point = DOM.mousePos(map.getCanvasContainer(), originalEvent);
         const lngLat = map.unproject(point);
-        super(type, extend({point, lngLat, originalEvent}, data) as MapEvents[MapMouseEventType]);
+        super(type, Object.assign({point, lngLat, originalEvent}, data) as MapEvents[MapMouseEventType]);
         this._defaultPrevented = false;
         this.target = map;
     }

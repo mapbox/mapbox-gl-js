@@ -6,7 +6,6 @@ import {
     UniformColor,
     UniformMatrix4f
 } from '../uniform_binding';
-import {extend} from '../../util/util';
 
 import type {mat4} from 'gl-matrix';
 import type Painter from '../painter';
@@ -85,7 +84,7 @@ const backgroundPatternUniformValues = (
         tileID: OverscaledTileID;
         tileSize: number;
     },
-): UniformValues<BackgroundPatternUniformsType> => extend(
+): UniformValues<BackgroundPatternUniformsType> => Object.assign(
     bgPatternUniformValues(image, scope, patternPosition, painter, isViewport, tile),
     {
         'u_matrix': matrix as Float32Array,

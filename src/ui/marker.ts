@@ -3,7 +3,7 @@ import Point from '@mapbox/point-geometry';
 import * as DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';
 import smartWrap from '../util/smart_wrap';
-import {bindAll, extend, radToDeg, smoothstep} from '../util/util';
+import {bindAll, radToDeg, smoothstep} from '../util/util';
 import {anchorTranslate} from './anchor';
 import {Event, Evented} from '../util/evented';
 import {GLOBE_ZOOM_THRESHOLD_MAX} from '../geo/projection/globe_constants';
@@ -111,7 +111,7 @@ export default class Marker extends Evented<MarkerEvents> {
         // For backward compatibility -- the constructor used to accept the element as a
         // required first argument, before it was made optional.
         if (options instanceof HTMLElement || legacyOptions) {
-            options = extend({element: options}, legacyOptions);
+            options = Object.assign({element: options}, legacyOptions);
         }
 
         bindAll([

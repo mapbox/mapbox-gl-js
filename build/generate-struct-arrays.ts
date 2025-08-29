@@ -10,7 +10,6 @@
 
 import fs from 'fs';
 import ejs from 'ejs';
-import {extend} from '../src/util/util';
 import {createLayout, viewTypes} from '../src/util/struct_array';
 
 // eslint-disable-next-line import/order
@@ -49,7 +48,7 @@ function normalizeMembers(members: StructArrayMember[], usedTypes: Set<string | 
             usedTypes.add(member.type);
         }
 
-        return extend(member, {
+        return Object.assign(member, {
             size: sizeOf(member.type),
             view: member.type.toLowerCase()
         }) as StructArrayMember;
@@ -93,7 +92,7 @@ function createStructArrayLayoutType({
     if (!alignment || alignment === 1) members = members.reduce((memo, member) => {
         if (memo.length > 0 && memo[memo.length - 1].type === member.type) {
             const last = memo[memo.length - 1];
-            return memo.slice(0, -1).concat(extend({}, last, {
+            return memo.slice(0, -1).concat(Object.assign({}, last, {
                 components: last.components + member.components,
             }));
         }

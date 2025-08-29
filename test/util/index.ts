@@ -1,7 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import {Map} from '../../src/ui/map';
-import {extend} from '../../src/util/util';
 
 export function createMap(t, options, callback) {
     const container = window.document.createElement('div');
@@ -25,7 +24,7 @@ export function createMap(t, options, callback) {
     if (!options || !options.skipCSSStub) t.stub(Map.prototype, '_detectMissingCSS');
     if (options && options.deleteStyle) delete defaultOptions.style;
 
-    const map = new Map(extend(defaultOptions, options));
+    const map = new Map(Object.assign(defaultOptions, options));
     if (callback) map.on('load', () => {
         callback(null, map);
     });

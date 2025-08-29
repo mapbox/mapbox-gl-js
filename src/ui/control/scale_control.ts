@@ -1,5 +1,5 @@
 import * as DOM from '../../util/dom';
-import {extend, bindAll} from '../../util/util';
+import {bindAll} from '../../util/util';
 
 import type {Map, IControl, ControlPosition} from '../map';
 
@@ -48,7 +48,7 @@ class ScaleControl implements IControl {
     options: ScaleControlOptions;
 
     constructor(options: ScaleControlOptions = {}) {
-        this.options = extend({}, defaultOptions, options);
+        this.options = Object.assign({}, defaultOptions, options);
 
         // Some old browsers (e.g., Safari < 14.1) don't support the "unit" style in NumberFormat.
         // This is a workaround to display the scale without proper internationalization support.

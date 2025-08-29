@@ -3,7 +3,6 @@
 import {describe, test, beforeEach, afterEach, expect, waitFor, vi, createMap, createStyleJSON} from '../../util/vitest';
 import {createStyle, createStyleSource} from './map/util';
 import {getPNGResponse} from '../../util/network';
-import {extend} from '../../../src/util/util';
 import {Map} from '../../../src/ui/map';
 import Actor from '../../../src/util/actor';
 import LngLat from '../../../src/geo/lng_lat';
@@ -234,7 +233,7 @@ describe('Map', () => {
             return new window.Response(res);
         });
         const map = createMap({
-            style: extend(createStyle(), {
+            style: Object.assign(createStyle(), {
                 sources: {
                     mapbox: {
                         type: 'vector',
@@ -271,7 +270,7 @@ describe('Map', () => {
         };
 
         const map = createMap({
-            style: extend(createStyle(), {
+            style: Object.assign(createStyle(), {
                 sources: {
                     mapbox: {
                         type: "geojson",
@@ -748,7 +747,7 @@ describe('Map', () => {
 
         test('sets and gets language property', async () => {
             const map = createMap({
-                style: extend(createStyle(), {
+                style: Object.assign(createStyle(), {
                     sources: {
                         mapbox: {
                             type: 'vector',
@@ -812,7 +811,7 @@ describe('Map', () => {
 
         test('sets and gets worldview property', async () => {
             const map = createMap({
-                style: extend(createStyle(), {
+                style: Object.assign(createStyle(), {
                     sources: {
                         mapbox: {
                             type: 'vector',
@@ -935,7 +934,7 @@ describe('Map', () => {
 
     test('#removeLayer restores Map#loaded() to true', async () => {
         const map = createMap({
-            style: extend(createStyle(), {
+            style: Object.assign(createStyle(), {
                 sources: {
                     mapbox: {
                         type: 'vector',

@@ -1,5 +1,4 @@
 import {DataConstantProperty, Properties, Transitionable} from '../style/properties';
-import {extend} from './util';
 import styleSpec from '../style-spec/reference/latest';
 import EvaluationParameters from '../../src/style/evaluation_parameters';
 
@@ -28,7 +27,7 @@ export function evaluateColorThemeProperties(
     configOptions?: ConfigOptions | null,
     worldview?: string
 ): PossiblyEvaluated<Props> {
-    const properties = extend({}, values);
+    const properties = Object.assign({}, values);
     for (const name of Object.keys(styleSpec.colorTheme)) {
         // Fallback to use default style specification when the properties wasn't set
         if (properties[name] === undefined) {

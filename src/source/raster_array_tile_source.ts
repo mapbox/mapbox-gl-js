@@ -2,7 +2,6 @@
 // it's registered as a serializable class on the main thread
 import '../data/mrt_data';
 import RasterTileSource from './raster_tile_source';
-import {extend} from '../util/util';
 import {RGBAImage} from '../util/image';
 import {ErrorEvent} from '../util/evented';
 import {ResourceType} from '../util/ajax';
@@ -71,7 +70,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         this.partial = true;
         this._loadTilePending = {};
         this._loadTileLoaded = {};
-        this._options = extend({type: 'raster-array'}, options);
+        this._options = Object.assign({type: 'raster-array'}, options);
     }
 
     triggerRepaint(tile: RasterArrayTile) {
