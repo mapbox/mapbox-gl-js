@@ -230,19 +230,6 @@ const skip = [
     "render-tests/background-pattern/image-update/delayed/different-size-before-color-theme-change",
     "render-tests/background-pattern/image-update/delayed/different-size-with-color-theme",
 
-    "render-tests/building/opacity",
-    "render-tests/building/faux-facade/building-facade",
-    "render-tests/building/faux-facade/building-facade-color-theme",
-    "render-tests/building/faux-facade/emissive-chance",
-    "render-tests/building/faux-facade/property-update",
-    "render-tests/building/faux-facade/shadows-supported",
-    "render-tests/building/faux-facade/skillion-unsupported",
-    "render-tests/building/faux-facade/window-ao",
-    "render-tests/building/faux-facade/building-facade-true-with-facade-hint",
-    "render-tests/building/faux-facade/building-facade-true-without-facade-hint",
-    "render-tests/building/faux-facade/feature-state",
-    "render-tests/building/cutoff-fade",
-
     // https://mapbox.atlassian.net/browse/GLJS-1295
     "render-tests/placement/icon-optional",
     "render-tests/placement/text-optional/basic",

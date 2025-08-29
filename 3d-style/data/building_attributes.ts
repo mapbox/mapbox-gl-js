@@ -10,8 +10,24 @@ export const buildingNormalAttributes: StructArrayLayout = createLayout([
     {name: 'a_normal_3', components: 3, type: 'Int16'}
 ]);
 
+export const buildingCentroidAttributes: StructArrayLayout = createLayout([
+    {name: 'a_centroid_3', components: 3, type: 'Int16'}
+]);
+
 export const buildingColorAttributes: StructArrayLayout = createLayout([
     {name: 'a_part_color_emissive', components: 2, type: 'Uint16'}
+]);
+
+export const buildingFacadePaintAttributes: StructArrayLayout = createLayout([
+    {name: 'a_faux_facade_color_emissive', components: 2, type: 'Uint16'}
+]);
+
+export const buildingFacadeDataAttributes: StructArrayLayout = createLayout([
+    {name: 'a_faux_facade_data',  components: 4, type: 'Uint16'}
+]);
+
+export const buildingFacadeVerticalRangeAttributes: StructArrayLayout = createLayout([
+    {name: 'a_faux_facade_vertical_range',  components: 2, type: 'Uint16'}
 ]);
 
 export const buildingBloomAttenuationAttributes: StructArrayLayout = createLayout([

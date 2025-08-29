@@ -40,6 +40,7 @@ export interface MeshBuffer {
 
 export interface MeshCollection {
     meshes: MeshBuffer[];
+    outerRingLength: number;
     modifiedPolygonRings: Float32Array[];
 }
 
@@ -248,7 +249,8 @@ export class BuildingGen {
             modifiedPolygonRings.push(ringArray);
         }
 
-        return {meshes, modifiedPolygonRings};
+        const outerRingLength = this.module.getOuterRingLength();
+        return {meshes, outerRingLength, modifiedPolygonRings};
     }
 }
 
@@ -266,11 +268,12 @@ type SetFacadeOptionsFunction = (facadeHeight: number, createEaves: number) => v
 type SetFauxFacadeOptionsFunction = (hasFacade: number, useUvXModifier: number, uvXModifier: number) => void;
 type SetFacadeClassifierOptionsFunction = (classificationDistance: number) => void;
 type AddFeatureFunction = (id: number, sourceId: number, minHeight: number, height: number, roofShape: number,
-    roofShapeLength: number, coords: number, ringIndices: number, numRings: number) => void;
+                           roofShapeLength: number, coords: number, ringIndices: number, numRings: number) => void;
 type AddFacadeFunction = (id: number, crossPerc: number, distanceToRoad: number, entrances: number, entrancesLength: number,
-    coords: number, numCoords: number) => void;
+                          coords: number, numCoords: number) => void;
 type GenerateMeshFunction = () => number;
 type GetLastErrorFunction = () => number;
+type GetOuterRingLengthFunction = () => number;
 type GetMeshCountFunction = () => number;
 type GetPositionsPtrFunction = (meshIndex: number) => number;
 type GetPositionsLengthFunction = (meshIndex: number) => number;
@@ -308,6 +311,7 @@ interface BuildingGenModule {
     addFacade: AddFacadeFunction;
     generateMesh: GenerateMeshFunction;
     getLastError: GetLastErrorFunction;
+    getOuterRingLength: GetOuterRingLengthFunction;
     getMeshCount: GetMeshCountFunction;
     getPositionsPtr: GetPositionsPtrFunction;
     getPositionsLength: GetPositionsLengthFunction;
@@ -406,27 +410,28 @@ export function loadBuildingGen(wasmPromise: Promise<Response>): Promise<Buildin
             addFacade: exports.p as AddFacadeFunction,
             generateMesh: exports.q as GenerateMeshFunction,
             getLastError: exports.r as GetLastErrorFunction,
-            getMeshCount: exports.s as GetMeshCountFunction,
-            getPositionsPtr: exports.t as GetPositionsPtrFunction,
-            getPositionsLength: exports.u as GetPositionsLengthFunction,
-            getNormalsPtr: exports.v as GetNormalsPtrFunction,
-            getNormalsLength: exports.w as GetNormalsLengthFunction,
-            getColorsPtr: exports.x as GetColorsPtrFunction,
-            getColorsLength: exports.y as GetColorsLengthFunction,
-            getAOPtr: exports.z as GetAOPtrFunction,
-            getAOLength: exports.A as GetAOLengthFunction,
-            getUVPtr: exports.B as GetUVPtrFunction,
-            getUVLength: exports.C as GetUVLengthFunction,
-            getFauxFacadePtr: exports.D as GetFauxFacadePtrFunction,
-            getFauxFacadeLength: exports.E as GetFauxFacadeLengthFunction,
-            getIndicesPtr: exports.F as GetIndicesPtrFunction,
-            getIndicesLength: exports.G as GetIndicesLengthFunction,
-            getBuildingPart: exports.H as GetBuildingPartFunction,
-            getRingCount: exports.I as GetRingCountFunction,
-            getRingPtr: exports.J as GetRingPtrFunction,
-            getRingLength: exports.K as GetRingLengthFunction,
-            free: exports.L as FreeFunction,
-            malloc: exports.M as MallocFunction,
+            getOuterRingLength: exports.s as GetOuterRingLengthFunction,
+            getMeshCount: exports.t as GetMeshCountFunction,
+            getPositionsPtr: exports.u as GetPositionsPtrFunction,
+            getPositionsLength: exports.v as GetPositionsLengthFunction,
+            getNormalsPtr: exports.w as GetNormalsPtrFunction,
+            getNormalsLength: exports.x as GetNormalsLengthFunction,
+            getColorsPtr: exports.y as GetColorsPtrFunction,
+            getColorsLength: exports.z as GetColorsLengthFunction,
+            getAOPtr: exports.A as GetAOPtrFunction,
+            getAOLength: exports.B as GetAOLengthFunction,
+            getUVPtr: exports.C as GetUVPtrFunction,
+            getUVLength: exports.D as GetUVLengthFunction,
+            getFauxFacadePtr: exports.E as GetFauxFacadePtrFunction,
+            getFauxFacadeLength: exports.F as GetFauxFacadeLengthFunction,
+            getIndicesPtr: exports.G as GetIndicesPtrFunction,
+            getIndicesLength: exports.H as GetIndicesLengthFunction,
+            getBuildingPart: exports.I as GetBuildingPartFunction,
+            getRingCount: exports.J as GetRingCountFunction,
+            getRingPtr: exports.K as GetRingPtrFunction,
+            getRingLength: exports.L as GetRingLengthFunction,
+            free: exports.M as FreeFunction,
+            malloc: exports.N as MallocFunction,
             heapU8,
             heap32,
             heapF32

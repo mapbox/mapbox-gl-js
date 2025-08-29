@@ -1,8 +1,26 @@
-import {BuildingPositionArray, BuildingNormalArray, BuildingColorArray, BuildingBloomAttenuationArray} from '../../../src/data/array_types';
+import {
+    BuildingPositionArray,
+    BuildingNormalArray,
+    BuildingCentroidArray,
+    BuildingColorArray,
+    BuildingFacadePaintArray,
+    BuildingFacadeDataArray,
+    BuildingFacadeVerticalRangeArray,
+    BuildingBloomAttenuationArray
+} from '../../../src/data/array_types';
 import {calculateLightsMesh} from '../../source/model_loader';
-import {clamp} from '../../../src/util/util';
+import {clamp, warnOnce} from '../../../src/util/util';
 import EvaluationParameters from '../../../src/style/evaluation_parameters';
-import {buildingPositionAttributes, buildingNormalAttributes, buildingColorAttributes, buildingBloomAttenuationAttributes} from '../building_attributes';
+import {
+    buildingPositionAttributes,
+    buildingNormalAttributes,
+    buildingCentroidAttributes,
+    buildingColorAttributes,
+    buildingFacadePaintAttributes,
+    buildingFacadeDataAttributes,
+    buildingFacadeVerticalRangeAttributes,
+    buildingBloomAttenuationAttributes
+} from '../building_attributes';
 import loadGeometry from '../../../src/data/load_geometry';
 import {ProgramConfigurationSet} from '../../../src/data/program_configuration';
 import {register} from '../../../src/util/web_worker_transfer';
@@ -31,6 +49,7 @@ import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type {FeatureStates} from '../../../src/source/source_state';
 import type {ImageId} from '../../../src/style-spec/expression/types/image_id';
 import type IndexBuffer from '../../../src/gl/index_buffer';
+import type {LUT} from '../../../src/util/lut';
 import type {SpritePositions} from '../../../src/util/image';
 import type {Style, Feature, Facade} from '../../util/building_gen';
 import type {Footprint, TileFootprint} from '../../util/conflation';
@@ -39,10 +58,8 @@ import type {TypedStyleLayer} from '../../../src/style/style_layer/typed_style_l
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 import type VertexBuffer from '../../../src/gl/vertex_buffer';
 import type {ProjectionSpecification} from '../../../src/style-spec/types';
-import type Painter from '../../../src/render/painter';
 import type {BucketWithGroundEffect} from '../../../src/render/draw_fill_extrusion';
 import type {AreaLight} from '../model';
-import type Color from '../../../src/style-spec/util/color';
 
 export const BUILDING_VISIBLE: number = 0x0;
 export const BUILDING_HIDDEN_BY_REPLACEMENT: number = 0x1;
@@ -74,6 +91,7 @@ interface BuildingFootprint extends Footprint {
     bloomIndicesLength: number;
     groundEffectVertexOffset: number;
     groundEffectVertexLength: number;
+    hasFauxFacade: boolean,
     height: number;
 }
 
@@ -91,29 +109,63 @@ interface BuildingFeaturePart {
 
 interface BuildingFeature {
     feature: EvaluationFeature,
+    hasFauxFacade: boolean,
     segment: Segment,
     parts: BuildingFeaturePart[],
     buildingBloom: BuildingFeaturePart
 };
 
-interface BuildingBloomGeometry {
-    layoutVertexArray: BuildingPositionArray;
+export class BuildingBloomGeometry {
+    layoutVertexArray = new BuildingPositionArray();
     layoutVertexBuffer: VertexBuffer;
 
-    layoutAttenuationArray: BuildingBloomAttenuationArray;
+    layoutAttenuationArray = new BuildingBloomAttenuationArray();
     layoutAttenuationBuffer: VertexBuffer;
 
-    layoutColorArray: BuildingColorArray;
+    layoutColorArray = new BuildingColorArray();
     layoutColorBuffer: VertexBuffer;
 
-    indexArray: TriangleIndexArray;
-    indexArrayForConflation: TriangleIndexArray;
+    indexArray = new TriangleIndexArray();
+    indexArrayForConflation = new TriangleIndexArray();
     indexBuffer: IndexBuffer;
 
-    segmentsBucket: SegmentVector;
+    segmentsBucket = new SegmentVector();
 }
 
-class BuildingBucket implements BucketWithGroundEffect {
+export class BuildingGeometry {
+    layoutVertexArray = new BuildingPositionArray();
+    layoutVertexBuffer: VertexBuffer;
+
+    layoutNormalArray = new BuildingNormalArray();
+    layoutNormalBuffer: VertexBuffer;
+
+    layoutCentroidArray = new BuildingCentroidArray();
+    layoutCentroidBuffer: VertexBuffer;
+
+    layoutColorArray = new BuildingColorArray();
+    layoutColorBuffer: VertexBuffer;
+
+    layoutFacadePaintArray: BuildingFacadePaintArray = null;
+    layoutFacadePaintBuffer: VertexBuffer;
+
+    layoutFacadeDataArray: BuildingFacadeDataArray = null;
+    layoutFacadeDataBuffer: VertexBuffer;
+
+    layoutFacadeVerticalRangeArray: BuildingFacadeVerticalRangeArray = null;
+    layoutFacadeVerticalRangeBuffer: VertexBuffer;
+
+    layoutAOArray: Array<number> = [];
+
+    indexArray = new TriangleIndexArray();
+    indexArrayForConflation = new TriangleIndexArray();
+    indexBuffer: IndexBuffer;
+
+    segmentsBucket = new SegmentVector();
+
+    entranceBloom = new BuildingBloomGeometry();
+}
+
+export class BuildingBucket implements BucketWithGroundEffect {
     index: number;
     zoom: number;
     brightness: number | null | undefined;
@@ -123,30 +175,12 @@ class BuildingBucket implements BucketWithGroundEffect {
     stateDependentLayers: Array<BuildingStyleLayer>;
     stateDependentLayerIds: Array<string>;
 
-    layoutVertexArray: BuildingPositionArray;
-    layoutVertexBuffer: VertexBuffer;
-
-    layoutNormalArray: BuildingNormalArray;
-    layoutNormalBuffer: VertexBuffer;
-
-    layoutColorArray: BuildingColorArray;
-    layoutColorBuffer: VertexBuffer;
-
-    layoutAOArray: Array<number> = [];
-
-    indexArray: TriangleIndexArray;
-    indexArrayForConflation: TriangleIndexArray;
-    indexArrayForConflationUploaded: boolean = false;
-    indexBuffer: IndexBuffer;
-
-    entranceBloom: BuildingBloomGeometry;
-
     hasPattern: boolean;
     worldview: string;
 
     programConfigurations: ProgramConfigurationSet<BuildingStyleLayer>;
-    private segmentsBucket: SegmentVector;
     uploaded: boolean;
+    colorBufferUploaded = false;
 
     maxHeight: number = 0;
 
@@ -160,17 +194,16 @@ class BuildingBucket implements BucketWithGroundEffect {
     featuresOnBorder: Array<BuildingFeatureOnBorder> = [];
     buildingFeatures: Array<BuildingFeature> = [];
 
-    public get segments(): SegmentVector {
-        return this.segmentsBucket;
-    }
+    buildingWithoutFacade: BuildingGeometry = new BuildingGeometry();
+    buildingWithFacade: BuildingGeometry = new BuildingGeometry();
 
-    public get bloomGeometry(): BuildingBloomGeometry {
-        return this.entranceBloom;
-    }
+    indexArrayForConflationUploaded: boolean = false;
 
     footprintLookup: {
         [_: number]: BuildingFootprint | null | undefined;
     };
+
+    lut: LUT;
 
     constructor(options: BucketParameters<BuildingStyleLayer>) {
 
@@ -183,28 +216,13 @@ class BuildingBucket implements BucketWithGroundEffect {
         this.index = options.index;
         this.hasPattern = false;
         this.worldview = options.worldview;
+        this.lut = options.lut;
 
-        this.layoutVertexArray = new BuildingPositionArray();
-        this.layoutNormalArray = new BuildingNormalArray();
-        this.layoutColorArray = new BuildingColorArray();
-        this.indexArray = new TriangleIndexArray();
-        this.indexArrayForConflation = new TriangleIndexArray();
-
-        this.entranceBloom = {
-            layoutVertexArray: new BuildingPositionArray(),
-            layoutVertexBuffer: null,
-            layoutAttenuationArray: new BuildingBloomAttenuationArray(),
-            layoutAttenuationBuffer: null,
-            layoutColorArray: new BuildingColorArray(),
-            layoutColorBuffer: null,
-            indexArray: new TriangleIndexArray(),
-            indexArrayForConflation: new TriangleIndexArray(),
-            indexBuffer: null,
-            segmentsBucket: new SegmentVector()
-        };
+        this.buildingWithFacade.layoutFacadePaintArray = new BuildingFacadePaintArray();
+        this.buildingWithFacade.layoutFacadeDataArray = new BuildingFacadeDataArray();
+        this.buildingWithFacade.layoutFacadeVerticalRangeArray = new BuildingFacadeVerticalRangeArray();
 
         this.programConfigurations = new ProgramConfigurationSet(options.layers, {zoom: options.zoom, lut: options.lut});
-        this.segmentsBucket = new SegmentVector();
         this.stateDependentLayerIds = this.layers.filter((l) => l.isStateDependent()).map((l) => l.id);
         this.projection = options.projection;
 
@@ -253,8 +271,6 @@ class BuildingBucket implements BucketWithGroundEffect {
         buildingGen.setAOOptions(false, 0.3);
         buildingGen.setMetricOptions(false, 16);
         buildingGen.setStructuralOptions(true);
-        buildingGen.setFacadeOptions(4.0, true);
-        buildingGen.setFauxFacadeOptions(false, false, 1.0);
         buildingGen.setFacadeClassifierOptions(3.0);
 
         // First, we process facade data
@@ -337,6 +353,10 @@ class BuildingBucket implements BucketWithGroundEffect {
                 continue;
             }
 
+            const hasFauxFacade = layer.layout.get('building-facade').evaluate(feature, {}, canonical);
+            buildingGen.setFacadeOptions(4.0, true);
+            buildingGen.setFauxFacadeOptions(hasFauxFacade, false, 1.0);
+
             const sourceId = feature.properties.source_id;
             let facades: Facade[];
             if (facadeDataForFeature.has(sourceId)) {
@@ -345,9 +365,58 @@ class BuildingBucket implements BucketWithGroundEffect {
                 facades = [];
             }
 
+            let windowXPerc = 0.0;
+            let windowYPerc = 0.0;
+            let floorXTile = 0.0;
+            let floorYTile = 0.0;
+            let startPositionTile = 0.0;
+            let endPositionTile = 0.0;
+            if (hasFauxFacade) {
+                // Some of this data such as facadeHeights and floorWidths were chosen experimentally
+                // and hard-coded. These will be parameterised as style properties in a follow-up change.
+                let numFloors = Math.round(layer.layout.get('building-facade-floors').evaluate(feature, {}, canonical));
+                if (base === 0.0) {
+                    const facadeHintAvailable = facades.length > 0;
+                    // If base == 0 then "one story" is already modelled geometrically
+                    // so for better visuals, we can subtract one floor.
+                    numFloors = Math.max(1.0, numFloors - (facadeHintAvailable ? 1.0 : 0.0));
+
+                    // Rule is that with buildings with height < 100 we used default facadeHeight from
+                    // building-gen which is currently 4m.
+                    // Otherwise
+                    let facadeHeight = 4.0;
+                    if (height > 100) {
+                        const facadeHeights = [10.0, 13.0, 15.0];
+                        facadeHeight = facadeHeights[feature.id ? feature.id % facadeHeights.length : 0];
+                        buildingGen.setFacadeOptions(facadeHeight, true);
+                    }
+
+                    // The buffer between geometric facades and the faux facades is based on the height
+                    // of the geometric facades multiplied by golden ratio.
+                    startPositionTile = 1.6803 * facadeHeight / tileToMeters;
+                } else {
+                    // No geometric facades when base > 0.
+                    startPositionTile = base / tileToMeters;
+                }
+                endPositionTile = height / tileToMeters;
+                startPositionTile = Math.min(startPositionTile, endPositionTile);
+
+                const floorWidths = [3.1, 5.3, 10.5, 20.0];
+                floorXTile = floorWidths[feature.id ? feature.id % floorWidths.length : 0] / tileToMeters;
+                floorYTile = (endPositionTile - startPositionTile) / numFloors;
+
+                buildingGen.setFauxFacadeOptions(true, true, floorXTile);
+
+                const window = layer.layout.get('building-facade-window').evaluate(feature, {}, canonical);
+                windowXPerc = window[0];
+                windowYPerc = window[1];
+            }
+
             const buildingGenFeatures = [];
             const bboxMin = new Point(Infinity, Infinity);
             const bboxMax = new Point(-Infinity, -Infinity);
+            const centroid = new Point(0, 0);
+            let pointCount = 0;
             for (const polygon of classifiedRings) {
                 if (polygon.length > 0) {
                     const coordinates = [];
@@ -365,12 +434,16 @@ class BuildingBucket implements BucketWithGroundEffect {
                             bboxMin.y = Math.min(bboxMin.y, point.y);
                             bboxMax.x = Math.max(bboxMax.x, point.x);
                             bboxMax.y = Math.max(bboxMax.y, point.y);
+
+                            centroid.x += point.x;
+                            centroid.y += point.y;
+                            pointCount++;
                         }
                         coordinates.push(polygonCoords);
                     }
 
                     const featureInput: Feature = {
-                        id: feature.id,
+                        id: feature.id ? feature.id : 0,
                         height,
                         minHeight: base,
                         sourceId: 0,
@@ -380,9 +453,13 @@ class BuildingBucket implements BucketWithGroundEffect {
                     buildingGenFeatures.push(featureInput);
                 }
             }
+            assert(pointCount > 0);
+            centroid.x /= pointCount || 1;
+            centroid.y /= pointCount || 1;
 
             const result = buildingGen.generateMesh(buildingGenFeatures, facades);
             if (typeof result === 'string') {
+                warnOnce(`Unable to generate building ${feature.id}: ${result}`);
                 continue;
             }
             if (result.meshes.length === 0 || result.modifiedPolygonRings.length === 0) {
@@ -394,16 +471,17 @@ class BuildingBucket implements BucketWithGroundEffect {
                 vertexCount += mesh.positions.length / 3;
             }
 
-            const segment = this.segmentsBucket.prepareSegment(vertexCount, this.layoutVertexArray, this.indexArray);
+            const building = hasFauxFacade ? this.buildingWithFacade : this.buildingWithoutFacade;
+            const segment = building.segmentsBucket.prepareSegment(vertexCount, building.layoutVertexArray, building.indexArray);
             const buildingParts = [];
             let buildingBloom: BuildingFeaturePart = null;
             let bloomIndicesOffset = 0;
             let bloomIndicesLength = -1;
 
-            const indexArrayRangeStartOffset = this.indexArray.length;
+            const indexArrayRangeStartOffset = building.indexArray.length;
             let footprintHeight = 0;
             for (const mesh of result.meshes) {
-                const partVertexOffset = this.layoutVertexArray.length;
+                const partVertexOffset = building.layoutVertexArray.length;
                 if (mesh.buildingPart === "entrance") {
                     const areaLights = new Array<AreaLight>();
                     // Doors are represented as four vertices each, so we need to process them in
@@ -433,22 +511,22 @@ class BuildingBucket implements BucketWithGroundEffect {
 
                     // The expected number of vertices is 10 per area light, as calculated in calculateLightsMesh
                     const expectedLightVertices = areaLights.length * 10;
-                    const bloomSegment = this.entranceBloom.segmentsBucket.prepareSegment(
+                    const bloomSegment = building.entranceBloom.segmentsBucket.prepareSegment(
                         expectedLightVertices,
-                        this.entranceBloom.layoutVertexArray,
-                        this.entranceBloom.indexArray
+                        building.entranceBloom.layoutVertexArray,
+                        building.entranceBloom.indexArray
                     );
 
-                    const bloomVertexOffset = this.entranceBloom.layoutVertexArray.length;
-                    bloomIndicesOffset = this.entranceBloom.indexArray.length;
-                    calculateLightsMesh(areaLights, 0.5 / this.tileToMeter, this.entranceBloom.indexArray, this.entranceBloom.layoutVertexArray, this.entranceBloom.layoutAttenuationArray);
+                    const bloomVertexOffset = building.entranceBloom.layoutVertexArray.length;
+                    bloomIndicesOffset = building.entranceBloom.indexArray.length;
+                    calculateLightsMesh(areaLights, 0.5 / this.tileToMeter, building.entranceBloom.indexArray, building.entranceBloom.layoutVertexArray, building.entranceBloom.layoutAttenuationArray);
 
-                    const bloomVertexLength = this.entranceBloom.layoutVertexArray.length - bloomVertexOffset;
-                    bloomIndicesLength = this.entranceBloom.indexArray.length - bloomIndicesOffset;
+                    const bloomVertexLength = building.entranceBloom.layoutVertexArray.length - bloomVertexOffset;
+                    bloomIndicesLength = building.entranceBloom.indexArray.length - bloomIndicesOffset;
 
                     for (let p = 0; p < bloomVertexLength; p++) {
                         const fullEmissive = (255 << 8) | 255;
-                        this.entranceBloom.layoutColorArray.emplaceBack(fullEmissive, fullEmissive);
+                        building.entranceBloom.layoutColorArray.emplaceBack(fullEmissive, fullEmissive);
                     }
 
                     bloomSegment.vertexLength += bloomVertexLength;
@@ -463,18 +541,25 @@ class BuildingBucket implements BucketWithGroundEffect {
 
                 for (let p = 0; p < mesh.positions.length; p += 3) {
                     footprintHeight = Math.max(footprintHeight, mesh.positions[p + 2]);
-                    this.layoutVertexArray.emplaceBack(mesh.positions[p], mesh.positions[p + 1], mesh.positions[p + 2]);
+                    building.layoutVertexArray.emplaceBack(mesh.positions[p], mesh.positions[p + 1], mesh.positions[p + 2]);
+                }
+
+                const cx = Math.floor(centroid.x);
+                const cy = Math.floor(centroid.y);
+                const ch = Math.floor(footprintHeight);
+                for (let p = 0; p < mesh.positions.length; p += 3) {
+                    building.layoutCentroidArray.emplaceBack(cx, cy, ch);
                 }
 
                 for (let n = 0; n < mesh.normals.length; n += 3) {
                     const nx = mesh.normals[n + 0] * MAX_INT_16;
                     const ny = mesh.normals[n + 1] * MAX_INT_16;
                     const nz = mesh.normals[n + 2] * MAX_INT_16;
-                    this.layoutNormalArray.emplaceBack(nx, ny, nz);
+                    building.layoutNormalArray.emplaceBack(nx, ny, nz);
                 }
 
                 for (let a = 0; a < mesh.ao.length; a++) {
-                    this.layoutAOArray.push(mesh.ao[a]);
+                    building.layoutAOArray.push(mesh.ao[a]);
                 }
 
                 for (let c = 0; c < mesh.colors.length; c += 3) {
@@ -487,12 +572,45 @@ class BuildingBucket implements BucketWithGroundEffect {
                     const c1 = (r << 8) | g;
                     const c2 = (b << 8);
 
-                    this.layoutColorArray.emplaceBack(c1, c2);
+                    building.layoutColorArray.emplaceBack(c1, c2);
+                }
+
+                if (hasFauxFacade) {
+                    for (let v = 0; v < mesh.positions.length; v += 3) {
+                        building.layoutFacadePaintArray.emplaceBack((255 << 8) | 255, 255);
+                    }
+
+                    for (let v = 0; v < mesh.isFauxFacade.length; v++) {
+                        if (mesh.isFauxFacade[v]) {
+                            const uvIdx = v * 2;
+                            const edgeDistanceTile = mesh.uv[uvIdx] * result.outerRingLength;
+
+                            const normalizedEdgeDistance = Math.min(0xFFFF, Math.floor(edgeDistanceTile));
+                            const r1 = normalizedEdgeDistance | 0x1;
+                            const windowX = Math.floor(windowXPerc * 255.0);
+                            const windowY = Math.floor(windowYPerc * 255.0);
+                            const g1 = (windowX << 8) | windowY;
+                            const normalizedFloorXTile = Math.floor(Math.min(1.0, floorXTile / EXTENT) * 0xFFFF);
+                            const b1 = normalizedFloorXTile;
+                            const normalizedFloorYTile = Math.floor(Math.min(1.0, floorYTile / EXTENT) * 0xFFFF);
+                            const a1 = normalizedFloorYTile;
+
+                            building.layoutFacadeDataArray.emplaceBack(r1, g1, b1, a1);
+
+                            const normalizedStartTile = Math.floor(Math.min(1.0, startPositionTile / EXTENT) * 0xFFFF);
+                            const normalizedEndTile = Math.floor(Math.min(1.0, endPositionTile / EXTENT) * 0xFFFF);
+
+                            building.layoutFacadeVerticalRangeArray.emplaceBack(normalizedStartTile, normalizedEndTile);
+                        } else {
+                            building.layoutFacadeDataArray.emplaceBack(0, 0, 0, 0);
+                            building.layoutFacadeVerticalRangeArray.emplaceBack(0, 0);
+                        }
+                    }
                 }
 
                 const triangleIndex = segment.vertexLength;
                 for (let i = 0; i < mesh.indices.length; i += 3) {
-                    this.indexArray.emplaceBack(
+                    building.indexArray.emplaceBack(
                         triangleIndex + mesh.indices[i],
                         triangleIndex + mesh.indices[i + 1],
                         triangleIndex + mesh.indices[i + 2]);
@@ -514,11 +632,11 @@ class BuildingBucket implements BucketWithGroundEffect {
             this.maxHeight = Math.max(this.maxHeight, footprintHeight);
 
             const buildingFeature: BuildingFeature = {
-                feature: evaluationFeature, segment, parts: buildingParts, buildingBloom
+                feature: evaluationFeature, hasFauxFacade, segment, parts: buildingParts, buildingBloom
             };
             this.buildingFeatures.push(buildingFeature);
 
-            const indexArrayRangeLength = this.indexArray.length - indexArrayRangeStartOffset;
+            const indexArrayRangeLength = building.indexArray.length - indexArrayRangeStartOffset;
 
             const footprintFlattened = [];
             const footprintflattenedPts = [];
@@ -586,18 +704,18 @@ class BuildingBucket implements BucketWithGroundEffect {
                     bloomIndicesLength,
                     groundEffectVertexOffset,
                     groundEffectVertexLength,
+                    hasFauxFacade,
                     segment,
                     height: footprintHeight
                 };
                 this.footprints.push(footprint);
             }
 
-            this.programConfigurations.populatePaintArrays(this.layoutVertexArray.length, feature, index, {}, options.availableImages, canonical, options.brightness);
+            this.programConfigurations.populatePaintArrays(building.layoutVertexArray.length, feature, index, {}, options.availableImages, canonical, options.brightness);
             this.groundEffect.addPaintPropertiesData(feature, index, {}, options.availableImages, canonical, options.brightness);
         }
 
         this.groundEffect.prepareBorderSegments();
-        this.evaluate(this.layers[0]);
 
         PerformanceUtils.endMeasure(m);
     }
@@ -605,10 +723,13 @@ class BuildingBucket implements BucketWithGroundEffect {
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: Array<ImageId>, imagePositions: SpritePositions, layers: ReadonlyArray<TypedStyleLayer>, isBrightnessChanged: boolean, brightness?: number | null) {
         this.programConfigurations.updatePaintArrays(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
         this.groundEffect.update(states, vtLayer, layers, availableImages, imagePositions, isBrightnessChanged, brightness);
+
+        this.evaluate(this.layers[0], states);
+        this.colorBufferUploaded = false;
     }
 
     isEmpty(): boolean {
-        return this.layoutVertexArray.length === 0;
+        return this.buildingWithoutFacade.layoutVertexArray.length === 0 && this.buildingWithFacade.layoutVertexArray.length === 0;
     }
 
     uploadPending(): boolean {
@@ -616,13 +737,29 @@ class BuildingBucket implements BucketWithGroundEffect {
     }
 
     upload(context: Context) {
-        if (!this.uploaded) {
-            this.layoutVertexBuffer = context.createVertexBuffer(this.layoutVertexArray, buildingPositionAttributes.members);
-            this.layoutNormalBuffer = context.createVertexBuffer(this.layoutNormalArray, buildingNormalAttributes.members);
-            this.entranceBloom.layoutVertexBuffer = context.createVertexBuffer(this.entranceBloom.layoutVertexArray, buildingPositionAttributes.members);
-            this.entranceBloom.layoutAttenuationBuffer = context.createVertexBuffer(this.entranceBloom.layoutAttenuationArray, buildingBloomAttenuationAttributes.members);
+        const uploadBuilding = (building: BuildingGeometry) => {
+            building.layoutVertexBuffer = context.createVertexBuffer(building.layoutVertexArray, buildingPositionAttributes.members);
+            building.layoutNormalBuffer = context.createVertexBuffer(building.layoutNormalArray, buildingNormalAttributes.members);
+            building.layoutCentroidBuffer = context.createVertexBuffer(building.layoutCentroidArray, buildingCentroidAttributes.members);
+
+            if (building.layoutFacadeDataArray && building.layoutFacadeDataArray.length) {
+                building.layoutFacadeDataBuffer = context.createVertexBuffer(building.layoutFacadeDataArray, buildingFacadeDataAttributes.members);
+            }
+            if (building.layoutFacadeVerticalRangeArray && building.layoutFacadeVerticalRangeArray.length) {
+                building.layoutFacadeVerticalRangeBuffer = context.createVertexBuffer(building.layoutFacadeVerticalRangeArray, buildingFacadeVerticalRangeAttributes.members);
+            }
+
+            if (building.entranceBloom.layoutVertexArray.length) {
+                building.entranceBloom.layoutVertexBuffer = context.createVertexBuffer(building.entranceBloom.layoutVertexArray, buildingPositionAttributes.members);
+                building.entranceBloom.layoutAttenuationBuffer = context.createVertexBuffer(building.entranceBloom.layoutAttenuationArray, buildingBloomAttenuationAttributes.members);
+            }
             this.uploadUpdatedColorBuffer(context);
             this.uploadUpdatedIndexBuffer(context);
+        };
+
+        if (!this.uploaded) {
+            uploadBuilding(this.buildingWithoutFacade);
+            uploadBuilding(this.buildingWithFacade);
             this.groundEffect.upload(context);
         }
         this.groundEffect.uploadPaintProperties(context);
@@ -631,23 +768,34 @@ class BuildingBucket implements BucketWithGroundEffect {
     }
 
     destroy() {
-        if (!this.layoutVertexBuffer) {
-            return;
-        }
+        const destroyBuilding = (building: BuildingGeometry) => {
+            if (!building.layoutVertexBuffer) {
+                return;
+            }
 
-        this.layoutVertexBuffer.destroy();
-        this.layoutNormalBuffer.destroy();
-        this.layoutColorBuffer.destroy();
+            building.layoutVertexBuffer.destroy();
+            building.layoutNormalBuffer.destroy();
+            building.layoutColorBuffer.destroy();
+            building.segmentsBucket.destroy();
+
+            if (building.indexBuffer) {
+                building.indexBuffer.destroy();
+            }
+
+            if (building.entranceBloom.layoutVertexBuffer) {
+                building.entranceBloom.layoutVertexBuffer.destroy();
+                building.entranceBloom.layoutColorBuffer.destroy();
+                building.entranceBloom.layoutAttenuationBuffer.destroy();
+                building.entranceBloom.indexBuffer.destroy();
+                building.entranceBloom.segmentsBucket.destroy();
+            }
+        };
+
+        destroyBuilding(this.buildingWithoutFacade);
+        destroyBuilding(this.buildingWithFacade);
+
         this.groundEffect.destroy();
-        this.indexBuffer.destroy();
         this.programConfigurations.destroy();
-        this.segmentsBucket.destroy();
-
-        this.entranceBloom.layoutVertexBuffer.destroy();
-        this.entranceBloom.layoutColorBuffer.destroy();
-        this.entranceBloom.layoutAttenuationBuffer.destroy();
-        this.entranceBloom.indexBuffer.destroy();
-        this.entranceBloom.segmentsBucket.destroy();
     }
 
     public updateFootprintHiddenFlags(footprintIndices: Array<number>, hiddenFlags: number, operationSetFlag = true) {
@@ -676,91 +824,127 @@ class BuildingBucket implements BucketWithGroundEffect {
     public uploadUpdatedIndexBuffer(context: Context) {
         this.groundEffect.uploadHiddenByLandmark(context);
 
-        if (this.indexArrayForConflationUploaded || this.indexArray.length === 0) {
+        if (this.indexArrayForConflationUploaded) {
             return;
         }
+
         const m = PerformanceUtils.beginMeasure("BuldingBucket:uploadUpdatedIndexBuffer");
 
-        this.indexArrayForConflation.resize(this.indexArray.length);
-        this.indexArrayForConflation.uint16.set(this.indexArray.uint16);
+        const clearBuildingIndexBuffer = (building: BuildingGeometry) => {
+            if (building.indexArray.length === 0) {
+                return;
+            }
 
-        this.entranceBloom.indexArrayForConflation.resize(this.entranceBloom.indexArray.length);
-        this.entranceBloom.indexArrayForConflation.uint16.set(this.entranceBloom.indexArray.uint16);
+            building.indexArrayForConflation.resize(building.indexArray.length);
+            building.indexArrayForConflation.uint16.set(building.indexArray.uint16);
+
+            building.entranceBloom.indexArrayForConflation.resize(building.entranceBloom.indexArray.length);
+            building.entranceBloom.indexArrayForConflation.uint16.set(building.entranceBloom.indexArray.uint16);
+        };
+        clearBuildingIndexBuffer(this.buildingWithoutFacade);
+        clearBuildingIndexBuffer(this.buildingWithFacade);
 
         // Update segments after conflation
         for (const footprint of this.footprints) {
+            const building = footprint.hasFauxFacade ? this.buildingWithFacade : this.buildingWithoutFacade;
             const footprintIndicesEnd = footprint.indicesOffset + footprint.indicesLength;
             const isVisible = footprint.hiddenFlags === BUILDING_VISIBLE;
             // Instead of removing indices of hidden footprints, use [0,0,0] generate degenerated triangles
             // Alternative would be removing hidden parts and patch segment array for rendering (primitive offsets and length  )
             if (!isVisible) {
                 for (let idx = footprint.indicesOffset; idx < footprintIndicesEnd; idx++) {
-                    this.indexArrayForConflation.uint16[idx * 3 + 0] = 0;
-                    this.indexArrayForConflation.uint16[idx * 3 + 1] = 0;
-                    this.indexArrayForConflation.uint16[idx * 3 + 2] = 0;
+                    building.indexArrayForConflation.uint16[idx * 3 + 0] = 0;
+                    building.indexArrayForConflation.uint16[idx * 3 + 1] = 0;
+                    building.indexArrayForConflation.uint16[idx * 3 + 2] = 0;
                 }
 
                 const bloomIndicesEnd = footprint.bloomIndicesOffset + footprint.bloomIndicesLength;
                 for (let idx = footprint.bloomIndicesOffset; idx < bloomIndicesEnd; idx++) {
-                    this.entranceBloom.indexArrayForConflation.uint16[idx * 3 + 0] = 0;
-                    this.entranceBloom.indexArrayForConflation.uint16[idx * 3 + 1] = 0;
-                    this.entranceBloom.indexArrayForConflation.uint16[idx * 3 + 2] = 0;
+                    building.entranceBloom.indexArrayForConflation.uint16[idx * 3 + 0] = 0;
+                    building.entranceBloom.indexArrayForConflation.uint16[idx * 3 + 1] = 0;
+                    building.entranceBloom.indexArrayForConflation.uint16[idx * 3 + 2] = 0;
                 }
             }
         }
 
-        if (!this.indexBuffer) {
-            this.indexBuffer = context.createIndexBuffer(this.indexArrayForConflation, true);
-        } else {
-            this.indexBuffer.updateData(this.indexArrayForConflation);
-        }
+        const uploadBuildingIndexBuffer = (building: BuildingGeometry) => {
+            if (building.indexArray.length === 0) {
+                return;
+            }
 
-        if (!this.entranceBloom.indexBuffer) {
-            this.entranceBloom.indexBuffer = context.createIndexBuffer(this.entranceBloom.indexArrayForConflation, true);
-        } else {
-            this.entranceBloom.indexBuffer.updateData(this.entranceBloom.indexArrayForConflation);
-        }
+            if (!building.indexBuffer) {
+                building.indexBuffer = context.createIndexBuffer(building.indexArrayForConflation, true);
+            } else {
+                building.indexBuffer.updateData(building.indexArrayForConflation);
+            }
+
+            if (!building.entranceBloom.indexBuffer) {
+                building.entranceBloom.indexBuffer = context.createIndexBuffer(building.entranceBloom.indexArrayForConflation, true);
+            } else {
+                building.entranceBloom.indexBuffer.updateData(building.entranceBloom.indexArrayForConflation);
+            }
+        };
+        uploadBuildingIndexBuffer(this.buildingWithoutFacade);
+        uploadBuildingIndexBuffer(this.buildingWithFacade);
+
         this.indexArrayForConflationUploaded = true;
         PerformanceUtils.endMeasure(m);
     }
 
     public uploadUpdatedColorBuffer(context: Context) {
-        if (!this.layoutColorBuffer) {
-            this.layoutColorBuffer = context.createVertexBuffer(this.layoutColorArray, buildingColorAttributes.members, true);
-        } else {
-            this.layoutColorBuffer.updateData(this.layoutColorArray);
-        }
+        const uploadBuildingColorBuffer = (building: BuildingGeometry) => {
+            if (!building.layoutColorBuffer) {
+                building.layoutColorBuffer = context.createVertexBuffer(building.layoutColorArray, buildingColorAttributes.members, true);
+            } else {
+                building.layoutColorBuffer.updateData(building.layoutColorArray);
+            }
 
-        if (!this.entranceBloom.layoutColorBuffer) {
-            this.entranceBloom.layoutColorBuffer = context.createVertexBuffer(this.entranceBloom.layoutColorArray, buildingColorAttributes.members, true);
-        } else {
-            this.entranceBloom.layoutColorBuffer.updateData(this.entranceBloom.layoutColorArray);
-        }
+            if (building.layoutFacadePaintArray) {
+                if (!building.layoutFacadePaintBuffer) {
+                    building.layoutFacadePaintBuffer = context.createVertexBuffer(building.layoutFacadePaintArray, buildingFacadePaintAttributes.members, true);
+                } else {
+                    building.layoutFacadePaintBuffer.updateData(building.layoutFacadePaintArray);
+                }
+            }
+
+            if (!building.entranceBloom.layoutColorBuffer) {
+                building.entranceBloom.layoutColorBuffer = context.createVertexBuffer(building.entranceBloom.layoutColorArray, buildingColorAttributes.members, true);
+            } else {
+                building.entranceBloom.layoutColorBuffer.updateData(building.entranceBloom.layoutColorArray);
+            }
+        };
+
+        uploadBuildingColorBuffer(this.buildingWithoutFacade);
+        uploadBuildingColorBuffer(this.buildingWithFacade);
+
+        this.colorBufferUploaded = true;
     }
 
-    evaluate(layer: BuildingStyleLayer) {
+    evaluate(layer: BuildingStyleLayer, featureState: FeatureStates) {
         const aoIntensity = layer.paint.get('building-ambient-occlusion-intensity');
         for (const buildingFeature of this.buildingFeatures) {
+            const state = featureState[buildingFeature.feature.id];
             const feature = buildingFeature.feature;
 
             feature.properties['building-part'] = 'roof';
-            const roofColor = layer.paint.get('building-color').evaluate(feature, {}, this.canonical);
-            const roofEmissive = layer.paint.get('building-emissive-strength').evaluate(feature, {}, this.canonical);
+            const roofColor = layer.paint.get('building-color').evaluate(feature, state, this.canonical).toPremultipliedRenderColor(this.lut);
+            const roofEmissive = layer.paint.get('building-emissive-strength').evaluate(feature, state, this.canonical);
 
             feature.properties['building-part'] = 'wall';
-            const wallsColor = layer.paint.get('building-color').evaluate(feature, {}, this.canonical);
-            const wallsEmissive = layer.paint.get('building-emissive-strength').evaluate(feature, {}, this.canonical);
+            const wallsColor = layer.paint.get('building-color').evaluate(feature, state, this.canonical).toPremultipliedRenderColor(this.lut);
+            const wallsEmissive = layer.paint.get('building-emissive-strength').evaluate(feature, state, this.canonical);
 
             feature.properties['building-part'] = 'window';
-            const windowColor = layer.paint.get('building-color').evaluate(feature, {}, this.canonical);
-            const windowEmissive = layer.paint.get('building-emissive-strength').evaluate(feature, {}, this.canonical);
+            const windowColor = layer.paint.get('building-color').evaluate(feature, state, this.canonical).toPremultipliedRenderColor(this.lut);
+            const windowEmissive = layer.paint.get('building-emissive-strength').evaluate(feature, state, this.canonical);
 
             feature.properties['building-part'] = 'door';
-            const entranceColor = layer.paint.get('building-color').evaluate(feature, {}, this.canonical);
-            const entranceEmissive = layer.paint.get('building-emissive-strength').evaluate(feature, {}, this.canonical);
+            const entranceColor = layer.paint.get('building-color').evaluate(feature, state, this.canonical).toPremultipliedRenderColor(this.lut);
+            const entranceEmissive = layer.paint.get('building-emissive-strength').evaluate(feature, state, this.canonical);
 
+            const building = buildingFeature.hasFauxFacade ? this.buildingWithFacade : this.buildingWithoutFacade;
             for (const buildingPart of buildingFeature.parts) {
-                let color: Color = roofColor;
+                let color = roofColor;
                 let emissive: number;
                 if (buildingPart.part === "roof") {
                     color = roofColor;
@@ -781,7 +965,7 @@ class BuildingBucket implements BucketWithGroundEffect {
 
                 for (let i = 0; i < buildingPart.vertexLength; i++) {
                     const vertexOffset = buildingPart.vertexOffset + i;
-                    const colorFactor = 1.0 + (this.layoutAOArray[vertexOffset] - 1.0) * aoIntensity;
+                    const colorFactor = 1.0 + (building.layoutAOArray[vertexOffset] - 1.0) * aoIntensity;
 
                     const r = color.r * colorFactor * 255;
                     const g = color.g * colorFactor * 255;
@@ -790,7 +974,18 @@ class BuildingBucket implements BucketWithGroundEffect {
                     const c1 = (r << 8) | g;
                     const c2 = (b << 8) | e;
 
-                    this.layoutColorArray.emplace(vertexOffset, c1, c2);
+                    building.layoutColorArray.emplace(vertexOffset, c1, c2);
+
+                    if (buildingFeature.hasFauxFacade) {
+                        const r = windowColor.r * 255;
+                        const g = windowColor.g * 255;
+                        const b = windowColor.b * 255;
+                        const e = windowEmissive * 255;
+                        const c1 = (r << 8) | g;
+                        const c2 = (b << 8) | e;
+
+                        building.layoutFacadePaintArray.emplace(vertexOffset, c1, c2);
+                    }
                 }
             }
 
@@ -806,26 +1001,14 @@ class BuildingBucket implements BucketWithGroundEffect {
                     const c1 = (r << 8) | g;
                     const c2 = (b << 8) | e;
 
-                    this.bloomGeometry.layoutColorArray.emplace(vertexOffset, c1, c2);
+                    building.entranceBloom.layoutColorArray.emplace(vertexOffset, c1, c2);
                 }
             }
         }
     }
 
-    needsEvaluation(painter: Painter, layer: BuildingStyleLayer): boolean {
-        // eslint-disable-next-line no-warning-comments
-        // TODO: This code is partially based on model bucket code, we can maybe taylor
-        // this more closely to what fill extrusions are doing, assuming that can
-        // be made more efficient.
-        const projection = painter.transform.projectionOptions;
-        const calculatedBrightness = painter.style.getBrightness();
-        if (!this.uploaded || projection.name !== this.projection.name ||
-            this.brightness !== calculatedBrightness) {
-            this.projection = projection;
-            this.brightness = calculatedBrightness;
-            return true;
-        }
-        return false;
+    needsEvaluation(): boolean {
+        return !this.colorBufferUploaded;
     }
 
     updateReplacement(coord: OverscaledTileID, source: ReplacementSource, layerIndex: number) {
@@ -957,5 +1140,7 @@ function transformFootprintVertices(vertices: Array<Point>, offset: number, coun
 }
 
 register(BuildingBucket, 'BuildingBucket', {omit: ['layers']});
+register(BuildingGeometry, 'BuildingGeometry');
+register(BuildingBloomGeometry, 'BuildingBloomGeometry');
 
 export default BuildingBucket;

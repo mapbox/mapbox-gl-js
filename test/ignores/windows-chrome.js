@@ -49,6 +49,13 @@ const todo = [
     // The appearance looks acceptable.
     "render-tests/building/conflation",
     "render-tests/building/tile-border",
+    "render-tests/building/faux-facade/building-facade-color-theme",
+    "render-tests/building/faux-facade/building-facade-true-with-facade-hint",
+    "render-tests/building/faux-facade/building-facade-true-without-facade-hint",
+    "render-tests/building/faux-facade/emissive-chance",
+    "render-tests/building/faux-facade/feature-state",
+    "render-tests/building/faux-facade/shadows-supported",
+    "render-tests/building/faux-facade/window-ao",
 ];
 
 const skip = [

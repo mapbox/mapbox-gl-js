@@ -29,6 +29,10 @@ class BuildingStyleLayer extends StyleLayer {
         return new BuildingBucket(parameters);
     }
 
+    override cutoffRange(): number {
+        return this.paint.get('building-cutoff-fade-range');
+    }
+
     override hasShadowPass(): boolean {
         return this.paint.get('building-cast-shadows');
     }

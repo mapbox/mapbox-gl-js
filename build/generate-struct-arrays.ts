@@ -145,7 +145,16 @@ import {patternAttributes} from '../src/data/bucket/pattern_attributes';
 import dashAttributes from '../src/data/bucket/dash_attributes';
 import skyboxAttributes from '../src/render/skybox_attributes';
 import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes, wallAttributes} from '../src/data/bucket/fill_extrusion_attributes';
-import {buildingPositionAttributes, buildingNormalAttributes, buildingColorAttributes, buildingBloomAttenuationAttributes} from '../3d-style/data/building_attributes';
+import {
+    buildingPositionAttributes,
+    buildingNormalAttributes,
+    buildingCentroidAttributes,
+    buildingColorAttributes,
+    buildingFacadePaintAttributes,
+    buildingFacadeDataAttributes,
+    buildingFacadeVerticalRangeAttributes,
+    buildingBloomAttenuationAttributes
+} from '../3d-style/data/building_attributes';
 // eslint-disable-next-line import/order
 import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, instanceAttributes, featureAttributes} from '../3d-style/data/model_attributes';
 
@@ -316,7 +325,11 @@ createStructArrayType('fill_extrusion_hidden_by_landmark', hiddenByLandmarkAttri
 // Procedural buildings
 createStructArrayType('building_position', buildingPositionAttributes);
 createStructArrayType('building_normal', buildingNormalAttributes);
+createStructArrayType('building_centroid', buildingCentroidAttributes);
 createStructArrayType('building_color', buildingColorAttributes);
+createStructArrayType('building_facade_paint', buildingFacadePaintAttributes);
+createStructArrayType('building_facade_data', buildingFacadeDataAttributes);
+createStructArrayType('building_facade_vertical_range', buildingFacadeVerticalRangeAttributes);
 createStructArrayType('building_bloom_attenuation', buildingBloomAttenuationAttributes);
 
 // Globe extension arrays
