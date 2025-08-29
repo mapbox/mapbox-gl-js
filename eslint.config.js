@@ -67,7 +67,6 @@ export default tseslint.config(
     // Default rules
     {
         rules: {
-            'no-loss-of-precision': 'off',
             'no-use-before-define': 'off',
             'implicit-arrow-linebreak': 'off',
             'arrow-parens': 'off',
@@ -154,7 +153,6 @@ export default tseslint.config(
             '@typescript-eslint/no-unsafe-call': 'off',
             '@typescript-eslint/no-unsafe-argument': 'off',
             '@typescript-eslint/no-unsafe-assignment': 'off',
-            '@typescript-eslint/no-loss-of-precision': 'off',
             '@typescript-eslint/no-unsafe-member-access': 'off',
             '@typescript-eslint/only-throw-error': 'off',
             '@typescript-eslint/method-signature-style': 'error',

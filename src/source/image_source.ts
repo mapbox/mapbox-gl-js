@@ -760,11 +760,11 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
 
         // Normalizing longitude so that abs(normalizedLongitude - desiredLongitude) <= 180
         const normalizeLongitudeTo = (longitude: number, desiredLongitude: number) => {
-            const diff = Math.round((desiredLongitude - longitude) / 360.);
-            return longitude + diff * 360.;
+            const diff = Math.round((desiredLongitude - longitude) / 360.0);
+            return longitude + diff * 360.0;
         };
 
-        let gapLongitude = normalizeLongitudeTo(longitude + 180., longitudes[0]);
+        let gapLongitude = normalizeLongitudeTo(longitude + 180.0, longitudes[0]);
         const ret = new SegmentVector();
 
         const addTriangleRange = (triangleOffset: number, triangleCount: number) => {
@@ -782,7 +782,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         // +0.01 - just to be sure that we don't draw "bad" triangles because of calculation errors
         const distanceToDrop = 0.51 * this.maxLongitudeTriangleSize;
         assert(distanceToDrop > 0);
-        assert(distanceToDrop < 180.);
+        assert(distanceToDrop < 180.0);
 
         if (Math.abs(longitudes[0] - gapLongitude) <= distanceToDrop) {
             const minIdx = upperBound(longitudes, 0, longitudes.length, gapLongitude + distanceToDrop);
@@ -790,14 +790,14 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
                 // Rotated 90 degrees, and one side is almost zero?
                 return ret;
             }
-            const maxIdx = lowerBound(longitudes, minIdx + 1, longitudes.length, gapLongitude + 360. - distanceToDrop);
+            const maxIdx = lowerBound(longitudes, minIdx + 1, longitudes.length, gapLongitude + 360.0 - distanceToDrop);
             const count = maxIdx - minIdx;
             addTriangleRange(minIdx, count);
             return ret;
         }
 
         if (gapLongitude < longitudes[0]) {
-            gapLongitude += 360.;
+            gapLongitude += 360.0;
         }
 
         // Looking for the range inside or in the end of our triangles array to skip
