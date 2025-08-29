@@ -5,12 +5,70 @@
         "procedural-buildings": {
             "type": "vector",
             "url": "mapbox://mapbox-geodata.procedural-buildings-v1",
-            "maxzoom": 15
+            "maxzoom": 15,
+            "promoteId": ["coalesce", ["get", "building_id"], ["id"]]
         }
     },
     "sprite": "",
     "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
     "projection": {"name": "globe"},
+    "schema": {
+        "colorBuildingHighlight": {
+            "default": "hsl(34, 30%, 93%)",
+            "type": "color",
+            "metadata": {
+                "mapbox:title": "Color",
+                "mapbox:description": "Set a custom color for building fill extrusion when setting highlight state."
+            }
+        },
+        "colorBuildingSelect": {
+            "default": "hsl(214, 82%, 63%)",
+            "type": "color",
+            "metadata": {
+                "mapbox:title": "Color",
+                "mapbox:description": "Set a custom color for building fill extrusion when setting select state."
+            }
+        }
+    },
+    "featuresets": {
+        "buildings": {
+            "metadata": {
+                "mapbox:title": "Buildings",
+                "mapbox:description": "Featureset describing the buildings.",
+                "mapbox:states": [
+                {
+                    "id": "highlight",
+                    "type": "boolean",
+                    "doc": "When `true`, the building is highlighted. Use this state to create a temporary effect (e.g. hover).",
+                    "importConfigs": ["colorBuildingHighlight"]
+                },
+                {
+                    "id": "select",
+                    "type": "boolean",
+                    "doc": "When `true`, the building is selected. Use this state to create a permanent effect. Note: the `select` state has a higher priority than `highlight`.",
+                    "importConfigs": ["colorBuildingSelect"]
+                }
+                ],
+                "mapbox:properties": [
+                {
+                    "name": "group",
+                    "type": "string",
+                    "doc": "A high-level building group like building-2d, building-3d, etc."
+                }
+                ]
+            },
+            "selectors": [
+                {
+                "layer": "procedural-buildings",
+                "properties": {
+                    "group": "building-3d"
+                },
+                "featureNamespace": "building-A",
+                "_uniqueFeatureID": true
+                }
+            ]
+        }
+    },
     "layers": [
         {
             "id": "procedural-buildings",
@@ -246,142 +304,172 @@
                     0
                 ],
                 "building-emissive-strength": [
-                    "match",
-                    [
-                        "get",
-                        "building-part"
-                    ],
-                    "window",
+                    "case",
+                    ["to-boolean", ["feature-state", "select"]],
                     [
                         "interpolate",
-                        [
-                            "linear"
-                        ],
-                        [
-                            "measure-light",
-                            "brightness"
-                        ],
-                        0.1,
-                        [
-                            "random",
-                            0,
-                            0.1,
-                            [
-                                "id"
-                            ]
-                        ],
-                        0.4,
-                        0.8
+                        ["linear"],
+                        ["at", 2, ["to-hsla", ["config", "colorBuildingSelect"]]],
+                        50,
+                        0.6,
+                        90,
+                        0.4
                     ],
-                    "door",
-                    0.5,
-                    0
-                ],
-                "building-color": [
-                    "match",
+                    ["to-boolean", ["feature-state", "highlight"]],
                     [
-                        "get",
-                        "building-part"
+                        "interpolate",
+                        ["linear"],
+                        ["at", 2, ["to-hsla", ["config", "colorBuildingHighlight"]]],
+                        50,
+                        0.6,
+                        90,
+                        0.4
                     ],
-                    "window",
-                    [
-                        "hsl",
-                        38,
-                        [
-                            "random",
-                            10,
-                            20,
-                            [
-                                "id"
-                            ]
-                        ],
-                        90
-                    ],
-                    "wall",
-                    "hsl(38, 40%, 96%)",
-                    "roof",
                     [
                         "match",
                         [
                             "get",
-                            "roof_type"
+                            "building-part"
                         ],
+                        "window",
                         [
-                            "gabled",
-                            "hipped",
-                            "mansard",
-                            "pyramidal"
-                        ],
-                        [
-                            "hsl",
+                            "interpolate",
+                            [
+                                "linear"
+                            ],
+                            [
+                                "measure-light",
+                                "brightness"
+                            ],
+                            0.1,
                             [
                                 "random",
-                                23,
-                                32,
+                                0,
+                                0.1,
                                 [
                                     "id"
                                 ]
                             ],
-                            65,
+                            0.4,
+                            0.8
+                        ],
+                        "door",
+                        0.5,
+                        0
+                    ]
+                ],
+                "building-color": [
+                    "case",
+                    ["to-boolean", ["feature-state", "select"]],
+                    ["config", "colorBuildingSelect"],
+                    ["to-boolean", ["feature-state", "highlight"]],
+                    ["config", "colorBuildingHighlight"],
+                    [
+                        "match",
+                        [
+                            "get",
+                            "building-part"
+                        ],
+                        "window",
+                        [
+                            "hsl",
+                            38,
                             [
-                                "at",
+                                "random",
+                                10,
+                                20,
                                 [
-                                    "round",
+                                    "id"
+                                ]
+                            ],
+                            90
+                        ],
+                        "wall",
+                        "hsl(38, 40%, 96%)",
+                        "roof",
+                        [
+                            "match",
+                            [
+                                "get",
+                                "roof_type"
+                            ],
+                            [
+                                "gabled",
+                                "hipped",
+                                "mansard",
+                                "pyramidal"
+                            ],
+                            [
+                                "hsl",
+                                [
+                                    "random",
+                                    23,
+                                    32,
                                     [
-                                        "random",
-                                        0,
-                                        1,
-                                        [
-                                            "id"
-                                        ]
+                                        "id"
                                     ]
                                 ],
+                                65,
                                 [
-                                    92,
-                                    96
-                                ]
-                            ]
-                        ],
-                        "skillion",
-                        [
-                            "hsl",
-                            32,
-                            80,
-                            95
-                        ],
-                        [
-                            "hsl",
-                            [
-                                "random",
-                                20,
-                                30,
-                                [
-                                    "id"
+                                    "at",
+                                    [
+                                        "round",
+                                        [
+                                            "random",
+                                            0,
+                                            1,
+                                            [
+                                                "id"
+                                            ]
+                                        ]
+                                    ],
+                                    [
+                                        92,
+                                        96
+                                    ]
                                 ]
                             ],
-                            50,
+                            "skillion",
                             [
-                                "random",
-                                90,
-                                94,
+                                "hsl",
+                                32,
+                                80,
+                                95
+                            ],
+                            [
+                                "hsl",
                                 [
-                                    "id"
+                                    "random",
+                                    20,
+                                    30,
+                                    [
+                                        "id"
+                                    ]
+                                ],
+                                50,
+                                [
+                                    "random",
+                                    90,
+                                    94,
+                                    [
+                                        "id"
+                                    ]
                                 ]
                             ]
+                        ],
+                        "door",
+                        [
+                            "hsl",
+                            0.0,
+                            0.0,
+                            100.0
+                        ],
+                        [
+                            "hsl",
+                            41,
+                            80,
+                            96
                         ]
-                    ],
-                    "door",
-                    [
-                        "hsl",
-                        0.0,
-                        0.0,
-                        100.0
-                    ],
-                    [
-                        "hsl",
-                        41,
-                        80,
-                        96
                     ]
                 ],
                 "building-vertical-scale": [
