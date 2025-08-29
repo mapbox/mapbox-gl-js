@@ -19,11 +19,13 @@ import type {StylePropertySpecification} from '../../../src/style-spec/style-spe
 export type LayoutProps = {
     "visibility": DataConstantProperty<"visible" | "none">;
     "model-id": DataDrivenProperty<string>;
+    "model-allow-density-reduction": DataConstantProperty<boolean>;
 };
 let layout: Properties<LayoutProps>;
 export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
     "visibility": new DataConstantProperty(styleSpec["layout_model"]["visibility"]),
     "model-id": new DataDrivenProperty(styleSpec["layout_model"]["model-id"]),
+    "model-allow-density-reduction": new DataConstantProperty(styleSpec["layout_model"]["model-allow-density-reduction"]),
 }));
 
 export type PaintProps = {
