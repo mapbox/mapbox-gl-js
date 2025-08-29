@@ -105,7 +105,7 @@ function getTouchById(mapTouches: Array<Touch>, points: Array<Point>, identifier
 const ZOOM_THRESHOLD = 0.1;
 
 function getZoomDelta(distance: number, lastDistance: number) {
-    return Math.log(distance / lastDistance) / Math.LN2;
+    return Math.log2(distance / lastDistance);
 }
 
 export class TouchZoomHandler extends TwoTouchHandler {

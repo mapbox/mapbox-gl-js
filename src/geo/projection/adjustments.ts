@@ -47,7 +47,7 @@ export function getProjectionInterpolationT(
     // The interpolation ranges are manually defined based on what makes
     // sense in a 1024px wide map. Adjust the ranges to the current size
     // of the map. The smaller the map, the earlier you can start unskewing.
-    const rangeAdjustment = Math.log(size / 1024) / Math.LN2;
+    const rangeAdjustment = Math.log2(size / 1024);
     const zoomA = range[0] + rangeAdjustment;
     const zoomB = range[1] + rangeAdjustment;
     const t = smoothstep(zoomA, zoomB, zoom);
@@ -80,7 +80,7 @@ export function getZoomAdjustment(projection: Projection, loc: LngLat) {
 
     const scale = Math.sqrt((mdx * mdx + mdy * mdy) / (pdx * pdx + pdy * pdy));
 
-    return Math.log(scale) / Math.LN2;
+    return Math.log2(scale);
 }
 
 function getShearAdjustment(projection: Projection, zoom: number, loc: LngLat, interpT: number, withoutRotation?: boolean) {

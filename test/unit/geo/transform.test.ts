@@ -36,7 +36,7 @@ describe('transform', () => {
         expect(transform.size.equals(new Point(500, 500))).toEqual(true);
         expect(transform.centerPoint.equals(new Point(250, 250))).toEqual(true);
         expect(transform.scaleZoom(0)).toEqual(-Infinity);
-        expect(transform.scaleZoom(10)).toEqual(3.3219280948873626);
+        expect(transform.scaleZoom(10)).toEqual(3.321928094887362);
         expect(transform.point).toEqual(new Point(262144, 262144));
         expect(transform.height).toEqual(500);
         expect(fixedLngLat(transform.pointLocation(new Point(250, 250)))).toEqual({lng: 0, lat: -0});

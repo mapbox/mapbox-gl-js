@@ -841,7 +841,7 @@ export function getCoordinatesCenterTileID(coords: Array<MercatorCoordinate>): C
     const dx = maxX - minX;
     const dy = maxY - minY;
     const dMax = Math.max(dx, dy);
-    const zoom = Math.max(0, Math.floor(-Math.log(dMax) / Math.LN2));
+    const zoom = Math.max(0, Math.floor(-Math.log2(dMax)));
     const tilesAtZoom = Math.pow(2, zoom);
 
     let x = Math.floor((minX + maxX) / 2 * tilesAtZoom);

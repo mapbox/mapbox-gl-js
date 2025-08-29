@@ -388,7 +388,7 @@ CompoundExpression.register(expressions, {
     'log2': [
         NumberType,
         [NumberType],
-        (ctx, [n]) => Math.log(n.evaluate(ctx)) / Math.LN2
+        (ctx, [n]) => Math.log2(n.evaluate(ctx))
     ],
     'sin': [
         NumberType,

@@ -1551,7 +1551,7 @@ class Transform {
     get unmodified(): boolean { return this._unmodified; }
 
     zoomScale(zoom: number): number { return Math.pow(2, zoom); }
-    scaleZoom(scale: number): number { return Math.log(scale) / Math.LN2; }
+    scaleZoom(scale: number): number { return Math.log2(scale); }
 
     // Transform from LngLat to Point in world coordinates [-180, 180] x [90, -90] --> [0, this.worldSize] x [0, this.worldSize]
     project(lnglat: LngLat): Point {

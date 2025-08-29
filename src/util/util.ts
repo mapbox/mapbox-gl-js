@@ -362,7 +362,7 @@ export function uuid(): string {
  * @private
  */
 export function isPowerOfTwo(value: number): boolean {
-    return (Math.log(value) / Math.LN2) % 1 === 0;
+    return (Math.log2(value)) % 1 === 0;
 }
 
 /**
@@ -371,7 +371,7 @@ export function isPowerOfTwo(value: number): boolean {
  */
 export function nextPowerOfTwo(value: number): number {
     if (value <= 1) return 1;
-    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+    return Math.pow(2, Math.ceil(Math.log2(value)));
 }
 
 /**
@@ -380,7 +380,7 @@ export function nextPowerOfTwo(value: number): number {
  */
 export function prevPowerOfTwo(value: number): number {
     if (value <= 1) return 1;
-    return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
+    return Math.pow(2, Math.floor(Math.log2(value)));
 }
 
 /**
