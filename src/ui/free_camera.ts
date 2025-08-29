@@ -22,7 +22,7 @@ function updateTransformPosition(matrix: mat4, position: vec3) {
 function orientationFromPitchBearing(pitch: number, bearing: number): quat {
     // Both angles are considered to define CW rotation around their respective axes.
     // Values have to be negated to achieve the proper quaternion in left handed coordinate space
-    const orientation = quat.identity([] as unknown as quat);
+    const orientation = quat.identity([]);
     quat.rotateZ(orientation, orientation, -bearing);
     quat.rotateX(orientation, orientation, -pitch);
     return orientation;
@@ -42,14 +42,14 @@ export function orientationFromFrame(forward: vec3, up: vec3): quat | null | und
     if (vec3.length(xyForward as [number, number, number]) >= epsilon) {
         // Roll rotation can be seen as the right vector not being on the xy-plane, ie. right[2] != 0.0.
         // It can be negated by projecting the up vector on top of the forward vector.
-        const xyDir = vec3.normalize([] as unknown as vec3, xyForward as [number, number, number]);
+        const xyDir = vec3.normalize([], xyForward as [number, number, number]);
         vec3.scale(xyUp as [number, number, number], xyDir, vec3.dot(xyUp as [number, number, number], xyDir));
 
         up[0] = xyUp[0];
         up[1] = xyUp[1];
     }
 
-    const right = vec3.cross([] as unknown as vec3, up, forward);
+    const right = vec3.cross([], up, forward);
     if (vec3.len(right) < epsilon) {
         return null;
     }
@@ -191,7 +191,7 @@ class FreeCamera {
     _orientation: quat;
 
     constructor(position?: vec3 | null, orientation?: quat | null) {
-        this._transform = mat4.identity([] as unknown as mat4);
+        this._transform = mat4.identity([]);
         this.orientation = orientation;
         this.position = position;
     }
@@ -217,7 +217,7 @@ class FreeCamera {
     }
 
     set orientation(value: quat | null | undefined) {
-        this._orientation = value || quat.identity([] as unknown as quat);
+        this._orientation = value || quat.identity([]);
         if (value) {
             updateTransformOrientation(this._transform, this._orientation);
         }
@@ -259,7 +259,7 @@ class FreeCamera {
     }
 
     getCameraToWorld(worldSize: number, pixelsPerMeter: number): mat4 {
-        const cameraToWorld = new Float64Array(16) as unknown as mat4;
+        const cameraToWorld = new Float64Array(16);
         mat4.invert(cameraToWorld, this.getWorldToCamera(worldSize, pixelsPerMeter));
         return cameraToWorld;
     }
@@ -272,9 +272,9 @@ class FreeCamera {
         const invPosition = this.position;
 
         vec3.scale(invPosition, invPosition, -worldSize);
-        const matrix = new Float64Array(16) as unknown as mat4;
-        mat4.fromScaling(matrix as unknown as mat4, [uniformScale, uniformScale, uniformScale]);
-        mat4.translate(matrix as unknown as mat4, matrix as unknown as mat4, invPosition);
+        const matrix = new Float64Array(16);
+        mat4.fromScaling(matrix, [uniformScale, uniformScale, uniformScale]);
+        mat4.translate(matrix, matrix, invPosition);
 
         // Adjust scale on z (3rd column 3rd row)
         matrix[10] *= pixelsPerMeter;
@@ -290,10 +290,10 @@ class FreeCamera {
 
         // worldToCamera: flip * cam^-1 * zScale
         // cameraToWorld: (flip * cam^-1 * zScale)^-1 => (zScale^-1 * cam * flip^-1)
-        const matrix = new Float64Array(16) as unknown as mat4;
+        const matrix = new Float64Array(16);
 
         // Compute inverse of camera matrix and post-multiply negated translation
-        const invOrientation = new Float64Array(4) as unknown as quat;
+        const invOrientation = new Float64Array(4);
         const invPosition = this.position;
 
         quat.conjugate(invOrientation, this._orientation);
@@ -317,7 +317,7 @@ class FreeCamera {
     }
 
     getCameraToClipPerspective(fovy: number, aspectRatio: number, nearZ: number, farZ: number): mat4 {
-        const matrix = new Float64Array(16) as unknown as mat4;
+        const matrix = new Float64Array(16);
         mat4.perspective(matrix, fovy, aspectRatio, nearZ, farZ);
         return matrix;
     }
@@ -330,7 +330,7 @@ class FreeCamera {
         nearZ: number,
         farZ: number,
     ): mat4 {
-        const matrix = new Float64Array(16) as unknown as mat4;
+        const matrix = new Float64Array(16);
         mat4.ortho(matrix, left, right, bottom, top, nearZ, farZ);
         return matrix;
     }

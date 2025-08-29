@@ -75,7 +75,7 @@ function fogMatrixForModel(modelMatrix: mat4, transform: Transform): mat4 {
     // convert model matrix from the default world size to the one used by the fog
     const fogMatrix = [...modelMatrix] as mat4;
     const scale = transform.cameraWorldSizeForFog / transform.worldSize;
-    const scaleMatrix = mat4.identity([] as unknown as mat4);
+    const scaleMatrix = mat4.identity([]);
     mat4.scale(scaleMatrix, scaleMatrix, [scale, scale, 1]);
     mat4.multiply(fogMatrix, scaleMatrix, fogMatrix);
     mat4.multiply(fogMatrix, transform.worldToFogMatrix, fogMatrix);
@@ -174,10 +174,10 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     if (painter.transform.projection.zAxisUnit === "pixels") {
         lightingMatrix = [...sortedMesh.nodeModelMatrix];
     } else {
-        lightingMatrix = mat4.multiply([] as unknown as mat4, modelParameters.zScaleMatrix, sortedMesh.nodeModelMatrix);
+        lightingMatrix = mat4.multiply([], modelParameters.zScaleMatrix, sortedMesh.nodeModelMatrix);
     }
     mat4.multiply(lightingMatrix, modelParameters.negCameraPosMatrix, lightingMatrix);
-    const normalMatrix = mat4.invert([] as unknown as mat4, lightingMatrix);
+    const normalMatrix = mat4.invert([], lightingMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
 
     const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
@@ -282,7 +282,7 @@ function prepareMeshes(transform: Transform, node: ModelNode, modelMatrix: mat4,
         nodeModelMatrix = [...modelMatrix];
     }
     mat4.multiply(nodeModelMatrix, nodeModelMatrix, node.matrix);
-    const worldViewProjection = mat4.multiply([] as unknown as mat4, projectionMatrix, nodeModelMatrix);
+    const worldViewProjection = mat4.multiply([], projectionMatrix, nodeModelMatrix);
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (mesh.material.alphaMode !== 'BLEND') {
@@ -291,7 +291,7 @@ function prepareMeshes(transform: Transform, node: ModelNode, modelMatrix: mat4,
                 continue;
             }
 
-            const centroidPos = vec3.transformMat4([] as unknown as vec3, mesh.centroid, worldViewProjection);
+            const centroidPos = vec3.transformMat4([], mesh.centroid, worldViewProjection);
             // Filter meshes behind the camera if in perspective mode
             if (!transform.isOrthographic && centroidPos[2] <= 0.0) continue;
             const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix};
@@ -389,7 +389,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     const modelParametersVector: ModelParameters[] = [];
 
     const mercCameraPos = painter.transform.getFreeCameraOptions().position;
-    const cameraPos = vec3.scale([] as unknown as vec3, [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
+    const cameraPos = vec3.scale([], [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
     vec3.negate(cameraPos, cameraPos);
     const transparentMeshes: SortedMesh[] = [];
     const opaqueMeshes: SortedMesh[] = [];
@@ -406,10 +406,10 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         model.computeModelMatrix(painter, rotation, scale, translation, true, true, false);
 
         // compute model parameters matrices
-        const negCameraPosMatrix = mat4.identity([] as unknown as mat4);
+        const negCameraPosMatrix = mat4.identity([]);
         const modelMetersPerPixel = getMetersPerPixelAtLatitude(model.position.lat, painter.transform.zoom);
         const modelPixelsPerMeter = 1.0 / modelMetersPerPixel;
-        const zScaleMatrix = mat4.fromScaling([] as unknown as mat4, [1.0, 1.0, modelPixelsPerMeter]);
+        const zScaleMatrix = mat4.fromScaling([], [1.0, 1.0, modelPixelsPerMeter]);
         mat4.translate(negCameraPosMatrix, negCameraPosMatrix, cameraPos);
         const modelParameters = {zScaleMatrix, negCameraPosMatrix};
         modelParametersVector.push(modelParameters);
@@ -779,13 +779,13 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
     }
 
     const mercCameraPos = painter.transform.getFreeCameraOptions().position;
-    const cameraPos = vec3.scale([] as unknown as vec3, [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
-    const negCameraPos = vec3.negate([] as unknown as vec3, cameraPos);
+    const cameraPos = vec3.scale([], [mercCameraPos.x, mercCameraPos.y, mercCameraPos.z], painter.transform.worldSize);
+    const negCameraPos = vec3.negate([], cameraPos);
     // compute model parameters matrices
-    const negCameraPosMatrix = mat4.identity([] as unknown as mat4);
+    const negCameraPosMatrix = mat4.identity([]);
     const metersPerPixel = getMetersPerPixelAtLatitude(tr.center.lat, tr.zoom);
     const pixelsPerMeter = 1.0 / metersPerPixel;
-    const zScaleMatrix = mat4.fromScaling([] as unknown as mat4, [1.0, 1.0, pixelsPerMeter]);
+    const zScaleMatrix = mat4.fromScaling([], [1.0, 1.0, pixelsPerMeter]);
     mat4.translate(negCameraPosMatrix, negCameraPosMatrix, negCameraPos);
     const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
 
@@ -815,7 +815,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
             step = 1;
         }
 
-        const invTileMatrix = new Float64Array(16) as unknown as mat4;
+        const invTileMatrix = new Float64Array(16);
         const cameraPosTileCoord = vec3.create();
         const cameraPointTileCoord = new Point(0.0, 0.0);
 
@@ -897,11 +897,11 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 }
 
                 // keep model and nodemodel matrices separate for rendering door lights
-                const nodeModelMatrix = mat4.multiply([] as unknown as mat4, tileModelMatrix, node.matrix);
-                const wvpForNode = mat4.multiply([] as unknown as mat4, tr.expandedFarZProjMatrix, nodeModelMatrix);
+                const nodeModelMatrix = mat4.multiply([], tileModelMatrix, node.matrix);
+                const wvpForNode = mat4.multiply([], tr.expandedFarZProjMatrix, nodeModelMatrix);
                 // Lights come in tilespace so wvp should not include node.matrix when rendering door ligths
-                const wvpForTile = mat4.multiply([] as unknown as mat4, tr.expandedFarZProjMatrix, tileModelMatrix);
-                const anchorPos = vec4.transformMat4([] as unknown as vec4, [anchorX, anchorY, elevation, 1.0], wvpForNode);
+                const wvpForTile = mat4.multiply([], tr.expandedFarZProjMatrix, tileModelMatrix);
+                const anchorPos = vec4.transformMat4([], [anchorX, anchorY, elevation, 1.0], wvpForNode);
                 const depth = anchorPos[2];
 
                 node.hidden = false;
@@ -956,9 +956,9 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                 const nodeInfo = sortedNode.nodeInfo;
                 const node = nodeInfo.node;
 
-                let lightingMatrix = mat4.multiply([] as unknown as mat4, zScaleMatrix, sortedNode.tileModelMatrix);
+                let lightingMatrix = mat4.multiply([], zScaleMatrix, sortedNode.tileModelMatrix);
                 mat4.multiply(lightingMatrix, negCameraPosMatrix, lightingMatrix);
-                const normalMatrix = mat4.invert([] as unknown as mat4, lightingMatrix);
+                const normalMatrix = mat4.invert([], lightingMatrix);
                 mat4.transpose(normalMatrix, normalMatrix);
                 mat4.scale(normalMatrix, normalMatrix, normalScale as [number, number, number]);
 
@@ -1125,8 +1125,8 @@ function calculateTileShadowPassCulling(bucket: ModelBucket, renderData: RenderD
     aabb.min[2] += bucket.terrainElevationMin;
     aabb.max[2] += bucket.terrainElevationMax;
 
-    vec3.transformMat4(aabb.min, aabb.min, renderData.tileMatrix as unknown as mat4);
-    vec3.transformMat4(aabb.max, aabb.max, renderData.tileMatrix as unknown as mat4);
+    vec3.transformMat4(aabb.min, aabb.min, renderData.tileMatrix);
+    vec3.transformMat4(aabb.max, aabb.max, renderData.tileMatrix);
     const intersection = aabb.intersects(shadowRenderer.getCurrentCascadeFrustum());
     if (painter.currentShadowCascade === 0) {
         bucket.isInsideFirstShadowMapFrustum = intersection === 2;

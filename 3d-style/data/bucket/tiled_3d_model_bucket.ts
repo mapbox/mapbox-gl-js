@@ -596,7 +596,7 @@ class Tiled3dModelBucket implements Bucket {
 
         const tmpVertex = [0, 0, 0];
 
-        const nodeInverse = mat4.identity([] as unknown as mat4);
+        const nodeInverse = mat4.identity([]);
 
         for (const nodeInfo of this.getNodesInfo()) {
             assert(nodeInfo.node.meshes.length > 0);

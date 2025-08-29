@@ -42,7 +42,6 @@ import type {ProjectionSpecification} from '../../../src/style-spec/types';
 import type Painter from '../../../src/render/painter';
 import type {BucketWithGroundEffect} from '../../../src/render/draw_fill_extrusion';
 import type {AreaLight} from '../model';
-import type {vec3, vec4} from 'gl-matrix';
 import type Color from '../../../src/style-spec/util/color';
 
 export const BUILDING_VISIBLE: number = 0x0;
@@ -426,9 +425,9 @@ class BuildingBucket implements BucketWithGroundEffect {
                         const dx = x1 - x0;
                         const dy = y1 - y0;
                         const width = Math.hypot(dx, dy);
-                        const normal: vec3 = [dy / width, -dx / width, 0];
-                        const pos: vec3 = [x0 + dx * 0.5, y0 + dy * 0.5, elevation];
-                        const points: vec4 = [x0, y0, x1, y1];
+                        const normal: [number, number, number] = [dy / width, -dx / width, 0];
+                        const pos: [number, number, number] = [x0 + dx * 0.5, y0 + dy * 0.5, elevation];
+                        const points: [number, number, number, number] = [x0, y0, x1, y1];
                         areaLights.push({pos, normal, width, height, depth, points});
                     }
 

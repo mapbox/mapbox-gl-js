@@ -122,7 +122,7 @@ function drawSymbols(painter: Painter, sourceCache: SourceCache, layer: SymbolSt
 
 function computeGlobeCameraUp(transform: Transform): [number, number, number] {
     const viewMatrix = transform._camera.getWorldToCamera(transform.worldSize, 1);
-    const viewToEcef = mat4.multiply([] as unknown as mat4, viewMatrix, transform.globeMatrix);
+    const viewToEcef = mat4.multiply([], viewMatrix, transform.globeMatrix);
     mat4.invert(viewToEcef, viewToEcef);
 
     const cameraUpVector: [number, number, number] = [0, 0, 0];

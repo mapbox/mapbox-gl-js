@@ -16,7 +16,7 @@ import {base64DecToArr} from '../../src/util/util';
 import TriangleGridIndex from '../../src/util/triangle_grid_index';
 import {HEIGHTMAP_DIM} from '../data/model';
 
-import type {vec2, vec4} from 'gl-matrix';
+import type {vec2} from 'gl-matrix';
 import type {Class} from '../../src/types/class';
 import type {Footprint} from '../util/conflation';
 import type {TextureImage} from '../../src/render/texture';
@@ -93,7 +93,7 @@ function convertMaterial(materialDesc: MaterialDescription, textures: Array<Mode
 }
 
 function computeCentroid(indexArray: ArrayBufferView, vertexArray: ArrayBufferView): vec3 {
-    const out: vec3 = [0.0, 0.0, 0.0];
+    const out: [number, number, number] = [0.0, 0.0, 0.0];
     // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'ArrayBufferView'.
     const indexSize = indexArray.length;
     if (indexSize > 0) {
@@ -258,7 +258,7 @@ function convertMeshes(gltf: any, textures: Array<ModelTexture>): Array<Array<Me
 function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): ModelNode {
     const {matrix, rotation, translation, scale, mesh, extras, children} = nodeDesc;
     const node = {} as ModelNode;
-    node.matrix = matrix || mat4.fromRotationTranslationScale([] as unknown as mat4, rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
+    node.matrix = matrix || mat4.fromRotationTranslationScale([], rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
     if (mesh !== undefined) {
         node.meshes = meshes[mesh];
         const anchor: vec2 = node.anchor = [0, 0];
@@ -388,7 +388,7 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
 
     let baseVertex = 0;
 
-    const tempVertex = [] as unknown as vec3;
+    const tempVertex = [];
     for (const mesh of meshes) {
         baseVertex = vertices.length;
 
@@ -590,14 +590,14 @@ export function calculateLightsMesh(lights: Array<AreaLight>, zScale: number, in
         // door posts. Later, additional vertices at depth distance from door could be reconsidered.
         // 0.01f to prevent intersection with door post.
         const width = light.width - 2 * light.depth * zScale * (horizontalSpread + 0.01);
-        const v1 = vec3.scaleAndAdd([] as unknown as vec3, light.pos, tangent as [number, number, number], width / 2);
-        const v2 = vec3.scaleAndAdd([] as unknown as vec3, light.pos, tangent as [number, number, number], -width / 2);
+        const v1 = vec3.scaleAndAdd([], light.pos, tangent as [number, number, number], width / 2);
+        const v2 = vec3.scaleAndAdd([], light.pos, tangent as [number, number, number], -width / 2);
         const v0 = [v1[0], v1[1], v1[2] + light.height];
         const v3 = [v2[0], v2[1], v2[2] + light.height];
 
-        const v1extrusion = vec3.scaleAndAdd([] as unknown as vec3, light.normal, tangent as [number, number, number], horizontalSpread);
+        const v1extrusion = vec3.scaleAndAdd([], light.normal, tangent as [number, number, number], horizontalSpread);
         vec3.scale(v1extrusion, v1extrusion, fallOff);
-        const v2extrusion = vec3.scaleAndAdd([] as unknown as vec3, light.normal, tangent as [number, number, number], -horizontalSpread);
+        const v2extrusion = vec3.scaleAndAdd([], light.normal, tangent as [number, number, number], -horizontalSpread);
         vec3.scale(v2extrusion, v2extrusion, fallOff);
 
         vec3.add(v1extrusion, v1, v1extrusion);
@@ -691,9 +691,9 @@ function decodeLights(base64: string): Array<AreaLight> {
         const dx = x1 - x0;
         const dy = y1 - y0;
         const width = Math.hypot(dx, dy);
-        const normal: vec3 = [dy / width, -dx / width, 0];
-        const pos: vec3 = [x0 + dx * 0.5, y0 + dy * 0.5, elevation];
-        const points: vec4 = [x0, y0, x1, y1];
+        const normal: [number, number, number] = [dy / width, -dx / width, 0];
+        const pos: [number, number, number] = [x0 + dx * 0.5, y0 + dy * 0.5, elevation];
+        const points: [number, number, number, number] = [x0, y0, x1, y1];
         lights.push({pos, normal, width, height, depth, points});
     }
     return lights;

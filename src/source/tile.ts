@@ -92,7 +92,7 @@ const BOUNDS_FEATURE = (() => {
  * Returns a matrix that can be used to convert from tile coordinates to viewport pixel coordinates.
  */
 function getPixelPosMatrix(transform: Transform, tileID: OverscaledTileID) {
-    const t = mat4.fromScaling([] as unknown as mat4, [transform.width * 0.5, -transform.height * 0.5, 1]);
+    const t = mat4.fromScaling([], [transform.width * 0.5, -transform.height * 0.5, 1]);
     mat4.translate(t, t, [1, -1, 0]);
     mat4.multiply(t, t, transform.calculateProjMatrix(tileID.toUnwrapped()));
     return Float32Array.from(t);
@@ -844,10 +844,10 @@ class Tile {
             mercatorX = (mercatorX - camX) * tr._pixelsPerMercatorPixel + camX;
             mercatorY = (mercatorY - camY) * tr._pixelsPerMercatorPixel + camY;
             const mercatorPos: vec3 = [mercatorX * tr.worldSize, mercatorY * tr.worldSize, 0];
-            vec3.transformMat4(mercatorPos, mercatorPos, worldToECEFMatrix as unknown as mat4);
+            vec3.transformMat4(mercatorPos, mercatorPos, worldToECEFMatrix);
             ecef = interpolateVec3(ecef, mercatorPos, phase);
         }
-        const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix as unknown as mat4);
+        const gp = vec3.transformMat4(ecef, ecef, normalizationMatrix);
         return gp;
     }
 

@@ -51,23 +51,23 @@ const GLOBE_LOW_ZOOM_TILE_AABBS = [
 ];
 
 export function globePointCoordinate(tr: Transform, x: number, y: number, clampToHorizon: boolean = true): MercatorCoordinate | null | undefined {
-    const point0 = vec3.scale([] as unknown as vec3, tr._camera.position, tr.worldSize);
+    const point0 = vec3.scale([], tr._camera.position, tr.worldSize);
     const point1: vec4 = [x, y, 1, 1];
 
     vec4.transformMat4(point1, point1, tr.pixelMatrixInverse);
     vec4.scale(point1, point1, 1 / point1[3]);
 
-    const p0p1 = vec3.sub([] as unknown as vec3, point1 as unknown as vec3, point0);
-    const dir = vec3.normalize([] as unknown as vec3, p0p1);
+    const p0p1 = vec3.sub([], point1, point0);
+    const dir = vec3.normalize([], p0p1);
 
     // Find closest point on the sphere to the ray. This is a bit more involving operation
     // if the ray is not intersecting with the sphere, in which case we "clamp" the ray
     // to the surface of the sphere, i.e. find a tangent vector that originates from the camera position
     const m = tr.globeMatrix;
     const globeCenter: vec3 = [m[12], m[13], m[14]];
-    const p0toCenter = vec3.sub([] as unknown as vec3, globeCenter, point0);
+    const p0toCenter = vec3.sub([], globeCenter, point0);
     const p0toCenterDist = vec3.length(p0toCenter);
-    const centerDir = vec3.normalize([] as unknown as vec3, p0toCenter);
+    const centerDir = vec3.normalize([], p0toCenter);
     const radius = tr.worldSize / (2.0 * Math.PI);
     const cosAngle = vec3.dot(centerDir, dir);
 
@@ -80,23 +80,23 @@ export function globePointCoordinate(tr: Transform, x: number, y: number, clampT
         // Find the tangent vector by interpolating between camera-to-globe and camera-to-click vectors.
         // First we'll find a point P1 on the clicked ray that forms a right-angled triangle with the camera position
         // and the center of the globe. Angle of the tanget vector is then used as the interpolation factor
-        const clampedP1 = [] as unknown as vec3;
-        const origoToP1 = [] as unknown as vec3;
+        const clampedP1 = [];
+        const origoToP1 = [];
 
         vec3.scale(clampedP1, dir, p0toCenterDist / cosAngle);
         vec3.normalize(origoToP1, vec3.sub(origoToP1, clampedP1, p0toCenter));
         vec3.normalize(dir, vec3.add(dir, p0toCenter, vec3.scale(dir, origoToP1, Math.tan(origoTangentAngle) * p0toCenterDist)));
     }
 
-    const pointOnGlobe = [] as unknown as vec3;
+    const pointOnGlobe = [];
     const ray = new Ray(point0, dir);
 
     ray.closestPointOnSphere(globeCenter, radius, pointOnGlobe);
 
     // Transform coordinate axes to find lat & lng of the position
-    const xa = vec3.normalize([] as unknown as vec3, getColumn(m, 0) as unknown as vec3);
-    const ya = vec3.normalize([] as unknown as vec3, getColumn(m, 1) as unknown as vec3);
-    const za = vec3.normalize([] as unknown as vec3, getColumn(m, 2) as unknown as vec3);
+    const xa = vec3.normalize([], getColumn(m, 0));
+    const ya = vec3.normalize([], getColumn(m, 1));
+    const za = vec3.normalize([], getColumn(m, 2));
 
     const xp = vec3.dot(xa, pointOnGlobe);
     const yp = vec3.dot(ya, pointOnGlobe);
@@ -116,11 +116,11 @@ export function globePointCoordinate(tr: Transform, x: number, y: number, clampT
 
 export class Arc {
     constructor(p0: vec3, p1: vec3, center: vec3) {
-        this.a = vec3.sub([] as unknown as vec3, p0, center);
-        this.b = vec3.sub([] as unknown as vec3, p1, center);
+        this.a = vec3.sub([], p0, center);
+        this.b = vec3.sub([], p1, center);
         this.center = center;
-        const an = vec3.normalize([] as unknown as vec3, this.a);
-        const bn = vec3.normalize([] as unknown as vec3, this.b);
+        const an = vec3.normalize([], this.a);
+        const bn = vec3.normalize([], this.b);
         this.angle = Math.acos(vec3.dot(an, bn));
     }
 
@@ -197,7 +197,7 @@ export function transitionTileAABBinECEF(id: CanonicalTileID, tr: Transform): Aa
     const sw: vec3 = [w, s, 0];
     const se: vec3 = [e, s, 0];
     // Transform Mercator globeCorners to ECEF
-    const worldToECEFMatrix = mat4.invert([] as unknown as mat4, tr.globeMatrix);
+    const worldToECEFMatrix = mat4.invert([], tr.globeMatrix);
     vec3.transformMat4(nw, nw, worldToECEFMatrix);
     vec3.transformMat4(ne, ne, worldToECEFMatrix);
     vec3.transformMat4(sw, sw, worldToECEFMatrix);
@@ -337,7 +337,7 @@ export function aabbForTileOnGlobe(
             interpolateVec3(corners[i], mercatorCorners[i], phase);
         }
         // Calculate the midpoint of the closest edge midpoint in Mercator
-        const mercatorMidpoint = vec3.add([] as unknown as vec3, mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
+        const mercatorMidpoint = vec3.add([], mercatorCorners[closestArcIdx], mercatorCorners[(closestArcIdx + 1) % 4]);
         vec3.scale(mercatorMidpoint, mercatorMidpoint, .5);
         // Interpolate globe extremum toward Mercator midpoint
         interpolateVec3(arcExtremum, mercatorMidpoint, phase);
@@ -463,12 +463,12 @@ export function globeECEFNormalizationScale(
 
 // avoid redundant allocations by sharing the same typed array for normalization/denormalization matrices;
 // we never use multiple instances of these at the same time, but this might change, so let's be careful here!
-const tempMatrix = new Float64Array(16) as unknown as mat4;
+const tempMatrix = new Float64Array(16);
 
 export function globeNormalizeECEF(bounds: Aabb): mat4 {
     const scale = globeECEFNormalizationScale(bounds);
     const m = mat4.fromScaling(tempMatrix, [scale, scale, scale]);
-    return mat4.translate(m, m, vec3.negate([] as unknown as vec3, bounds.min));
+    return mat4.translate(m, m, vec3.negate([], bounds.min));
 }
 
 export function globeDenormalizeECEF(bounds: Aabb): mat4 {
@@ -494,7 +494,7 @@ function calculateGlobePosMatrix(x: number, y: number, worldSize: number, lng: n
     // transform the globe from reference coordinate space to world space
     const scale = globeECEFUnitsToPixelScale(worldSize);
     const offset: vec3 = [x, y, -worldSize / (2.0 * Math.PI)];
-    const m = mat4.identity(new Float64Array(16) as unknown as mat4);
+    const m = mat4.identity(new Float64Array(16));
     mat4.translate(m, m, offset);
     mat4.scale(m, m, [scale, scale, scale]);
     mat4.rotateX(m, m, degToRad(-lat));
@@ -525,7 +525,7 @@ export function calculateGlobeMercatorMatrix(tr: Transform): mat4 {
     const zScale = tr.pixelsPerMeter;
     const ws = zScale / mercatorZfromAltitude(1, tr.center.lat);
 
-    const posMatrix = mat4.identity(new Float64Array(16) as unknown as mat4);
+    const posMatrix = mat4.identity(new Float64Array(16));
     mat4.translate(posMatrix, posMatrix, [tr.point.x, tr.point.y, 0.0]);
     mat4.scale(posMatrix, posMatrix, [ws, ws, zScale]);
 
@@ -542,7 +542,7 @@ export function globeMatrixForTile(id: CanonicalTileID, globeMatrix: mat4): mat4
 }
 
 export function globePoleMatrixForTile(z: number, x: number, tr: Transform): mat4 {
-    const poleMatrix = mat4.identity(new Float64Array(16) as unknown as mat4);
+    const poleMatrix = mat4.identity(new Float64Array(16));
 
     // Rotate the pole triangle fan to the correct location
     const numTiles = 1 << z;
@@ -599,7 +599,7 @@ export function getGridMatrix(
     matrix[5] = id.x;
     matrix[8] = id.y;
 
-    return matrix as unknown as mat4;
+    return matrix;
 }
 
 export function getLatitudinalLod(lat: number): number {
@@ -613,7 +613,7 @@ export function getLatitudinalLod(lat: number): number {
 
 export function globeCenterToScreenPoint(tr: Transform): Point {
     const pos: vec3 = [0, 0, 0];
-    const matrix = mat4.identity(new Float64Array(16) as unknown as mat4);
+    const matrix = mat4.identity(new Float64Array(16));
     mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
     vec3.transformMat4(pos, pos, matrix);
     return new Point(pos[0], pos[1]);
@@ -626,20 +626,20 @@ function cameraPositionInECEF(tr: Transform): vec3 {
 
     // Set axis to East-West line tangent to sphere at pivot
     const south = vec3.fromValues(0, 1, 0);
-    let axis = vec3.cross([] as unknown as vec3, south, centerToPivot);
+    let axis = vec3.cross([], south, centerToPivot);
 
     // Rotate axis around pivot by bearing
-    const rotation = mat4.fromRotation([] as unknown as mat4, -tr.angle, centerToPivot);
+    const rotation = mat4.fromRotation([], -tr.angle, centerToPivot);
     axis = vec3.transformMat4(axis, axis, rotation);
 
     // Rotate camera around axis by pitch
     mat4.fromRotation(rotation, -tr._pitch, axis);
 
-    const pivotToCamera = vec3.normalize([] as unknown as vec3, centerToPivot);
+    const pivotToCamera = vec3.normalize([], centerToPivot);
     vec3.scale(pivotToCamera, pivotToCamera, globeMetersToEcef(tr.cameraToCenterDistance / tr.pixelsPerMeter));
     vec3.transformMat4(pivotToCamera, pivotToCamera, rotation);
 
-    return vec3.add([] as unknown as vec3, centerToPivot, pivotToCamera);
+    return vec3.add([], centerToPivot, pivotToCamera);
 }
 
 // Return the angle of the normal vector at a point on the globe relative to the camera.
@@ -647,7 +647,7 @@ function cameraPositionInECEF(tr: Transform): vec3 {
 export function globeTiltAtLngLat(tr: Transform, lngLat: LngLat): number {
     const centerToPoint = latLngToECEF(lngLat.lat, lngLat.lng);
     const centerToCamera = cameraPositionInECEF(tr);
-    const pointToCamera = vec3.subtract([] as unknown as vec3, centerToCamera, centerToPoint);
+    const pointToCamera = vec3.subtract([], centerToCamera, centerToPoint);
     return vec3.angle(pointToCamera, centerToPoint);
 }
 
@@ -664,7 +664,7 @@ export function isLngLatBehindGlobe(tr: Transform, lngLat: LngLat): boolean {
  */
 export function polesInViewport(tr: Transform): [boolean, boolean] {
     // Create matrix from ECEF to screen coordinates
-    const ecefToScreenMatrix = mat4.identity(new Float64Array(16) as unknown as mat4);
+    const ecefToScreenMatrix = mat4.identity(new Float64Array(16));
     mat4.multiply(ecefToScreenMatrix, tr.pixelMatrix, tr.globeMatrix);
 
     const north: vec3 = [0, GLOBE_MIN, 0];

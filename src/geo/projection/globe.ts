@@ -54,7 +54,7 @@ export default class Globe extends Mercator {
 
     override locationPoint(tr: Transform, lngLat: LngLat, altitude?: number): Point {
         const pos = latLngToECEF(lngLat.lat, lngLat.lng);
-        const up = vec3.normalize([] as unknown as vec3, pos);
+        const up = vec3.normalize([], pos);
 
         const elevation = altitude ?
             tr._centerAltitude + altitude :
@@ -64,7 +64,7 @@ export default class Globe extends Mercator {
 
         const upScale = mercatorZfromAltitude(1, 0) * EXTENT * elevation;
         vec3.scaleAndAdd(pos, pos, up, upScale);
-        const matrix = mat4.identity(new Float64Array(16) as unknown as mat4);
+        const matrix = mat4.identity(new Float64Array(16));
         mat4.multiply(matrix, tr.pixelMatrix, tr.globeMatrix);
         vec3.transformMat4(pos, pos, matrix);
 
@@ -91,7 +91,7 @@ export default class Globe extends Mercator {
 
     override createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): mat4 {
         const decode = globeDenormalizeECEF(globeTileBounds(id.canonical));
-        return mat4.multiply(new Float64Array(16) as unknown as mat4, tr.globeMatrix, decode);
+        return mat4.multiply(new Float64Array(16), tr.globeMatrix, decode);
     }
 
     override createInversionMatrix(tr: Transform, id: CanonicalTileID): Float32Array {

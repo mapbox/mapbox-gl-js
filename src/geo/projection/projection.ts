@@ -126,7 +126,7 @@ export default class Projection {
     createTileMatrix(tr: Transform, worldSize: number, id: UnwrappedTileID): mat4 {
         let scale, scaledX, scaledY;
         const canonical = id.canonical;
-        const posMatrix = mat4.identity(new Float64Array(16) as unknown as mat4);
+        const posMatrix = mat4.identity(new Float64Array(16));
 
         if (this.isReprojectedInTileSpace) {
             const cs = tileTransform(canonical, this);

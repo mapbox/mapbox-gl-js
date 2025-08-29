@@ -115,7 +115,7 @@ function getLabelPlaneMatrixForRendering(
             const lm = calculateGlobeLabelMatrix(transform, tileID);
             mat4.multiply(m, m, lm);
         } else {
-            const s = mat2.invert([] as unknown as mat2, pixelsToTileUnits);
+            const s = mat2.invert([], pixelsToTileUnits);
             m[0] = s[0];
             m[1] = s[1];
             m[4] = s[2];
@@ -179,7 +179,7 @@ function getGlCoordMatrix(
             return m;
         } else {
             const m = mat4.clone(posMatrix);
-            const s = mat4.identity([] as unknown as mat4);
+            const s = mat4.identity([]);
             s[0] = pixelsToTileUnits[0];
             s[1] = pixelsToTileUnits[1];
             s[4] = pixelsToTileUnits[2];
@@ -527,7 +527,7 @@ function placeGlyphsAlongLine(
             // point on the segment.
             const b = (projectedVertex[3] > 0) ?
                 projectedVertex :
-                projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a  as unknown as vec3, 1, posMatrix, undefined, projection, tileID.canonical);
+                projectTruncatedLineSegment(tileAnchorPoint, tileSegmentEnd, a, 1, posMatrix, undefined, projection, tileID.canonical);
 
             const orientationChange = requiresOrientationChange(writingMode, flipState, (b[0] - a[0]) * aspectRatio, b[1] - a[1]);
             symbol.flipState = orientationChange && orientationChange.needsFlipping ? FlipState.flipRequired : FlipState.flipNotRequired;
@@ -571,10 +571,10 @@ function projectTruncatedLineSegment(
     // plane of the camera.
     const unitVertex = previousTilePoint.sub(currentTilePoint)._unit()._add(previousTilePoint);
     const projectedUnit = elevatePointAndProject(unitVertex, tileID, projectionMatrix, projection, getElevation);
-    vec3.sub(projectedUnit as unknown as vec3, previousProjectedPoint, projectedUnit as unknown as vec3);
-    vec3.normalize(projectedUnit as unknown as vec3, projectedUnit as unknown as vec3);
+    vec3.sub(projectedUnit, previousProjectedPoint, projectedUnit);
+    vec3.normalize(projectedUnit, projectedUnit);
 
-    return vec3.scaleAndAdd(projectedUnit as unknown as vec3, previousProjectedPoint, projectedUnit as unknown as vec3, minimumLength) as [number, number, number];
+    return vec3.scaleAndAdd(projectedUnit, previousProjectedPoint, projectedUnit, minimumLength) as [number, number, number];
 }
 
 function placeGlyphAlongLine(
@@ -625,7 +625,7 @@ function placeGlyphAlongLine(
     const tilePath = [];
     let currentVertex = tileAnchorPoint;
     let prevVertex = currentVertex;
-    let prevToCurrent = vec3.zero([] as unknown as vec3);
+    let prevToCurrent = vec3.zero([]);
 
     const getTruncatedLineSegment = () => {
         return projectTruncatedLineSegment(prevVertex, currentVertex, prev, absOffsetX - distanceToPrev + 1, labelPlaneMatrix, getElevation, reprojection, tileID.canonical);
@@ -659,7 +659,7 @@ function placeGlyphAlongLine(
         }
 
         distanceToPrev += currentSegmentDistance;
-        const nextPrevToCurrent = vec3.sub([] as unknown as vec3, current, prev);
+        const nextPrevToCurrent = vec3.sub([], current, prev);
         const nextSegmentDistance = vec3.distance(prev, current);
 
         if (lineOffsetY) {
@@ -683,7 +683,7 @@ function placeGlyphAlongLine(
         if (projectionCache[currentIndex]) {
             current = getTruncatedLineSegment();
             currentSegmentDistance = vec3.distance(prev, current);
-            prevToCurrent = vec3.sub([] as unknown as vec3, current, prev);
+            prevToCurrent = vec3.sub([], current, prev);
         }
         projectionCache[currentIndex] = current;
     }
@@ -691,7 +691,7 @@ function placeGlyphAlongLine(
     // The point is on the current segment. Interpolate to find it. Compute points on both label plane and tile space
     const segmentInterpolationT = (absOffsetX - distanceToPrev) / currentSegmentDistance;
     const tilePoint = currentVertex.sub(prevVertex)._mult(segmentInterpolationT)._add(prevVertex);
-    const labelPlanePoint = vec3.scaleAndAdd([] as unknown as vec3, prev, prevToCurrent, segmentInterpolationT);
+    const labelPlanePoint = vec3.scaleAndAdd([], prev, prevToCurrent, segmentInterpolationT);
 
     let axisZ: [number, number, number] = [0, 0, 1];
     let diffX = prevToCurrent[0];
@@ -703,7 +703,7 @@ function placeGlyphAlongLine(
         if (axisZ[0] !== 0 || axisZ[1] !== 0 || axisZ[2] !== 1) {
             // Compute coordinate frame that is aligned to the tangent of the surface
             const axisX: [number, number, number] = [axisZ[2], 0, -axisZ[0]];
-            const axisY = vec3.cross([] as unknown as vec3, axisZ, axisX);
+            const axisY = vec3.cross([], axisZ, axisX);
             vec3.normalize(axisX, axisX);
             vec3.normalize(axisY, axisY);
             diffX = vec3.dot(prevToCurrent, axisX);
@@ -714,7 +714,7 @@ function placeGlyphAlongLine(
     // offset the point from the line to text-offset and icon-offset
     if (lineOffsetY) {
         // Find a coordinate frame for the vertical offset
-        const offsetDir = vec3.cross([] as unknown as vec3, axisZ, prevToCurrent);
+        const offsetDir = vec3.cross([], axisZ, prevToCurrent);
         vec3.normalize(offsetDir, offsetDir);
         vec3.scaleAndAdd(labelPlanePoint, labelPlanePoint, offsetDir, lineOffsetY * dir);
     }

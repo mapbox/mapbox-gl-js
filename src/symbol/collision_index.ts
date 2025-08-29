@@ -519,7 +519,7 @@ class CollisionIndex {
     *   example transformation: clipPos = glCoordMatrix * viewportMatrix * circle_pos
     */
     getViewportMatrix(): mat4 {
-        const m = mat4.identity([] as unknown as mat4);
+        const m = mat4.identity([]);
         mat4.translate(m, m, [-viewportPadding, -viewportPadding, 0.0]);
         return m;
     }

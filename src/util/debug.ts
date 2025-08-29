@@ -87,9 +87,9 @@ export const Debug: {
     drawAabbs(painter: Painter, sourceCache: SourceCache, coords: Array<OverscaledTileID>) {
         const tr = painter.transform;
 
-        const worldToECEFMatrix = mat4.invert(new Float64Array(16) as unknown as mat4, tr.globeMatrix);
-        const ecefToPixelMatrix = mat4.multiply([] as unknown as mat4, tr.pixelMatrix, tr.globeMatrix);
-        const ecefToCameraMatrix = mat4.multiply([] as unknown as mat4, tr._camera.getWorldToCamera(tr.worldSize, 1), tr.globeMatrix);
+        const worldToECEFMatrix = mat4.invert(new Float64Array(16), tr.globeMatrix);
+        const ecefToPixelMatrix = mat4.multiply([], tr.pixelMatrix, tr.globeMatrix);
+        const ecefToCameraMatrix = mat4.multiply([], tr._camera.getWorldToCamera(tr.worldSize, 1), tr.globeMatrix);
 
         if (!tr.freezeTileCoverage) {
             // @ts-expect-error - TS2322 - Type 'vec3[][]' is not assignable to type 'vec3[]'.
@@ -123,11 +123,11 @@ export const Debug: {
                 // This means that AABBs close to the camera may appear to be missing.
                 // (A more correct algorithm would shorten the line segments instead of removing them entirely.)
                 // Full AABBs can be viewed by enabling `map.transform.freezeTileCoverage` and panning.
-                const cameraPos = vec3.transformMat4([] as unknown as vec3, ecef, ecefToCameraMatrix);
+                const cameraPos = vec3.transformMat4([], ecef, ecefToCameraMatrix);
 
                 if (cameraPos[2] > 0) { return null; }
 
-                return vec3.transformMat4([] as unknown as vec3, ecef, ecefToPixelMatrix);
+                return vec3.transformMat4([], ecef, ecefToPixelMatrix);
             });
             ctx.strokeStyle = `hsl(${360 * i / tileCount}, 100%, 50%)`;
             Debug._drawBox(ctx, pixelCorners);

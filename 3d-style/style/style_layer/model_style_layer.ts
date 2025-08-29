@@ -10,7 +10,6 @@ import EXTENT from '../../../src/style-spec/data/extent';
 import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '../../util/model_util';
 import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
 
-import type {vec3} from 'gl-matrix';
 import type {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue, ConfigOptions} from '../../../src/style/properties';
 import type Point from '@mapbox/point-geometry';
 import type {LayerSpecification} from '../../../src/style-spec/types';
@@ -99,7 +98,7 @@ class ModelStyleLayer extends StyleLayer {
                 const model = modelManager.getModel(modelId, this.scope);
                 if (!model) return false;
 
-                let matrix: mat4 = mat4.create();
+                let matrix = mat4.create();
                 const position = new LngLat(0, 0);
                 const id = bucket.canonical;
                 let minDepth = Number.MAX_VALUE;
@@ -108,7 +107,7 @@ class ModelStyleLayer extends StyleLayer {
                     const offset = instanceOffset * 16;
 
                     const va = instances.instancedDataArray.float32;
-                    const translation: vec3 = [va[offset + 4], va[offset + 5], va[offset + 6]];
+                    const translation: [number, number, number] = [va[offset + 4], va[offset + 5], va[offset + 6]];
                     const pointX = va[offset];
                     const pointY = va[offset + 1] | 0; // point.y stored in integer part
 
@@ -127,7 +126,7 @@ class ModelStyleLayer extends StyleLayer {
                     if (transform.projection.name === 'globe') {
                         matrix = convertModelMatrixForGlobe(matrix, transform);
                     }
-                    const worldViewProjection = mat4.multiply([] as unknown as mat4, transform.projMatrix, matrix);
+                    const worldViewProjection = mat4.multiply([], transform.projMatrix, matrix);
                     // Collision checks are performed in screen space. Corners are in ndc space.
                     const screenQuery = queryGeometry.queryGeometry;
                     const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
@@ -202,7 +201,7 @@ export function loadMatchingModelFeature(bucket: Tiled3dModelBucket, featureInde
     const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
 
     const checkNode = function (n: ModelNode) {
-        const worldViewProjectionForNode = mat4.multiply([] as unknown as mat4, modelMatrix, n.matrix);
+        const worldViewProjectionForNode = mat4.multiply([], modelMatrix, n.matrix);
         mat4.multiply(worldViewProjectionForNode, transform.expandedFarZProjMatrix, worldViewProjectionForNode);
         for (let i = 0; i < n.meshes.length; ++i) {
             const mesh = n.meshes[i];

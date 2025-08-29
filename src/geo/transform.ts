@@ -673,7 +673,7 @@ class Transform {
             targetPosition = [position.x, position.y, position.z];
         }
 
-        const distToTarget = vec3.length(vec3.sub([] as unknown as vec3, this._camera.position, targetPosition));
+        const distToTarget = vec3.length(vec3.sub([], this._camera.position, targetPosition));
         return clamp(this._zoomFromMercatorZ(distToTarget), this._minZoom, this._maxZoom);
     }
 
@@ -727,8 +727,8 @@ class Transform {
 
         // The new orientation must be sanitized by making sure it can be represented
         // with a pitch and bearing. Roll-component must be removed and the camera can't be upside down
-        const forward = vec3.transformQuat([] as unknown as vec3, [0, 0, -1], orientation);
-        const up = vec3.transformQuat([] as unknown as vec3, [0, -1, 0], orientation);
+        const forward = vec3.transformQuat([], [0, 0, -1], orientation);
+        const up = vec3.transformQuat([], [0, -1, 0], orientation);
 
         if (up[2] < 0.0)
             return false;
@@ -1340,7 +1340,7 @@ class Transform {
             const corners = it.aabb.getCorners();
             const distanceXyz = [];
             for (const corner of corners) {
-                vec3.sub(distanceXyz as unknown as vec3, corner, cameraPoint as unknown as vec3);
+                vec3.sub(distanceXyz, corner, cameraPoint);
                 if (!isGlobe) {
                     if (useElevationData) {
                         distanceXyz[2] *= meterToTile;
@@ -1348,7 +1348,7 @@ class Transform {
                         distanceXyz[2] = cameraHeight;
                     }
                 }
-                const dist = vec3.dot(distanceXyz as unknown as vec3, this._camera.forward());
+                const dist = vec3.dot(distanceXyz, this._camera.forward());
                 if (dist < closestDistance) {
                     closestDistance = dist;
                     closestElevation = Math.abs(distanceXyz[2]);
@@ -1363,7 +1363,7 @@ class Transform {
             }
             // Border case: with tilt of 85 degrees, center could be outside max zoom distance, due to scale.
             // Ensure max zoom tiles over center.
-            const closestPointToCenter = it.aabb.closestPoint(centerPoint as unknown as vec3);
+            const closestPointToCenter = it.aabb.closestPoint(centerPoint);
             return (closestPointToCenter[0] === centerPoint[0] && closestPointToCenter[1] === centerPoint[1]);
         };
 
@@ -1481,8 +1481,8 @@ class Transform {
                 vec4.transformMat4(br, br, fogTileMatrix);
 
                 // the fog matrix can flip the min/max values, so we calculate them explicitly
-                const min = vec4.min([] as unknown as vec4, tl, br) as number[];
-                const max = vec4.max([] as unknown as vec4, tl, br) as number[];
+                const min = vec4.min([], tl, br) as number[];
+                const max = vec4.max([], tl, br) as number[];
 
                 const sqDist = getAABBPointSquareDist(min, max);
 
@@ -1734,7 +1734,7 @@ class Transform {
         vec4.scale(p0, p0, 1 / this.worldSize);
         vec4.scale(p1, p1, 1 / this.worldSize);
 
-        return new Ray([p0[0], p0[1], p0[2]], vec3.normalize([] as unknown as vec3, vec3.sub([] as unknown as vec3, p1 as unknown as vec3, p0 as unknown as vec3)));
+        return new Ray([p0[0], p0[1], p0[2]], vec3.normalize([], vec3.sub([], p1, p0)));
     }
 
     /**
@@ -2150,8 +2150,8 @@ class Transform {
     globeToMercatorMatrix(): Array<number> | null | undefined {
         if (this.projection.name === 'globe') {
             const pixelsToMerc = 1 / this.worldSize;
-            const m = mat4.fromScaling([] as unknown as mat4, [pixelsToMerc, pixelsToMerc, pixelsToMerc]);
-            mat4.multiply(m, m, this.globeMatrix as unknown as mat4);
+            const m = mat4.fromScaling([], [pixelsToMerc, pixelsToMerc, pixelsToMerc]);
+            mat4.multiply(m, m, this.globeMatrix);
             return m as number[];
         }
         return undefined;
@@ -2180,7 +2180,7 @@ class Transform {
         const t = elevation.raycast(start, dir, elevation.exaggeration());
 
         if (t) {
-            const point = vec3.scaleAndAdd([] as unknown as vec3, start, dir, t);
+            const point = vec3.scaleAndAdd([], start, dir, t);
             const newCenter = new MercatorCoordinate(point[0], point[1], mercatorZfromAltitude(point[2], latFromMercatorY(point[1])));
 
             const camToNew = [newCenter.x - start[0], newCenter.y - start[1], newCenter.z - start[2] * metersToMerc];
@@ -2389,14 +2389,14 @@ class Transform {
             cameraToClip = cameraToClipPerspective;
         }
 
-        const worldToClipPerspective = mat4.mul([] as unknown as mat4, cameraToClipPerspective, worldToCamera);
-        let m = mat4.mul([] as unknown as mat4, cameraToClip, worldToCamera);
+        const worldToClipPerspective = mat4.mul([], cameraToClipPerspective, worldToCamera);
+        let m = mat4.mul([], cameraToClip, worldToCamera);
 
         if (this.projection.isReprojectedInTileSpace) {
             // Projections undistort as you zoom in (shear, scale, rotate).
             // Apply the undistortion around the center of the map.
             const mc = this.locationCoordinate(this.center);
-            const adjustments = mat4.identity([] as unknown as mat4);
+            const adjustments = mat4.identity([]);
             mat4.translate(adjustments, adjustments, [mc.x * this.worldSize, mc.y * this.worldSize, 0]);
             mat4.multiply(adjustments, adjustments, getProjectionAdjustments(this) as mat4);
             mat4.translate(adjustments, adjustments, [-mc.x * this.worldSize, -mc.y * this.worldSize, 0]);
@@ -2409,24 +2409,24 @@ class Transform {
 
         // The mercatorMatrix can be used to transform points from mercator coordinates
         // ([0, 0] nw, [1, 1] se) to GL coordinates. / zUnit compensates for scaling done in worldToCamera.
-        this.mercatorMatrix = mat4.scale([] as unknown as mat4, m, [this.worldSize, this.worldSize, this.worldSize / zUnit, 1.0] as unknown as vec3);
+        this.mercatorMatrix = mat4.scale([], m, [this.worldSize, this.worldSize, this.worldSize / zUnit, 1.0]);
 
         this.projMatrix = m;
 
         // For tile cover calculation, use inverted of base (non elevated) matrix
         // as tile elevations are in tile coordinates and relative to center elevation.
-        this.invProjMatrix = mat4.invert(new Float64Array(16) as unknown as mat4, this.projMatrix);
+        this.invProjMatrix = mat4.invert(new Float64Array(16), this.projMatrix);
 
         if (isGlobe) {
             const expandedCameraToClipPerspective = this._camera.getCameraToClipPerspective(this._fov, this.width / this.height, this._nearZ, Infinity);
             expandedCameraToClipPerspective[8] = -offset.x * 2 / this.width;
             expandedCameraToClipPerspective[9] = offset.y * 2 / this.height;
-            this.expandedFarZProjMatrix = mat4.mul([] as unknown as mat4, expandedCameraToClipPerspective, worldToCamera);
+            this.expandedFarZProjMatrix = mat4.mul([], expandedCameraToClipPerspective, worldToCamera);
         } else {
             this.expandedFarZProjMatrix = this.projMatrix;
         }
 
-        const clipToCamera = mat4.invert([] as unknown as mat4, cameraToClip);
+        const clipToCamera = mat4.invert([], cameraToClip);
         this.frustumCorners = FrustumCorners.fromInvProjectionMatrix(clipToCamera, this.horizonLineFromTop(), this.height);
 
         // Create a camera frustum in mercator units
@@ -2461,7 +2461,7 @@ class Transform {
             angleCos = Math.cos(this.angle), angleSin = Math.sin(this.angle),
             dx = x - Math.round(x) + angleCos * xShift + angleSin * yShift,
             dy = y - Math.round(y) + angleCos * yShift + angleSin * xShift;
-        const alignedM = new Float64Array(m) as unknown as mat4;
+        const alignedM = new Float64Array(m);
         mat4.translate(alignedM, alignedM, [dx > 0.5 ? dx - 1 : dx, dy > 0.5 ? dy - 1 : dy, 0]);
         this.alignedProjMatrix = alignedM;
 
@@ -2477,21 +2477,21 @@ class Transform {
         this.glCoordMatrix = m;
 
         // matrix for conversion from location to screen coordinates
-        this.pixelMatrix = mat4.multiply(new Float64Array(16) as unknown as mat4, this.labelPlaneMatrix, worldToClipPerspective);
+        this.pixelMatrix = mat4.multiply(new Float64Array(16), this.labelPlaneMatrix, worldToClipPerspective);
 
         this._calcFogMatrices();
         this._distanceTileDataCache = {};
 
         // inverse matrix for conversion from screen coordinates to location
-        m = mat4.invert(new Float64Array(16) as unknown as mat4, this.pixelMatrix);
+        m = mat4.invert(new Float64Array(16), this.pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
         if (this.projection.name === 'globe' || this.mercatorFromTransition) {
-            this.globeMatrix = calculateGlobeMatrix(this) as unknown as mat4;
+            this.globeMatrix = calculateGlobeMatrix(this);
 
             const globeCenter: [number, number, number] = [this.globeMatrix[12], this.globeMatrix[13], this.globeMatrix[14]];
-            this.globeCenterInViewSpace = vec3.transformMat4(globeCenter, globeCenter, worldToCamera as unknown as mat4) as [number, number, number];
+            this.globeCenterInViewSpace = vec3.transformMat4(globeCenter, globeCenter, worldToCamera) as [number, number, number];
             this.globeRadius = this.worldSize / 2.0 / Math.PI - 1.0;
         } else {
             this.globeMatrix = m;
@@ -2582,7 +2582,7 @@ class Transform {
             t = Math.min((maxZ - z) / deltaZ, 1);
         }
 
-        this._camera.position = vec3.scaleAndAdd([] as unknown as vec3, this._camera.position, translation, t);
+        this._camera.position = vec3.scaleAndAdd([], this._camera.position, translation, t);
         this._updateStateFromCamera();
     }
 
@@ -2750,7 +2750,7 @@ class Transform {
      * @returns {number} The distance in mercator coordinates.
      */
     zoomDeltaToMovement(center: vec3, zoomDelta: number): number {
-        const distance = vec3.length(vec3.sub([] as unknown as vec3, this._camera.position, center));
+        const distance = vec3.length(vec3.sub([], this._camera.position, center));
         const relativeZoom = this._zoomFromMercatorZ(distance) + zoomDelta;
         return distance - this._mercatorZfromZoom(relativeZoom);
     }

@@ -76,7 +76,7 @@ const modelUniforms = (context: Context): ModelUniformsType => ({
 
 });
 
-const emptyMat4 = new Float32Array(mat4.identity([] as unknown as mat4));
+const emptyMat4 = new Float32Array(mat4.identity([]));
 
 const modelUniformValues = (
     matrix: mat4,

@@ -199,8 +199,8 @@ export default class DemMinMaxQuadTree {
         d: vec3,
         exaggeration: number = 1,
     ): number | null | undefined {
-        const min: vec3 = [minx, miny, -aabbSkirtPadding];
-        const max: vec3 = [maxx, maxy, this.maximums[0] * exaggeration];
+        const min: [number, number, number] = [minx, miny, -aabbSkirtPadding];
+        const max: [number, number, number] = [maxx, maxy, this.maximums[0] * exaggeration];
         return aabbRayIntersect(min, max, p, d);
     }
 
@@ -222,8 +222,8 @@ export default class DemMinMaxQuadTree {
 
         const tHits = [];
         const sortedHits = [];
-        const boundsMin = [] as unknown as vec3;
-        const boundsMax = [] as unknown as vec3;
+        const boundsMin = [];
+        const boundsMax = [];
 
         const stack = [{
             idx: 0,
@@ -272,7 +272,7 @@ export default class DemMinMaxQuadTree {
                 // The ray might go below the two surface triangles but hit one of the sides.
                 // This covers the case of skirt geometry between two dem tiles of different zoom level
                 if (tMin === Number.MAX_VALUE) {
-                    const hitPos = vec3.scaleAndAdd([] as unknown as vec3, p, d, t);
+                    const hitPos = vec3.scaleAndAdd([], p, d, t);
                     const fracx = frac(hitPos[0], boundsMin[0], boundsMax[0]);
                     const fracy = frac(hitPos[1], boundsMin[1], boundsMax[1]);
 

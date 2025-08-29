@@ -158,7 +158,7 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
 
     const sunDirection = layer.getCenter(painter, true);
     const program = painter.getOrCreateProgram('skyboxCapture');
-    const faceRotate = new Float64Array(16) as unknown as mat4;
+    const faceRotate = new Float64Array(16);
 
     // +x;
     mat4.identity(faceRotate);

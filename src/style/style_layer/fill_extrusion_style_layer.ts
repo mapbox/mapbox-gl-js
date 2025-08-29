@@ -288,8 +288,8 @@ function projectExtrusionGlobe(tr: Transform, geometry: Array<Array<Point>>, zBa
                 reproj.y + dir[1] * elevationScale * zTopPoint,
                 reproj.z + dir[2] * elevationScale * zTopPoint);
 
-            vec3.transformMat4(basePoint as unknown as vec3, basePoint as unknown as vec3, m);
-            vec3.transformMat4(topPoint as unknown as vec3, topPoint as unknown as vec3, m);
+            vec3.transformMat4(basePoint, basePoint, m);
+            vec3.transformMat4(topPoint, topPoint, m);
 
             ringBase.push(new Point3D(basePoint[0], basePoint[1], basePoint[2]));
             ringTop.push(new Point3D(topPoint[0], topPoint[1], topPoint[2]));

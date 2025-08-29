@@ -1444,14 +1444,14 @@ export class Terrain extends Elevation {
         const camera = transform._camera.position;
         const mercatorZScale = mercatorZfromAltitude(1, transform.center.lat);
         const p: [number, number, number, number] = [camera[0], camera[1], camera[2] / mercatorZScale, 0.0];
-        const dir = vec3.subtract([] as unknown as vec3, far.slice(0, 3) as vec3, p as unknown as vec3);
+        const dir = vec3.subtract([], far.slice(0, 3) as vec3, p);
         vec3.normalize(dir, dir);
 
         const exaggeration = this._exaggeration;
-        const distanceAlongRay = this.raycast(p as unknown as vec3, dir, exaggeration);
+        const distanceAlongRay = this.raycast(p, dir, exaggeration);
 
         if (distanceAlongRay === null || !distanceAlongRay) return null;
-        vec3.scaleAndAdd(p as unknown as vec3, p as unknown as vec3, dir, distanceAlongRay);
+        vec3.scaleAndAdd(p, p, dir, distanceAlongRay);
         p[3] = p[2];
         p[2] *= mercatorZScale;
         return p;

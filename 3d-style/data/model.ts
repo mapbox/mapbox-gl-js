@@ -188,14 +188,14 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
             if (state.elevation) {
                 elevation = state.elevation.getAtPointOrZero(new MercatorCoordinate(projectedPoint.x / worldSize, projectedPoint.y / worldSize), 0.0);
             }
-            const mercProjPos = vec4.transformMat4([] as unknown as vec4, [projectedPoint.x, projectedPoint.y, elevation, 1.0], state.projMatrix);
+            const mercProjPos = vec4.transformMat4([], [projectedPoint.x, projectedPoint.y, elevation, 1.0], state.projMatrix);
             const mercProjectionScale = mercProjPos[3] / state.cameraToCenterDistance;
             const viewMetersPerPixel = getMetersPerPixelAtLatitude(state.center.lat, zoom);
             scaleXY = mercProjectionScale;
             scaleZ = mercProjectionScale * viewMetersPerPixel;
         } else if (state.projection.name === 'globe') {
             const globeMatrix = convertModelMatrixForGlobe(matrix, state);
-            const worldViewProjection = mat4.multiply([] as unknown as mat4, state.projMatrix, globeMatrix);
+            const worldViewProjection = mat4.multiply([], state.projMatrix, globeMatrix);
             const globeProjPos =  [0, 0, 0, 1];
             vec4.transformMat4(globeProjPos as [number, number, number, number], globeProjPos as [number, number, number, number], worldViewProjection);
             const globeProjectionScale = globeProjPos[3] / state.cameraToCenterDistance;
@@ -225,7 +225,7 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
 
     const orientation = model.orientation;
 
-    const rotationScaleYZFlip = [] as unknown as mat4;
+    const rotationScaleYZFlip = [];
     rotationScaleYZFlipMatrix(
         rotationScaleYZFlip,
         [
@@ -239,11 +239,11 @@ export function calculateModelMatrix(matrix: mat4, model: Readonly<Model>, state
 
     if (applyElevation && state.elevation) {
         let elevate = 0;
-        const rotateOnTerrain = [] as unknown as quat;
+        const rotateOnTerrain = [];
         if (followTerrainSlope && state.elevation) {
             elevate = positionModelOnTerrain(rotateOnTerrain, state, model.aabb, matrix, position);
-            const rotationOnTerrain = mat4.fromQuat([] as unknown as mat4, rotateOnTerrain);
-            const appendRotation = mat4.multiply([] as unknown as mat4, rotationOnTerrain, rotationScaleYZFlip);
+            const rotationOnTerrain = mat4.fromQuat([], rotateOnTerrain);
+            const appendRotation = mat4.multiply([], rotationOnTerrain, rotationScaleYZFlip);
             mat4.multiply(matrix, modelMatrixBeforeRotationScaleYZFlip, appendRotation);
         } else {
             elevate = state.elevation.getAtPointOrZero(new MercatorCoordinate(projectedPoint.x / worldSize, projectedPoint.y / worldSize), 0.0);
@@ -271,7 +271,7 @@ export default class Model {
         this.nodes = nodes;
         this.uploaded = false;
         this.aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
-        this.matrix = [] as unknown as mat4;
+        this.matrix = [];
     }
 
     _applyTransformations(node: ModelNode, parentMatrix: mat4) {
@@ -292,7 +292,7 @@ export default class Model {
     }
 
     computeBoundsAndApplyParent() {
-        const localMatrix = mat4.identity([] as unknown as mat4);
+        const localMatrix = mat4.identity([]);
         for (const node of this.nodes) {
             this._applyTransformations(node, localMatrix);
         }

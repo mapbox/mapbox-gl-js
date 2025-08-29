@@ -318,7 +318,7 @@ export class Placement {
                 symbolBucket.getProjection(),
                 pixelsToTiles);
 
-            labelToScreenMatrix = mat4.multiply([] as unknown as mat4, this.transform.labelPlaneMatrix, glMatrix);
+            labelToScreenMatrix = mat4.multiply([], this.transform.labelPlaneMatrix, glMatrix);
         }
 
         let clippingData = null;

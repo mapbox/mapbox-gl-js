@@ -95,7 +95,7 @@ class Atmosphere {
             let base = 0;
             for (let i = 0; i < stars.length; ++i) {
 
-                const star = vec3.scale([] as unknown as vec3, stars[i], 200.0);
+                const star = vec3.scale([], stars[i], 200.0);
 
                 const size = Math.max(0, 1.0 + 0.01 * sizeRange * (-0.5 + 1.0 * sRand()));
                 const intensity = Math.max(0, 1.0 + 0.01 * intensityRange * (-0.5 + 1.0 * sRand()));
@@ -218,16 +218,16 @@ class Atmosphere {
 
         const program = painter.getOrCreateProgram('stars');
 
-        const orientation = quat.identity([] as unknown as quat);
+        const orientation = quat.identity([]);
         quat.rotateX(orientation, orientation, -tr._pitch);
         quat.rotateZ(orientation, orientation, -tr.angle);
         quat.rotateX(orientation, orientation, degToRad(tr._center.lat));
         quat.rotateY(orientation, orientation, -degToRad(tr._center.lng));
 
         const rotationMatrix = mat4.fromQuat(new Float32Array(16), orientation);
-        const mvp = mat4.multiply([] as unknown as mat4, tr.starsProjMatrix, rotationMatrix);
-        const modelView3 = mat3.fromMat4([] as unknown as mat3, rotationMatrix);
-        const modelviewInv = mat3.invert([] as unknown as mat3, modelView3);
+        const mvp = mat4.multiply([], tr.starsProjMatrix, rotationMatrix);
+        const modelView3 = mat3.fromMat4([], rotationMatrix);
+        const modelviewInv = mat3.invert([], modelView3);
 
         const camUp: [number, number, number] = [0, 1, 0];
         vec3.transformMat3(camUp, camUp, modelviewInv);

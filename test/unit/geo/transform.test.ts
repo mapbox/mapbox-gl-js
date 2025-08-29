@@ -1504,9 +1504,9 @@ describe('transform', () => {
     describe('freeCamera', () => {
         const rotatedFrame = (quaternion) => {
             return {
-                up: vec3.transformQuat([] as unknown as vec3, [0, -1, 0], quaternion),
-                forward: vec3.transformQuat([] as unknown as vec3, [0, 0, -1], quaternion),
-                right: vec3.transformQuat([] as unknown as vec3, [1, 0, 0], quaternion)
+                up: vec3.transformQuat([], [0, -1, 0], quaternion),
+                forward: vec3.transformQuat([], [0, 0, -1], quaternion),
+                right: vec3.transformQuat([], [1, 0, 0], quaternion)
             };
         };
 
@@ -1655,7 +1655,7 @@ describe('transform', () => {
 
             // Place the camera to an arbitrary position looking away from the map
             options.position = new MercatorCoordinate(-100.0, -10000.0, 1000.0);
-            options.orientation = quat.rotateX([] as unknown as quat, [0, 0, 0, 1], -45.0 * Math.PI / 180.0);
+            options.orientation = quat.rotateX([], [0, 0, 0, 1], -45.0 * Math.PI / 180.0);
             transform.setFreeCameraOptions(options);
 
             expect(fixedPoint(transform.point, 5)).toEqual(new Point(50, 50));
@@ -1679,8 +1679,8 @@ describe('transform', () => {
             transform.resize(100, 100);
             let options = new FreeCameraOptions();
 
-            const orientationWithoutRoll = quat.rotateX([] as unknown as quat, [0, 0, 0, 1], -Math.PI / 4);
-            const orientationWithRoll = quat.rotateZ([] as unknown as quat, orientationWithoutRoll, Math.PI / 4);
+            const orientationWithoutRoll = quat.rotateX([], [0, 0, 0, 1], -Math.PI / 4);
+            const orientationWithRoll = quat.rotateZ([], orientationWithoutRoll, Math.PI / 4);
 
             options.orientation = orientationWithRoll;
             transform.setFreeCameraOptions(options);

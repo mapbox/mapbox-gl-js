@@ -145,7 +145,7 @@ function projectPoints(points: Array<vec3>, origin: vec3, axis: vec3): [number, 
     let min = Infinity;
     let max = -Infinity;
 
-    const vec = [] as unknown as vec3;
+    const vec = [];
     for (const point of points) {
         vec3.sub(vec, point, origin);
         const projection = vec3.dot(vec, axis);
@@ -239,12 +239,12 @@ class Frustum {
         // Precompute a set of separating axis candidates for precise intersection tests.
         // These axes are computed as follows: (edges of aabb) x (edges of frustum)
         this.frustumEdges = [
-            vec3.sub([] as unknown as vec3, this.points[NEAR_BR], this.points[NEAR_BL]),
-            vec3.sub([] as unknown as vec3, this.points[NEAR_TL], this.points[NEAR_BL]),
-            vec3.sub([] as unknown as vec3, this.points[FAR_TL], this.points[NEAR_TL]),
-            vec3.sub([] as unknown as vec3, this.points[FAR_TR], this.points[NEAR_TR]),
-            vec3.sub([] as unknown as vec3, this.points[FAR_BR], this.points[NEAR_BR]),
-            vec3.sub([] as unknown as vec3, this.points[FAR_BL], this.points[NEAR_BL]),
+            vec3.sub([], this.points[NEAR_BR], this.points[NEAR_BL]),
+            vec3.sub([], this.points[NEAR_TL], this.points[NEAR_BL]),
+            vec3.sub([], this.points[FAR_TL], this.points[NEAR_TL]),
+            vec3.sub([], this.points[FAR_TR], this.points[NEAR_TR]),
+            vec3.sub([], this.points[FAR_BR], this.points[NEAR_BR]),
+            vec3.sub([], this.points[FAR_BL], this.points[NEAR_BL]),
         ];
 
         for (const edge of this.frustumEdges) {
@@ -282,7 +282,7 @@ class Frustum {
         // Transform frustum corner points from clip space to tile space
         const frustumCoords: vec4[] = clipSpaceCorners
             .map((v) => {
-                const s = vec4.transformMat4([] as unknown as vec4, v, invProj);
+                const s = vec4.transformMat4([], v, invProj);
                 const k = 1.0 / s[3] / worldSize * scale;
                 // Z scale in meters.
                 return vec4.mul(s, s, [k, k, zInMeters ? 1.0 / s[3] : k, k]);
@@ -298,18 +298,18 @@ class Frustum {
         ];
 
         const frustumPlanes = frustumPlanePointIndices.map((p: vec3) => {
-            const a = vec3.sub([] as unknown as vec3, frustumCoords[p[0]] as unknown as vec3, frustumCoords[p[1]] as unknown as vec3);
-            const b = vec3.sub([] as unknown as vec3, frustumCoords[p[2]] as unknown as vec3, frustumCoords[p[1]] as unknown as vec3);
-            const n = vec3.normalize([] as unknown as vec3, vec3.cross([] as unknown as vec3, a, b)) as [number, number, number];
-            const d = -vec3.dot(n, frustumCoords[p[1]] as unknown as vec3);
+            const a = vec3.sub([], frustumCoords[p[0]], frustumCoords[p[1]]);
+            const b = vec3.sub([], frustumCoords[p[2]], frustumCoords[p[1]]);
+            const n = vec3.normalize([], vec3.cross([], a, b)) as [number, number, number];
+            const d = -vec3.dot(n, frustumCoords[p[1]]);
             return n.concat(d) as vec4;
         }) as FrustumPlanes;
 
-        const frustumPoints = [] as unknown as FrustumPoints;
+        const frustumPoints: vec3[] = [];
         for (let i = 0; i < frustumCoords.length; i++) {
             frustumPoints.push([frustumCoords[i][0], frustumCoords[i][1], frustumCoords[i][2]]);
         }
-        return new Frustum(frustumPoints, frustumPlanes);
+        return new Frustum(frustumPoints as FrustumPoints, frustumPlanes);
     }
 
     // Performs precise intersection test between the frustum and the provided convex hull.
@@ -331,7 +331,7 @@ class Frustum {
 
         for (const edge of edges) {
             for (const frustumEdge of this.frustumEdges) {
-                const axis = vec3.cross([] as unknown as vec3, edge, frustumEdge);
+                const axis = vec3.cross([], edge, frustumEdge);
                 const len  = vec3.length(axis);
                 if (len === 0) {
                     continue;
@@ -429,7 +429,7 @@ class Aabb {
     constructor(min_: vec3, max_: vec3) {
         this.min = min_;
         this.max = max_;
-        this.center = vec3.scale([] as unknown as vec3, vec3.add([] as unknown as vec3, this.min, this.max), 0.5);
+        this.center = vec3.scale([], vec3.add([], this.min, this.max), 0.5);
     }
 
     quadrant(index: number): Aabb {

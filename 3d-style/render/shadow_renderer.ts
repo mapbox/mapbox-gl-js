@@ -254,7 +254,7 @@ export class ShadowRenderer {
                 this._cascades.push({
                     framebuffer: fbo,
                     texture: depthTexture,
-                    matrix: [] as unknown as mat4,
+                    matrix: [],
                     far: 0,
                     boundingSphereRadius: 0,
                     frustum: new Frustum(),
@@ -280,7 +280,7 @@ export class ShadowRenderer {
 
         const cascadeSplitDist = transform.cameraToCenterDistance * 1.5;
         const shadowCutoutDist = cascadeSplitDist * 3.0;
-        const cameraInvProj = new Float64Array(16) as unknown as mat4;
+        const cameraInvProj = new Float64Array(16);
         for (let cascadeIndex = 0; cascadeIndex < this._cascades.length; ++cascadeIndex) {
             const cascade = this._cascades[cascadeIndex];
 
@@ -469,7 +469,7 @@ export class ShadowRenderer {
         const gl = context.gl;
         const uniforms = this._uniformValues;
 
-        const lightMatrix = new Float64Array(16) as unknown as mat4;
+        const lightMatrix = new Float64Array(16);
         const tileMatrix = transform.calculatePosMatrix(unwrappedTileID, transform.worldSize);
 
         for (let i = 0; i < this._cascades.length; i++) {
@@ -513,7 +513,7 @@ export class ShadowRenderer {
         const gl = context.gl;
         const uniforms = this._uniformValues;
 
-        const lightMatrix = new Float64Array(16) as unknown as mat4;
+        const lightMatrix = new Float64Array(16);
         for (let i = 0; i < shadowParameters.cascadeCount; i++) {
             mat4.multiply(lightMatrix, this._cascades[i].matrix, worldMatrix);
             uniforms[i === 0 ? 'u_light_matrix_0' : 'u_light_matrix_1'] = Float32Array.from(lightMatrix);
@@ -595,10 +595,10 @@ function tileAabb(id: UnwrappedTileID, height: number, worldSize: number): Aabb 
 }
 
 function computePlane(a: vec3, b: vec3, c: vec3): vec4 {
-    const bc = vec3.sub([] as unknown as vec3, c, b);
-    const ba = vec3.sub([] as unknown as vec3, a, b);
+    const bc = vec3.sub([], c, b);
+    const ba = vec3.sub([], a, b);
 
-    const normal = vec3.cross([] as unknown as vec3, bc, ba);
+    const normal = vec3.cross([], bc, ba);
     const len = vec3.length(normal);
 
     if (len === 0) {
@@ -636,7 +636,7 @@ export function calculateGroundShadowFactor(
     const dirIntensity = directionalLight.properties.get('intensity');
     const dirDirection = directionalLight.properties.get('direction');
 
-    const directionVec: vec3 = [dirDirection.x, dirDirection.y, dirDirection.z];
+    const directionVec: [number, number, number] = [dirDirection.x, dirDirection.y, dirDirection.z];
     const ambientColorIgnoreLut = ambientLight.properties.get('color-use-theme') === 'none';
     const ambientColor = ambientLight.properties.get('color');
     const ambientIntensity = ambientLight.properties.get('intensity');
@@ -695,7 +695,7 @@ function createLightMatrix(
 
     const pixelsPerMeter = transform.projection.pixelsPerMeter(transform.center.lat, ws);
     const cameraToWorldMerc = transform._camera.getCameraToWorldMercator();
-    const sphereCenter: vec3 = [0.0, 0.0, -centerDepth * wsInverse];
+    const sphereCenter: [number, number, number] = [0.0, 0.0, -centerDepth * wsInverse];
     vec3.transformMat4(sphereCenter, sphereCenter, cameraToWorldMerc);
     let sphereRadius = radius * wsInverse;
 
@@ -722,10 +722,10 @@ function createLightMatrix(
             cameraToClip[8] = -transform.centerOffset.x * 2 / transform.width;
             cameraToClip[9] = transform.centerOffset.y * 2 / transform.height;
 
-            const cameraProj = new Float64Array(16) as unknown as mat4;
+            const cameraProj = new Float64Array(16);
             mat4.mul(cameraProj, cameraToClip, worldToCamera);
 
-            const cameraInvProj = new Float64Array(16) as unknown as mat4;
+            const cameraInvProj = new Float64Array(16);
             mat4.invert(cameraInvProj, cameraProj);
 
             const frustum = Frustum.fromInvProjectionMatrix(cameraInvProj, ws, zoom, true);
@@ -733,7 +733,7 @@ function createLightMatrix(
             // Iterate over the frustum points to get the furthest one from the center
             for (const p of frustum.points) {
                 const fp = frustumPointToMercator(p);
-                sphereRadius = Math.max(sphereRadius, vec3.len(vec3.subtract([] as unknown as vec3, sphereCenter, fp)));
+                sphereRadius = Math.max(sphereRadius, vec3.len(vec3.subtract([], sphereCenter, fp)));
             }
         }
     }
@@ -760,7 +760,7 @@ function createLightMatrix(
     const lightMatrixFarZ = (radiusPx + verticalRange * pixelsPerMeter) / shadowDirection[2];
 
     const lightViewToClip = camera.getCameraToClipOrthographic(-radiusPx, radiusPx, -radiusPx, radiusPx, lightMatrixNearZ, lightMatrixFarZ);
-    const lightWorldToClip = new Float64Array(16) as unknown as mat4;
+    const lightWorldToClip = new Float64Array(16);
     mat4.multiply(lightWorldToClip, lightViewToClip, lightWorldToView);
 
     // Move light camera in discrete steps in order to reduce shimmering when translating
@@ -776,7 +776,7 @@ function createLightMatrix(
     vec3.sub(offsetVec as [number, number, number], projectedPoint as [number, number, number], roundedPoint as [number, number, number]);
     vec3.scale(offsetVec as [number, number, number], offsetVec as [number, number, number], -1.0 / halfResolution);
 
-    const truncMatrix = new Float64Array(16) as unknown as mat4;
+    const truncMatrix = new Float64Array(16);
     mat4.identity(truncMatrix);
     mat4.translate(truncMatrix, truncMatrix, offsetVec as [number, number, number]);
     mat4.multiply(lightWorldToClip, truncMatrix, lightWorldToClip);

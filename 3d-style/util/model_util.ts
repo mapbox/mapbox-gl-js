@@ -83,13 +83,13 @@ export function rotationFor3Points(
     h2: number,
     meterToMercator: number,
 ): quat {
-    const p0p1: vec3 = [p1[0] - p0[0], p1[1] - p0[1], 0.0];
-    const p0p2: vec3 = [p2[0] - p0[0], p2[1] - p0[1], 0.0];
+    const p0p1: [number, number, number] = [p1[0] - p0[0], p1[1] - p0[1], 0.0];
+    const p0p2: [number, number, number] = [p2[0] - p0[0], p2[1] - p0[1], 0.0];
     // If model scale is zero, all bounding box points are identical and no rotation can be calculated
     if (vec3.length(p0p1) < 1e-12 || vec3.length(p0p2) < 1e-12) {
         return quat.identity(out);
     }
-    const from = vec3.cross([] as unknown as vec3, p0p1, p0p2);
+    const from = vec3.cross([], p0p1, p0p2);
     vec3.normalize(from, from);
     vec3.subtract(p0p2, p2, p0);
     p0p1[2] = (h1 - h0) * meterToMercator;
@@ -101,9 +101,9 @@ export function rotationFor3Points(
 }
 
 export function coordinateFrameAtEcef(ecef: vec3): mat4 {
-    const zAxis: vec3 = [ecef[0], ecef[1], ecef[2]];
-    let yAxis: vec3 = [0.0, 1.0, 0.0];
-    const xAxis: vec3 = vec3.cross([] as unknown as vec3, yAxis, zAxis);
+    const zAxis: [number, number, number] = [ecef[0], ecef[1], ecef[2]];
+    let yAxis: [number, number, number] = [0.0, 1.0, 0.0];
+    const xAxis: vec3 = vec3.cross([], yAxis, zAxis);
     vec3.cross(yAxis, zAxis, xAxis);
     if (vec3.squaredLength(yAxis) === 0.0) {
         // Coordinate space is ambiguous if the model is placed directly at north or south pole
@@ -137,7 +137,7 @@ export function convertModelMatrix(matrix: mat4, transform: Transform, scaleWith
     const lat = latFromMercatorY(position[1] / worldSize);
     const lng = lngFromMercatorX(position[0] / worldSize);
     // Construct a matrix for scaling the original one to ecef space and removing the translation in mercator space
-    const mercToEcef = mat4.identity([] as unknown as mat4);
+    const mercToEcef = mat4.identity([]);
     const sourcePixelsPerMeter = mercatorZfromAltitude(1, lat) * worldSize;
     const pixelsPerMeterConversion = mercatorZfromAltitude(1, 0) * worldSize * getMetersPerPixelAtLatitude(lat, transform.zoom);
     const pixelsToEcef = 1.0 / globeECEFUnitsToPixelScale(worldSize);
@@ -151,11 +151,11 @@ export function convertModelMatrix(matrix: mat4, transform: Transform, scaleWith
     // Construct coordinate space matrix at the provided location in ecef space.
     const ecefCoord = latLngToECEF(lat, lng);
     // add altitude
-    vec3.add(ecefCoord, ecefCoord, vec3.scale([] as unknown as vec3, vec3.normalize([] as unknown as vec3, ecefCoord), sourcePixelsPerMeter * scale * position[2]));
+    vec3.add(ecefCoord, ecefCoord, vec3.scale([], vec3.normalize([], ecefCoord), sourcePixelsPerMeter * scale * position[2]));
     const ecefFrame = coordinateFrameAtEcef(ecefCoord);
     mat4.scale(mercToEcef, mercToEcef, [scale, scale, scale * sourcePixelsPerMeter]);
     mat4.translate(mercToEcef, mercToEcef, [-position[0], -position[1], -position[2]]);
-    const result = mat4.multiply([] as unknown as mat4, transform.globeMatrix, ecefFrame);
+    const result = mat4.multiply([], transform.globeMatrix, ecefFrame);
     mat4.multiply(result, result, mercToEcef);
     mat4.multiply(result, result, matrix);
     return result;
@@ -169,7 +169,7 @@ export function mercatorToGlobeMatrix(matrix: mat4, transform: Transform): mat4 
     const pixelsToEcef = pixelsPerMeterConversion / globeECEFUnitsToPixelScale(worldSize);
     const pixelsPerMeter = mercatorZfromAltitude(1, transform.center.lat) * worldSize;
 
-    const m = mat4.identity([] as unknown as mat4);
+    const m = mat4.identity([]);
     mat4.rotateY(m, m, degToRad(transform.center.lng));
     mat4.rotateX(m, m, degToRad(transform.center.lat));
 

@@ -69,7 +69,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     if (isViewportPitch) {
         // Set overrideRtt to ignore 3D lights
         const program = painter.getOrCreateProgram(programName, {overrideFog: false, overrideRtt: true});
-        const matrix = new Float32Array(mat4.identity([] as unknown as mat4));
+        const matrix = new Float32Array(mat4.identity([]));
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
         const uniformValues: UniformValues<BackgroundUniformsType | BackgroundPatternUniformsType> = image ?

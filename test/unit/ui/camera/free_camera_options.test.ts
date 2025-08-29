@@ -14,9 +14,9 @@ describe('camera', () => {
 
         const rotatedFrame = (quaternion) => {
             return {
-                up: vec3.transformQuat([] as unknown as vec3, [0, -1, 0], quaternion),
-                forward: vec3.transformQuat([] as unknown as vec3, [0, 0, -1], quaternion),
-                right: vec3.transformQuat([] as unknown as vec3, [1, 0, 0], quaternion)
+                up: vec3.transformQuat([], [0, -1, 0], quaternion),
+                forward: vec3.transformQuat([], [0, 0, -1], quaternion),
+                right: vec3.transformQuat([], [1, 0, 0], quaternion)
             };
         };
 

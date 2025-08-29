@@ -19,7 +19,6 @@ import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {ReplacementSource, Region} from '../../../3d-style/source/replacement_source';
 import type Point from '@mapbox/point-geometry';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
-import type {mat4} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import type {
     Bucket,
@@ -426,7 +425,7 @@ class ModelBucket implements Bucket {
         const color = layer.paint.get('model-color').evaluate(evaluationFeature, featureState, canonical);
 
         color.a = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
-        const rotationScaleYZFlip = [] as unknown as mat4;
+        const rotationScaleYZFlip = [];
         if (this.maxVerticalOffset < translation[2]) this.maxVerticalOffset = translation[2];
         this.maxScale = Math.max(Math.max(this.maxScale, scale[0]), Math.max(scale[1], scale[2]));
 

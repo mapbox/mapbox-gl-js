@@ -81,7 +81,7 @@ class SymbolStyleLayer extends StyleLayer {
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         super(layer, getProperties(), scope, lut, options, layer.layout ? layer.layout['icon-image-use-theme'] : null);
-        this._colorAdjustmentMatrix = mat4.identity([] as unknown as mat4);
+        this._colorAdjustmentMatrix = mat4.identity([]);
         this.hasOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
     }
 

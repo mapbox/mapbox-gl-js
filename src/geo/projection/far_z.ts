@@ -49,7 +49,7 @@ export function farthestPixelDistanceOnSphere(tr: Transform, pixelsPerMeter: num
 
     const camera = tr._camera;
     const forward = tr._camera.forward();
-    const cameraPosition = vec3.add([] as unknown as vec3, vec3.scale([] as unknown as vec3, forward, -cameraDistance), [0, 0, centerPixelAltitude]);
+    const cameraPosition = vec3.add([], vec3.scale([], forward, -cameraDistance), [0, 0, centerPixelAltitude]);
 
     const globeRadius = tr.worldSize / (2.0 * Math.PI);
     const globeCenter: vec3 = [0, 0, -globeRadius];
@@ -57,25 +57,25 @@ export function farthestPixelDistanceOnSphere(tr: Transform, pixelsPerMeter: num
     const aspectRatio = tr.width / tr.height;
     const tanFovAboveCenter = Math.tan(tr.fovAboveCenter);
 
-    const up = vec3.scale([] as unknown as vec3, camera.up(), tanFovAboveCenter);
-    const right = vec3.scale([] as unknown as vec3, camera.right(), tanFovAboveCenter * aspectRatio);
-    const dir = vec3.normalize([] as unknown as vec3, vec3.add([] as unknown as vec3, vec3.add([] as unknown as vec3, forward, up), right));
+    const up = vec3.scale([], camera.up(), tanFovAboveCenter);
+    const right = vec3.scale([], camera.right(), tanFovAboveCenter * aspectRatio);
+    const dir = vec3.normalize([], vec3.add([], vec3.add([], forward, up), right));
 
-    const pointOnGlobe = [] as unknown as vec3;
+    const pointOnGlobe = [];
     const ray = new Ray(cameraPosition, dir);
 
     let pixelDistance;
     if (ray.closestPointOnSphere(globeCenter, globeRadius, pointOnGlobe)) {
-        const p0 = vec3.add([] as unknown as vec3, pointOnGlobe, globeCenter);
-        const p1 = vec3.sub([] as unknown as vec3, p0, cameraPosition);
+        const p0 = vec3.add([], pointOnGlobe, globeCenter);
+        const p1 = vec3.sub([], p0, cameraPosition);
         // Globe is fully covering the view frustum. Project the intersection
         // point to the camera view vector in order to find the pixel distance
         pixelDistance = Math.cos(tr.fovAboveCenter) * vec3.length(p1);
     } else {
         // Background space is visible. Find distance to the point of the
         // globe where surface normal is parallel to the view vector
-        const globeCenterToCamera = vec3.sub([] as unknown as vec3, cameraPosition, globeCenter);
-        const cameraToGlobe = vec3.sub([] as unknown as vec3, globeCenter, cameraPosition);
+        const globeCenterToCamera = vec3.sub([], cameraPosition, globeCenter);
+        const cameraToGlobe = vec3.sub([], globeCenter, cameraPosition);
         vec3.normalize(cameraToGlobe, cameraToGlobe);
 
         const cameraHeight = vec3.length(globeCenterToCamera) - globeRadius;
