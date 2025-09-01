@@ -77,7 +77,7 @@ export function getSizeData(
     const {expression} = value;
 
     if (expression.kind === 'constant') {
-        const layoutSize = expression.evaluate(new EvaluationParameters(tileZoom + 1, {worldview}));
+        const layoutSize: number = expression.evaluate(new EvaluationParameters(tileZoom + 1, {worldview}));
         return {kind: 'constant', layoutSize};
 
     } else if (expression.kind === 'source') {
@@ -106,8 +106,8 @@ export function getSizeData(
 
         // for camera functions, also save off the function values
         // evaluated at the covering zoom levels
-        const minSize = expression.evaluate(new EvaluationParameters(minZoom, {worldview}));
-        const maxSize = expression.evaluate(new EvaluationParameters(maxZoom, {worldview}));
+        const minSize: number = expression.evaluate(new EvaluationParameters(minZoom, {worldview}));
+        const maxSize: number = expression.evaluate(new EvaluationParameters(maxZoom, {worldview}));
 
         return {kind: 'camera', minZoom, maxZoom, minSize, maxSize, interpolationType};
     }

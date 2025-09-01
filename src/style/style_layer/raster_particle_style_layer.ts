@@ -103,7 +103,7 @@ class RasterParticleStyleLayer extends StyleLayer {
         if (!this.hasColorMap()) return;
 
         const expression = this._transitionablePaint._values['raster-particle-color'].value.expression;
-        const end = this._transitionablePaint._values['raster-particle-max-speed'].value.expression.evaluate({zoom: 0});
+        const end: number = this._transitionablePaint._values['raster-particle-max-speed'].value.expression.evaluate({zoom: 0});
 
         this.colorRamp = renderColorRamp({
             expression,

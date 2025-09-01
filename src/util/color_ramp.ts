@@ -3,7 +3,7 @@ import {isPowerOfTwo} from './util';
 import assert from 'assert';
 
 import type {StylePropertyExpression, GlobalProperties} from '../style-spec/expression/index';
-import type {PremultipliedRenderColor} from '../style-spec/util/color';
+import type {default as Color, PremultipliedRenderColor} from '../style-spec/util/color';
 
 export type ColorRampParams = {
     expression: StylePropertyExpression;
@@ -29,7 +29,7 @@ export function renderColorRamp(params: ColorRampParams): RGBAImage {
 
     const renderPixel = (stride: number, index: number, progress: number) => {
         evaluationGlobals[params.evaluationKey] = progress;
-        const color = params.expression.evaluate(evaluationGlobals);
+        const color: Color = params.expression.evaluate(evaluationGlobals);
         const pxColor: PremultipliedRenderColor | null | undefined = color ? color.toNonPremultipliedRenderColor(null) : null;
         if (!pxColor) return;
 

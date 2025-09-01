@@ -126,8 +126,7 @@ class StyleChanges {
             removedIds?: Array<string>;
         };
         } {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const updatesByScope: Record<string, any> = {};
+        const updatesByScope: Record<string, {updatedIds?: Array<string>; removedIds?: Array<string>}> = {};
 
         for (const scope in this._updatedLayers) {
             updatesByScope[scope] = updatesByScope[scope] || {};

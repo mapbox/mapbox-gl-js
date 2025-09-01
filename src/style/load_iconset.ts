@@ -45,8 +45,7 @@ export function loadIconset(
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result: Record<string, any> = {};
+        const result: StyleImages = {};
 
         const iconSet = readIconSet(new Protobuf(data));
 

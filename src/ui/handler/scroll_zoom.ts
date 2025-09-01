@@ -46,8 +46,7 @@ class ScrollZoomHandler implements Handler {
     _timeout?: number; // used for delayed-handling of a single wheel movement
     _finishTimeout: number; // used to delay final '{move,zoom}end' events
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _lastWheelEvent: any;
+    _lastWheelEvent: WheelEvent | null;
     _lastWheelEventTime: number;
 
     _startZoom?: number;

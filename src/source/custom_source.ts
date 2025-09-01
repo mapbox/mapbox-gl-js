@@ -15,8 +15,7 @@ import type {TextureImage} from '../render/texture';
 
 type DataType = 'raster';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isRaster(data: any): boolean {
+function isRaster(data: unknown): boolean {
     return data instanceof ImageData ||
         data instanceof HTMLCanvasElement ||
         data instanceof ImageBitmap ||

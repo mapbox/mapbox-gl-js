@@ -108,7 +108,7 @@ global.defaultValue = function (property) {
 };
 
 global.overrides = function (property) {
-    return `{ runtimeType: ${global.runtimeType(property)}, getOverride: (o) => o.${global.camelizeWithLeadingLowercase(property.name)}, hasOverride: (o) => !!o.${global.camelizeWithLeadingLowercase(property.name)} }`;
+    return `{ runtimeType: ${global.runtimeType(property)}, getOverride: (o: Record<string, unknown>) => o.${global.camelizeWithLeadingLowercase(property.name)}, hasOverride: (o: Record<string, unknown>) => !!o.${global.camelizeWithLeadingLowercase(property.name)} }`;
 };
 
 global.propertyValue = function (type, property, valueType) {

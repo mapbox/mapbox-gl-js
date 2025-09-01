@@ -199,8 +199,7 @@ export function querySourceFeatures(sourceCache: SourceCache, params?: {
 
     const result = [];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dataTiles: Record<string, any> = {};
+    const dataTiles: Record<string, boolean> = {};
     for (let i = 0; i < tiles.length; i++) {
         const tile = tiles[i];
         const dataID = tile.tileID.canonical.key;

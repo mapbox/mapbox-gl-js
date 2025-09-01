@@ -41,8 +41,7 @@ class FillStyleLayer extends StyleLayer {
     override getProgramIds(): ProgramName[] {
         const pattern = this.paint.get('fill-pattern');
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const image = pattern && pattern.constantOr((1 as any));
+        const image = pattern && pattern.constantOr(1);
 
         const ids: ProgramName[] = [image ? 'fillPattern' : 'fill'];
 

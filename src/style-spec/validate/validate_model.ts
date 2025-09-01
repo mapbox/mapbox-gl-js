@@ -10,8 +10,7 @@ export function isValidUrl(str: string, allowRelativeUrls: boolean): boolean {
     try {
         new URL(str, isRelative && allowRelativeUrls ? 'http://example.com' : undefined);
         return true;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (_: any) {
+    } catch (_: unknown) {
         return false;
     }
 }

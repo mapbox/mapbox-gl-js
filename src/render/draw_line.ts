@@ -84,8 +84,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     const dasharrayProperty = layer.paint.get('line-dasharray');
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dasharray = dasharrayProperty.constantOr((1 as any));
+    const dasharray = dasharrayProperty.constantOr(1);
     const capProperty = layer.layout.get('line-cap');
 
     const constantDash = dasharrayProperty.constantOr(null);
@@ -93,8 +92,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const constantCap = capProperty.constantOr(null);
     const patternProperty = layer.paint.get('line-pattern');
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const image = patternProperty.constantOr((1 as any));
+    const image = patternProperty.constantOr(1);
     const patternTransition = layer.paint.get('line-pattern-cross-fade');
     const constantPattern = patternProperty.constantOr(null);
 

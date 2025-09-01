@@ -323,8 +323,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     painter.resetStencilClippingMasks();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, emissiveStrength: number, rasterConfig: any, cullFaceMode: CullFaceMode, stencilMode: StencilMode) {
+function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, emissiveStrength: number, rasterConfig: RasterConfig, cullFaceMode: CullFaceMode, stencilMode: StencilMode) {
     const source = sourceCache.getSource();
     const sharedBuffers = painter.globeSharedBuffers;
     if (!sharedBuffers) return;

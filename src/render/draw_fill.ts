@@ -71,8 +71,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
 
     const pattern = layer.paint.get('fill-pattern');
     const pass = painter.opaquePassEnabledForLayer() &&
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (!pattern.constantOr((1 as any)) &&
+        (!pattern.constantOr(1) &&
         color.constantOr(Color.transparent).a === 1 &&
         opacity.constantOr(0) === 1) ? 'opaque' : 'translucent';
 
@@ -367,8 +366,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const image = patternProperty && patternProperty.constantOr((1 as any));
+    const image = patternProperty && patternProperty.constantOr(1);
 
     const draw = (depthMode: DepthMode, isOutline: boolean) => {
         let programName: 'fillPattern' | 'fill' | 'fillOutlinePattern' | 'fillOutline';

@@ -155,8 +155,7 @@ class ConstantBinder implements UniformBinder {
     ): void {
         const value = currentValue.constantOr(this.value);
         if (value instanceof Color) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const lut = this.lutExpression && (this.lutExpression as any).value === 'none' ? null : this.context.lut;
+            const lut = this.lutExpression && this.lutExpression.kind === 'constant' && this.lutExpression.value === 'none' ? null : this.context.lut;
             uniform.set(program, uniformName, value.toPremultipliedRenderColor(lut));
         } else {
             uniform.set(program, uniformName, value);
@@ -524,10 +523,10 @@ export default class ProgramConfiguration {
             const useIntegerZoom = !!value.property.useIntegerZoom;
             const isPattern = property === 'line-dasharray' || property.endsWith('pattern');
 
-            // @ts-expect-error - TS2345: Argument of type 'string' is not assignable to parameter of type ...
-            const valueUseTheme = layer.paint.get(`${property}-use-theme`);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const sourceException = (property === 'line-dasharray' && (layer.layout as any).get('line-cap').value.kind !== 'constant') || (valueUseTheme && valueUseTheme.value.kind !== 'constant');
+            // @ts-expect-error - TS2349 - This expression is not callable.
+            const valueUseTheme = layer.paint.get(`${property}-use-theme`) as PossiblyEvaluatedPropertyValue<string>;
+            // @ts-expect-error - TS2349 - This expression is not callable.
+            const sourceException = (property === 'line-dasharray' && layer.layout.get('line-cap').value.kind !== 'constant') || (valueUseTheme && valueUseTheme.value.kind !== 'constant');
 
             if (expression.kind === 'constant' && !sourceException) {
                 this.binders[property] = isPattern ?
@@ -546,8 +545,7 @@ export default class ProgramConfiguration {
 
             } else {
                 const StructArrayLayout = layoutType(property, type, 'composite');
-                // @ts-expect-error - TS2345 - Argument of type 'CompositeExpression | { kind: "constant"; value: any; }' is not assignable to parameter of type 'CompositeExpression'.
-                this.binders[property] = new CompositeExpressionBinder(expression, names, type, useIntegerZoom, context, StructArrayLayout);
+                this.binders[property] = new CompositeExpressionBinder(expression as CompositeExpression, names, type, useIntegerZoom, context, StructArrayLayout);
                 keys.push(`/z_${property}`);
             }
 

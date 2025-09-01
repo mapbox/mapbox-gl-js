@@ -12,8 +12,7 @@ class VertexArrayObject {
     boundIndexBuffer: IndexBuffer | null | undefined;
     boundVertexOffset: number | null | undefined;
     boundDynamicVertexBuffers: Array<VertexBuffer | null | undefined>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vao: any;
+    vao: WebGLVertexArrayObject | null;
 
     constructor() {
         this.boundProgram = null;

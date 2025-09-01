@@ -83,8 +83,7 @@ export function gridSubdivision(
     gridSizeX: number,
     gridSizeY: number,
     padding: number | null | undefined = 0.0,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    splitFn: any,
+    splitFn: ((axis: number, min: number, max: number) => number) | null,
 ): Array<ClippedPolygon> {
     const outPolygons = [];
 

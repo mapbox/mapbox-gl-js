@@ -53,8 +53,7 @@ function deserialize(serialized: string): any {
 // Serializable folder state
 class FolderState {
     isFolded: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    current: any;
+    current: Record<string, unknown>;
 
     constructor() {
         this.isFolded = false;
@@ -314,9 +313,8 @@ export class TrackedParameters implements ITrackedParameters {
         }).then((writable) => {
             const serialized = serialize(this._paneState);
             return Promise.all([writable, writable.write(serialized)]);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }).then(([writable, _]: [any, any]) => {
-            writable.close();
+        }).then(([writable, _]: [WritableStream, unknown]) => {
+            writable.close().catch(() => {});
         }).catch((err) => {
             console.error(err);
         });

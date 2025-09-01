@@ -1028,7 +1028,7 @@ class LineBucket implements Bucket {
         if (this.zOffsetValue.kind === 'constant') {
             return {zOffset: this.zOffsetValue.value, variableWidth};
         }
-        const zOffset = this.zOffsetValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
+        const zOffset: number = this.zOffsetValue.evaluate(this.evaluationGlobals, this.lineFeature) || 0.0;
         return {zOffset, variableWidth};
     }
 

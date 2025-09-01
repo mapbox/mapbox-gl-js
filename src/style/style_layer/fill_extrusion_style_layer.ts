@@ -66,8 +66,7 @@ class FillExtrusionStyleLayer extends StyleLayer {
     override getProgramIds(): ProgramName[] {
         const patternProperty = this.paint.get('fill-extrusion-pattern');
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const image = patternProperty.constantOr((1 as any));
+        const image = patternProperty.constantOr(1);
         return [image ? 'fillExtrusionPattern' : 'fillExtrusion'];
     }
 

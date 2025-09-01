@@ -154,8 +154,7 @@ function isNumberFormatSupported() {
     try {
         new Intl.NumberFormat('en', {style: 'unit', unitDisplay: 'short', unit: 'meter'});
         return true;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (_: any) {
+    } catch (_: unknown) {
         return false;
     }
 }

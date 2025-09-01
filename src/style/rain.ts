@@ -6,6 +6,7 @@ import {Transitionable, PossiblyEvaluated} from './properties';
 import Color from '../style-spec/util/color';
 import {getProperties, type RainProps as Props} from '../../3d-style/style/rain_properties';
 
+import type {Validator} from './validate_style';
 import type {RainSpecification} from '../style-spec/types';
 import type EvaluationParameters from './evaluation_parameters';
 import type {TransitionParameters, ConfigOptions, Transitioning} from './properties';
@@ -107,8 +108,7 @@ class Rain extends Evented {
     }
 
     _validate(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        validate: any,
+        validate: Validator,
         value: unknown,
         options?: {
             validate?: boolean;

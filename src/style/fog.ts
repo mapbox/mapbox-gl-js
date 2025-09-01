@@ -8,6 +8,7 @@ import {number as interpolate, array as vecInterpolate} from '../style-spec/util
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
 import EXTENT from '../style-spec/data/extent';
 
+import type {Validator} from './validate_style';
 import type {Frustum} from '../util/primitives';
 import type {OverscaledTileID} from '../source/tile_id';
 import type Color from '../style-spec/util/color';
@@ -190,8 +191,7 @@ class Fog extends Evented {
     }
 
     _validate(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        validate: any,
+        validate: Validator,
         value: unknown,
         options?: {
             validate?: boolean;

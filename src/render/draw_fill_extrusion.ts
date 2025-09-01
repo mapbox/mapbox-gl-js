@@ -103,8 +103,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
         drawExtrusionTiles(painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, conflateLayer);
     } else if (painter.renderPass === 'translucent') {
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const noPattern = !layer.paint.get('fill-extrusion-pattern').constantOr((1 as any));
+        const noPattern = !layer.paint.get('fill-extrusion-pattern').constantOr(1);
 
         const color = layer.paint.get('fill-extrusion-color').constantOr(Color.white);
 
@@ -287,8 +286,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const patternTransition = layer.paint.get('fill-extrusion-pattern-cross-fade');
     const constantPattern = patternProperty.constantOr(null);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const image = patternProperty.constantOr((1 as any));
+    const image = patternProperty.constantOr(1);
     const opacity = layer.paint.get('fill-extrusion-opacity');
     const lighting3DMode = painter.style.enable3dLights();
     const aoRadius = (lighting3DMode && !image) ? layer.paint.get('fill-extrusion-ambient-occlusion-wall-radius') : layer.paint.get('fill-extrusion-ambient-occlusion-radius');

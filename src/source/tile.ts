@@ -31,7 +31,7 @@ import type RasterParticleState from '../render/raster_particle_state';
 import type FeatureIndex from '../data/feature_index';
 import type {Bucket} from '../data/bucket';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
-import type {WorkerSourceVectorTileResult} from './worker_source';
+import type {WorkerSourceVectorTileResult, WorkerSourceVectorTileCallback} from './worker_source';
 import type Actor from '../util/actor';
 import type DEMData from '../data/dem_data';
 import type {AlphaImage, SpritePositions} from '../util/image';
@@ -121,19 +121,15 @@ class Tile {
     lineAtlasTexture: Texture | null | undefined;
     glyphAtlasImage: AlphaImage | null | undefined;
     glyphAtlasTexture: Texture | null | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expirationTime: any;
+    expirationTime: number | null;
     expiredRequestCount: number;
     state: TileState;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    timeAdded: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fadeEndTime: any;
+    timeAdded: number | null;
+    fadeEndTime: number | null;
     collisionBoxArray: CollisionBoxArray | null | undefined;
     redoWhenDone: boolean;
     showCollisionBoxes: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    placementSource: any;
+    placementSource: unknown;
     actor: Actor | null | undefined;
     vtLayers: {
         [_: string]: VectorTileLayer;
@@ -155,8 +151,7 @@ class Tile {
     hillshadeFBO: Framebuffer | null | undefined;
     demTexture: Texture | null | undefined;
     refreshedUponExpiration: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    reloadCallback: any;
+    reloadCallback: WorkerSourceVectorTileCallback | null | undefined;
     resourceTiming: Array<PerformanceResourceTiming> | null | undefined;
     queryPadding: number;
     rasterParticleState: RasterParticleState | null | undefined;

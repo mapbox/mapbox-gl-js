@@ -219,8 +219,7 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
 
     const hasJoinNone = layer.layout.get('line-join').constantOr('miter') === 'none';
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const hasPattern = !!layer.paint.get('line-pattern').constantOr((1 as any));
+    const hasPattern = !!layer.paint.get('line-pattern').constantOr(1);
     if (hasJoinNone && hasPattern) {
         values.push('LINE_JOIN_NONE');
     }
@@ -230,9 +229,7 @@ const lineDefinesValues = (layer: LineStyleLayer): LineDefinesType[] => {
 
 function hasDash(layer: LineStyleLayer) {
     const dashPropertyValue = layer.paint.get('line-dasharray').value;
-    // @ts-expect-error - TS2339 - Property 'value' does not exist on type 'PossiblyEvaluatedValue<number[]>'.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return dashPropertyValue.value || dashPropertyValue.kind !== "constant";
+    return dashPropertyValue.kind !== 'constant' || dashPropertyValue.value;
 }
 
 export {

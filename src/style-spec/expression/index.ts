@@ -283,7 +283,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
 export type ConstantExpression = {
     kind: 'constant';
     configDependencies: Set<string>;
-    readonly evaluate: (
+    readonly evaluate: <T = unknown>(
         globals: GlobalProperties,
         feature?: Feature,
         featureState?: FeatureState,
@@ -291,8 +291,7 @@ export type ConstantExpression = {
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
         iconImageUseTheme?: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) => any;
+    ) => T;
 };
 
 export type SourceExpression = {
@@ -301,29 +300,27 @@ export type SourceExpression = {
     isLightConstant: boolean | null | undefined;
     isLineProgressConstant: boolean | null | undefined;
     configDependencies: Set<string>;
-    readonly evaluate: (
+    readonly evaluate: <T = unknown>(
         globals: GlobalProperties,
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) => any;
+    ) => T;
 };
 
 export type CameraExpression = {
     kind: 'camera';
     isStateDependent: boolean;
     configDependencies: Set<string>;
-    readonly evaluate: (
+    readonly evaluate: <T = unknown>(
         globals: GlobalProperties,
         feature?: Feature,
         featureState?: FeatureState,
         canonical?: CanonicalTileID,
         availableImages?: ImageId[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) => any;
+    ) => T;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;
     zoomStops: Array<number>;
     interpolationType: InterpolationType | null | undefined;
@@ -335,7 +332,7 @@ export interface CompositeExpression {
     isLightConstant: boolean | null | undefined;
     isLineProgressConstant: boolean | null | undefined;
     configDependencies: Set<string>;
-    readonly evaluate: (
+    readonly evaluate: <T = unknown>(
         globals: GlobalProperties,
         feature?: Feature,
         featureState?: FeatureState,
@@ -343,8 +340,7 @@ export interface CompositeExpression {
         availableImages?: ImageId[],
         formattedSection?: FormattedSection,
         iconImageUseTheme?: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) => any;
+    ) => T;
     readonly interpolationFactor: (input: number, lower: number, upper: number) => number;
     zoomStops: Array<number>;
     interpolationType: InterpolationType | null | undefined;
@@ -417,8 +413,7 @@ export class StylePropertyFunction<T> {
     _specification: StylePropertySpecification;
 
     kind: EvaluationKind;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    evaluate: (globals: GlobalProperties, feature?: Feature) => any;
+    evaluate: <T = unknown>(globals: GlobalProperties, feature?: Feature) => T;
     interpolationFactor: (input: number, lower: number, upper: number) => number | null | undefined;
     zoomStops: Array<number> | null | undefined;
 
@@ -467,15 +462,15 @@ export function normalizePropertyExpression<T>(
         return expression.value;
 
     } else {
-        let constant = value as Color;
+        let constant = value;
         if (typeof value === 'string' && specification.type === 'color') {
-            constant = Color.parse(value);
+            constant = Color.parse(value) as PropertyValueSpecification<T>;
         }
         return {
             kind: 'constant',
             configDependencies: new Set(),
             evaluate: () => constant
-        };
+        } as ConstantExpression;
     }
 }
 
