@@ -324,20 +324,7 @@ export function parseUsedPreprocessorDefines(source: string, defines: DynamicDef
 export function compile(fragmentSource: string, vertexSource: string): ShaderSource {
     const includeRegex = /#include\s+"([^"]+)"/g;
     const pragmaRegex = /#pragma mapbox: ([\w\-]+) ([\w]+) ([\w]+) ([\w]+)/g;
-    const attributeRegex = /(attribute(\S*)|(^\s*|;)in) (highp |mediump |lowp )?([\w]+) ([\w]+)/gm;
 
-    let staticAttributes: string[] = vertexSource.match(attributeRegex);
-
-    if (staticAttributes) {
-        staticAttributes = staticAttributes.map((str) => {
-            const tokens = str.split(' ');
-
-            return tokens[tokens.length - 1];
-        });
-        // remove duplicates as Safari does not support lookbehind in regex
-        // so we need to get rid of initialize-* expressions
-        staticAttributes = [...new Set(staticAttributes)];
-    }
     const fragmentPragmas: Record<string, boolean> = {};
 
     const vertexIncludes = [];
@@ -512,5 +499,5 @@ uniform ${precision} ${type} u_${name};
         }
     });
 
-    return {fragmentSource, vertexSource, staticAttributes, usedDefines, vertexIncludes, fragmentIncludes};
+    return {fragmentSource, vertexSource, usedDefines, vertexIncludes, fragmentIncludes};
 }

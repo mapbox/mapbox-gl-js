@@ -14,6 +14,11 @@ describe('VertexBuffer', () => {
         {name: 'map', components: 1, type: 'Int16', offset: 0},
         {name: 'box', components: 2, type: 'Int16', offset: 4}
     ];
+    const program = {
+        getAttributeLocation(gl, name) {
+            return ({map: 5, box: 6})[name] || -1;
+        }
+    };
 
     test('constructs itself', () => {
         const context = new Context(gl);
@@ -37,7 +42,7 @@ describe('VertexBuffer', () => {
         const array = new TestArray();
         const buffer = new VertexBuffer(context, array, attributes);
         vi.spyOn(context.gl, 'enableVertexAttribArray').mockImplementation(() => {});
-        buffer.enableAttributes(context.gl, {attributes: {map: 5, box: 6}});
+        buffer.enableAttributes(context.gl, program);
         expect(context.gl.enableVertexAttribArray.mock.calls).toEqual([[5], [6]]);
     });
 
@@ -46,7 +51,7 @@ describe('VertexBuffer', () => {
         const array = new TestArray();
         const buffer = new VertexBuffer(context, array, attributes);
         vi.spyOn(context.gl, 'vertexAttribPointer').mockImplementation(() => {});
-        buffer.setVertexAttribPointers(context.gl, {attributes: {map: 5, box: 6}}, 50);
+        buffer.setVertexAttribPointers(context.gl, program, 50);
         expect(context.gl.vertexAttribPointer.mock.calls).toEqual([
             [5, 1, context.gl['SHORT'], false, 6, 300],
             [6, 2, context.gl['SHORT'], false, 6, 304]

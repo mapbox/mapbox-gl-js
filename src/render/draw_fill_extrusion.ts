@@ -404,8 +404,8 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         }
 
         if (!bucket.centroidVertexBuffer) {
-            const attrIndex: number | undefined = program.attributes['a_centroid_pos'];
-            if (attrIndex !== undefined) gl.vertexAttrib2f(attrIndex, 0, 0);
+            const attrIndex = program.getAttributeLocation(gl, 'a_centroid_pos');
+            if (attrIndex !== -1) gl.vertexAttrib2f(attrIndex, 0, 0);
         }
 
         if (!isShadowPass && shadowRenderer) {

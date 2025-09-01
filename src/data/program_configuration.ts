@@ -655,37 +655,6 @@ export default class ProgramConfiguration {
         return result;
     }
 
-    getBinderAttributes(): Array<string> {
-        const result: Set<string> = new Set();
-        for (const property in this.binders) {
-            const binder = this.binders[property];
-            if (binder instanceof SourceExpressionBinder || binder instanceof CompositeExpressionBinder || binder instanceof PatternCompositeBinder) {
-                for (let i = 0; i < binder.paintVertexAttributes.length; i++) {
-                    result.add(binder.paintVertexAttributes[i].name);
-                }
-            }
-            if (binder instanceof PatternCompositeBinder) {
-                for (let i = 0; i < patternTransitionAttributes.members.length; i++) {
-                    result.add(patternTransitionAttributes.members[i].name);
-                }
-            }
-        }
-        return Array.from(result);
-    }
-
-    getBinderUniforms(): Array<string> {
-        const uniforms: string[] = [];
-        for (const property in this.binders) {
-            const binder = this.binders[property];
-            if (binder instanceof ConstantBinder || binder instanceof PatternConstantBinder || binder instanceof CompositeExpressionBinder) {
-                for (const uniformName of binder.uniformNames) {
-                    uniforms.push(uniformName);
-                }
-            }
-        }
-        return uniforms;
-    }
-
     getPaintVertexBuffers(): Array<VertexBuffer> {
         // _buffers will be undefined here if updatePaintBuffers hasn't been called on the main thread yet
         assert(this._buffers);

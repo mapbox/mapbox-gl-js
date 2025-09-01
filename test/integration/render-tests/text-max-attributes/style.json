@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "color": "red",
+          "haloColor": "white",
+          "haloWidth": 2,
+          "haloBlur": 1,
+          "opacity": 1,
+          "emissiveStrength": 1,
+          "occlusionOpacity": 0,
+          "zOffset": 0
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        }
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "text-field": "ABC",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"]
+      },
+      "paint": {
+        "text-color": ["to-color", ["get", "color"]],
+        "text-halo-color": ["to-color", ["get", "haloColor"]],
+        "text-halo-width": ["number", ["get", "haloWidth"]],
+        "text-halo-blur": ["number", ["get", "haloBlur"]],
+        "text-opacity": ["number", ["get", "opacity"]],
+        "text-emissive-strength": ["number", ["get", "emissiveStrength"]],
+        "text-occlusion-opacity": ["number", ["get", "occlusionOpacity"]],
+        "symbol-z-offset": ["number", ["get", "zOffset"]]
+      }
+    }
+  ]
+}

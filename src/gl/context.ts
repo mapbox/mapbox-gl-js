@@ -32,7 +32,6 @@ export type ContextOptions = {
 
 class Context {
     gl: WebGL2RenderingContext;
-    currentNumAttributes: number | null | undefined;
     maxTextureSize: number;
 
     clearColor: ClearColor;

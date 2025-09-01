@@ -43,7 +43,6 @@ export type DrawMode = WebGL2RenderingContext['POINTS'] | WebGL2RenderingContext
 export type ShaderSource = {
     fragmentSource: string;
     vertexSource: string;
-    staticAttributes: Array<string>;
     usedDefines: Array<DynamicDefinesType>;
     vertexIncludes: Array<string>;
     fragmentIncludes: Array<string>;
@@ -75,7 +74,6 @@ const instancingUniforms = (context: Context): InstancingUniformType => ({
 class Program<Us extends UniformBindings> {
     program: WebGLProgram;
     attributes: Record<string, number>;
-    numAttributes: number;
     fixedUniforms: Us;
     binderUniforms: Array<BinderUniform>;
     failedToCreate: boolean;
@@ -123,9 +121,6 @@ class Program<Us extends UniformBindings> {
         this.configuration = configuration;
         this.name = name;
         this.fixedDefines = [...fixedDefines];
-
-        const dynamicAttrInfo = configuration ? configuration.getBinderAttributes() : [];
-        const allAttrInfo = (source.staticAttributes || []).concat(dynamicAttrInfo);
 
         let defines = configuration ? configuration.defines() : [];
         defines = defines.concat(fixedDefines.map((define) => `#define ${define}`));
@@ -184,17 +179,6 @@ class Program<Us extends UniformBindings> {
 
         this.attributes = {};
 
-        this.numAttributes = allAttrInfo.length;
-
-        for (let i = 0; i < this.numAttributes; i++) {
-            if (allAttrInfo[i]) {
-                // Handle pragma defined attributes
-                const attributeName = allAttrInfo[i].startsWith('a_') ? allAttrInfo[i] : `a_${allAttrInfo[i]}`;
-                gl.bindAttribLocation(this.program, i, attributeName);
-                this.attributes[attributeName] = i;
-            }
-        }
-
         gl.linkProgram(this.program);
         assert(gl.getProgramParameter(this.program, gl.LINK_STATUS), gl.getProgramInfoLog(this.program));
 
@@ -228,6 +212,14 @@ class Program<Us extends UniformBindings> {
         if (fixedDefines.includes('RENDER_SHADOWS')) {
             this.shadowUniforms = shadowUniforms(context);
         }
+    }
+
+    getAttributeLocation(gl: WebGL2RenderingContext, name: string): number {
+        let location = this.attributes[name];
+        if (location === undefined) {
+            location = this.attributes[name] = gl.getAttribLocation(this.program, name);
+        }
+        return location;
     }
 
     setTerrainUniformValues(context: Context, terrainUniformValues: UniformValues<TerrainUniformsType>) {

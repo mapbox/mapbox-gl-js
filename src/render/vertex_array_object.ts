@@ -86,7 +86,6 @@ class VertexArrayObject {
               vertexOffset: number | null | undefined,
               dynamicVertexBuffers: Array<VertexBuffer | null | undefined>,
               vertexAttribDivisorValue?: number | null) {
-        const numNextAttributes = program.numAttributes;
 
         const context = this.context;
         const gl = context.gl;
@@ -127,8 +126,6 @@ class VertexArrayObject {
         if (indexBuffer) {
             indexBuffer.bind();
         }
-
-        context.currentNumAttributes = numNextAttributes;
     }
 
     destroy() {
