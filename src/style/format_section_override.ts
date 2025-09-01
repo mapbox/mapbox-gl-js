@@ -38,8 +38,7 @@ export default class FormatSectionOverride<T> implements Expression {
 
     eachChild(fn: (_: Expression) => void) {
         if (!this.defaultValue.isConstant()) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-            const expr: ZoomConstantExpression<'source'> = ((this.defaultValue.value) as any);
+            const expr: ZoomConstantExpression<'source'> = this.defaultValue.value as ZoomConstantExpression<'source'>;
             fn(expr._styleExpression.expression);
         }
     }

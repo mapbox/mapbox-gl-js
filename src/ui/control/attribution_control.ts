@@ -5,6 +5,7 @@ import {getHashString} from '../hash';
 
 import type {Map, ControlPosition, IControl} from '../map';
 import type {StyleSpecification} from '../../style-spec/types';
+import type {MapDataEvent} from '../events';
 
 export type AttributionControlOptions = {
     compact?: boolean;
@@ -133,10 +134,8 @@ class AttributionControl implements IControl {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _updateData(e: any) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (e && (e.sourceDataType === 'metadata' || e.sourceDataType === 'visibility' || e.dataType === 'style')) {
+    _updateData(e: MapDataEvent) {
+        if (e && ((e.dataType === 'source' && (e.sourceDataType === 'metadata' || e.sourceDataType === 'visibility')) || e.dataType === 'style')) {
             this._updateAttributions();
             this._updateEditLink();
         }

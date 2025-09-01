@@ -159,7 +159,7 @@ function sortTriangles(centerLatitudes: number[], indices: TriangleIndexArray): 
         return centerLatitudes[idx1] - centerLatitudes[idx2];
     });
 
-    const sortedCenterLatitudes = [];
+    const sortedCenterLatitudes: number[] = [];
     const sortedIndices = new TriangleIndexArray();
 
     for (let i = 0; i < triangleIndexes.length; i++) {
@@ -171,7 +171,6 @@ function sortTriangles(centerLatitudes: number[], indices: TriangleIndexArray): 
         sortedIndices.emplaceBack(indices.uint16[i0], indices.uint16[i1], indices.uint16[i2]);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return [sortedCenterLatitudes, sortedIndices];
 }
 

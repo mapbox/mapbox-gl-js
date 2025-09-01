@@ -39,19 +39,21 @@ export default class CollatorExpression implements Expression {
             context.parseObjectValue(options['diacritic-sensitive'], 1, 'diacritic-sensitive', BooleanType);
         if (!diacriticSensitive) return null;
 
-        let locale = null;
+        let locale: Expression = null;
         if (options['locale']) {
-            locale = context.parseObjectValue(options['locale'], 1, 'locale', StringType);
+            locale = context.parseObjectValue(options['locale'], 1, 'locale', StringType) as Expression;
             if (!locale) return null;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new CollatorExpression(caseSensitive, diacriticSensitive, locale);
     }
 
     evaluate(ctx: EvaluationContext): Collator {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        return new Collator(this.caseSensitive.evaluate(ctx), this.diacriticSensitive.evaluate(ctx), this.locale ? this.locale.evaluate(ctx) : null);
+        return new Collator(
+            this.caseSensitive.evaluate(ctx) as boolean,
+            this.diacriticSensitive.evaluate(ctx) as boolean,
+            this.locale ? this.locale.evaluate(ctx) as string : null
+        );
     }
 
     eachChild(fn: (_: Expression) => void) {
@@ -71,8 +73,7 @@ export default class CollatorExpression implements Expression {
     }
 
     serialize(): SerializedExpression {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const options: Record<string, any> = {};
+        const options: Record<string, SerializedExpression> = {};
         options['case-sensitive'] = this.caseSensitive.serialize();
         options['diacritic-sensitive'] = this.diacriticSensitive.serialize();
         if (this.locale) {

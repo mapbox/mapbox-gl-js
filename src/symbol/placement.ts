@@ -14,7 +14,7 @@ import {getAnchorAlignment, WritingMode} from './shaping';
 import {evaluateVariableOffset, getAnchorJustification} from './symbol_layout';
 import {evaluateSizeForFeature, evaluateSizeForZoom} from './symbol_size';
 
-import type {ReplacementSource} from "../../3d-style/source/replacement_source";
+import type {ReplacementSource} from '../../3d-style/source/replacement_source';
 import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
 import type {CollisionArrays, SingleCollisionBox, SymbolBuffers} from '../data/bucket/symbol_bucket';
@@ -22,12 +22,17 @@ import type FeatureIndex from '../data/feature_index';
 import type Transform from '../geo/transform';
 import type BuildingIndex from '../source/building_index';
 import type Tile from '../source/tile';
-import type {OverscaledTileID} from '../source/tile_id';
+import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
 import type {FogState} from '../style/fog_helpers';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
-import type {PlacedCollisionBox} from './collision_index';
+import type {PlacedCollisionBox, PlacedCollisionCircles} from './collision_index';
 import type {Orientation} from './shaping';
 import type {TextAnchor} from './symbol_layout';
+import type {Feature} from '../style-spec/expression/index';
+import type {InterpolatedSize} from './symbol_size';
+import type {FilterExpression} from '../style-spec/feature_filter/index';
+import type {PossiblyEvaluated} from '../style/properties';
+import type {LayoutProps, PaintProps} from '../style/style_layer/symbol_style_layer_properties';
 
 // PlacedCollisionBox with all fields optional
 type PartialPlacedCollisionBox = Partial<PlacedCollisionBox>;
@@ -193,25 +198,30 @@ export type VariableOffset = {
     prevAnchor?: TextAnchor;
 };
 
+type ClippingData = {
+    unwrappedTileID: UnwrappedTileID;
+    dynamicFilter: FilterExpression;
+    dynamicFilterNeedsFeature: boolean;
+};
+
 type TileLayerParameters = {
     bucket: SymbolBucket;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    layout: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    paint: any;
+    layout: PossiblyEvaluated<LayoutProps>;
+    paint: PossiblyEvaluated<PaintProps>;
     posMatrix: mat4;
+    invMatrix: mat4;
+    mercatorCenter: [number, number];
     textLabelPlaneMatrix: mat4;
-    labelToScreenMatrix: mat4 | null | undefined;
+    labelToScreenMatrix: mat4;
+    clippingData: ClippingData;
     scale: number;
     textPixelRatio: number;
     holdingForFade: boolean;
     collisionBoxArray: CollisionBoxArray | null | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    partiallyEvaluatedTextSize: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    collisionGroup: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    latestFeatureIndex: any;
+    partiallyEvaluatedTextSize: InterpolatedSize;
+    partiallyEvaluatedIconSize: InterpolatedSize;
+    collisionGroup: CollisionGroup;
+    latestFeatureIndex: FeatureIndex;
 };
 
 export type BucketPart = {
@@ -242,8 +252,7 @@ export class Placement {
     collisionGroups: CollisionGroups;
     prevPlacement: Placement | null | undefined;
     zoomAtLastRecencyCheck: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    collisionCircleArrays: Partial<Record<any, CollisionCircleArray>>;
+    collisionCircleArrays: Partial<Record<number, CollisionCircleArray>>;
     buildingIndex: BuildingIndex | null | undefined;
 
     constructor(transform: Transform, fadeDuration: number, crossSourceCollisions: boolean, prevPlacement?: Placement, fogState?: FogState | null, buildingIndex?: BuildingIndex | null) {
@@ -305,7 +314,7 @@ export class Placement {
                 symbolBucket.getProjection(),
                 pixelsToTiles);
 
-        let labelToScreenMatrix = null;
+        let labelToScreenMatrix: mat4 = null;
         const invMatrix = symbolBucket.getProjection().createInversionMatrix(this.transform, tile.tileID.canonical);
 
         if (pitchWithMap) {
@@ -321,7 +330,7 @@ export class Placement {
             labelToScreenMatrix = mat4.multiply([], this.transform.labelPlaneMatrix, glMatrix);
         }
 
-        let clippingData = null;
+        let clippingData: ClippingData = null;
         assert(!!tile.latestFeatureIndex);
         if (!!dynamicFilter && tile.latestFeatureIndex) {
 
@@ -351,7 +360,7 @@ export class Placement {
             mercatorYfromLat(this.transform.center.lat)
         ];
 
-        const parameters = {
+        const parameters: TileLayerParameters = {
             bucket: symbolBucket,
             layout,
             paint,
@@ -359,9 +368,7 @@ export class Placement {
             invMatrix,
             mercatorCenter,
             textLabelPlaneMatrix,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             labelToScreenMatrix,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             clippingData,
             scale,
             textPixelRatio,
@@ -407,10 +414,8 @@ export class Placement {
         bucket: SymbolBucket,
         orientation: Orientation,
         iconBox: SingleCollisionBox | null | undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        textSize: any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        iconSize: any,
+        textSize: InterpolatedSize,
+        iconSize: InterpolatedSize,
     ): {
         shift: Point;
         placedGlyphBoxes: PlacedCollisionBox;
@@ -424,7 +429,6 @@ export class Placement {
             bucket, textScale, textBox, mercatorCenter, invMatrix, projectedPosOnLabelSpace, offsetShift(shift.x, shift.y, rotateWithMap, pitchWithMap, this.transform.angle),
             textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
         if (iconBox) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const size = bucket.getSymbolInstanceIconSize(iconSize, this.transform.zoom, symbolInstance.placedIconSymbolIndex);
             const placedIconBoxes = this.collisionIndex.placeCollisionBox(
                 bucket, size,
@@ -434,7 +438,7 @@ export class Placement {
         }
 
         if (placedGlyphBoxes.box.length > 0) {
-            let prevAnchor;
+            let prevAnchor: TextAnchor;
             // If this label was placed in the previous placement, record the anchor position
             // to allow us to animate the transition
             if (this.prevPlacement &&
@@ -450,7 +454,6 @@ export class Placement {
                 height,
                 anchor,
                 textScale,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 prevAnchor
             };
             this.markUsedJustification(bucket, anchor, symbolInstance, orientation);
@@ -464,10 +467,7 @@ export class Placement {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    placeLayerBucketPart(bucketPart: any, seenCrossTileIDs: Set<number>, showCollisionBoxes: boolean, updateCollisionBoxIfNecessary: boolean, scaleFactor: number = 1) {
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    placeLayerBucketPart(bucketPart: BucketPart, seenCrossTileIDs: Set<number>, showCollisionBoxes: boolean, updateCollisionBoxIfNecessary: boolean, scaleFactor: number = 1) {
         const {
             bucket,
             layout,
@@ -485,53 +485,33 @@ export class Placement {
             partiallyEvaluatedIconSize,
             collisionGroup,
             latestFeatureIndex
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } = bucketPart.parameters;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const textOptional = layout.get('text-optional');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const iconOptional = layout.get('icon-optional');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const textAllowOverlap = layout.get('text-allow-overlap');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const iconAllowOverlap = layout.get('icon-allow-overlap');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const textRotateWithMap = layout.get('text-rotation-alignment') === 'map';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const iconRotateWithMap = layout.get('icon-rotation-alignment') === 'map';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const symbolZOffset = paint.get('symbol-z-offset');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const elevationFromSea = layout.get('symbol-elevation-reference') === 'sea';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const symbolPlacement = layout.get('symbol-placement');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const [textSizeScaleRangeMin, textSizeScaleRangeMax] = layout.get('text-size-scale-range');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const textScaleFactor = clamp(scaleFactor, textSizeScaleRangeMin, textSizeScaleRangeMax);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const iconScaleFactor = clamp(scaleFactor, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const textVariableAnchor = layout.get('text-variable-anchor');
 
         const isTextPlacedAlongLine = textRotateWithMap && symbolPlacement !== 'point';
         const isIconPlacedAlongLine = iconRotateWithMap && symbolPlacement !== 'point';
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
         const hasVariableAnchors = textVariableAnchor && bucket.hasTextData();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const updateTextFitIcon = bucket.hasIconTextFit() && hasVariableAnchors && bucket.hasIconData();
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         this.transform.setProjection(bucket.projection);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const textProjectedPosOnLabelSpace = hasVariableAnchors || isTextPlacedAlongLine;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const iconProjectedPosOnLabelSpace = isIconPlacedAlongLine || updateTextFitIcon;
 
         // This logic is similar to the "defaultOpacityState" logic below in updateBucketOpacities
@@ -548,22 +528,17 @@ export class Placement {
         //  This is the reverse of our normal policy of "fade in on pan", but should look like any other
         //  collision and hopefully not be too noticeable.
         // See https://github.com/mapbox/mapbox-gl-js/issues/7172
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
         let alwaysShowText = textAllowOverlap && (iconAllowOverlap || !bucket.hasIconData() || iconOptional);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         let alwaysShowIcon = iconAllowOverlap && (textAllowOverlap || !bucket.hasTextData() || textOptional);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const needsFeatureForElevation = !symbolZOffset.isConstant();
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!bucket.collisionArrays && collisionBoxArray) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             bucket.deserializeCollisionBoxes(collisionBoxArray);
         }
 
         if (showCollisionBoxes && updateCollisionBoxIfNecessary) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             bucket.updateCollisionDebugBuffers(this.transform.zoom, collisionBoxArray, textScaleFactor, iconScaleFactor);
         }
 
@@ -571,12 +546,12 @@ export class Placement {
             const {crossTileID, numVerticalGlyphVertices} = symbolInstance;
 
             // Deserialize feature only if necessary
-            let feature = null;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            let feature: Feature = null;
+
             if ((clippingData && clippingData.dynamicFilterNeedsFeature) || needsFeatureForElevation) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                 const retainedQueryData = this.retainedQueryData[bucket.bucketInstanceId];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
                 feature = latestFeatureIndex.loadFeature({
                     featureIndex: symbolInstance.featureIndex,
                     bucketIndex: retainedQueryData.bucketIndex,
@@ -592,11 +567,9 @@ export class Placement {
                     pitch: this.transform.pitch,
                 };
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 const canonicalTileId = this.retainedQueryData[bucket.bucketInstanceId].tileID.canonical;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                 const filterFunc = clippingData.dynamicFilter;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 const shouldClip = !filterFunc(globals, feature, canonicalTileId, new Point(symbolInstance.tileAnchorX, symbolInstance.tileAnchorY), this.transform.calculateDistanceTileData(clippingData.unwrappedTileID));
 
                 if (shouldClip) {
@@ -606,7 +579,6 @@ export class Placement {
                 }
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const symbolZOffsetValue = symbolZOffset.evaluate(feature, {});
 
             if (seenCrossTileIDs.has(crossTileID)) return;
@@ -621,14 +593,14 @@ export class Placement {
             let offscreen: boolean | null | undefined = true;
             let textOccluded: boolean | null | undefined = false;
             let iconOccluded = false;
-            let shift = null;
+            let shift: Point = null;
 
             let placed: PartialPlacedCollisionBox = {box: null, offscreen: null, occluded: null};
             let placedVerticalText: PartialPlacedCollisionBox = {box: null, offscreen: null, occluded: null};
 
-            let placedGlyphBoxes = null;
-            let placedGlyphCircles = null;
-            let placedIconBoxes = null;
+            let placedGlyphBoxes: PartialPlacedCollisionBox = null;
+            let placedGlyphCircles: Partial<PlacedCollisionCircles> = null;
+            let placedIconBoxes: PartialPlacedCollisionBox = null;
             let textFeatureIndex = 0;
             let verticalTextFeatureIndex = 0;
             let iconFeatureIndex = 0;
@@ -643,10 +615,9 @@ export class Placement {
             }
 
             const updateBoxData = (box: SingleCollisionBox) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 box.tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
                 const elevation = this.transform.elevation;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 box.elevation = (elevationFromSea ? symbolZOffsetValue : symbolZOffsetValue + (elevation ? elevation.getAtTileOffset(box.tileID, box.tileAnchorX, box.tileAnchorY) : 0));
                 box.elevation += symbolInstance.zOffset;
             };
@@ -656,13 +627,13 @@ export class Placement {
                 updateBoxData(textBox);
                 const updatePreviousOrientationIfNotPlaced = (isPlaced: boolean) => {
                     let previousOrientation: Orientation = WritingMode.horizontal;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                     if (bucket.allowVerticalPlacement && !isPlaced && this.prevPlacement) {
                         const prevPlacedOrientation = this.prevPlacement.placedOrientations[crossTileID];
                         if (prevPlacedOrientation) {
                             this.placedOrientations[crossTileID] = prevPlacedOrientation;
                             previousOrientation = prevPlacedOrientation;
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                             this.markUsedOrientation(bucket, previousOrientation, symbolInstance);
                         }
                     }
@@ -670,9 +641,9 @@ export class Placement {
                 };
 
                 const placeTextForPlacementModes = (placeHorizontalFn: () => PartialPlacedCollisionBox, placeVerticalFn: () => PartialPlacedCollisionBox) => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                     if (bucket.allowVerticalPlacement && numVerticalGlyphVertices > 0 && collisionArrays.verticalTextBox) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                         for (const placementMode of bucket.writingModes) {
                             if (placementMode === WritingMode.vertical) {
                                 placed = placeVerticalFn();
@@ -689,14 +660,14 @@ export class Placement {
 
                 if (!textVariableAnchor) {
                     const placeBox = (collisionTextBox: SingleCollisionBox, orientation: Orientation) => {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                        const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, boxIndex, scaleFactor);
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
+                        const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, boxIndex);
+
                         const placedFeature = this.collisionIndex.placeCollisionBox(bucket, textScale, collisionTextBox, mercatorCenter, invMatrix, textProjectedPosOnLabelSpace,
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+
                             new Point(0, 0), textAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                         if (placedFeature && placedFeature.box && placedFeature.box.length) {
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                             this.markUsedOrientation(bucket, orientation, symbolInstance);
                             this.placedOrientations[crossTileID] = orientation;
                         }
@@ -709,7 +680,7 @@ export class Placement {
 
                     const placeVertical: () => PlacedCollisionBox | PartialPlacedCollisionBox = () => {
                         const verticalTextBox = collisionArrays.verticalTextBox;
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                         if (bucket.allowVerticalPlacement && numVerticalGlyphVertices > 0 && verticalTextBox) {
                             updateBoxData(verticalTextBox);
                             return placeBox(verticalTextBox, WritingMode.vertical);
@@ -726,7 +697,7 @@ export class Placement {
                     updatePreviousOrientationIfNotPlaced(!!isPlaced);
 
                 } else {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                     let anchors = textVariableAnchor;
 
                     // If this symbol was in the last placement, shift the previously used
@@ -734,17 +705,17 @@ export class Placement {
                     // is still in the anchor list
                     if (this.prevPlacement && this.prevPlacement.variableOffsets[crossTileID]) {
                         const prevOffsets = this.prevPlacement.variableOffsets[crossTileID];
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
                         if (anchors.indexOf(prevOffsets.anchor) > 0) {
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
                             anchors = anchors.filter(anchor => anchor !== prevOffsets.anchor);
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
                             anchors.unshift(prevOffsets.anchor);
                         }
                     }
 
                     const placeBoxForVariableAnchors = (collisionTextBox: SingleCollisionBox, collisionIconBox: SingleCollisionBox | null | undefined, orientation: Orientation) => {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
                         const textScale = bucket.getSymbolInstanceTextSize(partiallyEvaluatedTextSize, symbolInstance, this.transform.zoom, boxIndex);
                         const width = (collisionTextBox.x2 - collisionTextBox.x1) * textScale + 2.0 * collisionTextBox.padding;
                         const height = (collisionTextBox.y2 - collisionTextBox.y1) * textScale + 2.0 * collisionTextBox.padding;
@@ -753,19 +724,19 @@ export class Placement {
                         if (variableIconBox) updateBoxData(variableIconBox);
 
                         let placedBox: PartialPlacedCollisionBox = {box: [], offscreen: false, occluded: false};
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                         const placementAttempts = textAllowOverlap ? anchors.length * 2 : anchors.length;
                         for (let i = 0; i < placementAttempts; ++i) {
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                             const anchor = anchors[i % anchors.length];
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                             const allowOverlap = (i >= anchors.length);
                             const result = this.attemptAnchorPlacement(
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                                 anchor, collisionTextBox, mercatorCenter, invMatrix, textProjectedPosOnLabelSpace, width, height, textScale, textRotateWithMap,
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                                 pitchWithMap, textPixelRatio, posMatrix, collisionGroup, allowOverlap,
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                                 symbolInstance, boxIndex, bucket, orientation, variableIconBox,
                                 partiallyEvaluatedTextSize, partiallyEvaluatedIconSize);
 
@@ -790,7 +761,7 @@ export class Placement {
                         const verticalTextBox = collisionArrays.verticalTextBox;
                         if (verticalTextBox) updateBoxData(verticalTextBox);
                         const wasPlaced = placed && placed.box && placed.box.length;
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                         if (bucket.allowVerticalPlacement && !wasPlaced && numVerticalGlyphVertices > 0 && verticalTextBox) {
                             return placeBoxForVariableAnchors(verticalTextBox, collisionArrays.verticalIconBox, WritingMode.vertical);
                         }
@@ -815,7 +786,7 @@ export class Placement {
                         const prevOffset = this.prevPlacement.variableOffsets[crossTileID];
                         if (prevOffset) {
                             this.variableOffsets[crossTileID] = prevOffset;
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                             this.markUsedJustification(bucket, prevOffset.anchor, symbolInstance, prevOrientation);
                         }
                     }
@@ -825,64 +796,48 @@ export class Placement {
 
             placedGlyphBoxes = placed;
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             placeText = placedGlyphBoxes && placedGlyphBoxes.box && placedGlyphBoxes.box.length > 0;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             offscreen = placedGlyphBoxes && placedGlyphBoxes.offscreen;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             textOccluded = placedGlyphBoxes && placedGlyphBoxes.occluded;
 
             if (symbolInstance.useRuntimeCollisionCircles) {
                 const placedSymbolIndex = symbolInstance.centerJustifiedTextSymbolIndex >= 0 ? symbolInstance.centerJustifiedTextSymbolIndex : symbolInstance.verticalPlacedTextSymbolIndex;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
                 const placedSymbol = bucket.text.placedSymbolArray.get(placedSymbolIndex);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+
                 const fontSize = evaluateSizeForFeature(bucket.textSizeData, partiallyEvaluatedTextSize, placedSymbol);
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 const textPixelPadding = layout.get('text-padding');
                 // Convert circle collision height into pixels
                 const circlePixelDiameter = symbolInstance.collisionCircleDiameter * fontSize / ONE_EM;
 
                 placedGlyphCircles = this.collisionIndex.placeCollisionCircles(
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         bucket,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         textAllowOverlap,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         placedSymbol,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         bucket.lineVertexArray,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         bucket.glyphOffsetArray,
                         fontSize,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                        posMatrix,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                        textLabelPlaneMatrix,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                        posMatrix as Float32Array,
+                        textLabelPlaneMatrix as Float32Array,
                         labelToScreenMatrix,
                         showCollisionBoxes,
                         pitchWithMap,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         collisionGroup.predicate,
                         circlePixelDiameter,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         textPixelPadding,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                        this.retainedQueryData[bucket.bucketInstanceId].tileID);
+                        this.retainedQueryData[bucket.bucketInstanceId].tileID
+                );
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 assert(!placedGlyphCircles.circles.length || (!placedGlyphCircles.collisionDetected || showCollisionBoxes));
                 // If text-allow-overlap is set, force "placedCircles" to true
                 // In theory there should always be at least one circle placed
                 // in this case, but for now quirks in text-anchor
                 // and text-offset may prevent that from being true.
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                 placeText = textAllowOverlap || (placedGlyphCircles.circles.length > 0 && !placedGlyphCircles.collisionDetected);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                 offscreen = offscreen && placedGlyphCircles.offscreen;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 textOccluded = placedGlyphCircles.occluded;
             }
 
@@ -891,40 +846,32 @@ export class Placement {
             }
 
             if (collisionArrays.iconBox) {
-
                 const placeIconFeature = (iconBox: SingleCollisionBox) => {
                     updateBoxData(iconBox);
                     const shiftPoint: Point = symbolInstance.hasIconTextFit && shift ?
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         offsetShift(shift.x, shift.y, textRotateWithMap, pitchWithMap, this.transform.angle) :
                         new Point(0, 0);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
                     const iconScale = bucket.getSymbolInstanceIconSize(partiallyEvaluatedIconSize, this.transform.zoom, symbolInstance.placedIconSymbolIndex);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                     return this.collisionIndex.placeCollisionBox(bucket, iconScale, iconBox, mercatorCenter, invMatrix, iconProjectedPosOnLabelSpace, shiftPoint,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         iconAllowOverlap, textPixelRatio, posMatrix, collisionGroup.predicate);
                 };
 
                 if (placedVerticalText && placedVerticalText.box && placedVerticalText.box.length && collisionArrays.verticalIconBox) {
                     placedIconBoxes = placeIconFeature(collisionArrays.verticalIconBox);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     placeIcon = placedIconBoxes.box.length > 0;
                 } else {
                     placedIconBoxes = placeIconFeature(collisionArrays.iconBox);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     placeIcon = placedIconBoxes.box.length > 0;
                 }
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 offscreen = offscreen && placedIconBoxes.offscreen;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 iconOccluded = placedIconBoxes.occluded;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const iconWithoutText = textOptional ||
                 (symbolInstance.numHorizontalGlyphVertices === 0 && numVerticalGlyphVertices === 0);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const textWithoutIcon = iconOptional || symbolInstance.numIconVertices === 0;
 
             // Combine the scales for icons and text.
@@ -936,136 +883,102 @@ export class Placement {
                 placeIcon = placeIcon && placeText;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (placeText && placedGlyphBoxes && placedGlyphBoxes.box) {
                 if (placedVerticalText && placedVerticalText.box && verticalTextFeatureIndex) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                     this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         bucket.bucketInstanceId, verticalTextFeatureIndex, collisionGroup.ID);
                 } else {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                     this.collisionIndex.insertCollisionBox(placedGlyphBoxes.box, layout.get('text-ignore-placement'),
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         bucket.bucketInstanceId, textFeatureIndex, collisionGroup.ID);
                 }
-
             }
+
             if (placeIcon && placedIconBoxes) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                 this.collisionIndex.insertCollisionBox(placedIconBoxes.box, layout.get('icon-ignore-placement'),
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         bucket.bucketInstanceId, iconFeatureIndex, collisionGroup.ID);
             }
+
             if (placedGlyphCircles) {
                 if (placeText) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                     this.collisionIndex.insertCollisionCircles(placedGlyphCircles.circles, layout.get('text-ignore-placement'),
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         bucket.bucketInstanceId, textFeatureIndex, collisionGroup.ID);
                 }
 
                 if (showCollisionBoxes) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const id = bucket.bucketInstanceId;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
                     let circleArray = this.collisionCircleArrays[id];
 
                     // Group collision circles together by bucket. Circles can't be pushed forward for rendering yet as the symbol placement
                     // for a bucket is not guaranteed to be complete before the commit-function has been called
                     if (circleArray === undefined)
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         circleArray = this.collisionCircleArrays[id] = new CollisionCircleArray();
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     for (let i = 0; i < placedGlyphCircles.circles.length; i += 4) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         circleArray.circles.push(placedGlyphCircles.circles[i + 0]);              // x
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         circleArray.circles.push(placedGlyphCircles.circles[i + 1]);              // y
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         circleArray.circles.push(placedGlyphCircles.circles[i + 2]);              // radius
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         circleArray.circles.push(placedGlyphCircles.collisionDetected ? 1 : 0);   // collisionDetected-flag
                     }
                 }
             }
 
             assert(crossTileID !== 0);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             assert(bucket.bucketInstanceId !== 0);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const notGlobe = bucket.projection.name !== 'globe';
             alwaysShowText = alwaysShowText && (notGlobe || !textOccluded);
             alwaysShowIcon = alwaysShowIcon && (notGlobe || !iconOccluded);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             this.placements[crossTileID] = new JointPlacement(placeText || alwaysShowText, placeIcon || alwaysShowIcon, offscreen || bucket.justReloaded);
             seenCrossTileIDs.add(crossTileID);
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         if (bucket.elevationType === 'offset' && this.buildingIndex) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.buildingIndex.updateZOffset(bucket, tileID);
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         if (bucket.elevationType === 'road') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             bucket.updateRoadElevation(tileID.canonical);
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
         bucket.updateZOffset();
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (bucket.sortFeaturesByY) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             assert(bucketPart.symbolInstanceStart === 0);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
             const symbolIndexes = bucket.getSortedSymbolIndexes(this.transform.angle);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             for (let i = symbolIndexes.length - 1; i >= 0; --i) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const symbolIndex = symbolIndexes[i];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 placeSymbol(bucket.symbolInstances.get(symbolIndex), symbolIndex, bucket.collisionArrays[symbolIndex]);
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             if (bucket.hasAnyZOffset) warnOnce(`${bucket.layerIds[0]} layer symbol-z-elevate: symbols are not sorted by elevation if symbol-z-order is evaluated to viewport-y`);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
         } else if (bucket.hasAnyZOffset) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const indexes = bucket.getSortedIndexesByZOffset();
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
             for (let i = 0; i < indexes.length; ++i) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const symbolIndex = indexes[i];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 placeSymbol(bucket.symbolInstances.get(symbolIndex), symbolIndex, bucket.collisionArrays[symbolIndex]);
             }
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             for (let i = bucketPart.symbolInstanceStart; i < bucketPart.symbolInstanceEnd; i++) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 placeSymbol(bucket.symbolInstances.get(i), i, bucket.collisionArrays[i]);
             }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (showCollisionBoxes && bucket.bucketInstanceId in this.collisionCircleArrays) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const circleArray = this.collisionCircleArrays[bucket.bucketInstanceId];
-
             // Store viewport and inverse projection matrices per bucket
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             mat4.invert(circleArray.invProjMatrix, posMatrix);
             circleArray.viewportMatrix = this.collisionIndex.getViewportMatrix();
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         bucket.justReloaded = false;
     }
 
@@ -1242,7 +1155,7 @@ export class Placement {
                 tileAnchorY
             } = symbolInstance;
 
-            let feature = null;
+            let feature: Feature = null;
             const retainedQueryData = this.retainedQueryData[bucket.bucketInstanceId];
             if (needsFeatureForElevation && symbolInstance && retainedQueryData) {
                 const featureIndex = tile.latestFeatureIndex;
@@ -1254,7 +1167,6 @@ export class Placement {
                 });
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const symbolZOffsetValue = symbolZOffset.evaluate(feature, {});
             const isDuplicate = seenCrossTileIDs.has(crossTileID);
 

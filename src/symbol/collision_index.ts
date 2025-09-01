@@ -28,12 +28,14 @@ export type PlacedCollisionBox = {
     offscreen: boolean;
     occluded: boolean;
 };
-type PlacedCollisionCircles = {
+
+export type PlacedCollisionCircles = {
     circles: Array<number>;
     offscreen: boolean;
     collisionDetected: boolean;
     occluded: boolean;
 };
+
 type ScreenAnchorPoint = {
     occluded: boolean;
     perspectiveRatio: number;
