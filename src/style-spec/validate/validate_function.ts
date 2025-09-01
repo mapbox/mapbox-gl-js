@@ -17,6 +17,7 @@ import type {StyleSpecification} from '../types';
 import type {StylePropertySpecification} from '../style-spec';
 
 function hasObjectStops(value: object): value is {stops: Array<Record<PropertyKey, unknown>>} {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const stops = value['stops'];
     return Array.isArray(stops) && Array.isArray(stops[0]) && isObject(stops[0][0]);
 }
@@ -51,6 +52,7 @@ export default function validateFunction(options: FunctionValidatorOptions): Val
     const errors = validateObject({
         key: options.key,
         value: options.value,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec: options.styleSpec.function,
         style: options.style,
         styleSpec: options.styleSpec,

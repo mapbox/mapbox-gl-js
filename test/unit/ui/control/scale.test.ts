@@ -66,6 +66,7 @@ test('ScaleControl should respect the maxWidth regardless of the unit and actual
     map._domRenderTaskQueue.run();
 
     const el = map.getContainer().querySelector(selector);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     expect(parseFloat(el.style.width, 10) <= maxWidth).toBeTruthy();
 });
 
@@ -105,6 +106,7 @@ test('ScaleControl should support different projections', () => {
 test('ScaleControl should work in legacy safari', () => {
     const realNumberFormat = Intl.NumberFormat;
     Intl.NumberFormat = function (arg, options) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (options && options.style === 'unit') {
             throw new Error('not supported');
         }

@@ -154,9 +154,13 @@ class ModelStyleLayer extends StyleLayer {
     }
 
     _isPropertyZoomDependent(name: string): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const prop = this._transitionablePaint._values[name];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         return prop != null && prop.value != null &&
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             prop.value.expression != null &&
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             prop.value.expression instanceof ZoomDependentExpression;
     }
 

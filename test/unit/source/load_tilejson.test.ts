@@ -39,6 +39,7 @@ describe('Inlined TileJSON', () => {
     };
     test('should place inline data without request', async () => {
         const {withAsync, wait} = doneAsync();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const transformSpy = vi.spyOn(map._requestManager, 'transformRequest');
 
         loadTileJSON({
@@ -46,10 +47,13 @@ describe('Inlined TileJSON', () => {
             data: {
                 ...baseTileJSON
             }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, null, null, withAsync((err, result, doneRef) => {
             assert.ifError(err);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(result.tiles).toEqual(["http://example.com/{z}/{x}/{y}.png"]);
             expect(transformSpy).not.toHaveBeenCalled();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -78,9 +82,11 @@ describe('Inlined TileJSON', () => {
                 }
             },
             url: '/source.json'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, 'fi', null, withAsync((err, result, doneRef) => {
             assert.ifError(err);
             expect(requestFn).toHaveBeenCalledOnce();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -113,9 +119,11 @@ describe('Inlined TileJSON', () => {
                 }
             },
             url: '/source.json'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, 'us', 'IN', withAsync((err, result, doneRef) => {
             assert.ifError(err);
             expect(requestFn).toHaveBeenCalledOnce();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -147,9 +155,11 @@ describe('Inlined TileJSON', () => {
                 }
             },
             url: '/source.json'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, 'et', 'IN', withAsync((err, result, doneRef) => {
             assert.ifError(err);
             expect(requestFn).toHaveBeenCalledOnce();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -186,9 +196,11 @@ describe('Inlined TileJSON', () => {
                 }
             },
             url: '/source.json'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, 'fi', 'JP', withAsync((err, result, doneRef) => {
             assert.ifError(err);
             expect(requestFn).toHaveBeenCalledOnce();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -220,9 +232,11 @@ describe('Inlined TileJSON', () => {
                 }
             },
             url: '/source.json'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, 'et', 'ET', withAsync((err, result, doneRef) => {
             assert.ifError(err);
             expect(requestFn).not.toHaveBeenCalled();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -241,9 +255,11 @@ describe('Inlined TileJSON', () => {
         loadTileJSON({
             type: 'vector',
             url: '/source.json'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, null, null, withAsync((err, result, doneRef) => {
             assert.ifError(err);
             expect(requestFn).toHaveBeenCalledOnce();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -277,9 +293,11 @@ describe('Inlined TileJSON', () => {
                 }
             },
             url: '/source.json'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, 'fi', null, withAsync((err, result, doneRef) => {
             assert.ifError(err);
             expect(requestFn).toHaveBeenCalledOnce();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -314,9 +332,11 @@ describe('Inlined TileJSON', () => {
                 }
             },
             url: '/source.json'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, 'us', 'JP', withAsync((err, result, doneRef) => {
             assert.ifError(err);
             expect(requestFn).toHaveBeenCalledOnce();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -348,9 +368,11 @@ describe('Inlined TileJSON', () => {
                 }
             },
             url: '/source.json'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, 'us', 'JP', withAsync((err, result, doneRef) => {
             assert.ifError(err);
             expect(requestFn).toHaveBeenCalledOnce();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -382,9 +404,11 @@ describe('Inlined TileJSON', () => {
                 }
             },
             url: '/source.json'
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         }, map._requestManager, 'us', 'JP', withAsync((err, result, doneRef) => {
             assert.ifError(err);
             expect(requestFn).toHaveBeenCalledOnce();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -401,8 +425,11 @@ describe('LoadTileJson#variants', () => {
             "tiles": ["http://dataset1"],
             "variants": "variants should not be a string"
         };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         loadTileJSON(tileJSON, map._requestManager, null, null, withAsync((err, doneRef) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(err.message).toEqual("variants must be an array");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -415,8 +442,11 @@ describe('LoadTileJson#variants', () => {
             "tiles": ["http://dataset1"],
             "variants": ["variants elements should be objects"]
         };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         loadTileJSON(tileJSON, map._requestManager, null, null, withAsync((err, doneRef) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(err.message).toEqual("variant must be an object");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -433,8 +463,11 @@ describe('LoadTileJson#variants', () => {
                 }
             ]
         };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         loadTileJSON(tileJSON, map._requestManager, null, null, withAsync((err, doneRef) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(err.message).toEqual("capabilities must be an array");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -462,9 +495,12 @@ describe('LoadTileJson#variants', () => {
                 return new Response(JSON.stringify(tileJSON));
             }
         });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         loadTileJSON(options, map._requestManager, null, null, withAsync((err, result, doneRef) => {
             expect(err).toEqual(null);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(result.tiles).toEqual(["http://dataset2"]);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -496,9 +532,12 @@ describe('LoadTileJson#variants', () => {
                 return new Response(JSON.stringify(tileJSON));
             }
         });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         loadTileJSON(options, map._requestManager, null, null, withAsync((err, result, doneRef) => {
             expect(err).toEqual(null);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(result.tiles).toEqual(["http://dataset3"]);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -530,9 +569,12 @@ describe('LoadTileJson#variants', () => {
                 return new Response(JSON.stringify(tileJSON));
             }
         });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         loadTileJSON(options, map._requestManager, null, null, withAsync((err, result, doneRef) => {
             expect(err).toEqual(null);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(result.minzoom).toEqual(14);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 

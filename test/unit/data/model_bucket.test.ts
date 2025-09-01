@@ -14,6 +14,7 @@ import FeatureIndex from '../../../src/data/feature_index';
 import featureFilter from '../../../src/style-spec/feature_filter/index';
 
 // Load a point feature from fixture tile.
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const vt = new VectorTile(new Protobuf(vectorStub));
 const feature = vt.layers.place_label.feature(10);
 const collisionBoxArray = new CollisionBoxArray();
@@ -25,17 +26,21 @@ const scope = '';
 
 export function createModelBucket(layerId, zoom, canonical) {
     const layer = new ModelStyleLayer({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         id: layerId,
         type: 'model',
         layout: {'model-id': modelId},
         filter: featureFilter(),
     }, scope, null);
     layer.modelManager = modelManager;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     layer.recalculate({zoom}, []);
 
     return new ModelBucket({
         overscaling: 1,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         zoom,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         canonical,
         collisionBoxArray,
         layers: [layer],
@@ -61,6 +66,7 @@ test("ModelBucket destroy doesn't remove models if they haven't been requested",
     );
 
     eventedParent.on('error', ({error}) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         expect.unreachable(error.message);
     });
 

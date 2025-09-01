@@ -59,6 +59,7 @@ export default class GlyphAtlas {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const {w, h} = potpack(bins);
         const image = new AlphaImage({width: w || 1, height: h || 1});
 

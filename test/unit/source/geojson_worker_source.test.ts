@@ -44,6 +44,7 @@ describe('reloadTile', () => {
         function addData(callback) {
             source.loadData({source: 'sourceId', data: JSON.stringify(geoJson)}, (err) => {
                 expect(err).toEqual(null);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             });
         }
@@ -51,6 +52,7 @@ describe('reloadTile', () => {
         function reloadTile(callback) {
             source.reloadTile(tileParams, (err, data) => {
                 expect(err).toEqual(null);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 return callback(data);
             });
         }
@@ -59,6 +61,7 @@ describe('reloadTile', () => {
             // first call should load vector data from geojson
             let firstData: any;
             reloadTile(data => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 firstData = data;
             });
             expect(loadVectorCallCount).toEqual(1);
@@ -66,6 +69,7 @@ describe('reloadTile', () => {
             // second call won't give us new rawTileData
             reloadTile(data => {
                 expect('rawTileData' in data).toBeFalsy();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 data.rawTileData = firstData.rawTileData;
                 expect(data).toEqual(firstData);
             });

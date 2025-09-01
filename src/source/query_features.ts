@@ -150,6 +150,7 @@ export function queryRenderedSymbols(
             queryData.sourceLayerIndex,
             query,
             availableImages,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             worldview
         );
 
@@ -205,6 +206,7 @@ export function querySourceFeatures(sourceCache: SourceCache, params?: {
         const dataID = tile.tileID.canonical.key;
         if (!dataTiles[dataID]) {
             dataTiles[dataID] = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             tile.querySourceFeatures(result, params);
         }
     }
@@ -230,6 +232,7 @@ function mergeRenderedFeatureLayers(tiles: RenderedFeatureLayers): QueryResult {
         const wrappedIDLayers = wrappedIDLayerMap[wrappedID] = wrappedIDLayerMap[wrappedID] || {};
         for (const layerID in queryResults) {
             const tileFeatures = queryResults[layerID];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const wrappedIDFeatures: Record<number, boolean> = wrappedIDLayers[layerID] = wrappedIDLayers[layerID] || {};
             const resultFeatures = result[layerID] = result[layerID] || [];
             for (const tileFeature of tileFeatures) {

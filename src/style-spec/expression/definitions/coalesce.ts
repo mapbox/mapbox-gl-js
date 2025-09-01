@@ -42,10 +42,13 @@ class Coalesce implements Expression {
         // Thus, if any of our arguments would have needed an annotation, we
         // need to wrap the enclosing coalesce expression with it instead.
         const needsAnnotation = expectedType &&
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             parsedArgs.some(arg => checkSubtype(expectedType, arg.type));
 
         return needsAnnotation ?
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             new Coalesce(ValueType, parsedArgs) :
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             new Coalesce(outputType, parsedArgs);
     }
 
@@ -56,6 +59,7 @@ class Coalesce implements Expression {
         let firstImage;
         for (const arg of this.args) {
             argCount++;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = arg.evaluate(ctx);
             // we need to keep track of the first requested image in a coalesce statement
             // if coalesce can't find a valid image, we return the first image so styleimagemissing can fire

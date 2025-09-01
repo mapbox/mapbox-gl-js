@@ -38,19 +38,23 @@ function clipPolygon(polygons: PolygonArray, clipAxis1: number, clipAxis2: numbe
                 const b = axis === 0 ? bx : by;
                 if (a < clipAxis1) {
                     if (b > clipAxis1) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         intersect(clipped, ax, ay, bx, by, clipAxis1);
                     }
                 } else if (a > clipAxis2) {
                     if (b < clipAxis2) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         intersect(clipped, ax, ay, bx, by, clipAxis2);
                     }
                 } else {
                     clipped.push(ring[i]);
                 }
                 if (b < clipAxis1 && a >= clipAxis1) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     intersect(clipped, ax, ay, bx, by, clipAxis1);
                 }
                 if (b > clipAxis2 && a <= clipAxis2) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     intersect(clipped, ax, ay, bx, by, clipAxis2);
                 }
             }
@@ -61,7 +65,9 @@ function clipPolygon(polygons: PolygonArray, clipAxis1: number, clipAxis2: numbe
                 clipped.push(last);
             }
             if (clipped.length) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 last = clipped[clipped.length - 1];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (clipped[0].x !== last.x || clipped[0].y !== last.y) {
                     clipped.push(clipped[0]);
                 }
@@ -131,33 +137,49 @@ export function gridSubdivision(
     }
 
     while (stack.length) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const frame = stack.pop();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         assert(frame.polygons.length > 0);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const depth = frame.depth;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const axis = splits[depth];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const bboxMin = frame.bounds[0];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const bboxMax = frame.bounds[1];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const splitMin = axis === 0 ? bboxMin.x : bboxMin.y;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const splitMax = axis === 0 ? bboxMax.x : bboxMax.y;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const splitMid = splitFn ? splitFn(axis, splitMin, splitMax) : 0.5 * (splitMin + splitMax);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         const lclip = clipPolygon(frame.polygons, splitMin - padding, splitMid + padding, axis);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         const rclip = clipPolygon(frame.polygons, splitMid - padding, splitMax + padding, axis);
 
         if (lclip.length) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const bbMaxX = axis === 0 ? splitMid : bboxMax.x;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const bbMaxY = axis === 1 ? splitMid : bboxMax.y;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const bbMax = new Point(bbMaxX, bbMaxY);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const lclipBounds: [Point, Point] = [bboxMin, bbMax];
 
             if (splits.length > depth + 1) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 stack.push({polygons: lclip, bounds: lclipBounds, depth: depth + 1});
             } else {
                 addResult(lclip, lclipBounds);
@@ -165,14 +187,18 @@ export function gridSubdivision(
         }
 
         if (rclip.length) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const bbMinX = axis === 0 ? splitMid : bboxMin.x;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const bbMinY = axis === 1 ? splitMid : bboxMin.y;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const bbMin = new Point(bbMinX, bbMinY);
 
             const rclipBounds = [bbMin, bboxMax];
 
             if (splits.length > depth + 1) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 stack.push({polygons: rclip, bounds: rclipBounds, depth: depth + 1});
             } else {
                 // @ts-expect-error - TS2345 - Argument of type 'any[]' is not assignable to parameter of type '[Point, Point]'.

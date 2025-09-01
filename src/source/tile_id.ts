@@ -35,6 +35,7 @@ export class CanonicalTileID {
 
     // given a list of urls, choose a url template and return a tile URL
     url(urls: Array<string>, scheme?: string | null): string {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const bbox = getTileBBox(this.x, this.y, this.z);
         const quadkey = getQuadkey(this.z, this.x, this.y);
 
@@ -44,6 +45,7 @@ export class CanonicalTileID {
             .replace(/{x}/g, String(this.x))
             .replace(/{y}/g, String(scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y))
             .replace('{quadkey}', quadkey)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             .replace('{bbox-epsg-3857}', bbox);
     }
 

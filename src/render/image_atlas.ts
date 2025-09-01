@@ -135,9 +135,12 @@ export default class ImageAtlas {
 
         const bins = [];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.addImages(icons, iconPositions, ICON_PADDING, bins);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.addImages(patterns, patternPositions, PATTERN_PADDING, bins);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const {w, h} = potpack(bins);
         const image = new RGBAImage({width: w || 1, height: h || 1});
 

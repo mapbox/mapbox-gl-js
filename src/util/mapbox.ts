@@ -298,6 +298,7 @@ function parseAccessToken(accessToken?: string | null): {u?: string} | null {
     }
 
     try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const jsonData: {u?: string} = JSON.parse(b64DecodeUnicode(parts[1]));
         return jsonData;
     } catch (e) {
@@ -348,6 +349,7 @@ class TelemetryEvent {
             try {
                 const data = localStorage.getItem(storageKey);
                 if (data) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     this.eventData = JSON.parse(data);
                 }
 
@@ -367,6 +369,7 @@ class TelemetryEvent {
         if (isLocalStorageAvailable && anonId) {
             try {
                 localStorage.setItem(uuidKey, anonId);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 if (Object.keys(this.eventData).length >= 1) {
                     localStorage.setItem(storageKey, JSON.stringify(this.eventData));
                 }
@@ -435,8 +438,10 @@ export class PerformanceEvent extends TelemetryEvent {
             return;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const {timestamp, performanceData} = this.queue.shift();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const additionalPayload = getLivePerformanceMetrics(performanceData);
 
         // Server will only process string for these entries
@@ -450,6 +455,7 @@ export class PerformanceEvent extends TelemetryEvent {
             assert(typeof attribute.value === 'string');
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.postEvent(timestamp, additionalPayload, () => {}, customAccessToken);
     }
 }
@@ -482,9 +488,11 @@ export class MapLoadEvent extends TelemetryEvent {
 
     override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) return;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const {id, timestamp} = this.queue.shift();
 
         // Only one load event should fire per map
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (id && this.success[id]) return;
 
         if (!this.anonId) {
@@ -503,10 +511,12 @@ export class MapLoadEvent extends TelemetryEvent {
             userId: this.anonId
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.postEvent(timestamp, additionalPayload, (err) => {
             if (err) {
                 this.errorCb(err);
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (id) this.success[id] = true;
             }
 
@@ -591,8 +601,10 @@ export class StyleLoadEvent extends TelemetryEvent {
             return;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const {timestamp, payload} = this.queue.shift();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.postEvent(timestamp, payload, () => {}, customAccessToken);
     }
 }
@@ -646,15 +658,19 @@ export class MapSessionAPI extends TelemetryEvent {
 
     override processRequests(customAccessToken?: string | null) {
         if (this.pendingRequest || this.queue.length === 0) return;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const {id, timestamp} = this.queue.shift();
 
         // Only one load event should fire per map
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (id && this.success[id]) return;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.getSession(timestamp, this.skuToken, (err) => {
             if (err) {
                 this.errorCb(err);
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (id) this.success[id] = true;
             }
         }, customAccessToken);
@@ -687,6 +703,7 @@ export class TurnstileEvent extends TelemetryEvent {
             return;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!this.anonId || !this.eventData.lastSuccess || !this.eventData.tokenU) {
             //Retrieve cached data
             this.fetchEventData();
@@ -695,6 +712,7 @@ export class TurnstileEvent extends TelemetryEvent {
         const tokenData = parseAccessToken(config.ACCESS_TOKEN);
         const tokenU = tokenData ? tokenData['u'] : config.ACCESS_TOKEN;
         //Reset event data cache if the access token owner changed.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         let dueForEvent = tokenU !== this.eventData.tokenU;
 
         if (!validateUuid(this.anonId)) {
@@ -702,11 +720,16 @@ export class TurnstileEvent extends TelemetryEvent {
             dueForEvent = true;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const nextUpdate = this.queue.shift();
         // Record turnstile event once per calendar day.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (this.eventData.lastSuccess) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const lastUpdate = new Date(this.eventData.lastSuccess);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const nextDate = new Date(nextUpdate);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const daysElapsed = (nextUpdate - this.eventData.lastSuccess) / (24 * 60 * 60 * 1000);
             dueForEvent = dueForEvent || daysElapsed >= 1 || daysElapsed < -1 || lastUpdate.getDate() !== nextDate.getDate();
         } else {
@@ -726,9 +749,12 @@ export class TurnstileEvent extends TelemetryEvent {
             userId: this.anonId
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.postEvent(nextUpdate, additionalPayload, (err) => {
             if (!err) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 this.eventData.lastSuccess = nextUpdate;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this.eventData.tokenU = tokenU;
             }
         }, customAccessToken);
@@ -736,9 +762,11 @@ export class TurnstileEvent extends TelemetryEvent {
 }
 
 const turnstileEvent_ = new TurnstileEvent();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: string | null) => void = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
 
 export const mapLoadEvent: MapLoadEvent = new MapLoadEvent();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const postMapLoadEvent: (
     arg1: number,
     arg2: string,
@@ -747,12 +775,15 @@ export const postMapLoadEvent: (
 ) => void = mapLoadEvent.postMapLoadEvent.bind(mapLoadEvent);
 
 export const styleLoadEvent: StyleLoadEvent = new StyleLoadEvent();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const postStyleLoadEvent: (arg1: string | null | undefined, arg2: StyleLoadEventInput) => void = styleLoadEvent.postStyleLoadEvent.bind(styleLoadEvent);
 
 export const performanceEvent_: PerformanceEvent = new PerformanceEvent();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const postPerformanceEvent: (arg1: string | null | undefined, arg2: LivePerformanceData) => void = performanceEvent_.postPerformanceEvent.bind(performanceEvent_);
 
 export const mapSessionAPI: MapSessionAPI = new MapSessionAPI();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const getMapSessionAPI: (
     arg1: number,
     arg2: string,

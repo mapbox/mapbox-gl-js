@@ -8,6 +8,7 @@ import {MapboxRasterTile} from '../../../src/data/mrt/mrt.esm.js';
 function createRasterArrayTile() {
     const tile = new RasterArrayTile(new OverscaledTileID(3, 0, 2, 1, 2));
     tile._isHeaderLoaded = true;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     tile.actor = {} as Actor;
     tile._mrt = new MapboxRasterTile(30);
 

@@ -409,9 +409,11 @@ function footprintTrianglesIntersect(
         const mxy = Math.max(a.y, b.y, c.y);
 
         candidateTriangles.length = 0;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         footprint.grid.query(new Point(mnx, mny), new Point(mxx, mxy), candidateTriangles);
 
         for (let j = 0; j < candidateTriangles.length; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const triIdx = candidateTriangles[j];
             const v0 = fpVertices[fpIndices[triIdx * 3 + 0]];
             const v1 = fpVertices[fpIndices[triIdx * 3 + 1]];
@@ -464,12 +466,14 @@ function transformPointToTile(x: number, y: number, src: CanonicalTileID, dst: C
 function pointInFootprint(p: Point, footprint: Footprint): boolean {
     // get a list of all triangles that potentially cover this point.
     const candidateTriangles = [];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     footprint.grid.queryPoint(p, candidateTriangles);
 
     // finally check if the point is in any of the triangles.
     const fpIndices: Array<number> = footprint.indices;
     const fpVertices: Array<Point> = footprint.vertices;
     for (let j = 0; j < candidateTriangles.length; j++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const triIdx = candidateTriangles[j];
         const triangle = [
             fpVertices[fpIndices[triIdx * 3 + 0]],

@@ -122,7 +122,9 @@ function drawTiles(params: DrawParams) {
                 {config: programConfiguration, defines: facadeDefines, overrideFog: false});
 
             if (shadowRenderer) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 shadowRenderer.setupShadowsFromMatrix(tileMatrix, programWithoutFacades, true);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 shadowRenderer.setupShadowsFromMatrix(tileMatrix, programWithFacades, true);
             }
         } else {
@@ -140,6 +142,7 @@ function drawTiles(params: DrawParams) {
                     dynamicBuffers = dynamicBuffers.concat([building.layoutFacadeDataBuffer, building.layoutFacadeVerticalRangeBuffer, building.layoutFacadePaintBuffer]);
                 }
                 const stencilMode = StencilMode.disabled;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 program.draw(painter, context.gl.TRIANGLES, params.depthMode, stencilMode, params.blendMode, isShadowPass ? CullFaceMode.disabled : CullFaceMode.backCW,
                     uniformValues, layer.id, building.layoutVertexBuffer, building.indexBuffer,
                     segments, layer.paint, painter.transform.zoom,
@@ -147,6 +150,7 @@ function drawTiles(params: DrawParams) {
             } else {
                 const bloomGeometry = building.entranceBloom;
                 const dynamicBuffers = [bloomGeometry.layoutAttenuationBuffer, bloomGeometry.layoutColorBuffer];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 program.draw(painter, context.gl.TRIANGLES, params.depthMode, StencilMode.disabled, params.blendMode, CullFaceMode.disabled,
                     uniformValues, layer.id, bloomGeometry.layoutVertexBuffer, bloomGeometry.indexBuffer,
                     bloomGeometry.segmentsBucket, layer.paint, painter.transform.zoom,
@@ -154,12 +158,14 @@ function drawTiles(params: DrawParams) {
             }
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         painter.uploadCommonUniforms(context, programWithoutFacades, coord.toUnwrapped(), null, cutoffParams);
         if (bucket.buildingWithoutFacade) {
             renderBuilding(bucket.buildingWithoutFacade, programWithoutFacades);
         }
 
         if (programWithFacades !== programWithoutFacades) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             painter.uploadCommonUniforms(context, programWithFacades, coord.toUnwrapped(), null, cutoffParams);
         }
         if (bucket.buildingWithFacade) {

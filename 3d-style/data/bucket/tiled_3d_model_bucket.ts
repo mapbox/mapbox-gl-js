@@ -303,6 +303,7 @@ class Tiled3dModelBucket implements Bucket {
         for (const nodeInfo of nodesInfo) {
             if (!nodeInfo.node.meshes) continue;
             const evaluationFeature = nodeInfo.feature;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const state = states && states[evaluationFeature.id];
             if (deepEqual(state, nodeInfo.state)) continue;
             nodeInfo.state = structuredClone(state);
@@ -603,6 +604,7 @@ class Tiled3dModelBucket implements Bucket {
             const mesh = nodeInfo.node.meshes[0];
             const meshAabb = mesh.transformedAabb;
             if (x < meshAabb.min[0] || y < meshAabb.min[1] || x > meshAabb.max[0] || y > meshAabb.max[1]) continue;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             if (nodeInfo.node.hidden === true) return {height: Infinity, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
 
             assert(mesh.heightmap);
@@ -618,13 +620,16 @@ class Tiled3dModelBucket implements Bucket {
             const heightValue = mesh.heightmap[heightmapIndex];
             if (heightValue < 0 && nodeInfo.node.footprint) {
                 // unpopulated cell. If it is in the building footprint, return undefined height
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 nodeInfo.node.footprint.grid.query(new Point(x, y), new Point(x, y), candidates);
                 if (candidates.length > 0) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     return {height: undefined, maxHeight: nodeInfo.feature.properties["height"], hidden: nodeInfo.hiddenByReplacement, verticalScale: nodeInfo.evaluatedScale[2]};
                 }
                 continue;
             }
             if (nodeInfo.hiddenByReplacement) return; // better luck with the next source
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             return {height: heightValue, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
         }
     }
@@ -682,11 +687,13 @@ function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: 
         b2 = 1;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     vertexArray.emplaceBack(a0, a1, a2, a3, b0, b1, b2);
     if (lightsFeatureArray) {
         const size = lightsFeatureArray.length;
         lightsFeatureArray.clear();
         for (let j = 0; j < size; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             lightsFeatureArray.emplaceBack(a0, a1, a2, a3, b0, b1, b2);
         }
     }
@@ -702,6 +709,7 @@ function updateNodeFeatureVertices(nodeInfo: Tiled3dModelFeature, doorLightChang
         // initialize featureArray
         mesh.featureArray = new FeatureVertexArray();
         // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'ArrayBufferView'.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         mesh.featureArray.reserve(mesh.featureData.length);
         let pendingDoorLightUpdate = doorLightChanged;
         // @ts-expect-error - TS2488 - Type 'ArrayBufferView' must have a '[Symbol.iterator]()' method that returns an iterator.

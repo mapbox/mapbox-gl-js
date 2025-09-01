@@ -291,22 +291,28 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             // if workers are not ready to receive messages yet, use the idle time to preemptively
             // load tiles on the main thread and pass the result instead of requesting a worker to do so
             if (!this.dispatcher.ready) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const cancel = loadVectorTile.call({deduped: this._deduped}, params, (err?: Error | null, data?: LoadVectorTileResult | null) => {
                     if (err || !data) {
                         done.call(this, err);
                     } else {
                         // the worker will skip the network request if the data is already there
                         params.data = {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             cacheControl: data.cacheControl,
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             expires: data.expires,
                             rawData: data.rawData.slice(0)
                         };
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         if (tile.actor) tile.actor.send('loadTile', params, done.bind(this), undefined, true);
                     }
                 }, true);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 tile.request = {cancel};
 
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
             }
 
@@ -315,6 +321,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             tile.reloadCallback = callback;
 
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
@@ -331,14 +338,18 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             if (data && data.resourceTiming)
                 tile.resourceTiming = data.resourceTiming;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             tile.loadVectorData(data, this.map.painter);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             cacheEntryPossiblyAdded(this.dispatcher);
 
             callback(null);
 
             if (tile.reloadCallback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 this.loadTile(tile, tile.reloadCallback);
                 tile.reloadCallback = null;
             }

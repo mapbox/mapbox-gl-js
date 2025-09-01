@@ -9,7 +9,9 @@ describe('Map#queryRasterValue', () => {
         const map = createMap();
 
         map.once('error', withAsync((e, doneRef) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.error.message).toBe(`IDs can't be empty.`);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -25,7 +27,9 @@ describe('Map#queryRasterValue', () => {
         const map = createMap();
 
         map.once('error', withAsync((e, doneRef) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.error.message).toMatch(/IDs can't contain special symbols/);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -67,7 +71,9 @@ describe('Map#queryRasterValue', () => {
         await waitFor(map, 'load');
 
         map.once('error', withAsync((e, doneRef) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.error.message).toBe(`queryRasterValue support only "raster-array" sources.`);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -80,6 +86,7 @@ describe('Map#queryRasterValue', () => {
 
     test('should return raster array values', async () => {
         mockFetch({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             'https://example.com/tiles/0/0/0.mrt': async () => Promise.resolve(new Response(tile))
         });
 
@@ -127,6 +134,7 @@ describe('Map#queryRasterValue', () => {
 
     test('Should filter out by layer', async () => {
         mockFetch({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             'https://example.com/tiles/0/0/0.mrt': async () => Promise.resolve(new Response(tile))
         });
 
@@ -170,6 +178,7 @@ describe('Map#queryRasterValue', () => {
 
     test('should fire error for non-existing source', async () => {
         mockFetch({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             'https://example.com/tiles/0/0/0.mrt': async () => Promise.resolve(new Response(tile))
         });
 
@@ -205,7 +214,9 @@ describe('Map#queryRasterValue', () => {
         });
 
         map.once('error', withAsync((e, doneRef) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.error.message).toBe(`Source with id "${sourceId}" does not exist in the style.`);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             doneRef.resolve();
         }));
 
@@ -223,6 +234,7 @@ describe('Map#queryRasterValue', () => {
 
     test('should filter out by band identifier', async () => {
         mockFetch({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             'https://example.com/tiles/0/0/0.mrt': async () => Promise.resolve(new Response(tile))
         });
         const map = createMap({

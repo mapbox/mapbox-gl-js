@@ -67,6 +67,7 @@ class VertexArrayObject {
                 if (dynamicBuffer) {
                     dynamicBuffer.bind();
                     if (vertexAttribDivisorValue && dynamicBuffer.instanceCount) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         dynamicBuffer.setVertexAttribDivisor(context.gl, program, vertexAttribDivisorValue);
                     }
                 }
@@ -101,22 +102,29 @@ class VertexArrayObject {
         this.boundVertexOffset = vertexOffset;
         this.boundDynamicVertexBuffers = dynamicVertexBuffers;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         layoutVertexBuffer.enableAttributes(gl, program);
         layoutVertexBuffer.bind();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         layoutVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
 
         for (const vertexBuffer of paintVertexBuffers) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             vertexBuffer.enableAttributes(gl, program);
             vertexBuffer.bind();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             vertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         }
 
         for (const dynamicBuffer of dynamicVertexBuffers) {
             if (dynamicBuffer) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 dynamicBuffer.enableAttributes(gl, program);
                 dynamicBuffer.bind();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 dynamicBuffer.setVertexAttribPointers(gl, program, vertexOffset);
                 if (vertexAttribDivisorValue && dynamicBuffer.instanceCount) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     dynamicBuffer.setVertexAttribDivisor(gl, program, vertexAttribDivisorValue);
                 }
             }

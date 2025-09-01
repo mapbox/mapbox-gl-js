@@ -98,10 +98,12 @@ test('AttributionControl compact mode control toggles attribution', () => {
 
     expect(container.querySelectorAll('.mapboxgl-compact-show').length).toEqual(0);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(toggle);
 
     expect(container.querySelectorAll('.mapboxgl-compact-show').length).toEqual(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(toggle);
 
     expect(container.querySelectorAll('.mapboxgl-compact-show').length).toEqual(0);
@@ -157,6 +159,7 @@ test('AttributionControl has the correct edit map link', async () => {
         expect(attribution._editLink.href).toEqual(
             'https://feedback.com/?owner=mapbox&id=streets-v10&access_token=pk.123#/0/0/2'
         );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         doneRef.resolve();
     }));
     map.addSource('1', {type: 'geojson', data: {type: 'FeatureCollection', features: []}, attribution: '<a class="mapbox-improve-map" href="https://feedback.com" target="_blank">Improve this map</a>'});

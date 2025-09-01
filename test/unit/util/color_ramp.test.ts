@@ -16,6 +16,7 @@ const spec = {
 };
 
 function pixelAt(image, i) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return image.data.slice(i * 4, (i + 1) * 4);
 }
 
@@ -24,6 +25,7 @@ function nearlyEquals(a, b) {
     // expect exact equal since 256 px need to represent a range from [0, 1]
     // (inclusive) -- the first and last pixel should be exact, the halfway
     // pixel may not be
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return a.every((e, i) => Math.abs(e - b[i]) <= 3);
 }
 
@@ -44,6 +46,7 @@ test('renderColorRamp linear', () => {
     expect(ramp.width).toEqual(256);
     expect(ramp.height).toEqual(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(pixelAt(ramp, 0)[3]).toEqual(0);
     expect(nearlyEquals(pixelAt(ramp, 63), [255, 255, 255, 255])).toBeTruthy();
     expect(nearlyEquals(pixelAt(ramp, 127), [0, 255, 255, 127])).toBeTruthy();
@@ -68,6 +71,7 @@ test('renderColorRamp step', () => {
     expect(ramp.width).toEqual(512);
     expect(ramp.height).toEqual(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(pixelAt(ramp, 0)[3]).toEqual(25);
     expect(nearlyEquals(pixelAt(ramp, 50), [0, 0, 255, 25])).toBeTruthy();
     expect(nearlyEquals(pixelAt(ramp, 53), [255, 0, 0, 255])).toBeTruthy();
@@ -95,6 +99,7 @@ test('renderColorRamp usePlacement', () => {
 
     renderColorRamp({expression, evaluationKey: 'lineProgress', resolution: 512, image: ramp});
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(pixelAt(ramp, 0)[3]).toEqual(127);
     expect(nearlyEquals(pixelAt(ramp, 50), [255, 0, 0, 127])).toBeTruthy();
     expect(nearlyEquals(pixelAt(ramp, 53), [0, 0, 0, 255])).toBeTruthy();

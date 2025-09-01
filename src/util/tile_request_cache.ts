@@ -62,6 +62,7 @@ function prepareBody(response: Response, callback: (body?: Blob | ReadableStream
     if (responseConstructorSupportsReadableStream) {
         callback(response.body);
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         response.blob().then(callback).catch(e => warnOnce(e.message));
     }
 }
@@ -118,6 +119,7 @@ export function cachePut(request: Request, response: Response, requestTime: numb
         if (sharedCache == null) return;
         sharedCache
             .then(cache => cache.put(strippedURL, clonedResponse))
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             .catch(e => warnOnce(e.message));
     });
 }
@@ -189,10 +191,13 @@ export function enforceCacheSizeLimit(limit: number) {
         .then(cache => {
             cache.keys().then(keys => {
                 for (let i = 0; i < keys.length - limit; i++) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                     cache.delete(keys[i]).catch(e => warnOnce(e.message));
                 }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             }).catch(e => warnOnce(e.message));
         })
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         .catch(e => warnOnce(e.message));
 }
 

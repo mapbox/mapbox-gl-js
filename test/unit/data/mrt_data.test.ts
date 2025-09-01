@@ -26,6 +26,7 @@ describe('MapboxRasterTile', () => {
             const result = await MapboxRasterTile.performDecoding(bufferSlice, task);
             task.complete(null, result);
         } catch (error) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             expect.unreachable(error);
         }
 
@@ -33,7 +34,9 @@ describe('MapboxRasterTile', () => {
 
         const bandView = layer.getBandView('the-shard');
         expect(bandView).toMatchObject({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             data: expect.any(Uint8Array),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             bytes: expect.any(Uint8Array),
             offset: 0,
             scale: 1,

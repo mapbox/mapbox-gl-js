@@ -32,12 +32,14 @@ class Length implements Expression {
     }
 
     evaluate(ctx: EvaluationContext): number {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const input = this.input.evaluate(ctx);
         if (typeof input === 'string') {
             return input.length;
         } else if (Array.isArray(input)) {
             return input.length;
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             throw new RuntimeError(`Expected value to be of type string or array, but found ${toString(typeOf(input))} instead.`);
         }
     }

@@ -663,6 +663,7 @@ export default class Marker extends Evented<MarkerEvents> {
             }
 
             if ((map._showingGlobe() || map.getTerrain() || map.getFog()) && !this._fadeTimer) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this._fadeTimer = window.setTimeout(this._evaluateOpacity.bind(this), 60);
             }
         });

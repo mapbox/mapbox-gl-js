@@ -184,8 +184,11 @@ describe('exponential function', () => {
         }).evaluate;
 
         expect(f({zoom: 0})).toEqual(new Color(0, 0, 0, 1));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         equalWithPrecision(f({zoom: 5}).r, 0, 1e-6);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         equalWithPrecision(f({zoom: 5}).g, 0.444, 1e-3);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         equalWithPrecision(f({zoom: 5}).b, 0.444, 1e-3);
     });
 
@@ -219,6 +222,7 @@ describe('exponential function', () => {
             colorSpace: 'lab',
             stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
         };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const paramsCopy = JSON.parse(JSON.stringify(params));
         createFunction(params, {
             type: 'color'

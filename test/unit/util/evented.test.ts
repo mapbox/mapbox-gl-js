@@ -132,6 +132,7 @@ describe('Evented', () => {
         evented.on('a', listener);
         evented.fire('a', {foo: 'bar'});
         expect(listener).toHaveBeenCalledTimes(1);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(listener.mock.calls[0][0].foo).toBeTruthy();
     });
 

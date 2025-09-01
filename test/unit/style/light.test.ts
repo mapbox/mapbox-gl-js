@@ -6,15 +6,20 @@ import Light from '../../../src/style/light';
 import styleSpec from '../../../src/style-spec/reference/latest';
 import Color from '../../../src/style-spec/util/color';
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const spec = styleSpec.light;
 
 test('Light with defaults', () => {
     const light = new Light({});
     light.recalculate({zoom: 0});
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(light.properties.get('anchor')).toEqual(spec.anchor.default);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     expect(light.properties.get('position')).toEqual(sphericalPositionToCartesian(spec.position.default));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(light.properties.get('intensity')).toEqual(spec.intensity.default);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     expect(light.properties.get('color')).toEqual(Color.parse(spec.color.default));
 });
 
@@ -29,6 +34,7 @@ test('Light with options', () => {
     expect(light.properties.get('anchor')).toEqual('map');
     expect(light.properties.get('position')).toEqual(sphericalPositionToCartesian([2, 30, 30]));
     expect(light.properties.get('intensity')).toEqual(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     expect(light.properties.get('color')).toEqual(Color.parse(spec.color.default));
 });
 
@@ -46,6 +52,7 @@ test('Light with stops function', () => {
 test('Light#getLight', () => {
     const defaults: Record<string, any> = {};
     for (const key in spec) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         defaults[key] = spec[key].default;
     }
 

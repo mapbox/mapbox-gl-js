@@ -30,9 +30,13 @@ type Props = {
 
 let properties: Properties<Props>;
 const getProperties = (): Properties<Props> => properties || (properties = new Properties({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     "anchor": new DataConstantProperty(styleSpec.light.anchor),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     "position": new PositionProperty(styleSpec.light.position),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     "color": new DataConstantProperty(styleSpec.light.color),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     "intensity": new DataConstantProperty(styleSpec.light.intensity),
 }));
 
@@ -89,6 +93,7 @@ class Light extends Evented {
             return false;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
             value,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407

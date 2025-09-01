@@ -299,6 +299,7 @@ class Painter {
         const layerTypes = ["fill", "line", "symbol", "circle", "heatmap", "fill-extrusion", "building", "raster", "raster-particle", "hillshade", "model", "background", "sky"];
 
         for (const layerType of layerTypes) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             this._debugParams.enabledLayers[layerType] = true;
         }
 
@@ -716,6 +717,7 @@ class Painter {
         const depthHeight = Math.ceil(this.height);
 
         const fboPrev = this.context.bindFramebuffer.get();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const texturePrev: WebGLTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
 
         if (!this.depthFBO || this.depthFBO.width !== depthWidth || this.depthFBO.height !== depthHeight) {
@@ -777,6 +779,7 @@ class Painter {
             const layer = layers[id];
 
             if (layer.type in this._debugParams.enabledLayers) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 return this._debugParams.enabledLayers[layer.type];
             }
 
@@ -1071,7 +1074,9 @@ class Painter {
             if (!this.buildingTileBorderManager) {
                 this.buildingTileBorderManager = new BuildingTileBorderManager();
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const buildingLayerSourceCache = this.style.getLayerSourceCache(buildingLayer);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.buildingTileBorderManager.updateBorders(buildingLayerSourceCache, buildingLayer);
         }
 
@@ -1283,6 +1288,7 @@ class Painter {
                         const depthPassLayer = orderedLayers[this.currentLayer];
                         if (depthPrepass[depthPassLayer.type]) {
                             const sourceCache = this.style.getLayerSourceCache(depthPassLayer);
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                             depthPrepass[depthPassLayer.type](this, sourceCache, depthPassLayer, coordsForTranslucentLayer(depthPassLayer, sourceCache), pass);
                         }
                     }
@@ -1323,6 +1329,7 @@ class Painter {
                         const maskLayer = orderedLayers[this.currentLayer];
                         if (groundShadowMask[maskLayer.type]) {
                             const sourceCache = this.style.getLayerSourceCache(maskLayer);
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                             groundShadowMask[maskLayer.type](this, sourceCache, maskLayer, coordsForTranslucentLayer(maskLayer, sourceCache));
                         }
                     }
@@ -1386,6 +1393,7 @@ class Painter {
             orderedLayers.forEach((layer) => {
                 const sourceCache = style.getLayerSourceCache(layer);
                 if (sourceCache && !layer.isHidden(this.transform.zoom) && sourceCache.getVisibleCoordinates().length) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     if (!selectedSource || (selectedSource.getSource().maxzoom < sourceCache.getSource().maxzoom)) {
                         selectedSource = sourceCache;
                     }
@@ -1393,15 +1401,18 @@ class Painter {
             });
             if (selectedSource) {
                 if (this.options.showTileBoundaries) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     drawDebug(this, selectedSource, selectedSource.getVisibleCoordinates(), Color.red, false, this.options.showParseStatus);
                 }
 
                 Debug.run(() => {
                     if (!selectedSource) return;
                     if (this.options.showQueryGeometry) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         drawDebugQueryGeometry(this, selectedSource, selectedSource.getVisibleCoordinates());
                     }
                     if (this.options.showTileAABBs) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         Debug.drawAabbs(this, selectedSource, selectedSource.getVisibleCoordinates());
                     }
                 });
@@ -1440,6 +1451,7 @@ class Painter {
 
         if (prepare[layer.type] && (isLayerSupported || isCustomLayerWithTerrain)) {
             const sourceCache = this.style.getLayerSourceCache(layer);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             prepare[layer.type](layer, sourceCache, this);
         }
 

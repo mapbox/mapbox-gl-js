@@ -49,9 +49,13 @@ describe('Map#control', () => {
             }
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const control = new Ctrl();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(map.hasControl(control)).toEqual(false);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         map.addControl(control);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(map.hasControl(control)).toEqual(true);
     });
 });

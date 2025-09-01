@@ -348,6 +348,7 @@ export class Terrain extends Elevation {
     }
 
     set style(style: Style) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         style.on('data', this._onStyleDataEvent.bind(this));
         this._style = style;
         this._style.map.on('moveend', () => {
@@ -798,7 +799,9 @@ export class Terrain extends Elevation {
         assert(demTexture);
         context.activeTexture.set(gl.TEXTURE2);
         if (demTexture) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             setDemSizeUniform(demTexture);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             demTexture.bind(filteringForDemTile(demTile), gl.CLAMP_TO_EDGE);
         }
 
@@ -954,11 +957,13 @@ export class Terrain extends Elevation {
             }
             if (poolIndex === FBO_POOL_SIZE) {
                 poolIndex = 0;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.renderToBackBuffer(accumulatedDrapes);
             }
         }
 
         // Reset states and render last drapes
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.renderToBackBuffer(accumulatedDrapes);
         this.renderingToTexture = false;
 
@@ -1632,6 +1637,7 @@ export class Terrain extends Elevation {
         }
 
         const pathToLookup = (key?: number | null) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             path.forEach(id => { lookup[id] = key; });
             path.length = 0;
         };

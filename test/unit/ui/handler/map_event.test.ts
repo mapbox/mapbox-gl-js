@@ -19,22 +19,28 @@ test('MapEvent handler fires touch events with correct values', () => {
     const touchesMove = [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: 60})];
     const touchesEnd = [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: 60})];
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: touchesStart, targetTouches: touchesStart});
     expect(touchstart).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(touchstart.mock.calls[0][0].point).toEqual({x: 0, y: 50});
     expect(touchmove).not.toHaveBeenCalled();
     expect(touchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: touchesMove, targetTouches: touchesMove});
     expect(touchstart).toHaveBeenCalledTimes(1);
     expect(touchmove).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(touchmove.mock.calls[0][0].point).toEqual({x: 0, y: 60});
     expect(touchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: [], targetTouches: [], changedTouches: touchesEnd});
     expect(touchstart).toHaveBeenCalledTimes(1);
     expect(touchmove).toHaveBeenCalledTimes(1);
     expect(touchend).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(touchend.mock.calls[0][0].point).toEqual({x: 0, y: 60});
 
     map.remove();
@@ -59,22 +65,28 @@ test('MapEvent handler fires touchmove even while drag handler is active', () =>
     const touchesMove = [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: 60})];
     const touchesEnd = [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: 60})];
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: touchesStart, targetTouches: touchesStart});
     expect(touchstart).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(touchstart.mock.calls[0][0].point).toEqual({x: 0, y: 50});
     expect(touchmove).not.toHaveBeenCalled();
     expect(touchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: touchesMove, targetTouches: touchesMove});
     expect(touchstart).toHaveBeenCalledTimes(1);
     expect(touchmove).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(touchmove.mock.calls[0][0].point).toEqual({x: 0, y: 60});
     expect(touchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: [], targetTouches: [], changedTouches: touchesEnd});
     expect(touchstart).toHaveBeenCalledTimes(1);
     expect(touchmove).toHaveBeenCalledTimes(1);
     expect(touchend).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(touchend.mock.calls[0][0].point).toEqual({x: 0, y: 60});
 
     map._renderTaskQueue.run();
@@ -96,11 +108,14 @@ test('MapEvent handler fires mousemove even while scroll handler is active', () 
     map.on('mousemove', mousemove);
     map.on('zoomstart', zoom);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     expect(wheel).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 0, clientX: 10, clientY: 10});
     expect(mousemove).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(mousemove.mock.calls[0][0].point).toEqual({x: 10, y: 10});
 
     map._renderTaskQueue.run();

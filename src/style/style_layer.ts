@@ -112,8 +112,10 @@ class StyleLayer extends Evented {
             this.sourceLayer = layer['source-layer'];
             this.filter = layer.filter;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const filterSpec = latest[`filter_${layer.type}`];
             assert(filterSpec);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const compiledStaticFilter = createExpression(this.filter, filterSpec);
             if (compiledStaticFilter.result !== 'error') {
                 this.configDependencies = new Set([...this.configDependencies, ...compiledStaticFilter.value.configDependencies]);
@@ -131,9 +133,11 @@ class StyleLayer extends Evented {
             this._transitionablePaint = new Transitionable(properties.paint, this.scope, options);
 
             for (const property in layer.paint) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.setPaintProperty(property as keyof PaintSpecification, layer.paint[property]);
             }
             for (const property in layer.layout) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.setLayoutProperty(property as keyof LayoutSpecification, layer.layout[property]);
             }
             this.configDependencies = new Set([...this.configDependencies, ...this._transitionablePaint.configDependencies]);
@@ -170,7 +174,9 @@ class StyleLayer extends Evented {
         }
 
         const layout = this._unevaluatedLayout;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const specProps = layout._properties.properties;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!specProps[name]) return; // skip unrecognized properties
 
         layout.setValue(name, value);
@@ -200,18 +206,21 @@ class StyleLayer extends Evented {
 
     setPaintProperty<T extends keyof PaintSpecification>(name: T, value: PaintSpecification[T]): boolean {
         const paint = this._transitionablePaint;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const specProps = paint._properties.properties;
 
         if (name.endsWith(TRANSITION_SUFFIX)) {
             const propName = name.slice(0, -TRANSITION_SUFFIX.length);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (specProps[propName]) { // skip unrecognized properties
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
                 paint.setTransition(propName, (value as any) || undefined);
             }
             return false;
 
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!specProps[name]) return false; // skip unrecognized properties
 
         const transitionable = paint._values[name];
@@ -267,11 +276,11 @@ class StyleLayer extends Evented {
 
     recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         if (this._unevaluatedLayout) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
             (this as any).layout = this._unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages, this.iconImageUseTheme);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         (this as any).paint = this._transitioningPaint.possiblyEvaluate(parameters, undefined, availableImages);
     }
 
@@ -351,9 +360,9 @@ class StyleLayer extends Evented {
     }
 
     isStateDependent(): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         for (const property in (this as any).paint._values) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const value = (this as any).paint.get(property);
             if (!(value instanceof PossiblyEvaluatedPropertyValue) || !supportsPropertyExpression(value.property.specification)) {
                 continue;

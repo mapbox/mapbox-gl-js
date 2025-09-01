@@ -22,6 +22,7 @@ describe('shaping', () => {
     const glyphPositonMap = glyphPositions['Test'];
     const glyphData = glyphMap['Test'].glyphs;
     for (const id in glyphData) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         glyphPositonMap[id] = glyphData[id].rect;
     }
 
@@ -32,10 +33,12 @@ describe('shaping', () => {
     ]);
 
     const sectionForImage = (name) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new FormattedSection('', ResolvedImage.build(name), null, null, null);
     };
 
     const sectionForText = (name, scale) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new FormattedSection(name, null, scale, null, null);
     };
 

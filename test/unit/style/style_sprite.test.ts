@@ -18,6 +18,7 @@ describe('Style', () => {
 
                 const map = new StubMap();
                 const transformSpy = vi.spyOn(map._requestManager, 'transformRequest');
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const style = new Style(map as MapboxMap);
 
                 style.loadJSON(Object.assign(createStyleJSON(), {
@@ -42,6 +43,7 @@ describe('Style', () => {
                     'http://example.com/sprite.png': async () => new Response(await getPNGResponse())
                 });
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const style = new Style(new StubMap() as MapboxMap);
 
                 style.loadJSON({
@@ -53,12 +55,15 @@ describe('Style', () => {
 
                 style.once('error', () => expect.unreachable());
                 style.once('data', withAsync((e, doneRef) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(e.target).toBe(style);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(e.dataType).toEqual('style');
 
                     style.once('data', (e) => {
                         expect(e.target).toBe(style);
                         expect(e.dataType).toEqual('style');
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         doneRef.resolve();
                     });
                 }));

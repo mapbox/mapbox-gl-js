@@ -16,6 +16,7 @@ export default function validateRain(options: RainValidatorOptions): ValidationE
     const rain = options.value;
     const style = options.style;
     const styleSpec = options.styleSpec;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const rainSpec = styleSpec.rain;
 
     if (rain === undefined) {
@@ -30,18 +31,22 @@ export default function validateRain(options: RainValidatorOptions): ValidationE
     for (const key in rain) {
         const transitionMatch = key.match(/^(.*)-transition$/);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (transitionMatch && rainSpec[transitionMatch[1]] && rainSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
                 value: rain[key],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 valueSpec: styleSpec.transition,
                 style,
                 styleSpec
             }));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (rainSpec[key]) {
             errors = errors.concat(validate({
                 key,
                 value: rain[key],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 valueSpec: rainSpec[key],
                 style,
                 styleSpec

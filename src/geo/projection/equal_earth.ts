@@ -45,6 +45,7 @@ export default class EqualEarth extends Projection {
             theta = clamp(theta - delta, -Math.PI / 3, Math.PI / 3);
             theta2 = theta * theta;
             theta6 = theta2 * theta2 * theta2;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (Math.abs(delta) < 1e-12) break;
         }
 

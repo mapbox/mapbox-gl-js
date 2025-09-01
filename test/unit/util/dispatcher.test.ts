@@ -41,6 +41,7 @@ describe('Dispatcher', () => {
     test('#remove destroys actors', () => {
         const actorsRemoved: Array<any> = [];
         function Actor() {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             this.remove = function () { actorsRemoved.push(this); };
         }
         vi.spyOn(Dispatcher, 'Actor', 'get').mockImplementation(() => Actor);

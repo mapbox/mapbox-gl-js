@@ -248,6 +248,7 @@ class HandlerManager {
 
         for (const name of ['boxZoom', 'doubleClickZoom', 'tapDragZoom', 'touchPitch', 'dragRotate', 'dragPan', 'touchZoomRotate', 'scrollZoom', 'keyboard'] as const) {
             if (options.interactive && options[name]) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 map[name].enable(options[name]);
             }
         }
@@ -355,6 +356,7 @@ class HandlerManager {
 
             } else {
                 if (handler[eventName || e.type]) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                     data = handler[eventName || e.type](e, points, mapTouches);
                     this.mergeHandlerResult(mergedHandlerResult, eventsInProgress, data, handlerName, inputEvent);
                     if (data && data.needsRenderFrame) {
@@ -446,12 +448,15 @@ class HandlerManager {
         const tr = map.transform;
 
         const eventStarted = (type: string) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const newEvent = combinedEventsInProgress[type];
             return newEvent && !this._eventsInProgress[type];
         };
 
         const eventEnded = (type: string) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const event = this._eventsInProgress[type];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return event && !this._handlersById[event.handlerName].isActive();
         };
 
@@ -583,10 +588,13 @@ class HandlerManager {
         const startEvents: EventsInProgress = {};
 
         for (const eventName in newEventsInProgress) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const {originalEvent} = newEventsInProgress[eventName];
             if (!this._eventsInProgress[eventName]) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 startEvents[`${eventName}start`] = originalEvent;
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this._eventsInProgress[eventName] = newEventsInProgress[eventName];
         }
 
@@ -596,6 +604,7 @@ class HandlerManager {
         }
 
         for (const name in startEvents) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._fireEvent(name as keyof MapEvents, startEvents[name]);
         }
 
@@ -604,7 +613,9 @@ class HandlerManager {
         }
 
         for (const eventName in newEventsInProgress) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const {originalEvent} = newEventsInProgress[eventName];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._fireEvent(eventName as keyof MapEvents, originalEvent);
         }
 
@@ -612,15 +623,20 @@ class HandlerManager {
 
         let originalEndEvent;
         for (const eventName in this._eventsInProgress) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const {handlerName, originalEvent} = this._eventsInProgress[eventName];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (!this._handlersById[handlerName].isActive()) {
                 delete this._eventsInProgress[eventName];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 originalEndEvent = deactivatedHandlers[handlerName] || originalEvent;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 endEvents[`${eventName}end`] = originalEndEvent;
             }
         }
 
         for (const name in endEvents) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._fireEvent(name as keyof MapEvents, endEvents[name]);
         }
 
@@ -635,8 +651,10 @@ class HandlerManager {
                 if (shouldSnapToNorth(inertialEase.bearing || this._map.getBearing())) {
                     inertialEase.bearing = 0;
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 this._map.easeTo(inertialEase, {originalEvent: originalEndEvent});
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 this._map.fire(new Event('moveend', {originalEvent: originalEndEvent}));
                 if (shouldSnapToNorth(this._map.getBearing())) {
                     this._map.resetNorth();

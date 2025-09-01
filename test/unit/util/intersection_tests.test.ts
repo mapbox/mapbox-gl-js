@@ -7,8 +7,11 @@ import Point from '@mapbox/point-geometry';
 describe('Intersection tests', () => {
     const newTriangle = (p0, p1, p2) => {
         return [
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             new Point(...p0),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             new Point(...p1),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             new Point(...p2)
         ];
     };

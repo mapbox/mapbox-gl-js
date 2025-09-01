@@ -95,6 +95,7 @@ function convertZoomAndPropertyFunction<T>(
             featureFunctionStops[zoom] = [];
             zoomStops.push(zoom);
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         featureFunctionStops[zoom].push([stop[0].value, stop[1]]);
     }
 
@@ -107,6 +108,7 @@ function convertZoomAndPropertyFunction<T>(
         const expression: ExpressionSpecification = [getInterpolateOperator(parameters), ['linear'], ['zoom']];
 
         for (const z of zoomStops) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const output = convertPropertyFunction(featureFunctionParameters[z], propertySpec, featureFunctionStops[z]);
             appendStopPair(expression, z, output, false);
         }
@@ -116,6 +118,7 @@ function convertZoomAndPropertyFunction<T>(
         const expression: ExpressionSpecification = ['step', ['zoom']];
 
         for (const z of zoomStops) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const output = convertPropertyFunction(featureFunctionParameters[z], propertySpec, featureFunctionStops[z]);
             appendStopPair(expression, z, output, true);
         }
@@ -219,9 +222,11 @@ function convertZoomFunction<T>(parameters: FunctionSpecification<T>, propertySp
     }
 
     for (const stop of stops) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         appendStopPair(expression, stop[0], stop[1], isStep);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     fixupDegenerateStepCurve(expression);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return

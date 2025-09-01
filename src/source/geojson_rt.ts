@@ -184,9 +184,11 @@ function outputFeature(feature: InternalFeature, z2: number, tx: number, ty: num
     const tileGeom = [];
 
     if (type === 1) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         transformPoints(geometry as number[], z2, tx, ty, tileGeom);
     } else {
         for (const ring of geometry) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             transformAndClipLine(ring as number[], z2, tx, ty, tileGeom);
         }
     }
@@ -260,11 +262,14 @@ function transformAndClipLine(line: number[], z2: number, tx: number, ty: number
             y1 = max;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!part || x0 !== part[part.length - 1][0] || y0 !== part[part.length - 1][1]) {
             part = [[x0, y0]];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             out.push(part);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         part.push([x1, y1]);
     }
 }

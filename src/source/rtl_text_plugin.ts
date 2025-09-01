@@ -33,11 +33,13 @@ let pluginURL: string | null | undefined = null;
 export const triggerPluginCompletionEvent = function (error?: Error | null) {
     // NetworkError's are not correctly reflected by the plugin status which prevents reloading plugin
 // @ts-expect-error - TS2339 - Property 'indexOf' does not exist on type 'never'.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     if (error && typeof error === 'string' && error.indexOf('NetworkError') > -1) {
         pluginStatus = rtlPluginStatus.error;
     }
 
     if (_completionCallback) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         _completionCallback(error);
     }
 };

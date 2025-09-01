@@ -60,8 +60,10 @@ describe('Map#getStyle', () => {
         map.setFog(fog);
 
         const fogDefaults = Object
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             .entries(styleSpec.fog)
             .reduce<Record<string, any>>((acc, [key, value]: [any, any]) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 acc[key] = value.default;
                 return acc;
             }, {});

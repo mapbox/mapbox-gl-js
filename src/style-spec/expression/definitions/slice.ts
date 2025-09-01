@@ -56,18 +56,22 @@ class Slice implements Expression {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const input = (this.input.evaluate(ctx));
         const beginIndex = (this.beginIndex.evaluate(ctx) as number);
 
         if (!isValidNativeType(input, ['string', 'array'])) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             throw new RuntimeError(`Expected first argument to be of type array or string, but found ${toString(typeOf(input))} instead.`);
         }
 
         if (this.endIndex) {
             const endIndex = (this.endIndex.evaluate(ctx) as number);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return input.slice(beginIndex, endIndex);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         return input.slice(beginIndex);
     }
 

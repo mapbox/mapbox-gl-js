@@ -122,6 +122,7 @@ export default function validate(options: ValidatorOptions, arrayAsExpression: b
     }
 
     const errors = validateObject(Object.assign({}, options, {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec: valueSpec.type ? styleSpec[valueSpec.type] : valueSpec
     }));
 

@@ -117,6 +117,7 @@ describe('InteractionSet', () => {
         // @ts-expect-error
         map.style = {
             queryRenderedTargets: (_, featuresetQueryTargets) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(featuresetQueryTargets[0].filter.filter).toBeTruthy();
                 return [
                     feature({id: 3, layer, variants: {test: [{target: featureset, properties: {cool: true}}]}}),

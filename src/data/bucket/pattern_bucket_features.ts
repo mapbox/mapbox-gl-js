@@ -50,14 +50,18 @@ export function hasPattern(type: string, layers: PatternStyleLayers, pixelRatio:
 
     for (const layer of layers) {
         // @ts-expect-error - TS2349 - This expression is not callable.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const patternProperty = layer.paint.get(`${type}-pattern`);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         if (!patternProperty.isConstant()) {
             hasPattern = true;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const constantPattern = patternProperty.constantOr(null);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (addPattern(constantPattern, patterns, pixelRatio)) {
             hasPattern = true;
         }
@@ -77,13 +81,19 @@ export function addPatternDependencies(
     const patterns = options.patternDependencies;
     for (const layer of layers) {
         // @ts-expect-error - TS2349 - This expression is not callable.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const patternProperty = layer.paint.get(`${type}-pattern`);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const patternPropertyValue = patternProperty.value;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (patternPropertyValue.kind !== "constant") {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             let pattern = patternPropertyValue.evaluate({zoom}, patternFeature, {}, options.availableImages);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             pattern = pattern && pattern.name ? pattern.name : pattern;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const patternResult = addPattern(pattern, patterns, pixelRatio);
 
             if (!patternResult) {

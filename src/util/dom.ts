@@ -30,6 +30,7 @@ let userSelect;
 
 export function disableDrag() {
     if (docStyle && selectProp) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         userSelect = docStyle[selectProp];
         docStyle[selectProp] = 'none';
     }
@@ -37,6 +38,7 @@ export function disableDrag() {
 
 export function enableDrag() {
     if (docStyle && selectProp) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         docStyle[selectProp] = userSelect;
     }
 }

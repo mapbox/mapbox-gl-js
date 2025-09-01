@@ -21,12 +21,14 @@ export class OcclusionQuery {
     }
 
     isResultAvailable(): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const resultReady: boolean = this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT_AVAILABLE);
 
         return resultReady;
     }
 
     consumeResult(): number {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const samplesPassed: number = this._gl.getQueryParameter(this._query, this._gl.QUERY_RESULT);
         this._isFree = true;
         return samplesPassed;

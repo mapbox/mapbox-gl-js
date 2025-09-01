@@ -300,7 +300,9 @@ describe('Map#cameraParams', () => {
             expect(map.transform.projection.name).toEqual("globe");
 
             transform = map.cameraForBounds(bb);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(transform.center, 4)).toEqual({lng: -132.5, lat: 17.0027});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedNum(transform.zoom, 3)).toEqual(6.071);
 
             map.setZoom(10);
@@ -309,7 +311,9 @@ describe('Map#cameraParams', () => {
             expect(map.transform.projection.name).toEqual("mercator");
 
             transform = map.cameraForBounds(bb);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(transform.center, 4)).toEqual({lng: -132.5, lat: 17.0027});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedNum(transform.zoom, 3)).toEqual(6.071);
         });
 
@@ -326,7 +330,9 @@ describe('Map#cameraParams', () => {
             expect(map.transform.projection.name).toEqual("mercator");
 
             transform = map.cameraForBounds(bb);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 34.716});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedNum(transform.zoom, 3)).toEqual(0.75);
 
             map.setZoom(0);
@@ -335,7 +341,9 @@ describe('Map#cameraParams', () => {
             expect(map.transform.projection.name).toEqual("globe");
 
             transform = map.cameraForBounds(bb);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(transform.center, 4)).toEqual({lng: -100.5, lat: 34.716});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(fixedNum(transform.zoom, 3)).toEqual(0.75);
         });
     });
@@ -495,13 +503,16 @@ describe('Map#cameraParams', () => {
         function toFixed(bounds) {
             const n = 10;
             return [
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 [normalizeFixed(bounds[0][0], n), normalizeFixed(bounds[0][1], n)],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 [normalizeFixed(bounds[1][0], n), normalizeFixed(bounds[1][1], n)]
             ];
         }
 
         function normalizeFixed(num, n) {
             // workaround for "-0.0000000000" ≠ "0.0000000000"
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return parseFloat(num.toFixed(n)).toFixed(n);
         }
     });
@@ -525,6 +536,7 @@ describe('Map#cameraParams', () => {
             const container = window.document.createElement('div');
             Object.defineProperty(container, 'offsetWidth', {value: 512});
             Object.defineProperty(container, 'offsetHeight', {value: 512});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             return createMap({skipCSSStub, container, bounds, fitBoundsOptions});
         };
 
@@ -570,7 +582,9 @@ describe('Map#cameraParams', () => {
         function toFixed(bounds) {
             const n = 9;
             return [
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
             ];
         }

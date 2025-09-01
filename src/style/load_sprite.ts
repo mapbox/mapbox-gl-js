@@ -36,16 +36,22 @@ export default function (
 
     function maybeComplete() {
         if (error) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             callback(error);
         } else if (json && image) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const imageData = browser.getImageData(image);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const result: Record<string, any> = {};
 
             for (const id in json) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const {width, height, x, y, sdf, pixelRatio, stretchX, stretchY, content} = json[id];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const data = new RGBAImage({width, height});
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 RGBAImage.copy(imageData, data, {x, y}, {x: 0, y: 0}, {width, height}, null);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 result[id] = {data, pixelRatio, sdf, stretchX, stretchY, content, usvg: false};
             }
 

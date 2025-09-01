@@ -5,6 +5,7 @@ import http from 'http';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function formatLog(req, res) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     return `[${res.statusCode} ${res.statusMessage}] ${req.method.toUpperCase()} ${req.url}`;
 }
 
@@ -74,6 +75,7 @@ http.createServer((req, res) => {
             } else if (start !== undefined) {
                 retrievedLength = contentLength - start;
             } else if (end !== undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 retrievedLength = (end + 1);
             } else {
                 retrievedLength = contentLength;
@@ -81,9 +83,11 @@ http.createServer((req, res) => {
 
             res.statusCode = start !== undefined || end !== undefined ? 206 : 200;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             retrievedLength = Math.min(retrievedLength, contentLength);
             res.setHeader("content-length", retrievedLength);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             end = Math.min(end, contentLength);
 
             if (range !== undefined) {

@@ -85,10 +85,14 @@ class ClipBucket implements Bucket {
         }
 
         for (const bucketFeature of bucketFeatures) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const {geometry, index, sourceLayerIndex} = bucketFeature;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.addFeature(bucketFeature, geometry, index, canonical, {}, options.availableImages, options.brightness);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const feature = features[index].feature;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }
@@ -140,12 +144,16 @@ class ClipBucket implements Bucket {
                 }
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const indices = earcut(flattened, holeIndices);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             assert(indices.length % 3 === 0);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const grid = new TriangleGridIndex(points, indices, 8, 256);
             this.footprints.push({
                 vertices: points,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 indices,
                 grid,
                 min,

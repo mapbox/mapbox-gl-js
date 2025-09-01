@@ -64,6 +64,7 @@ describe('polygon clipping', () => {
     test('no clip', () => {
         const outerBoxRing = [new Point(-5, -5), new Point(-5, 5), new Point(5, 5), new Point(5, -5), new Point(-5, -5)];
         const bounds = [new Point(-10, -10), new Point(10, 10)];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         let clippedPolygons = gridSubdivision(convertToCollection([outerBoxRing]), bounds, 1, 1);
 
         expect(clippedPolygons.length).toEqual(1);
@@ -72,6 +73,7 @@ describe('polygon clipping', () => {
         expect(outerBoxRing).toEqual(clippedPolygons[0].polygon[0]);
 
         const innerBoxRing = [new Point(-2, -2), new Point(-2, 2), new Point(2, 2), new Point(2, -2), new Point(-2, -2)];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         clippedPolygons = gridSubdivision(convertToCollection([outerBoxRing, innerBoxRing]), bounds, 1, 1);
 
         expect(1).toEqual(clippedPolygons.length);
@@ -85,6 +87,7 @@ describe('polygon clipping', () => {
         const boxRing = [new Point(-5, -5), new Point(-5, 5), new Point(5, 5), new Point(5, -5), new Point(-5, -5)];
         const bounds = [new Point(10, 0), new Point(20, 10)];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const clippedPolygons = gridSubdivision(convertToCollection([boxRing]), bounds, 1, 1);
 
         expect(0).toEqual(clippedPolygons.length);
@@ -94,6 +97,7 @@ describe('polygon clipping', () => {
         const boxRing = [new Point(1, 1), new Point(5, 1), new Point(5, 5), new Point(1, 5), new Point(1, 1)];
         const bounds = [new Point(-5, -5), new Point(5, 5)];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const clippedPolygons = gridSubdivision(convertToCollection([boxRing]), bounds, 2, 2);
 
         const expectedBounds = [new Point(0, 0), new Point(5, 5)];
@@ -107,15 +111,18 @@ describe('polygon clipping', () => {
     test('invalid input', () => {
         // No geometry
         const zeroRing: Array<any> = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         let clippedPolygons = gridSubdivision(convertToCollection([zeroRing]), [new Point(-1, -1), new Point(1, 1)], 2, 2);
         expect(0).toEqual(clippedPolygons.length);
 
         // Invalid bounds
         const boxRing = [new Point(-5, -5), new Point(-5, 5), new Point(5, 5), new Point(5, -5), new Point(-5, -5)];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         clippedPolygons = gridSubdivision(convertToCollection([boxRing]), [new Point(10, 10), new Point(-10, -10)], 2, 2);
         expect(0).toEqual(clippedPolygons.length);
 
         // Invalid grid size
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         clippedPolygons = gridSubdivision(convertToCollection([boxRing]), [new Point(10, 10), new Point(-10, -10)], 1, 0);
         expect(0).toEqual(clippedPolygons.length);
     });
@@ -125,6 +132,7 @@ describe('polygon clipping', () => {
         const innerBox = [new Point(3, 3), new Point(7, 3), new Point(7, 7), new Point(3, 7), new Point(3, 3)];
 
         // 2x2
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const clippedPolygons = gridSubdivision(convertToCollection([outerBox, innerBox]), [new Point(0, 0), new Point(10, 10)], 2, 2);
 
         expect(4).toEqual(clippedPolygons.length);
@@ -169,6 +177,7 @@ describe('polygon clipping', () => {
         const box = [new Point(-5, -5), new Point(-5, 5), new Point(5, 5), new Point(5, -5), new Point(-5, -5)];
 
         // 2x1
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const clippedPolygons = gridSubdivision(convertToCollection([box]), [new Point(-10, -10), new Point(10, 10)], 2, 1);
 
         expect(2).toEqual(clippedPolygons.length);
@@ -189,6 +198,7 @@ describe('polygon clipping', () => {
         const box = [new Point(-5, -5), new Point(-5, 5), new Point(5, 5), new Point(5, -5), new Point(-5, -5)];
 
         // Padding
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const clippedPolygons = gridSubdivision(convertToCollection([box]), [new Point(-2, -2), new Point(2, 2)], 1, 1, 1.0);
 
         expect(1).toEqual(clippedPolygons.length);
@@ -209,6 +219,7 @@ describe('polygon clipping', () => {
             return 0.75 * min + 0.25 * max;
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const clippedPolygons = gridSubdivision(convertToCollection([box]), [new Point(0, 0), new Point(1, 10)], 1, 4, 0, clipFunc);
 
         expect(4).toEqual(clippedPolygons.length);
@@ -230,6 +241,7 @@ describe('polygon clipping, simple polygon clipping', () => {
         expect(result.length).toBe(1);
         expect(result[0].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(3, 2), new Point(5, 2), new Point(5, 3), new Point(3, 3), new Point(3, 2)]);
     });
 
@@ -241,6 +253,7 @@ describe('polygon clipping, simple polygon clipping', () => {
         expect(result.length).toBe(1);
         expect(result[0].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing(clipPoly);
     });
 
@@ -252,6 +265,7 @@ describe('polygon clipping, simple polygon clipping', () => {
         expect(result.length).toBe(1);
         expect(result[0].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing(subject[0]);
     });
 
@@ -271,6 +285,7 @@ describe('polygon clipping, simple polygon clipping', () => {
         expect(result.length).toBe(1);
         expect(result[0].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(3, 5), new Point(5, 5), new Point(5, 6), new Point(3, 6), new Point(3, 5)]);
     });
 });
@@ -291,8 +306,11 @@ describe('polygon clipping, complex polygon clipping', () => {
         expect(result.length).toBe(1);
         expect(result[0].length).toBe(3);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing(exteriorRing);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][1]).toEqualRing(topHole);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][2]).toEqualRing(bottomHole);
     });
 
@@ -304,7 +322,9 @@ describe('polygon clipping, complex polygon clipping', () => {
         expect(result.length).toBe(1);
         expect(result[0].length).toBe(2);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(20, 60), new Point(60, 60), new Point(60, 100), new Point(20, 100), new Point(20, 60)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][1]).toEqualRing(bottomHole);
     });
 
@@ -316,7 +336,9 @@ describe('polygon clipping, complex polygon clipping', () => {
         expect(result.length).toBe(1);
         expect(result[0].length).toBe(2);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(20, 20), new Point(60, 20), new Point(60, 80), new Point(50, 80), new Point(50, 70), new Point(30, 70), new Point(30, 80), new Point(20, 80), new Point(20, 20)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][1]).toEqualRing(topHole);
     });
 
@@ -328,7 +350,9 @@ describe('polygon clipping, complex polygon clipping', () => {
         expect(result.length).toBe(1);
         expect(result[0].length).toBe(2);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing(clipPoly);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][1]).toEqualRing(topHole);
     });
 
@@ -348,6 +372,7 @@ describe('polygon clipping, complex polygon clipping', () => {
         expect(result.length).toBe(1);
         expect(result[0].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(25, 60), new Point(55, 60), new Point(55, 80), new Point(50, 80), new Point(50, 70), new Point(30, 70), new Point(30, 80), new Point(25, 80), new Point(25, 60)]);
     });
 });
@@ -363,7 +388,9 @@ describe('polygon clipping, multiple output', () => {
         expect(result[0].length).toBe(1);
         expect(result[1].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(-20, 10), new Point(-10, 10), new Point(-20, 20), new Point(-20, 10)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[1][0]).toEqualRing([new Point(10, 10), new Point(20, 10), new Point(20, 20), new Point(10, 10)]);
     });
 
@@ -382,9 +409,13 @@ describe('polygon clipping, multiple output', () => {
         expect(result[1].length).toBe(2);
         expect(result[2].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(20, 35), new Point(30, 35), new Point(30, 45), new Point(20, 45), new Point(20, 35)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[1][0]).toEqualRing([new Point(20, 60), new Point(60, 60), new Point(60, 95), new Point(20, 95), new Point(20, 60)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[1][1]).toEqualRing(bottomHole);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[2][0]).toEqualRing([new Point(50, 35), new Point(60, 35), new Point(60, 45), new Point(50, 45), new Point(50, 35)]);
     });
 });
@@ -399,6 +430,7 @@ describe('polygon subdivision', () => {
             [new Point(75, -20), new Point(75, 40)]
         ]);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const result = polygonSubdivision(convertToCollection(subject), edges);
 
         expect(result.length).toBe(4);
@@ -407,9 +439,13 @@ describe('polygon subdivision', () => {
         expect(result[2].length).toBe(1);
         expect(result[3].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(0, 0), new Point(25, 0), new Point(25, 20), new Point(0, 20), new Point(0, 0)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[1][0]).toEqualRing([new Point(25, 0), new Point(40, 0), new Point(60, 20), new Point(25, 20), new Point(25, 0)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[2][0]).toEqualRing([new Point(40, 0), new Point(75, 0), new Point(75, 20), new Point(60, 20), new Point(40, 0)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[3][0]).toEqualRing([new Point(75, 0), new Point(100, 0), new Point(100, 20), new Point(75, 20), new Point(75, 0)]);
     });
 
@@ -430,8 +466,11 @@ describe('polygon subdivision', () => {
         expect(result[1].length).toBe(1);
         expect(result[2].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(10, 10), new Point(40, 10), new Point(40, 20), new Point(30, 20), new Point(30, 40), new Point(40, 40), new Point(40, 50), new Point(10, 50), new Point(10, 10)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[1][0]).toEqualRing([new Point(40, 10), new Point(70, 10), new Point(70, 50), new Point(40, 50), new Point(40, 40), new Point(50, 40), new Point(50, 20), new Point(40, 20), new Point(40, 10)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[2][0]).toEqualRing([new Point(70, 10), new Point(80, 10), new Point(80, 50), new Point(70, 50), new Point(70, 10)]);
     });
 
@@ -451,9 +490,13 @@ describe('polygon subdivision', () => {
         expect(result[0].length).toBe(3);
         expect(result[1].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(10, 10), new Point(17, 10), new Point(17, 20), new Point(10, 20), new Point(10, 10)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][1]).toEqualRing(hole2);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][2]).toEqualRing(hole);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[1][0]).toEqualRing([new Point(17, 10), new Point(20, 10), new Point(20, 20), new Point(17, 20), new Point(17, 10)]);
     });
 
@@ -471,7 +514,9 @@ describe('polygon subdivision', () => {
         expect(result[0].length).toBe(1);
         expect(result[1].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(10, 10), new Point(20, 10), new Point(25, 10), new Point(25, 20), new Point(10, 10)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[1][0]).toEqualRing([new Point(25, 10), new Point(30, 10), new Point(40, 10), new Point(25, 20), new Point(25, 10)]);
     });
 
@@ -502,13 +547,21 @@ describe('polygon subdivision', () => {
         expect(result[6].length).toBe(1);
         expect(result[7].length).toBe(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[0][0]).toEqualRing([new Point(40, 30), new Point(50, 28),  new Point(50, 35), new Point(45, 35), new Point(45, 45), new Point(50, 45), new Point(50, 52), new Point(40, 50), new Point(40, 30)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[1][0]).toEqualRing([new Point(50, 28), new Point(60, 27), new Point(60, 35), new Point(50, 35), new Point(50, 28)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[2][0]).toEqualRing([new Point(50, 45), new Point(60, 45), new Point(60, 53), new Point(50, 52), new Point(50, 45)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[3][0]).toEqualRing([new Point(60, 27), new Point(80, 23), new Point(80, 37), new Point(70, 40), new Point(80, 43), new Point(80, 57), new Point(60, 53), new Point(60, 45), new Point(65, 45), new Point(65, 35), new Point(60, 35), new Point(60, 27)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[4][0]).toEqualRing([new Point(80, 23), new Point(90, 22), new Point(90, 33), new Point(80, 37), new Point(80, 23)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[5][0]).toEqualRing([new Point(80, 43), new Point(90, 47), new Point(90, 58), new Point(80, 57), new Point(80, 43)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[6][0]).toEqualRing([new Point(90, 22), new Point(100, 20), new Point(100, 30), new Point(90, 33), new Point(90, 22)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(result[7][0]).toEqualRing([new Point(90, 47), new Point(100, 50), new Point(100, 60), new Point(90, 58), new Point(90, 47)]);
     });
 });

@@ -18,6 +18,7 @@ export default function validateTerrain(options: TerrainValidatorOptions): Valid
     const key = options.key;
     const style = options.style;
     const styleSpec = options.styleSpec;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const terrainSpec = styleSpec.terrain;
 
     if (terrain == null) {
@@ -33,6 +34,7 @@ export default function validateTerrain(options: TerrainValidatorOptions): Valid
         const transitionMatch = key.match(/^(.*)-transition$/);
         const useThemeMatch = key.match(/^(.*)-use-theme$/);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (useThemeMatch && terrainSpec[useThemeMatch[1]]) {
             errors = errors.concat(validate({
                 key,
@@ -41,18 +43,22 @@ export default function validateTerrain(options: TerrainValidatorOptions): Valid
                 style,
                 styleSpec
             }));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (transitionMatch && terrainSpec[transitionMatch[1]] && terrainSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
                 value: terrain[key],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 valueSpec: styleSpec.transition,
                 style,
                 styleSpec
             }));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (terrainSpec[key]) {
             errors = errors.concat(validate({
                 key,
                 value: terrain[key],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 valueSpec: terrainSpec[key],
                 style,
                 styleSpec

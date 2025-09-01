@@ -12,6 +12,7 @@ test('DoubleClickZoomHandler zooms on dblclick event', () => {
     const zoom = vi.fn();
     map.on('zoomstart', zoom);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.dblclick(map.getCanvas());
     map._renderTaskQueue.run();
 
@@ -30,6 +31,7 @@ test('DoubleClickZoomHandler does not zoom if preventDefault is called on the db
     const zoom = vi.fn();
     map.on('zoomstart', zoom);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.dblclick(map.getCanvas());
     map._renderTaskQueue.run();
 
@@ -81,10 +83,14 @@ test('DoubleClickZoomHandler does not zoom on double tap if touchstart events ar
 
     const simulateTwoDifferentTaps = () => {
         return new Promise(resolve => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.touchstart(canvas, {touches: [constructTouch(canvas, {clientX: 0, clientY: 0})]});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.touchend(canvas);
             setTimeout(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.touchstart(canvas, {touches: [constructTouch(canvas, {clientX: 30.5, clientY: 30.5})]});
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.touchend(canvas);
                 map._renderTaskQueue.run();
                 resolve();
@@ -111,24 +117,33 @@ test('DoubleClickZoomHandler zooms on the second touchend event of a double tap'
     const canvas = map.getCanvas();
     const touchOptions = {touches: [constructTouch(canvas, {target: canvas, clientX: 0.5, clientY: 0.5})]};
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(canvas, touchOptions);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(canvas);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(canvas, touchOptions);
     map._renderTaskQueue.run();
     map._renderTaskQueue.run();
     expect(zoom).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchcancel(canvas);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(canvas);
     map._renderTaskQueue.run();
     expect(zoom).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(canvas, touchOptions);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(canvas);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(canvas, touchOptions);
     map._renderTaskQueue.run();
     expect(zoom).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(canvas);
     map._renderTaskQueue.run();
 
@@ -147,10 +162,14 @@ test('DoubleClickZoomHandler does not zoom on double tap if second touchend is >
 
     const simulateSlowSecondTap = () => {
         return new Promise(resolve => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.touchstart(canvas);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.touchend(canvas);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.touchstart(canvas);
             setTimeout(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.touchend(canvas);
                 map._renderTaskQueue.run();
                 resolve();

@@ -63,11 +63,13 @@ export interface GeoJSONIndex {
 function loadGeoJSONTile(params: WorkerSourceVectorTileRequest, callback: LoadVectorDataCallback): undefined {
     const canonical = params.tileID.canonical;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!this._geoJSONIndex) {
         callback(null, null); // we couldn't load the file
         return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const geoJSONTile = this._geoJSONIndex.getTile(canonical.z, canonical.x, canonical.y);
     if (!geoJSONTile) {
         callback(null, null); // nothing in the given tile
@@ -75,17 +77,24 @@ function loadGeoJSONTile(params: WorkerSourceVectorTileRequest, callback: LoadVe
     }
 
     // HACK: separate elevation features into separate layer
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const isElevationfeature = (f) => f.tags && '3d_elevation_id' in f.tags && 'source' in f.tags && f.tags.source === 'elevation';
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const elevationFeatures = geoJSONTile.features.filter(f => isElevationfeature(f));
 
     let layers: Record<string, Feature[]> = {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         _geojsonTileLayer: geoJSONTile.features
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (elevationFeatures.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const nonElevationFeatures = geoJSONTile.features.filter(f => !isElevationfeature(f));
         layers = {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             _geojsonTileLayer: nonElevationFeatures,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             'hd_road_elevation': elevationFeatures
         };
     }
@@ -184,11 +193,14 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                     }
 
                     this._geoJSONIndex =
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         params.cluster ? new Supercluster(getSuperclusterOptions(params)).load((data as GeoJSON.FeatureCollection).features as Array<GeoJSON.Feature<GeoJSON.Point, object>>) :
                         params.dynamic ? this._dynamicIndex :
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         geojsonvt(data, params.geojsonVtOptions);
 
                 } catch (err) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     return callback(err);
                 }
 
@@ -199,6 +211,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
                     // late evaluation in the main thread causes TypeError: illegal invocation
                     if (resourceTimingData) {
                         result.resourceTiming = {};
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         result.resourceTiming[params.source] = JSON.parse(JSON.stringify(resourceTimingData));
                     }
                 }
@@ -252,6 +265,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             // delay loading by one tick to hopefully let GC clean up the previous index (if present)
             setTimeout(() => {
                 try {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     return callback(null, JSON.parse(params.data));
                 } catch (e) {
                     return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
@@ -268,6 +282,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         try {
             callback(null, this._geoJSONIndex.getClusterExpansionZoom(params.clusterId));
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             callback(e);
         }
     }
@@ -278,6 +293,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         try {
             callback(null, this._geoJSONIndex.getChildren(params.clusterId));
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             callback(e);
         }
     }
@@ -290,6 +306,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         try {
             callback(null, this._geoJSONIndex.getLeaves(params.clusterId, params.limit, params.offset));
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             callback(e);
         }
     }
@@ -308,9 +325,11 @@ function getSuperclusterOptions({
     const reduceExpressions: Record<string, any> = {};
     const globals = {accumulated: null, zoom: 0};
     const feature = {properties: null};
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const propertyNames = Object.keys(clusterProperties);
 
     for (const key of propertyNames) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const [operator, mapExpression] = clusterProperties[key];
 
         const mapExpressionParsed = createExpression(mapExpression);
@@ -324,19 +343,26 @@ function getSuperclusterOptions({
         reduceExpressions[key] = reduceExpressionParsed.value;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     superclusterOptions.map = (pointProperties) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         feature.properties = pointProperties;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const properties: Record<string, any> = {};
         for (const key of propertyNames) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             properties[key] = mapExpressions[key].evaluate(globals, feature);
         }
         return properties;
     };
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     superclusterOptions.reduce = (accumulated, clusterProperties) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         feature.properties = clusterProperties;
         for (const key of propertyNames) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             globals.accumulated = accumulated[key];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             accumulated[key] = reduceExpressions[key].evaluate(globals, feature);
         }
     };

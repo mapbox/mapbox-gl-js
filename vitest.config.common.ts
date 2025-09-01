@@ -40,6 +40,7 @@ export function integrationTests({suiteDirs, includeImages}: {suiteDirs: string[
             if (allRenderTests[testName]) {
                 throw new Error(
                     `Test name conflict: "${testName}" exists in multiple directories: ` +
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     `"${allRenderTests[testName].path}" and "${testData.path}"`
                 );
             }
@@ -68,8 +69,10 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
         configureServer(server) {
             const reportFragmentsMap = new Map<number, string>();
             staticFolders.forEach((folder) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
                 server.middlewares.use(`/${folder}`, serveStatic(resolve(__dirname, `test/integration/${folder}`)));
                 const internalPath = resolve(__dirname, `internal/test/integration/${folder}`);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
                 if (existsSync(internalPath)) server.middlewares.use(`/${folder}`, serveStatic(internalPath));
             });
             server.middlewares.use('/report-html/send-fragment', (req, res) => {
@@ -80,7 +83,9 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
                 });
 
                 return req.on('end', () => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     const {id, data} = JSON.parse(body);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     reportFragmentsMap.set(id, Buffer.from(data, 'base64').toString());
                     res.writeHead(200, {'Content-Type': 'application/json'});
                     res.end(JSON.stringify({status: 'ok'}));
@@ -101,7 +106,9 @@ export function setupIntegrationTestsMiddlewares({reportPath}: {reportPath: stri
 
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             server.middlewares.use('/tilesets', tilesets);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
             server.middlewares.use('/mapbox-gl-styles', serveStatic(resolve(__dirname, 'node_modules/mapbox-gl-styles')));
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
             server.middlewares.use('/mvt-fixtures', serveStatic(resolve(__dirname, 'node_modules/@mapbox/mvt-fixtures')));
         }
     };

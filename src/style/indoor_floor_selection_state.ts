@@ -45,7 +45,9 @@ export default class IndoorFloorSelectionState {
             currentActiveFloors = [selectedFloor, ...connectedFloors];
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const nonConflictedFloors = this._getPreviouslyActiveNonConflictedFloors(currentActiveFloors);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const activeFloors: Array<TargetFeature> = [...currentActiveFloors, ...nonConflictedFloors];
         this._lastActiveFloors = activeFloors;
         return activeFloors;

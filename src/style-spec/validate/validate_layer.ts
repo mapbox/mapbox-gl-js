@@ -63,9 +63,11 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
         if (!parent) {
             if (typeof ref === 'string')
                 errors.push(new ValidationError(key, layer.ref, `ref layer "${ref}" not found`));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (parent.ref) {
             errors.push(new ValidationError(key, layer.ref, 'ref cannot reference another ref layer'));
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             type = unbundle(parent.type) as string;
         }
     } else if (!(type === 'background' || type === 'sky' || type === 'slot')) {
@@ -100,6 +102,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
     errors = errors.concat(validateObject({
         key,
         value: layer,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec: styleSpec.layer,
         style: options.style,
         styleSpec: options.styleSpec,
@@ -113,6 +116,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                 return validateSpec({
                     key: `${key}.type`,
                     value: layer.type,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     valueSpec: styleSpec.layer.type,
                     style: options.style,
                     styleSpec: options.styleSpec,

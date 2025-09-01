@@ -17,8 +17,10 @@ test('KeyboardHandler responds to keydown events', () => {
     const h = map.keyboard;
     vi.spyOn(h, 'keydown');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 32, key: " "});
     expect(h.keydown).toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(h.keydown.mock.calls[0][0].keyCode).toEqual(32);
 });
 
@@ -26,31 +28,48 @@ test('KeyboardHandler pans map in response to arrow keys', () => {
     const map = createMap({zoom: 10, center: [0, 0]});
     vi.spyOn(map, 'easeTo');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 32, key: " "});
     expect(map.easeTo).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 37, key: "ArrowLeft"});
     expect(map.easeTo).toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     let easeToArgs = map.easeTo.mock.calls[0][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(100);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(-0);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 39, key: "ArrowRight"});
     expect(map.easeTo).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     easeToArgs = map.easeTo.mock.calls[1][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(-100);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(-0);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 40, key: "ArrowDown"});
     expect(map.easeTo).toHaveBeenCalledTimes(3);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     easeToArgs = map.easeTo.mock.calls[2][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(-0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(-100);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 38, key: "ArrowUp"});
     expect(map.easeTo).toHaveBeenCalledTimes(4);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     easeToArgs = map.easeTo.mock.calls[3][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(-0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(100);
 });
 
@@ -59,31 +78,48 @@ test('KeyboardHandler pans map in response to arrow keys when disableRotation ha
     vi.spyOn(map, 'easeTo');
     map.keyboard.disableRotation();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 32, key: " "});
     expect(map.easeTo).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 37, key: "ArrowLeft"});
     expect(map.easeTo).toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     let easeToArgs = map.easeTo.mock.calls[0][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(100);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(-0);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 39, key: "ArrowRight"});
     expect(map.easeTo).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     easeToArgs = map.easeTo.mock.calls[1][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(-100);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(-0);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 40, key: "ArrowDown"});
     expect(map.easeTo).toHaveBeenCalledTimes(3);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     easeToArgs = map.easeTo.mock.calls[2][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(-0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(-100);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 38, key: "ArrowUp"});
     expect(map.easeTo).toHaveBeenCalledTimes(4);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     easeToArgs = map.easeTo.mock.calls[3][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(-0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(100);
 });
 
@@ -92,20 +128,29 @@ test('KeyboardHandler rotates map in response to Shift+left/right arrow keys', a
     const map = createMap({zoom: 10, center: [0, 0], bearing: 0});
     vi.spyOn(map, 'easeTo');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 32, key: " "});
     expect(map.easeTo).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 37, key: "ArrowLeft", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     let easeToArgs = map.easeTo.mock.calls[0][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.bearing).toEqual(-15);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(-0);
 
     map.setBearing(0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 39, key: "ArrowRight", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     easeToArgs = map.easeTo.mock.calls[1][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.bearing).toEqual(15);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(-0);
 });
 
@@ -115,20 +160,29 @@ test('KeyboardHandler does not rotate map in response to Shift+left/right arrow 
     vi.spyOn(map, 'easeTo');
     map.keyboard.disableRotation();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 32, key: " "});
     expect(map.easeTo).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 37, key: "ArrowLeft", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     let easeToArgs = map.easeTo.mock.calls[0][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.bearing).toEqual(0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(-0);
 
     map.setBearing(0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 39, key: "ArrowRight", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     easeToArgs = map.easeTo.mock.calls[1][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.bearing).toEqual(0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[0]).toEqual(-0);
 });
 
@@ -137,20 +191,29 @@ test('KeyboardHandler pitches map in response to Shift+up/down arrow keys', asyn
     const map = createMap({zoom: 10, center: [0, 0], pitch: 30});
     vi.spyOn(map, 'easeTo');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 32, key: " "});
     expect(map.easeTo).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 40, key: "ArrowDown", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     let easeToArgs = map.easeTo.mock.calls[0][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.pitch).toEqual(20);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(-0);
 
     map.setPitch(30);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 38, key: "ArrowUp", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     easeToArgs = map.easeTo.mock.calls[1][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.pitch).toEqual(40);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(-0);
 });
 
@@ -160,20 +223,29 @@ test('KeyboardHandler does not pitch map in response to Shift+up/down arrow keys
     vi.spyOn(map, 'easeTo');
     map.keyboard.disableRotation();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 32, key: " "});
     expect(map.easeTo).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 40, key: "ArrowDown", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     let easeToArgs = map.easeTo.mock.calls[0][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.pitch).toEqual(30);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(-0);
 
     map.setPitch(30);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 38, key: "ArrowUp", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     easeToArgs = map.easeTo.mock.calls[1][0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.pitch).toEqual(30);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(easeToArgs.offset[1]).toEqual(-0);
 });
 
@@ -181,23 +253,31 @@ test('KeyboardHandler zooms map in response to -/+ keys', () => {
     const map = createMap({zoom: 10, center: [0, 0]});
     vi.spyOn(map, 'easeTo');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 187, key: "Equal"});
     expect(map.easeTo).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(map.easeTo.mock.calls[0][0].zoom).toEqual(11);
 
     map.setZoom(10);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 187, key: "Equal", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(map.easeTo.mock.calls[1][0].zoom).toEqual(12);
 
     map.setZoom(10);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 189, key: "Minus"});
     expect(map.easeTo).toHaveBeenCalledTimes(3);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(map.easeTo.mock.calls[2][0].zoom).toEqual(9);
 
     map.setZoom(10);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 189, key: "Minus", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalledTimes(4);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(map.easeTo.mock.calls[3][0].zoom).toEqual(8);
 });
 
@@ -206,22 +286,30 @@ test('KeyboardHandler zooms map in response to -/+ keys when disableRotation has
     vi.spyOn(map, 'easeTo');
     map.keyboard.disableRotation();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 187, key: "Equal"});
     expect(map.easeTo).toHaveBeenCalledTimes(1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(map.easeTo.mock.calls[0][0].zoom).toEqual(11);
 
     map.setZoom(10);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 187, key: "Equal", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalledTimes(2);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(map.easeTo.mock.calls[1][0].zoom).toEqual(12);
 
     map.setZoom(10);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 189, key: "Minus"});
     expect(map.easeTo).toHaveBeenCalledTimes(3);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(map.easeTo.mock.calls[2][0].zoom).toEqual(9);
 
     map.setZoom(10);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.keydown(map.getCanvas(), {keyCode: 189, key: "Minus", shiftKey: true});
     expect(map.easeTo).toHaveBeenCalledTimes(4);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(map.easeTo.mock.calls[3][0].zoom).toEqual(8);
 });

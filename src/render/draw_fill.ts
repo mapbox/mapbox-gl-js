@@ -346,6 +346,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
 
     const patternProperty = layer.paint.get('fill-pattern');
     const patternTransition = layer.paint.get('fill-pattern-cross-fade');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const constantPattern = patternProperty.constantOr(null);
 
     let activeElevationType = elevationType;
@@ -417,6 +418,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
             let transitionableConstantPattern = false;
             if (constantPattern && tile.imageAtlas) {
                 const atlas = tile.imageAtlas;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const pattern = ResolvedImage.from(constantPattern);
                 const primaryPatternImage = pattern.getPrimary().scaleSelf(browser.devicePixelRatio).toString();
                 const secondaryPatternImageVariant = pattern.getSecondary();
@@ -466,8 +468,10 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
                 activeDepthMode = depthModeFor3D;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             program.draw(painter, drawMode, activeDepthMode,
                 stencilModeOverride ? stencilModeOverride : painter.stencilModeForClipping(coord), colorMode, CullFaceMode.disabled, uniformValues,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 layer.id, bufferData.layoutVertexBuffer, indexBuffer, segments,
                 layer.paint, painter.transform.zoom, programConfiguration, dynamicBuffers);
         }

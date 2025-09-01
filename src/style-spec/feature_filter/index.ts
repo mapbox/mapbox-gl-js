@@ -98,6 +98,7 @@ function createFilter(filter?: FilterSpecification, scope: string = "", options:
 
     let staticFilter = true;
     try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         staticFilter = extractStaticFilter(filterExp);
     } catch (e) {
         console.warn(
@@ -114,8 +115,10 @@ ${JSON.stringify(filterExp, null, 2)}
     let filterFunc = null;
     let filterSpec = null;
     if (layerType !== 'background' && layerType !== 'sky' && layerType !== 'slot') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         filterSpec = latest[`filter_${layerType}`];
         assert(filterSpec);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const compiledStaticFilter = createExpression(staticFilter, filterSpec, scope, options);
 
         if (compiledStaticFilter.result === 'error') {
@@ -131,6 +134,7 @@ ${JSON.stringify(filterExp, null, 2)}
     let dynamicFilterFunc = null;
     let needFeature = null;
     if (staticFilter !== filterExp) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const compiledDynamicFilter = createExpression(filterExp, filterSpec, scope, options);
 
         if (compiledDynamicFilter.result === 'error') {
@@ -146,7 +150,9 @@ ${JSON.stringify(filterExp, null, 2)}
     const needGeometry = geometryNeeded(staticFilter);
 
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         filter: filterFunc,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         dynamicFilter: dynamicFilterFunc ? dynamicFilterFunc : undefined,
         needGeometry,
         needFeature: !!needFeature
@@ -177,11 +183,12 @@ function collapseDynamicBooleanExpressions(expression: any): any {
         return expression;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const collapsed = collapsedExpression(expression);
     if (collapsed === true) {
         return collapsed;
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         return collapsed.map((subExpression) => collapseDynamicBooleanExpressions(subExpression));
     }
 }
@@ -200,35 +207,53 @@ function unionDynamicBranches(filter: any) {
     let isBranchingDynamically = false;
     const branches = [];
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (filter[0] === 'case') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (let i = 1; i < filter.length - 1; i += 2) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[i]);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             branches.push(filter[i + 1]);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         branches.push(filter[filter.length - 1]);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     } else if (filter[0] === 'match') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[1]);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (let i = 2; i < filter.length - 1; i += 2) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             branches.push(filter[i + 1]);
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         branches.push(filter[filter.length - 1]);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     } else if (filter[0] === 'step') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         isBranchingDynamically = isBranchingDynamically || isDynamicFilter(filter[1]);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (let i = 1; i < filter.length - 1; i += 2) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             branches.push(filter[i + 1]);
         }
     }
 
     if (isBranchingDynamically) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         filter.length = 0;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         filter.push('any', ...branches);
     }
 
     // traverse and recurse into children
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     for (let i = 1; i < filter.length; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         unionDynamicBranches(filter[i]);
     }
 }
@@ -239,11 +264,13 @@ function isDynamicFilter(filter: any): boolean {
     if (!Array.isArray(filter)) {
         return false;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (isRootExpressionDynamic(filter[0])) {
         return true;
     }
 
     for (let i = 1; i < filter.length; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const child = filter[i];
         if (isDynamicFilter(child)) {
             return true;
@@ -271,9 +298,12 @@ const dynamicConditionExpressions = new Set([
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function collapsedExpression(expression: any): any {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     if (dynamicConditionExpressions.has(expression[0])) {
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (let i = 1; i < expression.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const param = expression[i];
             if (isDynamicFilter(param)) {
                 return true;
@@ -293,6 +323,7 @@ function geometryNeeded(filter: Array<any> | boolean) {
     if (!Array.isArray(filter)) return false;
     if (filter[0] === 'within' || filter[0] === 'distance') return true;
     for (let index = 1; index < filter.length; index++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (geometryNeeded(filter[index])) return true;
     }
     return false;
@@ -301,23 +332,32 @@ function geometryNeeded(filter: Array<any> | boolean) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertFilter(filter?: Array<any> | null): unknown {
     if (!filter) return true;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const op = filter[0];
     if (filter.length <= 1) return (op !== 'any');
     const converted =
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         op === '==' ? convertComparisonOp(filter[1], filter[2], '==') :
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         op === '!=' ? convertNegation(convertComparisonOp(filter[1], filter[2], '==')) :
         op === '<' ||
         op === '>' ||
         op === '<=' ||
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         op === '>=' ? convertComparisonOp(filter[1], filter[2], op) :
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         op === 'any' ? convertDisjunctionOp(filter.slice(1)) :
         // @ts-expect-error - TS2769 - No overload matches this call.
         op === 'all' ? ['all'].concat(filter.slice(1).map(convertFilter)) :
         // @ts-expect-error - TS2769 - No overload matches this call.
         op === 'none' ? ['all'].concat(filter.slice(1).map(convertFilter).map(convertNegation)) :
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         op === 'in' ? convertInOp(filter[1], filter.slice(2)) :
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         op === '!in' ? convertNegation(convertInOp(filter[1], filter.slice(2))) :
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         op === 'has' ? convertHasOp(filter[1]) :
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         op === '!has' ? convertNegation(convertHasOp(filter[1])) :
         true;
     return converted;

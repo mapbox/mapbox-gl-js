@@ -30,7 +30,9 @@ class Terrain extends Evented {
         super();
         this.scope = scope;
         this._transitionable = new Transitionable(new Properties({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             "source": new DataConstantProperty(styleSpec.terrain.source),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             "exaggeration": new DataConstantProperty(styleSpec.terrain.exaggeration),
         }), scope, configOptions);
         // @ts-expect-error - TS2345 - Argument of type 'TerrainSpecification' is not assignable to parameter of type 'PropertyValueSpecifications<Props>'.
@@ -92,6 +94,7 @@ class Terrain extends Evented {
         let theLastExaggeration = 1.0;
         const zeroExaggerationCutoff = 0.01; // ~0 exaggeration
         for (const zoom of expression.zoomStops) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             theLastExaggeration = expression.evaluate(new EvaluationParameters(zoom, {worldview: this.worldview}));
             if (theLastExaggeration > zeroExaggerationCutoff) {
                 zoomBeforeDrop = zoom;

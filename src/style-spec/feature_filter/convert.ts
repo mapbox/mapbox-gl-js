@@ -81,29 +81,37 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
         op === '>='
     ) {
         const [, property, value] = filter;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         converted = convertComparisonOp(property, value, op, expectedTypes);
     } else if (op === 'any') {
         const children = filter.slice(1).map(f => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const types: Record<string, any> = {};
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const child = _convertFilter(f, types);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const typechecks = runtimeTypeChecks(types);
             return typechecks === true ? child : ['case', typechecks, child, false];
         }) as ExpressionSpecification;
         return ['any'].concat(children);
     } else if (op === 'all') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
         const children: any[] = (filter).slice(1).map(f => _convertFilter(f, expectedTypes));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return children.length > 1 ? ['all'].concat(children) : [].concat(...children);
     } else if (op === 'none') {
         return ['!', _convertFilter(['any'].concat((filter).slice(1)), {})];
     } else if (op === 'in') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         converted = convertInOp((filter[1]), filter.slice(2));
     } else if (op === '!in') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         converted = convertInOp((filter[1]), filter.slice(2), true);
     } else if (op === 'has') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         converted = convertHasOp((filter[1]));
     } else if (op === '!has') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         converted = ['!', convertHasOp((filter[1]))];
     } else {
         converted = true;

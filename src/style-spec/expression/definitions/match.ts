@@ -66,6 +66,7 @@ class Match implements Expression {
 
                 } else if (!inputType) {
                     inputType = typeOf(label);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 } else if (labelContext.checkSubtype(inputType, typeOf(label))) {
                     return null;
                 }
@@ -91,16 +92,20 @@ class Match implements Expression {
 
         assert(inputType && outputType);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (input.type.kind !== 'value' && context.concat(1).checkSubtype((inputType), input.type)) {
             return null;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Match(inputType, outputType, input, cases, outputs, otherwise);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const input = (this.input.evaluate(ctx));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         const output = (typeEquals(typeOf(input), this.inputType) && this.outputs[this.cases[input]]) || this.otherwise;
         return output.evaluate(ctx);
     }

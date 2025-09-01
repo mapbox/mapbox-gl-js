@@ -177,6 +177,7 @@ class RasterArrayTile extends Tile implements Tile {
 
                 callback(null, (this.entireBuffer || dataBuffer), cacheControl, expires);
             } catch (error) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 callback(error);
             }
         });

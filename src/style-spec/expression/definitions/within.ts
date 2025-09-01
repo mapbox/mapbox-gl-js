@@ -144,6 +144,7 @@ function getTileLines(geometry: Array<Array<Point>> | null | undefined, lineBBox
             updateBBox(lineBBox, p);
             tileLine.push(p);
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tileLines.push(tileLine);
     }
     if (lineBBox[2] - lineBBox[0] <= worldSize / 2) {

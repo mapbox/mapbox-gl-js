@@ -19,10 +19,12 @@ test('MousePitchHandler#pitchRotateKey', () => {
     vi.spyOn(browser, 'now').mockImplementation(() => 0);
     expect(mousePitch._lastPoint).toBeUndefined();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {button: 0, ctrlKey: true});
     map._renderTaskQueue.run();
     expect(mousePitch._lastPoint).toBeUndefined();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {button: 0, metaKey: true});
     map._renderTaskQueue.run();
     expect(mousePitch._lastPoint).toBeDefined();

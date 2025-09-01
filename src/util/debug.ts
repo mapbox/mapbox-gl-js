@@ -116,16 +116,19 @@ export const Debug: {
 
         for (let i = 0; i <  tileCount; i++) {
             // @ts-expect-error - TS2345 - Argument of type '(ecef: any) => vec3' is not assignable to parameter of type '((value: number, index: number, array: Float32Array) => number) & ((value: number, index: number, array: number[]) => vec3)'.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const pixelCorners = Debug.aabbCorners[i].map(ecef => {
                 // Clipping to prevent visual artifacts.
                 // We don't draw any lines if one of their points is behind the camera.
                 // This means that AABBs close to the camera may appear to be missing.
                 // (A more correct algorithm would shorten the line segments instead of removing them entirely.)
                 // Full AABBs can be viewed by enabling `map.transform.freezeTileCoverage` and panning.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const cameraPos = vec3.transformMat4([], ecef, ecefToCameraMatrix);
 
                 if (cameraPos[2] > 0) { return null; }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return vec3.transformMat4([], ecef, ecefToPixelMatrix);
             });
             ctx.strokeStyle = `hsl(${360 * i / tileCount}, 100%, 50%)`;

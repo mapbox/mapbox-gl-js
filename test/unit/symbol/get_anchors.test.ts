@@ -29,6 +29,7 @@ describe('getAnchors', () => {
     const glyphSize = 0.1;
 
     test('non-continued line with short labels', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const anchors = getAnchors(nonContinuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
         expect(anchors).toEqual([
@@ -42,6 +43,7 @@ describe('getAnchors', () => {
     });
 
     test('non-continued line with long labels', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const anchors = getAnchors(nonContinuedLine, smallSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
         expect(anchors).toEqual([
@@ -51,6 +53,7 @@ describe('getAnchors', () => {
     });
 
     test('continued line with short labels', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const anchors = getAnchors(continuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
         expect(anchors).toEqual([
@@ -60,6 +63,7 @@ describe('getAnchors', () => {
     });
 
     test('continued line with long labels', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const anchors = getAnchors(continuedLine, smallSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
         expect(anchors).toEqual([
@@ -69,7 +73,9 @@ describe('getAnchors', () => {
     });
 
     test('overscaled anchors contain all anchors in parent', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const anchors = getAnchors(nonContinuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const childAnchors = getAnchors(nonContinuedLine, bigSpacing / 2, Math.PI, shapedText, shapedIcon, glyphSize, 0.5, 2, TILE_EXTENT);
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];

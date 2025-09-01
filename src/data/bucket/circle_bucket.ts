@@ -117,7 +117,9 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
             if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom, {worldview: this.worldview}), evaluationFeature, canonical))
                 continue;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const sortKey = circleSortKey ?
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 circleSortKey.evaluate(evaluationFeature, {}, canonical) :
                 undefined;
 
@@ -129,6 +131,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
                 index,
                 geometry: needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform),
                 patterns: {},
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 sortKey
             };
 
@@ -139,6 +142,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
         if (circleSortKey) {
             bucketFeatures.sort((a, b) => {
                 // a.sortKey is always a number when in use
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 return (a.sortKey as number) - (b.sortKey as number);
             });
         }
@@ -152,10 +156,14 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
         }
 
         for (const bucketFeature of bucketFeatures) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const {geometry, index, sourceLayerIndex} = bucketFeature;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const feature = features[index].feature;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.addFeature(bucketFeature, geometry, index, options.availableImages, canonical, globeProjection, options.brightness, options.elevationFeatures);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
 

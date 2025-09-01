@@ -26,7 +26,9 @@ import type {Mesh, ModelNode, Material, MaterialDescription, ModelTexture, Sampl
 function convertTextures(gltf: any, images: Array<TextureImage>): Array<ModelTexture> {
     const textures: ModelTexture[] = [];
     const gl = WebGL2RenderingContext;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (gltf.json.textures) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (const textureDesc of gltf.json.textures) {
             const sampler: Sampler = {
                 magFilter: gl.LINEAR,
@@ -34,8 +36,10 @@ function convertTextures(gltf: any, images: Array<TextureImage>): Array<ModelTex
                 wrapS: gl.REPEAT,
                 wrapT: gl.REPEAT
             };
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (textureDesc.sampler !== undefined) Object.assign(sampler, gltf.json.samplers[textureDesc.sampler]);
             textures.push({
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 image: images[textureDesc.source],
                 sampler,
                 uploaded: false
@@ -95,6 +99,7 @@ function convertMaterial(materialDesc: MaterialDescription, textures: Array<Mode
 function computeCentroid(indexArray: ArrayBufferView, vertexArray: ArrayBufferView): vec3 {
     const out: [number, number, number] = [0.0, 0.0, 0.0];
     // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'ArrayBufferView'.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const indexSize = indexArray.length;
     if (indexSize > 0) {
         for (let i = 0; i < indexSize; i++) {
@@ -127,38 +132,55 @@ function getNormalizedScale(arrayType: Class<ArrayBufferView>) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getBufferData(gltf: any, accessor: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const bufferView = gltf.json.bufferViews[accessor.bufferView];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const buffer = gltf.buffers[bufferView.buffer];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const offset = (accessor.byteOffset || 0) + (bufferView.byteOffset || 0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
     // @ts-expect-error - TS2339 - Property 'BYTES_PER_ELEMENT' does not exist on type 'Class<ArrayBufferView>'.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const itemBytes = GLTF_COMPONENTS[accessor.type] * ArrayType.BYTES_PER_ELEMENT;
     // @ts-expect-error - TS2339 - Property 'BYTES_PER_ELEMENT' does not exist on type 'Class<ArrayBufferView>'.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const stride = (bufferView.byteStride && bufferView.byteStride !== itemBytes) ? bufferView.byteStride / ArrayType.BYTES_PER_ELEMENT : GLTF_COMPONENTS[accessor.type];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const bufferData = new ArrayType(buffer, offset, accessor.count * stride);
     return bufferData;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setArrayData(gltf: any, accessor: any, array: any, buffer: ArrayBufferView) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
     const norm = getNormalizedScale(ArrayType);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const bufferView = gltf.json.bufferViews[accessor.bufferView];
     // @ts-expect-error - TS2339 - Property 'BYTES_PER_ELEMENT' does not exist on type 'Class<ArrayBufferView>'.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const numElements = bufferView.byteStride ? bufferView.byteStride / ArrayType.BYTES_PER_ELEMENT : GLTF_COMPONENTS[accessor.type];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const float32Array = (array).float32;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const components = float32Array.length / array.capacity;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     for (let i = 0, count = 0;  i < accessor.count * numElements; i += numElements, count += components) {
         for (let j = 0; j < components; j++) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             float32Array[count + j] = buffer[i + j] * norm;
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     array._trim();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertPrimitive(primitive: any, gltf: any, textures: Array<ModelTexture>): Mesh {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const indicesIdx = primitive.indices;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const attributeMap = primitive.attributes;
 
     // @ts-expect-error - TS2740 - Type '{}' is missing the following properties from type 'Mesh': indexArray, indexBuffer, vertexArray, vertexBuffer, and 14 more.
@@ -169,73 +191,99 @@ function convertPrimitive(primitive: any, gltf: any, textures: Array<ModelTextur
     mesh.indexArray = new TriangleIndexArray();
     // eslint-disable-next-line no-warning-comments
     // TODO: There might be no need to copy element by element to mesh.indexArray.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const indexAccessor = gltf.json.accessors[indicesIdx];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const numTriangles = indexAccessor.count / 3;
     mesh.indexArray.reserve(numTriangles);
     const indexArrayBuffer = getBufferData(gltf, indexAccessor);
     for (let i = 0; i < numTriangles; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         mesh.indexArray.emplaceBack(indexArrayBuffer[i * 3], indexArrayBuffer[i * 3 + 1], indexArrayBuffer[i * 3 + 2]);
     }
     mesh.indexArray._trim();
     // vertices
     mesh.vertexArray = new ModelLayoutArray();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const positionAccessor = gltf.json.accessors[attributeMap.POSITION];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     mesh.vertexArray.reserve(positionAccessor.count);
     const vertexArrayBuffer = getBufferData(gltf, positionAccessor);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     for (let i = 0; i < positionAccessor.count; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         mesh.vertexArray.emplaceBack(vertexArrayBuffer[i * 3], vertexArrayBuffer[i * 3 + 1], vertexArrayBuffer[i * 3 + 2]);
     }
     mesh.vertexArray._trim();
     // bounding box
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     mesh.aabb = new Aabb(positionAccessor.min, positionAccessor.max);
     mesh.centroid = computeCentroid(indexArrayBuffer, vertexArrayBuffer);
 
     // colors
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (attributeMap.COLOR_0 !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const colorAccessor = gltf.json.accessors[attributeMap.COLOR_0];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const numElements = GLTF_COMPONENTS[colorAccessor.type];
         const colorArrayBuffer = getBufferData(gltf, colorAccessor);
         mesh.colorArray = numElements === 3 ? new Color3fLayoutArray() : new Color4fLayoutArray();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         mesh.colorArray.resize(colorAccessor.count);
         setArrayData(gltf, colorAccessor, mesh.colorArray, colorArrayBuffer);
     }
 
     // normals
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (attributeMap.NORMAL !== undefined) {
         mesh.normalArray = new NormalLayoutArray();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const normalAccessor = gltf.json.accessors[attributeMap.NORMAL];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         mesh.normalArray.resize(normalAccessor.count);
         const normalArrayBuffer = getBufferData(gltf, normalAccessor);
         setArrayData(gltf, normalAccessor, mesh.normalArray, normalArrayBuffer);
     }
 
     // texcoord
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (attributeMap.TEXCOORD_0 !== undefined && textures.length > 0) {
         mesh.texcoordArray = new TexcoordLayoutArray();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const texcoordAccessor = gltf.json.accessors[attributeMap.TEXCOORD_0];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         mesh.texcoordArray.resize(texcoordAccessor.count);
         const texcoordArrayBuffer = getBufferData(gltf, texcoordAccessor);
         setArrayData(gltf, texcoordAccessor, mesh.texcoordArray, texcoordArrayBuffer);
     }
 
     // V2 tiles
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (attributeMap._FEATURE_ID_RGBA4444 !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const featureAccesor = gltf.json.accessors[attributeMap._FEATURE_ID_RGBA4444];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         if (gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression')) {
             mesh.featureData = getBufferData(gltf, featureAccesor);
         }
     }
 
     // V1 tiles
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (attributeMap._FEATURE_RGBA4444 !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const featureAccesor = gltf.json.accessors[attributeMap._FEATURE_RGBA4444];
         mesh.featureData = new Uint32Array(getBufferData(gltf, featureAccesor).buffer);
     }
 
     // Material
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const materialIdx = primitive.material;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const materialDesc = materialIdx !== undefined ? gltf.json.materials[materialIdx] : {defined: false};
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mesh.material = convertMaterial(materialDesc, textures);
 
     return mesh;
@@ -244,8 +292,10 @@ function convertPrimitive(primitive: any, gltf: any, textures: Array<ModelTextur
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertMeshes(gltf: any, textures: Array<ModelTexture>): Array<Array<Mesh>> {
     const meshes: Mesh[][] = [];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     for (const meshDesc of gltf.json.meshes) {
         const primitives: Mesh[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (const primitive of meshDesc.primitives) {
             primitives.push(convertPrimitive(primitive, gltf, textures));
         }
@@ -256,10 +306,13 @@ function convertMeshes(gltf: any, textures: Array<ModelTexture>): Array<Array<Me
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): ModelNode {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const {matrix, rotation, translation, scale, mesh, extras, children} = nodeDesc;
     const node = {} as ModelNode;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
     node.matrix = matrix || mat4.fromRotationTranslationScale([], rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
     if (mesh !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         node.meshes = meshes[mesh];
         const anchor: vec2 = node.anchor = [0, 0];
         for (const mesh of node.meshes) {
@@ -271,16 +324,21 @@ function convertNode(nodeDesc: any, gltf: any, meshes: Array<Array<Mesh>>): Mode
         anchor[1] = Math.floor(anchor[1] / node.meshes.length / 2);
     }
     if (extras) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (extras.id) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             node.id = extras.id;
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (extras.lights) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             node.lights = decodeLights(extras.lights);
         }
     }
     if (children) {
         const converted: ModelNode[] = [];
         for (const childNodeIdx of children) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             converted.push(convertNode(gltf.json.nodes[childNodeIdx], gltf, meshes));
         }
         node.children = converted;
@@ -316,15 +374,18 @@ function convertFootprint(mesh: FootprintMesh): Footprint | null | undefined {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseLegacyFootprintMesh(gltfNode: any): FootprintMesh | null | undefined {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!gltfNode.extras || !gltfNode.extras.ground) {
         return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const groundContainer = gltfNode.extras.ground;
     if (!groundContainer || !Array.isArray(groundContainer) || groundContainer.length === 0) {
         return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const ground = groundContainer[0];
     if (!ground || !Array.isArray(ground) || ground.length === 0) {
         return null;
@@ -338,7 +399,9 @@ function parseLegacyFootprintMesh(gltfNode: any): FootprintMesh | null | undefin
             continue;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const x = point[0];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const y = point[1];
 
         if (typeof x !== "number" || typeof y !== "number") {
@@ -373,12 +436,15 @@ function parseLegacyFootprintMesh(gltfNode: any): FootprintMesh | null | undefin
 
     // Triangulate the footprint and compute grid acceleration structure for
     // more performant intersection queries.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const indices = earcut(vertices.flatMap(v => [v.x, v.y]), []);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (indices.length === 0) {
         return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return {vertices, indices};
 }
 
@@ -400,6 +466,7 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
             tempVertex[1] = vArray[i * 3 + 1];
             tempVertex[2] = vArray[i * 3 + 2];
             vec3.transformMat4(tempVertex, tempVertex, matrix);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             vertices.push(new Point(tempVertex[0], tempVertex[1]));
         }
 
@@ -429,6 +496,7 @@ function parseNodeFootprintMesh(meshes: Array<Mesh>, matrix: mat4): FootprintMes
 function convertFootprints(convertedNodes: Array<ModelNode>, sceneNodes: any, modelNodes: any) {
     // modelNodes == a list of nodes in the gltf file
     // sceneNodes == an index array pointing to modelNodes being parsed
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     assert(convertedNodes.length === sceneNodes.length);
 
     // Two different footprint formats are supported:
@@ -442,13 +510,17 @@ function convertFootprints(convertedNodes: Array<ModelNode>, sceneNodes: any, mo
     const footprintNodeIndices = new Set<number>();
 
     for (let i = 0; i < convertedNodes.length; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const gltfNode = modelNodes[sceneNodes[i]];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!gltfNode.extras) {
             continue;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const fpVersion = gltfNode.extras["mapbox:footprint:version"];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const fpId = gltfNode.extras["mapbox:footprint:id"];
 
         if (fpVersion || fpId) {
@@ -459,6 +531,7 @@ function convertFootprints(convertedNodes: Array<ModelNode>, sceneNodes: any, mo
             continue;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         nodeFootprintLookup[fpId] = i;
     }
 
@@ -469,8 +542,10 @@ function convertFootprints(convertedNodes: Array<ModelNode>, sceneNodes: any, mo
         }
 
         const node = convertedNodes[i];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const gltfNode = modelNodes[sceneNodes[i]];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!gltfNode.extras) {
             continue;
         }
@@ -503,17 +578,22 @@ function convertFootprints(convertedNodes: Array<ModelNode>, sceneNodes: any, mo
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function convertModel(gltf: any): Array<ModelNode> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const textures = convertTextures(gltf, gltf.images);
     const meshes = convertMeshes(gltf, textures);
 
     // select the correct node hierarchy
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const {scenes, scene, nodes} = gltf.json;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const gltfNodes = scenes ? scenes[scene || 0].nodes : nodes;
 
     const resultNodes: ModelNode[] = [];
     for (const nodeIdx of gltfNodes) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         resultNodes.push(convertNode(nodes[nodeIdx], gltf, meshes));
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     convertFootprints(resultNodes, gltfNodes, gltf.json.nodes);
     return resultNodes;
 }

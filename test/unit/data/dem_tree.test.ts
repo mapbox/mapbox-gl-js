@@ -18,24 +18,33 @@ function encodeElevation(elevation) {
 }
 
 function fillElevation(size, padding, value) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const paddedSize = size + padding * 2;
     const result: Array<any> = [];
     for (let i = 0; i < paddedSize * paddedSize; i++)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         result[i] = value;
     return result;
 }
 
 function mockDEMfromElevation(size, padding, elevation) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const paddedSize = size + padding * 2;
     const pixels = new Uint8Array(paddedSize * paddedSize * 4);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     for (let i = 0; i < elevation.length; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const bytes = encodeElevation(elevation[i]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         pixels[i * 4 + 0] = bytes[0];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         pixels[i * 4 + 1] = bytes[1];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         pixels[i * 4 + 2] = bytes[2];
         pixels[i * 4 + 3] = 0;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return new DEMData(0, {width: paddedSize, height: paddedSize, data: pixels});
 }
 
@@ -46,7 +55,9 @@ function idx(x, y, size, padding) {
 describe('DEM mip map generation', () => {
     const leafCount = (mip) => {
         let count = 0;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (let i = 0; i < mip.leaves.length; i++)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             count += mip.leaves[i];
         return count;
     };
@@ -93,6 +104,7 @@ describe('DEM mip map generation', () => {
             const yBlock = Math.floor(y / 8);
             for (let x = 0; x < size; x++) {
                 const xBlock = Math.floor(x / 8);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 elevation[idx(x, y, size, padding)] = (xBlock + yBlock) * 100;
             }
         }
@@ -136,9 +148,13 @@ describe('DEM mip map generation', () => {
         const idx = (x, y) => (y + 1) * (size + 2 * padding) + (x + 1);
 
         // Set elevation values of sampled corner points. (One block is 8x8 texels)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         elevation[idx(0, 0)] = 5;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         elevation[idx(size - 1, 0)] = 1000;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         elevation[idx(0, size - 1)] = 101;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         elevation[idx(size - 1, size - 1)] = 97;
 
         const dem = mockDEMfromElevation(size, 1, elevation);
@@ -215,9 +231,13 @@ describe('DemMinMaxQuadTree', () => {
             const idx = (x, y) => (y + 1) * (size + 2 * padding) + (x + 1);
 
             // Set elevation values of sampled corner points. (One block is 8x8 texels)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             elevation[idx(0, 0)] = 5;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             elevation[idx(size - 1, 0)] = 1000;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             elevation[idx(0, size - 1)] = 101;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             elevation[idx(size - 1, size - 1)] = 97;
 
             const dem = mockDEMfromElevation(size, 1, elevation);
@@ -309,6 +329,7 @@ describe('DemMinMaxQuadTree', () => {
 
             for (let y = 0; y < size; y++) {
                 for (let x = 0; x < size; x++) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     elevation[idx(x, y, size, padding)] = x;
                 }
             }
@@ -363,6 +384,7 @@ describe('DemMinMaxQuadTree', () => {
 
             for (let y = 0; y < size; y++) {
                 for (let x = 0; x < size; x++) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     elevation[idx(x, y, size, padding)] = x;
                 }
             }

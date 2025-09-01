@@ -103,11 +103,13 @@ describe('StyleLayer#setPaintProperty', () => {
         layer.setPaintProperty('fill-outline-color', '#f00');
         layer.updateTransitions({});
         layer.recalculate({zoom: 0});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(layer.paint.get('fill-outline-color').value).toEqual({kind: 'constant', value: new Color(1, 0, 0, 1)});
 
         layer.setPaintProperty('fill-outline-color', undefined);
         layer.updateTransitions({});
         layer.recalculate({zoom: 0});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(layer.paint.get('fill-outline-color').value).toEqual({kind: 'constant', value: new Color(0, 0, 1, 1)});
     });
 
@@ -193,6 +195,7 @@ describe('StyleLayer#setLayoutProperty', () => {
         layer.setLayoutProperty('text-transform', null);
         layer.recalculate({zoom: 0});
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(layer.layout.get('text-transform').value).toEqual({kind: 'constant', value: 'none'});
         expect(layer.getLayoutProperty('text-transform')).toEqual(undefined);
     });
@@ -219,6 +222,7 @@ describe('StyleLayer#serialize', () => {
     }
 
     test('serializes layers', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(createStyleLayer(createSymbolLayer()).serialize()).toEqual(createSymbolLayer());
     });
 
@@ -230,10 +234,12 @@ describe('StyleLayer#serialize', () => {
             }
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(createStyleLayer(createSymbolLayer({paint: layerPaint})).serialize().paint).toEqual(layerPaint);
     });
 
     test('serializes added paint properties', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const layer = createStyleLayer(createSymbolLayer());
         layer.setPaintProperty('text-halo-color', 'orange');
 
@@ -242,6 +248,7 @@ describe('StyleLayer#serialize', () => {
     });
 
     test('serializes added layout properties', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('text-size', 20);
 
@@ -250,6 +257,7 @@ describe('StyleLayer#serialize', () => {
     });
 
     test('serializes "visibility" of "visible"', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('visibility', 'visible');
 
@@ -257,6 +265,7 @@ describe('StyleLayer#serialize', () => {
     });
 
     test('serializes "visibility" of "none"', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('visibility', 'none');
 
@@ -264,6 +273,7 @@ describe('StyleLayer#serialize', () => {
     });
 
     test('serializes "visibility" of undefined', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('visibility', undefined);
 
@@ -286,6 +296,7 @@ describe('StyleLayer#serialize', () => {
     }
 
     test('serializes layers', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(createStyleLayer(createSymbolLayer()).serialize()).toEqual(createSymbolLayer());
     });
 
@@ -297,10 +308,12 @@ describe('StyleLayer#serialize', () => {
             }
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(createStyleLayer(createSymbolLayer({paint: layerPaint})).serialize().paint).toEqual(layerPaint);
     });
 
     test('serializes added paint properties', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const layer = createStyleLayer(createSymbolLayer());
         layer.setPaintProperty('text-halo-color', 'orange');
 
@@ -309,6 +322,7 @@ describe('StyleLayer#serialize', () => {
     });
 
     test('serializes added layout properties', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const layer = createStyleLayer(createSymbolLayer());
         layer.setLayoutProperty('text-size', 20);
 

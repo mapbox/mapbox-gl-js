@@ -149,6 +149,7 @@ export class BuildingGen {
             }
 
             const ringIndexPointer = this.createIntArray(ringIndices);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const coordinatesPointer = this.createFloatArray(coordinates);
 
             this.module.addFeature(feature.id, feature.sourceId,
@@ -164,6 +165,7 @@ export class BuildingGen {
         for (const facade of facades) {
             let entrances: number[];
             if (facade.entrances) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 entrances = JSON.parse(facade.entrances);
             } else {
                 entrances = [];
@@ -176,6 +178,7 @@ export class BuildingGen {
                 coordinates.push(point.y);
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const coordinatesPointer = this.createFloatArray(coordinates);
 
             this.module.addFacade(facade.sourceId, facade.crossPerc, facade.distanceToRoad,
@@ -194,6 +197,7 @@ export class BuildingGen {
         }
 
         const meshCount = this.module.getMeshCount();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const meshes: MeshBuffer[] = new Array(meshCount);
         for (let i = 0; i < meshCount; i++) {
             const positionsPtr = this.module.getPositionsPtr(i);

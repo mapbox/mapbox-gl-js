@@ -17,6 +17,7 @@ describe('tile_request_cache', () => {
             result = cachePut({url: ''});
             expect(result).toBeFalsy();
         } catch (e: any) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect.unreacheble('should not result in error');
         }
     });

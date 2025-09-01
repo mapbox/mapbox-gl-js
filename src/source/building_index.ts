@@ -161,6 +161,7 @@ class BuildingIndex {
                 availableHeight = heightData.height;
                 continue;
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             maxFillExtrusionHeight = Math.max(heightData.height * verticalScale, maxFillExtrusionHeight || 0);
         }
         if (maxFillExtrusionHeight !== undefined) {
@@ -180,6 +181,7 @@ class BuildingIndex {
             const b = bucket as Tiled3dModelBucket;
             const heightData = b.getHeightAtTileCoord(tileX, tileY);
             if (!heightData || heightData.hidden) continue;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (heightData.height === undefined && availableHeight !== undefined) return Math.min(heightData.maxHeight, availableHeight) * heightData.verticalScale;
             return heightData.height ? heightData.height * heightData.verticalScale : Number.NEGATIVE_INFINITY;
         }

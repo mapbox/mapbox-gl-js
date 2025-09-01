@@ -31,6 +31,7 @@ describe('Map#remove', () => {
         const control = {
             onRemove(map) {
                 onRemoveCalled++;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 expect(map.getStyle()).toEqual(style);
             },
             onAdd(_) {
@@ -57,6 +58,7 @@ describe('Map#remove', () => {
         const buffers = map.painter.globeSharedBuffers;
         expect(buffers).toBeTruthy();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const checkBuffer = (name) => buffers[name] && ('buffer' in buffers[name]);
 
         expect(checkBuffer('_poleIndexBuffer')).toBeFalsy();

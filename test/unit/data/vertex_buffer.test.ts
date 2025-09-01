@@ -16,6 +16,7 @@ describe('VertexBuffer', () => {
     ];
     const program = {
         getAttributeLocation(gl, name) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return ({map: 5, box: 6})[name] || -1;
         }
     };
@@ -43,6 +44,7 @@ describe('VertexBuffer', () => {
         const buffer = new VertexBuffer(context, array, attributes);
         vi.spyOn(context.gl, 'enableVertexAttribArray').mockImplementation(() => {});
         buffer.enableAttributes(context.gl, program);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(context.gl.enableVertexAttribArray.mock.calls).toEqual([[5], [6]]);
     });
 
@@ -52,6 +54,7 @@ describe('VertexBuffer', () => {
         const buffer = new VertexBuffer(context, array, attributes);
         vi.spyOn(context.gl, 'vertexAttribPointer').mockImplementation(() => {});
         buffer.setVertexAttribPointers(context.gl, program, 50);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(context.gl.vertexAttribPointer.mock.calls).toEqual([
             [5, 1, context.gl['SHORT'], false, 6, 300],
             [6, 2, context.gl['SHORT'], false, 6, 304]

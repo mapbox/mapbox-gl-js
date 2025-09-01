@@ -39,17 +39,17 @@ function lteq(ctx: EvaluationContext, a: any, b: any): boolean { return a <= b; 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function gteq(ctx: EvaluationContext, a: any, b: any): boolean { return a >= b; }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 function eqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) === 0; }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function neqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return !eqCollate(ctx, a, b, c); }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 function ltCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) < 0; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 function gtCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) > 0; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 function lteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) <= 0; }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 function gteqCollate(ctx: EvaluationContext, a: any, b: any, c: any): boolean { return c.compare(a, b) >= 0; }
 
 /**
@@ -143,15 +143,20 @@ function makeComparison(
                 if (!collator) return null;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return new Comparison(lhs, rhs, collator);
         }
 
         evaluate(ctx: EvaluationContext): boolean {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const lhs = this.lhs.evaluate(ctx);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const rhs = this.rhs.evaluate(ctx);
 
             if (isOrderComparison && this.hasUntypedArgument) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const lt = typeOf(lhs);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const rt = typeOf(rhs);
                 // check that type is string or number, and equal
                 if (lt.kind !== rt.kind || !(lt.kind === 'string' || lt.kind === 'number')) {
@@ -160,7 +165,9 @@ function makeComparison(
             }
 
             if (this.collator && !isOrderComparison && this.hasUntypedArgument) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const lt = typeOf(lhs);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const rt = typeOf(rhs);
                 if (lt.kind !== 'string' || rt.kind !== 'string') {
                     return compareBasic(ctx, lhs, rhs);

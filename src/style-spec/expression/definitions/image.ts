@@ -167,6 +167,7 @@ export default class ImageExpression implements Expression {
             for (const key in params) {
                 if (params[key]) {
                     try {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         result[key] = params[key].evaluate(ctx);
                     } catch (err) {
                         continue;
@@ -186,11 +187,13 @@ export default class ImageExpression implements Expression {
 
     evaluate(ctx: EvaluationContext): null | ResolvedImage {
         const primaryId = {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             name: this.namePrimary.evaluate(ctx),
             iconsetId: this.iconsetIdPrimary
         };
 
         const secondaryId = this.nameSecondary ? {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             name: this.nameSecondary.evaluate(ctx),
             iconsetId: this.iconsetIdSecondary
         } : undefined;

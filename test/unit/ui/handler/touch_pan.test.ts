@@ -23,9 +23,11 @@ test('If cooperativeGestures option is set to true, touch pan is prevented when 
     const moveSpy = vi.fn();
     map.on('move', moveSpy);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -50})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -40})]});
     map._renderTaskQueue.run();
 
@@ -39,9 +41,11 @@ test('If cooperativeGestures option is set to true, touch pan is triggered when 
     const moveSpy = vi.fn();
     map.on('move', moveSpy);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -40}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: -30})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -50}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: -40})]});
     map._renderTaskQueue.run();
 
@@ -56,9 +60,11 @@ test('When cooperativeGestures is true and map is in fullscreen, touch pan is no
     const moveSpy = vi.fn();
     map.on('move', moveSpy);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -50})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -40})]});
     map._renderTaskQueue.run();
 

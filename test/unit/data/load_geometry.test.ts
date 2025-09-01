@@ -7,6 +7,7 @@ import loadGeometry from '../../../src/data/load_geometry';
 import tileStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 // Load a line feature from fixture tile.
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const vt = new VectorTile(new Protobuf(tileStub));
 
 test('loadGeometry', () => {
@@ -26,6 +27,7 @@ test('loadGeometry warns and clamps when exceeding extent', () => {
     // Use a custom console.warn to count warnings
     const warn = console.warn;
     console.warn = function (warning) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         if (warning.match(/Geometry exceeds allowed extent, reduce your vector tile buffer size/)) {
             numWarnings++;
         }

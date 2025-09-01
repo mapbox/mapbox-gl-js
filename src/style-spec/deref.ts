@@ -7,12 +7,14 @@ function deref(layer: LayerSpecification, parent: LayerSpecification): LayerSpec
 
     for (const k in layer) {
         if (k !== 'ref') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result[k] = layer[k];
         }
     }
 
     refProperties.forEach((k) => {
         if (k in parent) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result[k] = parent[k];
         }
     });
@@ -36,6 +38,7 @@ function deref(layer: LayerSpecification, parent: LayerSpecification): LayerSpec
 export default function derefLayers(layers: Array<LayerSpecification>): Array<LayerSpecification> {
     layers = layers.slice();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const map: Record<string, LayerSpecification> = Object.create(null);
     for (let i = 0; i < layers.length; i++) {
         map[layers[i].id] = layers[i];

@@ -135,6 +135,7 @@ class AttributionControl implements IControl {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _updateData(e: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (e && (e.sourceDataType === 'metadata' || e.sourceDataType === 'visibility' || e.dataType === 'style')) {
             this._updateAttributions();
             this._updateEditLink();

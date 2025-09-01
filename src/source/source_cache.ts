@@ -77,10 +77,12 @@ class SourceCache extends Evented {
             // this._sourceLoaded signifies that the TileJSON is loaded if applicable.
             // if the source type does not come with a TileJSON, the flag signifies the
             // source data has loaded (in other words, GeoJSON has been tiled on the worker and is ready)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') this._sourceLoaded = true;
 
             // for sources with mutable data, this event fires when the underlying data
             // to a source is changed (for example, using [GeoJSONSource#setData](https://docs.mapbox.com/mapbox-gl-js/api/sources/#geojsonsource#setdata) or [ImageSource#setCoordinates](https://docs.mapbox.com/mapbox-gl-js/api/sources/#imagesource#setcoordinates))
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (this._sourceLoaded && !this._paused && e.dataType === "source" && e.sourceDataType === 'content') {
                 this.reload();
                 if (this.transform) {
@@ -95,6 +97,7 @@ class SourceCache extends Evented {
 
         this._source = source;
         this._tiles = {};
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._cache = new TileCache(0, this._unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
@@ -255,6 +258,7 @@ class SourceCache extends Evented {
             tile.state = state;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
@@ -580,7 +584,9 @@ class SourceCache extends Evented {
             });
 
             if (this._source.hasTile) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const hasTile = this._source.hasTile.bind(this._source);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 idealTileIDs = idealTileIDs.filter((coord) => hasTile(coord));
             }
         }
@@ -820,6 +826,7 @@ class SourceCache extends Evented {
 
             // Cache the result of this traversal to all newly visited tiles
             for (const key of path) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this._loadedParentTiles[key] = parentTile;
             }
         }
@@ -862,6 +869,7 @@ class SourceCache extends Evented {
                 new RasterArrayTile(tileID, size, this.transform.tileZoom, painter, this._isRaster) :
                 new Tile(tileID, size, this.transform.tileZoom, painter, this._isRaster, this._source.worldview);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 
@@ -1002,6 +1010,7 @@ class SourceCache extends Evented {
             }
 
             for (const wrap of tilesToCheck) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const tileResult = queryGeometry.containsTile(tile, transform, use3DQuery, wrap);
                 if (tileResult) {
                     tileResults.push(tileResult);

@@ -9,11 +9,13 @@ import {RequestManager} from '../../../src/util/mapbox';
 import sourceFixture from '../../fixtures/source.json';
 
 function createSource(options, transformCallback) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const source = new RasterTileSource('id', options, {send() {}}, options.eventedParent);
 
     source.onAdd({
         transform: {angle: 0, pitch: 0, showCollisionBoxes: false},
         _getMapId: () => 1,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         _requestManager: new RequestManager(transformCallback),
         style: {
             clearSource: () => {},
@@ -42,6 +44,7 @@ describe('RasterTileSource', () => {
             }))
         });
         const transformSpy = vi.fn((url) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             return {url};
         });
 
@@ -161,9 +164,11 @@ describe('RasterTileSource', () => {
             config.API_URL = 'http://path.png';
             config.REQUIRE_ACCESS_TOKEN = !!accessToken;
             if (accessToken) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 config.ACCESS_TOKEN = accessToken;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const source = createSource({url});
             source.tiles = [`${url}/{z}/{x}/{y}.${extension}`];
             const urlNormalizerSpy = vi.spyOn(source.map._requestManager, 'normalizeTileURL');
@@ -176,6 +181,7 @@ describe('RasterTileSource', () => {
 
             await new Promise((resolve) => {
                 source.loadTile(tile, () => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     loadCb(urlNormalizerSpy);
                     resolve();
                 });
@@ -185,21 +191,27 @@ describe('RasterTileSource', () => {
         test('png extension', async () => {
             await makeMapboxSource('mapbox://path.png', 'png', (spy) => {
                 expect(spy).toHaveBeenCalledTimes(1);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(spy.mock.calls[0][0]).toEqual('mapbox://path.png/10/5/5.png');
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(spy.mock.calls[0][1]).toEqual(true);
             });
         });
         test('png32 extension', async () => {
             await makeMapboxSource('mapbox://path.png', 'png32', (spy) => {
                 expect(spy).toHaveBeenCalledTimes(1);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(spy.mock.calls[0][0]).toEqual('mapbox://path.png/10/5/5.png32');
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(spy.mock.calls[0][1]).toEqual(true);
             });
         });
         test('jpg70 extension', async () => {
             await makeMapboxSource('mapbox://path.png', 'jpg70', (spy) => {
                 expect(spy).toHaveBeenCalledTimes(1);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(spy.mock.calls[0][0]).toEqual('mapbox://path.png/10/5/5.jpg70');
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(spy.mock.calls[0][1]).toEqual(true);
             });
         });

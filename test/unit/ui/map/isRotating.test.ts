@@ -47,12 +47,15 @@ test('Map#isRotating returns true when drag rotating', () => {
         map.remove();
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
 });

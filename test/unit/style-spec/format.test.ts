@@ -8,6 +8,7 @@ function roundtrip(style) {
 }
 
 test('orders top-level keys', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     expect(Object.keys(roundtrip({
         "layers": [],
         "other": {},
@@ -19,6 +20,7 @@ test('orders top-level keys', () => {
 });
 
 test('orders layer keys', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     expect(Object.keys(roundtrip({
         "layers": [{
             "paint": {},
@@ -26,5 +28,6 @@ test('orders layer keys', () => {
             "id": "id",
             "type": "type"
         }]
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     }).layers[0])).toEqual(['id', 'type', 'layout', 'paint']);
 });

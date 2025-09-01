@@ -12,8 +12,11 @@ const styleLayer = {
 
 function makeSymbolInstance(x, y, key, crossTileID = 0) {
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         tileAnchorX: x,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         tileAnchorY: y,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         key,
         crossTileID
     };
@@ -22,7 +25,9 @@ function makeSymbolInstance(x, y, key, crossTileID = 0) {
 function makeSymbolInstanceArray(instances) {
 
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         get: (i) => instances[i],
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         length: instances.length
     };
 }
@@ -30,12 +35,15 @@ function makeSymbolInstanceArray(instances) {
 function makeTile(tileID, symbolInstances) {
     const bucket = {
         symbolInstances: {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             get(i) { return symbolInstances[i]; },
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             length: symbolInstances.length
         },
         layerIds: ['test']
     };
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         tileID,
         getBucket: () => bucket,
         latestFeatureIndex: {}
@@ -269,5 +277,6 @@ test('TileLayerIndex.findMatches sort order', () => {
 
     const index = new TileLayerIndex(tileID, instanceArray, 0);
     index.findMatches(instanceArray, new OverscaledTileID(7, 0, 6, 8, 8), new Set());
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(instanceArray.get(0).crossTileID).toBe(0);
 });

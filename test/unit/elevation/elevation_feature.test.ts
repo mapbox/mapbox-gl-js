@@ -175,6 +175,7 @@ describe('ElevationFeature', () => {
 
     test('#parseTileZ14', () => {
         // Load a fill feature from fixture tile.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const vt = new VectorTile(new Protobuf(vectorTileStubZ14));
         const layer = vt.layers[HD_ELEVATION_SOURCE_LAYER];
 
@@ -240,6 +241,7 @@ describe('ElevationFeature', () => {
 
     test('#parseTileZ17', () => {
         // Load a fill feature from fixture tile.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const vt = new VectorTile(new Protobuf(vectorTileStubZ17));
         const layer = vt.layers[HD_ELEVATION_SOURCE_LAYER];
 
@@ -366,12 +368,14 @@ describe('ElevationFeature', () => {
         }
 
         {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             feature['properties'][PROPERTY_ELEVATION_ID] = 4;
             const actual = ElevationFeatures.getElevationFeature(feature as BucketFeature, ids as ElevationFeature[]);
             expect(actual).toBeUndefined();
         }
 
         {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             feature['properties'][PROPERTY_ELEVATION_ID] = 2;
             const actual = ElevationFeatures.getElevationFeature(feature as BucketFeature, ids as ElevationFeature[]);
             expect(actual).toMatchObject({id: 2});

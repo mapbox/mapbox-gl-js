@@ -216,85 +216,152 @@ import type {ShaderSource} from '../render/program';
 import type {DynamicDefinesType} from '../render/program/program_uniforms';
 
 const commonDefines: DynamicDefinesType[] = [];
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 parseUsedPreprocessorDefines(preludeCommon, commonDefines);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 parseUsedPreprocessorDefines(preludeVert, commonDefines);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 parseUsedPreprocessorDefines(preludeFrag, commonDefines);
 
 export const includeMap = {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     '_prelude_fog.vertex.glsl': preludeFogVert,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     '_prelude_terrain.vertex.glsl': preludeTerrainVert,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     '_prelude_shadow.vertex.glsl': preludeShadowVert,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     '_prelude_fog.fragment.glsl': preludeFogFrag,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     '_prelude_shadow.fragment.glsl': preludeShadowFrag,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     '_prelude_lighting.glsl': preludeLighting,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     '_prelude_raster_array.glsl': preludeRasterArrayFrag,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     '_prelude_raster_particle.glsl': preludeRasterParticleFrag
 } as const;
 
 // Populated during precompilation
 const defineMap: Record<string, DynamicDefinesType[]> = {};
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 export const preludeTerrain = compile('', preludeTerrainVert);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 export const preludeFog = compile(preludeFogFrag, preludeFogVert);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 export const preludeShadow = compile(preludeShadowFrag, preludeShadowVert);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 export const preludeRasterArray = compile(preludeRasterArrayFrag, '');
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 export const preludeRasterParticle = compile(preludeRasterParticleFrag, '');
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 export const prelude = compile(preludeFrag, preludeVert);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const preludeCommonSource = preludeCommon;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const preludeLightingSource = preludeLighting;
 
 export const preludeVertPrecisionQualifiers = `precision highp float;`;
 export const preludeFragPrecisionQualifiers = `precision mediump float;`;
 
 export default {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     background: compile(backgroundFrag, backgroundVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     backgroundPattern: compile(backgroundPatternFrag, backgroundPatternVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     building: compile(buildingFrag, buildingVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     buildingBloom: compile(buildingBloomFrag, buildingBloomVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     buildingDepth: compile(buildingDepthFrag, buildingDepthVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     circle: compile(circleFrag, circleVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     clippingMask: compile(clippingMaskFrag, clippingMaskVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     heatmap: compile(heatmapFrag, heatmapVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     heatmapTexture: compile(heatmapTextureFrag, heatmapTextureVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     collisionBox: compile(collisionBoxFrag, collisionBoxVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     collisionCircle: compile(collisionCircleFrag, collisionCircleVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     debug: compile(debugFrag, debugVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     elevatedStructuresDepth: compile(elevatedStructuresDepthFrag, elevatedStructuresDepthVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     elevatedStructuresDepthReconstruct: compile(elevatedStructuresDepthReconstructFrag, elevatedStructuresDepthReconstructVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     elevatedStructures: compile(elevatedStructuresModelFrag, elevatedStructuresModelVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     fill: compile(fillFrag, fillVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     fillOutline: compile(fillOutlineFrag, fillOutlineVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     fillOutlinePattern: compile(fillOutlinePatternFrag, fillOutlinePatternVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     fillPattern: compile(fillPatternFrag, fillPatternVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     fillExtrusion: compile(fillExtrusionFrag, fillExtrusionVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     fillExtrusionDepth: compile(fillExtrusionDepthFrag, fillExtrusionDepthVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     fillExtrusionPattern: compile(fillExtrusionPatternFrag, fillExtrusionPatternVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     groundShadow: compile(groundShadowFrag, groundShadowVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     fillExtrusionGroundEffect: compile(fillExtrusionGroundEffectFrag, fillExtrusionGroundEffectVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     hillshadePrepare: compile(hillshadePrepareFrag, hillshadePrepareVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     hillshade: compile(hillshadeFrag, hillshadeVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     line: compile(lineFrag, lineVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     linePattern: compile(linePatternFrag, linePatternVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     raster: compile(rasterFrag, rasterVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     rasterParticle: compile(rasterParticleFrag, rasterParticleVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     rasterParticleDraw: compile(rasterParticleDrawFrag, rasterParticleDrawVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     rasterParticleTexture: compile(rasterParticleTextureFrag, rasterParticleTextureVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     rasterParticleUpdate: compile(rasterParticleUpdateFrag, rasterParticleUpdateVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     symbol: compile(symbolFrag, symbolVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     terrainRaster: compile(terrainRasterFrag, terrainRasterVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     terrainDepth: compile(terrainDepthFrag, terrainDepthVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     skybox: compile(skyboxFrag, skyboxVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     skyboxGradient: compile(skyboxGradientFrag, skyboxVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     skyboxCapture: compile(skyboxCaptureFrag, skyboxCaptureVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     globeRaster: compile(globeFrag, globeVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     globeAtmosphere: compile(atmosphereFrag, atmosphereVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     model: compile(modelFrag, modelVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     modelDepth: compile(modelDepthFrag, modelDepthVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     stars: compile(starsFrag, starsVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     snowParticle: compile(snowFrag, snowVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     rainParticle: compile(rainFrag, rainVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     vignette: compile(vignetteFrag, vignetteVert),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     occlusion: compile(occlusionFrag, occlusionVert)
 } as const;
 
@@ -346,18 +413,25 @@ export function compile(fragmentSource: string, vertexSource: string): ShaderSou
     let usedDefines: DynamicDefinesType[] = [...commonDefines];
     parseUsedPreprocessorDefines(fragmentSource, usedDefines);
     parseUsedPreprocessorDefines(vertexSource, usedDefines);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     for (const includePath of [...vertexIncludes, ...fragmentIncludes]) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!includeMap[includePath]) {
             console.error(`Undefined include: ${includePath}`);
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!defineMap[includePath]) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             defineMap[includePath] = [];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             parseUsedPreprocessorDefines(includeMap[includePath], defineMap[includePath]);
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         usedDefines = [...usedDefines, ...defineMap[includePath]];
     }
 
     fragmentSource = fragmentSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         fragmentPragmas[name] = true;
         if (operation === 'define') {
             return `
@@ -386,7 +460,9 @@ uniform ${precision} ${type} u_${name};
     });
 
     vertexSource = vertexSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const attrType = type === 'float' ? 'vec2' : type;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const unpackType = name.match(/color/) ? 'color' : attrType;
 
         if (operation === 'define-attribute-vertex-shader-only') {
@@ -395,6 +471,7 @@ uniform ${precision} ${type} u_${name};
 in ${precision} ${type} a_${name};
 #endif
 `;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (fragmentPragmas[name]) {
             if (operation === 'define') {
                 return `
@@ -499,5 +576,6 @@ uniform ${precision} ${type} u_${name};
         }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return {fragmentSource, vertexSource, usedDefines, vertexIncludes, fragmentIncludes};
 }

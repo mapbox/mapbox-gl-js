@@ -80,6 +80,7 @@ export class QueryGeometry {
             aboveHorizon = polygonizeBounds(tl, br).every((p) => transform.isPointAboveHorizon(p)) && transform.isPointAboveHorizon(center);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new QueryGeometry(screenGeometry, aboveHorizon, transform);
     }
 
@@ -192,9 +193,12 @@ export class QueryGeometry {
 
         const camPos = this.cameraPoint.clone();
         // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'boolean' and 'boolean'.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const column = (camPos.x > min.x) + (camPos.x > max.x);
         // @ts-expect-error - TS2365 - Operator '+' cannot be applied to types 'boolean' and 'boolean'.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const row = (camPos.y > min.y) + (camPos.y > max.y);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const sector = row * 3 + column;
 
         switch (sector) {
@@ -478,6 +482,7 @@ export function projectPolygonCoveringPoles(polygon: Point[], tr: Transform): Ca
         ];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     resampled.push(...mid);
 
     // Resample to the second section of the ring

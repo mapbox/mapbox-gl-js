@@ -102,7 +102,7 @@ export class AJAXError extends Error {
 // and we will set an empty referrer. Otherwise, we're using the document's URL.
 export const getReferrer: () => string = isWorker() ?
 // @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     () => self.worker.referrer :
     () => (location.protocol === 'blob:' ? parent : self).location.href;
 
@@ -161,10 +161,12 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
                 return callback(new AJAXError(response.statusText, response.status, requestParameters.url));
             }
         }).catch(error => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (error.name === 'AbortError') {
                 // silence expected AbortError
                 return;
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             callback(new Error(`${error.message} ${requestParameters.url}`));
         });
     };
@@ -187,6 +189,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
             complete = true;
             callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
         }).catch(err => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             if (!aborted) callback(new Error(err.message));
         });
     };
@@ -226,8 +229,10 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
             if (requestParameters.type === 'json') {
                 // We're manually parsing JSON here to get better error messages.
                 try {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     data = JSON.parse(xhr.response);
                 } catch (err) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     return callback(err);
                 }
             }
@@ -307,6 +312,7 @@ function arrayBufferToImageBitmap(data: ArrayBuffer, callback: Callback<ImageBit
     createImageBitmap(blob).then((imgBitmap) => {
         callback(null, imgBitmap);
     }).catch((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         callback(new Error(`Could not load image because of ${e.message}. Please make sure to use a supported image type such as PNG or JPEG. Note that SVGs are not supported.`));
     });
 }
@@ -335,8 +341,10 @@ export const getImage = function (
             requestParameters,
             callback,
             cancelled: false,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             cancel() { this.cancelled = true; }
         };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         imageQueue.push(queued);
         return queued;
     }
@@ -348,10 +356,14 @@ export const getImage = function (
         advanced = true;
         numImageRequests--;
         assert(numImageRequests >= 0);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         while (imageQueue.length && numImageRequests < config.MAX_PARALLEL_IMAGE_REQUESTS) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const request = imageQueue.shift();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const {requestParameters, callback, cancelled} = request;
             if (!cancelled) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
                 request.cancel = getImage(requestParameters, callback).cancel;
             }
         }

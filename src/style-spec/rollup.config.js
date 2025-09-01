@@ -31,6 +31,7 @@ const config = [{
         }),
         esbuild({tsconfig: `${__dirname}/../../tsconfig.json`}),
         json(),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         unassert({include: ['*.js', '**/*.js', '*.ts', '**/*.ts']}),
         resolve({
             browser: true,

@@ -28,7 +28,9 @@ export class WireframeDebugCache {
 
         const gl = context.gl;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const bufSize = gl.getBufferParameter(gl.ELEMENT_ARRAY_BUFFER, gl.BUFFER_SIZE);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const bufTmp = new ArrayBuffer(bufSize);
         const intView = new Int16Array(bufTmp);
         gl.getBufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, new Int16Array(bufTmp));

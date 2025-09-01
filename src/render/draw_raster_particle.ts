@@ -502,10 +502,12 @@ function renderTextureToMap(painter: Painter, sourceCache: SourceCache, layer: R
             globeMatrix,
             globeMercatorMatrix,
             gridMatrix,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             parentTL || [0, 0],
             globeToMercatorTransition(painter.transform.zoom),
             mercatorCenter,
             cutoffParams,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             parentScaleBy || 1,
             fade,
             rasterElevation

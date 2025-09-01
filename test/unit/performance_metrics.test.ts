@@ -44,6 +44,7 @@ test('Performance metrics collected', async () => {
     await waitFor(map, 'idle');
 
     const performance = await new Promise((resolve, reject) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         mapboxgl.getPerformanceMetricsAsync((err, result) => {
             if (err) {
                 // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
@@ -55,15 +56,23 @@ test('Performance metrics collected', async () => {
         });
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const timelines = performance.timelines;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(timelines.length).toEqual(3);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(timelines[0].scope).toEqual('Window');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(timelines[1].scope).toEqual('Worker');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(timelines[2].scope).toEqual('Worker');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const find = name => timelines[0].entries.find(e => e.name === name);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     expect(timelines[0].entries.every(e => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         return !isNaN(e.startTime) && !isNaN(e.duration);
     })).toBeTruthy();
 

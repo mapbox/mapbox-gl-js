@@ -258,6 +258,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             const featuresById = new Map();
             for (const feature of this._data.features) featuresById.set(feature.id, feature);
             for (const feature of data.features) featuresById.set(feature.id, feature);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this._data.features = [...featuresById.values()];
         } else {
             this._data = data;

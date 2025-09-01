@@ -13,7 +13,9 @@ import land from '../../../util/fixtures/land.json';
 
 function createMap(clickTolerance, dragPan) {
     return globalCreateMap({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         clickTolerance: clickTolerance || 0,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         dragPan: dragPan || true,
         interactive: true
     });
@@ -33,18 +35,21 @@ test.skip('DragPanHandler fires dragstart, drag, and dragend events at appropria
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
     expect(dragstart).not.toHaveBeenCalled();
     expect(drag).not.toHaveBeenCalled();
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
     expect(drag).toHaveBeenCalledTimes(1);
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(window.document);
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
@@ -65,18 +70,21 @@ test('DragPanHandler captures mousemove events during a mouse-triggered drag (re
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
     expect(dragstart).not.toHaveBeenCalled();
     expect(drag).not.toHaveBeenCalled();
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document.body, {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
     expect(drag).toHaveBeenCalledTimes(1);
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(window.document);
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
@@ -98,18 +106,21 @@ test.skip('DragPanHandler fires dragstart, drag, and dragend events at appropria
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(target, {touches: [constructTouch(target, {target, clientX: 0, clientY: 0})]});
     map._renderTaskQueue.run();
     expect(dragstart).not.toHaveBeenCalled();
     expect(drag).not.toHaveBeenCalled();
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(target, {touches: [constructTouch(target, {target, clientX: 10, clientY: 10})]});
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
     expect(drag).toHaveBeenCalledTimes(1);
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(target);
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
@@ -125,12 +136,15 @@ test('DragPanHandler prevents mousemove events from firing during a drag (#1555)
     const mousemove = vi.fn();
     map.on('mousemove', mousemove);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvasContainer());
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(window.document);
     map._renderTaskQueue.run();
 
@@ -145,12 +159,15 @@ test('DragPanHandler ends a mouse-triggered drag if the window blurs', () => {
     const dragend = vi.fn();
     map.on('dragend', dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.blur(window);
     map._renderTaskQueue.run();
 
@@ -166,12 +183,15 @@ test('DragPanHandler does not end a touch-triggered drag if the window blurs', (
     const dragend = vi.fn();
     map.on('dragend', dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(target, {touches: [constructTouch(target, {target, clientX: 0, clientY: 0})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(target, {touches: [constructTouch(target, {target, clientX: 10, clientY: 10})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.blur(window);
     map._renderTaskQueue.run();
 
@@ -190,17 +210,21 @@ test.skip('DragPanHandler does not end a touch-triggered drag if the window resi
     const drag = vi.fn();
     map.on('drag', drag);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(target, {touches: [constructTouch(target, {target, clientX: 0, clientY: 0})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(target, {touches: [constructTouch(target, {target, clientX: 10, clientY: 10})]});
     map._renderTaskQueue.run();
 
     map.resize();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(target, {touches: [constructTouch(target, {target, clientX: 20, clientY: 10})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(target);
     map._renderTaskQueue.run();
 
@@ -214,7 +238,9 @@ test('DragPanHandler requests a new render frame after each mousemove event', ()
     const map = createMap();
     const requestFrame = vi.spyOn(map.handlers, '_requestFrame');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons, clientX: 10, clientY: 10});
     expect(requestFrame).toHaveBeenCalled();
 
@@ -222,6 +248,7 @@ test('DragPanHandler requests a new render frame after each mousemove event', ()
 
     // https://github.com/mapbox/mapbox-gl-js/issues/6063
     requestFrame.mockClear();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons, clientX: 20, clientY: 20});
     expect(requestFrame).toHaveBeenCalledTimes(1);
 
@@ -240,12 +267,14 @@ test('DragPanHandler can interleave with another handler', () => {
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
     expect(dragstart).not.toHaveBeenCalled();
     expect(drag).not.toHaveBeenCalled();
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
@@ -253,18 +282,21 @@ test('DragPanHandler can interleave with another handler', () => {
     expect(dragend).not.toHaveBeenCalled();
 
     // simulate a scroll zoom
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
     expect(drag).toHaveBeenCalledTimes(1);
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons, clientX: 20, clientY: 20});
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
     expect(drag).toHaveBeenCalledTimes(2);
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(window.document);
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
@@ -287,18 +319,21 @@ test('DragPanHandler can interleave with another handler', () => {
         map.on('drag',      drag);
         map.on('dragend',   dragend);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousedown(map.getCanvas(), {buttons, [`${modifier}Key`]: true});
         map._renderTaskQueue.run();
         expect(dragstart).not.toHaveBeenCalled();
         expect(drag).not.toHaveBeenCalled();
         expect(dragend).not.toHaveBeenCalled();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas(), {buttons, [`${modifier}Key`]: true, clientX: 10, clientY: 10});
         map._renderTaskQueue.run();
         expect(dragstart).not.toHaveBeenCalled();
         expect(drag).not.toHaveBeenCalled();
         expect(dragend).not.toHaveBeenCalled();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mouseup(map.getCanvas(), {[`${modifier}Key`]: true});
         map._renderTaskQueue.run();
         expect(dragstart).not.toHaveBeenCalled();
@@ -320,18 +355,21 @@ test('DragPanHandler can interleave with another handler', () => {
         map.on('drag',      drag);
         map.on('dragend',   dragend);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousedown(map.getCanvas());
         map._renderTaskQueue.run();
         expect(dragstart).not.toHaveBeenCalled();
         expect(drag).not.toHaveBeenCalled();
         expect(dragend).not.toHaveBeenCalled();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mouseup(map.getCanvas(), {[`${modifier}Key`]: true});
         map._renderTaskQueue.run();
         expect(dragstart).not.toHaveBeenCalled();
         expect(drag).not.toHaveBeenCalled();
         expect(dragend).not.toHaveBeenCalled();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas(), {buttons, clientX: 10, clientY: 10});
         map._renderTaskQueue.run();
         expect(dragstart).not.toHaveBeenCalled();
@@ -354,18 +392,21 @@ test('DragPanHandler does not begin a drag on right button mousedown', () => {
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
     expect(dragstart).not.toHaveBeenCalled();
     expect(drag).not.toHaveBeenCalled();
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(dragstart).not.toHaveBeenCalled();
     expect(drag).not.toHaveBeenCalled();
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     expect(dragstart).not.toHaveBeenCalled();
@@ -387,36 +428,42 @@ test('DragPanHandler does not end a drag on right button mouseup', () => {
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
     expect(dragstart).not.toHaveBeenCalled();
     expect(drag).not.toHaveBeenCalled();
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
     expect(drag).toHaveBeenCalledTimes(1);
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(window.document, {buttons: buttons + 2, button: 2});
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
     expect(drag).toHaveBeenCalledTimes(1);
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(window.document, {buttons, button: 2});
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
     expect(drag).toHaveBeenCalledTimes(1);
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons, clientX: 20, clientY: 20});
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
     expect(drag).toHaveBeenCalledTimes(2);
     expect(dragend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(window.document);
     map._renderTaskQueue.run();
     expect(dragstart).toHaveBeenCalledTimes(1);
@@ -439,12 +486,15 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the mo
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas());
     map._renderTaskQueue.run();
 
@@ -469,12 +519,15 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, clientX: 0, clientY: 0})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(window.document, {touches: [constructTouch(target, {target, clientX: 10, clientY: 10})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(window.document);
     map._renderTaskQueue.run();
 
@@ -504,12 +557,15 @@ test('DragPanHandler does not begin a drag if preventDefault is called on the to
     map.on('drag',      drag);
     map.on('dragend',   dragend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, clientX: 0, clientY: 0})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(window.document, {touches: [constructTouch(target, {target, clientX: 10, clientY: 10})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(window.document);
     map._renderTaskQueue.run();
 
@@ -555,12 +611,15 @@ test('Dragging to the left', async () => {
 
     await waitFor(map, 'load');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons, clientX: 50, clientY: 0});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(window.document);
     map._renderTaskQueue.run();
 

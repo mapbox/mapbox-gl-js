@@ -176,7 +176,9 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     } else {
         lightingMatrix = mat4.multiply([], modelParameters.zScaleMatrix, sortedMesh.nodeModelMatrix);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mat4.multiply(lightingMatrix, modelParameters.negCameraPosMatrix, lightingMatrix);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const normalMatrix = mat4.invert([], lightingMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
 
@@ -208,6 +210,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
     const shadowRenderer = painter.shadowRenderer;
     if (shadowRenderer) { shadowRenderer.useNormalOffset = false; }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
 
     let fogMatrixArray = null;
@@ -230,6 +233,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
 
     const program = painter.getOrCreateProgram('model', programOptions);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     painter.uploadCommonUniforms(context, program, null, fogMatrixArray, cutoffParams);
 
     const isShadowPass = painter.renderPass === 'shadow';
@@ -242,6 +246,7 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
 
     program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             undefined, dynamicBuffers);
 }
 
@@ -281,11 +286,14 @@ function prepareMeshes(transform: Transform, node: ModelNode, modelMatrix: mat4,
     } else {
         nodeModelMatrix = [...modelMatrix];
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mat4.multiply(nodeModelMatrix, nodeModelMatrix, node.matrix);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const worldViewProjection = mat4.multiply([], projectionMatrix, nodeModelMatrix);
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (mesh.material.alphaMode !== 'BLEND') {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const opaqueMesh: SortedMesh = {mesh, depth: 0.0, modelIndex, worldViewProjection, nodeModelMatrix};
                 opaqueMeshes.push(opaqueMesh);
                 continue;
@@ -294,6 +302,7 @@ function prepareMeshes(transform: Transform, node: ModelNode, modelMatrix: mat4,
             const centroidPos = vec3.transformMat4([], mesh.centroid, worldViewProjection);
             // Filter meshes behind the camera if in perspective mode
             if (!transform.isOrthographic && centroidPos[2] <= 0.0) continue;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix};
             transparentMeshes.push(transparentMesh);
         }
@@ -397,12 +406,16 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     // Draw models
     for (const model of models) {
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const rotation = layer.paint.get('model-rotation').constantOr(null);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const scale = layer.paint.get('model-scale').constantOr(null);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const translation = layer.paint.get('model-translation').constantOr(null);
         // update model matrices
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         model.computeModelMatrix(painter, rotation, scale, translation, true, true, false);
 
         // compute model parameters matrices
@@ -629,6 +642,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
             const modelInstances = bucket.instancesPerModel[modelId];
             if (modelInstances.features.length > 0) {
                 // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                 modelId = modelIdProperty.evaluate(modelInstances.features[0].feature, {});
             }
 
@@ -665,6 +679,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
             let uniformValues: UniformValues<ModelUniformsType | ModelDepthUniformsType>;
             let colorMode;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (modelInstances.instancedDataArray.length > minimumInstanceCount) {
                 definesValues.push('INSTANCED_ARRAYS');
             }
@@ -680,6 +695,7 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
             } else {
 
                 const ignoreLut = layer.paint.get('model-color-use-theme').constantOr('default') === 'none';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 setupMeshDraw(definesValues, dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                 program = painter.getOrCreateProgram('model', {defines: (definesValues as DynamicDefinesType[]), overrideFog: affectedByFog});
                 const material = mesh.material;
@@ -719,19 +735,28 @@ function drawInstancedNode(painter: Painter, layer: ModelStyleLayer, node: Model
 
             painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), null, cutoffParams);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             assert(modelInstances.instancedDataArray.bytesPerElement === 64);
             const cullFaceMode = mesh.material.doubleSided ? CullFaceMode.disabled : CullFaceMode.backCCW;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if  (modelInstances.instancedDataArray.length > minimumInstanceCount) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 dynamicBuffers.push(modelInstances.instancedDataBuffer);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, cullFaceMode,
                 uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 undefined, dynamicBuffers, modelInstances.instancedDataArray.length);
             } else {
                 const instanceUniform = isShadowPass ? "u_instance" : "u_normal_matrix";
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 for (let i = 0; i < modelInstances.instancedDataArray.length; ++i) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     uniformValues[instanceUniform] = new Float32Array(modelInstances.instancedDataArray.arrayBuffer, i * 64, 16);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, cullFaceMode,
                     uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     undefined, dynamicBuffers);
                 }
             }
@@ -819,7 +844,9 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
         const cameraPosTileCoord = vec3.create();
         const cameraPointTileCoord = new Point(0.0, 0.0);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         for (let i = start; i !== end; i += step) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const coord = coords[i];
             const tile = source.getTile(coord);
             const bucket = tile.getBucket(layer) as Tiled3dModelBucket | null | undefined;
@@ -996,6 +1023,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         shadowRenderer.useNormalOffset = !!mesh.normalBuffer;
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     setupMeshDraw((programOptions.defines as Array<string>), dynamicBuffers, mesh, painter, ignoreLut ? null : layer.lut);
                     if (!hasMapboxFeatures) {
                         programOptions.defines.push('DIFFUSE_SHADED');
@@ -1047,6 +1075,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                         shadowRenderer.setupShadowsFromMatrix(sortedNode.tileModelMatrix, program, shadowRenderer.useNormalOffset);
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     painter.uploadCommonUniforms(context, program, null, fogMatrixArray);
 
                     const pbr = material.pbrMetallicRoughness;
@@ -1070,6 +1099,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                             emissiveStrength,
                             layer,
                             [0, 0, 0],
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             occlusionTextureTransform
                     );
 
@@ -1077,6 +1107,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
 
                         program.draw(painter, context.gl.TRIANGLES, depthModeRW, StencilMode.disabled, ColorMode.disabled, CullFaceMode.backCCW,
                             uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             undefined, dynamicBuffers);
                     }
 
@@ -1085,6 +1116,7 @@ function drawBatchedModels(painter: Painter, source: SourceCache, layer: ModelSt
                     const depthMode = !isLight ? depthModeRW : depthModeRO;
                     program.draw(painter, context.gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.backCCW,
                         uniformValues, layer.id, mesh.vertexBuffer, mesh.indexBuffer, mesh.segments, layer.paint, painter.transform.zoom,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         undefined, dynamicBuffers);
                 }
             }

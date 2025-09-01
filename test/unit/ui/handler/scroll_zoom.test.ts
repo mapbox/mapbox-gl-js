@@ -40,6 +40,7 @@ describe('ScrollZoomHandler', () => {
         // simulate a single 'wheel' event
         const startZoom = map.getZoom();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
         map._renderTaskQueue.run();
 
@@ -64,6 +65,7 @@ describe('ScrollZoomHandler', () => {
             map.once("zoomstart", () => {
                 resolve();
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -20});
         });
         map.remove();
@@ -90,7 +92,9 @@ describe('ScrollZoomHandler', () => {
             [22, {type: 'wheel', deltaY: -376}],
         ];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const end = now + 500;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         let lastWheelEvent = now;
         // simulate the above sequence of wheel events, with render frames
         // interspersed every 20ms
@@ -98,7 +102,9 @@ describe('ScrollZoomHandler', () => {
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             if (events.length && lastWheelEvent + events[0][0] === now) {
                 const [, event] = events.shift();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.wheel(map.getCanvas(), event);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 lastWheelEvent = now;
             }
             if (now % 20 === 0) {
@@ -121,8 +127,11 @@ describe('ScrollZoomHandler', () => {
         const simulateWheel = (_map) => {
             const actual: Array<any> = [];
             for (const delta of deltas) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 simulate.wheel(_map.getCanvas(), {type: 'wheel', deltaY: delta});
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 _map._renderTaskQueue.run();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 actual.push(_map.getZoom());
             }
             return actual;
@@ -164,14 +173,17 @@ describe('ScrollZoomHandler', () => {
             await waitFor(map, "render");
             // zoom out to reach min zoom.
             for (let i = 0; i < 2; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 100});
                 map._renderTaskQueue.run();
             }
             const tr = map.transform.clone();
             // zooming out further should keep the map center stabile.
             for (let i = 0; i < 5; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 0.0001});
                 map._renderTaskQueue.run();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 100});
                 map._renderTaskQueue.run();
             }
@@ -199,6 +211,7 @@ describe('ScrollZoomHandler', () => {
             await waitFor(map, "render");
 
             for (let i = 0; i < 10; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -100});
                 map._renderTaskQueue.run();
             }
@@ -222,8 +235,11 @@ describe('ScrollZoomHandler', () => {
             expect(map.painter.terrain.getAtPoint(new MercatorCoordinate(0.5, 0.5))).toEqual(1500);
 
             // Start the scroll gesture with high elevation data by performing few scroll events
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
             simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: simulate.magicWheelZoomDelta});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 200});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 200});
             map._renderTaskQueue.run();
 
@@ -263,6 +279,7 @@ describe('ScrollZoomHandler', () => {
             map.transform.zoom = 0;
 
             for (let i = 0; i < 5; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -100});
                 map._renderTaskQueue.run();
             }
@@ -274,6 +291,7 @@ describe('ScrollZoomHandler', () => {
             map.setProjection({name: 'globe'});
 
             for (let i = 0; i < 5; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -100});
                 map._renderTaskQueue.run();
             }
@@ -291,6 +309,7 @@ describe('ScrollZoomHandler', () => {
         map.setCenter([-178.90, 38.8888]);
 
         for (let i = 0; i < 2; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
             map._renderTaskQueue.run();
         }
@@ -308,9 +327,13 @@ describe('ScrollZoomHandler', () => {
 
         const startZoom = map.getZoom();
         // simulate  shift+'wheel' events
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -0, shiftKey: true});
         map._renderTaskQueue.run();
 
@@ -327,9 +350,12 @@ describe('ScrollZoomHandler', () => {
         });
         map._renderTaskQueue.run();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -1});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -1});
         now += 1;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: 2});
 
         map._renderTaskQueue.run();
@@ -347,6 +373,7 @@ describe('ScrollZoomHandler', () => {
         map.once('wheel', (e) => {
             e.preventDefault();
         });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
         map._renderTaskQueue.run();
         now += 400;
@@ -384,14 +411,18 @@ describe('ScrollZoomHandler', () => {
             [30, {type: 'wheel', deltaY: -5}]
         ];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const end = now + 50;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         let lastWheelEvent = now;
 
         while (now++ < end) {
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             if (events.length && lastWheelEvent + events[0][0] === now) {
                 const [, event] = events.shift();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.wheel(map.getCanvas(), event);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 lastWheelEvent = now;
             }
             if (now % 20 === 0) {
@@ -432,14 +463,18 @@ describe('ScrollZoomHandler', () => {
             [30, {type: 'wheel', deltaY: -5}],
         ];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const end = now + 50;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         let lastWheelEvent = now;
 
         while (now++ < end) {
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             if (events.length && lastWheelEvent + events[0][0] === now) {
                 const [, event] = events.shift();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 simulate.wheel(map.getCanvas(), event);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 lastWheelEvent = now;
             }
             if (now % 20 === 0) {
@@ -469,6 +504,7 @@ test('When cooperativeGestures option is set to true, scroll zoom is prevented w
     const zoomSpy = vi.fn();
     map.on('zoom', zoomSpy);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
 
     expect(zoomSpy).not.toHaveBeenCalled(0);
@@ -480,6 +516,7 @@ test('When cooperativeGestures option is set to true, scroll zoom is activated w
     const zoomSpy = vi.fn();
     map.on('zoom', zoomSpy);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta, ctrlKey: true});
 
     map._renderTaskQueue.run();
@@ -493,6 +530,7 @@ test('When cooperativeGestures option is set to true, scroll zoom is activated w
     const zoomSpy = vi.fn();
     map.on('zoom', zoomSpy);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta, metaKey: true});
 
     map._renderTaskQueue.run();
@@ -507,6 +545,7 @@ test('When cooperativeGestures is true and map is in fullscreen, scroll zoom is 
     const zoomSpy = vi.fn();
     map.on('zoom', zoomSpy);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     map._renderTaskQueue.run();
 

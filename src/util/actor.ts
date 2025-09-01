@@ -133,8 +133,11 @@ class Actor {
                 // Some tasks may take a while in the worker thread, so before executing the next task
                 // in our queue, postMessage preempts this and <cancel> messages can be processed.
                 // We're using a MessageChannel object to get throttle the process() flow to one at a time.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const callback = this.callbacks[id];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const metadata = (callback && callback.metadata) || {type: 'message'};
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const cancel = this.scheduler.add(() => this.processTask(id, data), metadata);
                 if (cancel) this.cancelCallbacks[id] = cancel;
             } else {
@@ -151,13 +154,16 @@ class Actor {
         if (task.type === '<response>') {
             // The done() function in the counterpart has been called, and we are now
             // firing the callback in the originating actor, if there is one.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const callback = this.callbacks[id];
             delete this.callbacks[id];
             if (callback) {
                 // If we get a response, but don't have a callback, the request was canceled.
                 if (task.error) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     callback(deserialize(task.error) as Error);
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     callback(null, deserialize(task.data));
                 }
             }
@@ -176,12 +182,14 @@ class Actor {
             const params = deserialize(task.data);
             if (this.parent[task.type]) {
                 // task.type == 'loadTile', 'removeTile', etc.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 this.parent[task.type](task.sourceMapId, params as ActorMessages[ActorMessage]['params'], done);
             } else if (this.parent.getWorkerSource) {
                 // task.type == sourcetype.method
                 const keys = task.type.split('.');
                 const {source, scope} = params as {source: string; scope: string};
                 const workerSource = this.parent.getWorkerSource(task.sourceMapId, keys[0], source, scope);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 workerSource[keys[1]](params, done);
             } else {
                 // No function was found.

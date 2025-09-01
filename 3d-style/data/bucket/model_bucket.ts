@@ -467,14 +467,23 @@ class ModelBucket implements Bucket {
             va[offset + 5]  = translation[1];
             va[offset + 6]  = translation[2] + terrainElevationContribution;
             // Elements [7..16] Instance modelMatrix holds combined rotation and scale 3x3,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 7]  = rotationScaleYZFlip[0];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 8]  = rotationScaleYZFlip[1];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 9]  = rotationScaleYZFlip[2];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 10] = rotationScaleYZFlip[4];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 11] = rotationScaleYZFlip[5];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 12] = rotationScaleYZFlip[6];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 13] = rotationScaleYZFlip[8];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 14] = rotationScaleYZFlip[9];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 15] = rotationScaleYZFlip[10];
             perModelVertexArray.instancesEvaluatedElevation[instanceOffset] = translation[2];
         }

@@ -56,22 +56,28 @@ class IndexOf implements Expression {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const needle = (this.needle.evaluate(ctx));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const haystack = (this.haystack.evaluate(ctx));
 
         if (!isValidNativeType(needle, ['boolean', 'string', 'number', 'null'])) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             throw new RuntimeError(`Expected first argument to be of type boolean, string, number or null, but found ${toString(typeOf(needle))} instead.`);
         }
 
         if (!isValidNativeType(haystack, ['string', 'array'])) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             throw new RuntimeError(`Expected second argument to be of type array or string, but found ${toString(typeOf(haystack))} instead.`);
         }
 
         if (this.fromIndex) {
             const fromIndex = (this.fromIndex.evaluate(ctx) as number);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return haystack.indexOf(needle, fromIndex);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         return haystack.indexOf(needle);
     }
 

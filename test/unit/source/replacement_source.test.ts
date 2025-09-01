@@ -29,10 +29,15 @@ describe('ReplacementSource', () => {
 
     const createFootprint = (min, max, id) => {
         const vertices = [
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             [min.x, min.y],
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             [max.x, min.y],
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             [max.x, max.y],
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             [min.x, max.y]
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         ].map(p => new Point(p[0], p[1]));
 
         const indices = [0, 1, 2, 2, 3, 0];
@@ -43,24 +48,33 @@ describe('ReplacementSource', () => {
                 vertices,
                 indices,
                 grid,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 min,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 max
             },
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             id
         };
     };
 
     const createMockSource = (id, tileId, footprints) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         footprints = footprints.map(fp => {
             return createFootprint(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 {x: fp.min[0], y: fp.min[1]},
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 {x: fp.max[0], y: fp.max[1]},
                 tileId);
         });
 
         return {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             id,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             tileId,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             footprints,
 
             getSourceId: () => {
@@ -88,25 +102,34 @@ describe('ReplacementSource', () => {
     const createMockSourceFromSingleTriangle = (id, tileId, vertices) => {
         const indices = [0, 1, 2];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         const minx = Math.min(vertices[0].x, vertices[1].x, vertices[2].x);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         const miny = Math.min(vertices[0].y, vertices[1].y, vertices[2].y);
         const min = new Point(minx, miny);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         const maxx = Math.max(vertices[0].x, vertices[1].x, vertices[2].x);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         const maxy = Math.max(vertices[0].y, vertices[1].y, vertices[2].y);
         const max = new Point(maxx, maxy);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const grid = new TriangleGridIndex(vertices, indices, 6);
         const footprint = {footprint: {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             vertices,
             indices,
             grid,
             min,
             max
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         }, id: tileId};
 
         const footprints = [footprint];
         return {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             id,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             tileId,
             footprints,
 
@@ -133,6 +156,7 @@ describe('ReplacementSource', () => {
     };
 
     const createId = (z, x, y) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new UnwrappedTileID(0, new CanonicalTileID(z, x, y));
     };
 

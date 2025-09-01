@@ -159,9 +159,13 @@ function multiPolygonContainsPoint(rings: MultiPolygon, p: Point) {
 
     for (let k = 0; k < rings.length; k++) {
         ring = rings[k];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             p1 = ring[i];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             p2 = ring[j];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (((p1.y > p.y) !== (p2.y > p.y)) && (p.x < (p2.x - p1.x) * (p.y - p1.y) / (p2.y - p1.y) + p1.x)) {
                 c = !c;
             }

@@ -27,6 +27,7 @@ export default function validateFilter(options: FilterValidatorOptions): Validat
 
         return validateExpression(Object.assign({}, options, {
             expressionContext: 'filter' as const,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             valueSpec: options.styleSpec[`filter_${layerType}`]
         }));
     } else {
@@ -50,6 +51,7 @@ function validateNonExpressionFilter(options: FilterValidatorOptions): Validatio
     let errors: ValidationError[] = validateEnum({
         key: `${key}[0]`,
         value: value[0],
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec: styleSpec.filter_operator
     });
 
@@ -82,6 +84,7 @@ function validateNonExpressionFilter(options: FilterValidatorOptions): Validatio
                 errors = errors.concat(validateEnum({
                     key: `${key}[${i}]`,
                     value: value[i],
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     valueSpec: styleSpec.geometry_type
                 }));
             } else if (!isString(value[i]) && !isNumber(value[i]) && !isBoolean(value[i])) {

@@ -13,6 +13,7 @@ function createMockImage(height, width) {
     for (let i = 0; i < pixels.length; i++) {
         pixels[i] = (i + 1) % 4 === 0 ? 1 : Math.floor(Math.random() * 256);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return new RGBAImage({height, width}, pixels);
 }
 
@@ -38,6 +39,7 @@ describe('DEMData', () => {
         expect(dem.uid).toEqual(0);
         expect(console.warn).toHaveBeenCalledTimes(1);
         expect(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             console.warn.mock.calls[0][0]
         ).toMatch(/"derp" is not a valid encoding type/);
     });

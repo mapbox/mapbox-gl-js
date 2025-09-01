@@ -68,15 +68,19 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
         // @ts-expect-error - TS2339 - Property 'models' does not exist on type 'ModelSourceSpecification'.
         for (const modelId in this._options.models) {
             // @ts-expect-error - TS2339 - Property 'models' does not exist on type 'ModelSourceSpecification'.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const modelSpec = this._options.models[modelId];
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const modelPromise = loadGLTF(this.map._requestManager.transformRequest(modelSpec.uri, ResourceType.Model).url).then(gltf => {
                 if (!gltf) return;
                 const nodes = convertModel(gltf);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 const model = new Model(modelId, modelSpec.position, modelSpec.orientation, nodes);
                 model.computeBoundsAndApplyParent();
                 this.models.push(model);
             }).catch((err) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this.fire(new ErrorEvent(new Error(`Could not load model ${modelId} from ${modelSpec.uri}: ${err.message}`)));
             });
 
@@ -88,6 +92,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
             this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
         }).catch((err) => {
             this._loaded = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             this.fire(new ErrorEvent(new Error(`Could not load models: ${err.message}`)));
         });
     }

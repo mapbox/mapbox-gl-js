@@ -652,6 +652,7 @@ function drawLayerSymbols(
                 atlasTexture,
                 atlasTextureIcon,
                 atlasInterpolation,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 atlasInterpolationIcon,
                 isSDF: true,
                 hasHalo,

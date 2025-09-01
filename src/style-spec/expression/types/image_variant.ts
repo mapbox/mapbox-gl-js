@@ -61,6 +61,7 @@ export class ImageVariant {
         let name, iconsetId, params, transform;
 
         try {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             ({name, iconsetId, params, transform} = JSON.parse(str) || {});
         } catch (e) {
             return null;
@@ -68,7 +69,9 @@ export class ImageVariant {
 
         if (!name) return null;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const {a, b, c, d, e, f} = transform || {};
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         return new ImageVariant({name, iconsetId}, {params, transform: new DOMMatrix([a, b, c, d, e, f])});
     }
 

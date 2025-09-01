@@ -729,7 +729,9 @@ function placeGlyphAlongLine(
     return {
         point: labelPlanePoint,
         angle: segmentAngle,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         path: pathVertices,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         tilePath,
         up: axisZ
     };

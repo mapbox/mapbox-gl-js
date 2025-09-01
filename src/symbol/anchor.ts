@@ -17,6 +17,7 @@ class Anchor extends Point {
     }
 
     override clone(): Anchor {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Anchor(this.x, this.y, this.z, this.angle, this.segment);
     }
 }

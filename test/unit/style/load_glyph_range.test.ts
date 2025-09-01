@@ -6,6 +6,7 @@ import {loadGlyphRange} from '../../../src/style/load_glyph_range';
 import glyphStub from '../../fixtures/0-255.pbf?arraybuffer';
 
 test('loadGlyphRange', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const transform = vi.fn().mockImplementation((url) => ({url}));
     const manager = new RequestManager(transform);
 
@@ -13,6 +14,7 @@ test('loadGlyphRange', async () => {
     // eslint-disable-next-line @typescript-eslint/require-await
     vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
         request = req;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new window.Response(glyphStub);
     });
 
@@ -24,6 +26,7 @@ test('loadGlyphRange', async () => {
             expect(transform.mock.calls[0]).toEqual(['https://localhost/fonts/v1/Arial Unicode MS/0-255.pbf', 'Glyphs']);
 
             if (!result) return expect.unreachable();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(request.url).toEqual('https://localhost/fonts/v1/Arial%20Unicode%20MS/0-255.pbf');
             expect(typeof result.ascender).toEqual('undefined');
             expect(typeof result.descender).toEqual('undefined');

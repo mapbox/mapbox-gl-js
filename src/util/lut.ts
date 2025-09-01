@@ -18,6 +18,7 @@ type Props = {
 };
 
 const colorizationProperties: Properties<Props> = new Properties({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     "data": new DataConstantProperty(styleSpec.colorTheme.data)
 });
 
@@ -28,9 +29,11 @@ export function evaluateColorThemeProperties(
     worldview?: string
 ): PossiblyEvaluated<Props> {
     const properties = Object.assign({}, values);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     for (const name of Object.keys(styleSpec.colorTheme)) {
         // Fallback to use default style specification when the properties wasn't set
         if (properties[name] === undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             properties[name] = styleSpec.colorTheme[name].default;
         }
     }

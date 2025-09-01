@@ -51,9 +51,11 @@ function waitForDraco() {
     if (draco) return;
     if (dracoLoading != null) return dracoLoading;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     dracoLoading = DracoDecoderModule(fetch(getDracoUrl()));
 
     return dracoLoading.then((module) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         draco = module;
         dracoLoading = undefined;
     });
@@ -109,6 +111,7 @@ export function waitForBuildingGen(): Promise<unknown> {
     }).catch((error) => {
         warnOnce('Could not load building-gen');
         buildingGenLoading = null;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         buildingGenError = error;
     });
     return buildingGenLoading;
@@ -179,15 +182,21 @@ type GLTFPrimitive = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setAccessorBuffer(buffer: ArrayBuffer, accessor: GLTFAccessor, gltf: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const bufferViewIndex = gltf.json.bufferViews.length;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const bufferIndex = gltf.buffers.length;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     accessor.bufferView = bufferViewIndex;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     gltf.json.bufferViews[bufferViewIndex] = {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         buffer: bufferIndex,
         byteLength: buffer.byteLength
     };
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     gltf.buffers[bufferIndex] = buffer;
 }
 
@@ -198,47 +207,72 @@ function loadDracoMesh(primitive: GLTFPrimitive, gltf: any) {
     const config = primitive.extensions && primitive.extensions[DRACO_EXT];
     if (!config) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const decoder = new draco.Decoder();
     const bytes = getGLTFBytes(gltf, config.bufferView);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const mesh = new draco.Mesh();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const ok = decoder.DecodeArrayToMesh(bytes, bytes.byteLength, mesh);
     if (!ok) throw new Error('Failed to decode Draco mesh');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const indexAccessor = gltf.json.accessors[primitive.indices];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const IndexArrayType = GLTF_TO_ARRAY_TYPE[indexAccessor.componentType];
     // @ts-expect-error - TS2339 - Property 'BYTES_PER_ELEMENT' does not exist on type 'Class<ArrayBufferView>'.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const indicesSize = indexAccessor.count * IndexArrayType.BYTES_PER_ELEMENT;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const ptr = draco._malloc(indicesSize);
     if (IndexArrayType === Uint16Array) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         decoder.GetTrianglesUInt16Array(mesh, indicesSize, ptr);
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         decoder.GetTrianglesUInt32Array(mesh, indicesSize, ptr);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const indicesBuffer = draco.memory.buffer.slice(ptr, ptr + indicesSize);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     setAccessorBuffer(indicesBuffer, indexAccessor, gltf);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     draco._free(ptr);
 
     for (const attributeId of Object.keys(config.attributes)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const attribute = decoder.GetAttributeByUniqueId(mesh, config.attributes[attributeId]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const accessor = gltf.json.accessors[primitive.attributes[attributeId]];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const ArrayType = GLTF_TO_ARRAY_TYPE[accessor.componentType];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const dracoTypeName = GLTF_TO_DRACO_TYPE[accessor.componentType];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const numComponents = GLTF_COMPONENTS[accessor.type];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const numValues = accessor.count * numComponents;
         // @ts-expect-error - TS2339 - Property 'BYTES_PER_ELEMENT' does not exist on type 'Class<ArrayBufferView>'.
         const dataSize = numValues * ArrayType.BYTES_PER_ELEMENT;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const ptr = draco._malloc(dataSize);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         decoder.GetAttributeDataArrayForAllPoints(mesh, attribute, draco[dracoTypeName], dataSize, ptr);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const buffer = draco.memory.buffer.slice(ptr, ptr + dataSize);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         setAccessorBuffer(buffer, accessor, gltf);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         draco._free(ptr);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     decoder.destroy();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     mesh.destroy();
 
     delete primitive.extensions[DRACO_EXT];
@@ -249,19 +283,31 @@ const MESHOPT_EXT = 'EXT_meshopt_compression';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function loadMeshoptBuffer(bufferView: any, gltf: any) {
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!(bufferView.extensions && bufferView.extensions[MESHOPT_EXT])) return;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const config = bufferView.extensions[MESHOPT_EXT];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const byteOffset = config.byteOffset || 0;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const byteLength = config.byteLength || 0;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const buffer = gltf.buffers[config.buffer];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const source = new Uint8Array(buffer, byteOffset, byteLength);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const target = new Uint8Array(config.count * config.byteStride);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     meshopt.decodeGltfBuffer(target, config.count, config.byteStride, source, config.mode, config.filter);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     bufferView.buffer = gltf.buffers.length;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     bufferView.byteOffset = 0;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     gltf.buffers[bufferView.buffer] = target.buffer;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     delete bufferView.extensions[MESHOPT_EXT];
 }
 
@@ -284,15 +330,18 @@ function loadBuffer(buffer: {
         .then(response => response.arrayBuffer())
         .then(arrayBuffer => {
             assert(arrayBuffer.byteLength >= buffer.byteLength);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             gltf.buffers[index] = arrayBuffer;
         });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getGLTFBytes(gltf: any, bufferViewIndex: number): Uint8Array {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const bufferView = gltf.json.bufferViews[bufferViewIndex];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const buffer = gltf.buffers[bufferView.buffer];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return new Uint8Array(buffer, bufferView.byteOffset || 0, bufferView.byteLength);
 }
 
@@ -308,6 +357,7 @@ function loadImage(img: {
             .then(response => response.blob())
             .then(blob => createImageBitmap(blob))
             .then(imageBitmap => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 gltf.images[index] = imageBitmap;
             });
     } else if (img.bufferView !== undefined) {
@@ -315,6 +365,7 @@ function loadImage(img: {
         const blob = new Blob([bytes], {type: img.mimeType});
         return createImageBitmap(blob)
             .then(imageBitmap => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 gltf.images[index] = imageBitmap;
             });
     }
@@ -334,6 +385,7 @@ export function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, bas
         const jsonType = view[pos++];
         assert(jsonType === GLB_CHUNK_TYPE_JSON);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         gltf.json = JSON.parse(textDecoder.decode(view.subarray(pos, pos + jsonLen)));
         pos += jsonLen;
 
@@ -346,17 +398,23 @@ export function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, bas
         }
 
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         gltf.json = JSON.parse(textDecoder.decode(new Uint8Array(arrayBuffer, byteOffset)));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const {buffers, images, meshes, extensionsUsed, bufferViews} = (gltf.json);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let bufferLoadsPromise: Promise<any> = Promise.resolve();
     if (buffers) {
         const bufferLoads = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         for (let i = 0; i < buffers.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const buffer = buffers[i];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (buffer.uri) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 bufferLoads.push(loadBuffer(buffer, gltf, i, baseUrl));
 
             } else if (!gltf.buffers[i]) {
@@ -369,7 +427,9 @@ export function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, bas
     return bufferLoadsPromise.then(() => {
         const assetLoads = [];
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const dracoUsed = extensionsUsed && extensionsUsed.includes(DRACO_EXT);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const meshoptUsed = extensionsUsed && extensionsUsed.includes(MESHOPT_EXT);
         if (dracoUsed) {
             assetLoads.push(waitForDraco());
@@ -379,7 +439,9 @@ export function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, bas
             assetLoads.push(waitForMeshopt());
         }
         if (images) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             for (let i = 0; i < images.length; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 assetLoads.push(loadImage(images[i], gltf, i, baseUrl));
             }
         }
@@ -392,6 +454,7 @@ export function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, bas
             if (dracoUsed && meshes) {
                 for (const {primitives} of meshes) {
                     for (const primitive of primitives) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         loadDracoMesh(primitive, gltf);
                     }
                 }

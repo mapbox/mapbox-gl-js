@@ -128,6 +128,7 @@ class Program<Us extends UniformBindings> {
 
         let fragmentSource = version + defines.concat(
             preludeFragPrecisionQualifiers,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             preludeCommonSource,
             prelude.fragmentSource).join('\n');
         for (const include of source.fragmentIncludes) {
@@ -137,6 +138,7 @@ class Program<Us extends UniformBindings> {
 
         let vertexSource = version + defines.concat(
             preludeVertPrecisionQualifiers,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             preludeCommonSource,
             prelude.vertexSource).join('\n');
         for (const include of source.vertexIncludes) {
@@ -231,6 +233,7 @@ class Program<Us extends UniformBindings> {
 
         for (const name in terrainUniformValues) {
             if (uniforms[name]) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 uniforms[name].set(this.program, name, terrainUniformValues[name]);
             }
         }
@@ -245,6 +248,7 @@ class Program<Us extends UniformBindings> {
 
         for (const name in globeUniformValues) {
             if (uniforms[name]) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 uniforms[name].set(this.program, name, globeUniformValues[name]);
             }
         }
@@ -258,6 +262,7 @@ class Program<Us extends UniformBindings> {
         context.program.set(this.program);
 
         for (const name in fogUniformValues) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             uniforms[name].set(this.program, name, fogUniformValues[name]);
         }
     }
@@ -270,6 +275,7 @@ class Program<Us extends UniformBindings> {
         context.program.set(this.program);
 
         for (const name in cutoffUniformValues) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             uniforms[name].set(this.program, name, cutoffUniformValues[name]);
         }
     }
@@ -282,6 +288,7 @@ class Program<Us extends UniformBindings> {
         context.program.set(this.program);
 
         for (const name in lightsUniformValues) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             uniforms[name].set(this.program, name, lightsUniformValues[name]);
         }
     }
@@ -293,6 +300,7 @@ class Program<Us extends UniformBindings> {
         context.program.set(this.program);
 
         for (const name in shadowUniformValues) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             uniforms[name].set(this.program, name, shadowUniformValues[name]);
         }
     }
@@ -360,9 +368,13 @@ class Program<Us extends UniformBindings> {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const copyUniformValues = (group: string, pSrc: any, pDst: any) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (pSrc[group] && pDst[group]) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 for (const name in pSrc[group]) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (pDst[group][name]) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         pDst[group][name].set(pDst.program, name, pSrc[group][name].current);
                     }
                 }
@@ -432,7 +444,9 @@ class Program<Us extends UniformBindings> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     checkUniforms(name: string, define: DynamicDefinesType, uniforms: any) {
         if (this.fixedDefines.includes(define)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             for (const key of Object.keys(uniforms)) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (!uniforms[key].initialized) {
                     throw new Error(`Program '${this.name}', from draw '${name}': uniform ${key} not set but required by ${define} being defined`);
                 }

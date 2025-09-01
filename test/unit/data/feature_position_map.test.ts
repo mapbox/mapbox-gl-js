@@ -6,9 +6,12 @@ import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
 
 function getPositions(posMap, id) {
     const positions: Array<any> = [];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     posMap.eachPosition(id, (index, start, end) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         positions.push({index, start, end});
     });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     positions.sort((a, b) => a.index - b.index);
     return positions;
 }

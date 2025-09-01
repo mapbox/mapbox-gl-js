@@ -159,6 +159,7 @@ export class Evented<R extends EventRegistry = EventRegistry> {
 
             const parent = this._eventedParent;
             if (parent) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const eventedParentData = typeof this._eventedParentData === 'function' ?
                     this._eventedParentData() :
                     this._eventedParentData;

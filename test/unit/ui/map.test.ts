@@ -19,14 +19,17 @@ import {getGlobalWorkerPool, getImageRasterizerWorkerPool} from '../../../src/ut
 // Mock implementation of elevation
 const createElevation = (func, exaggeration) => {
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         _exaggeration: exaggeration,
         isDataAvailableAtPoint(_) {
             return true;
         },
         getAtPointOrZero(point, def) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return this.getAtPoint(point, def) || 0;
         },
         getAtPoint(point, def) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return func(point) * this.exaggeration() || def;
         },
         getForTilePoints() {
@@ -35,6 +38,7 @@ const createElevation = (func, exaggeration) => {
         getMinElevationBelowMSL: () => 0,
 
         exaggeration() {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return this._exaggeration;
         }
     };
@@ -117,6 +121,7 @@ describe('Map', () => {
                 options[handlerName] = false;
                 const map = createMap(options);
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 expect(map[handlerName].isEnabled()).toBeFalsy();
             });
         });
@@ -175,6 +180,7 @@ describe('Map', () => {
             const source = map.getSource('geojson');
             const fakeTileId = new OverscaledTileID(0, 0, 0, 0, 0);
             map.style.getOwnSourceCache('geojson')._tiles[fakeTileId.key] = new Tile(fakeTileId);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             map.style.getOwnSourceCache('geojson')._tiles[fakeTileId.key].state = tileState;
 
             return {map, source};
@@ -209,12 +215,14 @@ describe('Map', () => {
             const {map, source} = await setupIsSourceLoaded('loaded');
             await new Promise(resolve => {
                 map.on("data", (e) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (source._data.features[0].properties.name === 'Null Island' && e.sourceDataType === 'metadata') {
                         expect(e.isSourceLoaded).toEqual(true);
                         resolve();
                     }
                 });
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 source.setData({
                     'type': 'FeatureCollection',
                     'features': [{
@@ -436,6 +444,7 @@ describe('Map', () => {
         const stub = vi.spyOn(console, 'error').mockImplementation(() => {});
         map.updateImage('image', {});
         expect(stub).toHaveBeenCalledTimes(1);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(stub.mock.calls[0][0].message).toMatch('The map has no image with that id');
     });
 
@@ -564,14 +573,22 @@ describe('Map', () => {
 
                     const output = map.queryRenderedFeatures();
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const args1 = map.style.queryRenderedFeatures.mock.calls[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[0]).toBeTruthy();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[1]).toEqual(undefined);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[2]).toEqual(map.transform);
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const args2 = map.style.queryRenderedFeatureset.mock.calls[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[0]).toBeTruthy();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[1]).toEqual(undefined);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[2]).toEqual(map.transform);
 
                     expect(output).toEqual([]);
@@ -589,14 +606,22 @@ describe('Map', () => {
 
                     const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const args1 = map.style.queryRenderedFeatures.mock.calls[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[0]).toEqual({x: 100, y: 100}); // query geometry
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[1]).toEqual(undefined); // options
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[2]).toEqual(map.transform); // transform
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const args2 = map.style.queryRenderedFeatureset.mock.calls[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[0]).toEqual({x: 100, y: 100}); // query geometry
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[1]).toEqual(undefined); // options
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[2]).toEqual(map.transform); // transform
 
                     expect(output).toEqual([]);
@@ -615,12 +640,18 @@ describe('Map', () => {
 
                     const output = map.queryRenderedFeatures({filter: ['all']});
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const args1 = map.style.queryRenderedFeatures.mock.calls[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[0]).toBeTruthy();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[1]).toEqual({filter: ['all']});
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const args2 = map.style.queryRenderedFeatureset.mock.calls[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[0]).toBeTruthy();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[1]).toEqual({filter: ['all']});
 
                     expect(output).toEqual([]);
@@ -645,8 +676,11 @@ describe('Map', () => {
 
                     expect(map.style.queryRenderedFeatures).toHaveBeenCalledTimes(0);
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const args = map.style.queryRenderedFeatureset.mock.calls[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args[0]).toBeTruthy();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args[1]).toEqual({target: {featuresetId: 'featureset'}});
 
                     expect(output).toEqual([]);
@@ -666,8 +700,11 @@ describe('Map', () => {
 
                     const output = map.queryRenderedFeatures({layers: ['layer1']});
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const args0 = map.style.queryRenderedFeatures.mock.calls[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args0[0]).toBeTruthy();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args0[1]).toEqual({layers: ['layer1']});
 
                     expect(map.style.queryRenderedFeatureset).toHaveBeenCalledTimes(0);
@@ -687,14 +724,22 @@ describe('Map', () => {
 
                     const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)), {filter: ['all']});
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const args1 = map.style.queryRenderedFeatures.mock.calls[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[0]).toEqual({x: 100, y: 100});
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[1]).toEqual({filter: ['all']});
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args1[2]).toEqual(map.transform);
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const args2 = map.style.queryRenderedFeatureset.mock.calls[0];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[0]).toEqual({x: 100, y: 100});
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[1]).toEqual({filter: ['all']});
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(args2[2]).toEqual(map.transform);
 
                     expect(output).toEqual([]);
@@ -712,7 +757,9 @@ describe('Map', () => {
 
                     map.queryRenderedFeatures(map.project(new LngLat(360, 0)));
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(map.style.queryRenderedFeatures.mock.calls[0][0]).toEqual({x: 612, y: 100});
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     expect(map.style.queryRenderedFeatureset.mock.calls[0][0]).toEqual({x: 612, y: 100});
 
                     resolve();
@@ -766,6 +813,7 @@ describe('Map', () => {
 
             await new Promise(resolve => {
                 source.on("data", (e) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (e.sourceDataType === 'metadata') {
                         setTimeout(() => {
                             expect(clearSourceSpy).toHaveBeenCalledTimes(1);
@@ -830,6 +878,7 @@ describe('Map', () => {
 
             await new Promise(resolve => {
                 source.on("data", e => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (e.sourceDataType === 'metadata') {
                         setTimeout(() => {
                             expect(clearSourceSpy).toHaveBeenCalledTimes(1);
@@ -901,6 +950,7 @@ describe('Map', () => {
         expect(map.idle()).toBeFalsy();
         await waitFor(map, "idle");
         expect(map.idle()).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (timer) clearTimeout(timer);
         await new Promise(resolve => {
             timer = setTimeout(() => {
@@ -964,6 +1014,7 @@ describe('Map', () => {
         const map = createMap({interactive: true});
         map.flyTo({center: [200, 0], duration: 100});
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousedown(map.getCanvasContainer());
         expect(map.isEasing()).toEqual(false);
 
@@ -974,6 +1025,7 @@ describe('Map', () => {
         const map = createMap({interactive: false});
         map.flyTo({center: [200, 0], duration: 100});
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousedown(map.getCanvasContainer());
         expect(map.isEasing()).toEqual(true);
 
@@ -984,6 +1036,7 @@ describe('Map', () => {
         const map = createMap({interactive: true});
         map.flyTo({center: [200, 0], duration: 100});
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.touchstart(map.getCanvasContainer(), {touches: [constructTouch(map.getCanvasContainer(), {target: map.getCanvas(), clientX: 0, clientY: 0})]});
         expect(map.isEasing()).toEqual(false);
 
@@ -994,6 +1047,7 @@ describe('Map', () => {
         const map = createMap({interactive: false});
         map.flyTo({center: [200, 0], duration: 100});
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.touchstart(map.getCanvasContainer());
         expect(map.isEasing()).toEqual(true);
 
@@ -1031,6 +1085,7 @@ describe('Map', () => {
 
         afterEach(() => {
             const [index] = Object.entries(window.document.styleSheets[0].cssRules).find(([, rule]: [any, any]) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 return rule.selectorText === '.mapboxgl-canary';
             });
             try { window.document.body.removeChild(container); } catch (err) { /* noop */ }
@@ -1041,6 +1096,7 @@ describe('Map', () => {
             const stub = vi.spyOn(console, 'warn');
             await new Promise(resolve => {
                 setTimeout(() => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     new Map({container, testMode: true});
                     resolve();
                 }, 0);
@@ -1183,6 +1239,7 @@ describe('Map', () => {
 
         beforeEach(() => {
             map = createMap();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             version = map.version;
         });
 
@@ -1192,9 +1249,12 @@ describe('Map', () => {
         });
         test('cannot be set', () => {
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 map.version = "2.0.0-beta.9";
             }).toThrowError(TypeError);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(map.version).not.toBe("2.0.0-beta.9");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(map.version).toBe(version);
         });
     });
@@ -1222,6 +1282,7 @@ describe('Map', () => {
 
         test('elevation with exaggeration', () => {
             const map = createMap();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             map.transform.elevation = createElevation((point) => point.x + point.y, 0.1);
 
             let elevation = map.queryTerrainElevation([0, 0]);
@@ -1377,19 +1438,25 @@ test('Disallow usage of FQID separator in the public APIs', async () => {
     const callCount = 26;
     expect(spy.mock.calls.length).toEqual(callCount);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const event0 = spy.mock.calls[0][0];
 
     expect(event0).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(event0.error.message).toMatch(/can't be empty/);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const event1 = spy.mock.calls[1][0];
 
     expect(event1).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(event1.error.message).toMatch(/can't be empty/);
 
     for (let i = 2; i <= callCount - 1; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const event = spy.mock.calls[i][0];
         expect(event).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(event.error.message).toMatch(/can't contain special symbols/);
     }
 });

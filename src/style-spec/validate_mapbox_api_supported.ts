@@ -104,6 +104,7 @@ function getSourcesErrors(sources: SourcesSpecification): {
         errors.push(...sourceErrors);
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return {errors, sourcesCount};
 }
 

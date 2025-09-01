@@ -125,19 +125,23 @@ class Context {
         this.options = options ? Object.assign({}, options) : {};
 
         if (!this.options.extTextureFilterAnisotropicForceOff) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.extTextureFilterAnisotropic = (
                 gl.getExtension('EXT_texture_filter_anisotropic') ||
             gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
             gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
             );
             if (this.extTextureFilterAnisotropic) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 this.extTextureFilterAnisotropicMax = gl.getParameter(this.extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
             }
         }
 
         this.extDebugRendererInfo = gl.getExtension('WEBGL_debug_renderer_info');
         if (this.extDebugRendererInfo) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.renderer = gl.getParameter(this.extDebugRendererInfo.UNMASKED_RENDERER_WEBGL);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.vendor = gl.getParameter(this.extDebugRendererInfo.UNMASKED_VENDOR_WEBGL);
         }
 
@@ -149,8 +153,11 @@ class Context {
         }
         this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query_webgl2');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         this.maxPointSize = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)[1];
     }
 

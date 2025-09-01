@@ -9,13 +9,16 @@ import glyphStub from '/test/fixtures/0-255.pbf?arraybuffer';
 
 const glyphData: Record<string, any> = {};
 glyphData.glyphs = [];
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const data = parseGlyphPBF(glyphStub);
 glyphData.ascender = data.ascender;
 glyphData.descender = data.descender;
 for (const glyph of data.glyphs) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     glyphData.glyphs[glyph.id] = glyph;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const identityTransform = (url) => ({url});
 
 const TinySDF = class {
@@ -48,6 +51,7 @@ const createLoadGlyphRangeStub = () => {
 const createGlyphManager = (font, allGlyphs) => {
     const manager = new GlyphManager(identityTransform,
         font ? (allGlyphs ? LocalGlyphMode.all : LocalGlyphMode.ideographs) : LocalGlyphMode.none,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         font);
     manager.setURL('https://localhost/fonts/v1/{fontstack}/{range}.pbf');
     return manager;
@@ -109,11 +113,14 @@ test('GlyphManager does not cache CJK chars that should be rendered locally', as
     vi.spyOn(GlyphManager, 'loadGlyphRange').mockImplementation((stack, range, urlTemplate, transform, callback) => {
         const overlappingGlyphs: Record<string, any> = {};
         overlappingGlyphs.glyphs = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         overlappingGlyphs.ascender = glyphData.ascender;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         overlappingGlyphs.descender = glyphData.descender;
         const start = range * 256;
         const end = start + 256;
         for (let i = start, j = 0; i < end; i++, j++) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             overlappingGlyphs.glyphs[i] = glyphData.glyphs[j];
         }
         setTimeout(() => callback(null, overlappingGlyphs));

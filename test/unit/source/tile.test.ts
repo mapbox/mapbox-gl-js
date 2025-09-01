@@ -23,33 +23,48 @@ describe('querySourceFeatures', () => {
         let result: any;
 
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
 
         const layers = {_geojsonTileLayer: features};
         const geojsonWrapper = new GeoJSONWrapper(layers);
         tile.loadVectorData(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             createVectorData({rawTileData: writePbf(layers)}),
             createPainter()
         );
 
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(1);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result[0].geometry.coordinates).toEqual([-90, 0]);
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(1);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result[0].properties).toEqual(features[0].tags);
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {filter: ['==', 'oneway', true]});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(1);
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {filter: ['!=', 'oneway', true]});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
         result = [];
         const polygon = {type: "Polygon",  coordinates: [[[-91, -1], [-89, -1], [-89, 1], [-91, 1], [-91, -1]]]};
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {filter: ['within', polygon]});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(1);
     });
 
@@ -58,14 +73,18 @@ describe('querySourceFeatures', () => {
         let result: any;
 
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
 
         const layers = {_geojsonTileLayer: []};
         const geojsonWrapper = new GeoJSONWrapper(layers);
         tile.rawTileData = writePbf(layers);
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(() => { tile.querySourceFeatures(result); }).not.toThrowError();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
     });
 
@@ -74,27 +93,38 @@ describe('querySourceFeatures', () => {
         let result: any;
 
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
 
         tile.loadVectorData(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
             createVectorData({rawTileData}),
             createPainter()
         );
 
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {'sourceLayer': 'does-not-exist'});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
 
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {'sourceLayer': 'road'});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(3);
 
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {'sourceLayer': 'road', filter: ['==', 'class', 'main']});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(1);
         result = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {'sourceLayer': 'road', filter: ['!=', 'class', 'main']});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(2);
     });
 
@@ -114,15 +144,18 @@ describe('querySourceFeatures', () => {
         tile.state = 'loaded';
 
         tile.loadVectorData(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
             createVectorData({rawTileData}),
             createPainter()
         );
         tile.loadVectorData(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             createVectorData(),
             createPainter()
         );
 
         const features: Array<any> = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(features, {'sourceLayer': 'road'});
         expect(features.length).toEqual(3);
     });
@@ -259,6 +292,7 @@ describe('rtl text detection', () => {
             // symbolBucket has not been populated yet so we force override the value in the stub
             symbolBucket.hasRTLText = true;
             tile.loadVectorData(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
                 createVectorData({rawTileData, buckets: [symbolBucket]}),
                 createPainter({
                     getLayer() {

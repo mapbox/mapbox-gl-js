@@ -95,6 +95,7 @@ export default function verticalizePunctuation(input: string, skipContextCheckin
         const nextCharCode = input.charCodeAt(i + 1) || null;
         const prevCharCode = input.charCodeAt(i - 1) || null;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const canReplacePunctuation = skipContextChecking || (
             (!nextCharCode || !charHasRotatedVerticalOrientation(nextCharCode) || verticalizedCharacterMap[input[i + 1]]) &&
             (!prevCharCode || !charHasRotatedVerticalOrientation(prevCharCode) || verticalizedCharacterMap[input[i - 1]])

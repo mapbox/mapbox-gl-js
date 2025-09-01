@@ -387,6 +387,7 @@ export function getGlyphQuads(
                 //   |     |
                 // bl ----- br
                 tl = new Point(-halfAdvance + builtInOffset[0], builtInOffset[1]);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 tl._rotateAround(verticalRotation, center)._add(verticalOffsetCorrection);
 
                 // Relative position after rotating
@@ -396,9 +397,11 @@ export function getGlyphQuads(
                 // tl ----- bl
                 // After rotation, glyph lies on the horizontal midline.
                 // Shift back to tl's original x coordinate before rotation by applying 'xOffsetCorrection'.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tl.x += -yShift + halfAdvance;
 
                 // Add padding for y coordinate's justification
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tl.y -= (metrics.left - rectBuffer) * positionedGlyph.scale;
 
                 // Adjust x coordinate according to glyph bitmap's height and the vectical advance
@@ -408,10 +411,12 @@ export function getGlyphQuads(
                 const chr = String.fromCodePoint(positionedGlyph.glyph);
                 if (isVerticalClosePunctuation(chr)) {
                     // Place vertical punctuation in right place, pull down 1 pixel's space for close punctuations
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tl.x += (-rectBuffer + 1) * positionedGlyph.scale;
                 } else if (isVerticalOpenPunctuation(chr)) {
                     const xOffset = verticalAdvance - metrics.height * positionedGlyph.scale;
                     // Place vertical punctuation in right place, pull up 1 pixel's space for open punctuations
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tl.x += xOffset + (-rectBuffer - 1) * positionedGlyph.scale;
                 } else if (!positionedGlyph.image &&
                            ((metrics.width + rectBuffer * 2) !== rect.w || metrics.height + rectBuffer * 2 !== rect.h)) {
@@ -419,15 +424,20 @@ export function getGlyphQuads(
                     // but the original tl do have distance of rectBuffer padded to the top of the glyph.
                     const perfectPaddedHeight = (metrics.height + rectBuffer * 2) * positionedGlyph.scale;
                     const delta = verticalAdvance - perfectPaddedHeight;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tl.x += delta / 2;
                 } else {
                     // Place the glyph bitmap right in the center of the 24x24 point boxes
                     const delta = verticalAdvance - paddedHeight;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tl.x += delta / 2;
                 }
                 // Calculate other three points
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 tr = new Point(tl.x, tl.y - paddedWidth);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 bl = new Point(tl.x + paddedHeight, tl.y);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 br = new Point(tl.x + paddedHeight, tl.y - paddedWidth);
             }
 
@@ -442,9 +452,13 @@ export function getGlyphQuads(
                 } else {
                     center = new Point(0, 0);
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 tl._rotateAround(textRotate, center);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 tr._rotateAround(textRotate, center);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 bl._rotateAround(textRotate, center);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 br._rotateAround(textRotate, center);
             }
 
@@ -452,6 +466,7 @@ export function getGlyphQuads(
             const pixelOffsetBR = new Point(0, 0);
             const minFontScaleX = 0;
             const minFontScaleY = 0;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             quads.push({tl, tr, bl, br, texPrimary: textureRect, texSecondary: undefined, writingMode: shaping.writingMode, glyphOffset, sectionIndex: positionedGlyph.sectionIndex, isSDF, pixelOffsetTL, pixelOffsetBR, minFontScaleX, minFontScaleY});
         }
     }

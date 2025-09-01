@@ -19,30 +19,40 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
     class SourceMock extends Evented {
         constructor() {
             super();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.id = id;
             this.minzoom = 0;
             this.maxzoom = 22;
             Object.assign(this, sourceOptions);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.setEventedParent(eventedParent);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (sourceOptions.hasTile) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 this.hasTile = sourceOptions.hasTile;
             }
         }
         loadTile(tile, callback) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (sourceOptions.expires) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 tile.setExpiryData({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     expires: sourceOptions.expires
                 });
             }
-            // eslint-disable-next-line @typescript-eslint/no-implied-eval
+            // eslint-disable-next-line @typescript-eslint/no-implied-eval, @typescript-eslint/no-unsafe-argument
             setTimeout(callback, 0);
         }
         loaded() {
             return true;
         }
         onAdd() {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (sourceOptions.noLoad) return;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (sourceOptions.error) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 this.fire(new ErrorEvent(sourceOptions.error));
             } else {
                 this.fire(new Event('data', {dataType: 'source', sourceDataType: 'metadata'}));
@@ -60,11 +70,15 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
 setType('mock-source-type', MockSourceType);
 
 export function createSourceCache(options, used) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const spec = options || {};
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     spec['minzoom'] = spec['minzoom'] || 0;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     spec['maxzoom'] = spec['maxzoom'] || 14;
 
     const eventedParent = new Evented();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const sc = new SourceCache('id', create('id', Object.assign({
         tileSize: 512,
         type: 'mock-source-type'
@@ -80,7 +94,9 @@ describe('SourceCache#addTile', () => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
         const {sourceCache} = createSourceCache({
             loadTile(tile) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(tile.tileID).toEqual(tileID);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(tile.uses).toEqual(0);
             }
         });
@@ -94,7 +110,9 @@ describe('SourceCache#addTile', () => {
 
         await new Promise(resolve => {
             eventedParent.on("dataloading", (data) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(data.tile.tileID).toEqual(tileID);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(data.tile.uses).toEqual(1);
                 resolve();
             });
@@ -116,7 +134,9 @@ describe('SourceCache#addTile', () => {
                         resolve();
                     });
                     updateFeaturesSpy = vi.spyOn(tile, 'refreshFeatureState');
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.state = 'loaded';
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     callback();
                 }
             });
@@ -132,8 +152,10 @@ describe('SourceCache#addTile', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
                 load++;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -157,7 +179,9 @@ describe('SourceCache#addTile', () => {
 
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -224,8 +248,10 @@ describe('SourceCache#addTile', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
                 load++;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -278,6 +304,7 @@ describe('SourceCache#removeTile', () => {
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
         const {sourceCache} = createSourceCache({
             loadTile(tile) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
             },
             unloadTile() {
@@ -301,10 +328,12 @@ describe('SourceCache#removeTile', () => {
 
         const {sourceCache} = createSourceCache({
             abortTile(tile) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(tile.tileID).toEqual(tileID);
                 abort++;
             },
             unloadTile(tile) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(tile.tileID).toEqual(tileID);
                 unload++;
             }
@@ -324,6 +353,7 @@ describe('SourceCache#removeTile', () => {
             loadTile(tile, callback) {
                 // tile.added = t.notOk();
                 sourceCache._removeTile(tileID.key);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -401,6 +431,7 @@ describe('SourceCache / Source lifecycle', () => {
         transform.zoom = 0;
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback("error");
             }
         });
@@ -425,8 +456,11 @@ describe('SourceCache / Source lifecycle', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(tile.tileID.key).toBe(expected.shift());
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -453,7 +487,9 @@ describe('SourceCache / Source lifecycle', () => {
             loadTile(tile, callback) {
                 // this transform will try to load the four tiles at z1 and a single z0 tile
                 // we only expect _reloadTile to be called with the 'loaded' z0 tile
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = tile.tileID.canonical.z === 1 ? 'errored' : 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -517,6 +553,7 @@ describe('SourceCache#update', () => {
         transform.zoom = 1;
 
         const {sourceCache, eventedParent} = createSourceCache({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             hasTile: (coord) => (coord.canonical.x !== 0)
         });
         await new Promise(resolve => {
@@ -541,7 +578,9 @@ describe('SourceCache#update', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile: (tile, callback) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback(null);
             }
         });
@@ -577,7 +616,9 @@ describe('SourceCache#update', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = (tile.tileID.key === new OverscaledTileID(0, 0, 0, 0, 0).key) ? 'loaded' : 'loading';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -613,6 +654,7 @@ describe('SourceCache#update', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = (tile.tileID.key === new OverscaledTileID(0, 1, 0, 0, 0).key) ? 'loaded' : 'loading';
             }
         });
@@ -647,9 +689,13 @@ describe('SourceCache#update', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.timeAdded = Infinity;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 tile.registerFadeDuration(100);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -689,9 +735,13 @@ describe('SourceCache#update', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.timeAdded = Infinity;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 tile.registerFadeDuration(100);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -730,9 +780,13 @@ describe('SourceCache#update', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.timeAdded = Infinity;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 tile.registerFadeDuration(100);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -765,8 +819,11 @@ describe('SourceCache#update', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.timeAdded = Date.now();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -802,9 +859,13 @@ describe('SourceCache#update', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.timeAdded = browser.now();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.fadeEndTime = browser.now() + fadeTime;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -848,7 +909,9 @@ describe('SourceCache#update', () => {
         const {sourceCache, eventedParent} = createSourceCache({
             reparseOverscaled: true,
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = tile.tileID.overscaledZ === 16 ? 'loaded' : 'loading';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -915,7 +978,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
         const stateCache: Record<string, any> = {};
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 tile.state = stateCache[tile.tileID.key] || 'errored';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -931,7 +996,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
     test('retains all loaded children ', () => {
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'errored';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -971,7 +1038,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
             minzoom: 2,
             maxzoom: 5,
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'errored';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -1041,7 +1110,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
         const stateCache: Record<string, any> = {};
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 tile.state = stateCache[tile.tileID.key] || 'errored';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -1075,7 +1146,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
     test('don\'t use wrong parent tile', () => {
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'errored';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -1112,7 +1185,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
     test('use parent tile when ideal tile is not loaded', () => {
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loading';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -1160,7 +1235,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
     test('don\'t load parent if all immediate children are loaded', () => {
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loading';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -1182,7 +1259,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
     test('prefer loaded child tiles to parent tiles', () => {
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loading';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -1227,7 +1306,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
     test('don\'t use tiles below minzoom', () => {
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loading';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             },
             minzoom: 2
@@ -1255,7 +1336,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
     test('use overzoomed tile above maxzoom', () => {
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loading';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             },
             maxzoom: 2
@@ -1284,7 +1367,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
     test('dont\'t ascend multiple times if a tile is not found', () => {
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loading';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -1327,7 +1412,9 @@ describe('SourceCache#_updateRetainedTiles', () => {
     test('adds correct leaded parent tiles for overzoomed tiles', () => {
         const {sourceCache} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loading';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             },
             maxzoom: 7
@@ -1358,10 +1445,12 @@ describe('SourceCache#clearTiles', () => {
 
         const {sourceCache} = createSourceCache({
             abortTile(tile) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(tile.tileID).toEqual(coord);
                 abort++;
             },
             unloadTile(tile) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(tile.tileID).toEqual(coord);
                 unload++;
             }
@@ -1391,7 +1480,9 @@ describe('SourceCache#tilesIn', () => {
 
     function round(queryGeometry) {
         return {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             min: queryGeometry.min.round(),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             max: queryGeometry.max.round()
         };
     }
@@ -1404,8 +1495,11 @@ describe('SourceCache#tilesIn', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.additionalRadius = 0;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             }
         });
@@ -1447,8 +1541,11 @@ describe('SourceCache#tilesIn', () => {
     test('reparsed overscaled tiles', async () => {
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.additionalRadius = 0;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback();
             },
             reparseOverscaled: true,
@@ -1497,6 +1594,7 @@ describe('SourceCache#tilesIn', () => {
 
     test('overscaled tiles', async () => {
         const {sourceCache, eventedParent} = createSourceCache({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             loadTile(tile, callback) { tile.state = 'loaded'; callback(); },
             reparseOverscaled: false,
             minzoom: 1,
@@ -1523,7 +1621,9 @@ describe('SourceCache#tilesIn', () => {
 test('SourceCache#loaded (no errors)', async () => {
     const {sourceCache, eventedParent} = createSourceCache({
         loadTile(tile, callback) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.state = 'loaded';
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             callback();
         }
     });
@@ -1546,6 +1646,7 @@ test('SourceCache#loaded (no errors)', async () => {
 test('SourceCache#loaded (with errors)', async () => {
     const {sourceCache, eventedParent} = createSourceCache({
         loadTile(tile) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.state = 'errored';
         }
     });
@@ -1634,9 +1735,11 @@ describe('SourceCache#findLoadedParent', () => {
 
         const mockTile = id => {
             const tile = {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 tileID: id,
                 hasData() { return true; }
             };
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             sourceCache._tiles[id.key] = tile;
         };
 
@@ -1770,10 +1873,14 @@ describe('SourceCache loads tiles recursively', () => {
         const {sourceCache, eventedParent} = createSourceCache({
             maxzoom: 14,
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (tile.tileID.canonical.z > maxAvailableZoom) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     setTimeout(() => callback({status: 404}), 0);
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.state = 'loaded';
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     callback(null);
                 }
             }
@@ -1823,6 +1930,7 @@ describe('SourceCache loads tiles recursively', () => {
                 new OverscaledTileID(14, 0, 14, 8192, 8191).key,
                 new OverscaledTileID(14, 0, 14, 8191, 8191).key,
             ]);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             resolve();
         }
     });
@@ -1834,6 +1942,7 @@ describe('SourceCache loads tiles recursively', () => {
 
         const {sourceCache, eventedParent} = createSourceCache({
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 setTimeout(() => callback({status: 404}), 0);
             }
         });
@@ -1896,8 +2005,11 @@ describe('SourceCache#_preloadTiles', () => {
         const {sourceCache, eventedParent} = createSourceCache({
             reparseOverscaled: true,
             loadTile(tile, callback) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(tile.tileID.key).toEqual(expected.shift());
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback(null);
             }
         });
@@ -1924,6 +2036,7 @@ describe('SourceCache#_preloadTiles', () => {
         const {sourceCache} = createSourceCache({
             loadTile(tile) {
                 expect(sourceCache._sourceLoaded).toBeTruthy();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(tile.tileID.key).toEqual(new OverscaledTileID(0, 0, 0, 0, 0).key);
             }
         });
@@ -1948,7 +2061,9 @@ describe('Visible coords with shadows', () => {
     const {sourceCache, eventedParent} = createSourceCache({
         reparseOverscaled: true,
         loadTile(tile, callback) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.state = 'loaded';
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             callback(null);
         }
     });
@@ -1984,7 +2099,9 @@ test('sortCoordinatesByDistance', () => {
     const {sourceCache, eventedParent} = createSourceCache({
         reparseOverscaled: true,
         loadTile(tile, callback) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.state = 'loaded';
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             callback(null);
         }
     });
@@ -2053,7 +2170,9 @@ describe('shadow caster tiles', () => {
     const {sourceCache, eventedParent} = createSourceCache({
         reparseOverscaled: true,
         loadTile(tile, callback) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.state = 'loaded';
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             callback(null);
         }
     });

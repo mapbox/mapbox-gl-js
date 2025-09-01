@@ -126,6 +126,7 @@ export class StyleExpression {
         this._evaluator.iconImageUseTheme = iconImageUseTheme || null;
 
         try {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const val = this.expression.evaluate(this._evaluator);
             // eslint-disable-next-line no-self-compare
             if (val === null || val === undefined || (typeof val === 'number' && val !== val)) {
@@ -136,9 +137,12 @@ export class StyleExpression {
             }
             return val;
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (!this._warningHistory[e.message]) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this._warningHistory[e.message] = true;
                 if (typeof console !== 'undefined') {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     console.warn(`Failed to evaluate expression "${JSON.stringify(this.expression.serialize())}". ${e.message}`);
                 }
             }
@@ -357,33 +361,40 @@ export function createPropertyExpression(
     iconImageUseTheme?: string | null
 ): Result<StylePropertyExpression, Array<ParsingError>> {
     expression = createExpression(expression, propertySpec, scope, options, iconImageUseTheme);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (expression.result === 'error') {
         return expression as Result<StylePropertyExpression, Array<ParsingError>>;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const parsed = expression.value.expression;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const isFeatureConstant = isConstant.isFeatureConstant(parsed);
     if (!isFeatureConstant && !supportsPropertyExpression(propertySpec)) {
         return error([new ParsingError('', 'data expressions not supported')]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const isZoomConstant = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'pitch', 'distance-from-center']);
     if (!isZoomConstant && !supportsZoomExpression(propertySpec)) {
         return error([new ParsingError('', 'zoom expressions not supported')]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const isLightConstant = isConstant.isGlobalPropertyConstant(parsed, ['measure-light']);
     if (!isLightConstant && !supportsLightExpression(propertySpec)) {
         return error([new ParsingError('', 'measure-light expression not supported')]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const isLineProgressConstant = isConstant.isGlobalPropertyConstant(parsed, ['line-progress']);
     if (!isLineProgressConstant && !supportsLineProgressExpression(propertySpec)) {
         return error([new ParsingError('', 'line-progress expression not supported')]);
     }
 
     const canRelaxZoomRestriction = propertySpec.expression && propertySpec.expression.relaxZoomRestriction;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const zoomCurve = findZoomCurve(parsed);
     if (!zoomCurve && !isZoomConstant && !canRelaxZoomRestriction) {
         return error([new ParsingError('', '"zoom" expression may only be used as input to a top-level "step" or "interpolate" expression, or in the properties of atmosphere.')]);
@@ -395,14 +406,18 @@ export function createPropertyExpression(
 
     if (!zoomCurve) {
         return success((isFeatureConstant && isLineProgressConstant) ?
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             (new ZoomConstantExpression('constant', expression.value, isLightConstant, isLineProgressConstant) as ConstantExpression) :
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             (new ZoomConstantExpression('source', expression.value, isLightConstant, isLineProgressConstant) as SourceExpression));
     }
 
     const interpolationType = zoomCurve instanceof Interpolate ? zoomCurve.interpolation : undefined;
 
     return success((isFeatureConstant && isLineProgressConstant) ?
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         (new ZoomDependentExpression('camera', expression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CameraExpression) :
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         (new ZoomDependentExpression('composite', expression.value, zoomCurve.labels, interpolationType, isLightConstant, isLineProgressConstant) as CompositeExpression));
 }
 

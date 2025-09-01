@@ -55,12 +55,15 @@ class Coercion implements Expression {
                     return context.error(`Expected ${context.expectedType.kind} but found array.`);
                 }
             } else if (arrayLength > 0 && isValue(args[1][0])) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const value = (args[1][0]);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 type = array(typeOf(value), arrayLength);
             } else {
                 return null;
             }
             for (let i = 0; i < arrayLength; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const member = args[1][i];
                 let parsedMember;
                 if (Array.isArray(member)) {
@@ -81,6 +84,7 @@ class Coercion implements Expression {
             if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
                 return context.error(`Expected one argument.`);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             type = types[name];
 
             for (let i = 1; i < args.length; i++) {
@@ -90,6 +94,7 @@ class Coercion implements Expression {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Coercion(type, parsed);
     }
 
@@ -101,6 +106,7 @@ class Coercion implements Expression {
             let input;
             let error;
             for (const arg of this.args) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 input = arg.evaluate(ctx);
                 error = null;
                 if (input instanceof Color) {
@@ -115,14 +121,17 @@ class Coercion implements Expression {
                         error = validateRGBA(input[0], input[1], input[2], input[3]);
                     }
                     if (!error) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         return new Color((input[0]) / 255, (input[1]) / 255, (input[2]) / 255, (input[3]));
                     }
                 }
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             throw new RuntimeError(error || `Could not parse color from value '${typeof input === 'string' ? input : String(JSON.stringify(input))}'`);
         } else if (this.type.kind === 'number') {
             let value = null;
             for (const arg of this.args) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 value = arg.evaluate(ctx);
                 if (value === null) return 0;
                 const num = Number(value);
@@ -133,13 +142,16 @@ class Coercion implements Expression {
         } else if (this.type.kind === 'formatted') {
             // There is no explicit 'to-formatted' but this coercion can be implicitly
             // created by properties that expect the 'formatted' type.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'resolvedImage') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return ResolvedImage.build(valueToString(this.args[0].evaluate(ctx)));
         } else if (this.type.kind === 'array') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return this.args.map(arg => { return arg.evaluate(ctx); });
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return valueToString(this.args[0].evaluate(ctx));
         }
     }

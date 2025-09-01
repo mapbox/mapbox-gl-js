@@ -54,9 +54,11 @@ class ModelManager extends Evented {
                 return model;
             })
             .catch((err) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (err && err.status === 404) {
                     return null;
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this.fire(new ErrorEvent(new Error(`Could not load model ${id} from ${url}: ${err.message}`)));
             });
     }
@@ -91,16 +93,20 @@ class ModelManager extends Evented {
                     const {status} = results[i];
                     if (status === 'rejected') continue;
                     const {value} = results[i] as PromiseFulfilledResult<Model>;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (!this.models[scope][idsToLoad[i]]) {
                         // Before promises getting resolved, models could have been deleted
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         this.models[scope][idsToLoad[i]] = {model: null, numReferences: 1};
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     this.models[scope][idsToLoad[i]].model = value;
                 }
                 this.numModelsLoading[scope] -= idsToLoad.length;
                 this.fire(new Event('data', {dataType: 'style'}));
             })
             .catch((err) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this.fire(new ErrorEvent(new Error(`Could not load models: ${err.message}`)));
             });
     }

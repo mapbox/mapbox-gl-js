@@ -50,15 +50,20 @@ class Color {
             return undefined;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const rgba = parseCSSColor(input);
         if (!rgba) {
             return undefined;
         }
 
         return new Color(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             rgba[0] / 255,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             rgba[1] / 255,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             rgba[2] / 255,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             rgba[3]
         );
     }

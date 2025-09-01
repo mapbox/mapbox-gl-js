@@ -4,6 +4,7 @@ import fs from 'fs';
 import {execSync} from 'child_process';
 import {createRequire} from 'module';
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const packageJson = JSON.parse(fs.readFileSync('./package.json').toString());
 
 process.on('unhandledRejection', (/** @type {Error} */ error) => {
@@ -17,7 +18,9 @@ const require = createRequire(import.meta.url);
 const stylePath = require.resolve('mapbox-gl-styles/styles/basic-v9.json');
 
 try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     for (const bin in packageJson.bin) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const script = packageJson.bin[bin];
         const command = [script, stylePath].join(' ');
 
@@ -25,6 +28,7 @@ try {
         execSync(command).toString();
     }
 } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     console.log(error.message);
     process.exit(1);
 }

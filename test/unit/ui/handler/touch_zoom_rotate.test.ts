@@ -25,24 +25,28 @@ test('TouchZoomRotateHandler fires zoomstart, zoom, and zoomend events at approp
     map.on('zoom',      zoom);
     map.on('zoomend',   zoomend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -50}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: 50})]});
     map._renderTaskQueue.run();
     expect(zoomstart).not.toHaveBeenCalled();
     expect(zoom).not.toHaveBeenCalled();
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -100}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: 100})]});
     map._renderTaskQueue.run();
     expect(zoomstart).toHaveBeenCalledTimes(1);
     expect(zoom).toHaveBeenCalledTimes(1);
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: 0, clientY: -60}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: 60})]});
     map._renderTaskQueue.run();
     expect(zoomstart).toHaveBeenCalledTimes(1);
     expect(zoom).toHaveBeenCalledTimes(2);
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
 
@@ -67,24 +71,28 @@ test('TouchZoomRotateHandler fires rotatestart, rotate, and rotateend events at 
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 0, clientX: 0, clientY: -50}), constructTouch(target, {target, identifier: 1, clientX: 0, clientY: 50})]});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 0, clientX: -50, clientY: 0}), constructTouch(target, {target, identifier: 1, clientX: 50, clientY: 0})]});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 0, clientX: 0, clientY: -50}), constructTouch(target, {target, identifier: 1, clientX: 0, clientY: 50})]});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(2);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
@@ -103,12 +111,15 @@ test('TouchZoomRotateHandler does not begin a gesture if preventDefault is calle
     const move = vi.fn();
     map.on('move', move);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, clientX: 0, clientY: 0}), constructTouch(target, {target, clientX: 5, clientY: 0})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, clientX: 0, clientY: 0}), constructTouch(target, {target, clientX: 0, clientY: 5})]});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
 
@@ -131,24 +142,28 @@ test('TouchZoomRotateHandler starts zoom immediately when rotation disabled', ()
     map.on('zoom',      zoom);
     map.on('zoomend',   zoomend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 0, clientX: 0, clientY: -5}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: 5})]});
     map._renderTaskQueue.run();
     expect(zoomstart).not.toHaveBeenCalled();
     expect(zoom).not.toHaveBeenCalled();
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 0, clientX: 0, clientY: -5}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: 6})]});
     map._renderTaskQueue.run();
     expect(zoomstart).toHaveBeenCalledTimes(1);
     expect(zoom).toHaveBeenCalledTimes(1);
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 0, clientX: 0, clientY: -5}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: 4})]});
     map._renderTaskQueue.run();
     expect(zoomstart).toHaveBeenCalledTimes(1);
     expect(zoom).toHaveBeenCalledTimes(2);
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
     // incremented because inertia starts a second zoom
@@ -195,25 +210,30 @@ test('TouchZoomRotateHandler zooms when touching two markers on the same map', (
 
     const target = map.getCanvas();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(target, {touches: [constructTouch(target1, {target: target1, identifier: 1, clientX: 0, clientY: -50})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(target, {touches: [constructTouch(target1, {target: target1, identifier: 1, clientX: 0, clientY: -50}), constructTouch(target2, {target: target2, identifier: 2, clientX: 0, clientY: 50})]});
     map._renderTaskQueue.run();
     expect(zoomstart).not.toHaveBeenCalled();
     expect(zoom).not.toHaveBeenCalled();
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(target, {touches: [constructTouch(target1, {target: target1, identifier: 1, clientX: 0, clientY: -100}), constructTouch(target2, {target: target2, identifier: 2, clientX: 0, clientY: 100})]});
     map._renderTaskQueue.run();
     expect(zoomstart).toHaveBeenCalledTimes(1);
     expect(zoom).toHaveBeenCalledTimes(1);
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(target, {touches: [constructTouch(target1, {target: target1, identifier: 1, clientX: 0, clientY: -60}), constructTouch(target2, {target: target2, identifier: 2, clientX: 0, clientY: 60})]});
     map._renderTaskQueue.run();
     expect(zoomstart).toHaveBeenCalledTimes(1);
     expect(zoom).toHaveBeenCalledTimes(2);
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(target, {touches: []});
     map._renderTaskQueue.run();
 
@@ -249,25 +269,30 @@ test('TouchZoomRotateHandler does not zoom when touching an element not on the m
     map.on('zoom',      zoom);
     map.on('zoomend',   zoomend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target1, {target: target1, identifier: 1, clientX: 0, clientY: -50})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target1, {target: target1, identifier: 1, clientX: 0, clientY: -50}), constructTouch(target2, {target: target2, identifier: 2, clientX: 0, clientY: 50})]});
     map._renderTaskQueue.run();
     expect(zoomstart).not.toHaveBeenCalled();
     expect(zoom).not.toHaveBeenCalled();
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target1, {target: target1, identifier: 1, clientX: 0, clientY: -100}), constructTouch(target2, {target: target2, identifier: 2, clientX: 0, clientY: 100})]});
     map._renderTaskQueue.run();
     expect(zoomstart).not.toHaveBeenCalled();
     expect(zoom).not.toHaveBeenCalled();
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target1, {target: target1, identifier: 1, clientX: 0, clientY: -60}), constructTouch(target2, {target: target2, identifier: 2, clientX: 0, clientY: 60})]});
     map._renderTaskQueue.run();
     expect(zoomstart).not.toHaveBeenCalled();
     expect(zoom).not.toHaveBeenCalled();
     expect(zoomend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
 
@@ -292,14 +317,18 @@ test('Drag up with two fingers fires pitch event', () => {
     map.on('pitch',      pitch);
     map.on('pitchend',   pitchend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: 0})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: 0}), constructTouch(target, {target, identifier: 2, clientX: 50, clientY: 0})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: -100}), constructTouch(target, {target, identifier: 2, clientX: 50, clientY: -100})]});
     map._renderTaskQueue.run();
     expect(pitchstart).toHaveBeenCalledTimes(1);
     expect(pitch).toHaveBeenCalledTimes(1);
     expect(pitchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
 
@@ -321,14 +350,18 @@ test('Touch pitching requires three fingers with cooperative gestures', () => {
     map.on('pitchend',   pitchend);
 
     // two finger drag
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: 0})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: 0}), constructTouch(target, {target, identifier: 2, clientX: 50, clientY: 0})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: -100}), constructTouch(target, {target, identifier: 2, clientX: 50, clientY: -100})]});
     map._renderTaskQueue.run();
     expect(pitchstart).not.toHaveBeenCalled();
     expect(pitch).not.toHaveBeenCalled();
     expect(pitchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
 
@@ -337,13 +370,16 @@ test('Touch pitching requires three fingers with cooperative gestures', () => {
     expect(pitchend).not.toHaveBeenCalled();
 
     // three finger drag
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: 0}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: 0}), constructTouch(target, {target, identifier: 3, clientX: 50, clientY: 0})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: -100}), constructTouch(target, {target, identifier: 2, clientX: 0, clientY: -100}), constructTouch(target, {target, identifier: 3, clientX: 50, clientY: -100})]});
     map._renderTaskQueue.run();
     expect(pitchstart).toHaveBeenCalledTimes(1);
     expect(pitch).toHaveBeenCalledTimes(1);
     expect(pitchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
 
@@ -365,14 +401,18 @@ test('with cooperative gesture enabled but in fullscreen, touch pitching works w
     map.on('pitch',      pitch);
     map.on('pitchend',   pitchend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: 0})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchstart(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: 0}), constructTouch(target, {target, identifier: 2, clientX: 50, clientY: 0})]});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchmove(map.getCanvas(), {touches: [constructTouch(target, {target, identifier: 1, clientX: -50, clientY: -100}), constructTouch(target, {target, identifier: 2, clientX: 50, clientY: -100})]});
     map._renderTaskQueue.run();
     expect(pitchstart).toHaveBeenCalledTimes(1);
     expect(pitch).toHaveBeenCalledTimes(1);
     expect(pitchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.touchend(map.getCanvas(), {touches: []});
     map._renderTaskQueue.run();
 

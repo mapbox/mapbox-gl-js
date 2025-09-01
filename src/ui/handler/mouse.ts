@@ -23,6 +23,7 @@ const MODIFIER_KEYS = {
 } as const;
 
 function buttonStillPressed(e: MouseEvent, button: number) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const flag = BUTTONS_FLAGS[button];
     return e.buttons === undefined || (e.buttons & flag) !== flag;
 }

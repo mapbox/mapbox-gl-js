@@ -11,7 +11,9 @@ test('round trip', () => {
         _cached;
 
         constructor(n, b) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.n = n;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.b = b;
             this.buffer = new ArrayBuffer(100);
             this.squared();
@@ -41,6 +43,7 @@ test('round trip', () => {
     expect(bar.buffer === foo.buffer).toBeTruthy();
     expect(transferables.has(foo.buffer)).toBeTruthy();
     expect(bar._cached === undefined).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     expect(bar.squared() === 100).toBeTruthy();
 });
 
@@ -57,15 +60,18 @@ test('custom serialization', () => {
         id;
         _deserialized;
         constructor(id) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.id = id;
             this._deserialized = false;
         }
 
         static serialize(b) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return {foo: `custom serialization,${b.id}`};
         }
 
         static deserialize(input) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const b = new Bar(input.foo.split(',')[1]);
             b._deserialized = true;
             return b;

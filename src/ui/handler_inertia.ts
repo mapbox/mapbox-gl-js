@@ -140,7 +140,9 @@ export default class HandlerInertia {
         }
 
         if (easeOptions.zoom || easeOptions.bearing) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const last = deltas.pinchAround === undefined ? deltas.around : deltas.pinchAround;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             easeOptions.around = last ? this._map.unproject(last) : this._map.getCenter();
         }
 

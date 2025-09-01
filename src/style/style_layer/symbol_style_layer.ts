@@ -80,6 +80,7 @@ class SymbolStyleLayer extends StyleLayer {
     hasOcclusionOpacityProperties: boolean;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         super(layer, getProperties(), scope, lut, options, layer.layout ? layer.layout['icon-image-use-theme'] : null);
         this._colorAdjustmentMatrix = mat4.identity([]);
         this.hasOcclusionOpacityProperties = (layer.paint !== undefined) && (('icon-occlusion-opacity' in layer.paint) || ('text-occlusion-opacity' in layer.paint));
@@ -126,6 +127,7 @@ class SymbolStyleLayer extends StyleLayer {
             for (const m of writingModes) {
                 if (deduped.indexOf(m) < 0) deduped.push(m);
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.layout._values['text-writing-mode'] = deduped;
         } else if (this.layout.get('symbol-placement') === 'point') {
             // default value for 'point' placement symbols
@@ -209,6 +211,7 @@ class SymbolStyleLayer extends StyleLayer {
             }
             // @ts-expect-error - TS2322 - Type 'PossiblyEvaluatedPropertyValue<PaintProps>' is not assignable to type 'never'.
             this.paint._values[overridable] = new PossiblyEvaluatedPropertyValue(overriden.property,
+                                                                                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                                                                                  expression,
                                                                                  overriden.parameters);
         }
@@ -223,11 +226,13 @@ class SymbolStyleLayer extends StyleLayer {
 
     static hasPaintOverride(layout: PossiblyEvaluated<LayoutProps>, propertyName: string): boolean {
         const textField = layout.get('text-field');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const property = getProperties().paint.properties[propertyName];
         let hasOverrides = false;
 
         const checkSections = (sections: Array<FormattedSection> | Array<FormattedSectionExpression>) => {
             for (const section of sections) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                 if (property.overrides && property.overrides.hasOverride(section)) {
                     hasOverrides = true;
                     return;

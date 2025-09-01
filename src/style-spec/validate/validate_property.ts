@@ -28,11 +28,13 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
     const styleSpec = options.styleSpec;
     const value = options.value;
     const propertyKey = options.objectKey;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const layerSpec = styleSpec[`${propertyType}_${options.layerType}`];
 
     if (!layerSpec) return [];
 
     const useThemeMatch = propertyKey.match(/^(.*)-use-theme$/);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (useThemeMatch && layerSpec[useThemeMatch[1]]) {
         if (isExpression(value)) {
             const errors: ValidationError[] = [];
@@ -67,22 +69,26 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
     }
 
     const transitionMatch = propertyKey.match(/^(.*)-transition$/);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (propertyType === 'paint' && transitionMatch && layerSpec[transitionMatch[1]] && layerSpec[transitionMatch[1]].transition) {
         return validate({
             key,
             value,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             valueSpec: styleSpec.transition,
             style,
             styleSpec
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const valueSpec = options.valueSpec || layerSpec[propertyKey];
     if (!valueSpec) {
         return [new ValidationWarning(key, value, `unknown property "${propertyKey}"`)];
     }
 
     let tokenMatch: RegExpExecArray | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     if (isString(value) && supportsPropertyExpression(valueSpec) && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
         const example = `\`{ "type": "identity", "property": ${tokenMatch ? JSON.stringify(tokenMatch[1]) : '"_"'} }\``;
         return [new ValidationError(
@@ -101,13 +107,17 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
             errors.push(new ValidationError(key, value, '"text-font" does not support identity functions'));
         }
     } else if (options.layerType === 'model' && propertyType === 'paint' && layer && layer.layout && layer.layout.hasOwnProperty('model-id')) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (supportsPropertyExpression(valueSpec) && (supportsLightExpression(valueSpec) || supportsZoomExpression(valueSpec))) {
             // Performance related style spec limitation: zoom and light expressions are not allowed for e.g. trees.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const expression = createPropertyExpression(deepUnbundle(value), valueSpec);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const expressionObj = (expression.value as any).expression || (expression.value as any)._styleExpression.expression;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (expressionObj && !isGlobalPropertyConstant(expressionObj, ['measure-light'])) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 if (propertyKey !== 'model-emissive-strength' || (!isFeatureConstant(expressionObj) || !isStateConstant(expressionObj))) {
                     errors.push(new ValidationError(key, value, `${propertyKey} does not support measure-light expressions when the model layer source is vector tile or GeoJSON.`));
                 }
@@ -118,6 +128,7 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
     return errors.concat(validate({
         key: options.key,
         value,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec,
         style,
         styleSpec,

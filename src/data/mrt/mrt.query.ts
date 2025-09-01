@@ -46,6 +46,7 @@ export function getPointXY([x, y]: [number, number], bandView: TBandViewRGBA, {s
     } else {
         const Ctor = bandView.data.constructor;
         // @ts-expect-error This expression is not constructable.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         output = new Ctor(dimension);
     }
 

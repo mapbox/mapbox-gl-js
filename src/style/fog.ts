@@ -49,15 +49,22 @@ class Fog extends Evented {
         super();
 
         const fogProperties: Properties<Props> = new Properties({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             "range": new DataConstantProperty(styleSpec.fog.range),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             "color": new DataConstantProperty(styleSpec.fog.color),
             "color-use-theme": new DataConstantProperty({"type": "string", "property-type": "data-constant", "default": "default"}),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             "high-color": new DataConstantProperty(styleSpec.fog["high-color"]),
             "high-color-use-theme": new DataConstantProperty({"type": "string", "property-type": "data-constant", "default": "default"}),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             "space-color": new DataConstantProperty(styleSpec.fog["space-color"]),
             "space-color-use-theme": new DataConstantProperty({"type": "string", "property-type": "data-constant", "default": "default"}),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             "horizon-blend": new DataConstantProperty(styleSpec.fog["horizon-blend"]),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             "star-intensity": new DataConstantProperty(styleSpec.fog["star-intensity"]),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             "vertical-range": new DataConstantProperty(styleSpec.fog["vertical-range"]),
         });
 
@@ -98,9 +105,11 @@ class Fog extends Evented {
         }
 
         const properties = Object.assign({}, fog);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         for (const name of Object.keys(styleSpec.fog)) {
             // Fallback to use default style specification when the properties wasn't set
             if (properties[name] === undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 properties[name] = styleSpec.fog[name].default;
             }
         }
@@ -201,6 +210,7 @@ class Fog extends Evented {
             return false;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
             value,
             style: {glyphs: true, sprite: true},

@@ -87,13 +87,16 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const dasharray = dasharrayProperty.constantOr(1);
     const capProperty = layer.layout.get('line-cap');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const constantDash = dasharrayProperty.constantOr(null);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const constantCap = capProperty.constantOr(null);
     const patternProperty = layer.paint.get('line-pattern');
 
     const image = patternProperty.constantOr(1);
     const patternTransition = layer.paint.get('line-pattern-cross-fade');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const constantPattern = patternProperty.constantOr(null);
 
     const lineOpacity = layer.paint.get('line-opacity').constantOr(1.0);
@@ -156,6 +159,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
             let transitionableConstantPattern = false;
             if (constantPattern && tile.imageAtlas) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const pattern = ResolvedImage.from(constantPattern);
                 const primaryPatternImage = pattern.getPrimary().scaleSelf(pixelRatio).toString();
                 const primaryPosTo = tile.imageAtlas.patternPositions.get(primaryPatternImage);
@@ -175,6 +179,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const program = painter.getOrCreateProgram(programId, {config: programConfiguration, defines, overrideFog: affectedByFog});
 
             if (!image && constantDash && constantCap && tile.lineAtlas) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const posTo = tile.lineAtlas.getDash(constantDash, constantCap);
                 if (posTo) programConfiguration.setConstantPatternPositions(posTo);
             }
@@ -267,6 +272,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
             const renderLine = (stencilMode: StencilMode) => {
                 if (lineOpacityForOcclusion != null) {
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     lineOpacityForOcclusion.value = lineOpacity * occlusionOpacity;
                 }
                 program.draw(painter, gl.TRIANGLES, depthMode,
@@ -274,6 +280,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                     layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
                     layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer]);
                 if (lineOpacityForOcclusion != null) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     lineOpacityForOcclusion.value = lineOpacity; //restore
                 }
             };

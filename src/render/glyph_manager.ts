@@ -243,9 +243,10 @@ class GlyphManager {
         }
 
         // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (this.localGlyphs[tinySDF.fontWeight][id]) {
             // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
             return this.localGlyphs[tinySDF.fontWeight][id];
         }
 
@@ -271,6 +272,7 @@ class GlyphManager {
         const baselineAdjustment = 27;
 
         // @ts-expect-error - TS2339 - Property 'fontWeight' does not exist on type 'TinySDF'.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const glyph = this.localGlyphs[tinySDF.fontWeight][id] = {
             id,
             bitmap: new AlphaImage({width, height}, data),

@@ -14,10 +14,12 @@ test('Map#on adds a non-delegated event listener', () => {
     const map = createMap();
     const spy = vi.fn(function (e) {
         expect(this).toEqual(map);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('click');
     });
 
     map.on('click', spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -29,6 +31,7 @@ test('Map#off removes a non-delegated event listener', () => {
 
     map.on('click', spy);
     map.off('click', spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).not.toHaveBeenCalled();
@@ -46,11 +49,14 @@ test('Map#on adds a listener for an event on a given layer', () => {
 
     const spy = vi.fn(function (e) {
         expect(this).toEqual(map);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('click');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.features).toEqual(features);
     });
 
     map.on('click', 'layer', spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -69,6 +75,7 @@ test('Map#on adds a listener not triggered for events not matching any features'
     const spy = vi.fn();
 
     map.on('click', 'layer', spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).not.toHaveBeenCalled();
@@ -82,6 +89,7 @@ test(`Map#on adds a listener not triggered when the specified layer does not exi
     const spy = vi.fn();
 
     map.on('click', 'layer', spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).not.toHaveBeenCalled();
@@ -94,15 +102,18 @@ test('Map#on distinguishes distinct event types', () => {
     vi.spyOn(map, 'queryRenderedFeatures').mockImplementation(() => [{}]);
 
     const spyDown = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('mousedown');
     });
 
     const spyUp = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('mouseup');
     });
 
     map.on('mousedown', 'layer', spyDown);
     map.on('mouseup', 'layer', spyUp);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spyDown).toHaveBeenCalledTimes(1);
@@ -116,19 +127,23 @@ test('Map#on distinguishes distinct layers', () => {
 
     vi.spyOn(map, 'getLayer').mockImplementation(() =>  ({}));
     vi.spyOn(map, 'queryRenderedFeatures').mockImplementation((point, options) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         return options.layers[0] === 'A' ? featuresA : featuresB;
     });
 
     const spyA = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.features).toEqual(featuresA);
     });
 
     const spyB = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.features).toEqual(featuresB);
     });
 
     map.on('click', 'A', spyA);
     map.on('click', 'B', spyB);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spyA).toHaveBeenCalledTimes(1);
@@ -146,6 +161,7 @@ test('Map#on distinguishes distinct listeners', () => {
 
     map.on('click', 'layer', spyA);
     map.on('click', 'layer', spyB);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spyA).toHaveBeenCalledTimes(1);
@@ -162,6 +178,7 @@ test('Map#off removes a delegated event listener', () => {
 
     map.on('click', 'layer', spy);
     map.off('click', 'layer', spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).not.toHaveBeenCalled();
@@ -174,12 +191,14 @@ test('Map#off distinguishes distinct event types', () => {
     vi.spyOn(map, 'queryRenderedFeatures').mockImplementation(() => [{}]);
 
     const spy = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('mousedown');
     });
 
     map.on('mousedown', 'layer', spy);
     map.on('mouseup', 'layer', spy);
     map.off('mouseup', 'layer', spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -196,12 +215,14 @@ test('Map#off distinguishes distinct layers', () => {
     });
 
     const spy = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.features).toEqual(featuresA);
     });
 
     map.on('click', 'A', spy);
     map.on('click', 'B', spy);
     map.off('click', 'B', spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -219,6 +240,7 @@ test('Map#off distinguishes distinct listeners', () => {
     map.on('click', 'layer', spyA);
     map.on('click', 'layer', spyB);
     map.off('click', 'layer', spyB);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spyA).toHaveBeenCalledTimes(1);
@@ -234,7 +256,9 @@ test('Map#off distinguishes distinct listeners', () => {
         const spy = vi.fn();
 
         map.on(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).not.toHaveBeenCalled();
@@ -252,12 +276,16 @@ test('Map#off distinguishes distinct listeners', () => {
 
         const spy = vi.fn(function (e) {
             expect(this).toEqual(map);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.type).toEqual(event);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.target).toEqual(map);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(features);
         });
 
         map.on(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -272,7 +300,9 @@ test('Map#off distinguishes distinct listeners', () => {
         const spy = vi.fn();
 
         map.on(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -290,8 +320,11 @@ test('Map#off distinguishes distinct listeners', () => {
         const spy = vi.fn();
 
         map.on(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(2);
@@ -306,8 +339,11 @@ test('Map#off distinguishes distinct listeners', () => {
         const spy = vi.fn();
 
         map.on(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mouseout(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(2);
@@ -320,21 +356,26 @@ test('Map#off distinguishes distinct listeners', () => {
 
         vi.spyOn(map, 'getLayer').mockImplementation(() =>  ({}));
         vi.spyOn(map, 'queryRenderedFeatures').mockImplementation((point, options) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return options.layers[0] === 'A' ? featuresA : featuresB;
         });
 
         const spyA = vi.fn((e) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(featuresA);
         });
 
         const spyB = vi.fn((e) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(featuresB);
         });
 
         map.on(event, 'A', spyA);
         map.on(event, 'B', spyB);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spyA).toHaveBeenCalledTimes(1);
@@ -352,6 +393,7 @@ test('Map#off distinguishes distinct listeners', () => {
 
         map.on(event, 'layer', spyA);
         map.on(event, 'layer', spyB);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spyA).toHaveBeenCalledTimes(1);
@@ -368,6 +410,7 @@ test('Map#off distinguishes distinct listeners', () => {
 
         map.on(event, 'layer', spy);
         map.off(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).not.toHaveBeenCalled();
@@ -384,12 +427,14 @@ test('Map#off distinguishes distinct listeners', () => {
         });
 
         const spy = vi.fn((e) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(featuresA);
         });
 
         map.on(event, 'A', spy);
         map.on(event, 'B', spy);
         map.off(event, 'B', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -407,6 +452,7 @@ test('Map#off distinguishes distinct listeners', () => {
         map.on(event, 'layer', spyA);
         map.on(event, 'layer', spyB);
         map.off(event, 'layer', spyB);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spyA).toHaveBeenCalledTimes(1);
@@ -423,7 +469,9 @@ test('Map#off distinguishes distinct listeners', () => {
         const spy = vi.fn();
 
         map.on(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).not.toHaveBeenCalled();
@@ -438,7 +486,9 @@ test('Map#off distinguishes distinct listeners', () => {
         const spy = vi.fn();
 
         map.on(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).not.toHaveBeenCalled();
@@ -454,12 +504,16 @@ test('Map#off distinguishes distinct listeners', () => {
 
         const spy = vi.fn(function (e) {
             expect(this).toEqual(map);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.type).toEqual(event);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(undefined);
         });
 
         map.on(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -473,12 +527,16 @@ test('Map#off distinguishes distinct listeners', () => {
 
         const spy = vi.fn(function (e) {
             expect(this).toEqual(map);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.type).toEqual(event);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(undefined);
         });
 
         map.on(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mouseout(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -496,8 +554,11 @@ test('Map#off distinguishes distinct listeners', () => {
 
         map.on(event, 'layer', spy);
         map.off(event, 'layer', spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mouseout(map.getCanvas());
 
         expect(spy).not.toHaveBeenCalled();
@@ -512,6 +573,7 @@ test(`Map#on mousedown can have default behavior prevented and still fire subseq
     const click = vi.fn();
     map.on('click', click);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
     expect(click).toHaveBeenCalledTimes(1);
 
@@ -527,6 +589,7 @@ test(`Map#on mousedown doesn't fire subsequent click event if mousepos changes`,
     map.on('click', click);
     const canvas = map.getCanvas();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.drag(canvas, {}, {clientX: 100, clientY: 100});
     expect(click).not.toHaveBeenCalled();
 
@@ -542,6 +605,7 @@ test(`Map#on mousedown fires subsequent click event if mouse position changes le
     map.on('click', click);
     const canvas = map.getCanvas();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.drag(canvas, {clientX: 100, clientY: 100}, {clientX: 100, clientY: 103});
     expect(click).toHaveBeenCalled();
 
@@ -557,6 +621,7 @@ test(`Map#on mousedown does not fire subsequent click event if mouse position ch
     map.on('click', click);
     const canvas = map.getCanvas();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.drag(canvas, {clientX: 100, clientY: 100}, {clientX: 100, clientY: 104});
     expect(click).not.toHaveBeenCalled();
 
@@ -570,8 +635,11 @@ test(`Map#on click fires subsequent click event if there is no corresponding mou
     map.on('click', click);
     const canvas = map.getCanvas();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const MouseEvent = window(canvas).MouseEvent;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const event = new MouseEvent('click', {bubbles: true, clientX: 100, clientY: 100});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     canvas.dispatchEvent(event);
     expect(click).toHaveBeenCalled();
 
@@ -586,18 +654,22 @@ test("Map#isMoving() returns false in mousedown/mouseup/click with no movement",
     map.on('click', () => { click = map.isMoving(); });
 
     const canvas = map.getCanvas();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const MouseEvent = window(canvas).MouseEvent;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
     canvas.dispatchEvent(new MouseEvent('mousedown', {bubbles: true, clientX: 100, clientY: 100}));
     expect(mousedown).toEqual(false);
     map._renderTaskQueue.run();
     expect(mousedown).toEqual(false);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
     canvas.dispatchEvent(new MouseEvent('mouseup', {bubbles: true, clientX: 100, clientY: 100}));
     expect(mouseup).toEqual(false);
     map._renderTaskQueue.run();
     expect(mouseup).toEqual(false);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
     canvas.dispatchEvent(new MouseEvent('click', {bubbles: true, clientX: 100, clientY: 100}));
     expect(click).toEqual(false);
     map._renderTaskQueue.run();
@@ -610,11 +682,13 @@ test("Map#on click should fire preclick before click", () => {
     const map = createMap();
     const preclickSpy = vi.fn(function (e) {
         expect(this).toEqual(map);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('preclick');
     });
 
     const clickSpy = vi.fn(function (e) {
         expect(this).toEqual(map);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('click');
     });
 
@@ -624,6 +698,7 @@ test("Map#on click should fire preclick before click", () => {
         expect(clickSpy).not.toHaveBeenCalled();
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(preclickSpy).toHaveBeenCalledTimes(1);
@@ -645,6 +720,7 @@ test('Map#on adds a listener for an event on multiple layers which do not exist'
     const spy = vi.fn();
 
     map.on('click', ['layer1', 'layer2'], spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).not.toHaveBeenCalled();
@@ -666,11 +742,14 @@ test('Map#on adds a listener for an event on multiple layers which some do not e
 
     const spy = vi.fn(function (e) {
         expect(this).toEqual(map);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('click');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.features).toEqual(features);
     });
 
     map.on('click', ['layer', 'background'], spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -686,15 +765,18 @@ test('Map#on distinguishes distinct event types - multiple layers', () => {
     });
 
     const spyDown = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('mousedown');
     });
 
     const spyUp = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('mouseup');
     });
 
     map.on('mousedown', ['layer1', 'layer2'], spyDown);
     map.on('mouseup', ['layer1', 'layer2'], spyUp);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spyDown).toHaveBeenCalledTimes(1);
@@ -708,19 +790,23 @@ test('Map#on distinguishes distinct multiple layers', () => {
 
     vi.spyOn(map, 'getLayer').mockImplementation(() =>  ({}));
     vi.spyOn(map, 'queryRenderedFeatures').mockImplementation((point, options) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         return options.layers[0] === 'A' ? featuresA : featuresB;
     });
 
     const spyA = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.features).toEqual(featuresA);
     });
 
     const spyB = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.features).toEqual(featuresB);
     });
 
     map.on('click', ['A', 'A2'], spyA);
     map.on('click', ['B', 'B2'], spyB);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spyA).toHaveBeenCalledTimes(1);
@@ -737,6 +823,7 @@ test('Map#off removes a delegated event listener -  multiple layers', () => {
 
     map.on('click', ['layer1', 'layer2'], spy);
     map.off('click', ['layer2', 'layer1'], spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).not.toHaveBeenCalled();
@@ -749,12 +836,14 @@ test('Map#off distinguishes distinct event types -  multiple layers', () => {
     vi.spyOn(map, 'queryRenderedFeatures').mockImplementation(() => [{}]);
 
     const spy = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.type).toEqual('mousedown');
     });
 
     map.on('mousedown', ['layer1', 'layer2'], spy);
     map.on('mouseup', ['layer1', 'layer2'], spy);
     map.off('mouseup', ['layer1', 'layer2'], spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -771,12 +860,14 @@ test('Map#off distinguishes distinct layers -  multiple layers', () => {
     });
 
     const spy = vi.fn((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(e.features).toEqual(featuresA);
     });
 
     map.on('click', ['A', 'B'], spy);
     map.on('click', ['C', 'D'], spy);
     map.off('click', ['C', 'D'], spy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -794,6 +885,7 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
     map.on('click', ['layer1', 'layer2'], spyA);
     map.on('click', ['layer1', 'layer2'], spyB);
     map.off('click', ['layer1', 'layer2'], spyB);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.click(map.getCanvas());
 
     expect(spyA).toHaveBeenCalledTimes(1);
@@ -809,7 +901,9 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
         const spy = vi.fn();
 
         map.on(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).not.toHaveBeenCalled();
@@ -827,12 +921,16 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
 
         const spy = vi.fn(function (e) {
             expect(this).toEqual(map);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.type).toEqual(event);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.target).toEqual(map);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(features);
         });
 
         map.on(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -847,7 +945,9 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
         const spy = vi.fn();
 
         map.on(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -865,8 +965,11 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
         const spy = vi.fn();
 
         map.on(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(2);
@@ -881,8 +984,11 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
         const spy = vi.fn();
 
         map.on(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mouseout(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(2);
@@ -895,21 +1001,26 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
 
         vi.spyOn(map, 'getLayer').mockImplementation(() =>  ({}));
         vi.spyOn(map, 'queryRenderedFeatures').mockImplementation((point, options) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return options.layers[0] === 'A' ? featuresA : featuresB;
         });
 
         const spyA = vi.fn((e) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(featuresA);
         });
 
         const spyB = vi.fn((e) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(featuresB);
         });
 
         map.on(event, ['A', 'A2'], spyA);
         map.on(event, ['B', 'B2'], spyB);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spyA).toHaveBeenCalledTimes(1);
@@ -927,6 +1038,7 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
 
         map.on(event, ['layer1', 'layer2'], spyA);
         map.on(event, ['layer1', 'layer2'], spyB);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spyA).toHaveBeenCalledTimes(1);
@@ -943,6 +1055,7 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
 
         map.on(event, ['layer1', 'layer2'], spy);
         map.off(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).not.toHaveBeenCalled();
@@ -959,12 +1072,14 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
         });
 
         const spy = vi.fn((e) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(featuresA);
         });
 
         map.on(event, ['A', 'A2'], spy);
         map.on(event, ['B', 'B2'], spy);
         map.off(event, ['B', 'B2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -982,6 +1097,7 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
         map.on(event, ['layer1', 'layer2'], spyA);
         map.on(event, ['layer1', 'layer2'], spyB);
         map.off(event, ['layer1', 'layer2'], spyB);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spyA).toHaveBeenCalledTimes(1);
@@ -998,7 +1114,9 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
         const spy = vi.fn();
 
         map.on(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).not.toHaveBeenCalled();
@@ -1013,7 +1131,9 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
         const spy = vi.fn();
 
         map.on(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).not.toHaveBeenCalled();
@@ -1029,12 +1149,16 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
 
         const spy = vi.fn(function (e) {
             expect(this).toEqual(map);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.type).toEqual(event);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(undefined);
         });
 
         map.on(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -1048,12 +1172,16 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
 
         const spy = vi.fn(function (e) {
             expect(this).toEqual(map);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.type).toEqual(event);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(e.features).toEqual(undefined);
         });
 
         map.on(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mouseout(map.getCanvas());
 
         expect(spy).toHaveBeenCalledTimes(1);
@@ -1071,8 +1199,11 @@ test('Map#off distinguishes distinct listeners -  multiple layers', () => {
 
         map.on(event, ['layer1', 'layer2'], spy);
         map.off(event, ['layer1', 'layer2'], spy);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mouseout(map.getCanvas());
 
         expect(spy).not.toHaveBeenCalled();

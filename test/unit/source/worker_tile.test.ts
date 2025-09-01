@@ -95,6 +95,7 @@ test('WorkerTile#parse warns once when encountering a v1 vector tile layer', () 
     const tile = createWorkerTile();
     tile.parse(data, layerIndex, [], [], {}, (err) => {
         expect(err).toBeFalsy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(console.warn.mock.calls[0][0]).toMatch(/does not use vector tile spec v2/);
     });
 });
@@ -119,20 +120,32 @@ test('WorkerTile#parse adds $localized property and filters features based on th
     // no worldview
     // eslint-disable-next-line no-promise-executor-return
     await new Promise((resolve) => createWorkerTile({worldview: null}).parse(vt, layerIndex, [], [], {}, resolve));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const allFeatures = bucketPopulateSpy.mock.lastCall[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(allFeatures.length).toEqual(5);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(allFeatures[0].feature.properties).toMatchObject({worldview: 'all'});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(allFeatures[1].feature.properties).toMatchObject({worldview: 'CN'});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(allFeatures[2].feature.properties).toMatchObject({worldview: 'US,CN'});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(allFeatures[3].feature.properties).toMatchObject({worldview: 'JP,TR'});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(allFeatures[4].feature.properties).toMatchObject({worldview: 'US'});
 
     // worldview: 'US'
     // eslint-disable-next-line no-promise-executor-return
     await new Promise((resolve) => createWorkerTile({worldview: 'US', localizableLayerIds: new Set(['_geojsonTileLayer'])}).parse(vt, layerIndex, [], [], {}, resolve));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const usFeatures = bucketPopulateSpy.mock.lastCall[0];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(usFeatures.length).toEqual(3);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(usFeatures[0].feature.properties).toMatchObject({worldview: 'all', '$localized': true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(usFeatures[1].feature.properties).toMatchObject({worldview: 'US', '$localized': true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(usFeatures[2].feature.properties).toMatchObject({worldview: 'US', '$localized': true});
 });

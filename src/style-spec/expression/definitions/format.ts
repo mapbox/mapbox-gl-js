@@ -71,8 +71,11 @@ export default class FormatExpression implements Expression {
                 }
 
                 const lastExpression = sections[sections.length - 1];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 lastExpression.scale = scale;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 lastExpression.font = font;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 lastExpression.textColor = textColor;
             } else {
                 const content = context.parse(args[i], i, ValueType);
@@ -92,16 +95,23 @@ export default class FormatExpression implements Expression {
 
     evaluate(ctx: EvaluationContext): Formatted {
         const evaluateSection = (section: FormattedSectionExpression) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const evaluatedContent = section.content.evaluate(ctx);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (typeEquals(typeOf(evaluatedContent), ResolvedImageType)) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return new FormattedSection('', evaluatedContent, null, null, null);
             }
 
             return new FormattedSection(
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     toString(evaluatedContent),
                     null,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     section.scale ? section.scale.evaluate(ctx) : null,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     section.font ? section.font.evaluate(ctx).join(',') : null,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     section.textColor ? section.textColor.evaluate(ctx) : null
             );
         };

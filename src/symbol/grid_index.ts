@@ -117,6 +117,7 @@ class GridIndex {
             }
             for (let boxUid = 0; boxUid < this.boxKeys.length; boxUid++) {
                 result.push({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     key: this.boxKeys[boxUid],
                     x1: this.bboxes[boxUid * 4],
                     y1: this.bboxes[boxUid * 4 + 1],
@@ -129,6 +130,7 @@ class GridIndex {
                 const y = this.circles[circleUid * 3 + 1];
                 const radius = this.circles[circleUid * 3 + 2];
                 result.push({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     key: this.circleKeys[circleUid],
                     x1: x - radius,
                     y1: y - radius,
@@ -136,7 +138,7 @@ class GridIndex {
                     y2: y + radius
                 });
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
             return predicate ? result.filter(predicate) : result;
         } else {
             const queryArgs = {
@@ -207,24 +209,32 @@ class GridIndex {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         predicate?: any,
     ): void | boolean {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const seenUids = queryArgs.seenUids;
         const boxCell = this.boxCells[cellIndex];
         if (boxCell !== null) {
             const bboxes = this.bboxes;
             for (const boxUid of boxCell) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (!seenUids.box[boxUid]) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     seenUids.box[boxUid] = true;
                     const offset = boxUid * 4;
                     if ((x1 <= bboxes[offset + 2]) &&
                         (y1 <= bboxes[offset + 3]) &&
                         (x2 >= bboxes[offset + 0]) &&
                         (y2 >= bboxes[offset + 1]) &&
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         (!predicate || predicate(this.boxKeys[boxUid]))) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         if (queryArgs.hitTest) {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                             result.push(true);
                             return true;
                         } else {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                             result.push({
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                                 key: this.boxKeys[boxUid],
                                 x1: bboxes[offset],
                                 y1: bboxes[offset + 1],
@@ -240,7 +250,9 @@ class GridIndex {
         if (circleCell !== null) {
             const circles = this.circles;
             for (const circleUid of circleCell) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (!seenUids.circle[circleUid]) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     seenUids.circle[circleUid] = true;
                     const offset = circleUid * 3;
                     if (this._circleAndRectCollide(
@@ -251,15 +263,20 @@ class GridIndex {
                         y1,
                         x2,
                         y2) &&
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         (!predicate || predicate(this.circleKeys[circleUid]))) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         if (queryArgs.hitTest) {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                             result.push(true);
                             return true;
                         } else {
                             const x = circles[offset];
                             const y = circles[offset + 1];
                             const radius = circles[offset + 2];
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                             result.push({
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                                 key: this.circleKeys[circleUid],
                                 x1: x - radius,
                                 y1: y - radius,
@@ -286,24 +303,33 @@ class GridIndex {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         predicate?: any,
     ): void | boolean {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const circle = queryArgs.circle;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const seenUids = queryArgs.seenUids;
         const boxCell = this.boxCells[cellIndex];
         if (boxCell !== null) {
             const bboxes = this.bboxes;
             for (const boxUid of boxCell) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (!seenUids.box[boxUid]) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     seenUids.box[boxUid] = true;
                     const offset = boxUid * 4;
                     if (this._circleAndRectCollide(
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         circle.x,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         circle.y,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         circle.radius,
                         bboxes[offset + 0],
                         bboxes[offset + 1],
                         bboxes[offset + 2],
                         bboxes[offset + 3]) &&
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         (!predicate || predicate(this.boxKeys[boxUid]))) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         result.push(true);
                         return true;
                     }
@@ -315,17 +341,24 @@ class GridIndex {
         if (circleCell !== null) {
             const circles = this.circles;
             for (const circleUid of circleCell) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (!seenUids.circle[circleUid]) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     seenUids.circle[circleUid] = true;
                     const offset = circleUid * 3;
                     if (this._circlesCollide(
                         circles[offset],
                         circles[offset + 1],
                         circles[offset + 2],
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         circle.x,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         circle.y,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         circle.radius) &&
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         (!predicate || predicate(this.circleKeys[circleUid]))) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         result.push(true);
                         return true;
                     }
@@ -344,6 +377,7 @@ class GridIndex {
         for (let x = cx1; x <= cx2; x++) {
             for (let y = cy1; y <= cy2; y++) {
                 const cellIndex = this.xCellCount * y + x;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 if (fn.call(this, x1, y1, x2, y2, cellIndex, arg1, arg2, predicate)) return;
             }
         }

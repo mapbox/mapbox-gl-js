@@ -3,6 +3,7 @@
 /* eslint-env browser */
 import template from 'lodash/template.js';
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 const generateResultHTML = template(`
   <div class="tab tab_<%- r.status %>">
     <% if (r.status === 'failed') { %>
@@ -103,6 +104,7 @@ export function setupHTML() {
     const failedTestContainer = document.createElement('h1');
     failedTestContainer.style.color = 'red';
     counterDom.failed = document.createElement('span');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     counterDom.failed.innerHTML = '0';
     const failedTests = document.createElement('span');
     failedTests.innerHTML = ' tests failed.';
@@ -113,6 +115,7 @@ export function setupHTML() {
     const passedTestContainer = document.createElement('h1');
     passedTestContainer.style.color = 'green';
     counterDom.passed = document.createElement('span');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     counterDom.passed.innerHTML = '0';
     const passedTests = document.createElement('span');
     passedTests.innerHTML = ' tests passed.';
@@ -123,6 +126,7 @@ export function setupHTML() {
     const todoTestContainer = document.createElement('h1');
     todoTestContainer.style.color = '#e89b00';
     counterDom.todo = document.createElement('span');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     counterDom.todo.innerHTML = '0';
     const todoTests = document.createElement('span');
     todoTests.innerHTML = ' tests todo.';
@@ -148,6 +152,7 @@ export function setupHTML() {
 
     //Create a container to hold test results
     resultsContainer = document.createElement('div');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     resultsContainer.className = 'tests';
     document.body.appendChild(resultsContainer);
 }
@@ -166,32 +171,51 @@ const testStatus = new Map();
 const testId = new Map();
 
 export function updateHTML(testData) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const status = testData.status;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (!testStatus.has(testData.name)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         stats[status]++;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         testStatus.set(testData.name, testData.status);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         testId.set(testData.name, 0);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     } else if (testStatus.get(testData.name) !== status) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         stats[testStatus.get(testData.name)]--;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         stats[status]++;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         testStatus.set(testData.name, status);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         testId.set(testData.name, testId.get(testData.name) + 1);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     } else if (testStatus.get(testData.name) === status) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         testId.set(testData.name, testId.get(testData.name) + 1);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     counterDom[status].innerHTML = stats[status];
 
     // skip adding passing tests to report in CI mode
     if (import.meta.env.CI && status === 'passed') return;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     testData["color"] = colors[status];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     testData["id"] = `${status}Test-${stats[status]}-${testId.get(testData.name)}`;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     testData["attempt"] = testId.get(testData.name);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const html = generateResultHTML({r: testData});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const resultHTMLFrag = document.createRange().createContextualFragment(html);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     resultsContainer.appendChild(resultHTMLFrag);
 
     return html;

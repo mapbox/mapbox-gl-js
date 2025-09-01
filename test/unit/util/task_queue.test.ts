@@ -47,6 +47,7 @@ describe('TaskQueue', () => {
             const no = vi.fn();
             q.add(yes);
             let id: any; // eslint-disable-line prefer-const
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             q.add(() => q.remove(id));
             id = q.add(no);
             q.run();

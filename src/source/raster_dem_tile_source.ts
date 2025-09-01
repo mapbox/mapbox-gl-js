@@ -30,6 +30,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
 
     override loadTile(tile: Tile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
         function imageLoaded(
@@ -46,6 +47,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
                 tile.state = 'errored';
                 callback(err);
             } else if (img) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
                 const transfer = ImageBitmap && img instanceof ImageBitmap && offscreenCanvasSupported();
                 // DEMData uses 1px padding. Handle cases with image buffer of 1 and 2 pxs, the rest assume default buffer 0
@@ -55,6 +57,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
                 const padding = 1 - buffer;
                 const borderReady = padding < 1;
                 if (!borderReady && !tile.neighboringTiles) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     tile.neighboringTiles = this._getNeighboringTiles(tile.tileID);
                 }
 
@@ -63,16 +66,22 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
                 const params: WorkerSourceDEMTileRequest = {
                     uid: tile.uid,
                     tileID: tile.tileID,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     source: this.id,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     type: this.type,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     scope: this.scope,
                     rawImageData,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     encoding: this.encoding,
                     padding
                 };
 
                 if (!tile.actor || tile.state === 'expired') {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     tile.actor = this.dispatcher.getActor();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     tile.actor.send('loadTile', params, done.bind(this), undefined, true);
                 }
             }

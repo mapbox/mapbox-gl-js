@@ -8,12 +8,15 @@ function sortKeysBy(obj, reference) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: Record<string, any> = {};
     for (const key in reference) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (obj[key] !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             result[key] = obj[key];
         }
     }
     for (const key in obj) {
         if (result[key] === undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             result[key] = obj[key];
         }
     }
@@ -44,7 +47,9 @@ function sortKeysBy(obj, reference) {
 function format(style, space = 2) {
     style = sortKeysBy(style, reference.$root);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (style.layers) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         style.layers = style.layers.map((layer) => sortKeysBy(layer, reference.layer));
     }
 

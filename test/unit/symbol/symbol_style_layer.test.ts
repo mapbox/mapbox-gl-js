@@ -6,13 +6,16 @@ import FormatSectionOverride from '../../../src/style/format_section_override';
 import {getPaintProperties} from '../../../src/style/style_layer/symbol_style_layer_properties';
 
 function createSymbolLayer(layerProperties) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const layer = new SymbolStyleLayer(layerProperties);
     layer.recalculate({zoom: 0});
     return layer;
 }
 
 function isOverriden(paintProperty) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (paintProperty.value.kind === 'source' || paintProperty.value.kind === 'composite') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         return paintProperty.value._styleExpression.expression instanceof FormatSectionOverride;
     }
     return false;

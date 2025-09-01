@@ -15,7 +15,9 @@ import {createLayout, viewTypes} from '../src/util/struct_array';
 // eslint-disable-next-line import/order
 import type {ViewType, StructArrayLayout, StructArrayMember} from '../src/util/struct_array';
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 const structArrayLayoutJs = ejs.compile(fs.readFileSync('src/util/struct_array_layout.js.ejs', 'utf8'), {strict: true});
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 const structArrayJs = ejs.compile(fs.readFileSync('src/util/struct_array.js.ejs', 'utf8'), {strict: true});
 
 const typeAbbreviations = {
@@ -89,10 +91,14 @@ function createStructArrayLayoutType({
 
     // combine consecutive 'members' with same underlying type, summing their
     // component counts
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     if (!alignment || alignment === 1) members = members.reduce((memo, member) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (memo.length > 0 && memo[memo.length - 1].type === member.type) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const last = memo[memo.length - 1];
             return memo.slice(0, -1).concat(Object.assign({}, last, {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 components: last.components + member.components,
             }));
         }
@@ -121,6 +127,7 @@ function sizeOf(type: ViewType): number {
 
 function camelize(str: string) {
     return str.replace(/(?:^|[-_])(.)/g, (_, x) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         return /^[0-9]$/.test(x) ? _ : x.toUpperCase();
     });
 }
@@ -176,6 +183,7 @@ const layoutAttributes = {
     dash: dashAttributes
 };
 for (const name in layoutAttributes) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     createStructArrayType(`${name.replace(/-/g, '_')}_layout`, layoutAttributes[name]);
 }
 
@@ -347,9 +355,9 @@ import {register} from '../util/web_worker_transfer';
 
 import type {IStructArrayLayout} from '../util/struct_array';
 
-${// eslint-disable-next-line @typescript-eslint/no-base-to-string
+${// eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/no-unsafe-argument
     layouts.map(structArrayLayoutJs).join('\n')}
-${// eslint-disable-next-line @typescript-eslint/no-base-to-string
+${// eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/no-unsafe-argument
     arraysWithStructAccessors.map(structArrayJs).join('\n')}
 export {
     ${layouts.map(layout => layout.className).join(',\n    ')},

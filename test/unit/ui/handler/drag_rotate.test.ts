@@ -8,6 +8,7 @@ import browser from '../../../../src/util/browser';
 
 function createMap(options) {
     vi.spyOn(Map.prototype, '_detectMissingCSS').mockImplementation(() => {});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return new Map(Object.assign({container: DOM.create('div', '', window.document.body), testMode: true}, options));
 }
 
@@ -19,14 +20,17 @@ test('DragRotateHandler#isActive', () => {
 
     expect(map.dragRotate.isActive()).toEqual(false);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
     expect(map.dragRotate.isActive()).toEqual(false);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(map.dragRotate.isActive()).toEqual(true);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     expect(map.dragRotate.isActive()).toEqual(false);
@@ -48,18 +52,21 @@ test('DragRotateHandler fires rotatestart, rotate, and rotateend events at appro
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
@@ -80,14 +87,18 @@ test('DragRotateHandler stops firing events after mouseup', () => {
     map.on('rotate',      spy);
     map.on('rotateend',   spy);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     expect(spy).toHaveBeenCalledTimes(3);
 
     spy.mockClear();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 0, clientX: 20, clientY: 20});
     map._renderTaskQueue.run();
     expect(spy).not.toHaveBeenCalled();
@@ -109,18 +120,21 @@ test('DragRotateHandler fires rotatestart, rotate, and rotateend events at appro
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 1,            ctrlKey: true, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
@@ -144,12 +158,15 @@ test('DragRotateHandler pitches in response to a right-click drag by default', (
     map.on('pitch',      pitch);
     map.on('pitchend',   pitchend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: -10});
     map._renderTaskQueue.run();
     expect(pitchstart).toHaveBeenCalledTimes(1);
     expect(pitch).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     expect(pitchend).toHaveBeenCalledTimes(1);
@@ -171,12 +188,15 @@ test('DragRotateHandler doesn\'t fire pitch event when rotating only', () => {
     map.on('pitch',      pitch);
     map.on('pitchend',   pitchend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 0, clientY: 10});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(pitchstart).not.toHaveBeenCalled();
     expect(pitch).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     expect(pitchend).not.toHaveBeenCalled();
 
@@ -197,12 +217,15 @@ test('DragRotateHandler pitches in response to a control-left-click drag', () =>
     map.on('pitch',      pitch);
     map.on('pitchend',   pitchend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 1,            ctrlKey: true, clientX: 10, clientY: -10});
     map._renderTaskQueue.run();
     expect(pitchstart).toHaveBeenCalledTimes(1);
     expect(pitch).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
     map._renderTaskQueue.run();
     expect(pitchend).toHaveBeenCalledTimes(1);
@@ -219,14 +242,20 @@ test('DragRotateHandler does not pitch if given pitchWithRotate: false', () => {
     map.on('pitch',       spy);
     map.on('pitchend',    spy);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(window.document,   {buttons: 0, button: 2});
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(window.document, {buttons: 1,            ctrlKey: true, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(window.document,   {buttons: 0, button: 0, ctrlKey: true});
 
     expect(spy).not.toHaveBeenCalled();
@@ -248,9 +277,12 @@ test('DragRotateHandler does not rotate or pitch when disabled', () => {
     map.on('pitch',       spy);
     map.on('pitchend',    spy);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
 
     expect(spy).not.toHaveBeenCalled();
@@ -262,11 +294,14 @@ test('DragRotateHandler ensures that map.isMoving() returns true during drag', (
     // The bearingSnap option here ensures that the moveend event is sent synchronously.
     const map = createMap({bearingSnap: 0});
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(map.isMoving()).toBeTruthy();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     expect(!map.isMoving()).toBeTruthy();
@@ -289,12 +324,15 @@ test('DragRotateHandler fires move events', () => {
     map.on('move',      move);
     map.on('moveend',   moveend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(movestart).toHaveBeenCalledTimes(1);
     expect(move).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     expect(moveend).toHaveBeenCalledTimes(1);
@@ -319,13 +357,16 @@ test('DragRotateHandler doesn\'t fire rotate event when pitching only', () => {
     map.on('pitch',     pitch);
     map.on('rotateend', rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 0, clientY: 0});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 0, clientY: -10});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(pitch).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     expect(rotateend).not.toHaveBeenCalled();
 
@@ -360,22 +401,34 @@ test('DragRotateHandler includes originalEvent property in triggered events', ()
     map.on('move',      move);
     map.on('moveend',   moveend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: -10});
     map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(rotatestart.mock.calls[0][0].originalEvent.type).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(pitchstart.mock.calls[0][0].originalEvent.type).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(movestart.mock.calls[0][0].originalEvent.type).toBeTruthy();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(rotate.mock.calls[0][0].originalEvent.type).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(pitch.mock.calls[0][0].originalEvent.type).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(move.mock.calls[0][0].originalEvent.type).toBeTruthy();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(rotateend.mock.calls[0][0].originalEvent.type).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(pitchend.mock.calls[0][0].originalEvent.type).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(moveend.mock.calls[0][0].originalEvent.type).toBeTruthy();
 
     map.remove();
@@ -395,12 +448,15 @@ test('DragRotateHandler responds to events on the canvas container (#1301)', () 
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvasContainer(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvasContainer(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvasContainer(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     expect(rotateend).toHaveBeenCalledTimes(1);
@@ -417,9 +473,12 @@ test('DragRotateHandler prevents mousemove events from firing during a drag (#15
     const mousemove = vi.fn();
     map.on('mousemove', mousemove);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvasContainer(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvasContainer(), {buttons: 2, clientX: 100, clientY: 100});
     map._renderTaskQueue.run();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvasContainer(),   {buttons: 0, button: 2});
 
     expect(mousemove).not.toHaveBeenCalled();
@@ -441,12 +500,15 @@ test('DragRotateHandler ends a control-left-click drag on mouseup even when the 
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 1,            ctrlKey: true, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: false});
     map._renderTaskQueue.run();
     expect(rotateend).toHaveBeenCalledTimes(1);
@@ -468,12 +530,15 @@ test('DragRotateHandler ends rotation if the window blurs (#3389)', () => {
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.blur(window);
     map._renderTaskQueue.run();
 
@@ -489,7 +554,9 @@ test('DragRotateHandler requests a new render frame after each mousemove event',
     // Prevent inertial rotation.
     vi.spyOn(browser, 'now').mockImplementation(() => 0);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     expect(requestRenderFrame).toHaveBeenCalled();
 
@@ -497,6 +564,7 @@ test('DragRotateHandler requests a new render frame after each mousemove event',
 
     // https://github.com/mapbox/mapbox-gl-js/issues/6063
     requestRenderFrame.mockClear();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 20, clientY: 20});
     expect(requestRenderFrame).toHaveBeenCalledTimes(1);
 
@@ -518,12 +586,14 @@ test('DragRotateHandler can interleave with another handler', () => {
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
@@ -532,18 +602,21 @@ test('DragRotateHandler can interleave with another handler', () => {
 
     // simulates another handler taking over
     // simulate a scroll zoom
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 20, clientY: 20});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(2);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     // Ignore second rotatestart triggered by inertia
@@ -565,18 +638,21 @@ test('DragRotateHandler does not begin a drag on left-button mousedown without t
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas());
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
@@ -601,36 +677,42 @@ test('DragRotateHandler does not end a right-button drag on left-button mouseup'
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 3, button: 0});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 2, button: 0});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 20, clientY: 20});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(2);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
     // Ignore second rotatestart triggered by inertia
@@ -655,36 +737,42 @@ test('DragRotateHandler does not end a control-left-button drag on right-button 
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 1, button: 0, ctrlKey: true});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 1,            ctrlKey: true, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 3, button: 2, ctrlKey: true});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 1, button: 2, ctrlKey: true});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(1);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 1,            ctrlKey: true, clientX: 20, clientY: 20});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);
     expect(rotate).toHaveBeenCalledTimes(2);
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 0, ctrlKey: true});
     map._renderTaskQueue.run();
     // Ignore second rotatestart triggered by inertia
@@ -707,12 +795,15 @@ test('DragRotateHandler does not begin a drag if preventDefault is called on the
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
 
@@ -737,11 +828,13 @@ test(`DragRotateHandler can be disabled after mousedown (#2419)`, () => {
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
 
     map.dragRotate.disable();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
@@ -751,6 +844,7 @@ test(`DragRotateHandler can be disabled after mousedown (#2419)`, () => {
     expect(map.isMoving()).toEqual(false);
     expect(map.dragRotate.isEnabled()).toEqual(false);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(), {buttons: 0, button: 2});
     map._renderTaskQueue.run();
 
@@ -774,18 +868,21 @@ test('DragRotateHandler does not begin rotation on spurious mousemove events', (
     map.on('rotate',      rotate);
     map.on('rotateend',   rotateend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
     expect(rotate).not.toHaveBeenCalled();
     expect(rotateend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
@@ -815,6 +912,7 @@ test('DragRotateHandler does not begin a mouse drag if moved less than click tol
     map.on('pitch',       pitch);
     map.on('pitchend',    pitchend);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
@@ -824,6 +922,7 @@ test('DragRotateHandler does not begin a mouse drag if moved less than click tol
     expect(pitch).not.toHaveBeenCalled();
     expect(pitchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 13, clientY: 10});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
@@ -833,6 +932,7 @@ test('DragRotateHandler does not begin a mouse drag if moved less than click tol
     expect(pitch).not.toHaveBeenCalled();
     expect(pitchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 13});
     map._renderTaskQueue.run();
     expect(rotatestart).not.toHaveBeenCalled();
@@ -842,6 +942,7 @@ test('DragRotateHandler does not begin a mouse drag if moved less than click tol
     expect(pitch).not.toHaveBeenCalled();
     expect(pitchend).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 14, clientY: 10 - 4});
     map._renderTaskQueue.run();
     expect(rotatestart).toHaveBeenCalledTimes(1);

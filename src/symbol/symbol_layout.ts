@@ -320,6 +320,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
                     if (singleLine) {
                         // If the shaping for the first justification was only a single line, we
                         // can re-use it for the other justifications
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         shapedTextOrientations.horizontal[justification] = shapedTextOrientations.horizontal[0];
                     } else {
                         // If using text-variable-anchor for the layer, we use a center anchor for all shapings and apply
@@ -422,6 +423,7 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return {featureData, sizes, hasAnySecondaryIcon, textAlongLine, symbolPlacement};
 
 }
@@ -520,6 +522,7 @@ function reconcileTextImagePositions(shapedTextOrientations: ShapedTextOrientati
     // changed
 
     for (const orientation in shapedTextOrientations.horizontal) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         reconcileTextOrientationImagePositions(shapedTextOrientations.horizontal[orientation], atlasIconPositions);
     }
 
@@ -588,6 +591,7 @@ function fitIconsToText(bucket: SymbolBucket, shapedIcon: PositionedIcon | undef
                                        iconTextFitPadding, iconOffset, fontScale);
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return {defaultShapedIcon, verticallyShapedIcon};
 }
 
@@ -1002,6 +1006,7 @@ function addSymbol(bucket: SymbolBucket,
             iconSizeData = [
                 SIZE_PACK_FACTOR * layer.layout.get('icon-size').evaluate(feature, {}, canonical) * sizes.iconScaleFactor
             ];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (iconSizeData[0] > MAX_PACKED_SIZE) {
                 warnOnce(`${bucket.layerIds[0]}: Value for "icon-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "icon-size".`);
             }
@@ -1010,6 +1015,7 @@ function addSymbol(bucket: SymbolBucket,
                 SIZE_PACK_FACTOR * sizes.compositeIconSizes[0].evaluate(feature, {}, canonical) * sizes.iconScaleFactor,
                 SIZE_PACK_FACTOR * sizes.compositeIconSizes[1].evaluate(feature, {}, canonical) * sizes.iconScaleFactor
             ];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (iconSizeData[0] > MAX_PACKED_SIZE || iconSizeData[1] > MAX_PACKED_SIZE) {
                 warnOnce(`${bucket.layerIds[0]}: Value for "icon-size" is >= ${MAX_GLYPH_ICON_SIZE}. Reduce your "icon-size".`);
             }
@@ -1018,6 +1024,7 @@ function addSymbol(bucket: SymbolBucket,
         bucket.addSymbols(
             bucket.icon,
             iconQuads,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             iconSizeData,
             iconOffset,
             iconAlongLine,
@@ -1042,6 +1049,7 @@ function addSymbol(bucket: SymbolBucket,
             bucket.addSymbols(
                 bucket.icon,
                 verticalIconQuads,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 iconSizeData,
                 iconOffset,
                 iconAlongLine,
@@ -1107,8 +1115,11 @@ function addSymbol(bucket: SymbolBucket,
         return diameter ? Math.max(diameter, prevHeight) : prevHeight;
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     collisionCircleDiameter = getCollisionCircleHeight(textCircle, collisionCircleDiameter);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     collisionCircleDiameter = getCollisionCircleHeight(verticalTextCircle, collisionCircleDiameter);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     collisionCircleDiameter = getCollisionCircleHeight(verticalIconCircle, collisionCircleDiameter);
     const useRuntimeCollisionCircles = (collisionCircleDiameter > -1) ? 1 : 0;
 
@@ -1135,13 +1146,21 @@ function addSymbol(bucket: SymbolBucket,
         placedIconSymbolIndex,
         verticalPlacedIconSymbolIndex,
         key,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         textBoxIndex !== undefined ? textBoxIndex : bucket.collisionBoxArray.length,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         textBoxIndex !== undefined ? textBoxIndex + 1 : bucket.collisionBoxArray.length,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         verticalTextBoxIndex !== undefined ? verticalTextBoxIndex : bucket.collisionBoxArray.length,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         verticalTextBoxIndex !== undefined ? verticalTextBoxIndex + 1 : bucket.collisionBoxArray.length,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         iconBoxIndex !== undefined ? iconBoxIndex : bucket.collisionBoxArray.length,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         iconBoxIndex !== undefined ? iconBoxIndex + 1 : bucket.collisionBoxArray.length,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         verticalIconBoxIndex ? verticalIconBoxIndex : bucket.collisionBoxArray.length,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         verticalIconBoxIndex ? verticalIconBoxIndex + 1 : bucket.collisionBoxArray.length,
         featureIndex,
         numHorizontalGlyphVertices,

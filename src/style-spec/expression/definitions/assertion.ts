@@ -47,6 +47,7 @@ class Assertion implements Expression {
                 const type = args[1];
                 if (typeof type !== 'string' || !(type in types) || type === 'object')
                     return context.error('The item type argument of "array" must be one of string, number, boolean', 1);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 itemType = types[type];
                 i++;
             } else {
@@ -66,9 +67,11 @@ class Assertion implements Expression {
                 i++;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             type = array(itemType, N);
         } else {
             assert(types[name], name);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             type = types[name];
         }
 
@@ -79,17 +82,21 @@ class Assertion implements Expression {
             parsed.push(input);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Assertion(type, parsed);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
         for (let i = 0; i < this.args.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const value = this.args[i].evaluate(ctx);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const error = checkSubtype(this.type, typeOf(value));
             if (!error) {
                 return value;
             } else if (i === this.args.length - 1) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 throw new RuntimeError(`The expression ${JSON.stringify(this.args[i].serialize())} evaluated to ${toString(typeOf(value))} but was expected to be of type ${toString(this.type)}.`);
             }
         }

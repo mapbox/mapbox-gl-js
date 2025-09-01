@@ -23,6 +23,7 @@ export const plugins = ({mode, minified, production, test, bench, keepClassNames
         minify: false,
         sourceMap: true,
         define: {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             'import.meta.env': JSON.stringify({mode}),
         },
     }),
@@ -34,6 +35,7 @@ export const plugins = ({mode, minified, production, test, bench, keepClassNames
         functions: ['PerformanceUtils.*', 'WorkerPerformanceUtils.*', 'Debug.*'],
         include: ['**/*.ts']
     }) : false,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     production || bench ? unassert({include: ['*.js', '**/*.js', '*.ts', '**/*.ts']}) : false,
     test ? replace({
         preventAssignment: true,
@@ -46,6 +48,7 @@ export const plugins = ({mode, minified, production, test, bench, keepClassNames
     minified ? terser({
         ecma: 2020,
         module: true,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         keep_classnames: keepClassNames,
         compress: {
             pure_getters: true,
@@ -65,6 +68,7 @@ export const plugins = ({mode, minified, production, test, bench, keepClassNames
 
 // Using this instead of rollup-plugin-string to add minification
 function glsl(include, minify) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const filter = createFilter(include);
     return {
         name: 'glsl',
@@ -73,11 +77,17 @@ function glsl(include, minify) {
 
             // barebones GLSL minification
             if (minify) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 code = code.trim() // strip whitespace at the start/end
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     .replace(/\s*\/\/[^\n]*\n/g, '\n') // strip double-slash comments
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     .replace(/\n+/g, '\n') // collapse multi line breaks
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     .replace(/\n\s+/g, '\n') // strip indentation
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     .replace(/\s?([+-\/*=,])\s?/g, '$1') // strip whitespace around operators
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     .replace(/([;,\{\}])\n(?=[^#])/g, '$1'); // strip more line breaks
             }
 

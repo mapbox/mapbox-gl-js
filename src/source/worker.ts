@@ -287,6 +287,7 @@ export default class MapWorker {
             this.self.importScripts(params.url);
             callback();
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             callback(e.toString());
         }
     }
@@ -322,6 +323,7 @@ export default class MapWorker {
                 }
             }
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             callback(e.toString());
         }
     }
@@ -396,6 +398,7 @@ export default class MapWorker {
                 scheduler: this.actor.scheduler
             } as Actor;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             workerSources[mapId][scope][type][source] = new this.workerSourceTypes[type](
                 actor,
                 this.getLayerIndex(mapId, scope),

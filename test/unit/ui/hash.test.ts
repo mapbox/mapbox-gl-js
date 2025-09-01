@@ -8,7 +8,9 @@ describe('hash', () => {
         window.location.hash = '';
     });
     function createHash(name) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const hash = new Hash(name);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         hash._updateHash = hash._updateHashUnthrottled.bind(hash);
         return hash;
     }

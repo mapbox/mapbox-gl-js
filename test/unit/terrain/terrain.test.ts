@@ -111,12 +111,15 @@ describe('Elevation', () => {
         const elevationError = -1;
 
         test('Sample', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const elevation = map.painter.terrain.getAtPoint({x: 0.51, y: 0.49}, elevationError);
             expect(elevation).toEqual(0);
         });
 
         test('Invalid sample position', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const elevation1 = map.painter.terrain.getAtPoint({x: 0.5, y: 1.1}, elevationError);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const elevation2 = map.painter.terrain.getAtPoint({x: 1.15, y: -0.001}, elevationError);
             expect(elevation1).toEqual(elevationError);
             expect(elevation2).toEqual(elevationError);
@@ -135,6 +138,7 @@ describe('Elevation', () => {
 
         test('Sample', () => {
             const points = [[8191, 8191, 1]];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.painter.terrain.getForTilePoints(new OverscaledTileID(15, 0, 15, 17439, 11377), points);
             expect(points[0][2]).toEqual(0);
         });
@@ -153,6 +157,7 @@ describe('Elevation', () => {
         describe('Throws error if style update tries to remove terrain DEM source', () => {
             test('remove source', () => {
                 const stub = vi.spyOn(console, 'error');
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 map.removeSource('mapbox-dem');
                 expect(stub.calledOnce).toBeTruthy();
             });
@@ -182,6 +187,7 @@ describe('Elevation', () => {
         beforeEach(async () => {
             // eslint-disable-next-line @typescript-eslint/require-await
             vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return new window.Response(vectorStub);
             });
             map = createMap({
@@ -190,6 +196,7 @@ describe('Elevation', () => {
 
             await waitFor(map, 'style.load');
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addSource('mapbox-dem', {
                 "type": "raster-dem",
                 "tiles": ['http://example.com/{z}/{x}/{y}.png'],
@@ -197,17 +204,27 @@ describe('Elevation', () => {
                 "maxzoom": 14
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             cache = map.style.getOwnSourceCache('mapbox-dem');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             cache.used = cache._sourceLoaded = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             cache._loadTile = (tile, callback) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.dem = dem;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.needsHillshadePrepare = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.needsDEMTextureUpload = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback(null);
             };
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain({"source": "mapbox-dem"});
             await waitFor(map, 'load');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             cache = map.style.getOwnSourceCache('mapbox-dem');
 
             const tilesAtTileZoom = 1 << 14;
@@ -218,52 +235,65 @@ describe('Elevation', () => {
         });
 
         test('terrain tiles loaded wrap', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const tile = cache.getTile(new OverscaledTileID(14, 1, 14, 0, 8192));
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(tile.dem).toBeTruthy();
         });
 
         test('terrain tiles loaded no wrap', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const tile = cache.getTile(new OverscaledTileID(14, 0, 14, 16383, 8192));
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(tile.dem).toBeTruthy();
         });
 
         test('terrain at coord should be 0', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.getAtPoint(coord)).toEqual(0);
         });
 
         test('dx', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const elevationDx = map.painter.terrain.getAtPoint({x: coord.x + dx, y: coord.y}, 0);
             expect(Math.abs(elevationDx - 0.1) < 1e-8).toBeTruthy();
         });
 
         test('dy', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const elevationDy = map.painter.terrain.getAtPoint({x: coord.x, y: coord.y + dx}, 0);
             const expectation = TILE_SIZE * 0.1;
             expect(Math.abs(elevationDy - expectation) < 1e-6).toBeTruthy();
         });
 
         test('dx/3 dy/3', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const elevation = map.painter.terrain.getAtPoint({x: coord.x + dx / 3, y: coord.y + dx / 3}, 0);
             const expectation = (2 * TILE_SIZE + 2) * 0.1 / 6;
             expect(Math.abs(elevation - expectation) < 1e-9).toBeTruthy();
         });
 
         test('-dx -wrap', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const elevation = map.painter.terrain.getAtPoint({x: coord.x - dx, y: coord.y}, 0);
             const expectation = (TILE_SIZE - 1) * 0.1;
             expect(Math.abs(elevation - expectation) < 1e-6).toBeTruthy();
         });
 
         test('-1.5dx -wrap', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const elevation = map.painter.terrain.getAtPoint({x: coord.x - 1.5 * dx, y: coord.y}, 0);
             const expectation = (TILE_SIZE - 1.5) * 0.1;
             expect(Math.abs(elevation - expectation) < 1e-7).toBeTruthy();
         });
 
         test('disable terrain', async () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain(null);
             await waitFor(map, "render");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain).toBeFalsy();
             await waitFor(map, "idle");
         });
@@ -277,36 +307,50 @@ describe('Elevation', () => {
             });
             map = createMap();
             await waitFor(map, 'style.load');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addSource('mapbox-dem', {
                 "type": "raster-dem",
                 "tiles": ['http://example.com/{z}/{x}/{y}.png'],
                 TILE_SIZE,
                 "maxzoom": 14
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain({"source": "mapbox-dem"});
             await waitFor(map, 'render');
         });
 
         test('Sample before loading DEMs', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.isDataAvailableAtPoint({x: 0.5, y: 0.5})).toBeFalsy();
         });
 
         test('Sample within after loading', async () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const cache = map.style.getOwnSourceCache('mapbox-dem');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             cache.used = cache._sourceLoaded = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             cache._loadTile = (tile, callback) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.dem = zeroDem;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.needsHillshadePrepare = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.needsDEMTextureUpload = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback(null);
             };
             await waitFor(map, 'render');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.isDataAvailableAtPoint({x: 0.5, y: 0.5})).toBeTruthy();
         });
 
         test('Sample outside after loading', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.getAtPoint({x: 0.5, y: 1.1})).toBeFalsy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.getAtPoint({x: 1.15, y: -0.001})).toBeFalsy();
         });
     });
@@ -361,14 +405,18 @@ describe('Elevation', () => {
         let timestamp: any;
 
         timestamp = browser.now();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         changed = map._updateAverageElevation(timestamp);
         expect(changed).toBeFalsy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(map._averageElevation.isEasing(timestamp)).toBeFalsy();
         expect(map.transform.averageElevation).toEqual(0);
 
         timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         changed = map._updateAverageElevation(timestamp);
         expect(changed).toBeFalsy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(map._averageElevation.isEasing(timestamp)).toBeFalsy();
         expect(map.transform.averageElevation).toEqual(0);
 
@@ -377,8 +425,10 @@ describe('Elevation', () => {
         map.setCenter([map.getCenter().lng + 0.01, map.getCenter().lat]);
 
         timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         changed = map._updateAverageElevation(timestamp);
         expect(changed).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(map._averageElevation.isEasing(timestamp)).toBeTruthy();
         expect(map.transform.averageElevation).toEqual(0);
 
@@ -387,20 +437,26 @@ describe('Elevation', () => {
         };
 
         timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         changed = map._updateAverageElevation(timestamp);
         expect(changed).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(map._averageElevation.isEasing(timestamp)).toBeTruthy();
         assertAlmostEqual(map.transform.averageElevation, 797.6258610429736);
 
         timestamp += AVERAGE_ELEVATION_EASE_TIME * 0.5;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         changed = map._updateAverageElevation(timestamp);
         expect(changed).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(map._averageElevation.isEasing(timestamp)).toBeTruthy();
         assertAlmostEqual(map.transform.averageElevation, 1595.2517220859472);
 
         timestamp += AVERAGE_ELEVATION_SAMPLING_INTERVAL;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         changed = map._updateAverageElevation(timestamp);
         expect(changed).toBeFalsy();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(map._averageElevation.isEasing(timestamp)).toBeFalsy();
         assertAlmostEqual(map.transform.averageElevation, 1595.2517220859472);
     });
@@ -454,9 +510,11 @@ describe('Elevation', () => {
                 [180.1, 0],
                 [180.2, 0.1]
             ];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             source.setData(data);
             expect(source.loaded()).toEqual(false);
             const onLoaded = (e) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (e.sourceDataType === 'visibility') return;
                 source.off('data', onLoaded);
                 expect(map.getSource('trace').loaded()).toEqual(true);
@@ -471,6 +529,7 @@ describe('Elevation', () => {
                         beganRenderingContent = isCenterRendered;
                         if (beganRenderingContent) {
                             data.features[0].geometry.coordinates.push([180.1, 0.1]);
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                             source.setData(data);
                             expect(map.getSource('trace').loaded()).toEqual(false);
                         }
@@ -527,8 +586,11 @@ describe('Elevation', () => {
                 }
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.on('style.load', withAsync((_, doneRef) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 map.addSource('trace', {type: 'geojson', data});
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 map.addLayer({
                     'id': 'trace',
                     'type': 'line',
@@ -539,29 +601,49 @@ describe('Elevation', () => {
                         'line-width': 5
                     }
                 });
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 const cache = map.style.getOwnSourceCache('mapbox-dem');
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 cache._loadTile = (tile, callback) => {
                     const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.needsHillshadePrepare = true;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.needsDEMTextureUpload = true;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.state = 'loaded';
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     callback(null);
                 };
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 cache.used = cache._sourceLoaded = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 map.setTerrain({"source": "mapbox-dem"});
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 map.once('render', () => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     map._updateTerrain();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     map.painter.style.on('data', (event) => {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         if (event.sourceCacheId === 'other:trace') {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                             doneRef.resolve();
                         }
                     });
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     const cache = map.style.getOwnSourceCache('trace');
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     cache.transform = map.painter.transform;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     cache._addTile(new OverscaledTileID(0, 0, 0, 0, 0));
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     cache.onAdd();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     cache.reload();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     cache.used = cache._sourceLoaded = true;
                 });
             }));
@@ -570,7 +652,9 @@ describe('Elevation', () => {
         });
 
         test('Source other:trace is cleared from cache', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain._tilesDirty.hasOwnProperty('other:trace')).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain._tilesDirty['other:trace']['0']).toBeTruthy();
         });
     });
@@ -622,6 +706,7 @@ describe('Elevation', () => {
             const {withAsync, wait} = doneAsync();
             // eslint-disable-next-line @typescript-eslint/require-await
             vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return new window.Response(vectorStub);
             });
             map = createMap({
@@ -641,21 +726,35 @@ describe('Elevation', () => {
                 }
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.on('style.load', withAsync((_, doneRef) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 const cache = map.style.getOwnSourceCache('mapbox-dem');
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 cache._loadTile = (tile, callback) => {
                     const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.needsHillshadePrepare = true;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.needsDEMTextureUpload = true;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tile.state = 'loaded';
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                     callback(null);
                 };
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 cache.used = cache._sourceLoaded = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 tr = map.painter.transform.clone();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 map.setTerrain({"source": "mapbox-dem"});
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 map.once('render', () => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     map._updateTerrain();
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     doneRef.resolve();
                 });
             }));
@@ -664,11 +763,13 @@ describe('Elevation', () => {
         });
 
         test('center is not further constrained', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(tr.center).toEqual(map.painter.transform.center);
         });
     });
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const spec = styleSpec.terrain;
 
 describe('Terrain style', () => {
@@ -676,7 +777,9 @@ describe('Terrain style', () => {
         const terrain = new Terrain({});
         terrain.recalculate({zoom: 0});
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(terrain.properties.get('source')).toEqual(spec.source.default);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(terrain.properties.get('exaggeration')).toEqual(spec.exaggeration.default);
     });
 
@@ -694,6 +797,7 @@ describe('Terrain style', () => {
 });
 
 function nearlyEquals(a, b, eps = 0.000000001) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return Object.keys(a).length >= 2 && Object.keys(a).every(key => Math.abs(a[key] - b[key]) < eps);
 }
 
@@ -785,7 +889,9 @@ function createInteractiveMap(clickTolerance, dragPan) {
     vi.spyOn(Map.prototype, '_detectMissingCSS').mockImplementation(() => {});
     return new Map({
         container: DOM.create('div', '', window.document.body),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         clickTolerance: clickTolerance || 0,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         dragPan: dragPan || true,
         testMode: true,
         interactive: true,
@@ -816,91 +922,134 @@ describe('Drag pan ortho', () => {
     beforeEach(async () => {
         // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return new window.Response(vectorStub);
         });
         map = createInteractiveMap();
 
         await waitFor(map, 'style.load');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.addSource('mapbox-dem', {
             "type": "raster-dem",
             "tiles": ['http://example.com/{z}/{x}/{y}.png'],
             "tileSize": TILE_SIZE,
             "maxzoom": 14
         });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         cache = map.style.getOwnSourceCache('mapbox-dem');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         cache.used = cache._sourceLoaded = true;
     });
 
     const mockDem = (dem, cache) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         cache._loadTile = (tile, callback) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             tile.dem = dem;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.needsHillshadePrepare = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.needsDEMTextureUpload = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.state = 'loaded';
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             callback(null);
         };
     };
 
     test('ortho camera & drag over zero pitch elevation', async () => {
         mockDem(createNegativeGradientDEM(), cache);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.setTerrain({"source": "mapbox-dem"});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.setPitch(0);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.setZoom(15.7);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.setCamera({"camera-projection": "orthographic"});
         await waitFor(map, "render");
 
         // MouseEvent.buttons = 1 // left button
         const buttons = 1;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map._updateTerrain();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         expect(map.getZoom()).toEqual(15.7);
 
         const dragstart = vi.fn();
         const drag      = vi.fn();
         const dragend   = vi.fn();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.on('dragstart', dragstart);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.on('drag',      drag);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.on('dragend',   dragend);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         simulate.mousedown(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map._renderTaskQueue.run();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map._renderTaskQueue.run();
         expect(dragstart).toHaveBeenCalledTimes(1);
         expect(drag).toHaveBeenCalledTimes(1);
         expect(dragend).not.toHaveBeenCalled();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         simulate.mouseup(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map._renderTaskQueue.run();
         expect(dragstart).toHaveBeenCalledTimes(1);
         expect(drag).toHaveBeenCalledTimes(1);
         expect(dragend).toHaveBeenCalledTimes(1);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         expect(map.getZoom()).toEqual(15.7); // recenter on pitch.
 
         // Still in ortho
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.setPitch(5);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         simulate.mousedown(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map._renderTaskQueue.run();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map._renderTaskQueue.run();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         simulate.mouseup(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map._renderTaskQueue.run();
         expect(dragend).toHaveBeenCalledTimes(2);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         assertAlmostEqual(map.getZoom(), 13.35, 0.01);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.setPitch(0);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         simulate.mousedown(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map._renderTaskQueue.run();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(window.document.body, {buttons, clientX: 15, clientY: 15});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map._renderTaskQueue.run();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         simulate.mouseup(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map._renderTaskQueue.run();
         expect(dragend).toHaveBeenCalledTimes(3);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         assertAlmostEqual(map.getZoom(), 13.35, 0.01); // no pitch, keep old zoom.
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.remove();
     });
 });
@@ -911,28 +1060,38 @@ describe('Negative Elevation', () => {
     beforeAll(async () => {
         // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return new window.Response(vectorStub);
         });
         map = createMap({
             style: createStyle()
         });
         await waitFor(map, 'style.load');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.addSource('mapbox-dem', {
             "type": "raster-dem",
             "tiles": ['http://example.com/{z}/{x}/{y}.png'],
             "tileSize": TILE_SIZE,
             "maxzoom": 14
         });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         cache = map.style.getOwnSourceCache('mapbox-dem');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         cache.used = cache._sourceLoaded = true;
     });
 
     const mockDem = (dem, cache) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         cache._loadTile = (tile, callback) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             tile.dem = dem;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.needsHillshadePrepare = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.needsDEMTextureUpload = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.state = 'loaded';
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             callback(null);
         };
     };
@@ -944,14 +1103,18 @@ describe('Negative Elevation', () => {
     describe('sampling with negative elevation', () => {
         beforeAll(async () => {
             mockDem(createNegativeGradientDEM(), cache);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain({"source": "mapbox-dem"});
             await waitFor(map, 'render');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map._updateTerrain();
         });
 
         test('negative elevation', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const minElevation = map.painter.terrain.getMinElevationBelowMSL();
             assertAlmostEqual(minElevation, -1671.55);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             cache.clearTiles();
         });
     });
@@ -959,14 +1122,18 @@ describe('Negative Elevation', () => {
     describe('sampling with negative elevation and exaggeration', () => {
         beforeAll(async () => {
             mockDem(createNegativeGradientDEM(), cache);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain({"source": "mapbox-dem", "exaggeration": 1.5});
             await waitFor(map, 'render');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map._updateTerrain();
         });
 
         test('negative elevation with exaggeration', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const minElevation = map.painter.terrain.getMinElevationBelowMSL();
             assertAlmostEqual(minElevation, -2507.325);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             cache.clearTiles();
         });
     });
@@ -974,14 +1141,18 @@ describe('Negative Elevation', () => {
     describe('sampling with no negative elevation', () => {
         beforeAll(async () => {
             mockDem(createGradientDEM(), cache);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain({"source": "mapbox-dem"});
             await waitFor(map, 'render');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map._updateTerrain();
         });
 
         test('no negative elevation', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const minElevation = map.painter.terrain.getMinElevationBelowMSL();
             expect(minElevation).toEqual(0);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             cache.clearTiles();
         });
     });
@@ -989,6 +1160,7 @@ describe('Negative Elevation', () => {
 
 describe('Vertex morphing', () => {
     const createTile = (id) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const tile = new Tile(id);
         tile.demTexture = {};
         tile.state = 'loaded';
@@ -1139,6 +1311,7 @@ describe('Render cache efficiency', () => {
             vi.spyOn(console, 'warn').mockImplementation(() => {});
             // eslint-disable-next-line @typescript-eslint/require-await
             vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return new window.Response(vectorStub);
             });
             map = createMap({
@@ -1168,18 +1341,28 @@ describe('Render cache efficiency', () => {
                 }
             });
             await waitFor(map, 'style.load');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const cache = map.style.getOwnSourceCache('mapbox-dem');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             cache._loadTile = (tile, callback) => {
                 const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.needsHillshadePrepare = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.needsDEMTextureUpload = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback(null);
             };
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain({'source': 'mapbox-dem'});
             await waitFor(map, 'render');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map._updateTerrain();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'background',
                 'type': 'background'
@@ -1187,90 +1370,118 @@ describe('Render cache efficiency', () => {
         });
 
         test('Cache efficiency 1', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'undraped1',
                 'type': 'symbol',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('undraped1');
         });
 
         test('Cache efficiency 2', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped1',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped2',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'undraped1',
                 'type': 'symbol',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped2');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('undraped1');
         });
 
         test('Cache efficiency 3', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped1',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped2',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'undraped1',
                 'type': 'symbol',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped3',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped2');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped3');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('undraped1');
         });
 
         test('Cache efficiency 4', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped1',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'undraped1',
                 'type': 'symbol',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped2',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped3',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped2');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped3');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('undraped1');
         });
     });
@@ -1282,6 +1493,7 @@ describe('Render cache efficiency', () => {
             vi.spyOn(console, 'warn').mockImplementation(() => {});
             // eslint-disable-next-line @typescript-eslint/require-await
             vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return new window.Response(vectorStub);
             });
             map = createMap({
@@ -1311,18 +1523,28 @@ describe('Render cache efficiency', () => {
                 }
             });
             await waitFor(map, 'style.load');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const cache = map.style.getOwnSourceCache('mapbox-dem');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             cache._loadTile = (tile, callback) => {
                 const pixels = new Uint8Array((512 + 2) * (512 + 2) * 4);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.dem = new DEMData(0, new RGBAImage({height: 512 + 2, width: 512 + 2}, pixels));
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.needsHillshadePrepare = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.needsDEMTextureUpload = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback(null);
             };
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain({'source': 'mapbox-dem'});
             await waitFor(map, 'render');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map._updateTerrain();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'background',
                 'type': 'background'
@@ -1330,90 +1552,118 @@ describe('Render cache efficiency', () => {
         });
 
         test('Cache efficiency 1', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'undraped1',
                 'type': 'symbol',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('undraped1');
         });
 
         test('Cache efficiency 2', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped1',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped2',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'undraped1',
                 'type': 'symbol',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped2');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('undraped1');
         });
 
         test('Cache efficiency 3', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped1',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped2',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'undraped1',
                 'type': 'symbol',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped3',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped2');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped3');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('undraped1');
         });
 
         test('Cache efficiency 4', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped1',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'undraped1',
                 'type': 'symbol',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped2',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addLayer({
                 'id': 'draped3',
                 'type': 'fill',
                 'source': 'geojson'
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.painter.terrain.isLayerOrderingCorrect(map.painter.style)).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped1');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped2');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('draped3');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.removeLayer('undraped1');
         });
     });
@@ -1434,12 +1684,17 @@ describe('Marker interaction and raycast', () => {
                 }]
             })
         });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.setPitch(85);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         map.setZoom(13);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         tr = map.transform;
         marker = new Marker({draggable: true})
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             .setLngLat(tr.center)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             .addTo(map)
             .setPopup(new Popup().setHTML(`a popup content`))
             .togglePopup();
@@ -1448,8 +1703,11 @@ describe('Marker interaction and raycast', () => {
     });
 
     test('marker positioned in center', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         expect(map.project(marker.getLngLat()).y).toEqual(tr.height / 2);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         expect(tr.locationPoint3D(marker.getLngLat()).y).toEqual(tr.height / 2);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         expect(marker.getPopup()._pos).toEqual(new Point(tr.width / 2, tr.height / 2));
     });
 
@@ -1459,89 +1717,134 @@ describe('Marker interaction and raycast', () => {
         beforeAll(async () => {
             // eslint-disable-next-line @typescript-eslint/require-await
             vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return new window.Response(vectorStub);
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.addSource('mapbox-dem', {
                 "type": "raster-dem",
                 "tiles": ['http://example.com/{z}/{x}/{y}.png'],
                 "tileSize": TILE_SIZE,
                 "maxzoom": 14
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             map.transform._horizonShift = 0;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const cache = map.style.getOwnSourceCache('mapbox-dem');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             cache.used = cache._sourceLoaded = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             cache._loadTile = (tile, callback) => {
             // Elevate tiles above center.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.dem = createConstElevationDEM(300 * (tr.zoom - tile.tileID.overscaledZ), TILE_SIZE);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.needsHillshadePrepare = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.needsDEMTextureUpload = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 tile.state = 'loaded';
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 callback(null);
             };
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain({"source": "mapbox-dem"});
             await waitFor(map, 'render');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map._updateTerrain();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             terrainTopLngLat = tr.pointLocation3D(new Point(tr.width / 2, 0)); // gets clamped at the top of terrain
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             terrainTop = tr.locationPoint3D(terrainTopLngLat);
         });
 
         test('no changes at center', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(map.project(marker.getLngLat()).y).toEqual(tr.height / 2);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(tr.locationPoint3D(marker.getLngLat()).y).toEqual(tr.height / 2);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(marker.getPopup()._pos).toEqual(new Point(tr.width / 2, tr.height / 2));
         });
 
         test('terrain is above horizon line', () => {
         // With a bit of tweaking (given that const terrain planes are used), terrain is above horizon line.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             expect(terrainTop.y < tr.horizonLineFromTop()).toBeTruthy();
         });
 
         test('Drag above clamps at horizon', () => {
         // Offset marker down, 2 pixels under terrain top above horizon.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const startPos = new Point(0, 7)._add(terrainTop);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             marker.setLngLat(tr.pointLocation3D(startPos));
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(Math.abs(tr.locationPoint3D(marker.getLngLat()).y - startPos.y) < 0.000001).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const el = marker.getElement();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.mousedown(el);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.mousemove(el, {clientX: 0, clientY: -40});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.mouseup(el);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const endPos = tr.locationPoint3D(marker.getLngLat());
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(Math.abs(endPos.x - startPos.x) < 0.00000000001).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(endPos.y).toEqual(terrainTop.y);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(marker.getPopup()._pos).toEqual(endPos);
         });
 
         test('Drag below / behind camera', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const startPos = new Point(terrainTop.x, tr.height - 20);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             marker.setLngLat(tr.pointLocation3D(startPos));
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(Math.abs(tr.locationPoint3D(marker.getLngLat()).y - startPos.y) < 0.000001).toBeTruthy();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const el = marker.getElement();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.mousedown(el);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.mousemove(el, {clientX: 0, clientY: 40});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.mouseup(el);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const endPos = tr.locationPoint3D(marker.getLngLat());
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             expect(Math.round(endPos.y)).toEqual(Math.round(startPos.y) + 40);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(marker.getPopup()._pos).toEqual(endPos);
         });
 
         test('Occluded', async () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             marker._fadeTimer = null;
             // Occlusion is happening with Timers API. Advance them
             vi.spyOn(window, 'setTimeout').mockImplementation((cb) => cb());
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             marker.setLngLat(terrainTopLngLat);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
             const bottomLngLat = tr.pointLocation3D(new Point(terrainTop.x, tr.height));
             // Raycast returns distance to closer point evaluates to occluded marker.
             vi.spyOn(tr, 'pointLocation3D').mockImplementation(() => bottomLngLat);
             await waitFor(map, "render");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(marker.getElement().style.opacity).toEqual("0.2");
         });
 
         test(`Marker updates position on removing terrain (#10982)`, async () => {
             const update = vi.spyOn(marker, "_update");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain(null);
             await waitFor(map, 'render');
             expect(update).toHaveBeenCalledTimes(1);
@@ -1549,6 +1852,7 @@ describe('Marker interaction and raycast', () => {
 
         test(`Marker updates position on adding terrain (#10982)`, async () => {
             const update = vi.spyOn(marker, "_update");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setTerrain({"source": "mapbox-dem"});
             await waitFor(map, 'render');
             expect(update).toHaveBeenCalledTimes(1);
@@ -1560,6 +1864,7 @@ describe('terrain getBounds', () => {
     test('should has correct coordinates of center', async () => {
         // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return new window.Response(vectorStub);
         });
         const map = createMap({
@@ -1688,7 +1993,9 @@ describe('terrain getBounds', () => {
     function toFixed(bounds) {
         const n = 9;
         return [
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
         ];
     }
@@ -1698,6 +2005,7 @@ describe('terrain getBounds', () => {
 test('terrain recursively loads parent tiles on 404', async () => {
     // eslint-disable-next-line @typescript-eslint/require-await
     vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new window.Response(vectorStub);
     });
     const style = createStyle();
@@ -1762,6 +2070,7 @@ describe('#hasCanvasFingerprintNoise', () => {
     test('Dynamic terrain', async () => {
         // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return new window.Response(vectorStub);
         });
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1789,6 +2098,7 @@ describe('#hasCanvasFingerprintNoise', () => {
     test('Terrain in Style', async () => {
         // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return new window.Response(vectorStub);
         });
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1822,6 +2132,7 @@ describe('#hasCanvasFingerprintNoise', () => {
     test('Terrain in Style fragment', async () => {
         // eslint-disable-next-line @typescript-eslint/require-await
         vi.spyOn(window, 'fetch').mockImplementation(async (req) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return new window.Response(vectorStub);
         });
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

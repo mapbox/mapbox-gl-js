@@ -57,6 +57,7 @@ describe('clipLines', () => {
     const maxY = 200;
 
     const clipLineTest = (lines, linesInfo?: LineInfo[]) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return clipLines(lines, minX, minY, maxX, maxY, linesInfo);
     };
 

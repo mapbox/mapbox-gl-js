@@ -92,6 +92,7 @@ test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', () =>
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback);
     expect(parse).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     parse.mock.calls[0][5]();
     expect(callback).toHaveBeenCalledTimes(1);
 });
@@ -117,11 +118,13 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback2);
     expect(parse).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     parse.mock.calls[0][5]();
     expect(parse).toHaveBeenCalledTimes(2);
     expect(callback1).toHaveBeenCalledTimes(1);
     expect(callback2).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     parse.mock.calls[1][5]();
     expect(callback1).toHaveBeenCalledTimes(1);
     expect(callback2).toHaveBeenCalledTimes(1);
@@ -150,6 +153,7 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', () =>
     source.reloadTile({uid: 0, tileID: {canonical: {x: 0, y: 0, z: 0}}, projection: {name: 'mercator'}}, callback2);
     expect(parse).toHaveBeenCalledTimes(1);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     parse.mock.calls[0][5]();
     expect(parse).toHaveBeenCalledTimes(2);
     expect(callback1).toHaveBeenCalledTimes(1);
@@ -162,12 +166,14 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', () =>
     expect(callback2).not.toHaveBeenCalled();
     expect(callback3).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     parse.mock.calls[1][5]();
     expect(parse).toHaveBeenCalledTimes(3);
     expect(callback1).toHaveBeenCalledTimes(1);
     expect(callback2).toHaveBeenCalledTimes(1);
     expect(callback3).not.toHaveBeenCalled();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     parse.mock.calls[2][5]();
     expect(callback1).toHaveBeenCalledTimes(1);
     expect(callback2).toHaveBeenCalledTimes(1);
@@ -194,8 +200,11 @@ test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTil
 
 test('VectorTileWorkerSource provides resource timing information', () => {
     function loadVectorData(params, callback) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         return callback(null, {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             vectorTile: new VectorTile(new Protobuf(rawTileData)),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             rawData: rawTileData,
             cacheControl: null,
             expires: null

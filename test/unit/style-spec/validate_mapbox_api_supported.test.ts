@@ -7,8 +7,10 @@ import {fixtures} from 'virtual:style-spec/fixtures';
 import badColorStyleSpecFixture from './fixture/bad-color.input.json';
 
 describe('Validate style', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     Object.keys(fixtures).forEach(fixtureName => {
         test(fixtureName, async () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const result = validateMapboxApiSupported(fixtures[fixtureName]);
             for (const error of result) {
                 if (error.error) error.error = {};

@@ -16,6 +16,7 @@ test('v8.json includes all definitions from style-spec', () => {
     const v8List = Object.keys(v8.expression_name.values);
     const v8SupportedList = v8List.filter((expression) => {
         //filter out expressions that are not supported in Mapbox GL JS
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         return !!v8.expression_name.values[expression]["sdk-support"]["basic functionality"]["js"];
     });
     expect(definitionList).toStrictEqual(v8SupportedList.sort());
@@ -35,6 +36,7 @@ describe('createPropertyExpression', () => {
         });
         expect(result).toEqual('error');
         expect(value.length).toEqual(1);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(value[0].message).toEqual('"interpolate" expressions cannot be used with this property');
     });
 });
@@ -67,7 +69,9 @@ describe('evaluate expression', () => {
 
         expect(value.kind).toEqual('source');
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(value.evaluate({}, {properties: {x: 'b'}})).toEqual('b');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(value.evaluate({}, {properties: {x: 'invalid'}})).toEqual('a');
         expect(
             console.warn

@@ -40,6 +40,7 @@ function containsKey(obj: unknown, key: string) {
         }
 
         if (item && typeof item === 'object') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return Object.values(item).some(recursiveSearch);
         }
 
@@ -97,16 +98,19 @@ export default function groupByLayout(
         if (cachedKeys)
             cachedKeys[layer.id] = k;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         let group = groups[k];
         if (!group) {
             group = groups[k] = [];
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         group.push(layer);
     }
 
     const result: LayerSpecification[][] = [];
 
     for (const k in groups) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         result.push(groups[k]);
     }
 

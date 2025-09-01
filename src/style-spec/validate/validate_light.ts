@@ -15,6 +15,7 @@ type LightValidatorOptions = {
 export default function validateLight(options: LightValidatorOptions): ValidationError[] {
     const light = options.value;
     const styleSpec = options.styleSpec;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const lightSpec = styleSpec.light;
     const style = options.style;
 
@@ -31,6 +32,7 @@ export default function validateLight(options: LightValidatorOptions): Validatio
         const transitionMatch = key.match(/^(.*)-transition$/);
         const useThemeMatch = key.match(/^(.*)-use-theme$/);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (useThemeMatch && lightSpec[useThemeMatch[1]]) {
             errors = errors.concat(validate({
                 key,
@@ -39,18 +41,22 @@ export default function validateLight(options: LightValidatorOptions): Validatio
                 style,
                 styleSpec
             }));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (transitionMatch && lightSpec[transitionMatch[1]] && lightSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
                 value: light[key],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 valueSpec: styleSpec.transition,
                 style,
                 styleSpec
             }));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (lightSpec[key]) {
             errors = errors.concat(validate({
                 key,
                 value: light[key],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 valueSpec: lightSpec[key],
                 style,
                 styleSpec

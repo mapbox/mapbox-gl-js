@@ -138,9 +138,11 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
         if (this.partial) {
             // Load only the tile header in the main thread
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             tile.request = tile.fetchHeader(undefined, done.bind(this));
         } else {
             // Load and parse the entire tile in Worker
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
         }
     }
@@ -241,15 +243,18 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         } else if (layer instanceof RasterParticleStyleLayer) {
             layerBand = layer.paint.get('raster-particle-array-band');
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const band = layerBand || this.getInitialBand(sourceLayer);
         if (band == null) return;
 
         if (!tile.textureDescriptorPerLayer.get(layer.id)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.prepareTile(tile, sourceLayer, layer.id, band);
             return;
         }
 
         // Fallback to previous texture even if update is needed
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (tile.updateNeeded(layer.id, band) && !fallbackToPrevious) return;
 
         const textureDescriptor = tile.textureDescriptorPerLayer.get(layer.id);

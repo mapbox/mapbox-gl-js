@@ -76,6 +76,7 @@ class FeatureIndex {
         this.x = tileID.canonical.x;
         this.y = tileID.canonical.y;
         this.z = tileID.canonical.z;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         this.grid = new Grid(EXTENT, 16, 0);
         this.featureIndexArray = new FeatureIndexArray();
         this.promoteId = promoteId;
@@ -171,6 +172,7 @@ class FeatureIndex {
                     featureGeometry = loadGeometry(feature, this.tileID.canonical, tileTransform);
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return styleLayer.queryIntersectsFeature(tilespaceGeometry, feature, featureState, featureGeometry, this.z, transform, pixelPosMatrix, elevationHelper, layoutVertexArrayOffset);
             };
 
@@ -314,9 +316,11 @@ class FeatureIndex {
 
             let featureState: FeatureState = {};
             if (feature.id !== undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 featureState = query.sourceCache.getFeatureState(styleLayer.sourceLayer, feature.id);
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const geojsonFeature = new Feature({} as unknown as VectorTileFeature, z, x, y, feature.id);
             geojsonFeature.tile = this.tileID.canonical;
             geojsonFeature.state = featureState;
@@ -372,6 +376,7 @@ class FeatureIndex {
             const transformedProperties = {};
             for (const name in target.properties) {
                 const expression = target.properties[name];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const value = expression.evaluate(
                     {zoom: this.z},
                     feature._vectorTileFeature,
@@ -379,6 +384,7 @@ class FeatureIndex {
                     feature.tile,
                     availableImages
                 );
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 if (value != null) transformedProperties[name] = value;
             }
             feature.properties = transformedProperties;

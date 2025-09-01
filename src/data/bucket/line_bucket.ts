@@ -267,6 +267,7 @@ class LineBucket implements Bucket {
         if (lineSortKey) {
             bucketFeatures.sort((a, b) => {
                 // a.sortKey is always a number when in use
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 return (a.sortKey as number) - (b.sortKey as number);
             });
         }
@@ -275,23 +276,29 @@ class LineBucket implements Bucket {
         const hasFeatureDashes = this.addConstantDashes(lineAtlas);
 
         for (const bucketFeature of bucketFeatures) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const {geometry, index, sourceLayerIndex} = bucketFeature;
 
             if (hasFeatureDashes) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.addFeatureDashes(bucketFeature, lineAtlas);
             }
 
             if (this.hasPattern) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const patternBucketFeature = addPatternDependencies('line', this.layers, bucketFeature, this.zoom, this.pixelRatio, options);
                 // pattern features are added only once the pattern is loaded into the image atlas
                 // so are stored during populate until later updated with positions by tile worker in addFeatures
                 this.patternFeatures.push(patternBucketFeature);
 
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.addFeature(bucketFeature, geometry, index, canonical, lineAtlas.positions, options.availableImages, options.brightness, options.elevationFeatures);
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const feature = features[index].feature;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }
@@ -338,6 +345,7 @@ class LineBucket implements Bucket {
                 if (!dashArray) continue;
 
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 dashArray = dashPropertyValue.evaluate({zoom}, feature);
             }
 
@@ -345,12 +353,15 @@ class LineBucket implements Bucket {
                 cap = capPropertyValue.value;
 
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 cap = capPropertyValue.evaluate({zoom}, feature);
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             lineAtlas.addDash(dashArray, cap);
 
             // save positions for paint array
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             feature.patterns[layer.id] = [lineAtlas.getKey(dashArray, cap)];
         }
 

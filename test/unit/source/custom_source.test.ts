@@ -19,6 +19,7 @@ function createSource(options = {}) {
     source.loadTileData = vi.fn(() => {});
 
     const sourceCache = new SourceCache('id', source, /* dispatcher */ {}, eventedParent);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     sourceCache.transform = eventedParent.transform;
 
     return {source, sourceCache, eventedParent};
@@ -98,10 +99,12 @@ describe('CustomSource', () => {
         });
 
         const {source, sourceCache, eventedParent} = createSource({loadTile});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         source.loadTileData.mockImplementation(() => {});
 
         await new Promise(resolve => {
             eventedParent.on('error', (err) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(err.error.message).toEqual('Error loading tile');
                 expect(loadTile).toHaveBeenCalledTimes(1);
                 expect(source.loadTileData).not.toHaveBeenCalled(); // loadTileData must not be called if loadTile throws
@@ -122,6 +125,7 @@ describe('CustomSource', () => {
         const loadTile = vi.fn(async () => expectedData);
         const {source, sourceCache, eventedParent} = createSource({loadTile});
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         source.loadTileData.mockImplementation((tile, actualData) => {
             expect(actualData).toEqual(expectedData);
         });
@@ -150,6 +154,7 @@ describe('CustomSource', () => {
         });
 
         const {source, sourceCache, eventedParent} = createSource({loadTile});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         source.loadTileData.mockImplementation(() => {});
 
         await new Promise(resolve => {
@@ -174,6 +179,7 @@ describe('CustomSource', () => {
         const loadTile = vi.fn(async () => null);
 
         const {source, sourceCache, eventedParent} = createSource({loadTile});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         source.loadTileData.mockImplementation((tile, actualData) => {
             const expectedData = {width: source.tileSize, height: source.tileSize, data: null};
             expect(actualData).toEqual(expectedData);
@@ -203,6 +209,7 @@ describe('CustomSource', () => {
                 const {x, y, z} = tileID.canonical;
                 expect(tile).toEqual({x, y, z});
                 expect(signal).toBeTruthy();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 signal.addEventListener('abort', () => {
                     resolve(); // AbortSignal was aborted
                 });
@@ -219,6 +226,7 @@ describe('CustomSource', () => {
     test('hasTile', async () => {
         const {sourceCache, eventedParent} = createSource({
             loadTile: async () => {},
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             hasTile: (tileID) => tileID.x !== 0
         });
 
@@ -259,6 +267,7 @@ describe('CustomSource', () => {
             eventedParent.on('data', (e) => {
                 if (e.sourceDataType === 'metadata') {
                     sourceCache.update(transform);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                     const coveringTiles = customSource.coveringTiles();
                     expect(coveringTiles).toEqual([{x: 0, y: 0, z: 0}]);
                     resolve();
@@ -277,8 +286,10 @@ describe('CustomSource', () => {
         const {source, eventedParent} = createSource(customSource);
 
         source.onAdd(eventedParent);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         customSource.clearTiles();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(eventedParent.style.clearSource).toHaveBeenCalledTimes(1);
     });
 
@@ -296,6 +307,7 @@ describe('CustomSource', () => {
                     resolve();
                 }
             });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             customSource.update();
         });
 

@@ -10,6 +10,7 @@ class Let implements Expression {
 
     constructor(bindings: Array<[string, Expression]>, result: Expression) {
         this.type = result.type;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.bindings = [].concat(bindings);
         this.result = result;
     }

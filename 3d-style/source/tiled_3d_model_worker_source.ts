@@ -72,8 +72,11 @@ class Tiled3dWorkerTile {
         load3DTile(data)
             .then(gltf => {
                 if (!gltf) return callback(new Error('Could not parse tile'));
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                 const hasMapboxMeshFeatures = (gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('MAPBOX_mesh_features')) ||
+                                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                                             (gltf.json.asset.extras && gltf.json.asset.extras['MAPBOX_mesh_features']);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                 const hasMeshoptCompression = gltf.json.extensionsUsed && gltf.json.extensionsUsed.includes('EXT_meshopt_compression');
 
                 const parameters = new EvaluationParameters(this.zoom, {brightness: this.brightness, worldview: this.worldview});
@@ -84,6 +87,7 @@ class Tiled3dWorkerTile {
                         layer.recalculate(parameters, []);
                         // Nodes are created per layer which allows styling when multiple model layers are referencing the same source
                         const nodes = process3DTile(gltf, 1.0 / tileToMeter(params.tileID.canonical));
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         const bucket = new Tiled3dModelBucket(family as Array<ModelStyleLayer>, nodes, tileID, hasMapboxMeshFeatures, hasMeshoptCompression, this.brightness, featureIndex, this.worldview);
                         // Upload to GPU without waiting for evaluation if we are in diffuse path
                         if (!hasMapboxMeshFeatures) bucket.needsUpload = true;
@@ -105,6 +109,7 @@ class Tiled3dWorkerTile {
                     brightness: null,
                 });
             })
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             .catch((err) => callback(new Error(err.message)));
     }
 }

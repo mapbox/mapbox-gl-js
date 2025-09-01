@@ -5,7 +5,9 @@ import {fixedLngLat} from '../../../util/fixed';
 
 function pointToFixed(p, n = 8) {
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         'x': p.x.toFixed(n),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         'y': p.y.toFixed(n)
     };
 }
@@ -342,22 +344,33 @@ describe('Map#projection', () => {
         });
 
         test('In Mercator', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(pointToFixed(map.project({lng: 0, lat: 0}))).toEqual({x: "100.00000000", y: "100.00000000"});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(pointToFixed(map.project({lng: -70.3125, lat: 57.326521225}))).toEqual({x: "0.00000000", y: "0.00000000"});
         });
         test('In Globe', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setProjection('globe');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(pointToFixed(map.project({lng: 0, lat: 0}))).toEqual({x: "100.00000000", y: "100.00000000"});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(pointToFixed(map.project({lng: -72.817409474, lat: 43.692434709}))).toEqual({x: "38.86205343", y: "38.86205343"});
         });
         test('In Natural Earth', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setProjection('naturalEarth');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(pointToFixed(map.project({lng: 0, lat: 0}))).toEqual({x: "100.00000000", y: "100.00000000"});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(pointToFixed(map.project({lng: -86.861020716, lat: 61.500721712}))).toEqual({x: "0.00000000", y: "-0.00000000"});
         });
         test('In Albers', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setProjection('albers');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(pointToFixed(map.project({lng: 0, lat: 0}))).toEqual({x: "100.00000000", y: "100.00000000"});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(pointToFixed(map.project({lng: 44.605340721, lat: 79.981951054}))).toEqual({x: "-0.00000000", y: "-0.00000000"});
         });
     });
@@ -370,22 +383,33 @@ describe('Map#projection', () => {
         });
 
         test('In Mercator', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(map.unproject([100, 100]))).toEqual({lng: -0, lat: 0});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(map.unproject([0, 0]))).toEqual({lng: -70.3125, lat: 57.326521225});
         });
         test('In Globe', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setProjection('globe');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(map.unproject([100, 100]))).toEqual({lng: -0, lat: 0});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(map.unproject([0, 0]))).toEqual({lng: -67.77848443, lat: 42.791315106});
         });
         test('In Natural Earth', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setProjection('naturalEarth');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(map.unproject([100, 100]))).toEqual({lng: -0, lat: 0});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(map.unproject([0, 0]))).toEqual({lng: -86.861020716, lat: 61.500721712});
         });
         test('In Albers', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             map.setProjection('albers');
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(map.unproject([100, 100]))).toEqual({lng: 0, lat: -0});
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             expect(fixedLngLat(map.unproject([0, 0]))).toEqual({lng: 44.605340721, lat: 79.981951054});
         });
     });

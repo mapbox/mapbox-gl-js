@@ -60,12 +60,15 @@ test('Map#isMoving returns true when drag panning', () => {
         map.remove();
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas());
     map._renderTaskQueue.run();
 });
@@ -91,12 +94,15 @@ test('Map#isMoving returns true when drag rotating', () => {
         map.remove();
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons: 2, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mouseup(map.getCanvas(),   {buttons: 0, button: 2});
     map._renderTaskQueue.run();
 });
@@ -116,6 +122,7 @@ test('Map#isMoving returns true when scroll zooming', () => {
     let now = 0;
     vi.spyOn(browser, 'now').mockImplementation(() => now);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     map._renderTaskQueue.run();
 
@@ -138,6 +145,7 @@ test('Map#isMoving returns true when drag panning and scroll zooming interleave'
 
     map.on('zoomend', () => {
         expect(map.isMoving()).toEqual(true);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mouseup(map.getCanvas());
         setTimeout(() => {
             map._renderTaskQueue.run();
@@ -152,15 +160,18 @@ test('Map#isMoving returns true when drag panning and scroll zooming interleave'
     // The following should trigger the above events, where a zoomstart/zoomend
     // pair is nested within a dragstart/dragend pair.
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousedown(map.getCanvas());
     map._renderTaskQueue.run();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.mousemove(map.getCanvas(), {buttons, clientX: 10, clientY: 10});
     map._renderTaskQueue.run();
 
     let now = 0;
     vi.spyOn(browser, 'now').mockImplementation(() => now);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     simulate.wheel(map.getCanvas(), {type: 'wheel', deltaY: -simulate.magicWheelZoomDelta});
     map._renderTaskQueue.run();
 

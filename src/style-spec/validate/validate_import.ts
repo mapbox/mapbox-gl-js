@@ -32,6 +32,7 @@ export default function validateImport(options: ImportValidatorOptions): Validat
 
     let errors = validateObject(Object.assign({}, options, {
         value: importSpec,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec: styleSpec.import
     }));
 

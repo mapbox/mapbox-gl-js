@@ -94,7 +94,9 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             const rawTileData = response.rawData;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const cacheControl: Record<string, any> = {};
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             if (response.expires) cacheControl.expires = response.expires;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
 
             // response.vectorTile will be present in the GeoJSON worker case (which inherits from this class)
@@ -112,6 +114,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                         // it's necessary to eval the result of getEntriesByName() here via parse/stringify
                         // late evaluation in the main thread causes TypeError: illegal invocation
                         if (resourceTimingData.length > 0) {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
                         }
                     }

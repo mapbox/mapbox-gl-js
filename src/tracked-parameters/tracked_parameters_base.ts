@@ -66,6 +66,7 @@ export function registerButton(scope: Array<string>, buttonTitle: string, onClic
 export function registerBinding(containerObject: any, scope: Array<string>, name: string, description?: Description) {
     Debug.run(() => {
         if (global) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             global.registerBinding(containerObject, scope, name, description);
 
             console.warn(`Dev only "registerBinding('${name}')" call. For production consider replacing with tracked parameters container method.`);

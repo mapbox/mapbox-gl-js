@@ -72,6 +72,7 @@ export default function validateArray(options: ArrayValidatorOptions): Validatio
         errors = errors.concat(validateArrayElement({
             array,
             arrayIndex: i,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             value: array[i],
             valueSpec: arrayElementSpec,
             style,

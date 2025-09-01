@@ -23,6 +23,7 @@ export default tseslint.config(
 
     includeIgnoreFile(gitignorePath),
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     ...config,
     tseslint.configs.recommendedTypeChecked,
     importPlugin.flatConfigs.recommended,
@@ -150,10 +151,6 @@ export default tseslint.config(
     {
         rules: {
             '@typescript-eslint/unbound-method': 'off',
-            '@typescript-eslint/no-unsafe-call': 'off',
-            '@typescript-eslint/no-unsafe-argument': 'off',
-            '@typescript-eslint/no-unsafe-assignment': 'off',
-            '@typescript-eslint/no-unsafe-member-access': 'off',
             '@typescript-eslint/only-throw-error': 'off',
             '@typescript-eslint/method-signature-style': 'error',
             '@typescript-eslint/consistent-type-exports': 'error',
@@ -161,7 +158,6 @@ export default tseslint.config(
             '@typescript-eslint/restrict-template-expressions': ['off', {
                 allowNever: true,
             }],
-            '@typescript-eslint/no-unnecessary-type-constraint': 'off',
             'no-unused-vars': 'off',
             '@typescript-eslint/no-unused-vars': ['error', {
                 args: 'none',

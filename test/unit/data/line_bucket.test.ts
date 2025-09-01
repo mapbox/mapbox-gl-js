@@ -10,6 +10,7 @@ import LineStyleLayer from '../../../src/style/style_layer/line_style_layer';
 import tileStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 // Load a line feature from fixture tile.
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const vt = new VectorTile(new Protobuf(tileStub));
 const feature = vt.layers.road.feature(0);
 
@@ -110,9 +111,11 @@ test('LineBucket segmentation', () => {
 
     // first add an initial, small feature to make sure the next one starts at
     // a non-zero offset
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     bucket.addFeature({}, [createLine(10)]);
 
     // add a feature that will break across the group boundary
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     bucket.addFeature({}, [createLine(128)]);
 
     // Each polygon must fit entirely within a segment, so we expect the

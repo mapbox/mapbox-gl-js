@@ -1795,6 +1795,7 @@ export class Map extends Camera {
         this._delegatedListeners[type].push(delegatedListener);
 
         for (const event in delegatedListener.delegates) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.on(event as T, delegatedListener.delegates[event]);
         }
 
@@ -1857,6 +1858,7 @@ export class Map extends Camera {
         const delegatedListener = this._createDelegatedListener(type as MapEventType, targets, listener);
 
         for (const event in delegatedListener.delegates) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.once(event as T, delegatedListener.delegates[event]);
         }
 
@@ -1905,6 +1907,7 @@ export class Map extends Camera {
                 const delegatedListener = listeners[i];
                 if (delegatedListener.listener === listener && areTargetsEqual(delegatedListener.targets, targets)) {
                     for (const event in delegatedListener.delegates) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         this.off(event as T, delegatedListener.delegates[event]);
                     }
                     listeners.splice(i, 1);
@@ -3146,6 +3149,7 @@ export class Map extends Camera {
      */
     addImport(importSpecification: ImportSpecification, beforeId?: string | null): this {
         this.style.addImport(importSpecification, beforeId)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             .catch((e) => this.fire(new ErrorEvent(new Error('Failed to add import', e))));
 
         return this;
@@ -4138,7 +4142,9 @@ export class Map extends Camera {
             const transformMatrix = window.getComputedStyle(el).transform;
             if (transformMatrix && transformMatrix !== 'none') {
                 transformValues = transformMatrix.match(/matrix.*\((.+)\)/)[1].split(', ');
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
                 if (transformValues[0] && transformValues[0] !== '0' && transformValues[0] !== '1') transformScaleWidth = transformValues[0];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
                 if (transformValues[3] && transformValues[3] !== '0' && transformValues[3] !== '1') transformScaleHeight = transformValues[3];
             }
             el = el.parentElement;
@@ -4253,11 +4259,13 @@ export class Map extends Camera {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _contextLost(event: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         event.preventDefault();
         if (this._frame) {
             this._frame.cancel();
             this._frame = null;
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.fire(new Event('webglcontextlost', {originalEvent: event}));
     }
 
@@ -4273,11 +4281,13 @@ export class Map extends Camera {
             this.style.clearSources();
         }
         this._update();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.fire(new Event('webglcontextrestored', {originalEvent: event}));
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _onMapScroll(event: any): boolean | null | undefined {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (event.target !== this._container) return;
 
         // Revert any scroll which would move the canvas outside of the view

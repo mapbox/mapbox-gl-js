@@ -10,6 +10,7 @@ import FillStyleLayer from '../../../src/style/style_layer/fill_style_layer';
 import tileStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
 // Load a fill feature from fixture tile.
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const vt = new VectorTile(new Protobuf(tileStub));
 const feature = vt.layers.water.feature(0);
 
@@ -60,9 +61,11 @@ test('FillBucket segmentation', () => {
 
     // first add an initial, small feature to make sure the next one starts at
     // a non-zero offset
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     bucket.addFeature({}, [createPolygon(10)]);
 
     // add a feature that will break across the group boundary
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     bucket.addFeature({}, [
         createPolygon(128),
         createPolygon(128)

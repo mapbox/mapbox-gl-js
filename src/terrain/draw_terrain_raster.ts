@@ -160,6 +160,7 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
         if (useCustomAntialiasing) defines.push('CUSTOM_ANTIALIASING');
 
         const affectedByFog = painter.isTileAffectedByFog(coord);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         program = painter.getOrCreateProgram('globeRaster', {defines, overrideFog: affectedByFog});
         programMode = mode;
     };
@@ -298,6 +299,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
             if (programMode === mode)
                 return;
             const modes: DynamicDefinesType[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             modes.push(shaderDefines[mode]);
             if (cutoffParams.shouldRenderCutoff) {
                 modes.push('RENDER_CUTOFF');
@@ -364,6 +366,7 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                     continue;
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 terrain.setupElevationDraw(tile, program, elevationOptions);
 
                 const unwrappedId = coord.toUnwrapped();

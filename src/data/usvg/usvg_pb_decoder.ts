@@ -91,9 +91,11 @@ export function buildStretchedAreas(metadata: {stretch_x?: number[]; stretch_y?:
             if (areas.length === 0) {
                 left = stretch[0];
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 left = areas[areas.length - 1][1] + stretch[i];
             }
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const right = left + stretch[i];
             areas.push([left, right]);
             left = null;

@@ -973,11 +973,14 @@ class Transform {
         }
 
         // Remove identical IDs
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         out = nonOverlappingIds.filter(newId => !coveringTiles.some(oldId => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
             if (newId.overscaledZ < maxZoom && oldId.isChildOf(newId)) {
                 return true;
             }
             // Remove identical IDs or children of existing IDs
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return newId.equals(oldId) || newId.isChildOf(oldId);
         }));
 
@@ -1193,16 +1196,19 @@ class Transform {
         };
 
         const newRootTile = (wrap: number): RootTile => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const max = maxRange;
             const min = minRange;
             return {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 aabb: tileAABB(this, numTiles, 0, 0, 0, wrap, min, max, this.projection),
                 zoom: 0,
                 x: 0,
                 y: 0,
                 minZ: min,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 maxZ: max,
                 wrap,
                 fullyVisible: false
@@ -1351,6 +1357,7 @@ class Transform {
                 const dist = vec3.dot(distanceXyz, this._camera.forward());
                 if (dist < closestDistance) {
                     closestDistance = dist;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     closestElevation = Math.abs(distanceXyz[2]);
                 }
             }
@@ -1506,6 +1513,7 @@ class Transform {
                         minmax = elevation.getMinMaxForTile(entry.tileID);
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     if (!minmax) { minmax = {min: minRange, max: maxRange}; }
 
                     // ensure that we want `this.rotation` instead of `this.bearing` here
@@ -1514,6 +1522,7 @@ class Transform {
                     const farX = cornerFar[0] * EXTENT;
                     const farY = cornerFar[1] * EXTENT;
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     const worldFar = [farX, farY, minmax.max];
 
                     // World to NDC
@@ -2125,6 +2134,7 @@ class Transform {
         } else {
             projMatrix = aligned ? this.alignedProjMatrix : this.projMatrix;
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         mat4.multiply(posMatrix, projMatrix, posMatrix);
 
         cache[projMatrixKey] = new Float32Array(posMatrix);
@@ -2384,12 +2394,14 @@ class Transform {
 
             const mixValue =
                 this.pitch >= OrthographicPitchTranstionValue ? 1.0 : this.pitch / OrthographicPitchTranstionValue;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             lerpMatrix(cameraToClip, cameraToClip, cameraToClipPerspective, easeIn(mixValue));
         } else {
             cameraToClip = cameraToClipPerspective;
         }
 
         const worldToClipPerspective = mat4.mul([], cameraToClipPerspective, worldToCamera);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         let m = mat4.mul([], cameraToClip, worldToCamera);
 
         if (this.projection.isReprojectedInTileSpace) {
@@ -2426,6 +2438,7 @@ class Transform {
             this.expandedFarZProjMatrix = this.projMatrix;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const clipToCamera = mat4.invert([], cameraToClip);
         this.frustumCorners = FrustumCorners.fromInvProjectionMatrix(clipToCamera, this.horizonLineFromTop(), this.height);
 

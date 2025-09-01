@@ -325,6 +325,7 @@ function shapeText(
     };
 
     shapeLines(shaping, glyphMap, glyphPositions, imagePositions, lines, lineHeight, textAnchor, textJustify, writingMode, spacing, allowVerticalPlacement, layoutTextSizeThisZoom);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (isEmpty(positionedLines)) return undefined;
 
     return shaping;
@@ -526,6 +527,7 @@ function determineLineBreaks(
                         i + 1,
                         currentX,
                         targetWidth,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         potentialLineBreaks,
                         calculatePenalty(codePoint, logicalInput.getCodePoint(i + 1), ideographicBreak && hasServerSuggestedBreakpoints),
                         false));
@@ -538,6 +540,7 @@ function determineLineBreaks(
             logicalInput.length(),
             currentX,
             targetWidth,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             potentialLineBreaks,
             0,
             true));
@@ -727,10 +730,12 @@ function shapeLines(shaping: Shaping,
                     // Based on node-fontnik: 'top = heightAboveBaseline - Ascender'(it is not valid for locally
                     // generated glyph). Since the top is a constant: glyph's borderSize. So if we set image glyph with
                     // 'ascender = height', it means we pull down the glyph under baseline with a distance of glyph's borderSize.
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const imageAscender = metrics.height;
                     glyphOffset = -imageAscender * sectionScale;
 
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 verticalAdvance = metrics.advance;
 
                 // Difference between height of an image and one EM at max line scale.
@@ -742,10 +747,13 @@ function shapeLines(shaping: Shaping,
             }
 
             if (!vertical) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 positionedGlyphs.push({glyph: codePoint, image, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 x += metrics.advance * sectionScale + spacing;
             } else {
                 shaping.verticalizable = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 positionedGlyphs.push({glyph: codePoint, image, x, y: y + glyphOffset, vertical, scale: sectionScale, localGlyph: metrics.localGlyph, fontStack: section.fontStack, sectionIndex, metrics, rect});
                 x += verticalAdvance * sectionScale + spacing;
             }
@@ -758,9 +766,11 @@ function shapeLines(shaping: Shaping,
             // Justify the line so that its top is aligned with the current height of y, and its horizontal coordinates
             // are justified according to the TextJustifyType
             if (hasBaseline) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 justifyLine(positionedGlyphs, justify, lineOffset, baselineOffset, lineHeight * lineMaxScale / 2);
             } else {
                 // Scaled line height offset is counted in glyphOffset, so here just use an unscaled line height
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 justifyLine(positionedGlyphs, justify, lineOffset, 0, lineHeight / 2);
             }
         }
@@ -896,6 +906,7 @@ function fitIconToText(
     } else {
         // Centered on the text
         left = iconOffset[0] + (textLeft + textRight - image.displaySize[0]) / 2;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         right = left + image.displaySize[0];
     }
 
@@ -908,9 +919,11 @@ function fitIconToText(
     } else {
         // Centered on the text
         top = iconOffset[1] + (textTop + textBottom - image.displaySize[1]) / 2;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         bottom = top + image.displaySize[1];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return {imagePrimary: image, imageSecondary: undefined, top, right, bottom, left, collisionPadding};
 }
 

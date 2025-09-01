@@ -53,6 +53,7 @@ export default function validateSource(options: SourceValidatorOptions): Validat
         errors = errors.concat(validateObject({
             key,
             value,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             valueSpec: styleSpec[`source_${type.replace('-', '_')}`],
             style: options.style,
             styleSpec,
@@ -63,6 +64,7 @@ export default function validateSource(options: SourceValidatorOptions): Validat
         errors = validateObject({
             key,
             value,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             valueSpec: styleSpec.source_geojson,
             style,
             styleSpec,
@@ -80,7 +82,9 @@ export default function validateSource(options: SourceValidatorOptions): Validat
                     return [new ValidationError(`${key}.clusterProperties.${prop}`, propValue, 'array expected')];
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const [operator, mapExpr] = propValue;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const reduceExpr = typeof operator === 'string' ? [operator, ['accumulated'], ['get', prop]] : operator;
 
                 errors.push(...validateExpression({
@@ -102,6 +106,7 @@ export default function validateSource(options: SourceValidatorOptions): Validat
         return validateObject({
             key,
             value,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             valueSpec: styleSpec.source_video,
             style,
             styleSpec
@@ -111,6 +116,7 @@ export default function validateSource(options: SourceValidatorOptions): Validat
         return validateObject({
             key,
             value,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             valueSpec: styleSpec.source_image,
             style,
             styleSpec
@@ -131,9 +137,13 @@ export default function validateSource(options: SourceValidatorOptions): Validat
 }
 
 function getSourceTypeValues(styleSpec: StyleReference): string[] {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return styleSpec.source.reduce((memo: string[], source: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const sourceType = styleSpec[source];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (sourceType.type.type === 'enum') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             memo = memo.concat(Object.keys(sourceType.type.values));
         }
         return memo;
@@ -161,7 +171,9 @@ function validatePromoteId({key, value}: PromoteIdValidatorOptions) {
         }
 
         // @ts-expect-error - TS2339: Property 'expression' does not exist on type 'ParsingError[] | StyleExpression'.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const parsed = expression.value.expression;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const onlyFeatureDependent = isConstant.isGlobalPropertyConstant(parsed, ['zoom', 'heatmap-density', 'line-progress', 'raster-value', 'sky-radial-progress', 'accumulated', 'is-supported-script', 'pitch', 'distance-from-center', 'measure-light', 'raster-particle-speed']);
         if (!onlyFeatureDependent) {
             errors.push(new ValidationError(`${key}`, null, 'promoteId expression should be only feature dependent'));

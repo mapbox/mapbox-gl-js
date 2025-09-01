@@ -85,6 +85,7 @@ type SerializedGrid = {
     buffer: ArrayBuffer;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 Grid.serialize = function serialize(grid: GridIndex, transferables?: Set<Transferable>): SerializedGrid {
     const buffer = grid.toArrayBuffer();
     if (transferables) {
@@ -93,7 +94,9 @@ Grid.serialize = function serialize(grid: GridIndex, transferables?: Set<Transfe
     return {buffer};
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 Grid.deserialize = function deserialize(serialized: SerializedGrid): GridIndex {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     return new Grid(serialized.buffer) as GridIndex;
 };
 
@@ -212,6 +215,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         const properties: SerializedObject = {'$name': 'DOMMatrix'};
         const matrixProperties = ['is2D', 'm11', 'm12', 'm13', 'm14', 'm21', 'm22', 'm23', 'm24', 'm31', 'm32', 'm33', 'm34', 'm41', 'm42', 'm43', 'm44', 'a', 'b', 'c', 'd', 'e', 'f'];
         for (const property of matrixProperties) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             properties[property] = input[property];
         }
         return properties;
@@ -243,6 +247,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
             for (const key in input) {
                 if (!input.hasOwnProperty(key)) continue;
                 if (registry[name].omit.indexOf(key) >= 0) continue;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const property = input[key];
                 properties[key] = serialize(property, transferables);
             }
@@ -320,6 +325,7 @@ export function deserialize(input: Serialized): unknown {
                     input['m31'], input['m32'], input['m33'], input['m34'],
                     input['m41'], input['m42'], input['m43'], input['m44']];
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const matrix = new DOMMatrix(values);
             return matrix;
         }
@@ -337,6 +343,7 @@ export function deserialize(input: Serialized): unknown {
             return klass.deserialize(input);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
         const result: Record<string, unknown> = Object.create(klass.prototype);
 
         for (const key of Object.keys(input)) {

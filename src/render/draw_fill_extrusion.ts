@@ -241,20 +241,25 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         const width = terrain.drapeBufferSize[0];
                         const height = terrain.drapeBufferSize[1];
                         framebufferCopyTexture = terrain.framebufferCopyTexture;
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         if (!framebufferCopyTexture || (framebufferCopyTexture && (framebufferCopyTexture.size[0] !== width || framebufferCopyTexture.size[1] !== height))) {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                             if (framebufferCopyTexture) framebufferCopyTexture.destroy();
                             framebufferCopyTexture = terrain.framebufferCopyTexture = new Texture(context,
                                 new RGBAImage({width, height}), gl.RGBA8);
                         }
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         framebufferCopyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
                         gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
                     }
                     // Render ground AO.
                     if (aoEnabled) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         passDraped(true, false, framebufferCopyTexture);
                     }
                     // Render ground flood light.
                     if (floodLightEnabled) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         passDraped(false, true, framebufferCopyTexture);
                     }
                 }
@@ -284,6 +289,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const tr = painter.transform;
     const patternProperty = layer.paint.get('fill-extrusion-pattern');
     const patternTransition = layer.paint.get('fill-extrusion-pattern-cross-fade');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const constantPattern = patternProperty.constantOr(null);
 
     const image = patternProperty.constantOr(1);
@@ -301,7 +307,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
     const mercatorCenter: [number, number] = [mercatorXfromLng(tr.center.lng), mercatorYfromLat(tr.center.lat)];
 
     const floodLightColorUseTheme = layer.paint.get('fill-extrusion-flood-light-color-use-theme').constantOr('default') === 'none';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
     const floodLightColor = (layer.paint.get('fill-extrusion-flood-light-color').toNonPremultipliedRenderColor(floodLightColorUseTheme ? null : layer.lut).toArray01().slice(0, 3) as any);
     const floodLightIntensity = layer.paint.get('fill-extrusion-flood-light-intensity');
     const verticalScale = layer.paint.get('fill-extrusion-vertical-scale');
@@ -378,6 +384,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         let transitionableConstantPattern = false;
         if (constantPattern && tile.imageAtlas) {
             const atlas = tile.imageAtlas;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const pattern = ResolvedImage.from(constantPattern);
             const primaryPatternImage = pattern.getPrimary().scaleSelf(browser.devicePixelRatio).toString();
             const secondaryPatternImageVariant = pattern.getSecondary();
@@ -394,6 +401,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         }
 
         const program = painter.getOrCreateProgram(programName,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             {config: programConfiguration, defines: singleCascade ? singleCascadeDefines : baseDefines, overrideFog: affectedByFog});
 
         if (painter.terrain) {
@@ -439,9 +447,11 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
             const invMatrix = tr.projection.createInversionMatrix(tr, coord.canonical);
             if (image) {
                 uniformValues = fillExtrusionPatternUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     tile, heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, patternTransition);
             } else {
                 uniformValues = fillExtrusionUniformValues(matrix, painter, shouldUseVerticalGradient, opacity, ao, roofEdgeRadius, lineWidthScale, coord,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     heightLift, heightAlignment, baseAlignment, globeToMercator, mercatorCenter, invMatrix, floodLightColor, verticalScale, floodLightIntensity, groundShadowFactor);
             }
         }
@@ -476,6 +486,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             segments, layer.paint, painter.transform.zoom,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             programConfiguration, dynamicBuffers);
     }
 
@@ -555,12 +566,13 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
         program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, groundEffect.vertexBuffer, groundEffect.indexBuffer,
             segments, layer.paint, zoom,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             programConfiguration, dynamicBuffers);
     };
 
     for (const coord of coords) {
         const tile = source.getTile(coord);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
         const bucket: BucketWithGroundEffect | null | undefined = (tile.getBucket(layer) as any);
         if (!bucket || bucket.projection.name !== tr.projection.name || !bucket.groundEffect || (bucket.groundEffect && !bucket.groundEffect.hasData())) continue;
 
@@ -605,11 +617,13 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
                     regionId = 2;
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 const segments = nGroundEffect.regionSegments[regionId];
                 // No geometry from the neighbour tile intersects the current tile.
                 if (!segments) continue;
 
                 const proj = new Float32Array(16);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 mat4.translate(proj, coord.projMatrix, translation);
                 const matrix = painter.translatePosMatrix(
                     proj,
@@ -788,12 +802,17 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
             while (ib < b.length) {
                 // Pass all that are before the overlap
                 partB = nBucket.featuresOnBorder[b[ib]];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 assert(partB.borders);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const partBBorderRange = (partB.borders)[j];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (partBBorderRange[1] > partABorderRange[0] + error ||
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     partBBorderRange[0] > partABorderRange[0] - error) {
                     break;
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 nBucket.showCentroid(partB);
                 ib++;
             }
@@ -803,8 +822,11 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 let count = 0;
                 while (true) {
                     // Collect all parts overlapping parts on the edge, to make sure it is only one.
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     assert(partB.borders);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const partBBorderRange = (partB.borders)[j];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (partBBorderRange[0] > partABorderRange[1] - error) {
                         break;
                     }
@@ -819,9 +841,13 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                 if (count >= 1) {
                     // if it can be concluded that it is the piece of the same feature,
                     // use it, even following features (inner details) overlap on border edge.
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     assert(partB.borders);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     const partBBorderRange = (partB.borders)[j];
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (Math.abs(partABorderRange[0] - partBBorderRange[0]) < error &&
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         Math.abs(partABorderRange[1] - partBBorderRange[1]) < error) {
                         count = 1;
                         // In some cases count could be 1 but a different feature, here we make sure
@@ -835,11 +861,13 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     continue;
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 const centroidB = nBucket.centroidData[partB.centroidDataIndex];
                 if (reconcileReplacementState && doReconcile) {
                     reconcileReplacement(centroidA, centroidB);
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 const moreThanOneBorderIntersected = partA.intersectsCount() > 1 || partB.intersectsCount() > 1;
                 if (count > 1) {
                     ib = saveIb;    // rewind unprocessed ib so that it is processed again for the next ia.
@@ -858,6 +886,7 @@ function updateBorders(context: Context, source: SourceCache, coord: OverscaledT
                     centroidA.centroidXY = centroidB.centroidXY = new Point(0, 0);
                 } else {
                     centroidA.centroidXY = bucket.encodeBorderCentroid(partA);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     centroidB.centroidXY = nBucket.encodeBorderCentroid(partB);
                 }
 

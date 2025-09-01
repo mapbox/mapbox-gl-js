@@ -471,6 +471,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             this._map.on('zoom', this._onZoom);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._geolocateButton.addEventListener('click', this.trigger.bind(this));
 
         this._setup = true;
@@ -637,6 +638,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                 }
 
                 this._geolocationWatchID = this.options.geolocation.watchPosition(
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     this._onSuccess, this._onError, positionOptions);
 
                 if (this.options.showUserHeading) {
@@ -661,6 +663,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                 window.addEventListener('deviceorientationabsolute', this._onDeviceOrientation);
             } else {
                 // @ts-expect-error - TS2769 - No overload matches this call.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 window.addEventListener('deviceorientation', this._onDeviceOrientation);
             }
         };
@@ -668,12 +671,15 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
         // @ts-expect-error - TS2339 - Property 'requestPermission' does not exist on type '{ new (type: string, eventInitDict?: DeviceMotionEventInit): DeviceMotionEvent; prototype: DeviceMotionEvent; }'.
         if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === 'function') {
             // @ts-expect-error - TS2339 - Property 'requestPermission' does not exist on type '{ new (type: string, eventInitDict?: DeviceOrientationEventInit): DeviceOrientationEvent; prototype: DeviceOrientationEvent; }'.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             DeviceOrientationEvent.requestPermission()
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 .then(response => {
                     if (response === 'granted') {
                         addListener();
                     }
                 })
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 .catch(console.error);
         } else {
             addListener();

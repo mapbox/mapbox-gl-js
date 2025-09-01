@@ -22,9 +22,12 @@ describe('Popup', () => {
     let container: any;
 
     function createMap(options) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         options = options || {};
         Object.defineProperty(container, 'getBoundingClientRect',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         {value: () => ({height: options.height || containerHeight, width: options.width || containerWidth})});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         return globalCreateMap({container, ...options});
     }
 
@@ -66,6 +69,7 @@ describe('Popup', () => {
             .setLngLat([0, 0])
             .addTo(map);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.click(map.getCanvas());
 
         expect(!popup.isOpen()).toBeTruthy();
@@ -82,7 +86,9 @@ describe('Popup', () => {
         const listener = vi.fn();
         popup.on('close', listener);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.click(map.getCanvas());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.click(map.getCanvas());
 
         expect(!popup.isOpen()).toBeTruthy();
@@ -98,6 +104,7 @@ describe('Popup', () => {
                 .setLngLat([0, 0])
                 .addTo(map);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             simulate.click(map.getCanvas());
 
             expect(popup.isOpen()).toBeTruthy();
@@ -111,6 +118,7 @@ describe('Popup', () => {
             .setLngLat([0, 0])
             .addTo(map);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.click(map.getContainer().querySelector('.mapboxgl-popup-close-button'));
 
         expect(!popup.isOpen()).toBeTruthy();
@@ -847,6 +855,7 @@ describe('Popup', () => {
             .trackPointer()
             .addTo(map);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         simulate.mousemove(map.getCanvas(), {screenX: 10, screenY: 1000});
         expect(popup._pos).toEqual({x: 0, y: 0});
     });

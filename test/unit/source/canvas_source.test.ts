@@ -6,17 +6,23 @@ import Transform from '../../../src/geo/transform';
 import {Event, Evented} from '../../../src/util/evented';
 
 function createSource(options) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const c = (options && options.canvas) || window.document.createElement('canvas');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     c.width = 20;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     c.height = 20;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     options = Object.assign({
         canvas: 'id',
         coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
     }, options);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const source = new CanvasSource('id', options, {send() {}}, options.eventedParent);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     source.canvas = c;
 
     return source;
@@ -168,7 +174,10 @@ describe('CanvasSource', () => {
 test('CanvasSource#serialize', () => {
     const source = createSource();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const serialized = source.serialize();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(serialized.type).toEqual('canvas');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(serialized.coordinates).toEqual([[0, 0], [1, 0], [1, 1], [0, 1]]);
 });

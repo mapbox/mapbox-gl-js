@@ -301,6 +301,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         this._loaded = loaded || false;
         this.fire(new Event('dataloading', {dataType: 'source'}));
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         this.url = this.options.url;
         if (!this.url) {
             if (newCoordinates) {
@@ -380,10 +381,12 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
         if (!options.url) {
             return this;
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (this._imageRequest && options.url !== this.options.url) {
             this._imageRequest.cancel();
             this._imageRequest = null;
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         this.options.url = options.url;
         this.load(options.coordinates, this._loaded);
         return this;
@@ -659,10 +662,15 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
             const processTriangle = (i0: number, i1: number, i2: number) => {
                 indices.emplaceBack(i0, i1, i2);
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const l0 = verticesLongitudes[i0];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const l1 = verticesLongitudes[i1];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const l2 = verticesLongitudes[i2];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const minLongitude = Math.min(Math.min(l0, l1), l2);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const maxLongitude = Math.max(Math.max(l0, l1), l2);
                 const diff = maxLongitude - minLongitude;
                 if (diff > this.maxLongitudeTriangleSize) {
@@ -689,8 +697,10 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
                 }
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             [elevatedGlobeTrianglesCenterLongitudes, indices] = sortTriangles(elevatedGlobeTrianglesCenterLongitudes, indices);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.elevatedGlobeTrianglesCenterLongitudes = elevatedGlobeTrianglesCenterLongitudes;
             this.elevatedGlobeIndexBuffer = context.createIndexBuffer(indices);
         }
@@ -741,6 +751,7 @@ class ImageSource<T = 'image'> extends Evented<SourceEvents> implements ISource<
     serialize(): any {
         return {
             type: 'image',
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             url: this.options.url,
             coordinates: this.coordinates
         };

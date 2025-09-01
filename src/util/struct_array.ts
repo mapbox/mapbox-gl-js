@@ -137,6 +137,7 @@ class StructArray implements IStructArrayLayout {
     }
 
     static deserialize(input: SerializedStructArray): StructArray {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const structArray: StructArray = Object.create(this.prototype);
         structArray.arrayBuffer = input.arrayBuffer;
         structArray.length = input.length;

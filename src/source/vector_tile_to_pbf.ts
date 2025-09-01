@@ -33,6 +33,7 @@ function writeLayer({name, features}: {name: string, features: Feature[]}, pbf: 
         pbf.writeMessage(2, writeFeature, context);
     }
     for (const key of keys.keys()) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         pbf.writeStringField(3, key);
     }
     for (const value of values.keys()) {
@@ -134,15 +135,20 @@ function writeGeometry(feature: Feature, pbf: Pbf) {
 function writeValue(value: any, pbf: Pbf) {
     const type = typeof value;
     if (type === 'string') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         pbf.writeStringField(1, value);
     } else if (type === 'boolean') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         pbf.writeBooleanField(7, value);
     } else if (type === 'number') {
         if (value % 1 !== 0) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             pbf.writeDoubleField(3, value);
         } else if (value < 0) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             pbf.writeSVarintField(6, value);
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             pbf.writeVarintField(5, value);
         }
     }

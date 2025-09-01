@@ -130,7 +130,9 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     const counters = getCountersPerResourceType(resourcesByType);
     const devicePixelRatio = window.devicePixelRatio;
     // @ts-expect-error - TS2339 - Property 'connection' does not exist on type 'Navigator'. | TS2339 - Property 'mozConnection' does not exist on type 'Navigator'. | TS2339 - Property 'webkitConnection' does not exist on type 'Navigator'.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const effectiveType = connection ? (connection).effectiveType : undefined;
     const metrics: LivePerformanceMetrics = {counters: [], metadata: [], attributes: []};
 
@@ -151,9 +153,11 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     }
     if (markerTimers) {
         for (const marker of Object.keys(LivePerformanceMarkers)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const markerName = LivePerformanceMarkers[marker];
             const markerTimer = markerTimers.find((entry) => entry.name === markerName);
             if (markerTimer) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 addMetric(metrics.counters, markerName, markerTimer.startTime);
             }
         }
@@ -167,6 +171,7 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     addMetric(metrics.attributes, "zoom", data.zoom);
 
     addMetric(metrics.metadata, "devicePixelRatio", devicePixelRatio);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     addMetric(metrics.metadata, "connectionEffectiveType", effectiveType);
     addMetric(metrics.metadata, "navigatorUserAgent", navigator.userAgent);
     addMetric(metrics.metadata, "screenWidth", window.screen.width);

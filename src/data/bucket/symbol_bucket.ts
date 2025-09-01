@@ -561,8 +561,10 @@ class SymbolBucket implements Bucket {
             if (codePoint === undefined) break;
             stack[codePoint] = true;
             if (allowVerticalPlacement && doesAllowVerticalWritingMode && codePoint <= 65535) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const verticalChar = verticalizedCharacterMap[char];
                 if (verticalChar) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                     stack[verticalChar.charCodeAt(0)] = true;
                 }
             }
@@ -834,9 +836,12 @@ class SymbolBucket implements Bucket {
                 }
 
                 const slopeNormal = elevationFeature.computeSlopeNormal(anchor, metersToTile);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const rotation = quat.rotationTo(quat.create(), vec3.fromValues(0, 0, 1), slopeNormal);
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 vec3.transformQuat(orientedXAxis, orientedXAxis, rotation);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 vec3.transformQuat(orientedYAxis, orientedYAxis, rotation);
 
                 orientedXAxis[2] *= tileToMeters;

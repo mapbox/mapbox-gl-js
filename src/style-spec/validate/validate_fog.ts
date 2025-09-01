@@ -16,6 +16,7 @@ export default function validateFog(options: FogValidatorOptions): ValidationErr
     const fog = options.value;
     const style = options.style;
     const styleSpec = options.styleSpec;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const fogSpec = styleSpec.fog;
 
     if (fog === undefined) {
@@ -31,6 +32,7 @@ export default function validateFog(options: FogValidatorOptions): ValidationErr
         const transitionMatch = key.match(/^(.*)-transition$/);
         const useThemeMatch = key.match(/^(.*)-use-theme$/);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (useThemeMatch && fogSpec[useThemeMatch[1]]) {
             errors = errors.concat(validate({
                 key,
@@ -39,18 +41,22 @@ export default function validateFog(options: FogValidatorOptions): ValidationErr
                 style,
                 styleSpec
             }));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (transitionMatch && fogSpec[transitionMatch[1]] && fogSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
                 value: fog[key],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 valueSpec: styleSpec.transition,
                 style,
                 styleSpec
             }));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (fogSpec[key]) {
             errors = errors.concat(validate({
                 key,
                 value: fog[key],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 valueSpec: fogSpec[key],
                 style,
                 styleSpec

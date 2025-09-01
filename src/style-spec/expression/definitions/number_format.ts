@@ -70,20 +70,27 @@ export default class NumberFormat implements Expression {
             if (!maxFractionDigits) return null;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new NumberFormat(number, locale, currency, unit, minFractionDigits, maxFractionDigits);
     }
 
     evaluate(ctx: EvaluationContext): string {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Intl.NumberFormat(this.locale ? this.locale.evaluate(ctx) : [],
             {
                 style:
                     (this.currency && "currency") ||
                     (this.unit && "unit") ||
                     "decimal",
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 currency: this.currency ? this.currency.evaluate(ctx) : undefined,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 unit: this.unit ? this.unit.evaluate(ctx) : undefined,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 minimumFractionDigits: this.minFractionDigits ? this.minFractionDigits.evaluate(ctx) : undefined,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 maximumFractionDigits: this.maxFractionDigits ? this.maxFractionDigits.evaluate(ctx) : undefined,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             }).format(this.number.evaluate(ctx));
     }
 

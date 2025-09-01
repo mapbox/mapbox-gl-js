@@ -93,6 +93,7 @@ class VertexBuffer {
                 gl.vertexAttribPointer(
                     attribIndex,
                     member.components,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     gl[AttributeType[member.type]],
                     false,
                     this.itemSize,

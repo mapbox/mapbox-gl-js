@@ -124,6 +124,7 @@ export default class Popup extends Evented<PopupEvents> {
 
     constructor(options?: PopupOptions) {
         super();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.options = Object.assign(Object.create(defaultOptions), options);
         this._altitude = this.options.altitude;
         bindAll(['_update', '_onClose', 'remove', '_onMouseEvent'], this);

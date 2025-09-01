@@ -36,9 +36,11 @@ function clipFirst(a: Point, b: Point, axis: string, clip: number): void {
     a[axis1] = Math.round(a[axis1] + (b[axis1] - a[axis1]) * ratio);
     a[axis] = clip;
     if (a.hasOwnProperty('z')) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         a['z'] = interpolate(a['z'], b['z'], ratio);
     }
     if (a.hasOwnProperty('w')) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         a['w'] = interpolate(a['w'], b['w'], ratio);
     }
 }

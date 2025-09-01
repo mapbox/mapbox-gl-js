@@ -225,14 +225,19 @@ describe('ajax', () => {
         expect(serverRequests.length).toEqual(maxRequests);
 
         // cancel the first request to let the queued request start
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         requests[0].cancel();
         expect(serverRequests.length).toEqual(maxRequests + 1);
 
         // abort the previously queued request and confirm that it is aborted
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const queuedRequest = serverRequests[serverRequests.length - 1];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(queuedRequest.url).toMatch(queuedURL);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(queuedRequest.signal.aborted).toEqual(false);
         queued.cancel();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(queuedRequest.signal.aborted).toEqual(true);
     });
 
@@ -241,6 +246,7 @@ describe('ajax', () => {
 
         await new Promise(resolve => {
             vi.spyOn(window, 'fetch').mockImplementation((req) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 expect(req.headers.get('accept').includes('image/webp')).toBeTruthy();
                 resolve();
             });

@@ -19,14 +19,18 @@ export function makeConfigFQID(id: string, ownScope?: string | null, contextScop
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function coerceValue(type: string, value: any): any {
     switch (type) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     case 'string': return valueToString(value);
     case 'number': return +value;
     case 'boolean': return !!value;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     case 'color': return Color.parse(value);
     case 'formatted': {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return Formatted.fromString(valueToString(value));
     }
     case 'resolvedImage': {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return ResolvedImage.build(valueToString(value));
     }
     }
@@ -105,17 +109,21 @@ class Config implements Expression {
 
         const {type, value, values, minValue, maxValue, stepValue} = config;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const defaultValue = config.default.evaluate(ctx);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         let result = defaultValue;
         if (value) {
             // temporarily override scope to parent to evaluate config expressions passed from the parent
             const originalScope = ctx.scope;
             ctx.scope = (originalScope || '').split(FQIDSeparator).slice(1).join(FQIDSeparator);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = value.evaluate(ctx);
             ctx.scope = originalScope;
         }
         if (type) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = coerceValue(type, result);
         }
 
@@ -130,14 +138,18 @@ class Config implements Expression {
 
         if (value !== undefined && result !== undefined && values && !values.includes(result)) {
             // The result is not among the allowed values. Instead, use the default value from the option.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = defaultValue;
             if (type) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 result = coerceValue(type, result);
             }
         }
 
         // @ts-expect-error - TS2367 - This comparison appears to be unintentional because the types 'string' and 'Type' have no overlap.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if ((type && type !== this.type) || (result !== undefined && !typeEquals(typeOf(result), this.type))) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = coerceValue(this.type.kind, result);
         }
 

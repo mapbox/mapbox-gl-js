@@ -774,16 +774,23 @@ class Tile {
             boundsIndices = new TriangleIndexArray();
 
             for (const {x, y} of boundsLine) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 boundsVertices.emplaceBack(x, y, 0, 0);
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const indices = earcut(boundsVertices.int16.subarray(0, boundsVertices.length * 4), undefined, 4);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             for (let i = 0; i < indices.length; i += 3) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 boundsIndices.emplaceBack(indices[i], indices[i + 1], indices[i + 2]);
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._tileBoundsBuffer = context.createVertexBuffer(boundsVertices, boundsAttributes.members);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._tileBoundsIndexBuffer = context.createIndexBuffer(boundsIndices);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         this._tileBoundsSegments = SegmentVector.simpleSegment(0, 0, boundsVertices.length, boundsIndices.length);
     }
 
@@ -801,7 +808,9 @@ class Tile {
             worldToECEFMatrix = mat4.invert(new Float64Array(16), transform.globeMatrix);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._makeGlobeTileDebugBorderBuffer(context, id, transform, normalizationMatrix, worldToECEFMatrix, phase);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._makeGlobeTileDebugTextBuffer(context, id, transform, normalizationMatrix, worldToECEFMatrix, phase);
     }
 

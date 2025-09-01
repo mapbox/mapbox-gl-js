@@ -6,8 +6,10 @@ import featureFilter from '../../src/style-spec/feature_filter/index';
 
 export function createSymbolBucket(layerId, font, text, collisionBoxArray) {
     const layer = new SymbolStyleLayer({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         id: layerId,
         type: 'symbol',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         layout: {'text-font': [font], 'text-field': text},
         filter: featureFilter()
     }, '');
@@ -16,6 +18,7 @@ export function createSymbolBucket(layerId, font, text, collisionBoxArray) {
     return new SymbolBucket({
         overscaling: 1,
         zoom: 0,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         collisionBoxArray,
         layers: [layer],
         projection: {name: 'mercator'}

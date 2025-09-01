@@ -69,7 +69,9 @@ function checkMaxAngle(
         recentAngleDelta += angleDelta;
 
         // remove corners that are far enough away from the list of recent anchors
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         while (anchorDistance - recentCorners[0].distance > windowSize) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             recentAngleDelta -= recentCorners.shift().angleDelta;
         }
 

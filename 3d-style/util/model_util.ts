@@ -256,6 +256,7 @@ export function queryGeometryIntersectsProjectedAabb(
         break;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (polygonIntersectsPolygon(queryGeometry, convexPolygon)) {
         return minDepth;
     }

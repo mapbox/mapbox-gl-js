@@ -225,6 +225,7 @@ class WorkerTile {
                 recalculateLayers(family, this.zoom, options.brightness, availableImages, this.worldview);
 
                 // @ts-expect-error: Type 'TypedStyleLayer' doesn't have a 'createBucket' method in all of its subtypes
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                 const bucket: Bucket = buckets[layer.id] = layer.createBucket({
                     index: featureIndex.bucketLayerIDs.length,
                     layers: family,
@@ -247,9 +248,11 @@ class WorkerTile {
 
                 let bucketPromise = bucket.prepare ? bucket.prepare() : null;
                 if (bucketPromise != null) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     bucketPromise = bucketPromise.then(() => bucket.populate(features, options, this.tileID.canonical, this.tileTransform));
                     asyncBucketLoads.push(bucketPromise);
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     bucket.populate(features, options, this.tileID.canonical, this.tileTransform);
                 }
             }
@@ -426,6 +429,7 @@ class WorkerTile {
                     }
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const evaluatedPortals = ElevationPortalGraph.evaluate(unevaluatedPortals);
 
                 // Pass evaluated portals back to buckets and construct a separate acceleration structure

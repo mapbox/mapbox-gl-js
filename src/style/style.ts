@@ -375,6 +375,7 @@ class Style extends Evented<MapEvents> {
 
         this.fragments = [];
         this.importDepth = options.importDepth || 0;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.importsCache = options.importsCache || new Map();
         this.resolvedImports = options.resolvedImports || new Set();
 
@@ -440,6 +441,7 @@ class Style extends Evented<MapEvents> {
         this._order = [];
         this._markersNeedUpdate = false;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.options = options.configOptions ? options.configOptions : new Map();
         this._configDependentLayers = options.configDependentLayers ? options.configDependentLayers : new Set();
         this._config = options.config;
@@ -545,6 +547,7 @@ class Style extends Evented<MapEvents> {
             try {
                 callback(null, this.setState(json, onFinished));
             } catch (e) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 callback(e, false);
             }
         };
@@ -713,6 +716,7 @@ class Style extends Evented<MapEvents> {
             imageManager: this.imageManager,
             glyphManager: this.glyphManager,
             modelManager: this.modelManager,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             config,
             configOptions: this.options,
             colorThemeOverride: importSpec["color-theme"],
@@ -864,6 +868,7 @@ class Style extends Evented<MapEvents> {
                         this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
                     })
                     .catch((e) => {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         this.fire(new ErrorEvent(new Error('Failed to load imports', e)));
                         this.fire(new Event(isRootStyle ? 'style.load' : 'style.import.load'));
                     });
@@ -930,6 +935,7 @@ class Style extends Evented<MapEvents> {
             }
 
             terrain = this._prioritizeTerrain(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 terrain,
                 style.terrain,
                 style.stylesheet.terrain,
@@ -956,23 +962,33 @@ class Style extends Evented<MapEvents> {
             styleColorThemeForScope[style.scope] = style._styleColorTheme;
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.light = light;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.ambientLight = ambientLight;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.directionalLight = directionalLight;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.fog = fog;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.snow = snow;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.rain = rain;
         this._styleColorThemeForScope = styleColorThemeForScope;
 
         if (terrain === null) {
             delete this.terrain;
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.terrain = terrain;
         }
 
         // Use perspective camera as a fallback if no camera is specified
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.camera = camera || {'camera-projection': 'perspective'};
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.projection = projection || {name: 'mercator'};
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.transition = Object.assign({}, defaultTransition, transition);
 
         this.mergeSources();
@@ -1033,6 +1049,7 @@ class Style extends Evented<MapEvents> {
 
         this.forEachFragmentStyle((style: Style) => {
             terrain = this._prioritizeTerrain(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 terrain,
                 style.terrain,
                 style.stylesheet.terrain,
@@ -1042,6 +1059,7 @@ class Style extends Evented<MapEvents> {
         if (terrain === null) {
             delete this.terrain;
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.terrain = terrain;
         }
     }
@@ -1054,6 +1072,7 @@ class Style extends Evented<MapEvents> {
                 projection = style.stylesheet.projection;
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.projection = projection || {name: 'mercator'};
     }
 
@@ -1460,6 +1479,7 @@ class Style extends Evented<MapEvents> {
         for (const cacheId in this._sourceCaches) {
             const source = this._sourceCaches[cacheId].getSource();
             if (!sources[source.id]) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 sources[source.id] = source.serialize();
             }
         }
@@ -1864,6 +1884,7 @@ class Style extends Evented<MapEvents> {
         const changesPromises = [];
 
         changes.forEach((op) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             changesPromises.push(this[op.command](...op.args));
         });
 
@@ -2019,6 +2040,7 @@ class Style extends Evented<MapEvents> {
 
         sourceInstance.setEventedParent(this, () => ({
             isSourceLoaded: this._isSourceCacheLoaded(sourceInstance.id),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             source: sourceInstance.serialize(),
             sourceId: sourceInstance.id
         }));
@@ -2308,12 +2330,15 @@ class Style extends Evented<MapEvents> {
                     for (const name in selector.properties) {
                         const expression = createExpression(selector.properties[name]);
                         if (expression.result === 'success') {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             properties = properties || {};
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                             properties[name] = expression.value;
                         }
                     }
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 featuresetSelectors.push({layerId: selector.layer, namespace: selector.featureNamespace, properties, uniqueFeatureID: selector._uniqueFeatureID});
             }
         }
@@ -2399,6 +2424,7 @@ class Style extends Evented<MapEvents> {
 
         this.options.set(fqid, Object.assign({}, expressions, {
             value: expression,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             default: defaultExpression,
             minValue, maxValue, stepValue, type, values
         }));
@@ -2482,7 +2508,9 @@ class Style extends Evented<MapEvents> {
             if (defaultExpression) {
                 const fqid = makeFQID(id, this.scope);
                 this.options.set(fqid, {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     default: defaultExpression,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     value: configExpression,
                     minValue, maxValue, stepValue, type, values
                 });
@@ -2572,11 +2600,14 @@ class Style extends Evented<MapEvents> {
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
             layer = createStyleLayer(layerObject as LayerSpecification, this.scope, this._styleColorTheme.lut, this.options);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._validateLayer(layer);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             layer.setEventedParent(this, {layer: {id}});
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
         if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
 
         let index = this._order.length;
@@ -2591,6 +2622,7 @@ class Style extends Evented<MapEvents> {
             // or it has the same slot as the 'before' layer,
             // then we can insert the new layer before the existing one.
             const beforeLayer = this._layers[before];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (layer.slot === beforeLayer.slot) index = beforeIndex;
             else warnOnce(`Layer with id "${before}" has a different slot. Layers can only be rearranged within the same slot.`);
         }
@@ -2598,16 +2630,21 @@ class Style extends Evented<MapEvents> {
         this._order.splice(index, 0, id);
         this._layerOrderChanged = true;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this._layers[id] = layer;
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const sourceCache = this.getOwnLayerSourceCache(layer);
         const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         if (sourceCache && layer.canCastShadows() && shadowsEnabled) {
             sourceCache.castsShadows = true;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const removedLayer = this._changes.getRemovedLayer(layer);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (removedLayer && layer.source && sourceCache && layer.type !== 'custom') {
             // If, in the current batch, we have already removed this layer
             // and we are now re-adding it with a different `type`, then we
@@ -2616,8 +2653,11 @@ class Style extends Evented<MapEvents> {
             // buffers that are set up for the _previous_ version of this
             // layer, causing, e.g.:
             // https://github.com/mapbox/mapbox-gl-js/issues/3633
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._changes.discardLayerRemoval(layer);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
             const fqid = makeFQID(layer.source, layer.scope);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (removedLayer.type !== layer.type) {
                 this._changes.updateSourceCache(fqid, 'clear');
             } else {
@@ -2626,12 +2666,16 @@ class Style extends Evented<MapEvents> {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._updateLayer(layer);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (layer.onAdd) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             layer.onAdd(this.map);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.scope = this.scope;
 
         this.mergeLayers();
@@ -2845,6 +2889,7 @@ class Style extends Evented<MapEvents> {
 
         if (value !== null && value !== undefined && !(options && options.validate === false)) {
             const key = `layers.${layerId}.layout.${name}`;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const errors = emitValidationErrors(layer, validateLayoutProperty.call(validateStyle, {
                 key,
                 layerType: layer.type,
@@ -2886,6 +2931,7 @@ class Style extends Evented<MapEvents> {
 
         if (value !== null && value !== undefined && !(options && options.validate === false)) {
             const key = `layers.${layerId}.paint.${name}`;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const errors = emitValidationErrors(layer, validatePaintProperty.call(validateStyle, {
                 key,
                 layerType: layer.type,
@@ -3230,6 +3276,7 @@ class Style extends Evented<MapEvents> {
             const querySourceCache = queries[sourceCache.id] = queries[sourceCache.id] || {sourceCache, layers: {}, has3DLayers: false};
             if (styleLayer.is3D(!!this.terrain)) querySourceCache.has3DLayers = true;
             querySourceCache.layers[styleLayer.fqid] = querySourceCache.layers[styleLayer.fqid] || {styleLayer, targets: []};
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             querySourceCache.layers[styleLayer.fqid].targets.push({filter});
         };
 
@@ -3277,11 +3324,13 @@ class Style extends Evented<MapEvents> {
         const targets: QrfTarget[] = [];
 
         if (params && params.target) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             targets.push(Object.assign({}, params, {targetId, filter}));
         } else {
             // Query all root-level featuresets
             const featuresetDescriptors = this.getFeaturesetDescriptors();
             for (const featureset of featuresetDescriptors) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 targets.push({targetId, filter, target: featureset});
             }
 
@@ -3289,6 +3338,7 @@ class Style extends Evented<MapEvents> {
             for (const {style} of this.fragments) {
                 const featuresetDescriptors = style.getFeaturesetDescriptors();
                 for (const featureset of featuresetDescriptors) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     targets.push({targetId, filter, target: featureset});
                 }
             }
@@ -3564,9 +3614,12 @@ class Style extends Evented<MapEvents> {
             const terrain = this.terrain;
             const currSpec = terrain.get();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             for (const name of Object.keys(styleSpec.terrain)) {
                 // Fallback to use default style specification when the properties wasn't set
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (!options.hasOwnProperty(name) && !!styleSpec.terrain[name].default) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     options[name] = styleSpec.terrain[name].default;
                 }
             }
@@ -3784,7 +3837,9 @@ class Style extends Evented<MapEvents> {
         }
 
         this._drapedFirstOrder = [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._drapedFirstOrder.push(...draped);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._drapedFirstOrder.push(...nonDraped);
     }
 
@@ -3835,6 +3890,7 @@ class Style extends Evented<MapEvents> {
 
         // Fallback to the default glyphs URL if none is specified
         const style = Object.assign({}, this.serialize());
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
             key,
             style,

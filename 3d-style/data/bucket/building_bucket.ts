@@ -297,6 +297,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             }
 
             const facadeProperties: Facade = {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 coordinates,
                 crossPerc: feature.properties.cross_perc as number,
                 distanceToRoad: feature.properties.distance_to_road as number,
@@ -448,6 +449,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
                         minHeight: base,
                         sourceId: 0,
                         roofType: buildingRoofShape,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         coordinates
                     };
                     buildingGenFeatures.push(featureInput);
@@ -457,6 +459,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             centroid.x /= pointCount || 1;
             centroid.y /= pointCount || 1;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const result = buildingGen.generateMesh(buildingGenFeatures, facades);
             if (typeof result === 'string') {
                 warnOnce(`Unable to generate building ${feature.id}: ${result}`);
@@ -632,6 +635,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             this.maxHeight = Math.max(this.maxHeight, footprintHeight);
 
             const buildingFeature: BuildingFeature = {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 feature: evaluationFeature, hasFauxFacade, segment, parts: buildingParts, buildingBloom
             };
             this.buildingFeatures.push(buildingFeature);
@@ -681,8 +685,11 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
             // Store footprint data for later conflation with fill-extrusions and model layers
             {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                 const indices = earcut(footprintFlattened, null, 2);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 assert(indices.length % 3 === 0);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const grid = new TriangleGridIndex(footprintflattenedPts, indices, 8, 256);
 
                 let buildingOrFeatureId = feature.id;
@@ -692,6 +699,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
                 const footprint = {
                     vertices: footprintflattenedPts,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     indices,
                     grid,
                     min: footprintBoundsMin,
@@ -923,6 +931,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
     evaluate(layer: BuildingStyleLayer, featureState: FeatureStates) {
         const aoIntensity = layer.paint.get('building-ambient-occlusion-intensity');
         for (const buildingFeature of this.buildingFeatures) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const state = featureState[buildingFeature.feature.id];
             const feature = buildingFeature.feature;
 

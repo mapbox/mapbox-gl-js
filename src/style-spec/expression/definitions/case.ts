@@ -50,6 +50,7 @@ class Case implements Expression {
         if (!otherwise) return null;
 
         assert(outputType);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Case(outputType, branches, otherwise);
     }
 
@@ -72,7 +73,7 @@ class Case implements Expression {
     }
 
     outputDefined(): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         return this.branches.every(([_, out]: [any, any]) => out.outputDefined()) && this.otherwise.outputDefined();
     }
 

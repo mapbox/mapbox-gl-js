@@ -159,8 +159,10 @@ class ParsingContext {
                 if (!(parsed instanceof Literal) && (parsed.type.kind !== 'resolvedImage') && isConstant(parsed)) {
                     const ec = new EvaluationContext(this._scope, this.options, this.iconImageUseTheme);
                     try {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         parsed = new Literal(parsed.type, parsed.evaluate(ec));
                     } catch (e) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         this.error(e.message);
                         return null;
                     }

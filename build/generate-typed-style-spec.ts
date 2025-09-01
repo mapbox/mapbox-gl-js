@@ -20,6 +20,7 @@ function tsEnum(values) {
     if (Array.isArray(values)) {
         return values.map(v => JSON.stringify(v)).join(' | ');
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return Object.keys(values).map(v => JSON.stringify(v)).join(' | ');
     }
 }
@@ -27,26 +28,35 @@ function tsEnum(values) {
 function tsType(property, overrideFn?: (any) => string) {
     if (overrideFn) return overrideFn(property);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (typeof property.type === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         return property.type();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const baseType = (() => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         switch (property.type) {
         case 'never':
         case 'string':
         case 'number':
         case 'boolean':
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return property.type;
         case 'enum':
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return tsEnum(property.values);
         case 'array':
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (property.value === 'light-3d') {
                 return 'Array<LightsSpecification>';
             }
-            // eslint-disable-next-line no-case-declarations
+            // eslint-disable-next-line no-case-declarations, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const elementType = tsType(typeof property.value === 'string' ? {type: property.value, values: property.values} : property.value, overrideFn);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (property.length) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 return `[${Array(property.length).fill(elementType).join(', ')}]`;
             } else {
                 return `Array<${elementType}>`;
@@ -56,15 +66,20 @@ function tsType(property, overrideFn?: (any) => string) {
         case '*':
             return 'unknown';
         default:
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return `${property.type.slice(0, 1).toUpperCase()}${property.type.slice(1)}Specification`;
         }
     })();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (supportsPropertyExpression(property)) {
         return `DataDrivenPropertyValueSpecification<${baseType}>`;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     } else if (supportsZoomExpression(property)) {
         return `PropertyValueSpecification<${baseType}>`;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     } else if (property.expression) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (property.type === 'enum') return `${baseType} | ExpressionSpecification`;
         return `ExpressionSpecification`;
     } else {
@@ -75,8 +90,10 @@ function tsType(property, overrideFn?: (any) => string) {
 function tsProperty(key, property, overrideFn) {
     assert(property, `Property not found in the style-specification for ${key}`);
     if (key === '*') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return `[_: string]: ${tsType(property, overrideFn)}`;
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
         return `"${key}"${property.required ? '' : '?'}: ${tsType(property, overrideFn)}${property['optional'] ? ' | null | undefined' : ''}`;
     }
 }
@@ -85,7 +102,9 @@ function tsObjectDeclaration(key, properties, overrides = {}) {
     assert(properties, `Properties not found in the style-specification for ${key}`);
 
     let experimentalTag;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (properties.experimental) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete properties.experimental;
         experimentalTag = tag('@experimental', 'This is experimental and subject to change in future versions.');
     }
@@ -96,10 +115,13 @@ function tsObjectDeclaration(key, properties, overrides = {}) {
 
 function tsObject(properties, indent, overrides = {}) {
     return `{
-${Object.keys(properties)
+${// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+Object.keys(properties)
         .flatMap(k => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             let property = `    ${indent}${tsProperty(k, properties[k], overrides[k])}`;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (properties[k].experimental) {
                 const experimentalTag = tag('@experimental', 'This property is experimental and subject to change in future versions.', `    ${indent}`);
                 property = [experimentalTag, property].join('\n');
@@ -107,11 +129,13 @@ ${Object.keys(properties)
 
             const result = [property];
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (properties[k].transition) {
                 const propertyTransition = `    ${indent}"${k}-transition"?: TransitionSpecification`;
                 result.push(propertyTransition);
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (properties[k]['use-theme']) {
                 const propertyUseTheme = `    ${indent}"${k}-use-theme"?: PropertyValueSpecification<string>`;
                 result.push(propertyUseTheme);
@@ -124,78 +148,103 @@ ${indent}}`;
 }
 
 function tsSourceTypeName(key) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return key.replace(/source_(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}Source`)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         .replace(/_dem/, 'DEM')
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         .replace(/_array/, 'Array')
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         .replace(/Geojson/, 'GeoJSON');
 }
 
 function tsSourceSpecificationTypeName(key) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return tsSourceTypeName(key).concat('Specification');
 }
 
 function tsLightTypeName(key) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return key.split('-').map(k => k.replace(/(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}`)).concat('LightSpecification').join('');
 }
 
 function tsLayerName(key) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return key.split('-').map(k => k.replace(/(.)(.*)/, (_, _1, _2) => `${_1.toUpperCase()}${_2}`)).join('');
 }
 
 function tsLayerTypeName(key) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return tsLayerName(key).concat('Layer');
 }
 
 function tsLayerSpecificationTypeName(key) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return tsLayerTypeName(key).concat('Specification');
 }
 
 function tsLayer(key) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const layer = structuredClone(spec.layer);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     layer.type = {
         type: 'enum',
         values: [key],
         required: true
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     delete layer.ref;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     delete layer['paint.*'];
 
     if (spec[`paint_${key}`]) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.paint.type = () => {
             return tsObject(spec[`paint_${key}`], '    ');
         };
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete layer.paint;
     }
 
     if (spec[`layout_${key}`]) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.layout.type = () => {
             return tsObject(spec[`layout_${key}`], '    ');
         };
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         delete layer.layout;
     }
 
     if (key === 'background' || key === 'sky' || key === 'slot') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.source = {type: 'never'};
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer['source-layer'] = {type: 'never'};
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.filter = {type: 'never'};
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.source.required = true;
     }
 
     if (key === 'slot') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.minzoom = {type: 'never'};
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.maxzoom = {type: 'never'};
     }
 
     if (!spec[`layout_${key}`]) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.layout = {type: 'never'};
     }
 
     if (!spec[`paint_${key}`]) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.paint = {type: 'never'};
     }
 
@@ -215,14 +264,17 @@ function tsLayer(key) {
 }
 
 function tsLight(key) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const light = spec['light-3d'];
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     light.type = {
         type: 'enum',
         values: [key],
         required: true
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     light.properties.type = () => {
         return tsObject(spec[`properties_light_${key}`], '    ');
     };
@@ -230,8 +282,10 @@ function tsLight(key) {
     return tsObjectDeclaration(tsLightTypeName(key), light);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
 const lightTypes = Object.keys(spec['light-3d'].type.values);
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
 const layerTypes = Object.keys(spec.layer.type.values);
 
 fs.writeFileSync('src/style-spec/types.ts', `// Generated code; do not edit. Edit build/generate-typed-style-spec.ts instead.
@@ -356,20 +410,30 @@ ${tsObjectDeclaration('SelectorPropertySpecification', spec.selectorProperty)}
 
 ${tsObjectDeclaration('AppearanceSpecification', spec.appearance)}
 
-${spec.source.map(key => {
+${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+spec.source.map(key => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const sourceSpecName = tsSourceSpecificationTypeName(key);
         if (sourceSpecName === 'GeoJSONSourceSpecification') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return tsObjectDeclaration(sourceSpecName, spec[key], {data: () => 'GeoJSON.GeoJSON | string'});
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         return tsObjectDeclaration(sourceSpecName, spec[key]);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     }).join('\n\n')}
 
 export type SourceSpecification =
-${spec.source.map(key => `    | ${tsSourceSpecificationTypeName(key)}`).join('\n')};
+${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+spec.source.map(key => `    | ${tsSourceSpecificationTypeName(key)}`// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+).join('\n')};
 
 export type IconsetSpecification =
-${spec.iconset.map(key => `    | ${tsObject(spec[key], '    ')}`).join('\n')};
+${// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+spec.iconset.map(key => `    | ${// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+tsObject(spec[key], '    ')}`// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+).join('\n')};
 
 export type ModelSpecification = ${tsType(spec.model)};
 

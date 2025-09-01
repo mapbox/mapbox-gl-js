@@ -29,6 +29,7 @@ describe('Map#setStyle', () => {
                 expect(error).toBeFalsy();
 
                 const events: Array<any> = [];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 function recordEvent(event) { events.push(event.type); }
 
                 map.on('error', recordEvent);
@@ -56,6 +57,7 @@ describe('Map#setStyle', () => {
                 expect(error).toBeFalsy();
 
                 const events: Array<any> = [];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 function recordEvent(event) { events.push(event.type); }
 
                 map.on('styledata', recordEvent);
@@ -359,17 +361,21 @@ describe('Map#setStyle', () => {
                 vi.spyOn(initStyleObj, 'setTerrain');
                 vi.spyOn(initStyleObj, 'setState');
                 await waitFor(map, "style.load");
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const styleWithTerrain = JSON.parse(JSON.stringify(style));
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 styleWithTerrain['sources']["mapbox-dem"] = {
                     "type": "raster-dem",
                     "tiles": ['http://example.com/{z}/{x}/{y}.png'],
                     "tileSize": 256,
                     "maxzoom": 14
                 };
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 styleWithTerrain['terrain'] = {
                     "source": "mapbox-dem"
                 };
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 map.setStyle(styleWithTerrain);
                 await waitFor(map, "load");
                 expect(initStyleObj).toEqual(map.style);
@@ -640,12 +646,15 @@ describe('Map#setStyle', () => {
             vi.spyOn(initStyleObj, 'setFog');
             vi.spyOn(initStyleObj, 'setState');
             await waitFor(map, "style.load");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const styleWithFog = JSON.parse(JSON.stringify(style));
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             styleWithFog['fog'] = {
                 "range": [2, 5],
                 "color": "white"
             };
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             map.setStyle(styleWithFog);
             expect(initStyleObj).toEqual(map.style);
             expect(initStyleObj.setState).toHaveBeenCalledTimes(1);

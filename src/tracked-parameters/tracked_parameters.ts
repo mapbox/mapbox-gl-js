@@ -99,6 +99,7 @@ function deSerializePaneParams(input?: string | null): PaneState {
     let obj: Record<string, any> = {};
     if (input) {
         try {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             obj = deserialize(input);
         } catch (err) {
             console.log(`Tracked parameters deserialization error: ${err}`);
@@ -109,10 +110,12 @@ function deSerializePaneParams(input?: string | null): PaneState {
 
     // Replace properties if present
     if ('isMainPaneShown' in obj) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         p.isMainPaneShown = obj.isMainPaneShown;
     }
 
     if ('scrollTopRatio' in obj) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         p.scrollTopRatio = obj.scrollTopRatio;
     }
 
@@ -121,11 +124,15 @@ function deSerializePaneParams(input?: string | null): PaneState {
             obj.folders.forEach((it, key) => {
                 const f = new FolderState();
                 if (`isFolded` in it) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     f.isFolded = it.isFolded;
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (`current` in it && it.current instanceof Object) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     f.current = structuredClone(it.current);
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 p.folders.set(key, f);
             });
         }
@@ -147,11 +154,15 @@ class ParameterInfo {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(object: any, parameterName: string, defaultValue: any, noSave: boolean, tpBinding: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.containerObject = object;
         this.parameterName = parameterName;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.defaultValue = defaultValue;
         this.noSave = noSave;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.tpBinding = tpBinding;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         this.label = tpBinding.label ? tpBinding.label : parameterName;
     }
 }
@@ -204,7 +215,9 @@ export class TrackedParameters implements ITrackedParameters {
             this._paneState.scrollTopRatio = scrollTop / this._container.scrollHeight;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const serialized = serialize(this._paneState);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         localStorage.setItem(this._storageName, serialized);
     }
 
@@ -214,7 +227,9 @@ export class TrackedParameters implements ITrackedParameters {
         });
 
         this._folders.forEach((folder) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             folder.expanded = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             folder.refresh();
         });
 
@@ -224,6 +239,7 @@ export class TrackedParameters implements ITrackedParameters {
     resetToDefaults() {
         const doReset = () => {
             this._parametersInfo.forEach((elem, key) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 elem.containerObject[elem.parameterName] = structuredClone(elem.defaultValue);
 
                 // Update serializable state as well
@@ -235,6 +251,7 @@ export class TrackedParameters implements ITrackedParameters {
             });
             this.checkDefaults();
             this._folders.forEach((folder) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 folder.refresh();
             });
         };
@@ -254,9 +271,11 @@ export class TrackedParameters implements ITrackedParameters {
         }
 
         this._parametersInfo.forEach((parameterInfo, key) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const isDefault = JSON.stringify(parameterInfo.defaultValue) === JSON.stringify(parameterInfo.containerObject[parameterInfo.parameterName]);
 
             const noSaveIndicator = parameterInfo.noSave ? "❗💾 " : "";
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             parameterInfo.tpBinding.label = (isDefault ? "  " : "* ") + noSaveIndicator + parameterInfo.label;
 
             const folderName = key.slice(0, key.lastIndexOf("|"));
@@ -277,6 +296,7 @@ export class TrackedParameters implements ITrackedParameters {
         });
 
         folderModCount.forEach((count, key) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const folder = this._folders.get(key);
             if (folder) {
                 if (key === "_") {
@@ -284,8 +304,10 @@ export class TrackedParameters implements ITrackedParameters {
                 }
                 const folderName = key.slice(key.lastIndexOf("_") + 1, key.length);
                 if (count === 0) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     folder.title = `  ${folderName}`;
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     folder.title = `* ${folderName}`;
                 }
             }
@@ -307,14 +329,20 @@ export class TrackedParameters implements ITrackedParameters {
             ],
         };
         // @ts-expect-error - TS2349 - This expression is not callable.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         window.showSaveFilePicker(opts).then((fileHandle) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return fileHandle.createWritable();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         }).then((writable) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const serialized = serialize(this._paneState);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return Promise.all([writable, writable.write(serialized)]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         }).then(([writable, _]: [WritableStream, unknown]) => {
             writable.close().catch(() => {});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         }).catch((err) => {
             console.error(err);
         });
@@ -335,13 +363,17 @@ export class TrackedParameters implements ITrackedParameters {
             ],
         };
         // @ts-expect-error - TS2551 - Property 'showOpenFilePicker' does not exist on type 'Window & typeof globalThis & Record<"showSaveFilePicker", unknown>'. Did you mean 'showSaveFilePicker'?
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         window.showOpenFilePicker(opts).then((fileHandles) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return fileHandles[0].getFile();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         }).then((file) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return file.text();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         }).then((fileData) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const loadedPaneState = deSerializePaneParams(fileData);
 
             mergePaneParams(this._paneState, loadedPaneState);
@@ -351,12 +383,15 @@ export class TrackedParameters implements ITrackedParameters {
                     const fullParameterName = `${folderKey}|${parameterKey}`;
                     const paramInfo = this._parametersInfo.get(fullParameterName);
                     if (paramInfo && !paramInfo.noSave) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         paramInfo.containerObject[parameterKey] = structuredClone(value);
                     }
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const tpFolder = this._folders.get(folderKey);
                 if (tpFolder) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     tpFolder.expanded = !folder.isFolded;
                 }
             });
@@ -364,8 +399,10 @@ export class TrackedParameters implements ITrackedParameters {
             this.checkDefaults();
 
             this._folders.forEach((folder) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 folder.refresh();
             });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         }).catch((err) => {
             console.error(err);
         });
@@ -451,21 +488,24 @@ export class TrackedParameters implements ITrackedParameters {
         assert(scope.length >= 1);
 
         // Iterate/create panes
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
         let currentScope: any = this._folders.get("_");
         let fullScopeName = "_";
         for (let i = 0; i < scope.length; ++i) {
             fullScopeName = scope.slice(0, i + 1).reduce((prev, cur) => { return `${prev}_${cur}`; }, "_");
 
             if (this._folders.has(fullScopeName)) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 currentScope = this._folders.get(fullScopeName);
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 const folder = currentScope.addFolder({
                     title: `  ${scope[i]}`,
                     expanded: true,
                 });
 
                 this._folders.set(fullScopeName, folder);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 currentScope = folder;
 
                 if (!this._paneState.folders.has(fullScopeName)) {
@@ -474,9 +514,12 @@ export class TrackedParameters implements ITrackedParameters {
                 }
 
                 const folderObj: FolderState = this._paneState.folders.get(fullScopeName);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 currentScope.expanded = !folderObj.isFolded;
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 currentScope.on('fold', (ev) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     folderObj.isFolded = !ev.expanded;
                     this.dump();
                 });
@@ -484,11 +527,13 @@ export class TrackedParameters implements ITrackedParameters {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         return {currentScope, fullScopeName};
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerParameter(containerObject: any, scope: Array<string>, name: string, description?: Description, changeValueCallback?: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const {currentScope, fullScopeName} = this.createFoldersChainAndSelectScope(scope);
 
         const folderStateObj: FolderState = this._paneState.folders.get(fullScopeName);
@@ -497,23 +542,31 @@ export class TrackedParameters implements ITrackedParameters {
         const fullParameterName = `${fullScopeName}|${name}`;
 
         if (!this._parametersInfo.has(fullParameterName)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const defaultValue = structuredClone(containerObject[name]);
 
             // Check if parameter should ignore (de)serialization
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const noSave = !!(description && description.noSave);
 
             if (!noSave && folderStateObj.current.hasOwnProperty(name)) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 containerObject[name] = structuredClone(folderStateObj.current[name]);
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 folderStateObj.current[name] = structuredClone(containerObject[name]);
             }
 
             // Create binding to TweakPane UI
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const binding = currentScope.addBinding(containerObject, name, description);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             binding.on('change', (ev) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 folderStateObj.current[name] = structuredClone(ev.value);
                 this.dump();
                 this.checkDefaults();
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 if (changeValueCallback) { changeValueCallback(ev.value); }
             });
 
@@ -531,17 +584,22 @@ export class TrackedParameters implements ITrackedParameters {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerButton(scope: Array<string>, buttonTitle: string, onClick: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const {currentScope} = this.createFoldersChainAndSelectScope(scope);
 
         // Add button to TweakPane UI
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const button = currentScope.addButton({title: buttonTitle});
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         button.on('click', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             onClick();
         });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     registerBinding(containerObject: any, scope: Array<string>, name: string, description?: Description) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const {currentScope} = this.createFoldersChainAndSelectScope(scope);
 
         const modifiedLabel = `  ${(() => {
@@ -550,7 +608,7 @@ export class TrackedParameters implements ITrackedParameters {
             }
 
             if ("label" in description) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
                 return description.label;
             }
 
@@ -558,11 +616,13 @@ export class TrackedParameters implements ITrackedParameters {
         })()}`;
 
         // Add button to TweakPane UI
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         currentScope.addBinding(containerObject, name, Object.assign({}, description, {label: modifiedLabel}));
     }
 
     refreshUI() {
         this._folders.forEach((folder) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             folder.refresh();
         });
     }

@@ -101,6 +101,7 @@ export const PerformanceUtils = {
         performance.clearMeasures('fullLoadTime');
 
         for (const marker in LivePerformanceMarkers) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             performance.clearMarks(LivePerformanceMarkers[marker]);
         }
     },
@@ -113,6 +114,7 @@ export const PerformanceUtils = {
 
         const measures = performance.getEntriesByType('measure');
         for (const measure of measures) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             metrics[measure.name] = (metrics[measure.name] || 0) + measure.duration;
         }
 
@@ -123,6 +125,7 @@ export const PerformanceUtils = {
 
     getWorkerPerformanceMetrics(): WorkerPerformanceMetrics {
         const entries = performance.getEntries().map((entry: PerformanceEntry & PerformanceMarkOptions) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const result: PerformanceEntry & PerformanceMarkOptions = entry.toJSON();
             if (entry.detail) Object.assign(result, {detail: entry.detail});
             return result;

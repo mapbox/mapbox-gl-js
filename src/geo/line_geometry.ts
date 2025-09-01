@@ -59,6 +59,7 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
 
     if (isPolygon) {
         currentVertex = vertices[len - 2];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         nextNormal = vertices[first].sub(currentVertex)._unit()._perp();
     }
 
@@ -72,6 +73,7 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         if (nextVertex && vertices[i].equals(nextVertex)) continue;
 
         if (nextNormal) prevNormal = nextNormal;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         if (currentVertex) prevVertex = currentVertex;
 
         currentVertex = vertices[i];
@@ -79,6 +81,7 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         // Calculate the normal towards the next vertex in this line. In case
         // there is no next vertex, pretend that the line is continuing straight,
         // meaning that we are just using the previous normal.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         nextNormal = nextVertex ? nextVertex.sub(currentVertex)._unit()._perp() : prevNormal;
 
         // If we still don't have a previous normal, this is the beginning of a
@@ -123,11 +126,17 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         }
 
         const addWallJoin = (vert, normal, outerOffset, innerOffset) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const innerPoint = new Point(vert.x, vert.y);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const outerPoint = new Point(vert.x, vert.y);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             innerPoint.x += normal.x * innerOffset;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             innerPoint.y += normal.y * innerOffset;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
             outerPoint.x -= normal.x * Math.max(outerOffset, 1.0);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
             outerPoint.y -= normal.y * Math.max(outerOffset, 1.0);
 
             joinNormals.push(normal);
@@ -161,7 +170,9 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
 
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     wallGeometry.geometry = [...innerWall, ...outerWall.reverse(), innerWall[0]];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     wallGeometry.joinNormals = [...joinNormals, ...joinNormals.reverse(), joinNormals[joinNormals.length - 1]];
 
     // Build index buffer

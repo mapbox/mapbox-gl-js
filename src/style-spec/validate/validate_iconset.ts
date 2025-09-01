@@ -38,6 +38,7 @@ export default function validateIconset(options: IconsetValidatorOptions): Valid
     errors = errors.concat(validateObject({
         key,
         value: iconset,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         valueSpec: styleSpec[`iconset_${type}`],
         style,
         styleSpec

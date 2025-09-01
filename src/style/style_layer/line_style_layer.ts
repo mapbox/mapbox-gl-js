@@ -113,7 +113,7 @@ class LineStyleLayer extends StyleLayer {
 
     override _handleSpecialPaintPropertyUpdate(name: string) {
         if (name === 'line-gradient') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
             const expression: ZoomConstantExpression<'source'> = ((this._transitionablePaint._values['line-gradient'].value.expression) as any);
             this.stepInterpolant = expression._styleExpression && expression._styleExpression.expression instanceof Step;
             this.gradientVersion = (this.gradientVersion + 1) % Number.MAX_SAFE_INTEGER;
@@ -130,7 +130,7 @@ class LineStyleLayer extends StyleLayer {
 
     override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         (this.paint._values as any)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
     }
 
@@ -185,6 +185,7 @@ class LineStyleLayer extends StyleLayer {
             this.paint.get('line-gap-width').evaluate(feature, featureState));
         const lineOffset = this.paint.get('line-offset').evaluate(feature, featureState);
         if (lineOffset) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             geometry = offsetLine(geometry, lineOffset * queryGeometry.pixelToTileUnitsFactor);
         }
 

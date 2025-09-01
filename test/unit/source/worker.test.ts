@@ -45,9 +45,11 @@ test('worker source messages dispatched to the correct map instance', () => {
     };
 
     _self.registerWorkerSource('test', function (actor) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         this.loadTile = function () {
             // we expect the map id to get appended in the call to the "real"
             // actor.send()
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             actor.send('main thread task', {}, () => {}, null);
         };
     } as unknown as WorkerSourceConstructor);

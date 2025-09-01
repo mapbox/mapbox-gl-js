@@ -111,6 +111,7 @@ export function typeOf(value: Value): Type {
         let itemType: Type;
 
         for (const item of value) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const t = typeOf(item);
             if (!itemType) {
                 itemType = t;

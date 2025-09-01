@@ -114,6 +114,7 @@ class LineAtlas {
                     signedDistance = halfStretch - Math.sqrt(minDist * minDist + distMiddle * distMiddle);
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.image.data[index + x] = Math.max(0, Math.min(255, signedDistance + 128));
             }
         }

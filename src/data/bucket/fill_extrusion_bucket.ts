@@ -449,6 +449,7 @@ export class GroundEffect {
                 const na = pb.sub(pa)._perp()._unit();
                 const nb = pc.sub(pb)._perp()._unit();
                 const factor = getAngularOffsetFactor(na, nb);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const a0 = prevFactor;
                 const a1 = factor;
 
@@ -460,7 +461,9 @@ export class GroundEffect {
 
                 const idx = segment.vertexLength;
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 addGroundVertex(this.vertexArray, pa, pb, 1, 1, a0);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 addGroundVertex(this.vertexArray, pa, pb, 1, 0, a0);
                 addGroundVertex(this.vertexArray, pa, pb, 0, 1, a1);
                 addGroundVertex(this.vertexArray, pa, pb, 0, 0, a1);
@@ -923,6 +926,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             geometry = [wallGeometry.geometry];
         }
         const isPointOnInnerWall = (index, polygon) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             return index < ((polygon.length - 1) / 2.0) || index === polygon.length - 1;
         };
 
@@ -1028,13 +1032,18 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
                         if (edgeRadius) {
                             nb = p2.sub(p1)._perp()._unit();
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                             const nm = na.add(nb)._unit();
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                             const cosHalfAngle = na.x * nm.x + na.y * nm.y;
                             const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                             q.x += offset * nm.x;
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                             q.y += offset * nm.y;
                             q.x = Math.round(q.x);
                             q.y = Math.round(q.y);
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             na = nb;
                         }
 
@@ -1072,23 +1081,33 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     }
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                 const indices = this.wallMode ? wallGeometry.indices : earcut(flattened, holeIndices);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 assert(indices.length % 3 === 0);
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 for (let j = 0; j < indices.length; j += 3) {
                     this.footprintIndices.emplaceBack(
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         fpSegment.vertexOffset + indices[j + 0],
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         fpSegment.vertexOffset + indices[j + 1],
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         fpSegment.vertexOffset + indices[j + 2]);
 
                     // clockwise winding order.
                     this.indexArray.emplaceBack(
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         topIndex + indices[j],
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         topIndex + indices[j + 2],
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                         topIndex + indices[j + 1]);
                     segment.primitiveLength++;
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 fpSegment.indexCount += indices.length;
                 fpSegment.vertexCount += this.footprintVertices.length - fpSegment.vertexOffset;
             }
@@ -1156,6 +1175,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     if (edgeRadius) {
                         nb = p2.sub(p1)._perp()._unit();
 
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         const cosHalfAngle = getCosHalfAngle(na, nb);
                         let offsetNext = _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius);
 
@@ -1165,6 +1185,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                         p1 = p1.add(nEdge.mult(-offsetNext))._round();
                         offsetPrev = offsetNext;
 
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         na = nb;
 
                         if (onGround && this.zoom >= 17) {
@@ -1227,13 +1248,17 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
                         // Make sure to fill in the gap in the corner only when both corresponding edges are in tile bounds.
                         if (!isEdgeOutsideBounds(p2, ring[i], bounds)) {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             const l = i === ring.length - 1 ? kFirst : segment.vertexLength;
 
                             // vertical side chamfer i.e. the space between consecutive walls.
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             this.indexArray.emplaceBack(k + 2, k + 3, l);
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             this.indexArray.emplaceBack(k + 3, l + 1, l);
 
                             // top corner where the top(roof) and two sides(walls) meet.
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             this.indexArray.emplaceBack(k + 3, t1, l + 1);
 
                             segment.primitiveLength += 3;
@@ -1466,7 +1491,9 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             fracMin[1] = subSegment.min.y / EXTENT;
             fracMax[0] = subSegment.max.x / EXTENT;
             fracMax[1] = subSegment.max.y / EXTENT;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const aabbMin = mix(tileMin, tileMax, fracMin);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const aabbMax = mix(tileMin, tileMax, fracMax);
             const aabb = new Aabb([aabbMin[0], aabbMin[1], minZ], [aabbMax[0], aabbMax[1], maxZ]);
             if (aabb.intersectsPrecise(frustum) === 0) {

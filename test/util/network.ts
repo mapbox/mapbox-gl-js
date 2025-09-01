@@ -36,8 +36,10 @@ export function getRequestBody(request) {
     let data = '';
 
     return new Promise(resolve => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         request.body.pipeTo(new window.WritableStream({
             write(chunk) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 data += new TextDecoder().decode(chunk);
             },
             close() {

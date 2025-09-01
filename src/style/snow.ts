@@ -76,9 +76,11 @@ class Snow extends Evented {
         }
 
         const properties = Object.assign({}, snow);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         for (const name of Object.keys(styleSpec.snow)) {
             // Fallback to use default style specification when the properties wasn't set
             if (properties[name] === undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 properties[name] = styleSpec.snow[name].default;
             }
         }
@@ -116,6 +118,7 @@ class Snow extends Evented {
             return false;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
             value,
             style: {glyphs: true, sprite: true},

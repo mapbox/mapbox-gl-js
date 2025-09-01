@@ -45,10 +45,12 @@ export default class CollatorExpression implements Expression {
             if (!locale) return null;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new CollatorExpression(caseSensitive, diacriticSensitive, locale);
     }
 
     evaluate(ctx: EvaluationContext): Collator {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return new Collator(this.caseSensitive.evaluate(ctx), this.diacriticSensitive.evaluate(ctx), this.locale ? this.locale.evaluate(ctx) : null);
     }
 

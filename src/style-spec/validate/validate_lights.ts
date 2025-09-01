@@ -28,6 +28,7 @@ export default function validateLights(options: LightsValidatorOptions): Validat
 
     let errors: ValidationError[] = [];
     const styleSpec = options.styleSpec;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const lightSpec = styleSpec['light-3d'];
     const style = options.style;
     const lights = options.style.lights;
@@ -60,6 +61,7 @@ export default function validateLights(options: LightsValidatorOptions): Validat
         return errors;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const lightPropertySpec = styleSpec[lightType];
 
     for (const key in light) {
@@ -73,6 +75,7 @@ export default function validateLights(options: LightsValidatorOptions): Validat
                 const transitionMatch = propertyKey.match(/^(.*)-transition$/);
                 const useThemeMatch = propertyKey.match(/^(.*)-use-theme$/);
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (useThemeMatch && lightPropertySpec[useThemeMatch[1]]) {
                     errors = errors.concat(validate({
                         key,
@@ -81,20 +84,24 @@ export default function validateLights(options: LightsValidatorOptions): Validat
                         style,
                         styleSpec
                     }));
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 } else if (transitionMatch && lightPropertySpec[transitionMatch[1]] && lightPropertySpec[transitionMatch[1]].transition) {
                     errors = errors.concat(validate({
                         key,
                         value: light[key],
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         valueSpec: styleSpec.transition,
                         style,
                         styleSpec
                     }));
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 } else if (!lightPropertySpec[propertyKey]) {
                     errors = errors.concat([new ValidationWarning(options.key, properties[propertyKey], `unknown property "${propertyKey}"`)]);
                 } else {
                     errors = errors.concat(validate({
                         key: propertyKey,
                         value: properties[propertyKey],
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                         valueSpec: lightPropertySpec[propertyKey],
                         style,
                         styleSpec
@@ -102,10 +109,12 @@ export default function validateLights(options: LightsValidatorOptions): Validat
                 }
             }
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (lightSpec[key]) {
                 errors = errors.concat(validate({
                     key,
                     value: light[key],
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     valueSpec: lightSpec[key],
                     style,
                     styleSpec
