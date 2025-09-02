@@ -12,7 +12,6 @@ export default function validateColor({key, value}: ColorValidatorOptions): Vali
         return [new ValidationError(key, value, `color expected, ${getType(value)} found`)];
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     if (parseCSSColor(value) === null) {
         return [new ValidationError(key, value, `color expected, "${value}" found`)];
     }
