@@ -336,7 +336,7 @@ function loadBuffer(buffer: {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getGLTFBytes(gltf: any, bufferViewIndex: number): Uint8Array {
+function getGLTFBytes(gltf: any, bufferViewIndex: number): Uint8Array<ArrayBuffer> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const bufferView = gltf.json.bufferViews[bufferViewIndex];
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access

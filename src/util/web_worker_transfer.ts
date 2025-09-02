@@ -181,7 +181,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
 
     if (input instanceof ImageData) {
         if (transferables) {
-            transferables.add(input.data.buffer as ArrayBuffer);
+            transferables.add(input.data.buffer);
         }
         return input;
     }
