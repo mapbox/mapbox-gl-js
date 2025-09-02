@@ -24,7 +24,11 @@
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
 <script type="text/javascript" src="https://unpkg.com/d3@7.6.1/dist/d3.min.js"></script>
 <script src="../dist/mapbox-gl-dev.js"></script>
-<script src="../debug/access_token_generated.js"></script>
+<script type="module">
+import {getAccessToken} from '../debug/access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+</script>
 <script>
 
 /*global d3*/

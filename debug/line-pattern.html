@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Display a line string with pattern</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-<link href='../dist/mapbox-gl.css' rel='stylesheet' />
+<link href="../dist/mapbox-gl.css" rel="stylesheet" />
 <style>
     body { margin: 0; padding: 0; }
     #map { position: absolute; top: 0; bottom: 0; width: 100%; }
@@ -14,9 +14,13 @@
 <body>
 <div id="map"></div>
 <div id='config'></div>
-<script type='text/javascript' src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.9/dist/tweakpane.min.js"></script>
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='access_token_generated.js'></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.9/dist/tweakpane.min.js"></script>
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from './access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+</script>
 <script>
 
 const lineBaseWidth = 16;

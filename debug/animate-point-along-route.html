@@ -8,7 +8,7 @@
     body { margin: 0; padding: 0; }
     #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 </style>
-<link rel='stylesheet' href='../dist/mapbox-gl.css'/>
+<link rel="stylesheet" href="../dist/mapbox-gl.css"/>
 </head>
 <body>
 <style>
@@ -38,14 +38,16 @@
 
 <div id="map"></div>
 <div class="overlay">
-    <button id='replay'>Replay</button>
-    <button id='globe'>Switch to globe</button>
+    <button id="replay">Replay</button>
+    <button id="globe">Switch to globe</button>
 </div>
 
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='access_token_generated.js'></script>
-<script>
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from 'access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
     /* globals turf */
 
     const map = new mapboxgl.Map({

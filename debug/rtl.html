@@ -2,9 +2,9 @@
 <html>
 <head>
     <title>Mapbox GL JS debug page</title>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <link rel="stylesheet" href="/dist/mapbox-gl.css" />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -19,7 +19,7 @@
 </head>
 
 <body>
-<div id='map'></div>
+<div id="map"></div>
 <div id="buttons">
     <button id="loadSync">Load rtlTextPlugin Sync</button><br>
     <button id="loadAsync">Load rtlTextPlugin Async</button><br>
@@ -27,8 +27,12 @@
     <span id="pluginStatus"></span>
 </div>
 
-<script src='/dist/mapbox-gl-dev.js'></script>
-<script src='/debug/access_token_generated.js'></script>
+<script src="/dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from './access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+</script>
 <script>
 // badPluginURL allows us to simulate a NetworkError that we can recover from by retrying plugin loading
 var badPluginURL = 'http://localhost:9966/debug/2762.html';

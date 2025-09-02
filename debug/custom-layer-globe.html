@@ -2,9 +2,9 @@
 <html>
 <head>
     <title>Mapbox GL JS custom layers on globe page</title>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -18,10 +18,10 @@
 </head>
 
 <body>
-<div id='map'></div>
-<div id='checkboxes'>
-    <label><input id='immediate-checkbox' type='checkbox' checked> add a custom layer with immediate rendering</label><br />
-    <label><input id='draped-checkbox' type='checkbox'> add a custom layer with draped rendering</label><br />
+<div id="map"></div>
+<div id="checkboxes">
+    <label><input id="immediate-checkbox" type="checkbox" checked> add a custom layer with immediate rendering</label><br />
+    <label><input id="draped-checkbox" type="checkbox"> add a custom layer with draped rendering</label><br />
 </div>
 
 <script src="//unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
@@ -29,8 +29,11 @@
 
 <script src="color-earth-custom-layer.js"></script>
 
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from '../debug/access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
 
 <script>
 const map = new mapboxgl.Map({

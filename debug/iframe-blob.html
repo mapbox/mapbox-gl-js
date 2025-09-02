@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Mapbox GL JS debug page</title>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 </head>
 
@@ -12,7 +12,11 @@
 <script>
 const mapboxgl = {};
 </script>
-<script src='../debug/access_token_generated.js'></script>
+<script type="module">
+import {getAccessToken} from '../debug/access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+</script>
 <script>
 const js = document.createElement("a");
 js.href = "../dist/mapbox-gl-dev.js";
@@ -25,7 +29,7 @@ document.querySelector('iframe').src = URL.createObjectURL(new Blob([ `
     <title>Mapbox GL JS debug page<\/title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='${css.href}' />
+    <link rel="stylesheet" href="${css.href}" />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -33,9 +37,9 @@ document.querySelector('iframe').src = URL.createObjectURL(new Blob([ `
 </head>
 
 <body>
-<div id='map'></div>
+<div id="map"></div>
 
-<script src='${js.href}'><\/script>
+<script src="${js.href}"><\/script>
 <script>
 mapboxgl.accessToken = '${mapboxgl.accessToken}';
 var map = window.map = new mapboxgl.Map({

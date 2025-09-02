@@ -6,8 +6,10 @@
 <body>
     <div id="map"></div>
     <script src="/dist/mapbox-gl-csp.js"></script>
-    <script src="/debug/access_token_generated.js"></script>
-    <script>
+    <script type="module">
+        import {getAccessToken} from '../debug/access_token_generated.js';
+        mapboxgl.accessToken = getAccessToken();
+
         mapboxgl.workerUrl = '/dist/mapbox-gl-csp-worker.js';
         window.addEventListener('message', (e) => {
             if (e.data.type === 'load') {

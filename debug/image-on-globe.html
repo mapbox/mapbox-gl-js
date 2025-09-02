@@ -16,12 +16,12 @@
             font-family: Arial, Helvetica, sans-serif;
         }
     </style>
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
 </head>
 
 <body>
 <div id="map"></div>
-<div id='controls'>
+<div id="controls">
     <div>
         <label>Projection:</label>
         <select id="projName">
@@ -40,8 +40,12 @@
     </div>
 </div>
 
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='access_token_generated.js'></script>
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from './access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+</script>
 <script>
     const map = new mapboxgl.Map({
         container: 'map',

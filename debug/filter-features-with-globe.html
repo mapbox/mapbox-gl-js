@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Filter features within map view</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-<link rel='stylesheet' href='../dist/mapbox-gl.css' />
+<link rel="stylesheet" href="../dist/mapbox-gl.css" />
 <style>
     body { margin: 0; padding: 0; }
     #map { position: absolute; top: 0; bottom: 0; width: 100%; }
@@ -93,9 +93,11 @@
 <div id="feature-listing" class="listing"></div>
 </div>
 
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='access_token_generated.js'></script>
-<script>
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from './access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
     const map = new mapboxgl.Map({
         container: 'map',
         devtools: true,

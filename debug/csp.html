@@ -3,9 +3,9 @@
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta http-equiv="Content-Security-Policy" content="worker-src blob: ; img-src data: blob: ; script-src http: 'nonce-dummy'; connect-src https://*.tiles.mapbox.com https://api.mapbox.com">
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -13,11 +13,13 @@
 </head>
 
 <body>
-<div id='map'></div>
+<div id="map"></div>
 
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
-<script nonce="dummy">
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module" nonce="dummy">
+import {getAccessToken} from '../debug/access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',

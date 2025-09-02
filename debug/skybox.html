@@ -3,9 +3,9 @@
 
 <head>
     <title>Mapbox GL JS Sky Demo</title>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link href='main.css' rel='stylesheet' type="text/css" />
+    <link href="main.css" rel="stylesheet" type="text/css" />
     <style>
         body {
             margin: 0;
@@ -27,9 +27,13 @@
     </style>
 </head>
 <body>
-    <script src='../dist/mapbox-gl-dev.js'></script>
-    <script src='../debug/access_token_generated.js'></script>
-    <div id='map'></div>
+    <script src="../dist/mapbox-gl-dev.js"></script>
+    <script type="module">
+import {getAccessToken} from '../debug/access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+</script>
+    <div id="map"></div>
     <div id='inputs'>
         <input type="button" id="sunriseEnd" value="sunrise">
         <input type="button" id="goldenHourEnd" value="morning">
@@ -42,7 +46,7 @@
         <input type="button" id="next30days" value="+30 days">
         <input type="button" id="prev30days" value="-30 days">
     </div>
-    <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js'></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js"></script>
     <script>
         var map = window.map = new mapboxgl.Map({
             container: 'map',

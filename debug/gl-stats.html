@@ -8,9 +8,13 @@
 let now = performance.now();
 window.performance.now = () => now;
 </script>
-<script src='../dist/mapbox-gl.js'></script>
-<script src='../debug/access_token_generated.js'></script>
-<link rel='stylesheet' href='../dist/mapbox-gl.css' />
+<script src="../dist/mapbox-gl.js"></script>
+<script type="module">
+import {getAccessToken} from '../debug/access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+</script>
+<link rel="stylesheet" href="../dist/mapbox-gl.css" />
 <style>.mapboxgl-canary { background-color: salmon; }</style>
 </head>
 <body style="margin: 0; padding: 0"><div id="map" style="width: 500px; height: 500px"></div></body>

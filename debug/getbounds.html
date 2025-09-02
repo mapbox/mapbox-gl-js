@@ -2,9 +2,9 @@
 <html>
 <head>
     <title>Mapbox GL JS debug page</title>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
     <style>
         body { margin: 0; padding: 0; }
         #map, #map2 { position: absolute; top: 0; bottom: 0; }
@@ -52,8 +52,8 @@
 
 <body>
 
-<div id='map'></div>
-<div id='map2'></div>
+<div id="map"></div>
+<div id="map2"></div>
 <div class="map-overlay top">
     <details open>
     <summary>Toggle controls</summary>
@@ -136,9 +136,11 @@
     </details>
 </div>
 
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
-<script>
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from '../debug/access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
 
 const projectionInput = document.getElementById('projection');
 const styleInput = document.getElementById('style');

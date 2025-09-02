@@ -2,10 +2,10 @@
 <html>
 <head>
     <title>Mapbox GL JS debug page</title>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
-    <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <link href="https://www.mapbox.com/base/latest/base.css" rel="stylesheet" />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -13,7 +13,7 @@
 </head>
 
 <body>
-<div id='map'></div>
+<div id="map"></div>
 <div class='button pin-topleft z100' onclick='togglePlayback()'>Play/pause</div>
 <div class = 'pin-topright'>
     <label><input id='terrain-checkbox' type='checkbox'> terrain</label><br />
@@ -34,8 +34,12 @@
 <div class='pin-bottom pad1 z100 col12 bg-white' style='background:white'>
     <input class="timeslider col12 fr" type="range" value="0" min="0" max="45" step="0.1" id="timeslider">
 </div>
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from '../debug/access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+</script>
 <script>
 
 var videoStyle = {

@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Debug page</title>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <style>
         body { margin: 0; padding: 0 }
@@ -19,15 +19,17 @@
 
 <body>
 
-<div id='map'></div>
-<div id='checkboxes'>
-    <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
-    <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
-    <label><input id='freeze-tile-coverage-checkbox' type='checkbox'> freeze tile coverage </label><br />
+<div id="map"></div>
+<div id="checkboxes">
+    <label><input id="show-tile-boundaries-checkbox" type="checkbox"> tile debug</label><br />
+    <label><input id="show-symbol-collision-boxes-checkbox" type="checkbox"> collision debug</label><br />
+    <label><input id="freeze-tile-coverage-checkbox" type="checkbox"> freeze tile coverage </label><br />
 </div>
-<script src='../dist/mapbox-gl-dev.js'></script>
-<script src='../debug/access_token_generated.js'></script>
-<script>
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from '../debug/access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     devtools: true,
