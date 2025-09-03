@@ -253,6 +253,11 @@
                         ]
                     ]
                 ],
+                "building-facade-unit-width": [
+                    "at",
+                    ["%", ["to-number", ["id"], 0], 4],
+                    [3.1, 5.3, 10.5, 20.0]
+                ],
                 "building-facade-window": [
                     "case",
                     [

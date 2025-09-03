@@ -402,8 +402,8 @@ export class BuildingBucket implements BucketWithGroundEffect {
                 endPositionTile = height / tileToMeters;
                 startPositionTile = Math.min(startPositionTile, endPositionTile);
 
-                const floorWidths = [3.1, 5.3, 10.5, 20.0];
-                floorXTile = floorWidths[feature.id ? feature.id % floorWidths.length : 0] / tileToMeters;
+                const unitWidth = layer.layout.get('building-facade-unit-width').evaluate(feature, {}, canonical);
+                floorXTile = unitWidth / tileToMeters;
                 floorYTile = (endPositionTile - startPositionTile) / numFloors;
 
                 buildingGen.setFauxFacadeOptions(true, true, floorXTile);

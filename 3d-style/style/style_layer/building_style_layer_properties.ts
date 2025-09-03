@@ -20,6 +20,7 @@ export type LayoutProps = {
     "visibility": DataConstantProperty<"visible" | "none">;
     "building-facade": DataDrivenProperty<boolean>;
     "building-facade-floors": DataDrivenProperty<number>;
+    "building-facade-unit-width": DataDrivenProperty<number>;
     "building-facade-window": DataDrivenProperty<[number, number]>;
     "building-roof-shape": DataDrivenProperty<"flat" | "hipped" | "gabled" | "parapet" | "mansard" | "skillion" | "pyramidal">;
     "building-height": DataDrivenProperty<number>;
@@ -30,6 +31,7 @@ export const getLayoutProperties = (): Properties<LayoutProps> => layout || (lay
     "visibility": new DataConstantProperty(styleSpec["layout_building"]["visibility"]),
     "building-facade": new DataDrivenProperty(styleSpec["layout_building"]["building-facade"]),
     "building-facade-floors": new DataDrivenProperty(styleSpec["layout_building"]["building-facade-floors"]),
+    "building-facade-unit-width": new DataDrivenProperty(styleSpec["layout_building"]["building-facade-unit-width"]),
     "building-facade-window": new DataDrivenProperty(styleSpec["layout_building"]["building-facade-window"]),
     "building-roof-shape": new DataDrivenProperty(styleSpec["layout_building"]["building-roof-shape"]),
     "building-height": new DataDrivenProperty(styleSpec["layout_building"]["building-height"]),

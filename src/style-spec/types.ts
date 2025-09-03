@@ -1102,6 +1102,10 @@ export type BuildingLayerSpecification = {
         /**
          * @experimental This property is experimental and subject to change in future versions.
          */
+        "building-facade-unit-width"?: DataDrivenPropertyValueSpecification<number>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
         "building-facade-window"?: DataDrivenPropertyValueSpecification<[number, number]>,
         /**
          * @experimental This property is experimental and subject to change in future versions.

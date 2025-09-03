@@ -2100,6 +2100,28 @@
         "building-facade"
       ]
     },
+    "building-facade-unit-width": {
+      "type": "number",
+      "minimum": 1.0,
+      "maximum": 20.0,
+      "default": 3.1,
+      "doc": "Width of a floor. Think of this as measure how wide each unit should be. This effectively determines the number of units per each floor. Note that this does not affect the ground level facades (i.e. number of windows).",
+      "experimental": true,
+      "property-type": "data-driven",
+      "sdk-support": {
+        "basic functionality": {},
+        "data-driven styling": {}
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "feature"
+        ]
+      },
+      "requires": [
+        "building-facade"
+      ]
+    },
     "building-facade-window": {
       "type": "array",
       "length": 2,
@@ -2107,7 +2129,7 @@
       "minimum": 0.1,
       "maximum": 1.0,
       "default": [0.9, 0.9],
-      "doc": "Given as fractions, specifies the percentage of floor area covered by windows when building-facade is enabled",
+      "doc": "Given as fractions, specifies the percentage of unit area covered by windows when building-facade is enabled. Note that the area of a unit is ultimately determined by `building-facade-unit-width` and `building-facade-floors`.",
       "experimental": true,
       "property-type": "data-driven",
       "sdk-support": {
