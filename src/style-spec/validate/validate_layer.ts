@@ -1,7 +1,9 @@
 import ValidationError from '../error/validation_error';
 import {unbundle} from '../util/unbundle_jsonlint';
+import validateArray from './validate_array';
 import validateObject from './validate_object';
 import validateFilter from './validate_filter';
+import validateAppearance, {type AppearanceValidatorOptions} from './validate_appearance';
 import validatePaintProperty from './validate_paint_property';
 import validateLayoutProperty from './validate_layout_property';
 import validateSpec from './validate';
@@ -155,6 +157,16 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                             return validatePaintProperty(Object.assign({layerType: type, layer}, options));
                         }
                     }
+                });
+            },
+            appearances(options) {
+                return validateArray({
+                    key: options.key,
+                    value: options.value,
+                    valueSpec: options.valueSpec,
+                    style: options.style,
+                    styleSpec: options.styleSpec,
+                    arrayElementValidator: (options) => validateAppearance(Object.assign({layerType: type, layer}, options) as AppearanceValidatorOptions)
                 });
             }
         }

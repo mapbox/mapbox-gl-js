@@ -1564,12 +1564,25 @@
   },
   "appearance": {
     "condition": {
-      "type": "expression",
-      "doc": "A boolean expression that determines when this appearance should be applied."
+      "type": "boolean",
+      "doc": "A boolean expression that determines when this appearance should be applied.",
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom",
+          "pitch",
+          "feature",
+          "feature-state",
+          "measure-light",
+          "distance-from-center"
+        ]
+      },
+      "property-type": "data-driven"
     },
     "name": {
       "type": "string",
-      "doc": "Optional name for this appearance. Non-empty names should be unique within a layer."
+      "doc": "Optional name for this appearance. Non-empty names should be unique within a layer.",
+      "property-type": "constant"
     },
     "properties": {
       "type": "*",

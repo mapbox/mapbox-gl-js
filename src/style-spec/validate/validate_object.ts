@@ -8,6 +8,7 @@ import type {StyleSpecification, LayerSpecification} from '../types';
 type ObjectElementValidatorOptions = {
     key: string;
     value: unknown;
+    valueSpec?: unknown;
     style: Partial<StyleSpecification>;
     styleSpec: StyleReference;
 };

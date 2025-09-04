@@ -1,0 +1,58 @@
+{
+  "version": 8,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v8"
+    }
+  },
+  "layers": [
+    {
+      "id": "appearances-valid",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "source-layer",
+      "appearances": [
+        {
+          "condition": [">=", ["zoom"], 16],
+          "properties": {
+            "icon-image": "big-poi",
+            "icon-opacity": 0.5
+          }
+        },
+        {
+          "condition": [">=", ["measure-light", "brightness"], 0.2],
+          "properties": {
+            "text-color": "black",
+            "text-halo-color": "white"
+          }
+        },
+        {
+          "name": "selected",
+          "condition": ["feature-state", "select"],
+          "properties": {
+            "icon-image": ["image", "poi", {"params": {"fill": "red"}}],
+            "icon-size": 1.3,
+            "icon-opacity": 1,
+            "text-color": "red"
+          }
+        }
+      ]
+    },
+    {
+      "id": "appearances-invalid",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "source-layer",
+      "appearances": [
+        {
+          "condition": [">=", ["zoom"], 16],
+          "properties": {
+            "bad": true,
+            "icon-opacity": -1
+          }
+        }
+      ]
+    }
+  ]
+}

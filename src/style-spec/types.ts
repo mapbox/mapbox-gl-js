@@ -383,7 +383,7 @@ export type SelectorPropertySpecification = {
 };
 
 export type AppearanceSpecification = {
-    "condition"?: ExpressionSpecification,
+    "condition"?: DataDrivenPropertyValueSpecification<boolean>,
     "name"?: string,
     "properties"?: unknown
 };

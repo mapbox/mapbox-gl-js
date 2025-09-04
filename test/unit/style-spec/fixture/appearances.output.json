@@ -1,0 +1,9 @@
+[
+  {
+    "message": "layers[1].appearances[0].properties: unknown property \"bad\" for layer type \"symbol\""
+  },
+  {
+    "message": "layers[1].appearances[0].properties.icon-opacity: -1 is less than the minimum value 0",
+    "line": 52
+  }
+]
