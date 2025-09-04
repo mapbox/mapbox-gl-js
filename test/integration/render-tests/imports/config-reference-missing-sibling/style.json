@@ -1,0 +1,58 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 32
+    }
+  },
+  "sources": {},
+  "layers": [],
+  "schema": {
+    "basemap-exist": {
+      "default": ["case", ["config", "color", "basemap"], true, false],
+      "type": "boolean"
+    },
+    "basemap-color": {
+      "default": ["config", "color", "basemap"],
+      "type": "color"
+    }
+  },
+  "imports": [
+    {
+      "id": "basemap-sibling",
+      "url": "",
+      "config": {
+        "basemap-color": ["config", "basemap-color"]
+      },
+      "data": {
+        "version": 8,
+        "schema": {
+          "basemap-color": {
+            "default": "green",
+            "type": "color"
+          }
+        },
+        "sources": {
+          "geojson": {
+            "type": "geojson",
+            "data": {
+              "type": "Point",
+              "coordinates": [15, 0]
+            }
+          }
+        },
+        "layers": [
+          {
+            "id": "roads",
+            "type": "circle",
+            "source": "geojson",
+            "paint": {
+              "circle-color": ["case", ["config", "basemap-exist"], ["config", "basemap-color"], "red"]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
