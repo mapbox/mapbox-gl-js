@@ -137,8 +137,11 @@ class ModelBucket implements Bucket {
         this.maxScale = 0;
         this.maxHeight = 0;
         // reduce density, more on lower zooms and almost no reduction in overscale range.
-        // Heuristics is related to trees performance.
-        this.lookupDim = this.zoom > this.canonical.z ? 256 : this.zoom > 15 ? 75 : 100;
+        // Heuristics is related to trees performance. Disable density check after maxZoom + 2.
+        // For vector tiles this means:
+        // z15 and lower: lookup grid of size 75x75 per tile
+        // z16: 100x100, z17: 256x256, z18: no density reduction.
+        this.lookupDim = this.zoom > (this.canonical.z + 1) ? 0 : (this.zoom > this.canonical.z ? 256 : this.zoom > 15 ? 75 : 100);
         this.instanceCount = 0;
 
         this.terrainElevationMin = 0;
@@ -380,13 +383,15 @@ class ModelBucket implements Bucket {
                     continue; // Clip on tile borders to prevent duplicates
                 }
                 // reduce density
-                const tileToLookup = (this.lookupDim - 1.0) / EXTENT;
-                const lookupIndex = this.lookupDim * ((point.y * tileToLookup) | 0) + (point.x * tileToLookup) | 0;
-                if (this.lookup) {
-                    if (this.lookup[lookupIndex] !== 0) {
-                        continue;
+                if (this.lookupDim !== 0) {
+                    const tileToLookup = (this.lookupDim - 1.0) / EXTENT;
+                    const lookupIndex = this.lookupDim * ((point.y * tileToLookup) | 0) + (point.x * tileToLookup) | 0;
+                    if (this.lookup) {
+                        if (this.lookup[lookupIndex] !== 0) {
+                            continue;
+                        }
+                        this.lookup[lookupIndex] = 1;
                     }
-                    this.lookup[lookupIndex] = 1;
                 }
                 this.instanceCount++;
                 const i = instancedDataArray.length;
