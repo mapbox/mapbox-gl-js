@@ -39,6 +39,7 @@ class IndoorControl implements IControl {
     onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
+
         this._map.indoor.on('indoorupdate', (event) => this._onIndoorUpdate({
             selectedFloorId: event.selectedFloorId,
             floors: event.floors
@@ -54,11 +55,14 @@ class IndoorControl implements IControl {
         return a;
     }
 
+    _createSeparator(): HTMLElement {
+        return DOM.create('div', 'mapboxgl-ctrl-separator', this._container);
+    }
+
     _setButtonTitle(button: HTMLButtonElement, title: string) {
         if (!this._map) return;
         button.setAttribute('aria-label', title);
-        button.innerHTML = `<strong>${title}</strong>`;
-        if (button.firstElementChild) button.firstElementChild.setAttribute('title', title);
+        button.textContent = title;
     }
 
     onRemove() {
@@ -85,7 +89,8 @@ class IndoorControl implements IControl {
         const oldModel = this._model;
         this._model = model;
         this._container.style.display = 'inline-block';
-        const currentFloors = model.floors.sort((a, b) => a.levelOrder - b.levelOrder);
+        this._container.style.borderRadius = '8px';
+        const currentFloors = model.floors.sort((a, b) => b.levelOrder - a.levelOrder);
 
         if (oldModel) {
             Array.from(this._container.children).forEach(child => child.remove());
@@ -96,22 +101,33 @@ class IndoorControl implements IControl {
     }
 
     addCurrentFloors(floors: Array<IndoorControlLevel>) {
-        for (const floor of floors) {
+        for (let i = 0; i < floors.length; i++) {
+            const floor = floors[i];
             const levelButton = this._createButton('mapboxgl-ctrl-level-button', () => {
                 this._map._selectIndoorFloor(floor.id);
-                // Update selected state of all buttons
-                Array.from(this._container.children).forEach(button => {
-                    button.classList.remove('mapboxgl-ctrl-level-button-selected');
+                if (this._model) {
+                    this._model.selectedFloorId = floor.id;
+                }
+                Array.from(this._container.children).forEach(child => {
+                    if (child.classList.contains('mapboxgl-ctrl-level-button')) {
+                        child.classList.remove('mapboxgl-ctrl-level-button-selected');
+                    }
                 });
                 levelButton.classList.add('mapboxgl-ctrl-level-button-selected');
             });
+
             this._setButtonTitle(levelButton, floor.shortName);
-            // Add selected state if this is the currently selected level
+
             if (this._model && floor.id === this._model.selectedFloorId) {
-                this._map._selectIndoorFloor(floor.id);
                 levelButton.classList.add('mapboxgl-ctrl-level-button-selected');
             }
+
             this._container.append(levelButton);
+
+            // Add separator after each button except the last one
+            if (i < floors.length - 1) {
+                this._createSeparator();
+            }
         }
     }
 }

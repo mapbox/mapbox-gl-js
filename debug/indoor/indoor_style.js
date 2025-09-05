@@ -17,6 +17,7 @@ const indoorLayers = [
         "minzoom": 16.0,
         "filter": [
             "all",
+            [ ">", ["length", ["config", "mbx-indoor-level-selected"]], 0],
             ["==", ["get", "shape_type"], "building"],
         ],
         "layout": {
@@ -32,13 +33,22 @@ const indoorLayers = [
         "slot": "middle",
         "filter": [
             "all",
+            [ ">", ["length", ["config", "mbx-indoor-level-selected"]], 0],
             ["==", ["geometry-type"], "Polygon"],
             ["in", ["get", "shape_type"], ["literal", ["building"]]],
         ],
         "paint": {
             // Note: We should keep opacity above zero to enable queries of the footprint
             "fill-extrusion-color": "#fbfbfb",
-            "fill-extrusion-opacity": 0.6,
+            "fill-extrusion-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                16,
+                0,
+                16.5,
+                0.8
+            ],
             "fill-extrusion-height": 1
         }
     },
@@ -48,7 +58,7 @@ const indoorLayers = [
         "id": "building-outline",
         "source": "indoor-source",
         "source-layer": "indoor_structure_metadata",
-        "minzoom": 16.0,
+        "minzoom": 15.0,
         "slot": "middle",
         "filter": [
             "all",
@@ -58,7 +68,7 @@ const indoorLayers = [
         "paint": {
             // Note: We should keep opacity above zero to enable queries of the footprint,
             // Keep 0.01 do be not visible, 0.1 useful to debug and see metadata geometries
-            "fill-opacity": 0.1,
+            "fill-opacity": 0.01,
             "fill-color": "#e8a5b8"
         }
     },
@@ -68,7 +78,7 @@ const indoorLayers = [
         "id": "floor-outline",
         "source": "indoor-source",
         "source-layer": "indoor_floor_metadata",
-        "minzoom": 16.0,
+        "minzoom": 15.0,
         "slot": "middle",
         "filter": [
             "all",
@@ -85,7 +95,7 @@ const indoorLayers = [
         "id": "floor-current",
         "source": "indoor-source",
         "source-layer": "indoor_floor",
-        "minzoom": 16.0,
+        "minzoom": 15.0,
         "slot": "middle",
         "filter": isSelectedFloorBase(),
         "paint": {
@@ -139,7 +149,7 @@ const indoorLayers = [
                 ["zoom"],
                 16,
                 0,
-                17,
+                16.5,
                 1
             ],
             "fill-extrusion-color": [
@@ -187,7 +197,7 @@ const indoorLayers = [
                 ["zoom"],
                 16,
                 0,
-                17,
+                16.5,
                 0.4
             ],
             "line-color": "#a3a3d1"
@@ -214,7 +224,7 @@ const indoorLayers = [
                 ["zoom"],
                 16,
                 0,
-                17,
+                16.5,
                 1
             ],
             "fill-extrusion-color": "hsl(250, 75%, 90%)",
@@ -248,7 +258,7 @@ const indoorLayers = [
                 ["zoom"],
                 16,
                 0,
-                17,
+                16.5,
                 0.2
             ],
             "fill-extrusion-color": "#f8cf7e",
@@ -303,6 +313,15 @@ const indoorLayers = [
         "paint": {
             "text-halo-color": "#ffffff",
             "text-halo-width": 1.3,
+            "text-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                17,
+                0,
+                17.5,
+                1
+            ],
             "text-color": [
                 "case",
                 ["match", ["get", "class"], ["retail"], true, false],
@@ -336,6 +355,15 @@ const indoorLayers = [
         },
         "paint": {
             "text-color": "hsl(0, 0%, 0%)",
+            "text-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                16,
+                0,
+                16.5,
+                1
+            ],
             "text-translate": [0, 0]
         }
     },
@@ -368,7 +396,16 @@ const indoorLayers = [
         "paint": {
             "text-halo-color": "#ffffff",
             "text-halo-width": 1.3,
-            "text-color": "hsl(0, 0%, 0%)"
+            "text-color": "hsl(0, 0%, 0%)",
+            "text-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                16,
+                0,
+                16.5,
+                1
+            ],
         }
     },
 ];
@@ -407,6 +444,7 @@ const style = {
                                 "building_ids": ["get", "building_ids"],
                                 "type": ["get", "type"],
                                 "name": ["get", "name"],
+                                "short_name": ["get", "short_name"],
                                 "z_index": ["get", "z_index"],
                                 "connected_floor_ids": ["get", "connected_floor_ids"],
                                 "conflicted_floor_ids": ["get", "conflicted_floor_ids"]

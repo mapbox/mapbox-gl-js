@@ -10,16 +10,28 @@ export default class IndoorFeaturesStorage {
         this._buildings = new Map();
     }
 
-    append(indoorData: IndoorData) {
+    append(indoorData: IndoorData): boolean {
         const building = indoorData.building;
-        const buildingId = building.properties.id as string;
-        if (buildingId) {
-            this._buildings.set(buildingId, building);
+        let hasChanges = false;
+        if (building) {
+            const buildingId = building.properties.id as string;
+            if (buildingId) {
+                this._buildings.set(buildingId, building);
+                if (!hasChanges && !this._buildings.has(buildingId)) {
+                    hasChanges = true;
+                }
+            }
         }
 
         indoorData.floors.forEach(newFloor => {
-            this._floors.set(newFloor.properties.id as string, newFloor);
+            const floorId = newFloor.properties.id as string;
+            if (!hasChanges && !this._floors.has(floorId)) {
+                hasChanges = true;
+            }
+            this._floors.set(floorId, newFloor);
         });
+
+        return hasChanges;
     }
 
     clear() {
@@ -28,16 +40,19 @@ export default class IndoorFeaturesStorage {
     }
 
     getFloors(buildingId: string | null = null): Array<TargetFeature> {
+        const floorFeatures = Array.from(this._floors.values());
         if (buildingId) {
-            return Array.from(this._floors.values()).filter(floor => {
+            const floors = floorFeatures.filter(floor => {
                 const buildingIds = floor.properties.building_ids as string;
                 if (!buildingIds) {
                     return false;
                 }
                 const buildingIdsArray = buildingIds.split(';');
-                return buildingIdsArray.includes(buildingId);
+                const isBuildingId = buildingIdsArray.includes(buildingId);
+                return isBuildingId;
             });
+            return floors;
         }
-        return Array.from(this._floors.values());
+        return floorFeatures;
     }
 }
