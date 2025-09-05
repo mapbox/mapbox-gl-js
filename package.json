@@ -167,7 +167,7 @@
     "print-release-url": "node build/print-release-url.js",
     "size": "size-limit",
     "check-size": "tsx build/check-size.ts",
-    "check-ts-suppressions": "node build/check-ts-suppressions.js",
+    "check-ts-suppressions": "tsx build/check-ts-suppressions.ts",
     "codegen": "tsx ./build/generate-style-code.ts && tsx ./build/generate-struct-arrays.ts && tsx ./build/generate-typed-style-spec.ts",
     "tsc": "tsc --project tsconfig.json",
     "publish-alpha": "./build/publish_alpha.sh"
