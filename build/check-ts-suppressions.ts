@@ -58,7 +58,7 @@ const currentSha = process.env.COMMIT_SHA || execSync('git rev-parse HEAD').toSt
 const priorCommit = process.env.PRIOR_COMMIT_SHA;
 
 // Fetch prior suppressions
-const priorSuppressions: number | undefined = await getCheckSummary(priorCommit, CHECK_NAME).then(summary => JSON.parse(summary) as number | undefined);
+const priorSuppressions: number | undefined = await getCheckSummary(priorCommit, CHECK_NAME).then(summary => (summary ? JSON.parse(summary) as number : undefined));
 
 // Calculate new suppressions
 const newSuppressions: number = await getSuppressions();
