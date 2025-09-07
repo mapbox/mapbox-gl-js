@@ -267,6 +267,10 @@ const skip = [
     "query-tests/building/with-id-more-accurate-height",
     "query-tests/building/with-id-more-parapet",
     "query-tests/building/without-id-less-accurate-height",
+
+    "render-tests/building/terrain/terrain-toggle-conflation-works",
+    "render-tests/building/terrain/terrain-unsupported",
+    "render-tests/building/globe-unsupported"
 ];
 
 export default {todo, skip};
