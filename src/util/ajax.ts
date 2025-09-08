@@ -101,9 +101,7 @@ export class AJAXError extends Error {
 // to the string(!) "null" (Firefox), or "file://" (Chrome, Safari, Edge, IE),
 // and we will set an empty referrer. Otherwise, we're using the document's URL.
 export const getReferrer: () => string = isWorker() ?
-// @ts-expect-error - TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'? | TS2551 - Property 'worker' does not exist on type 'Window & typeof globalThis'. Did you mean 'Worker'?
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    () => self.worker.referrer :
+    () => (self as typeof self & {worker: {referrer: string}}).worker.referrer :
     () => (location.protocol === 'blob:' ? parent : self).location.href;
 
 // Determines whether a URL is a file:// URL. This is obviously the case if it begins

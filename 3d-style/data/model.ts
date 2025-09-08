@@ -84,7 +84,7 @@ export type Mesh = {
     texcoordBuffer: VertexBuffer;
     colorArray: StructArray;
     colorBuffer: VertexBuffer;
-    featureData: ArrayBufferView;
+    featureData: Uint32Array | Float32Array;
     featureArray: FeatureVertexArray;
     pbrBuffer: VertexBuffer;
     material: Material;

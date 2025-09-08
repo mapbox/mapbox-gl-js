@@ -165,8 +165,7 @@ function intersectsFrustum(frustum: Frustum, aabbPoints: Array<vec3>): number {
         let pointsInside = 0;
 
         for (let i = 0; i < aabbPoints.length; i++) {
-            // @ts-expect-error - TS2365 - Operator '+=' cannot be applied to types 'number' and 'boolean'. | TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'ReadonlyVec3'.
-            pointsInside += vec3.dot(plane, aabbPoints[i]) + plane[3] >= 0;
+            pointsInside += +(vec3.dot(plane as vec3, aabbPoints[i]) + plane[3] >= 0);
         }
 
         if (pointsInside === 0)

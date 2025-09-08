@@ -60,6 +60,7 @@ export default class MapWorker {
     isSpriteLoaded: WorkerScopeRegistry<boolean>;
     referrer: string | null | undefined;
     dracoUrl: string | null | undefined;
+    meshoptUrl: string | null | undefined;
     brightness: number | null | undefined;
     imageRasterizer: ImageRasterizer;
     worldview: string | undefined;

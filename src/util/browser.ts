@@ -40,8 +40,7 @@ const exported = {
         return {cancel: () => cancelAnimationFrame(frame)};
     },
 
-    getImageData(img: CanvasImageSource, padding: number = 0): ImageData {
-        // @ts-expect-error - TS2339 - Property 'width' does not exist on type 'CanvasImageSource'. | TS2339 - Property 'height' does not exist on type 'CanvasImageSource'.
+    getImageData(img: ImageBitmap | HTMLImageElement, padding: number = 0): ImageData {
         const {width, height} = img;
 
         if (!canvas) {
@@ -54,17 +53,12 @@ const exported = {
         }
 
         if (width > canvas.width || height > canvas.height) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             canvas.width = width;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             canvas.height = height;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         context.clearRect(-padding, -padding, width + 2 * padding, height + 2 * padding);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         context.drawImage(img, 0, 0, width, height);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return context.getImageData(-padding, -padding, width + 2 * padding, height + 2 * padding);
     },
 

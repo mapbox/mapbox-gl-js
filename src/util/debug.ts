@@ -15,7 +15,7 @@ import type {OverscaledTileID} from '../source/tile_id';
  */
 export const Debug: {
     debugCanvas: HTMLCanvasElement | null | undefined;
-    aabbCorners: Array<vec3>;
+    aabbCorners: Array<Array<vec3>>;
     extend: (...args: unknown[]) => void;
     run: (...args: unknown[]) => void;
     drawAabbs: (...args: unknown[]) => void;
@@ -91,7 +91,6 @@ export const Debug: {
         const ecefToCameraMatrix = mat4.multiply([], tr._camera.getWorldToCamera(tr.worldSize, 1), tr.globeMatrix);
 
         if (!tr.freezeTileCoverage) {
-            // @ts-expect-error - TS2322 - Type 'vec3[][]' is not assignable to type 'vec3[]'.
             Debug.aabbCorners = coords.map(coord => {
                 // Get tile AABBs in world/pixel space scaled by worldSize
                 const aabb = aabbForTileOnGlobe(tr, tr.worldSize, coord.canonical, false);
@@ -115,20 +114,16 @@ export const Debug: {
         ctx.lineWidth = 1.5;
 
         for (let i = 0; i <  tileCount; i++) {
-            // @ts-expect-error - TS2345 - Argument of type '(ecef: any) => vec3' is not assignable to parameter of type '((value: number, index: number, array: Float32Array) => number) & ((value: number, index: number, array: number[]) => vec3)'.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-            const pixelCorners = Debug.aabbCorners[i].map(ecef => {
+            const pixelCorners = Debug.aabbCorners[i].map((ecef: vec3) => {
                 // Clipping to prevent visual artifacts.
                 // We don't draw any lines if one of their points is behind the camera.
                 // This means that AABBs close to the camera may appear to be missing.
                 // (A more correct algorithm would shorten the line segments instead of removing them entirely.)
                 // Full AABBs can be viewed by enabling `map.transform.freezeTileCoverage` and panning.
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const cameraPos = vec3.transformMat4([], ecef, ecefToCameraMatrix);
 
                 if (cameraPos[2] > 0) { return null; }
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 return vec3.transformMat4([], ecef, ecefToPixelMatrix);
             });
             ctx.strokeStyle = `hsl(${360 * i / tileCount}, 100%, 50%)`;

@@ -593,7 +593,7 @@ class Tiled3dModelBucket implements Bucket {
         hidden: boolean;
         verticalScale: number;
     } | null | undefined {
-        const candidates = [];
+        const candidates: number[] = [];
 
         const tmpVertex = [0, 0, 0];
 
@@ -620,7 +620,6 @@ class Tiled3dModelBucket implements Bucket {
             const heightValue = mesh.heightmap[heightmapIndex];
             if (heightValue < 0 && nodeInfo.node.footprint) {
                 // unpopulated cell. If it is in the building footprint, return undefined height
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 nodeInfo.node.footprint.grid.query(new Point(x, y), new Point(x, y), candidates);
                 if (candidates.length > 0) {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -629,8 +628,7 @@ class Tiled3dModelBucket implements Bucket {
                 continue;
             }
             if (nodeInfo.hiddenByReplacement) return; // better luck with the next source
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            return {height: heightValue, maxHeight: nodeInfo.feature.properties["height"], hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
+            return {height: heightValue, maxHeight: nodeInfo.feature.properties["height"] as number, hidden: false, verticalScale: nodeInfo.evaluatedScale[2]};
         }
     }
 }
@@ -669,7 +667,7 @@ function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: 
     const emissionMultiplierValueStart = clamp(heightBasedEmissionMultiplierParams[2], 0, 1);
     const emissionMultiplierValueFinish = clamp(heightBasedEmissionMultiplierParams[3], 0, 1);
 
-    let a3, b0, b1, b2;
+    let a3: number, b0: number, b1: number, b2: number;
 
     if (emissionMultiplierStart !== emissionMultiplierFinish && zMax !== zMin &&
         emissionMultiplierFinish !== emissionMultiplierStart) {
@@ -687,13 +685,11 @@ function addPBRVertex(vertexArray: FeatureVertexArray, color: number, colorMix: 
         b2 = 1;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     vertexArray.emplaceBack(a0, a1, a2, a3, b0, b1, b2);
     if (lightsFeatureArray) {
         const size = lightsFeatureArray.length;
         lightsFeatureArray.clear();
         for (let j = 0; j < size; j++) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             lightsFeatureArray.emplaceBack(a0, a1, a2, a3, b0, b1, b2);
         }
     }
@@ -708,11 +704,8 @@ function updateNodeFeatureVertices(nodeInfo: Tiled3dModelFeature, doorLightChang
         if (!mesh.featureData) continue;
         // initialize featureArray
         mesh.featureArray = new FeatureVertexArray();
-        // @ts-expect-error - TS2339 - Property 'length' does not exist on type 'ArrayBufferView'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         mesh.featureArray.reserve(mesh.featureData.length);
         let pendingDoorLightUpdate = doorLightChanged;
-        // @ts-expect-error - TS2488 - Type 'ArrayBufferView' must have a '[Symbol.iterator]()' method that returns an iterator.
         for (const feature of mesh.featureData) {
             // V1 and V2 tiles have a different bit structure
             // In V2, meshopt compression forces to use values less than 2^24 to not lose any information
