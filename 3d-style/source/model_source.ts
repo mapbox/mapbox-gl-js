@@ -65,17 +65,12 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
     load(): void {
         const modelPromises = [];
 
-        // @ts-expect-error - TS2339 - Property 'models' does not exist on type 'ModelSourceSpecification'.
         for (const modelId in this._options.models) {
-            // @ts-expect-error - TS2339 - Property 'models' does not exist on type 'ModelSourceSpecification'.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const modelSpec = this._options.models[modelId];
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const modelPromise = loadGLTF(this.map._requestManager.transformRequest(modelSpec.uri, ResourceType.Model).url).then(gltf => {
                 if (!gltf) return;
                 const nodes = convertModel(gltf);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 const model = new Model(modelId, modelSpec.position, modelSpec.orientation, nodes);
                 model.computeBoundsAndApplyParent();
                 this.models.push(model);

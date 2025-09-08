@@ -1315,6 +1315,108 @@
       }
     }
   },
+  "modelNodeOverride": {
+       "orientation": {
+         "type": "array",
+         "value": "number",
+         "length": 3,
+         "default": [0, 0, 0],
+         "period": 360,
+         "units": "degrees",
+         "doc": "Override the orientation of the model node in euler angles [x, y, z]."
+       }
+  },
+  "modelNodeOverrides": {
+    "*": {
+       "type": "modelNodeOverride",
+       "doc": "An object defining model node properties to override. Object key is the node name as defined in the model."
+    }
+  },
+  "modelMaterialOverride": {
+    "model-color": {
+      "type": "color",
+      "doc": "Override the tint color of the material."
+    },
+    "model-color-mix-intensity": {
+      "type": "number",
+      "doc": "Override the intensity of model-color (on a scale from 0 to 1) in color mix with original 3D model's colors."
+    },
+    "model-opacity": {
+      "type": "number",
+      "doc": "Override the opacity of the material."
+    },
+    "model-emissive-strength": {
+      "type": "number",
+      "units": "intensity",
+      "doc": "Override strength of the emission of material."
+    }
+  },
+  "modelMaterialOverrides": {
+    "*": {
+       "type": "modelMaterialOverride",
+        "doc": "An object defining material properties to override. Object key is the material name as defined in the model."
+    }
+  },
+  "modelSourceModel": {
+      "uri": {
+        "type": "string",
+        "required": true,
+        "doc": "A URL to a model resource. Supported protocols are `http:`, `https:`, and `mapbox://<Model ID>`."
+      },
+      "position": {
+        "type": "array",
+        "value": "number",
+        "length": 2,
+        "required": false,
+        "default": [0,0],
+        "minimum": [-180, -90],
+        "maximum": [180, 90],
+        "doc": "Position of the model in longitude and latitude [lng, lat]."
+      },
+      "orientation": {
+        "type": "array",
+        "value": "number",
+        "length": 3,
+        "required": false,
+        "default": [0,0,0],
+        "period": 360,
+        "units": "degrees",
+        "doc": "Orientation of the model in euler angles [x, y, z]."
+      },
+      "nodeOverrides": {
+        "type": "modelNodeOverrides",
+        "required": false,
+        "doc": "A collection of node overrides."
+      },
+      "materialOverrides": {
+        "type": "modelMaterialOverrides",
+        "required": false,
+        "doc": "A collection of material overrides."
+      },
+      "nodeOverrideNames": {
+        "type": "array",
+        "value": "string",
+        "doc" : "An array of one or more model node names whose transform will be overridden from model layer paint properties.",
+        "required": false
+      },
+      "materialOverrideNames": {
+        "type": "array",
+        "value": "string",
+        "doc" : "An array of one or more model material names whose properties will be overridden from model layer paint properties.",
+        "required": false
+      },
+      "featureProperties": {
+        "type": "*",
+        "doc": "An object defining custom properties of the model. Properties are accessible as feature properties in expressions.",
+        "required": false
+      }
+  },
+  "modelSourceModels": {
+    "*": {
+       "type": "modelSourceModel",
+       "doc": "A 3D model and its properties."
+    }
+  },
   "source_model" : {
     "type": {
       "required": true,
@@ -1342,7 +1444,11 @@
     "tiles": {
       "type": "array",
       "value": "string",
-      "doc": "An array of one or more tile source URLs, as in the TileJSON spec."
+      "doc": "An array of one or more tile source URLs, as in the TileJSON spec. Requires `batched-model` source type."
+    },
+    "models": {
+      "type": "modelSourceModels",
+      "doc": "Defines properties of 3D models in collection. Requires `model` source type."
     }
   },
   "layer": {
@@ -10983,6 +11089,32 @@
       "sdk-support": {
         "basic functionality": {
           "js": "3.5.0"
+        }
+      }
+    },
+    "model-elevation-reference": {
+      "type": "enum",
+      "doc": "Selects the base of the model. Some modes might require precomputed elevation data in the tileset.",
+      "values": {
+        "sea": {
+          "doc": "Elevated rendering is enabled. Use this mode to elevate models relative to the sea level."
+        },
+        "ground": {
+          "doc": "Elevated rendering is enabled. Use this mode to elevate models relative to the ground's height below them."
+        },
+        "hd-road-markup": {
+          "doc": "Elevated rendering is enabled. Use this mode to describe additive and stackable features that should exist only on top of road polygons."
+        }
+      },
+      "default": "ground",
+      "transition": false,
+      "expression": {
+        "interpolated": false
+      },
+      "property-type": "data-constant",
+      "experimental": true,
+      "sdk-support": {
+        "basic functionality": {
         }
       }
     }

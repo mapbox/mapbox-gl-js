@@ -130,6 +130,35 @@ export type ModelsSpecification = {
     [_: string]: ModelSpecification
 };
 
+export type ModelNodeOverrideSpecification = {
+    "orientation"?: [number, number, number]
+};
+export type ModelNodeOverridesSpecification = {
+    [_: string]: ModelNodeOverrideSpecification
+};
+export type ModelMaterialOverrideSpecification = {
+    "model-color"?: ColorSpecification,
+    "model-color-mix-intensity"?: number,
+    "model-opacity"?: number,
+    "model-emissive-strength"?: number
+};
+export type ModelMaterialOverridesSpecification = {
+    [_: string]: ModelMaterialOverrideSpecification
+};
+export type ModelSourceModelsSpecification = {
+    [_: string]: ModelSourceModelSpecification
+};
+export type ModelSourceModelSpecification = {
+    "uri": string,
+    "position"?: [number, number],
+    "orientation"?: [number, number, number],
+    "nodeOverrides"?: ModelNodeOverridesSpecification,
+    "materialOverrides"?: ModelMaterialOverridesSpecification,
+    "nodeOverrideNames"?: Array<string>,
+    "materialOverrideNames"?: Array<string>,
+    "featureProperties"?: unknown
+};
+
 export type IconsetsSpecification = {
     [_: string]: IconsetSpecification
 };
@@ -499,7 +528,8 @@ export type ModelSourceSpecification = {
     "type": "model" | "batched-model",
     "maxzoom"?: number,
     "minzoom"?: number,
-    "tiles"?: Array<string>
+    "tiles"?: Array<string>,
+    "models"?: ModelSourceModelsSpecification
 };
 
 export type SourceSpecification =
@@ -1367,7 +1397,11 @@ export type ModelLayerSpecification = {
         "model-height-based-emissive-strength-multiplier"?: DataDrivenPropertyValueSpecification<[number, number, number, number, number]>,
         "model-height-based-emissive-strength-multiplier-transition"?: TransitionSpecification,
         "model-cutoff-fade-range"?: ExpressionSpecification,
-        "model-front-cutoff"?: PropertyValueSpecification<[number, number, number]>
+        "model-front-cutoff"?: PropertyValueSpecification<[number, number, number]>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "model-elevation-reference"?: "sea" | "ground" | "hd-road-markup" | ExpressionSpecification
     },
     "appearances"?: Array<AppearanceSpecification>
 };

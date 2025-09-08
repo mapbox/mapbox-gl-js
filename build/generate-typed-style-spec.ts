@@ -372,6 +372,13 @@ ${tsObjectDeclaration('SourcesSpecification', spec.sources)}
 
 ${tsObjectDeclaration('ModelsSpecification', spec.models)}
 
+${tsObjectDeclaration('ModelNodeOverrideSpecification', spec.modelNodeOverride)}
+${tsObjectDeclaration('ModelNodeOverridesSpecification', spec.modelNodeOverrides)}
+${tsObjectDeclaration('ModelMaterialOverrideSpecification', spec.modelMaterialOverride)}
+${tsObjectDeclaration('ModelMaterialOverridesSpecification', spec.modelMaterialOverrides)}
+${tsObjectDeclaration('ModelSourceModelsSpecification', spec.modelSourceModels)}
+${tsObjectDeclaration('ModelSourceModelSpecification', spec.modelSourceModel)}
+
 ${tsObjectDeclaration('IconsetsSpecification', spec.iconsets)}
 
 ${tsObjectDeclaration('LightSpecification', spec.light)}
