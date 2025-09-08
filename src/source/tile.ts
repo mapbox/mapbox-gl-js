@@ -654,8 +654,7 @@ class Tile {
             const imagePositions: SpritePositions = this.imageAtlas ? Object.fromEntries(this.imageAtlas.patternPositions) : {};
             const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
             const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
-            const updatesWithoutStateDependentLayers = withStateUpdates && !bucket.stateDependentLayers.length;
-            if (!updatesWithoutStateDependentLayers || isBrightnessChanged) {
+            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged) {
                 bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
             }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {

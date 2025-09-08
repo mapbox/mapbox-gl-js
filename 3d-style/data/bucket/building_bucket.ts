@@ -724,6 +724,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
         }
 
         this.groundEffect.prepareBorderSegments();
+        this.evaluate(this.layers[0], {});
 
         PerformanceUtils.endMeasure(m);
     }
