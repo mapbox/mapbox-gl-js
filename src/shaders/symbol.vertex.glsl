@@ -255,6 +255,10 @@ void main() {
     out_fade_opacity *= occludedFadeMultiplier;
 #endif
 
+#ifdef Z_TEST_OCCLUSION
+    out_fade_opacity *= occlusion_opacity;
+#endif
+
     float alpha = opacity * out_fade_opacity;
     float hidden = float(alpha == 0.0 || projected_point.w <= 0.0 || occlusion_fade == 0.0);
 
