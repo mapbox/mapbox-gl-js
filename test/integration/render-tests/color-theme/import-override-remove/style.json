@@ -53,10 +53,6 @@
         }
       }
   ],
-  "fog": {
-    "range": [-0.5, 10.0],
-    "color": "yellow"
-  },
   "terrain": {
     "source": "rgbterrain",
     "exaggeration": 0.5
