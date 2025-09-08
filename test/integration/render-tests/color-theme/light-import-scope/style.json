@@ -59,16 +59,6 @@
     "range": [-0.5, 10.0],
     "color": "yellow"
   },
-  "models": {
-    "maple": "local://models/maple.glb",
-    "maple1": "local://models/maple1.glb",
-    "maple2": "local://models/maple2.glb",
-    "oak1": "local://models/oak1.glb",
-    "oak2": "local://models/oak2.glb",
-    "oak3": "local://models/oak3.glb",
-    "spur1": "local://models/spur1.glb",
-    "spur2": "local://models/spur2.glb"
-  },
   "terrain": {
     "source": "rgbterrain",
     "exaggeration": 0.5
@@ -89,24 +79,6 @@
       "tiles": [
         "local://tiles/{z}-{x}-{y}.vector.pbf"
       ]
-    },
-    "trees": {
-      "type": "vector",
-      "minzoom": 15,
-      "maxzoom": 15,
-      "tiles": [
-        "local://tiles/trees/{z}-{x}-{y}.pbf"
-      ]
-    },
-    "model": {
-      "type": "model",
-      "models": {
-        "model-1" : {
-          "uri": "local://models/low-poly-car.gltf",
-          "position": [-122.4027, 37.7845],
-          "orientation": [0, 0, 0]
-        }
-      }
     }
   },
   "pitch": 70,
@@ -131,15 +103,6 @@
       "type": "background",
       "paint": {
         "background-color": "blue"
-      }
-    },
-    {
-      "id": "land",
-      "type": "fill",
-      "source": "mapbox",
-      "source-layer": "water",
-      "paint": {
-        "fill-color": "lightblue"
       }
     },
     {
