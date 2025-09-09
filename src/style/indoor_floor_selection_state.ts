@@ -1,12 +1,11 @@
 import IndoorFeaturesStorage from './indoor_features_storage';
 
-import type {TargetFeature} from '../util/vectortile_to_geojson';
-import type {IndoorData} from './indoor_data_query';
+import type {IndoorData, IndoorDataFloor} from './indoor_data_query';
 
 export default class IndoorFloorSelectionState {
     _selectedFloorId: string | null;
     _selectedBuildingId: string | null;
-    _lastActiveFloors: Array<TargetFeature>;
+    _lastActiveFloors: Array<IndoorDataFloor>;
     _featuresStorage: IndoorFeaturesStorage;
 
     constructor() {
@@ -18,7 +17,7 @@ export default class IndoorFloorSelectionState {
 
     setIndoorData(indoorData: IndoorData): boolean {
         const hasChanges = this._featuresStorage.append(indoorData);
-        this._selectedBuildingId = indoorData.building ? indoorData.building.properties.id as string : null;
+        this._selectedBuildingId = indoorData.building ? indoorData.building.id : null;
         return hasChanges;
     }
 
@@ -30,7 +29,7 @@ export default class IndoorFloorSelectionState {
         return hasChanges;
     }
 
-    getCurrentBuildingSelection(): {selectedFloorId: string | null, floors: Array<TargetFeature>} {
+    getCurrentBuildingSelection(): {selectedFloorId: string | null, floors: Array<IndoorDataFloor>} {
         if (!this._selectedBuildingId) {
             return {
                 selectedFloorId: null,
@@ -41,7 +40,7 @@ export default class IndoorFloorSelectionState {
         const currentBuildingFloors = this._featuresStorage.getFloors(this._selectedBuildingId);
         const activeFloors = this.getActiveFloors();
         const currentBuildingActiveFloor = activeFloors.find(floor => {
-            const buildingIdsString = floor.properties.building_ids as string;
+            const buildingIdsString = floor.buildingIds;
             if (!buildingIdsString) {
                 return false;
             }
@@ -50,16 +49,16 @@ export default class IndoorFloorSelectionState {
         });
 
         return {
-            selectedFloorId: currentBuildingActiveFloor ? currentBuildingActiveFloor.properties.id as string : null,
+            selectedFloorId: currentBuildingActiveFloor ? currentBuildingActiveFloor.id : null,
             floors: currentBuildingFloors
         };
     }
 
-    getActiveFloors(isExplicitSelection: boolean = false): Array<TargetFeature> {
+    getActiveFloors(isExplicitSelection: boolean = false): Array<IndoorDataFloor> {
         const allFloors = this._featuresStorage.getFloors();
-        const selectedFloor = allFloors.find(floor => floor.properties.id as string === this._selectedFloorId);
-        const defaultFloors = allFloors.filter(floor => floor.properties.is_default === true);
-        let currentActiveFloors: Array<TargetFeature> = [];
+        const selectedFloor = allFloors.find(floor => floor.id === this._selectedFloorId);
+        const defaultFloors = allFloors.filter(floor => floor.isDefault === true);
+        let currentActiveFloors: Array<IndoorDataFloor> = [];
 
         if (!selectedFloor) {
             if (defaultFloors.length === 0) {
@@ -74,13 +73,13 @@ export default class IndoorFloorSelectionState {
         }
 
         const nonConflictedFloors = this._getNonConflictingLastActiveFloors(currentActiveFloors);
-        const activeFloors: Array<TargetFeature> = [...currentActiveFloors, ...nonConflictedFloors];
+        const activeFloors: Array<IndoorDataFloor> = [...currentActiveFloors, ...nonConflictedFloors];
         this._lastActiveFloors = activeFloors;
         return activeFloors;
     }
 
     hasBuildingChanged(indoorData: IndoorData): boolean {
-        return this._selectedBuildingId !== (indoorData.building ? indoorData.building.properties.id : null);
+        return this._selectedBuildingId !== (indoorData.building ? indoorData.building.id : null);
     }
 
     hasActiveBuilding(): boolean {
@@ -91,7 +90,7 @@ export default class IndoorFloorSelectionState {
         return this._selectedFloorId === null && this._selectedBuildingId === null && this._lastActiveFloors.length === 0;
     }
 
-    _calculateCurrentActiveFloors(allFloors: Array<TargetFeature>, selectedFloor: TargetFeature, defaultFloors: Array<TargetFeature>, isExplicitSelection: boolean): Array<TargetFeature> {
+    _calculateCurrentActiveFloors(allFloors: Array<IndoorDataFloor>, selectedFloor: IndoorDataFloor, defaultFloors: Array<IndoorDataFloor>, isExplicitSelection: boolean): Array<IndoorDataFloor> {
         if (!selectedFloor) {
             return this._getNonConflictingDefaultFloors(this._lastActiveFloors, defaultFloors);
         }
@@ -106,15 +105,15 @@ export default class IndoorFloorSelectionState {
         }
     }
 
-    _getConnectedFloors(selectedFloor: TargetFeature, allFloors: Array<TargetFeature>): Array<TargetFeature> {
-        const connectedFloorsString = selectedFloor.properties.connected_floor_ids as string;
+    _getConnectedFloors(selectedFloor: IndoorDataFloor, allFloors: Array<IndoorDataFloor>): Array<IndoorDataFloor> {
+        const connectedFloorsString = selectedFloor.connectedFloorIds;
         if (!connectedFloorsString) return [];
 
         const connectedFloorIds = new Set(connectedFloorsString.split(';'));
-        return allFloors.filter(floor => connectedFloorIds.has(floor.properties.id as string));
+        return allFloors.filter(floor => connectedFloorIds.has(floor.id));
     }
 
-    _buildExplicitSelectionFloors(selectedFloor: TargetFeature, connectedFloors: Array<TargetFeature>, defaultFloors: Array<TargetFeature>): Array<TargetFeature> {
+    _buildExplicitSelectionFloors(selectedFloor: IndoorDataFloor, connectedFloors: Array<IndoorDataFloor>, defaultFloors: Array<IndoorDataFloor>): Array<IndoorDataFloor> {
         const baseFloors = [selectedFloor, ...connectedFloors];
 
         const nonConflictingLastActive = this._getNonConflictingLastActiveFloors(baseFloors);
@@ -122,45 +121,45 @@ export default class IndoorFloorSelectionState {
 
         const uniqueActiveFloors = this._deduplicateFloors(allActiveFloors);
         const conflictingIds = this._getConflictingFloorIdsFrom(uniqueActiveFloors);
-        const nonConflictingDefaults = defaultFloors.filter(floor => !conflictingIds.has(floor.properties.id as string));
+        const nonConflictingDefaults = defaultFloors.filter(floor => !conflictingIds.has(floor.id));
 
         const result = [...uniqueActiveFloors, ...nonConflictingDefaults];
         this._lastActiveFloors = result;
         return result;
     }
 
-    _buildImplicitSelectionFloors(connectedFloors: Array<TargetFeature>, defaultFloors: Array<TargetFeature>): Array<TargetFeature> {
+    _buildImplicitSelectionFloors(connectedFloors: Array<IndoorDataFloor>, defaultFloors: Array<IndoorDataFloor>): Array<IndoorDataFloor> {
         const conflictingIds = this._getConflictingFloorIdsFrom(this._lastActiveFloors);
-        const nonConflictingDefaults = defaultFloors.filter(floor => !conflictingIds.has(floor.properties.id as string));
+        const nonConflictingDefaults = defaultFloors.filter(floor => !conflictingIds.has(floor.id));
 
         const result = this._deduplicateFloors([...this._lastActiveFloors, ...nonConflictingDefaults]);
         this._lastActiveFloors = result;
         return result;
     }
 
-    _getNonConflictingDefaultFloors(lastActiveFloors: Array<TargetFeature>, defaultFloors: Array<TargetFeature>): Array<TargetFeature> {
+    _getNonConflictingDefaultFloors(lastActiveFloors: Array<IndoorDataFloor>, defaultFloors: Array<IndoorDataFloor>): Array<IndoorDataFloor> {
         const conflictingIds = this._getConflictingFloorIdsFrom(lastActiveFloors);
-        const nonConflictingDefaults = defaultFloors.filter(floor => !conflictingIds.has(floor.properties.id as string));
+        const nonConflictingDefaults = defaultFloors.filter(floor => !conflictingIds.has(floor.id));
 
         const result = this._deduplicateFloors([...lastActiveFloors, ...nonConflictingDefaults]);
         this._lastActiveFloors = result;
         return result;
     }
 
-    _deduplicateFloors(floors: Array<TargetFeature>): Array<TargetFeature> {
+    _deduplicateFloors(floors: Array<IndoorDataFloor>): Array<IndoorDataFloor> {
         const seenIds = new Set<string>();
         return floors.filter(floor => {
-            const id = floor.properties.id as string;
+            const id = floor.id;
             if (seenIds.has(id)) return false;
             seenIds.add(id);
             return true;
         });
     }
 
-    _getConflictingFloorIdsFrom(floors: Array<TargetFeature>): Set<string> {
+    _getConflictingFloorIdsFrom(floors: Array<IndoorDataFloor>): Set<string> {
         const conflictingIds = new Set<string>();
         floors.forEach(floor => {
-            const conflictedIds = floor.properties.conflicted_floor_ids as string;
+            const conflictedIds = floor.conflictedFloorIds;
             if (conflictedIds) {
                 conflictedIds.split(';').forEach(id => conflictingIds.add(id));
             }
@@ -168,16 +167,16 @@ export default class IndoorFloorSelectionState {
         return conflictingIds;
     }
 
-    _getNonConflictingLastActiveFloors(currentActiveFloors: Array<TargetFeature>): Array<TargetFeature> {
+    _getNonConflictingLastActiveFloors(currentActiveFloors: Array<IndoorDataFloor>): Array<IndoorDataFloor> {
         if (!this._lastActiveFloors || this._lastActiveFloors.length === 0) {
             return [];
         }
 
-        const activeFloorIds = new Set(currentActiveFloors.map(floor => floor.properties.id as string));
+        const activeFloorIds = new Set(currentActiveFloors.map(floor => floor.id));
         const activeFloorConflictedIds = this._getConflictingFloorIdsFrom(currentActiveFloors);
 
         return this._lastActiveFloors.filter(floor => {
-            const floorId = floor.properties.id as string;
+            const floorId = floor.id;
             if (activeFloorIds.has(floorId)) {
                 return false;
             }
@@ -191,10 +190,10 @@ export default class IndoorFloorSelectionState {
     }
 
     // Check if a floor is conflicted with any of the active floors
-    _isFloorConflicted(floor: TargetFeature, activeFloors: Array<TargetFeature>): boolean {
-        const floorId = floor.properties.id as string;
+    _isFloorConflicted(floor: IndoorDataFloor, activeFloors: Array<IndoorDataFloor>): boolean {
+        const floorId = floor.id;
         const hasFloorConflict = activeFloors.some(activeFloor => {
-            const conflictedFloorIdsString = activeFloor.properties.conflicted_floor_ids as string;
+            const conflictedFloorIdsString = activeFloor.conflictedFloorIds;
             if (!conflictedFloorIdsString) {
                 return false;
             }

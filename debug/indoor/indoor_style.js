@@ -1,11 +1,11 @@
 function isSelectedFloor() {
     // True if the current level is selected
-    return ["in", ["get", "floor_id"], ["config", "mbx-indoor-level-selected"]]
+    return ["in", ["get", "floor_id"], ["config", "activeFloors"]]
 }
 
 function isSelectedFloorBase() {
     // True if the current level is selected
-    return ["in", ["get", "id"], ["config", "mbx-indoor-level-selected"]]
+    return ["in", ["get", "id"], ["config", "activeFloors"]]
 }
 
 const indoorLayers = [
@@ -17,7 +17,7 @@ const indoorLayers = [
         "minzoom": 16.0,
         "filter": [
             "all",
-            [ ">", ["length", ["config", "mbx-indoor-level-selected"]], 0],
+            [ ">", ["length", ["config", "activeFloors"]], 0],
             ["==", ["get", "shape_type"], "building"],
         ],
         "layout": {
@@ -33,7 +33,7 @@ const indoorLayers = [
         "slot": "middle",
         "filter": [
             "all",
-            [ ">", ["length", ["config", "mbx-indoor-level-selected"]], 0],
+            [ ">", ["length", ["config", "activeFloors"]], 0],
             ["==", ["geometry-type"], "Polygon"],
             ["in", ["get", "shape_type"], ["literal", ["building"]]],
         ],
@@ -55,7 +55,7 @@ const indoorLayers = [
     // NOTE: In reality we mustn't rely on *_metadata layers, but in current example we need to use them due to internal implementation of indoor with QRF, this will be changed 
     {
         "type": "fill",
-        "id": "building-outline",
+        "id": "building-metadata",
         "source": "indoor-source",
         "source-layer": "indoor_structure_metadata",
         "minzoom": 15.0,
@@ -75,7 +75,7 @@ const indoorLayers = [
     // NOTE: In reality we mustn't rely on *_metadata layers, but in current example we need to use them due to internal implementation of indoor with QRF, this will be changed 
     {
         "type": "fill",
-        "id": "floor-outline",
+        "id": "floor-metadata",
         "source": "indoor-source",
         "source-layer": "indoor_floor_metadata",
         "minzoom": 15.0,
@@ -421,11 +421,17 @@ const style = {
         url: '',
         data: {
             version: 8,
+            schema: {
+                "activeFloors": {
+                    "default": "[]",
+                }
+            },
+            // NOTE: In reality we mustn't rely on *_metadata layers, but in current example we need to use them due to internal implementation of indoor with QRF, this will be changed
             featuresets: {
-                "building-outline": {
+                "building-metadata": {
                     "selectors": [
                         {
-                            "layer": "building-outline",
+                            "layer": "building-metadata",
                             "properties": {
                                 "id": ["get", "id"],
                                 "type": ["get", "type"],
@@ -434,10 +440,10 @@ const style = {
                         }
                     ]
                 },
-                "floor-outline": {
+                "floor-metadata": {
                     "selectors": [
                         {
-                            "layer": "floor-outline",
+                            "layer": "floor-metadata",
                             "properties": {
                                 "id": ["get", "id"],
                                 "is_default": ["get", "is_default"],
@@ -459,9 +465,10 @@ const style = {
                     "url": "mapbox://mapbox-geodata.indoor-v2-next"
                 }
             },
+            // Left it style but empty as indoor_manager depends on it to be present, will change it in future
             indoor: {
-                floorplanFeaturesetId: "floorplan-detection",
-                buildingFeaturesetId: "building-entry"
+                floorplanFeaturesetId: "",
+                buildingFeaturesetId: ""
             },
             layers: indoorLayers,
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"

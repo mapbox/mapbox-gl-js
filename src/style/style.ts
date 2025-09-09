@@ -62,7 +62,6 @@ import {DEFAULT_MAX_ZOOM, DEFAULT_MIN_ZOOM} from '../geo/transform';
 import {RGBAImage} from '../util/image';
 import {evaluateColorThemeProperties} from '../util/lut';
 import EvaluationParameters from './evaluation_parameters';
-import {expandSchemaWithIndoor} from './indoor_manager';
 import featureFilter from '../style-spec/feature_filter/index';
 import {TargetFeature} from '../util/vectortile_to_geojson';
 import {loadIconset} from './load_iconset';
@@ -749,8 +748,6 @@ class Style extends Evented<MapEvents> {
     }
 
     _load(json: StyleSpecification, validate: boolean) {
-        const schema = json.indoor ? expandSchemaWithIndoor(json.schema) : json.schema;
-
         // This style was loaded as a root style, but it is marked as a fragment and/or has a schema. We instead load
         // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
         if (this._isInternalStyle(json)) {
@@ -760,7 +757,7 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        this.updateConfig(this._config, schema);
+        this.updateConfig(this._config, json.schema);
 
         if (validate && emitValidationErrors(this, validateStyle(json))) {
             return;
@@ -2395,7 +2392,7 @@ class Style extends Evented<MapEvents> {
         const fragmentStyle = this.getFragmentStyle(fragmentId);
         if (!fragmentStyle) return;
 
-        const schema = fragmentStyle.stylesheet.indoor ? expandSchemaWithIndoor(fragmentStyle.stylesheet.schema) : fragmentStyle.stylesheet.schema;
+        const schema = fragmentStyle.stylesheet.schema;
         if (!schema || !schema[key]) return;
 
         const expressionParsed = createExpression(value);

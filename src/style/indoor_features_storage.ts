@@ -1,9 +1,8 @@
-import type {TargetFeature} from "../util/vectortile_to_geojson";
-import type {IndoorData} from "./indoor_data_query";
+import type {IndoorData, IndoorDataBuilding, IndoorDataFloor} from "./indoor_data_query";
 
 export default class IndoorFeaturesStorage {
-    _floors: Map<string, TargetFeature>;
-    _buildings: Map<string, TargetFeature>;
+    _floors: Map<string, IndoorDataFloor>;
+    _buildings: Map<string, IndoorDataBuilding>;
 
     constructor() {
         this._floors = new Map();
@@ -14,7 +13,7 @@ export default class IndoorFeaturesStorage {
         const building = indoorData.building;
         let hasChanges = false;
         if (building) {
-            const buildingId = building.properties.id as string;
+            const buildingId = building.id;
             if (buildingId) {
                 this._buildings.set(buildingId, building);
                 if (!hasChanges && !this._buildings.has(buildingId)) {
@@ -24,7 +23,7 @@ export default class IndoorFeaturesStorage {
         }
 
         indoorData.floors.forEach(newFloor => {
-            const floorId = newFloor.properties.id as string;
+            const floorId = newFloor.id;
             if (!hasChanges && !this._floors.has(floorId)) {
                 hasChanges = true;
             }
@@ -39,11 +38,11 @@ export default class IndoorFeaturesStorage {
         this._buildings.clear();
     }
 
-    getFloors(buildingId: string | null = null): Array<TargetFeature> {
+    getFloors(buildingId: string | null = null): Array<IndoorDataFloor> {
         const floorFeatures = Array.from(this._floors.values());
         if (buildingId) {
             const floors = floorFeatures.filter(floor => {
-                const buildingIds = floor.properties.building_ids as string;
+                const buildingIds = floor.buildingIds;
                 if (!buildingIds) {
                     return false;
                 }

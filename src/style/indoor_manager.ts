@@ -4,7 +4,6 @@ import {type IndoorData, IndoorDataQuery} from './indoor_data_query';
 import IndoorFloorSelectionState from './indoor_floor_selection_state';
 
 import type {Map} from '../ui/map';
-import type {SchemaSpecification} from '../style-spec/types';
 import type Style from './style';
 
 type IndoorEvents = {
@@ -18,17 +17,6 @@ type IndoorEvents = {
         }>;
     };
 };
-
-const indoorSchemaExtension: SchemaSpecification = {
-    "mbx-indoor-level-selected": {
-        "default": ["literal", []]
-    },
-};
-
-export function expandSchemaWithIndoor(schema?: SchemaSpecification): SchemaSpecification {
-    schema = schema ? schema : {};
-    return Object.assign(schema, indoorSchemaExtension);
-}
 
 export default class IndoorManager extends Evented<IndoorEvents> {
     _map: Map;
@@ -71,11 +59,11 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     // the manager gets automatically enabled and it starts querying features.
     _onLoad() {
         this._map.style.forEachFragmentStyle((style: Style) => {
-            // Find a style with an indoor property
+            // Find a style import with an indoor property
             if (style.stylesheet.indoor) {
                 if (!this._indoorDataQuery) {
                     this._scope = style.scope;
-                    this._indoorDataQuery = new IndoorDataQuery(this._scope);
+                    this._indoorDataQuery = new IndoorDataQuery();
                 } else {
                     this.fire(new ErrorEvent(new Error('Multiple indoor map styles detected, simultaneous usage is not allowed currently.')));
                 }
@@ -141,16 +129,16 @@ export default class IndoorManager extends Evented<IndoorEvents> {
 
         this._floorSelectionState.reset();
         this._updateIndoorSelector();
-        this._map.setConfigProperty(this._scope, "mbx-indoor-level-selected", ["literal", []]);
+        this._map.setConfigProperty(this._scope, "activeFloors", ["literal", []]);
     };
 
     _updateIndoorSelector() {
         const currentBuildingSelection = this._floorSelectionState.getCurrentBuildingSelection();
         const floors = currentBuildingSelection.floors.map((floor) => ({
-            id: floor.properties.id as string,
-            name: floor.properties.name as string,
-            shortName: floor.properties.z_index as string,
-            levelOrder: floor.properties.z_index as number
+            id: floor.id,
+            name: floor.name,
+            shortName: floor.zIndex.toString(),
+            levelOrder: floor.zIndex
         }));
 
         this.fire(new Event('indoorupdate', {
@@ -163,7 +151,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     // TODO: Replace use of config with the style expressions
     _updateIndoorConfig(isExplicitSelection: boolean = false) {
         const activeFloors = this._floorSelectionState.getActiveFloors(isExplicitSelection);
-        const activeFloorsIds = activeFloors.map(floor => floor.properties.id as string) || [];
-        this._map.setConfigProperty(this._scope, "mbx-indoor-level-selected", ["literal", activeFloorsIds]);
+        const activeFloorsIds = activeFloors.map(floor => floor.id) || [];
+        this._map.setConfigProperty(this._scope, "activeFloors", ["literal", activeFloorsIds]);
     }
 }

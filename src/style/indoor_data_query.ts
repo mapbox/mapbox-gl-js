@@ -1,67 +1,77 @@
 import Point from '@mapbox/point-geometry';
 
-import type {TargetFeature} from "../util/vectortile_to_geojson";
-import type {QueryRenderedFeaturesetParams} from "./style";
+import type {GeoJSONFeature} from "../util/vectortile_to_geojson";
 import type {Map} from "../ui/map";
 import type {PointLike} from "../types/point-like";
 
 export type IndoorData = {
-    building: TargetFeature;
-    floors: Array<TargetFeature>;
+    building: IndoorDataBuilding;
+    floors: Array<IndoorDataFloor>;
+};
+
+export type IndoorDataBuilding = {
+    id: string;
+    name: string;
+};
+
+export type IndoorDataFloor = {
+    id: string;
+    name: string;
+    isDefault: boolean;
+    zIndex: number;
+    connectedFloorIds: string | null;
+    conflictedFloorIds: string | null;
+    buildingIds: string;
 };
 
 export class IndoorDataQuery {
-    _scope: string;
-    _buildingQueryParams: QueryRenderedFeaturesetParams;
-    _floorQueryParams: QueryRenderedFeaturesetParams;
-
-    // eslint-disable-next-line no-warning-comments
-    // TODO: Don't use hardcoded featureset ids
-    constructor(scope: string) {
-        this._scope = scope;
-        this._buildingQueryParams = {
-            target: {
-                featuresetId: "building-outline",
-                importId: this._scope
-            }
-        };
-        this._floorQueryParams = {
-            target: {
-                featuresetId: "floor-outline",
-                importId: this._scope
-            }
-        };
-    }
-
     execute(map: Map): IndoorData | null {
         const buildingsQueryArea = this._makeBuildingsQueryArea(map);
         const floorsQueryArea = this._makeFloorsQueryArea(map);
 
-        const buildingFeatures = map.queryRenderedFeatures(buildingsQueryArea, this._buildingQueryParams).reduce((unique, feature) => {
+        const buildingFeatures = map.queryRenderedFeatures(buildingsQueryArea).reduce((unique, feature) => {
             const id = feature.properties.id as string;
             const shapeType = feature.properties.type as string;
             if (shapeType === "building" && !unique.some(existing => existing.properties.id === id)) {
                 unique.push(feature);
             }
             return unique;
-        }, [] as Array<TargetFeature>);
+        }, [] as Array<GeoJSONFeature>);
 
-        const floorFeatures = map.queryRenderedFeatures(floorsQueryArea, this._floorQueryParams).reduce((unique, feature) => {
+        const floorFeatures = map.queryRenderedFeatures(floorsQueryArea).reduce((unique, feature) => {
             const id = feature.properties.id as string;
             const shapeType = feature.properties.type as string;
             if (shapeType === "floor" && !unique.some(existing => existing.properties.id === id)) {
                 unique.push(feature);
             }
             return unique;
-        }, [] as Array<TargetFeature>);
+        }, [] as Array<GeoJSONFeature>);
 
         const centerPoint: [number, number] = [map.getCenter().lng, map.getCenter().lat];
         const closestBuilding = this._findBuildingAtCenter(centerPoint, buildingFeatures);
         const anyBuilding = buildingFeatures.length > 0 ? buildingFeatures[0] : null;
 
+        const floorData = floorFeatures.map(floor => ({
+            id: floor.properties.id as string,
+            name: floor.properties.name as string,
+            isDefault: floor.properties.is_default as boolean,
+            zIndex: floor.properties.z_index as number,
+            connectedFloorIds: floor.properties.connected_floor_ids as string,
+            conflictedFloorIds: floor.properties.conflicted_floor_ids as string,
+            buildingIds: floor.properties.building_ids as string
+        }));
+
+        const buildingData = closestBuilding ? {
+            id: closestBuilding.properties.id as string,
+            name: closestBuilding.properties.name as string
+        } : {
+            id: anyBuilding.properties.id as string,
+            name: anyBuilding.properties.name as string
+        };
+
         return {
-            floors: floorFeatures,
-            building: closestBuilding ? closestBuilding : anyBuilding
+            floors: floorData,
+            building: buildingData
         };
     }
 
@@ -87,7 +97,7 @@ export class IndoorDataQuery {
         return [new Point(0, 0), new Point(width, height)];
     }
 
-    _findBuildingAtCenter(centerPoint: [number, number], buildings: Array<TargetFeature>): TargetFeature | null {
+    _findBuildingAtCenter(centerPoint: [number, number], buildings: Array<GeoJSONFeature>): GeoJSONFeature | null {
         for (const building of buildings) {
             if (building.geometry.type === 'Polygon') {
                 const coordinates = building.geometry.coordinates[0];
