@@ -1,6 +1,6 @@
 precision highp float;
 
-uniform sampler2D u_image;
+uniform highp sampler2D u_image;
 in vec2 v_pos;
 uniform vec2 u_dimension;
 uniform float u_zoom;

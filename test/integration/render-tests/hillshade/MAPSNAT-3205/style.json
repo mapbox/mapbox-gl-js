@@ -1,0 +1,35 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+        "height": 256,
+        "width": 256
+    }
+  },
+  "center": [-106.271426, 39.237098],
+  "zoom": 16,
+  "sources": {
+    "mapbox-dem": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.png"
+      ],
+      "maxzoom": 16,
+      "tileSize": 514
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "hillshade",
+      "type": "hillshade",
+      "source": "mapbox-dem"
+    }
+  ]
+}
