@@ -32,8 +32,8 @@
     <div id="map"></div>
     <script src="../dist/mapbox-gl-dev.js"></script>
     <script type="module">
-    import {getAccessToken} from '../debug/access_token_generated.js';
-    
+    import {getAccessToken} from './access_token_generated.js';
+
     mapboxgl.accessToken = getAccessToken();
     </script>
     <script>
@@ -106,11 +106,11 @@
 
         map.on('style.load', () => {
             map.addImport({id: 'procedural-buildings', url: 'procedural-buildings.standard.fragment.json'});
-            
+
             // Store the original style so we can restore it - e.g. if someone
             // changed the lighting using one of the other debug options.
             let styleLights = map.getLights();
-            
+
             dbgTrackedParams.registerParameter(params, ["Sun"], "lightPreset", {
                 label: "Light Preset",
                 options: {

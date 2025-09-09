@@ -128,7 +128,6 @@ a.button.disabled {
 
 #container {
     height:calc(100% - 60px);
-    max-height:768px;
     display:flex;
     background-color:#CCC;
 }

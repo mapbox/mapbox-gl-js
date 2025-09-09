@@ -78,7 +78,7 @@ Start the debug server
 MAPBOX_ACCESS_TOKEN={YOUR_MAPBOX_ACCESS_TOKEN} npm run start-debug
 ```
 
-Open the debug page at [http://localhost:9966/debug](http://localhost:9966/debug)
+Open the debug page at [http://localhost:9966/debug/](http://localhost:9966/debug/)
 
 ## Creating a Standalone Build
 

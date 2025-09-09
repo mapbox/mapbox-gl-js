@@ -184,15 +184,6 @@ document.addEventListener('DOMContentLoaded', function () {
         params[entry[0]] = entry[1];
     });
 
-    if (!params.access_token) {
-        if (mapboxgl.accessToken) {
-            params.access_token = mapboxgl.accessToken;
-        } else {
-            // This default access token is scoped to localhost and internal mapbox pages
-            params.accessToken = 'pk.eyJ1IjoiZ2wtanMtdGVhbSIsImEiOiJjbTV1d3l0d3AwMThnMmpzZ2M5OTNyeDE1In0.2nygBIo7PXbkFCCt6LEBgw'
-        }
-    }
-
     titleElement.addEventListener('click', function () {
         versionItem.classList.remove('active');
         titleItem.classList[titleItem.classList.contains('active') ? 'remove' : 'add']('active');
@@ -307,13 +298,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 doc = doc.replace(instrumentileRegex, '');
                 doc = doc.replace(sentryRegex, '');
             } else { // Perform cleanups of pages locally referenced
-                const versionLibRegex = /<script src='(.*)mapbox-gl(.*)\.js'><\/script>/g;
-                const versionCSSRegex = /<link rel='stylesheet'(.*)mapbox-gl\.css'(.*)\/>/g;
-                const apiKeyRegex = /<script(.*)access_token_generated\.js(.*)\/script>/g;
+                const versionLibRegex = /<script src="(.*)mapbox-gl(.*)\.js"><\/script>/g;
+                const versionCSSRegex = /<link rel="stylesheet"(.*)mapbox-gl\.css"(.*)\/>/g;
 
                 doc = doc.replace(versionLibRegex, '<script src="' + js + '"></script>');
                 doc = doc.replace(versionCSSRegex, '<link rel="stylesheet" href="' + css + '" />');
-                doc = doc.replace(apiKeyRegex, '<script>mapboxgl.accessToken="' + params.access_token + '"</script>');
             }
 
             iframeDoc.write([doc].join(''));
@@ -326,9 +315,6 @@ document.addEventListener('DOMContentLoaded', function () {
         let hash = 'page=' + page.key;
         if (version !== 'latest') {
             hash += '&version=' + version;
-        }
-        if (!mapboxgl.accessToken) {
-            hash += '&access_token=' + params.access_token;
         }
         location.hash = hash;
     }
