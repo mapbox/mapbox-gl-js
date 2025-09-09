@@ -2,8 +2,10 @@ import validateObject from './validate_object';
 import ValidationError from '../error/validation_error';
 import validateProperty from './validate_property';
 import {unbundle} from '../util/unbundle_jsonlint';
+import validateExpression from './validate_expression';
+import latest from '../reference/latest';
 
-import type {StyleSpecification, LayerSpecification} from '../types';
+import type {StyleSpecification, LayerSpecification, AppearanceSpecification} from '../types';
 import type {StyleReference} from '../reference/latest';
 
 export type AppearanceValidatorOptions = {
@@ -19,7 +21,9 @@ export type AppearanceValidatorOptions = {
 
 export default function validateAppearance(options: AppearanceValidatorOptions): Array<ValidationError> {
     const {key, layer, layerType} = options;
-    const value = unbundle(options.value);
+    const value = unbundle(options.value) as AppearanceSpecification;
+    const name = unbundle(value.name);
+    const condition = unbundle(value.condition);
 
     const errors = validateObject({
         key,
@@ -28,9 +32,14 @@ export default function validateAppearance(options: AppearanceValidatorOptions):
         style: options.style,
         styleSpec: options.styleSpec,
         objectElementValidators: {
+            condition: (options) => validateCondition(Object.assign({layer, layerType}, options)),
             properties: (options) => validateProperties(Object.assign({layer, layerType}, options)),
         }
     });
+
+    if (name !== 'hidden' && !condition) {
+        errors.push(new ValidationError(options.key, 'name', `Appearance with name different than "hidden" must have a condition`));
+    }
 
     return errors;
 }
@@ -70,6 +79,23 @@ function validateProperties(options: AppearanceValidatorOptions): Array<Validati
 
         errors.push(...validateProperty(propertyValidationOptions, propertyType));
     }
+
+    return errors;
+}
+
+function validateCondition(options: AppearanceValidatorOptions): Array<ValidationError> {
+    const errors: Array<ValidationError> = [];
+
+    const appearance = options.object as AppearanceSpecification;
+    const condition = appearance.condition;
+
+    errors.push(...validateExpression({
+        key: options.key,
+        value: condition,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        valueSpec: latest['appearance']['condition'],
+        expressionContext: 'appearance'
+    }));
 
     return errors;
 }

@@ -4,6 +4,16 @@
   },
   {
     "message": "layers[1].appearances[0].properties.icon-opacity: -1 is less than the minimum value 0",
-    "line": 52
+    "line": 61
+  },
+  {
+    "message": "layers[1].appearances[1]: Appearance with name different than \"hidden\" must have a condition"
+  },
+  {
+    "message": "layers[1].appearances[2].condition: [\"line-progress\"] is not an allowed parameter",
+    "line": 71
+  },
+  {
+    "message": "layers[2].appearances: Duplicated appearance name \"A\" for layer \"appearances-with-repeated-names\""
   }
 ]

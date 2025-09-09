@@ -4,10 +4,10 @@ import {deepUnbundle} from '../util/unbundle_jsonlint';
 import {isStateConstant, isGlobalPropertyConstant, isFeatureConstant} from '../expression/is_constant';
 import CompoundExpression from '../expression/compound_expression';
 
+import type {StylePropertySpecification} from '../../style-spec/style-spec';
 import type {Expression} from '../expression/expression';
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
-import type {StylePropertySpecification} from '../style-spec';
 
 export type ExpressionValidatorOptions = {
     key: string;
@@ -17,7 +17,7 @@ export type ExpressionValidatorOptions = {
     propertyType?: 'layout' | 'paint' | 'filter';
     style?: Partial<StyleSpecification>;
     styleSpec?: StyleReference;
-    expressionContext?: 'property' | 'filter' | 'cluster-initial' | 'cluster-reduce' | 'cluster-map';
+    expressionContext?: 'property' | 'filter' | 'cluster-initial' | 'cluster-reduce' | 'cluster-map' | 'appearance';
 };
 
 export default function validateExpression(options: ExpressionValidatorOptions): ValidationError[] {
@@ -46,6 +46,11 @@ export default function validateExpression(options: ExpressionValidatorOptions):
     if (options.expressionContext === 'filter') {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return disallowedFilterParameters(expressionObj, options);
+    }
+
+    if (options.expressionContext === 'appearance') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        return checkDisallowedParameters(expressionObj, options);
     }
 
     if (options.expressionContext && options.expressionContext.indexOf('cluster') === 0) {
@@ -93,6 +98,37 @@ export function disallowedFilterParameters(e: Expression, options: any): Validat
     }
     e.eachChild((arg) => {
         errors.push(...disallowedFilterParameters(arg, options));
+    });
+
+    return errors;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function checkDisallowedParameters(e: Expression, options: any): ValidationError[] {
+    const allowedParameters = new Set<string>();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (options.valueSpec && options.valueSpec.expression) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        for (const param of options.valueSpec.expression.parameters) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            allowedParameters.add(param);
+        }
+    }
+
+    if (allowedParameters.size === 0) {
+        return [];
+    }
+    const errors: ValidationError[] = [];
+
+    if (e instanceof CompoundExpression) {
+        if (!allowedParameters.has(e.name)) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+            return [new ValidationError(options.key, options.value, `["${e.name}"] is not an allowed parameter`)];
+        }
+    }
+    e.eachChild((arg) => {
+        errors.push(...checkDisallowedParameters(arg, options));
     });
 
     return errors;

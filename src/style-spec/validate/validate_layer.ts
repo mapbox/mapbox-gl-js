@@ -160,14 +160,32 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                 });
             },
             appearances(options) {
-                return validateArray({
+                const validationErrors = validateArray({
                     key: options.key,
                     value: options.value,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     valueSpec: options.valueSpec,
                     style: options.style,
                     styleSpec: options.styleSpec,
                     arrayElementValidator: (options) => validateAppearance(Object.assign({layerType: type, layer}, options) as AppearanceValidatorOptions)
                 });
+                // Check non-repeated names on a given layer
+                const appearances = Array.isArray(options.value) ? options.value : [];
+                const dedupedNames = new Set<string>();
+                appearances.forEach((a, index) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    const name: string | undefined = unbundle(a.name) as string | undefined;
+                    if (name) {
+                        if (dedupedNames.has(name)) {
+                            const layerId = unbundle((layer as LayerSpecification).id) as string;
+                            validationErrors.push(new ValidationError(options.key, name, `Duplicated appearance name "${name}" for layer "${layerId}"`));
+                        } else {
+                            dedupedNames.add(name);
+                        }
+                    }
+                });
+
+                return validationErrors;
             }
         }
     }));

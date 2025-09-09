@@ -36,6 +36,15 @@
             "icon-opacity": 1,
             "text-color": "red"
           }
+        },
+        {
+          "name": "hidden",
+          "properties": {
+            "icon-image": ["image", "poi", {"params": {"fill": "red"}}],
+            "icon-size": 1.3,
+            "icon-opacity": 1,
+            "text-color": "red"
+          }
         }
       ]
     },
@@ -50,6 +59,46 @@
           "properties": {
             "bad": true,
             "icon-opacity": -1
+          }
+        },
+        {
+          "name": "not-hidden",
+          "properties": {
+            "icon-opacity": 0.5
+          }
+        },
+        {
+          "condition": ["==", ["line-progress"], 16],
+          "properties": {
+            "icon-opacity": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "appearances-with-repeated-names",
+      "type": "symbol",
+      "source": "vector",
+      "source-layer": "source-layer",
+      "appearances": [
+        {
+          "name": "A",
+          "condition": [">=", ["zoom"], 16],
+          "properties": {
+            "icon-opacity": 1
+          }
+        },
+        {
+          "condition": [">=", ["zoom"], 16],
+          "properties": {
+            "icon-opacity": 1
+          }
+        },
+        {
+          "name": "A",
+          "condition": [">=", ["zoom"], 16],
+          "properties": {
+            "icon-opacity": 1
           }
         }
       ]

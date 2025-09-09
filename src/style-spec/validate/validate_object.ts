@@ -11,6 +11,8 @@ type ObjectElementValidatorOptions = {
     valueSpec?: unknown;
     style: Partial<StyleSpecification>;
     styleSpec: StyleReference;
+    object?: object;
+    objectKey?: string;
 };
 
 type ObjectValidatorOptions = {
