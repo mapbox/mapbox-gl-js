@@ -1,0 +1,28 @@
+<%
+  const properties = locals;
+-%>
+// This file is generated. Edit build/generate-style-code.ts, then run `npm run codegen`.
+/* eslint-disable */
+
+import styleSpec from '../../src/style-spec/reference/latest';
+
+import {
+    Properties,
+    DataDrivenProperty
+} from '../../src/style/properties';
+import type ResolvedImage from '../style-spec/expression/types/resolved_image';
+
+<% if (properties.length) { -%>
+export type AppearanceProps = {
+<% for (const property of properties) { -%>
+    "<%= property.name %>": <%- propertyType(property.src, property) %>;
+<% } -%>
+};
+
+let properties: Properties<AppearanceProps>;
+export const getAppearanceProperties = (): Properties<AppearanceProps> => properties || (properties = new Properties({
+<% for (const property of properties) { -%>
+    "<%= property.name %>": <%- propertyValue(property.type, property, property.srcSection) %>,
+<% } -%>
+}));
+<% } -%>

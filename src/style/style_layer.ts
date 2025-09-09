@@ -7,6 +7,7 @@ import {makeFQID} from '../util/fqid';
 import {createExpression, type FeatureState} from '../style-spec/expression/index';
 import latest from '../style-spec/reference/latest';
 import assert from 'assert';
+import SymbolAppearance from './appearance';
 
 import type {Bucket} from '../data/bucket';
 import type Point from '@mapbox/point-geometry';
@@ -32,6 +33,7 @@ import type Painter from '../render/painter';
 import type {LUT} from '../util/lut';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {ProgramName} from '../render/program';
+import type {AppearanceProps} from './appearance_properties';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -59,6 +61,7 @@ class StyleLayer extends Evented {
     visibility: 'visible' | 'none' | undefined;
     configDependencies: Set<string>;
     iconImageUseTheme: string | null | undefined;
+    appearances: Array<SymbolAppearance>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _unevaluatedLayout: Layout<any>;
@@ -96,6 +99,7 @@ class StyleLayer extends Evented {
         this.lut = lut;
         this.options = options;
         this.iconImageUseTheme = iconImageUseTheme;
+        this.appearances = new Array<SymbolAppearance>();
 
         this._featureFilter = {filter: () => true, needGeometry: false, needFeature: false};
         this._filterCompiled = false;
@@ -123,6 +127,12 @@ class StyleLayer extends Evented {
         }
 
         if (layer.slot) this.slot = layer.slot;
+
+        if (layer.appearances) {
+            layer.appearances.forEach(a => {
+                this.appearances.push(new SymbolAppearance(a.condition, a.name, a.properties as AppearanceProps, this.scope, options, this.iconImageUseTheme));
+            });
+        }
 
         if (properties.layout) {
             this._unevaluatedLayout = new Layout(properties.layout, this.scope, options, this.iconImageUseTheme);
@@ -301,6 +311,10 @@ class StyleLayer extends Evented {
             'paint': this._transitionablePaint && this._transitionablePaint.serialize()
         } as LayerSpecification;
 
+        if (this.appearances.length !== 0) {
+            output['appearances'] = this.appearances.map(a => a.serialize());
+        }
+
         return filterObject(output, (value, key) => {
             return value !== undefined &&
                 !(key === 'layout' && !Object.keys(value).length) &&
@@ -407,6 +421,10 @@ class StyleLayer extends Evented {
                 this._stats.numRenderedVerticesInTransparentPass = 0;
             }
         }
+    }
+
+    getAppearances() {
+        return this.appearances;
     }
 
     // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
