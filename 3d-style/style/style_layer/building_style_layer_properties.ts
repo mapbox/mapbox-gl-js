@@ -25,6 +25,9 @@ export type LayoutProps = {
     "building-roof-shape": DataDrivenProperty<"flat" | "hipped" | "gabled" | "parapet" | "mansard" | "skillion" | "pyramidal">;
     "building-height": DataDrivenProperty<number>;
     "building-base": DataDrivenProperty<number>;
+    "building-flood-light-wall-radius": DataDrivenProperty<number>;
+    "building-flood-light-ground-radius": DataDrivenProperty<number>;
+    "building-flip-roof-orientation": DataDrivenProperty<boolean>;
 };
 let layout: Properties<LayoutProps>;
 export const getLayoutProperties = (): Properties<LayoutProps> => layout || (layout = new Properties({
@@ -36,6 +39,9 @@ export const getLayoutProperties = (): Properties<LayoutProps> => layout || (lay
     "building-roof-shape": new DataDrivenProperty(styleSpec["layout_building"]["building-roof-shape"]),
     "building-height": new DataDrivenProperty(styleSpec["layout_building"]["building-height"]),
     "building-base": new DataDrivenProperty(styleSpec["layout_building"]["building-base"]),
+    "building-flood-light-wall-radius": new DataDrivenProperty(styleSpec["layout_building"]["building-flood-light-wall-radius"]),
+    "building-flood-light-ground-radius": new DataDrivenProperty(styleSpec["layout_building"]["building-flood-light-ground-radius"]),
+    "building-flip-roof-orientation": new DataDrivenProperty(styleSpec["layout_building"]["building-flip-roof-orientation"]),
 }));
 
 export type PaintProps = {
@@ -50,7 +56,11 @@ export type PaintProps = {
     "building-emissive-strength": DataDrivenProperty<number>;
     "building-facade-emissive-chance": DataConstantProperty<number>;
     "building-cutoff-fade-range": DataConstantProperty<number>;
+    "building-flood-light-color": DataConstantProperty<Color>;
+    "building-flood-light-intensity": DataConstantProperty<number>;
+    "building-flood-light-ground-attenuation": DataConstantProperty<number>;
     "building-color-use-theme": DataDrivenProperty<string>;
+    "building-flood-light-color-use-theme": DataDrivenProperty<string>;
 };
 
 let paint: Properties<PaintProps>;
@@ -66,5 +76,9 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "building-emissive-strength": new DataDrivenProperty(styleSpec["paint_building"]["building-emissive-strength"]),
     "building-facade-emissive-chance": new DataConstantProperty(styleSpec["paint_building"]["building-facade-emissive-chance"]),
     "building-cutoff-fade-range": new DataConstantProperty(styleSpec["paint_building"]["building-cutoff-fade-range"]),
+    "building-flood-light-color": new DataConstantProperty(styleSpec["paint_building"]["building-flood-light-color"]),
+    "building-flood-light-intensity": new DataConstantProperty(styleSpec["paint_building"]["building-flood-light-intensity"]),
+    "building-flood-light-ground-attenuation": new DataConstantProperty(styleSpec["paint_building"]["building-flood-light-ground-attenuation"]),
     "building-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
+    "building-flood-light-color-use-theme": new DataDrivenProperty({"type":"string","default":"default","property-type":"data-driven"}),
 }));

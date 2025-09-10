@@ -1150,7 +1150,22 @@ export type BuildingLayerSpecification = {
          * @experimental This property is experimental and subject to change in future versions.
          */
         "building-base"?: DataDrivenPropertyValueSpecification<number>,
-        "building-base-transition"?: TransitionSpecification
+        "building-base-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-flood-light-wall-radius"?: DataDrivenPropertyValueSpecification<number>,
+        "building-flood-light-wall-radius-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-flood-light-ground-radius"?: DataDrivenPropertyValueSpecification<number>,
+        "building-flood-light-ground-radius-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-flip-roof-orientation"?: DataDrivenPropertyValueSpecification<boolean>,
+        "building-flip-roof-orientation-transition"?: TransitionSpecification
     },
     "paint"?: {
         /**
@@ -1200,7 +1215,23 @@ export type BuildingLayerSpecification = {
          * @experimental This property is experimental and subject to change in future versions.
          */
         "building-facade-emissive-chance"?: PropertyValueSpecification<number>,
-        "building-cutoff-fade-range"?: ExpressionSpecification
+        "building-cutoff-fade-range"?: ExpressionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-flood-light-color"?: PropertyValueSpecification<ColorSpecification>,
+        "building-flood-light-color-transition"?: TransitionSpecification,
+        "building-flood-light-color-use-theme"?: PropertyValueSpecification<string>,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-flood-light-intensity"?: PropertyValueSpecification<number>,
+        "building-flood-light-intensity-transition"?: TransitionSpecification,
+        /**
+         * @experimental This property is experimental and subject to change in future versions.
+         */
+        "building-flood-light-ground-attenuation"?: PropertyValueSpecification<number>,
+        "building-flood-light-ground-attenuation-transition"?: TransitionSpecification
     },
     "appearances"?: Array<AppearanceSpecification>
 };

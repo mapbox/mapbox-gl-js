@@ -1523,6 +1523,9 @@
         "building": {
           "doc": "A procedural 3D building.",
           "sdk-support": {
+            "js": "3.16.0",
+            "android": "11.16.0",
+            "ios": "11.16.0"
           },
           "experimental": true,
           "private": true
@@ -2170,6 +2173,9 @@
       "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       },
       "expression": {
@@ -2185,8 +2191,14 @@
       "private": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         },
         "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       },
       "expression": {
@@ -2206,8 +2218,16 @@
       "experimental": true,
       "property-type": "data-driven",
       "sdk-support": {
-        "basic functionality": {},
-        "data-driven styling": {}
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        },
+        "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2228,8 +2248,16 @@
       "experimental": true,
       "property-type": "data-driven",
       "sdk-support": {
-        "basic functionality": {},
-        "data-driven styling": {}
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        },
+        "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2252,8 +2280,16 @@
       "experimental": true,
       "property-type": "data-driven",
       "sdk-support": {
-        "basic functionality": {},
-        "data-driven styling": {}
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        },
+        "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
       },
       "expression": {
         "interpolated": false,
@@ -2296,8 +2332,14 @@
       "private": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         },
         "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       },
       "expression": {
@@ -2319,8 +2361,14 @@
       "private": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         },
         "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       },
       "expression": {
@@ -2342,14 +2390,114 @@
       "private": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         },
         "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       },
       "expression": {
         "interpolated": false
       },
       "property-type": "data-driven"
+    },
+    "building-flood-light-wall-radius": {
+      "property-type": "data-driven",
+      "type": "number",
+      "experimental": true,
+      "units": "meters",
+      "default": 0,
+      "minimum": 0,
+      "doc": "The extent of the flood light effect on the walls of the buildings in meters.",
+      "requires": [
+        "lights"
+      ],
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "feature",
+          "feature-state"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        },
+        "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
+      }
+    },
+    "building-flood-light-ground-radius": {
+      "property-type": "data-driven",
+      "type": "number",
+      "experimental": true,
+      "units": "meters",
+      "default": 0,
+      "doc": "The extent of the flood light effect on the ground beneath the buildings in meters.",
+      "requires": [
+        "lights"
+      ],
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "feature",
+          "feature-state"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        },
+        "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
+      }
+    },
+    "building-flip-roof-orientation": {
+      "property-type": "data-driven",
+      "type": "boolean",
+      "experimental": true,
+      "units": "meters",
+      "default": false,
+      "doc": "Flips the orientation of the roofs for the buildings. This only affects simple geometries. Namely buildings whose footprints form a quadrilateral. By default (false), the roof ridge takes the direction of the longer edge of the quadrilateral.",
+      "transition": true,
+      "requires": [
+        "building-roof-shape"
+      ],
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "feature",
+          "feature-state"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        },
+        "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
+      }
     }
   },
   "layout_line": {
@@ -7754,6 +7902,9 @@
       "private": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       },
       "expression": {
@@ -7781,6 +7932,9 @@
       "doc": "Controls the intensity of ambient occlusion when shading concave angles between walls and roof crevices and windows.",
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       }
     },
@@ -7802,6 +7956,9 @@
       "doc": "Controls the intensity of shading near ground",
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       }
     },
@@ -7822,6 +7979,9 @@
       "doc": "The extent of the ambient occlusion effect on the ground beneath the procedural buildings in meters.",
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       }
     },
@@ -7843,6 +8003,9 @@
       },
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       }
     },
@@ -7863,6 +8026,9 @@
       },
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       }
     },
@@ -7874,7 +8040,10 @@
       "experimental": true,
       "private": true,
       "sdk-support": {
-          "basic functionality": {
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       },
       "property-type": "data-constant"
@@ -7889,8 +8058,14 @@
       "transition": false,
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         },
         "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       },
       "expression": {
@@ -7914,8 +8089,14 @@
       "private": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         },
         "data-driven styling": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
         }
       },
       "expression": {
@@ -7937,7 +8118,11 @@
       "experimental": true,
       "property-type": "data-constant",
       "sdk-support": {
-        "basic functionality": {}
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
       },
       "expression": {
         "interpolated": true,
@@ -7958,9 +8143,92 @@
         "interpolated": false
       },
       "sdk-support": {
-          "basic functionality": {}
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
       },
       "property-type": "data-constant"
+    },
+    "building-flood-light-color": {
+      "property-type": "data-constant",
+      "type": "color",
+      "experimental": true,
+      "default": "#ffffff",
+      "doc": "The color of the flood light effect on the walls of the buildings.",
+      "requires": [
+        "lights"
+      ],
+      "use-theme": true,
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
+      }
+    },
+    "building-flood-light-intensity": {
+      "property-type": "data-constant",
+      "type": "number",
+      "experimental": true,
+      "default": 0.0,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "doc": "The intensity of the flood light color.",
+      "requires": [
+        "lights"
+      ],
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom",
+          "measure-light"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
+      }
+    },
+    "building-flood-light-ground-attenuation": {
+      "property-type": "data-constant",
+      "type": "number",
+      "experimental": true,
+      "default": 0.69,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "doc": "Provides a control to futher fine-tune the look of the flood light on the ground beneath the buildings. Lower values give the effect a more solid look while higher values make it smoother.",
+      "requires": [
+        "lights"
+      ],
+      "transition": true,
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.16.0",
+          "android": "11.16.0",
+          "ios": "11.16.0"
+        }
+      }
     }
   },
   "paint_line": {
