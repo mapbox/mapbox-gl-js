@@ -5,11 +5,6 @@
 <title>Add a 3D model</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 <script src="../dist/mapbox-gl-dev.js"></script>
-<script type="module">
-import {getAccessToken} from './access_token_generated.js';
-
-mapboxgl.accessToken = getAccessToken();
-</script>
 <link rel="stylesheet" href="../dist/mapbox-gl.css" />
 <style>
     body { margin: 0; padding: 0; }
@@ -20,7 +15,11 @@ mapboxgl.accessToken = getAccessToken();
 <script src="https://unpkg.com/three@0.106.2/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.106.2/examples/js/loaders/GLTFLoader.js"></script>
 <div id="map"></div>
-<script>
+<script type="module">
+    import {getAccessToken} from './access_token_generated.js';
+
+    mapboxgl.accessToken = getAccessToken();
+
     /* eslint-disable */
     var map = (window.map = new mapboxgl.Map({
         container: 'map',

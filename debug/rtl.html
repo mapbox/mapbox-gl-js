@@ -32,8 +32,7 @@
 import {getAccessToken} from './access_token_generated.js';
 
 mapboxgl.accessToken = getAccessToken();
-</script>
-<script>
+
 // badPluginURL allows us to simulate a NetworkError that we can recover from by retrying plugin loading
 var badPluginURL = 'http://localhost:9966/debug/2762.html';
 var goodPluginURL = 'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js';

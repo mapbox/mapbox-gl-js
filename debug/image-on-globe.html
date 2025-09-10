@@ -42,11 +42,10 @@
 
 <script src="../dist/mapbox-gl-dev.js"></script>
 <script type="module">
-import {getAccessToken} from './access_token_generated.js';
+    import {getAccessToken} from './access_token_generated.js';
 
-mapboxgl.accessToken = getAccessToken();
-</script>
-<script>
+    mapboxgl.accessToken = getAccessToken();
+
     const map = new mapboxgl.Map({
         container: 'map',
         devtools: true,

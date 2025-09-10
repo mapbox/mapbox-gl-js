@@ -85,12 +85,11 @@ a.button.disabled {
 .navbar-item.active .dropdown {
     position:absolute;
     top:60px;
-    max-height:250px;
+    max-height:100%;
     overflow-y:auto;
     display:block;
     background:rgba(255, 255, 255, 0.8);
     color:#222;
-    /*min-width:250px;*/
     font-size:14px;
 }
 

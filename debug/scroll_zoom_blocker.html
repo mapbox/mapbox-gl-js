@@ -76,22 +76,17 @@
 import {getAccessToken} from './access_token_generated.js';
 
 mapboxgl.accessToken = getAccessToken();
-</script>
-<script>
 
-if (!mapboxgl.supported()) {
-    alert('Your browser does not support Mapbox GL');
-} else {
-    const map = new mapboxgl.Map({
-        container: 'map',
-        devtools: true,
-        zoom: 12.5,
-        center: [-77.01866, 38.888],
-        style: 'mapbox://styles/mapbox/streets-v11',
-        cooperativeGestures: true
-    });
-    map.addControl(new mapboxgl.FullscreenControl());
-}
+const map = new mapboxgl.Map({
+    container: 'map',
+    devtools: true,
+    zoom: 12.5,
+    center: [-77.01866, 38.888],
+    style: 'mapbox://styles/mapbox/streets-v11',
+    cooperativeGestures: true
+});
+
+map.addControl(new mapboxgl.FullscreenControl());
 
 </script>
 </body>

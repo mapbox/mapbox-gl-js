@@ -18,8 +18,9 @@ coverage
 tests-to-run.txt
 **/test/**/__screenshots__/
 **/test/unit/**/vitest
-**/test/release/dist/**/*.js
-**/test/release/dist/**/*.json
+**/test/release/dist/
+**/test/release/*.html
+!**/test/release/index.html
 **/test/integration/**/vitest
 **/test/integration/**/index*.html
 **/test/integration/**/query-tests.html
