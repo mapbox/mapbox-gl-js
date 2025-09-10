@@ -9,32 +9,25 @@
         />
         <link rel="stylesheet" href="../dist/mapbox-gl.css" />
         <style>
-            body {
-                margin: 0;
-                padding: 0;
-            }
-            html,
-            body,
-            #map {
-                height: 100%;
-            }
+            body { margin: 0; padding: 0; }
+            html, body, #map { height: 100%; }
+            .tp-dfwv { width: 350px; }
         </style>
     </head>
 
     <body>
         <div id="map"></div>
-        <div id="config"></div>
 
         <script src="../dist/mapbox-gl-dev.js"></script>
         <script type="module">
+            import {Pane} from 'https://esm.sh/tweakpane@4';
             import {getAccessToken} from './access_token_generated.js';
 
             mapboxgl.accessToken = getAccessToken();
-            import { Pane } from "https://cdn.jsdelivr.net/npm/tweakpane@4.0.3/dist/tweakpane.min.js";
 
-            var map = (window.map = new mapboxgl.Map({
+            const map = window.map = new mapboxgl.Map({
                 container: "map",
-                zoom: 18.49,
+                zoom: 17,
                 center: [24.9419371, 60.1712992],
                 pitch: 76,
                 hash: true,
@@ -42,20 +35,17 @@
                 projection: "globe",
                 devtools: true,
                 repaint: true,
-            }));
+            });
 
             map.on("style.load", function () {
                 map.repaint = true;
 
-                const pane = new Pane({
-                    container: document.querySelector("#config"),
-                    title: "Parameters",
-                });
+                const pane = new Pane();
 
                 const params = {
-                    lightPreset: "night",
+                    lightPreset: "day",
                     precipitationType: "snow",
-                    precipitationParametersSource: "fromStyleSpecDefaults",
+                    useStyleSpecDefaults: true,
                 };
 
                 let precipitation;
@@ -92,11 +82,6 @@
                 };
 
                 const onPrecipitationChange = () => {
-                    if (params.precipitationParametersSource === "fromStyleSpecDefaults") {
-                        precipitation.disabled = true;
-                    } else {
-                        precipitation.disabled = false;
-                    }
 
                     map.setSnow(null);
                     map.setRain(null);
@@ -115,7 +100,7 @@
                     };
 
                     if (params.precipitationType === "snow") {
-                        if (params.precipitationParametersSource === "fromStyleSpecDefaults") {
+                        if (params.useStyleSpecDefaults) {
                             map.setSnow({});
                             return;
                         }
@@ -139,7 +124,7 @@
                             })`,
                         });
                     } else {
-                        if (params.precipitationParametersSource === "fromStyleSpecDefaults") {
+                        if (params.useStyleSpecDefaults) {
                             map.setRain({});
                             return;
                         }
@@ -168,6 +153,7 @@
                 };
 
                 pane.addBinding(params, "lightPreset", {
+                    label: 'Light',
                     options: {
                         dawn: "dawn",
                         day: "day",
@@ -179,6 +165,7 @@
                 });
 
                 pane.addBinding(params, "precipitationType", {
+                    label: 'Precipitation',
                     options: {
                         snow: "snow",
                         rain: "rain",
@@ -187,11 +174,8 @@
                     onPrecipitationChange();
                 });
 
-                pane.addBinding(params, "precipitationParametersSource", {
-                    options: {
-                        fromUI: "fromUI",
-                        fromStyleSpecDefaults: "fromStyleSpecDefaults",
-                    },
+                pane.addBinding(params, "useStyleSpecDefaults", {
+                    label: "Use Defaults",
                 }).on("change", (ev) => {
                     onPrecipitationChange();
                 });
@@ -205,13 +189,11 @@
                 precipitation = pane
                     .addFolder({
                         title: "Precipitation",
-                        expanded: true,
+                        expanded: false,
                     })
                     .on("change", (ev) => {
                         onPrecipitationChange();
                     });
-
-                precipitation.disabled = true;
 
                 precipitation.addBinding(precipitationParams, "revealStart", {
                     min: 0,
@@ -329,28 +311,8 @@
         </script>
     </body>
     <style>
-        #config {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            max-height: 95%;
-            overflow-y: auto;
-            z-index: 100;
-        }
-        #config::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-        #config::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
-        #config::-webkit-scrollbar-thumb {
-            background: rgba(110, 110, 110);
-            border-radius: 10px;
-        }
-        #config::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(90, 90, 90);
+        .tp-dfwv {
+            width: 350px;
         }
     </style>
 </html>

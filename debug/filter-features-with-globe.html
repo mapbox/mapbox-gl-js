@@ -179,6 +179,19 @@ mapboxgl.accessToken = getAccessToken();
         return uniqueFeatures;
     }
 
+    function updateAirportsList() {
+        const features = map.queryRenderedFeatures({layers: ['airport']});
+        if (features) {
+            const uniqueFeatures = getUniqueFeatures(features, 'iata_code');
+            renderListings(uniqueFeatures);
+            airports = uniqueFeatures;
+        }
+    }
+
+    map.on('resize', () => {
+        updateAirportsList();
+    });
+
     map.on('load', () => {
         map.addSource('airports', {
             'type': 'vector',
@@ -197,26 +210,18 @@ mapboxgl.accessToken = getAccessToken();
             }
         });
 
+        map.once('idle', () => {
+            updateAirportsList();
+        });
+
         map.on('movestart', () => {
         // reset features filter as the map starts moving
             map.setFilter('airport', ['has', 'abbrev']);
         });
 
         map.on('moveend', () => {
-            const features = map.queryRenderedFeatures({layers: ['airport']});
-
-            if (features) {
-                const uniqueFeatures = getUniqueFeatures(features, 'iata_code');
-                // Populate features for the listing overlay.
-                renderListings(uniqueFeatures);
-
-                // Clear the input container
-                filterEl.value = '';
-
-                // Store the current features in sn `airports` variable to
-                // later use for filtering on `keyup`.
-                airports = uniqueFeatures;
-            }
+            updateAirportsList();
+            filterEl.value = '';
         });
 
         map.on('mousemove', 'airport', (e) => {
@@ -265,10 +270,6 @@ mapboxgl.accessToken = getAccessToken();
                 ]);
             }
         });
-
-        // Call this function on initialization
-        // passing an empty array to render an empty state
-        renderListings([]);
     });
 
     document.getElementById('globe').addEventListener('click', (e) => {

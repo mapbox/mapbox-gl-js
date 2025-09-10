@@ -7,69 +7,27 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        #controls {
-            position: absolute;
-            top: 0;
-            left: 0;
-            padding:10px;
-            background-color: lightblue;
-            font-family: Arial, Helvetica, sans-serif;
-        }
     </style>
     <link rel="stylesheet" href="../dist/mapbox-gl.css" />
 </head>
 
 <body>
 <div id="map"></div>
-<div id="controls">
-    <div>
-        <label>Projection:</label>
-        <select id="projName">
-            <option value="mercator">Mercator</option>
-            <option value="albers">Albers USA</option>
-            <option value="equalEarth">Equal Earth</option>
-            <option value="equirectangular">Equirectangular</option>
-            <option value="globe" selected>Globe</option>
-            <option value="lambertConformalConic">Lambert Conformal Conic</option>
-            <option value="naturalEarth">Natural Earth</option>
-            <option value="winkelTripel">Winkel Tripel</option>
-        </select>
-        </br>
-        <label>Raster elevation:</label>
-        <input type="range" id="rasterElevation" name="volume" min="0" max="5000000" value="1000000"/>
-    </div>
-</div>
 
 <script src="../dist/mapbox-gl-dev.js"></script>
 <script type="module">
+    import {Pane} from 'https://esm.sh/tweakpane@4';
     import {getAccessToken} from './access_token_generated.js';
 
     mapboxgl.accessToken = getAccessToken();
 
     const map = new mapboxgl.Map({
         container: 'map',
-        devtools: true,
-        zoom: 5,
-        center: [-75.789, 41.874],
-        style: 'mapbox://styles/mapbox/dark-v10',
+        style: 'mapbox://styles/mapbox/standard',
         hash: true,
-        projection: 'globe'
     });
 
-    map.on('load', () => {
-        map.addSource('mapbox-dem', {
-            "type": "raster-dem",
-            "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
-            "tileSize": 514,
-            "maxzoom": 14
-        });
-        map.setTerrain({
-            "source": "mapbox-dem",
-            "exaggeration": 1.0
-        });
-
-        map.setFog({});
-
+    map.on('style.load', () => {
         map.addSource('radar', {
             'type': 'image',
             'url': 'https://docs.mapbox.com/mapbox-gl-js/assets/radar.gif',
@@ -92,14 +50,15 @@
         });
     });
 
-    document.getElementById('projName').addEventListener('change', (e) => {
-        const el = document.getElementById('projName');
-        map.setProjection(el.options[el.selectedIndex].value);
-    });
-
-    document.getElementById('rasterElevation').addEventListener('input', (e) => {
-        const el = document.getElementById('rasterElevation');
-        map.setPaintProperty('radar-layer', 'raster-elevation', Number(el.value));
+    const pane = new Pane();
+    pane.addBlade({
+        view: 'slider',
+        label: 'elevation',
+        min: 0,
+        max: 5000000,
+        value: 1000000,
+    }).on('change', (e) => {
+        map.setPaintProperty('radar-layer', 'raster-elevation', e.value);
     });
 
 </script>

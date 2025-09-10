@@ -9,49 +9,32 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-        #controls { position: absolute; top: 0; left: 0; }
     </style>
 </head>
 <body>
 <div id="map"></div>
-<div id="controls">
-    <label><input id="terrain-checkbox" type="checkbox"> terrain</label><br />
-    <div>
-        <label>Projection:</label>
-        <select id="projName">
-            <option value="mercator" selected>Mercator</option>
-            <option value="globe">Globe</option>
-            <option value="albers">Albers USA</option>
-            <option value="equalEarth">Equal Earth</option>
-            <option value="equirectangular">Equirectangular</option>
-            <option value="lambertConformalConic">Lambert Conformal Conic</option>
-            <option value="naturalEarth">Natural Earth</option>
-            <option value="winkelTripel">Winkel Tripel</option>
-        </select>
-    </div>
-</div>
 
 <script src="../dist/mapbox-gl-dev.js"></script>
 <script type="module">
+import {Pane} from 'https://esm.sh/tweakpane@4';
 import {getAccessToken} from './access_token_generated.js';
 
 mapboxgl.accessToken = getAccessToken();
 
-var map = window.map = new mapboxgl.Map({
+const map = window.map = new mapboxgl.Map({
     container: 'map',
-    devtools: true,
-    zoom: 16.9,
+    zoom: 16,
     center: [-73.989816, 40.76263],
     pitch: 60,
-    style: 'mapbox://styles/mapbox/streets-v10',
+    style: 'mapbox://styles/mapbox/streets-v12',
+    projection: 'globe',
     hash: true
 });
 
 const r = 255 * 0.65;
-map.on('style.load', function() {
+map.on('style.load', () => {
     map.addLayer({
         'id': '3d-buildings',
-        //'source': 'composite',
         'source': {
             'type': 'vector',
             'url': 'mapbox://mapbox.3d-buildings'
@@ -106,13 +89,10 @@ map.on('style.load', function() {
         }
     });
 });
-document.getElementById('terrain-checkbox').onclick = function() {
-    map.setTerrain(this.checked ? {"source": "mapbox-dem"} : null);
-};
 
-document.getElementById('projName').addEventListener('change', (e) => {
-    const el = document.getElementById('projName');
-    map.setProjection(el.options[el.selectedIndex].value);
+const pane = new Pane();
+pane.addBinding({terrain: false}, 'terrain').on('change', (e) => {
+    map.setTerrain(e.value ? {"source": "mapbox-dem"} : null);
 });
 
 </script>

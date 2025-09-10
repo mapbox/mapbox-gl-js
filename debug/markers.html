@@ -8,31 +8,15 @@
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
-        #controls { position: absolute; top: 0; left: 0; }
     </style>
 </head>
 
 <body>
 <div id="map"></div>
-<div id="controls">
-    <button id="animate">Animate</button><br />
-    <label><input id="terrain-checkbox" type="checkbox"> terrain</label><br />
-    <div>
-        <label>Projection:</label>
-        <select id="projName">
-            <option value="mercator" selected>Mercator</option>
-            <option value="globe">Globe</option>
-            <option value="albers">Albers USA</option>
-            <option value="equalEarth">Equal Earth</option>
-            <option value="equirectangular">Equirectangular</option>
-            <option value="lambertConformalConic">Lambert Conformal Conic</option>
-            <option value="naturalEarth">Natural Earth</option>
-            <option value="winkelTripel">Winkel Tripel</option>
-        </select>
-    </div>
-</div>
+
 <script src="../dist/mapbox-gl-dev.js"></script>
 <script type="module">
+import {Pane} from 'https://esm.sh/tweakpane@4';
 import {getAccessToken} from './access_token_generated.js';
 
 mapboxgl.accessToken = getAccessToken();
@@ -42,6 +26,7 @@ var map = window.map = new mapboxgl.Map({
     zoom: 12.5,
     center: [-77.01866, 38.888],
     style: 'mapbox://styles/mapbox/streets-v12',
+    projection: 'globe',
     hash: true
 });
 
@@ -136,8 +121,13 @@ map.on('style.load',() => {
     });
 })
 
+const pane = new Pane();
+pane.addBinding({terrain: false}, 'terrain').on('change', (e) => {
+    map.setTerrain(e.value ? {"source": "mapbox-dem", "exaggeration": 10} : null);
+});
+
 let animate = false;
-document.getElementById('animate').addEventListener('click', () => {
+pane.addBinding({animate: false}, 'animate').on('change', (e) => {
     animate = !animate;
     if (animate) {
         spinMarkers();
@@ -156,28 +146,15 @@ function spinMarkers() {
 }
 window.requestAnimationFrame(spinMarkers);
 
-map.addControl(new mapboxgl.NavigationControl());
-
-map.on('load', function() {
+map.on('style.load', function() {
     map.addSource('mapbox-dem', {
         "type": "raster-dem",
         "url": "mapbox://mapbox.mapbox-terrain-dem-v1",
         "tileSize": 512,
         "maxzoom": 14
     });
-
-    map.setFog({});
 });
 
-document.getElementById('terrain-checkbox').onclick = function() {
-    map.setTerrain(this.checked ? {"source": "mapbox-dem", "exaggeration": 10} : null);
-};
-
-document.getElementById('projName').addEventListener('change', (e) => {
-    const el = document.getElementById('projName');
-    map.setProjection(el.options[el.selectedIndex].value);
-});
 </script>
-
 </body>
 </html>

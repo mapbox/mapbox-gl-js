@@ -41,20 +41,12 @@ const pages = [
         "url": "./filter-features-with-globe.html"
     },
     {
-        "key": "custom-style-layer",
-        "title": "Add a custom style layer"
-    },
-    {
         "key": "mapbox-gl-geocoder",
         "title": "Add a geocoder"
     },
     {
         "key": "mapbox-gl-directions",
         "title": "Display driving directions"
-    },
-    {
-        "key": "locate-user",
-        "title": "Locate the user"
     },
     {
         "key": "mapbox-gl-draw",
@@ -136,29 +128,9 @@ const pages = [
         "url": "./precipitation.html"
     },
     {
-        "key": "scroll_zoom_blocker",
-        "title": "Gestures",
-        "url": "./scroll_zoom_blocker.html"
-    },
-    {
         "key": "raster-array",
         "title": "Raster Array",
         "url": "./raster-array.html"
-    },
-    {
-        "key": "custom-source",
-        "title": "Custom Source",
-        "url": "./custom-source.html"
-    },
-    {
-        "key": "landmark-icons",
-        "title": "Landmark Icons",
-        "url": "./landmark-icons.html"
-    },
-    {
-        "key": "atmosphere",
-        "title": "Atmosphere",
-        "url": "./atmosphere.html"
     }
 ];
 
