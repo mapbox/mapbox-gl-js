@@ -1,20 +1,4 @@
-## 3.15.0-beta.2
-
-### Features and improvements ✨
-
-- Slightly improve `hsla` expression performance.
-- Optimize applying LUT for patterns.
-- Round `queryRasterValue` results to 12 decimal digits to fix precision issues.
-
-### Bug fixes 🐞
-
-- Fix an error on GeoJSON with `"Infinity"`` and similar ids.
-- Fix `GL_INVALID_VALUE` console warning on Mapbox Satellite Standard and a few other styles.
-- Fix model layer positioning during globe to mercator transition.
-- Fix an issue with incorrect transparency for some icons with LUT applied.
-- Fix an issue where updating `*-occlusion-opacity` properties didn't have any effect.
-
-## 3.15.0-beta.1
+## 3.15.0
 
 ### Features and improvements ✨
 
@@ -24,10 +8,25 @@
 - Improve HD Roads loading performance.
 - Optimize applying LUT when updating images at runtime.
 - Improve TypeScript types in Style Spec validation methods.
+- Slightly improve `hsla` expression performance.
+- Optimize applying LUT for patterns.
+- Round `queryRasterValue` results to 12 decimal digits to fix precision issues.
+- Improvements on typing and testing.
 
 ### Bug fixes 🐞
 
 - Fix an issue with refreshing expired raster array tiles.
+- Fix an error on GeoJSON with `"Infinity"` and similar ids.
+- Fix `GL_INVALID_VALUE` console warning on Mapbox Satellite Standard and a few other styles.
+- Fix model layer positioning during globe to mercator transition.
+- Fix an issue with incorrect transparency for some icons with LUT applied.
+- Fix an issue where updating `*-occlusion-opacity` properties didn't have any effect.
+- Fix an issue with MRT layers throwing an error when reloading.
+- Fix occlusion layer ordering.
+- Fix an issue where using too many data-driven properties on the symbol layer could break the map.
+- Fix gradients and interpolations with fully-transparent colors.
+- Fix model layer density reduction.
+- Fix performance regression on styles that use feature-state expressions.
 
 ## 3.14.0
 
