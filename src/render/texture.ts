@@ -95,8 +95,8 @@ class Texture {
         if (this.size) {
             if (externalImage) {
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, _getLegacyFormat(this.format), _getType(this.format), image);
-            } else if ('data' in image) {
-                gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, srcWidth, srcHeight, _getLegacyFormat(this.format), _getType(this.format), image.data);
+            } else {
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, srcWidth, srcHeight, _getLegacyFormat(this.format), _getType(this.format), (image as RGBAImage | AlphaImage | Float32Image | EmptyImage).data);
             }
         }
 
@@ -200,9 +200,7 @@ export class Texture3D {
         assert(image.height === height);
         assert(image.width === width * depth);
 
-        if ('data' in image) {
-            gl.texImage3D(gl.TEXTURE_3D, 0, this.format, width, height, depth, 0, _getLegacyFormat(this.format), _getType(this.format), image.data);
-        }
+        gl.texImage3D(gl.TEXTURE_3D, 0, this.format, width, height, depth, 0, _getLegacyFormat(this.format), _getType(this.format), (image as RGBAImage | AlphaImage | Float32Image | EmptyImage).data);
     }
 
     bind(filter: TextureFilter, wrap: TextureWrap) {
