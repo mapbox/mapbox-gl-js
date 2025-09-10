@@ -1,0 +1,44 @@
+import plotly.express as px
+import pandas as pd
+from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
+
+# Load your cleaned timeline dataframe (df from earlier)
+# df has: timestamp, latitude, longitude, source, accuracy_m
+
+# Reverse geocoding with Nominatim
+geolocator = Nominatim(user_agent="timeline_viewer")
+reverse = RateLimiter(geolocator.reverse, min_delay_seconds=1)
+
+def get_address(lat, lon):
+    try:
+        location = reverse((lat, lon), language="en")
+        return location.address if location else None
+    except:
+        return None
+
+# Add address column (be patient if many points!)
+df["address"] = df.apply(lambda row: get_address(row["latitude"], row["longitude"]), axis=1)
+
+# Create interactive map
+fig = px.scatter_mapbox(
+    df,
+    lat="latitude",
+    lon="longitude",
+    color="source",
+    size_max=10,
+    hover_name="timestamp",
+    hover_data={"address": True, "accuracy_m": True},
+    zoom=13,
+    title="Timeline Map"
+)
+
+# Set Mapbox style (requires token)
+fig.update_layout(
+    mapbox_style="open-street-map",  # fallback if no token
+    # mapbox_style="streets",
+    # mapbox_accesstoken="YOUR_MAPBOX_ACCESS_TOKEN",
+    margin={"r":0,"t":40,"l":0,"b":0}
+)
+
+fig.show()
