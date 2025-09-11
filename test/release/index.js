@@ -143,245 +143,245 @@ for (const [version, metadata] of Object.entries(mapboxglVersions)) {
 }
 
 // Wait for DOMContentLoaded
-await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+document.addEventListener('DOMContentLoaded', () => {
+    const titleItem = document.querySelector('#title');
+    const titleElement = document.querySelector('#title-text');
+    const titleDropdown = document.querySelector('#title .dropdown');
+    const container = document.querySelector('#container');
+    const versionButton = document.querySelector('#version');
+    const versionItem = document.querySelector('#version-item');
+    const versionDropdown = document.querySelector('#version-item .dropdown');
+    const versionNumber = document.querySelector('#version-number');
+    const prevButton = document.querySelector('#prev');
+    const nextButton = document.querySelector('#next');
 
-const titleItem = document.querySelector('#title');
-const titleElement = document.querySelector('#title-text');
-const titleDropdown = document.querySelector('#title .dropdown');
-const container = document.querySelector('#container');
-const versionButton = document.querySelector('#version');
-const versionItem = document.querySelector('#version-item');
-const versionDropdown = document.querySelector('#version-item .dropdown');
-const versionNumber = document.querySelector('#version-number');
-const prevButton = document.querySelector('#prev');
-const nextButton = document.querySelector('#next');
+    /** @type {AbortController} */
+    let abortController;
 
-/** @type {AbortController} */
-let abortController;
-
-/**
- * Returns the appropriate JS and CSS URLs for the selected version
- * @param {string} version
- * @returns {{js: string, css: string}}
- */
-function getUrls(version) {
-    if (version === 'latest') {
+    /**
+     * Returns the appropriate JS and CSS URLs for the selected version
+     * @param {string} version
+     * @returns {{js: string, css: string}}
+     */
+    function getUrls(version) {
+        if (version === 'latest') {
+            return {
+                js: './dist/mapbox-gl.js',
+                css: './dist/mapbox-gl.css'
+            };
+        }
         return {
-            js: './dist/mapbox-gl.js',
-            css: './dist/mapbox-gl.css'
+            js: `https://api.mapbox.com/mapbox-gl-js/${version}/mapbox-gl.js`,
+            css: `https://api.mapbox.com/mapbox-gl-js/${version}/mapbox-gl.css`
         };
     }
-    return {
-        js: `https://api.mapbox.com/mapbox-gl-js/${version}/mapbox-gl.js`,
-        css: `https://api.mapbox.com/mapbox-gl-js/${version}/mapbox-gl.css`
-    };
-}
 
-/**
- * Sanitizes content from remote docs.mapbox.com pages
- * @param {string} doc
- * @param {string} jsUrl
- * @param {string} cssUrl
- * @returns {string}
- */
-function sanitizeRemoteContent(doc, jsUrl, cssUrl) {
-    return doc
-        .replace(REGEX_PATTERNS.MAPBOX_JS_CDN, jsUrl)
-        .replace(REGEX_PATTERNS.MAPBOX_CSS_CDN, cssUrl)
-        .replace(REGEX_PATTERNS.API_KEY, `${accessToken}"`)
-        .replace(REGEX_PATTERNS.INSTRUMENTILE_SCRIPT, '')
-        .replace(REGEX_PATTERNS.SENTRY_SCRIPT, '');
-}
-
-/**
- * Sanitizes content from local HTML files
- * @param {string} doc
- * @param {string} jsUrl
- * @param {string} cssUrl
- * @returns {string}
- */
-function sanitizeLocalContent(doc, jsUrl, cssUrl) {
-    return doc
-        .replace(REGEX_PATTERNS.LOCAL_JS_SCRIPT, `<script src="${jsUrl}"></script>`)
-        .replace(REGEX_PATTERNS.LOCAL_CSS_LINK, `<link rel="stylesheet" href="${cssUrl}" />`);
-}
-
-/**
- * @param {Page} page
- */
-async function loadContent(page) {
-    if (abortController) {
-        abortController.abort();
+    /**
+     * Sanitizes content from remote docs.mapbox.com pages
+     * @param {string} doc
+     * @param {string} jsUrl
+     * @param {string} cssUrl
+     * @returns {string}
+     */
+    function sanitizeRemoteContent(doc, jsUrl, cssUrl) {
+        return doc
+            .replace(REGEX_PATTERNS.MAPBOX_JS_CDN, jsUrl)
+            .replace(REGEX_PATTERNS.MAPBOX_CSS_CDN, cssUrl)
+            .replace(REGEX_PATTERNS.API_KEY, `${accessToken}"`)
+            .replace(REGEX_PATTERNS.INSTRUMENTILE_SCRIPT, '')
+            .replace(REGEX_PATTERNS.SENTRY_SCRIPT, '');
     }
 
-    container.replaceChildren();
+    /**
+     * Sanitizes content from local HTML files
+     * @param {string} doc
+     * @param {string} jsUrl
+     * @param {string} cssUrl
+     * @returns {string}
+     */
+    function sanitizeLocalContent(doc, jsUrl, cssUrl) {
+        return doc
+            .replace(REGEX_PATTERNS.LOCAL_JS_SCRIPT, `<script src="${jsUrl}"></script>`)
+            .replace(REGEX_PATTERNS.LOCAL_CSS_LINK, `<link rel="stylesheet" href="${cssUrl}" />`);
+    }
 
-    abortController = new AbortController();
-    const url = page.url || `https://docs.mapbox.com/mapbox-gl-js/assets/${page.key}-demo.html`;
-    const {js, css} = getUrls(state.version);
-
-    try {
-        const response = await fetch(url, {signal: abortController.signal});
-        if (!response.ok) {
-            container.innerText = `Failed to load ${url}: ${response.statusText}`;
-            return;
+    /**
+     * @param {Page} page
+     */
+    async function loadContent(page) {
+        if (abortController) {
+            abortController.abort();
         }
 
-        let doc = await response.text();
+        container.replaceChildren();
 
-        // Apply correct sanitization based on content source
-        doc = page.url ?
-            sanitizeLocalContent(doc, js, css) :
-            sanitizeRemoteContent(doc, js, css);
+        abortController = new AbortController();
+        const url = page.url || `https://docs.mapbox.com/mapbox-gl-js/assets/${page.key}-demo.html`;
+        const {js, css} = getUrls(state.version);
 
-        // Create and populate iframe
-        const iframe = document.createElement('iframe');
-        container.appendChild(iframe);
-        const iframeDoc = iframe.contentWindow.document.open("text/html", "replace");
-        iframeDoc.write(doc);
-        iframeDoc.close();
-    } catch (error) {
-        if (error.name !== 'AbortError') {
-            container.innerText = `Failed to load ${url}: ${error.message}`;
+        try {
+            const response = await fetch(url, {signal: abortController.signal});
+            if (!response.ok) {
+                container.innerText = `Failed to load ${url}: ${response.statusText}`;
+                return;
+            }
+
+            let doc = await response.text();
+
+            // Apply correct sanitization based on content source
+            doc = page.url ?
+                sanitizeLocalContent(doc, js, css) :
+                sanitizeRemoteContent(doc, js, css);
+
+            // Create and populate iframe
+            const iframe = document.createElement('iframe');
+            container.appendChild(iframe);
+            const iframeDoc = iframe.contentWindow.document.open("text/html", "replace");
+            iframeDoc.write(doc);
+            iframeDoc.close();
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                container.innerText = `Failed to load ${url}: ${error.message}`;
+            }
         }
     }
-}
 
-/**
- * @param {number} pageIndex
- */
-function loadPage(pageIndex) {
-    const page = pages[pageIndex];
+    /**
+     * @param {number} pageIndex
+     */
+    function loadPage(pageIndex) {
+        const page = pages[pageIndex];
 
-    // Update state
-    state.page = page.key;
-    state.index = pageIndex;
-
-    // Update UI
-    titleElement.innerText = page.title;
-    versionNumber.innerText = state.version;
-
-    // Update navigation buttons
-    prevButton.classList.toggle('disabled', pageIndex === 0);
-    nextButton.classList.toggle('disabled', pageIndex + 1 === pages.length);
-
-    // Update URL hash
-    let hash = `page=${page.key}`;
-    if (state.version !== 'latest') {
-        hash += `&version=${state.version}`;
-    }
-
-    location.hash = hash;
-
-    // Load content
-    loadContent(page);
-}
-
-/**
- * Initialize the state from URL parameters
- * @returns {{page: string, version: string, index: number}}
- */
-function initState() {
-    const state = {
-        page: pages[0].key,
-        version: 'latest',
-        index: 0
-    };
-
-    const searchParams = new URLSearchParams(location.hash.slice(1));
-    for (const [key, value] of searchParams) {
-        state[key] = value;
-    }
-
-    if (!(state.version in versions)) {
-        state.version = 'latest';
-    }
-
-    const pageIndex = pages.findIndex(p => p.key === state.page);
-    if (pageIndex === -1) {
-        state.index = 0;
-        state.page = pages[0].key;
-    } else {
+        // Update state
+        state.page = page.key;
         state.index = pageIndex;
-        state.page = pages[pageIndex].key;
+
+        // Update UI
+        titleElement.innerText = page.title;
+        versionNumber.innerText = state.version;
+
+        // Update navigation buttons
+        prevButton.classList.toggle('disabled', pageIndex === 0);
+        nextButton.classList.toggle('disabled', pageIndex + 1 === pages.length);
+
+        // Update URL hash
+        let hash = `page=${page.key}`;
+        if (state.version !== 'latest') {
+            hash += `&version=${state.version}`;
+        }
+
+        location.hash = hash;
+
+        // Load content
+        loadContent(page);
     }
 
-    return state;
-}
+    /**
+     * Initialize the state from URL parameters
+     * @returns {{page: string, version: string, index: number}}
+     */
+    function initState() {
+        const state = {
+            page: pages[0].key,
+            version: 'latest',
+            index: 0
+        };
 
-/**
- * Initialize all UI elements and event listeners
- * @param {{page: string, version: string, index: number}} state
- */
-function initUI(state) {
-    function closeDropdown() {
-        versionItem.classList.remove('active');
-        titleItem.classList.remove('active');
+        const searchParams = new URLSearchParams(location.hash.slice(1));
+        for (const [key, value] of searchParams) {
+            state[key] = value;
+        }
+
+        if (!(state.version in versions)) {
+            state.version = 'latest';
+        }
+
+        const pageIndex = pages.findIndex(p => p.key === state.page);
+        if (pageIndex === -1) {
+            state.index = 0;
+            state.page = pages[0].key;
+        } else {
+            state.index = pageIndex;
+            state.page = pages[pageIndex].key;
+        }
+
+        return state;
     }
 
-    // Navbar expand button
-    document.querySelector('.navbar-expand').addEventListener('click', closeDropdown);
+    /**
+     * Initialize all UI elements and event listeners
+     * @param {{page: string, version: string, index: number}} state
+     */
+    function initUI(state) {
+        function closeDropdown() {
+            versionItem.classList.remove('active');
+            titleItem.classList.remove('active');
+        }
 
-    // Title dropdown toggle
-    titleElement.addEventListener('click', () => {
-        versionItem.classList.remove('active');
-        titleItem.classList.toggle('active');
-    });
+        // Navbar expand button
+        document.querySelector('.navbar-expand').addEventListener('click', closeDropdown);
 
-    // Create page dropdown items
-    for (const [i, page] of pages.entries()) {
-        const item = document.createElement('a');
-        item.classList.add('dropdown-item');
-        item.innerHTML = `<span class="item-title">${page.title}</span>`;
-        item.addEventListener('click', () => {
-            state.page = page.key;
-            state.index = i;
-            closeDropdown();
-            loadPage(i);
+        // Title dropdown toggle
+        titleElement.addEventListener('click', () => {
+            versionItem.classList.remove('active');
+            titleItem.classList.toggle('active');
         });
-        titleDropdown.appendChild(item);
-    }
 
-    // Navigation buttons
-    prevButton.addEventListener('click', () => {
-        if (state.index > 0) {
-            state.index--;
-            loadPage(state.index);
+        // Create page dropdown items
+        for (const [i, page] of pages.entries()) {
+            const item = document.createElement('a');
+            item.classList.add('dropdown-item');
+            item.innerHTML = `<span class="item-title">${page.title}</span>`;
+            item.addEventListener('click', () => {
+                state.page = page.key;
+                state.index = i;
+                closeDropdown();
+                loadPage(i);
+            });
+            titleDropdown.appendChild(item);
         }
-    });
 
-    nextButton.addEventListener('click', () => {
-        if (state.index + 1 < pages.length) {
-            state.index++;
-            loadPage(state.index);
-        }
-    });
-
-    // Version selector
-    versionNumber.innerText = state.version;
-    versionButton.addEventListener('click', () => {
-        titleItem.classList.remove('active');
-        versionItem.classList.toggle('active');
-    });
-
-    // Create version dropdown items
-    for (const [version, metadata] of Object.entries(versions)) {
-        const item = document.createElement('a');
-        item.classList.add('dropdown-item');
-        if (metadata.prerelease) {
-            item.classList.add('item-prerelease');
-        }
-        item.innerHTML = `<span class="item-title">${version}</span> <span class="item-meta">${metadata.released?.split('T')[0] || '&lt;unknown&gt;'}</span>`;
-        item.addEventListener('click', () => {
-            state.version = version;
-            closeDropdown();
-            loadPage(state.index);
+        // Navigation buttons
+        prevButton.addEventListener('click', () => {
+            if (state.index > 0) {
+                state.index--;
+                loadPage(state.index);
+            }
         });
-        versionDropdown.appendChild(item);
+
+        nextButton.addEventListener('click', () => {
+            if (state.index + 1 < pages.length) {
+                state.index++;
+                loadPage(state.index);
+            }
+        });
+
+        // Version selector
+        versionNumber.innerText = state.version;
+        versionButton.addEventListener('click', () => {
+            titleItem.classList.remove('active');
+            versionItem.classList.toggle('active');
+        });
+
+        // Create version dropdown items
+        for (const [version, metadata] of Object.entries(versions)) {
+            const item = document.createElement('a');
+            item.classList.add('dropdown-item');
+            if (metadata.prerelease) {
+                item.classList.add('item-prerelease');
+            }
+            item.innerHTML = `<span class="item-title">${version}</span> <span class="item-meta">${metadata.released?.split('T')[0] || '&lt;unknown&gt;'}</span>`;
+            item.addEventListener('click', () => {
+                state.version = version;
+                closeDropdown();
+                loadPage(state.index);
+            });
+            versionDropdown.appendChild(item);
+        }
     }
-}
 
-const state = initState();
-initUI(state);
+    const state = initState();
+    initUI(state);
 
-loadPage(state.index);
+    loadPage(state.index);
+});
