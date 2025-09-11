@@ -251,11 +251,12 @@ function updateLineLabels(bucket: SymbolBucket,
     pitchWithMap: boolean,
     keepUpright: boolean,
     getElevation: GetElevation | null | undefined,
-    tileID: OverscaledTileID) {
+    tileID: OverscaledTileID,
+    scaleFactor: number = 1) {
 
     const tr = painter.transform;
     const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
-    const partiallyEvaluatedSize = evaluateSizeForZoom(sizeData, painter.transform.zoom);
+    const partiallyEvaluatedSize = evaluateSizeForZoom(sizeData, painter.transform.zoom, scaleFactor);
     const isGlobe = tr.projection.name === 'globe';
 
     const clippingBuffer: [number, number] = [256 / painter.width * 2 + 1, 256 / painter.height * 2 + 1];

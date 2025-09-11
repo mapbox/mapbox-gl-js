@@ -519,8 +519,10 @@ function drawLayerSymbols(
                 const elevation = tr.elevation;
                 const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, bucket.getProjection()) : null;
                 const labelPlaneMatrixPlacement = symbolProjection.getLabelPlaneMatrixForPlacement(tileMatrix, tile.tileID.canonical, iconPitchWithMap, iconRotateWithMap, tr, bucket.getProjection(), s);
+                const iconSizeScaleRange = layer.layout.get('icon-size-scale-range');
+                const iconScaleFactor = clamp(painter.scaleFactor, iconSizeScaleRange[0], iconSizeScaleRange[1]);
 
-                symbolProjection.updateLineLabels(bucket, tileMatrix, painter, false, labelPlaneMatrixPlacement, glCoordMatrix, iconPitchWithMap, iconKeepUpright, getElevation, coord);
+                symbolProjection.updateLineLabels(bucket, tileMatrix, painter, false, labelPlaneMatrixPlacement, glCoordMatrix, iconPitchWithMap, iconKeepUpright, getElevation, coord, iconScaleFactor);
             }
 
             return {
@@ -642,7 +644,7 @@ function drawLayerSymbols(
                 const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, bucket.getProjection()) : null;
                 const labelPlaneMatrixPlacement = symbolProjection.getLabelPlaneMatrixForPlacement(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
 
-                symbolProjection.updateLineLabels(bucket, tileMatrix, painter, true, labelPlaneMatrixPlacement, glCoordMatrix, textPitchWithMap, textKeepUpright, getElevation, coord);
+                symbolProjection.updateLineLabels(bucket, tileMatrix, painter, true, labelPlaneMatrixPlacement, glCoordMatrix, textPitchWithMap, textKeepUpright, getElevation, coord, textScaleFactor);
             }
 
             return {
