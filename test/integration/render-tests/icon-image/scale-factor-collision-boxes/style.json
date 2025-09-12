@@ -4,7 +4,8 @@
     "test": {
       "height": 256,
       "width": 128,
-      "scaleFactor": 4
+      "scaleFactor": 4,
+      "collisionDebug": true
     }
   },
   "sources": {

@@ -5,7 +5,8 @@
       "spriteFormat": "raster",
       "width": 128,
       "height": 128,
-      "scaleFactor": 2
+      "scaleFactor": 2,
+      "collisionDebug": true
     }
   },
   "sources": {
