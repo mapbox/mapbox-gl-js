@@ -13,6 +13,7 @@ type IndoorControlLevel = {
 type IndoorControlModel = {
     selectedFloorId: string;
     floors: Array<IndoorControlLevel>;
+    showBuildingsOverview: boolean;
 };
 
 /**
@@ -39,10 +40,10 @@ class IndoorControl implements IControl {
     onAdd(map: Map): HTMLElement {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-group');
-
         this._map.indoor.on('indoorupdate', (event) => this._onIndoorUpdate({
             selectedFloorId: event.selectedFloorId,
-            floors: event.floors
+            floors: event.floors,
+            showBuildingsOverview: event.showBuildingsOverview
         }));
 
         return this._container;
@@ -82,6 +83,7 @@ class IndoorControl implements IControl {
 
     _onIndoorUpdate(model: IndoorControlModel | null) {
         if (!model || !model.floors) {
+            this._model = model;
             this._container.style.display = 'none';
             return;
         }
@@ -94,31 +96,54 @@ class IndoorControl implements IControl {
 
         if (oldModel) {
             Array.from(this._container.children).forEach(child => child.remove());
-            this.addCurrentFloors(currentFloors);
-        } else {
-            this.addCurrentFloors(currentFloors);
+        }
+
+        if (currentFloors.length > 0) {
+            this.addBuildingsToggleButton();
+            this.addCurrentFloors(currentFloors, !model.showBuildingsOverview);
+            this._updateBuildingsButtonState();
         }
     }
 
-    addCurrentFloors(floors: Array<IndoorControlLevel>) {
+    addBuildingsToggleButton() {
+        const buildingsButton = this._createButton('mapboxgl-ctrl-buildings-toggle', () => {
+            if (this._model && this._map) {
+                this._map._setIndoorOptions(!this._model.showBuildingsOverview);
+            }
+        });
+        DOM.create('span', `mapboxgl-ctrl-icon`, buildingsButton).setAttribute('aria-hidden', 'true');
+
+        buildingsButton.classList.add('mapboxgl-ctrl-level-button', 'mapboxgl-ctrl-buildings-toggle');
+
+        if (this._model && this._model.showBuildingsOverview) {
+            buildingsButton.classList.add('mapboxgl-ctrl-level-button-selected');
+        }
+
+        this._container.append(buildingsButton);
+        this._createSeparator();
+    }
+
+    _updateBuildingsButtonState() {
+        const buildingsButton = this._container.querySelector('.mapboxgl-ctrl-buildings-toggle');
+        if (buildingsButton && this._model) {
+            if (this._model.showBuildingsOverview) {
+                buildingsButton.classList.add('mapboxgl-ctrl-level-button-selected');
+            } else {
+                buildingsButton.classList.remove('mapboxgl-ctrl-level-button-selected');
+            }
+        }
+    }
+
+    addCurrentFloors(floors: Array<IndoorControlLevel>, showSelectedFloor: boolean) {
         for (let i = 0; i < floors.length; i++) {
             const floor = floors[i];
             const levelButton = this._createButton('mapboxgl-ctrl-level-button', () => {
                 this._map._selectIndoorFloor(floor.id);
-                if (this._model) {
-                    this._model.selectedFloorId = floor.id;
-                }
-                Array.from(this._container.children).forEach(child => {
-                    if (child.classList.contains('mapboxgl-ctrl-level-button')) {
-                        child.classList.remove('mapboxgl-ctrl-level-button-selected');
-                    }
-                });
-                levelButton.classList.add('mapboxgl-ctrl-level-button-selected');
             });
 
             this._setButtonTitle(levelButton, floor.shortName);
 
-            if (this._model && floor.id === this._model.selectedFloorId) {
+            if (this._model && floor.id === this._model.selectedFloorId && showSelectedFloor) {
                 levelButton.classList.add('mapboxgl-ctrl-level-button-selected');
             }
 

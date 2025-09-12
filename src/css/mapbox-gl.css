@@ -304,6 +304,15 @@
     background-image: svg-inline(ctrl-geolocate);
 }
 
+.mapboxgl-ctrl button.mapboxgl-ctrl-buildings-toggle .mapboxgl-ctrl-icon {
+    background-image: svg-load("svg/mapboxgl-ctrl-buildings-toggle.svg");
+    background-size: 26px 26px;
+}
+
+.mapboxgl-ctrl button.mapboxgl-ctrl-buildings-toggle.mapboxgl-ctrl-level-button-selected .mapboxgl-ctrl-icon {
+    filter: invert(1) brightness(1);
+}
+
 .mapboxgl-ctrl button.mapboxgl-ctrl-geolocate:disabled .mapboxgl-ctrl-icon {
     background-image: svg-inline(ctrl-geolocate-disabled);
 }
@@ -833,8 +842,8 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 .mapboxgl-ctrl button.mapboxgl-ctrl-level-button {
     color: #333;
     font-size: 18px;
-    width: 44px;
-    height: 44px;
+    width: 50px;
+    height: 50px;
     font-weight: bold;
 }
 
@@ -860,3 +869,4 @@ a.mapboxgl-ctrl-logo.mapboxgl-compact {
 .mapboxgl-ctrl button.mapboxgl-ctrl-level-button-selected:hover {
     background-color: #2d3748;
 }
+

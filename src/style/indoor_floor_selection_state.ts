@@ -5,6 +5,7 @@ import type {IndoorData, IndoorDataFloor} from './indoor_data_query';
 export default class IndoorFloorSelectionState {
     _selectedFloorId: string | null;
     _selectedBuildingId: string | null;
+    _showBuildingsOverview: boolean;
     _lastActiveFloors: Array<IndoorDataFloor>;
     _featuresStorage: IndoorFeaturesStorage;
 
@@ -12,6 +13,7 @@ export default class IndoorFloorSelectionState {
         this._selectedFloorId = null;
         this._selectedBuildingId = null;
         this._lastActiveFloors = [];
+        this._showBuildingsOverview = false;
         this._featuresStorage = new IndoorFeaturesStorage();
     }
 
@@ -21,10 +23,19 @@ export default class IndoorFloorSelectionState {
         return hasChanges;
     }
 
+    getShowBuildingsOverview(): boolean {
+        return this._showBuildingsOverview;
+    }
+
+    setShowBuildingsOverview(showBuildingsOverview: boolean): void {
+        this._showBuildingsOverview = showBuildingsOverview;
+    }
+
     setFloorId(floorId: string | null): boolean {
-        const hasChanges = this._selectedFloorId !== floorId;
+        const hasChanges = (this._selectedFloorId !== floorId) || (this._showBuildingsOverview !== false);
         if (hasChanges) {
             this._selectedFloorId = floorId;
+            this._showBuildingsOverview = false;
         }
         return hasChanges;
     }
@@ -208,6 +219,7 @@ export default class IndoorFloorSelectionState {
         this._selectedFloorId = null;
         this._selectedBuildingId = null;
         this._lastActiveFloors = [];
+        this._showBuildingsOverview = false;
         this._featuresStorage.clear();
     }
 }

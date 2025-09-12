@@ -61,6 +61,13 @@ export class IndoorDataQuery {
             buildingIds: floor.properties.building_ids as string
         }));
 
+        if (!closestBuilding && !anyBuilding) {
+            return {
+                building: null,
+                floors: floorData
+            };
+        }
+
         const buildingData = closestBuilding ? {
             id: closestBuilding.properties.id as string,
             name: closestBuilding.properties.name as string

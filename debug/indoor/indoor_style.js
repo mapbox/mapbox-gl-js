@@ -38,7 +38,6 @@ const indoorLayers = [
             ["in", ["get", "shape_type"], ["literal", ["building"]]],
         ],
         "paint": {
-            // Note: We should keep opacity above zero to enable queries of the footprint
             "fill-extrusion-color": "#fbfbfb",
             "fill-extrusion-opacity": [
                 "interpolate",

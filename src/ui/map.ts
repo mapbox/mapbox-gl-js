@@ -4113,6 +4113,10 @@ export class Map extends Camera {
         this.indoor.selectFloor(floorId);
     }
 
+    _setIndoorOptions(showBuildingsOverview: boolean) {
+        this.indoor.setShowBuildingsOverview(showBuildingsOverview);
+    }
+
     _addIndoorControl() {
         if (!this._indoorControl) {
             this._indoorControl = new IndoorControl();

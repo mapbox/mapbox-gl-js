@@ -9,6 +9,7 @@ import type Style from './style';
 type IndoorEvents = {
     'indoorupdate': {
         selectedFloorId: string;
+        showBuildingsOverview: boolean;
         floors: Array<{
             id: string;
             name: string;
@@ -20,8 +21,8 @@ type IndoorEvents = {
 
 export default class IndoorManager extends Evented<IndoorEvents> {
     _map: Map;
-    _floorSelectionState: IndoorFloorSelectionState | null;
     _scope: string | null;
+    _floorSelectionState: IndoorFloorSelectionState | null;
     _indoorDataQuery: IndoorDataQuery | null;
 
     constructor(map: Map) {
@@ -34,7 +35,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
 
         this._map = map;
         this._floorSelectionState = new IndoorFloorSelectionState();
-        this._queryIndoor();
+        this._indoorDataQuery = null;
         this._map.on('load', this._onLoad);
         this._map.on('move', this._onMove);
     }
@@ -46,17 +47,20 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         this._floorSelectionState = null;
     }
 
-    // Selects a level of based on a provided ID.
     selectFloor(floorId: string | null) {
         const hasChanges = this._floorSelectionState.setFloorId(floorId);
         if (hasChanges) {
             this._updateIndoorConfig(true);
+            this._updateIndoorSelector();
         }
     }
 
-    // Prepare IndoorManager on the map load.
-    // If the style contains any fragment with "indoor" property
-    // the manager gets automatically enabled and it starts querying features.
+    setShowBuildingsOverview(showBuildingsOverview: boolean) {
+        this._floorSelectionState.setShowBuildingsOverview(showBuildingsOverview);
+        this._updateIndoorConfig(false);
+        this._updateIndoorSelector();
+    }
+
     _onLoad() {
         this._map.style.forEachFragmentStyle((style: Style) => {
             // Find a style import with an indoor property
@@ -143,6 +147,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
 
         this.fire(new Event('indoorupdate', {
             selectedFloorId: currentBuildingSelection.selectedFloorId,
+            showBuildingsOverview: this._floorSelectionState.getShowBuildingsOverview(),
             floors
         }));
     }
@@ -150,6 +155,11 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     // eslint-disable-next-line no-warning-comments
     // TODO: Replace use of config with the style expressions
     _updateIndoorConfig(isExplicitSelection: boolean = false) {
+        if (this._floorSelectionState.getShowBuildingsOverview()) {
+            this._map.setConfigProperty(this._scope, "activeFloors", ["literal", []]);
+            return;
+        }
+
         const activeFloors = this._floorSelectionState.getActiveFloors(isExplicitSelection);
         const activeFloorsIds = activeFloors.map(floor => floor.id) || [];
         this._map.setConfigProperty(this._scope, "activeFloors", ["literal", activeFloorsIds]);
