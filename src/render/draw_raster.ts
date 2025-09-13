@@ -23,6 +23,7 @@ import {mercatorXfromLng, mercatorYfromLat} from '../geo/mercator_coordinate';
 import {COLOR_MIX_FACTOR} from '../style/style_layer/raster_style_layer';
 import RasterArrayTile from '../source/raster_array_tile';
 import RasterArrayTileSource from '../source/raster_array_tile_source';
+import browser from '../util/browser';
 
 import type Transform from '../geo/transform';
 import type {OverscaledTileID} from '../source/tile_id';
@@ -40,6 +41,7 @@ import type {CrossTileID, VariableOffset} from '../symbol/placement';
 export default drawRaster;
 
 const RASTER_COLOR_TEXTURE_UNIT = 2;
+const PREVIOUS_TILE_TEXTURE_UNIT = 3;
 
 type RasterConfig = {
     defines: DynamicDefinesType[];
@@ -185,6 +187,24 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 texture.bind(textureFilter, gl.CLAMP_TO_EDGE);
             }
 
+            // --- ICONEM: bind previous tile texture (if any) on unit 3
+            let perTileFadeMix = 0.5;
+            const perTileFadeDuration = 1000; // because was probably initialLoad, rasterFadeDuration = 0
+            if (tile.previousTexture) {
+                const now = browser.now();
+                // If we missed setting start, treat as fully shown
+                const t0 = tile.perTileFadeStartTime ? tile.perTileFadeStartTime : now;
+                // const t0 = tile.perTileFadeEndTime ? tile.perTileFadeEndTime - perTileFadeDuration : now;
+                perTileFadeMix = Math.max(0, Math.min(1, (now - t0) / perTileFadeDuration));
+                context.activeTexture.set(gl.TEXTURE0 + PREVIOUS_TILE_TEXTURE_UNIT);
+                tile.previousTexture.bind(textureFilter, gl.CLAMP_TO_EDGE);
+                // Optional micro-GC once the fade is done
+                if (perTileFadeMix >= 1 && tile.previousTexture instanceof Texture) {
+                    tile.previousTexture.destroy();
+                    tile.previousTexture = null;
+                }
+            }
+
             // Enable trilinear filtering on tiles only beyond 20 degrees pitch,
             // to prevent it from compromising image crispness on flat or low tilted maps.
             if ('useMipmap' in texture && context.extTextureFilterAnisotropic && painter.transform.pitch > 20) {
@@ -249,7 +269,9 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 rasterConfig.range,
                 tileSize,
                 buffer,
-                emissiveStrength
+                emissiveStrength,
+                perTileFadeMix,
+                (tile.previousTexture && perTileFadeMix < 1.0) ? PREVIOUS_TILE_TEXTURE_UNIT : 0
             );
             const affectedByFog = painter.isTileAffectedByFog(coord);
 
