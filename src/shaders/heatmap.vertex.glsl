@@ -33,7 +33,7 @@ const highp float ZERO = 1.0 / 255.0 / 16.0;
 // Gaussian kernel coefficient: 1 / sqrt(2 * PI)
 #define GAUSS_COEF 0.3989422804014327
 
-void main(void) {
+void main() {
     #pragma mapbox: initialize highp float weight
     #pragma mapbox: initialize mediump float radius
 

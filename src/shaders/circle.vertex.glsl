@@ -88,7 +88,7 @@ float get_sample_step() {
 #endif
 }
 
-void main(void) {
+void main() {
     #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize mediump float radius
     #pragma mapbox: initialize lowp float blur
