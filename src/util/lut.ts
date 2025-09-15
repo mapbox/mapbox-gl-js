@@ -6,6 +6,7 @@ import type {PossiblyEvaluated, ConfigOptions} from '../style/properties';
 import type {RGBAImage} from "./image";
 import type {Texture3D} from '../../src/render/texture';
 import type {ColorThemeSpecification} from "../style-spec/types";
+import type {StylePropertySpecification} from '../style-spec/style-spec';
 
 export type LUT = {
     image: RGBAImage;
@@ -14,12 +15,13 @@ export type LUT = {
 };
 
 type Props = {
-    ["data"]: DataConstantProperty<string>;
+    data?: DataConstantProperty<string>;
 };
 
+const colorThemeReference = styleSpec.colorTheme as Record<string, StylePropertySpecification>;
+
 const colorizationProperties: Properties<Props> = new Properties({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    "data": new DataConstantProperty(styleSpec.colorTheme.data)
+    data: new DataConstantProperty(colorThemeReference.data)
 });
 
 export function evaluateColorThemeProperties(
@@ -29,17 +31,14 @@ export function evaluateColorThemeProperties(
     worldview?: string
 ): PossiblyEvaluated<Props> {
     const properties = Object.assign({}, values);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    for (const name of Object.keys(styleSpec.colorTheme)) {
+    for (const name of Object.keys(colorThemeReference)) {
         // Fallback to use default style specification when the properties wasn't set
         if (properties[name] === undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-            properties[name] = styleSpec.colorTheme[name].default;
+            properties[name] = colorThemeReference[name].default;
         }
     }
 
     const transitionable = new Transitionable(colorizationProperties, scope, new Map(configOptions));
-    // @ts-expect-error - TS2344 - Type 'ColorThemeSpecification' does not satisfy the constraint 'PropertyValueSpecifications<Props>'.
     transitionable.setTransitionOrValue<ColorThemeSpecification>(properties, configOptions);
     const transitioning = transitionable.untransitioned();
     return transitioning.possiblyEvaluate(new EvaluationParameters(0.0, {worldview}));

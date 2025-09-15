@@ -16,6 +16,12 @@ type LivePerformanceMetrics = {
 
 type ResourceTimers = Record<string, Array<PerformanceResourceTiming>>;
 
+type NavigatorWithConnection = Navigator & {
+    connection?: {effectiveType?: string};
+    mozConnection?: {effectiveType?: string};
+    webkitConnection?: {effectiveType?: string};
+};
+
 export type LivePerformanceData = {
     interactionRange: [number, number];
     visibilityHidden: number;
@@ -129,11 +135,8 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     const resourcesByType = categorize(resourceTimers, getResourceCategory);
     const counters = getCountersPerResourceType(resourcesByType);
     const devicePixelRatio = window.devicePixelRatio;
-    // @ts-expect-error - TS2339 - Property 'connection' does not exist on type 'Navigator'. | TS2339 - Property 'mozConnection' does not exist on type 'Navigator'. | TS2339 - Property 'webkitConnection' does not exist on type 'Navigator'.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const effectiveType = connection ? (connection).effectiveType : undefined;
+    const connection = (navigator as NavigatorWithConnection).connection || (navigator as NavigatorWithConnection).mozConnection || (navigator as NavigatorWithConnection).webkitConnection;
+    const effectiveType = connection ? connection.effectiveType : undefined;
     const metrics: LivePerformanceMetrics = {counters: [], metadata: [], attributes: []};
 
     // Please read carefully before adding or modifying the following metrics:
@@ -152,12 +155,9 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
         addMetric(metrics.counters, "interactionRangeMax", data.interactionRange[1]);
     }
     if (markerTimers) {
-        for (const marker of Object.keys(LivePerformanceMarkers)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const markerName = LivePerformanceMarkers[marker];
+        for (const markerName of Object.values(LivePerformanceMarkers)) {
             const markerTimer = markerTimers.find((entry) => entry.name === markerName);
             if (markerTimer) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 addMetric(metrics.counters, markerName, markerTimer.startTime);
             }
         }
@@ -171,7 +171,6 @@ export function getLivePerformanceMetrics(data: LivePerformanceData): LivePerfor
     addMetric(metrics.attributes, "zoom", data.zoom);
 
     addMetric(metrics.metadata, "devicePixelRatio", devicePixelRatio);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     addMetric(metrics.metadata, "connectionEffectiveType", effectiveType);
     addMetric(metrics.metadata, "navigatorUserAgent", navigator.userAgent);
     addMetric(metrics.metadata, "screenWidth", window.screen.width);

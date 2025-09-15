@@ -8,7 +8,7 @@ import {vec3, vec4} from 'gl-matrix';
 import EXTENT from '../../style-spec/data/extent';
 import {Point3D} from '../../util/line_clipping';
 
-import type {Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
+import type {Layout, Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../properties';
 import type {CanonicalTileID} from '../../source/tile_id';
 import type {FeatureState} from '../../style-spec/expression/index';
 import type {BucketParameters} from '../../data/bucket';
@@ -25,10 +25,12 @@ import type {ProgramName} from '../../../src/render/program';
 class FillExtrusionStyleLayer extends StyleLayer {
     override type: 'fill-extrusion';
 
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
+
     override _transitionablePaint: Transitionable<PaintProps>;
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;
-    override layout: PossiblyEvaluated<LayoutProps>;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {

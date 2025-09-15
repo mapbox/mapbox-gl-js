@@ -10,7 +10,7 @@ import EXTENT from '../../../src/style-spec/data/extent';
 import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '../../util/model_util';
 import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
 
-import type {Transitionable, Transitioning, PossiblyEvaluated, PropertyValue, ConfigOptions} from '../../../src/style/properties';
+import type {Layout, Transitionable, Transitioning, PossiblyEvaluated, PropertyValue, ConfigOptions} from '../../../src/style/properties';
 import type Point from '@mapbox/point-geometry';
 import type {LayerSpecification} from '../../../src/style-spec/types';
 import type {PaintProps, LayoutProps} from './model_style_layer_properties';
@@ -29,10 +29,13 @@ import type {ProgramName} from '../../../src/render/program';
 class ModelStyleLayer extends StyleLayer {
     override type: 'model';
 
+    override _unevaluatedLayout: Layout<LayoutProps>;
+    override layout: PossiblyEvaluated<LayoutProps>;
+
     override _transitionablePaint: Transitionable<PaintProps>;
     override _transitioningPaint: Transitioning<PaintProps>;
     override paint: PossiblyEvaluated<PaintProps>;
-    override layout: PossiblyEvaluated<LayoutProps>;
+
     modelManager: ModelManager;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {

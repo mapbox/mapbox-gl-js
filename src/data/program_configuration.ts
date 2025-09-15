@@ -857,7 +857,7 @@ const defaultLayouts = {
     }
 } as const;
 
-type LayoutType = 'array' | 'boolean' | 'color' | 'enum' | 'number' | 'resolvedImage' | 'string';
+type LayoutType = 'array' | 'boolean' | 'color' | 'enum' | 'number' | 'resolvedImage' | 'string' | 'formatted';
 
 function layoutType(property: string, type: LayoutType, binderType: 'source' | 'composite'): Class<StructArray> {
     const layoutException = propertyExceptions[property as keyof typeof propertyExceptions];

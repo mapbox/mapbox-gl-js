@@ -6,11 +6,14 @@ import {ZoomDependentExpression} from '../style-spec/expression/index';
 
 import type {ConfigOptions, TransitionParameters, Transitioning, PossiblyEvaluated} from './properties';
 import type {TerrainSpecification} from '../style-spec/types';
+import type {StylePropertySpecification} from '../style-spec/style-spec';
 
 type Props = {
     ["source"]: DataConstantProperty<string>;
     ["exaggeration"]: DataConstantProperty<number>;
 };
+
+const terrainSpecification = styleSpec.terrain as Record<string, StylePropertySpecification>;
 
 export const DrapeRenderMode = {
     deferred: 0,
@@ -30,12 +33,10 @@ class Terrain extends Evented {
         super();
         this.scope = scope;
         this._transitionable = new Transitionable(new Properties({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-            "source": new DataConstantProperty(styleSpec.terrain.source),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-            "exaggeration": new DataConstantProperty(styleSpec.terrain.exaggeration),
+            "source": new DataConstantProperty(terrainSpecification.source),
+            "exaggeration": new DataConstantProperty(terrainSpecification.exaggeration),
         }), scope, configOptions);
-        // @ts-expect-error - TS2345 - Argument of type 'TerrainSpecification' is not assignable to parameter of type 'PropertyValueSpecifications<Props>'.
+
         this._transitionable.setTransitionOrValue(terrainOptions, configOptions);
         this._transitioning = this._transitionable.untransitioned();
         this.drapeRenderMode = drapeRenderMode;
@@ -48,7 +49,6 @@ class Terrain extends Evented {
     }
 
     set(terrain: TerrainSpecification, configOptions?: ConfigOptions | null) {
-        // @ts-expect-error - TS2345 - Argument of type 'TerrainSpecification' is not assignable to parameter of type 'PropertyValueSpecifications<Props>'.
         this._transitionable.setTransitionOrValue(terrain, configOptions);
     }
 

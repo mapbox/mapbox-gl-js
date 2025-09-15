@@ -3,14 +3,12 @@ import ValidationError from '../error/validation_error';
 
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
+import type {NumberPropertySpecification} from '../style-spec';
 
 type NumberValidatorOptions = {
     key: string;
     value: unknown;
-    valueSpec: {
-        minimum?: number;
-        maximum?: number
-    };
+    valueSpec: NumberPropertySpecification;
     style: Partial<StyleSpecification>;
     styleSpec: StyleReference;
     arrayIndex: number;

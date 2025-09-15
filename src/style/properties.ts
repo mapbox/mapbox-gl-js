@@ -422,9 +422,11 @@ type PropertyValues<Props> = {
  *
  * @private
  */
-type PropertyValueSpecifications<Props> = {
-    [Key in keyof Props]: Props[Key] extends Property<infer T, unknown> ? PropertyValueSpecification<T> : never;
-};
+type PropertyValueSpecifications<Props> = Partial<{
+    [Key in keyof Props]: Props[Key] extends Property<infer T, unknown> ?
+        PropertyValueSpecification<T extends Color ? string : T> :
+        never;
+}>;
 
 /**
  * Because layout properties are not transitionable, they have a simpler representation and evaluation chain than

@@ -129,9 +129,7 @@ export default function validateSource(options: SourceValidatorOptions): Validat
         return validateEnum({
             key: `${key}.type`,
             value: (value as {type: unknown}).type,
-            valueSpec: {values: getSourceTypeValues(styleSpec)},
-            style,
-            styleSpec
+            valueSpec: {values: getSourceTypeValues(styleSpec)}
         });
     }
 }

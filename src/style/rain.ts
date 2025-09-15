@@ -88,12 +88,10 @@ class Rain extends Evented {
         }
 
         this._options = properties;
-        // @ts-expect-error - TS2345 - Argument of type 'RainSpecification' is not assignable to parameter of type 'PropertyValueSpecifications<Props>'.
         this._transitionable.setTransitionOrValue(this._options, configOptions);
     }
 
     updateConfig(configOptions?: ConfigOptions | null) {
-        // @ts-expect-error - TS2345 - Argument of type 'FogSpecification' is not assignable to parameter of type 'PropertyValueSpecifications<Props>'.
         this._transitionable.setTransitionOrValue(this._options, new Map(configOptions));
     }
 

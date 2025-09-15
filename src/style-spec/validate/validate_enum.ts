@@ -1,17 +1,12 @@
 import ValidationError from '../error/validation_error';
 import {unbundle} from '../util/unbundle_jsonlint';
 
-import type {StyleReference} from '../reference/latest';
-import type {StyleSpecification} from '../types';
+import type {EnumPropertySpecification} from '../style-spec';
 
 type EnumValidatorOptions = {
     key: string;
     value: unknown;
-    valueSpec?: {
-        values: unknown[];
-    };
-    style?: Partial<StyleSpecification>;
-    styleSpec?: StyleReference;
+    valueSpec: EnumPropertySpecification | {values: unknown[] | {[_: string]: unknown}};
 };
 
 export default function validateEnum(options: EnumValidatorOptions): ValidationError[] {

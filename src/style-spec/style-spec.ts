@@ -1,77 +1,3 @@
-type ExpressionType = 'data-driven' | 'color-ramp' | 'data-constant' | 'constant';
-type ExpressionParameters = Array<'zoom' | 'feature' | 'feature-state' | 'heatmap-density' | 'line-progress' | 'raster-value' | 'sky-radial-progress' | 'pitch' | 'distance-from-center' | 'measure-light' | 'raster-particle-speed'>;
-
-export type ExpressionSpecification = {
-    interpolated: boolean,
-    parameters?: ExpressionParameters,
-    relaxZoomRestriction?: boolean
-};
-
-export type StylePropertySpecification = {
-    type: 'number',
-    'property-type': ExpressionType,
-    expression?: ExpressionSpecification,
-    transition?: boolean,
-    default?: number,
-    tokens: never
-} | {
-    type: 'string',
-    'property-type': ExpressionType,
-    expression?: ExpressionSpecification,
-    transition?: boolean,
-    default?: string,
-    tokens?: boolean
-} | {
-    type: 'boolean',
-    'property-type': ExpressionType,
-    expression?: ExpressionSpecification,
-    transition?: boolean,
-    overridable?: boolean,
-    default?: boolean,
-    tokens?: never
-} | {
-    type: 'enum',
-    'property-type': ExpressionType,
-    expression?: ExpressionSpecification,
-    values: {[_: string]: unknown},
-    transition?: boolean,
-    default?: string,
-    tokens: never
-} | {
-    type: 'color',
-    'property-type': ExpressionType,
-    expression?: ExpressionSpecification,
-    transition?: boolean,
-    default?: string,
-    tokens: never,
-    overridable: boolean
-} | {
-    type: 'array',
-    value: 'number',
-    'property-type': ExpressionType,
-    expression?: ExpressionSpecification,
-    length?: number,
-    transition?: boolean,
-    default?: Array<number>,
-    tokens: never
-} | {
-    type: 'array',
-    value: 'string',
-    'property-type': ExpressionType,
-    expression?: ExpressionSpecification,
-    length?: number,
-    transition?: boolean,
-    default?: Array<string>,
-    tokens: never
-} | {
-    type: 'resolvedImage',
-    'property-type': ExpressionType,
-    expression?: ExpressionSpecification,
-    transition?: boolean,
-    default?: string,
-    tokens: never
-};
-
 import v8 from './reference/v8.json';
 import latest from './reference/latest';
 import format from './format';
@@ -90,6 +16,193 @@ import convertFunction from './function/convert';
 import {eachSource, eachLayer, eachProperty} from './visit';
 import validate from './validate_style';
 import validateMapboxApiSupported from './validate_mapbox_api_supported';
+
+type ExpressionType = 'data-driven' | 'color-ramp' | 'data-constant' | 'constant';
+
+type ExpressionParameter =
+    | 'zoom'
+    | 'pitch'
+    | 'feature'
+    | 'raster-value'
+    | 'feature-state'
+    | 'line-progress'
+    | 'measure-light'
+    | 'heatmap-density'
+    | 'sky-radial-progress'
+    | 'distance-from-center'
+    | 'raster-particle-speed';
+
+export type ExpressionSpecification = {
+    interpolated: boolean,
+    parameters?: ExpressionParameter[],
+    relaxZoomRestriction?: boolean
+};
+
+export type ArrayPropertySpecification =
+    {
+        type: 'array';
+        'property-type': ExpressionType;
+        value: 'enum';
+        expression?: ExpressionSpecification,
+        transition?: boolean,
+        default?: string[],
+        length?: number,
+        values?: {[_: string]: unknown},
+        experimental?: boolean,
+        private?: boolean,
+        requires?: unknown,
+        appearance?: boolean,
+        tokens?: never,
+        minimum?: never,
+        maximum?: never,
+    } | {
+        type: 'array';
+        'property-type': ExpressionType;
+        value: 'number';
+        expression?: ExpressionSpecification;
+        transition?: boolean;
+        default?: number[];
+        minimum?: number;
+        maximum?: number;
+        length?: number;
+        period?: number;
+        units?: string;
+        experimental?: boolean;
+        private?: boolean;
+        requires?: unknown;
+        appearance?: boolean;
+        tokens?: never;
+        values?: never;
+    } | {
+        type: 'array';
+        'property-type': ExpressionType;
+        value: 'string';
+        expression?: ExpressionSpecification;
+        transition?: boolean;
+        default?: string[];
+        length?: number;
+        experimental?: boolean;
+        private?: boolean;
+        requires?: unknown;
+        appearance?: boolean;
+        tokens?: never;
+        minimum?: never;
+        maximum?: never;
+        values?: never;
+    };
+
+export type BooleanPropertySpecification = {
+    type: 'boolean';
+    'property-type': ExpressionType;
+    expression?: ExpressionSpecification;
+    transition?: boolean;
+    default?: boolean;
+    overridable?: boolean;
+    experimental?: boolean;
+    private?: boolean;
+    requires?: unknown;
+    appearance?: boolean;
+    tokens?: never;
+};
+
+export type ColorPropertySpecification = {
+    type: 'color';
+    'property-type': ExpressionType;
+    expression?: ExpressionSpecification;
+    transition?: boolean;
+    default?: string;
+    'use-theme'?: boolean;
+    overridable?: boolean;
+    experimental?: boolean;
+    private?: boolean;
+    requires?: unknown;
+    appearance?: boolean;
+    tokens?: never;
+};
+
+export type EnumPropertySpecification = {
+    type: 'enum';
+    'property-type': ExpressionType;
+    expression?: ExpressionSpecification;
+    transition?: boolean;
+    default?: string;
+    values?: {[_: string]: unknown};
+    experimental?: boolean;
+    private?: boolean;
+    requires?: unknown;
+    appearance?: boolean;
+    tokens?: never;
+};
+
+export type FormattedPropertySpecification = {
+    type: 'formatted';
+    'property-type': ExpressionType;
+    expression?: ExpressionSpecification;
+    transition?: boolean;
+    default?: string;
+    tokens?: boolean;
+    experimental?: boolean;
+    private?: boolean;
+    requires?: unknown;
+    appearance?: boolean;
+};
+
+export type NumberPropertySpecification = {
+    type: 'number';
+    'property-type': ExpressionType;
+    expression?: ExpressionSpecification;
+    transition?: boolean;
+    default?: number;
+    minimum?: number;
+    maximum?: number;
+    period?: number;
+    units?: string;
+    experimental?: boolean;
+    private?: boolean;
+    requires?: unknown;
+    appearance?: boolean;
+    tokens?: never;
+};
+
+export type ResolvedImagePropertySpecification = {
+    type: 'resolvedImage';
+    'property-type': ExpressionType;
+    expression?: ExpressionSpecification;
+    transition?: boolean;
+    default?: string;
+    tokens?: boolean;
+    'use-theme'?: boolean;
+    experimental?: boolean;
+    private?: boolean;
+    requires?: unknown;
+    appearance?: boolean;
+};
+
+export type StringPropertySpecification = {
+    type: 'string';
+    'property-type': ExpressionType;
+    expression?: ExpressionSpecification;
+    transition?: boolean;
+    default?: string;
+    tokens?: boolean;
+    experimental?: boolean;
+    private?: boolean;
+    requires?: unknown;
+    appearance?: boolean;
+};
+
+/**
+ * A style property specification is used to describe a value of some style property reference in the v8.json
+ */
+export type StylePropertySpecification =
+    | ArrayPropertySpecification
+    | BooleanPropertySpecification
+    | ColorPropertySpecification
+    | EnumPropertySpecification
+    | FormattedPropertySpecification
+    | NumberPropertySpecification
+    | ResolvedImagePropertySpecification
+    | StringPropertySpecification;
 
 const expression = {
     StyleExpression,

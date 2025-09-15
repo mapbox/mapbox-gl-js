@@ -8,18 +8,14 @@ const customTypeBindings = {
     "directional.direction": "DirectionProperty",
 };
 
-global.camelize = function (str) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    return str.replace(/(?:^|-)(.)/g, (_, x) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+global.camelize = function (str: string) {
+    return str.replace(/(?:^|-)(.)/g, (_, x: string) => {
         return x.toUpperCase();
     });
 };
 
-global.camelizeWithLeadingLowercase = function (str) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    return str.replace(/-(.)/g, (_, x) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+global.camelizeWithLeadingLowercase = function (str: string) {
+    return str.replace(/-(.)/g, (_, x: string) => {
         return x.toUpperCase();
     });
 };

@@ -20,6 +20,7 @@ import type {TransitionParameters,
     Transitioning,
     PossiblyEvaluated} from './properties';
 import type {LightSpecification} from '../style-spec/types';
+import type {StylePropertySpecification} from '../style-spec/style-spec';
 
 type Props = {
     ["anchor"]: DataConstantProperty<'map' | 'viewport'>;
@@ -28,16 +29,14 @@ type Props = {
     ["intensity"]: DataConstantProperty<number>;
 };
 
+const lightReference = styleSpec.light as Record<string, StylePropertySpecification>;
+
 let properties: Properties<Props>;
 const getProperties = (): Properties<Props> => properties || (properties = new Properties({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    "anchor": new DataConstantProperty(styleSpec.light.anchor),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    "position": new PositionProperty(styleSpec.light.position),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    "color": new DataConstantProperty(styleSpec.light.color),
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    "intensity": new DataConstantProperty(styleSpec.light.intensity),
+    "anchor": new DataConstantProperty(lightReference.anchor),
+    "position": new PositionProperty(lightReference.position),
+    "color": new DataConstantProperty(lightReference.color),
+    "intensity": new DataConstantProperty(lightReference.intensity),
 }));
 
 /*
@@ -65,7 +64,6 @@ class Light extends Evented {
         if (this._validate(validateLight, light, options)) {
             return;
         }
-        // @ts-expect-error - TS2345 - Argument of type 'LightSpecification' is not assignable to parameter of type 'PropertyValueSpecifications<Props>'.
         this._transitionable.setTransitionOrValue(light);
         this.id = id;
     }

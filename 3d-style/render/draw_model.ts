@@ -641,8 +641,6 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
             // From effective tile zoom (distance to camera) and calculate model to use.
             const modelInstances = bucket.instancesPerModel[modelId];
             if (modelInstances.features.length > 0) {
-                // @ts-expect-error - TS2339 - Property 'evaluate' does not exist on type 'unknown'.
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                 modelId = modelIdProperty.evaluate(modelInstances.features[0].feature, {});
             }
 
@@ -1183,9 +1181,8 @@ function calculateFarCutoffOpacity(cutoffParams: CutoffParams, depth: number): n
 
 function calculateFrontCutoffOpacity(tileModelMatrix: mat4, tr: Transform, aabb: Aabb, cutoffParams: [number, number, number]) {
     // The cutoff opacity is completely disabled when pitch is lower than 20.
-    const fullyOpaquePitch = 20.0;
-    const fullyTransparentPitch = 40.0;
-    // @ts-expect-error - TS2367 - This comparison appears to be unintentional because the types '20' and '40' have no overlap.
+    const fullyOpaquePitch: number = 20.0;
+    const fullyTransparentPitch: number = 40.0;
     assert(fullyOpaquePitch !== fullyTransparentPitch);
     if (tr.pitch < fullyOpaquePitch) {
         return 1.0;
