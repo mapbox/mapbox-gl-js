@@ -3137,9 +3137,9 @@
         0.8,
         2
       ],
-      "doc": "Defines the minimum and maximum scaling factors for icon related properties like `icon-size`, `icon-halo-width`, `icon-halo-blur`",
-      "minimum": 0.1,
-      "maximum": 10,
+      "doc": "Limits the possible scaling range for `icon-size`, `icon-halo-width`, `icon-halo-blur` properties to be within [min-scale, max-scale]",
+      "minimum": [0.1, 0.1],
+      "maximum": [10, 10],
       "experimental": true,
       "private": true,
       "expression": {
@@ -3653,9 +3653,9 @@
         0.8,
         2
       ],
-      "doc": "Defines the minimum and maximum scaling factors for text related properties like `text-size`, `text-max-width`, `text-halo-width`, `font-size`",
-      "minimum": 0.1,
-      "maximum": 10,
+      "doc": "Limits the possible scaling range for `text-size`, `text-halo-width`, `text-halo-blur` properties to be within [min-scale, max-scale]",
+      "minimum": [0.1, 0.1],
+      "maximum": [10, 10],
       "experimental": true,
       "private": true,
       "expression": {
