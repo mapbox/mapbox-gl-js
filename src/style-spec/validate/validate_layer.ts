@@ -163,7 +163,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                 const validationErrors = validateArray({
                     key: options.key,
                     value: options.value,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                     valueSpec: options.valueSpec,
                     style: options.style,
                     styleSpec: options.styleSpec,

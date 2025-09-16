@@ -16,6 +16,8 @@ import {getProjection} from '../../../src/geo/projection/index';
 import vectorStub from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 import glyphData from '../../fixtures/fontstack-glyphs.json';
 
+import type {BucketPart} from '../../../src/symbol/placement';
+
 // Load a point feature from fixture tile.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 const vt = new VectorTile(new Protobuf(vectorStub));
@@ -73,7 +75,7 @@ test('SymbolBucket', () => {
     crossTileSymbolIndex.addLayer(bucketA.layers[0], [tileA, tileB], 0.0, projection);
 
     const place = (layer, tile) => {
-        const parts: Array<any> = [];
+        const parts: BucketPart[] = [];
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         placement.getBucketParts(parts, layer, tile, false);
         for (const part of parts) {

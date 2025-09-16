@@ -343,6 +343,7 @@ describe('VectorTileSource', () => {
             maxzoom: 22,
             attribution: "Mapbox",
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
+            // eslint-disable-next-line camelcase
             extra_bounds: [
                 [-18.716583, 34.608345, 48.080292, 73.128931],  // Europe/Northern Africa region
                 [122.871094, 26.431228, 158.730469, 46.800059], // East Asia region

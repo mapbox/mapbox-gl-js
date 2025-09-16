@@ -6,21 +6,14 @@ import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import';
 import {globalIgnores} from 'eslint/config';
 import {includeIgnoreFile} from '@eslint/compat';
+import tsConfig from './tsconfig.json' with {type: 'json'};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const gitignorePath = path.resolve(__dirname, '.gitignore');
 
 export default tseslint.config(
-    globalIgnores([
-        './debug/**/*',
-        './rollup/**/*',
-        './src/style-spec/bin',
-        './src/style-spec/dist',
-        './test/build/typings/**/*',
-        './test/build/transpilation/**/*',
-    ]),
-
+    globalIgnores(tsConfig.exclude),
     includeIgnoreFile(gitignorePath),
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -202,6 +195,7 @@ export default tseslint.config(
             }],
 
             'import/extensions': ['error', {
+                ts: 'ignorePackages',
                 js: 'always',
                 json: 'always',
             }],

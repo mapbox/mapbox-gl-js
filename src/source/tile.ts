@@ -68,7 +68,7 @@ export type TileState =
 
 export type ExpiryData = {
     cacheControl?: string;
-    expires?: string;
+    expires?: Date | string;
 };
 
 // a tile bounds outline used for getting reprojected tile geometry in non-mercator projections

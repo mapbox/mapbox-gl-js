@@ -17,40 +17,40 @@ test('parseUsedPreprocessorDefines', () => {
     #else
     #endif
     #endif
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #if defined(SHADER_DEFINE_1) || defined(SHADER_DEFINE_2)
     #endif
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #if defined(SHADER_DEFINE_1) && defined(SHADER_DEFINE_2)
     #endif
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #if !defined(SHADER_DEFINE_1) && !defined(SHADER_DEFINE_2)
     #endif
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #ifndef SHADER_DEFINE_1
     #endif
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual(['SHADER_DEFINE_1']);
 
     defines = [];
@@ -58,8 +58,8 @@ test('parseUsedPreprocessorDefines', () => {
     #if defined(SHADER_DEFINE_1)
     #elif defined(SHADER_DEFINE_2)
     #endif
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
@@ -67,37 +67,37 @@ test('parseUsedPreprocessorDefines', () => {
     #ifndef SHADER_DEFINE_1
     #elif defined(SHADER_DEFINE_1)
     #endif
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual(['SHADER_DEFINE_1']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #if ! defined( (SHADER_DEFINE_1) )  &&  ! defined( (SHADER_DEFINE_2) )
     #endif
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual(['SHADER_DEFINE_1', 'SHADER_DEFINE_2']);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     if (SHADER_VARIABLE) {
     }
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual([]);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #endif // SHADER_DEFINE
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual([]);
 
     defines = [];
     parseUsedPreprocessorDefines(`
     #define SHADER_DEFINE
-    `    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-, defines);
+    `,    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+ defines);
     expect(defines).toEqual([]);
 });

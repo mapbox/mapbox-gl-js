@@ -79,7 +79,7 @@ describe('Query geometry', () => {
 
             const geom = QueryGeometry.createFromScreenPoints([new Point(0, 0), new Point(512, 512)], tr);
             expect(geom.isAboveHorizon).toEqual(false);
-        })
+        });
     });
 
     describe('unwrapQueryPolygon', () => {

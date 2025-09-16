@@ -188,7 +188,7 @@ describe('ModelManager', () => {
         modelManager.addModelsFromBucket(['https://www.example.com/1', 'https://www.example.com/2', 'https://www.example.com/3'], 'basemap');
     });
 
-    test('#reloadModels', async () => {
+    test('#reloadModels', () => {
         const {modelManager, eventedParent} = createModelManager();
 
         eventedParent.on('error', ({error}) => {
@@ -213,7 +213,7 @@ describe('ModelManager', () => {
         expect(modelManager.models['basemap']['model2'].numReferences).toBe(1);
     });
 
-    test('#destroy', async () => {
+    test('#destroy', () => {
         const {modelManager, eventedParent} = createModelManager();
 
         eventedParent.on('error', ({error}) => {

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
     "esModuleInterop": true,
@@ -28,7 +29,7 @@
       "node",
       "geojson",
       "offscreencanvas"
-    ],
+    ]
   },
   "include": [
     "./src/**/*",

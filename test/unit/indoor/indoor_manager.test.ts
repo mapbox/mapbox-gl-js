@@ -1,8 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {describe, test, beforeEach, afterEach, expect, waitFor, vi, createMap} from '../../util/vitest';
-import {createStyle} from '../ui/map/util';
+import {describe, test, expect, createMap} from '../../util/vitest';
 
 const indoorData = {
     "type": "FeatureCollection",
@@ -80,7 +76,6 @@ const indoorData = {
                 "type": "Polygon"
             },
         },
-        
     ]
 };
 
@@ -170,7 +165,7 @@ const indoorStyle = {
                 buildingFeaturesetId: "building-entry"
             },
             layers: indoorLayers,
-       }
+        }
     }],
     center: [24.94248, 60.16931],
     zoom: 17.0,
@@ -180,7 +175,7 @@ const indoorStyle = {
 
 describe('IndoorManager', () => {
     test('created with map', () => {
-        const map = createMap({interactive: true, style: createStyle()});
+        const map = createMap({interactive: true, style: indoorStyle});
         expect(map.indoor._map).toEqual(map);
         expect(map.indoor._indoorDataQuery).toBeFalsy();
         expect(map.indoor._floorSelectionState).toBeTruthy();

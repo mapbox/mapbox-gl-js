@@ -1,138 +1,117 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import {describe, test, expect, vi} from '../../util/vitest';
 import {createSymbolBucket} from '../../util/create_symbol_layer';
 import Tile from '../../../src/source/tile';
-import GeoJSONWrapper from '../../../src/source/geojson_wrapper';
 import {OverscaledTileID} from '../../../src/source/tile_id';
 import writePbf from '../../../src/source/vector_tile_to_pbf';
 import FeatureIndex from '../../../src/data/feature_index';
 import {CollisionBoxArray} from '../../../src/data/array_types';
 import {serialize, deserialize} from '../../../src/util/web_worker_transfer';
+// @ts-expect-error: TypeScript does not know how to import .pbf files
 import rawTileData from '../../fixtures/mbsv5-6-18-23.vector.pbf?arraybuffer';
 
+import type GeoJSON from 'geojson';
+import type Painter from '../../../src/render/painter';
+import type {Bucket} from '../../../src/data/bucket';
+import type {Feature} from '../../../src/source/geojson_wrapper';
+import type {ExpiryData} from '../../../src/source/tile';
+import type {default as GeoJSONFeature} from '../../../src/util/vectortile_to_geojson';
+import type {WorkerSourceVectorTileResult} from '../../../src/source/worker_source';
+
 describe('querySourceFeatures', () => {
-    const features = [{
+    const features: Feature[] = [{
+        id: '1',
         type: 1,
         geometry: [[0, 0]],
         tags: {oneway: true}
     }];
 
     test('geojson tile', () => {
-        const tile = new Tile(new OverscaledTileID(3, 0, 2, 1, 2));
-        let result: any;
+        const tile = new Tile(new OverscaledTileID(3, 0, 2, 1, 2), 512, 22);
+        let result: GeoJSONFeature[] = [];
 
-        result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
 
         const layers = {_geojsonTileLayer: features};
-        const geojsonWrapper = new GeoJSONWrapper(layers);
         tile.loadVectorData(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            createVectorData({rawTileData: writePbf(layers)}),
+            createVectorData({rawTileData: writePbf(layers) as unknown as ArrayBuffer}),
             createPainter()
         );
 
         result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(1);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(result[0].geometry.coordinates).toEqual([-90, 0]);
+        expect((result[0].geometry as GeoJSON.Point).coordinates).toEqual([-90, 0]);
+
         result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(1);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result[0].properties).toEqual(features[0].tags);
+
         result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {filter: ['==', 'oneway', true]});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(1);
+
         result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {filter: ['!=', 'oneway', true]});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
+
         result = [];
         const polygon = {type: "Polygon",  coordinates: [[[-91, -1], [-89, -1], [-89, 1], [-91, 1], [-91, -1]]]};
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {filter: ['within', polygon]});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(1);
     });
 
     test('empty geojson tile', () => {
-        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
-        let result: any;
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
+        let result: GeoJSONFeature[] = [];
 
-        result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
 
         const layers = {_geojsonTileLayer: []};
-        const geojsonWrapper = new GeoJSONWrapper(layers);
-        tile.rawTileData = writePbf(layers);
+        tile.latestRawTileData = writePbf(layers) as unknown as ArrayBuffer;
+
         result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         expect(() => { tile.querySourceFeatures(result); }).not.toThrowError();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
     });
 
     test('vector tile', () => {
-        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
-        let result: any;
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
+        let result: GeoJSONFeature[] = [];
 
         result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
 
         tile.loadVectorData(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
-            createVectorData({rawTileData}),
+            createVectorData({rawTileData: rawTileData as ArrayBuffer}),
             createPainter()
         );
 
         result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {'sourceLayer': 'does-not-exist'});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(0);
 
         result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {'sourceLayer': 'road'});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(3);
 
         result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {'sourceLayer': 'road', filter: ['==', 'class', 'main']});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(1);
+
         result = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         tile.querySourceFeatures(result, {'sourceLayer': 'road', filter: ['!=', 'class', 'main']});
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         expect(result.length).toEqual(2);
     });
 
     test('loadVectorData unloads existing data before overwriting it', () => {
-        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
         tile.state = 'loaded';
         vi.spyOn(tile, 'unloadVectorData').mockImplementation(() => {});
-        const painter: Record<string, any> = {};
+        const painter: Painter = {} as Painter;
 
         tile.loadVectorData(null, painter);
 
@@ -140,22 +119,19 @@ describe('querySourceFeatures', () => {
     });
 
     test('loadVectorData preserves the most recent rawTileData', () => {
-        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
         tile.state = 'loaded';
 
         tile.loadVectorData(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
-            createVectorData({rawTileData}),
+            createVectorData({rawTileData: rawTileData as ArrayBuffer}),
             createPainter()
         );
         tile.loadVectorData(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             createVectorData(),
             createPainter()
         );
 
-        const features: Array<any> = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        const features: GeoJSONFeature[] = [];
         tile.querySourceFeatures(features, {'sourceLayer': 'road'});
         expect(features.length).toEqual(3);
     });
@@ -207,28 +183,28 @@ describe('Tile#isLessThan', () => {
 
 describe('expiring tiles', () => {
     test('regular tiles do not expire', () => {
-        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
         tile.state = 'loaded';
         tile.timeAdded = Date.now();
 
-        expect(tile.cacheControl).toBeFalsy();
-        expect(tile.expires).toBeFalsy();
+        expect((tile as Tile & ExpiryData).cacheControl).toBeFalsy();
+        expect((tile as Tile & ExpiryData).expires).toBeFalsy();
     });
 
     test('set, get expiry', () => {
-        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
         tile.state = 'loaded';
         tile.timeAdded = Date.now();
 
-        expect(tile.cacheControl).toBeFalsy();
-        expect(tile.expires).toBeFalsy();
+        expect((tile as Tile & ExpiryData).cacheControl).toBeFalsy();
+        expect((tile as Tile & ExpiryData).expires).toBeFalsy();
 
         tile.setExpiryData({
             cacheControl: 'max-age=60'
         });
 
         // times are fuzzy, so we'll give this a little leeway:
-        let expiryTimeout = tile.getExpiryTimeout();
+        let expiryTimeout = tile.getExpiryTimeout() as number;
         expect(expiryTimeout >= 56000 && expiryTimeout <= 60000).toBeTruthy();
 
         const date = new Date();
@@ -239,12 +215,12 @@ describe('expiring tiles', () => {
             expires: date.toString()
         });
 
-        expiryTimeout = tile.getExpiryTimeout();
+        expiryTimeout = tile.getExpiryTimeout() as number;
         expect(expiryTimeout > 598000 && expiryTimeout < 600000).toBeTruthy();
     });
 
     test('exponential backoff handling', () => {
-        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+        const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
         tile.state = 'loaded';
         tile.timeAdded = Date.now();
 
@@ -252,7 +228,7 @@ describe('expiring tiles', () => {
             cacheControl: 'max-age=10'
         });
 
-        const expiryTimeout = tile.getExpiryTimeout();
+        const expiryTimeout = tile.getExpiryTimeout() as number;
         expect(expiryTimeout >= 8000 && expiryTimeout <= 10000).toBeTruthy();
 
         const justNow = new Date();
@@ -286,14 +262,13 @@ describe('rtl text detection', () => {
     test(
         'Tile#hasRTLText is true when a tile loads a symbol bucket with rtl text',
         () => {
-            const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1));
+            const tile = new Tile(new OverscaledTileID(1, 0, 1, 1, 1), 512, 22);
             // Create a stub symbol bucket
             const symbolBucket = createSymbolBucket('test', 'Test', 'test', new CollisionBoxArray());
             // symbolBucket has not been populated yet so we force override the value in the stub
             symbolBucket.hasRTLText = true;
             tile.loadVectorData(
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
-                createVectorData({rawTileData, buckets: [symbolBucket]}),
+                createVectorData({rawTileData: rawTileData as ArrayBuffer, buckets: [symbolBucket]}),
                 createPainter({
                     getLayer() {
                         return symbolBucket.layers[0];
@@ -309,15 +284,15 @@ describe('rtl text detection', () => {
     );
 });
 
-function createVectorData(options) {
+function createVectorData(options?: {buckets?: Bucket[]; rawTileData?: ArrayBuffer}): WorkerSourceVectorTileResult {
     const collisionBoxArray = new CollisionBoxArray();
     return Object.assign({
         collisionBoxArray: deserialize(serialize(collisionBoxArray)),
         featureIndex: deserialize(serialize(new FeatureIndex(new OverscaledTileID(1, 0, 1, 1, 1)))),
         buckets: []
-    }, options);
+    }, options) as WorkerSourceVectorTileResult;
 }
 
-function createPainter(styleStub = {}) {
-    return {style: styleStub};
+function createPainter(styleStub = {}): Painter {
+    return {style: styleStub} as Painter;
 }
