@@ -1,12 +1,20 @@
 import StyleLayer from '../../../src/style/style_layer';
-import BuildingBucket from '../../data/bucket/building_bucket';
+import {BuildingBucket, BUILDING_VISIBLE} from '../../data/bucket/building_bucket';
 import {getLayoutProperties, getPaintProperties} from './building_style_layer_properties';
+import {checkIntersection, projectExtrusion} from '../../../src/style/style_layer/fill_extrusion_style_layer';
+import Point from '@mapbox/point-geometry';
+import assert from 'assert';
 
 import type {Layout, Transitionable, Transitioning, PossiblyEvaluated, ConfigOptions} from '../../../src/style/properties';
-import type {BucketParameters} from '../../../src/data/bucket';
+import type {Bucket, BucketParameters} from '../../../src/data/bucket';
+import type {DEMSampler} from '../../../src/terrain/elevation';
+import type {FeatureState} from '../../../src/style-spec/expression';
 import type {PaintProps, LayoutProps} from './building_style_layer_properties';
 import type {LayerSpecification} from '../../../src/style-spec/types';
 import type {LUT} from "../../../src/util/lut";
+import type {TilespaceQueryGeometry} from '../../../src/style/query_geometry';
+import type Transform from '../../../src/geo/transform';
+import type {VectorTileFeature} from '@mapbox/vector-tile';
 
 class BuildingStyleLayer extends StyleLayer {
     override type: 'building';
@@ -49,6 +57,45 @@ class BuildingStyleLayer extends StyleLayer {
 
     override is3D(terrainEnabled?: boolean): boolean {
         return true;
+    }
+
+    override queryRadius(bucket: Bucket): number {
+        return 0;
+    }
+
+    override queryIntersectsFeature(
+        queryGeometry: TilespaceQueryGeometry,
+        feature: VectorTileFeature,
+        featureState: FeatureState,
+        geometry: Array<Array<Point>>,
+        zoom: number,
+        transform: Transform,
+        pixelPosMatrix: Float32Array,
+        elevationHelper: DEMSampler | null | undefined,
+        layoutVertexArrayOffset: number,
+    ): boolean | number {
+        let height = this.layout.get('building-height').evaluate(feature, featureState);
+        const base = this.layout.get('building-base').evaluate(feature, featureState);
+
+        const bucket = queryGeometry.tile.getBucket(this);
+        assert(bucket instanceof BuildingBucket);
+        const footprint = bucket.getFootprint(feature);
+        if (footprint) {
+            if (footprint.hiddenFlags !== BUILDING_VISIBLE) {
+                return false;
+            }
+            height = footprint.height;
+        }
+
+        const demSampler: DEMSampler | null = null;
+        const centroid: [number, number] = [0, 0];
+        const exaggeration = 1;
+        const [projectedBase, projectedTop] = projectExtrusion(transform, geometry, base, height, new Point(0.0, 0.0), pixelPosMatrix, demSampler, centroid, exaggeration, transform.center.lat, queryGeometry.tileID.canonical);
+
+        const screenQuery = queryGeometry.queryGeometry;
+        const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        return checkIntersection(projectedBase, projectedTop, projectedQueryGeometry);
     }
 }
 

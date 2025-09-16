@@ -261,13 +261,6 @@ const skip = [
     // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
     "render-tests/clip-layer/clip-layer-keep-fill-extrusions",
 
-    // building layer query tests - ignored until QRF is ported.
-    "query-tests/building/behind-camera",
-    "query-tests/building/top-down",
-    "query-tests/building/with-id-more-accurate-height",
-    "query-tests/building/with-id-more-parapet",
-    "query-tests/building/without-id-less-accurate-height",
-
     "render-tests/building/terrain/terrain-toggle-conflation-works",
     "render-tests/building/terrain/terrain-unsupported",
     "render-tests/building/globe-unsupported"

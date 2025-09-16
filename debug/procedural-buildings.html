@@ -32,11 +32,9 @@
     <div id="map"></div>
     <script src="../dist/mapbox-gl-dev.js"></script>
     <script type="module">
-    import {getAccessToken} from './access_token_generated.js';
-
-    mapboxgl.accessToken = getAccessToken();
-    </script>
-    <script>
+        import {getAccessToken} from './access_token_generated.js';
+    
+        mapboxgl.accessToken = getAccessToken();
 
         var map = window.map = new mapboxgl.Map({
             container: 'map',
@@ -124,6 +122,21 @@
                 map.setConfigProperty("basemap", "lightPreset", params.lightPreset);
             });
             map.setConfigProperty("basemap", "lightPreset", params.lightPreset);
+        });
+
+        let selectedBuilding = null;
+        map.addInteraction('place-click', {
+            type: 'click',
+            target: { featuresetId: 'buildings', importId: 'procedural-buildings' },
+            handler: ({ feature }) => {
+                console.log(feature.id);
+
+                if (selectedBuilding) {
+                    map.setFeatureState(selectedBuilding, {select: false});
+                }
+                map.setFeatureState(feature, {select: !feature.state.select});
+                selectedBuilding = feature;
+            }
         });
     </script>
 </body>

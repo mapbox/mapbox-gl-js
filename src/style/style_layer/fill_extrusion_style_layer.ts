@@ -200,7 +200,7 @@ export function getIntersectionDistance(projectedQueryGeometry: Array<Point>, pr
     }
 }
 
-function checkIntersection(projectedBase: Array<Array<Point3D>>, projectedTop: Array<Array<Point3D>>, projectedQueryGeometry: Array<Point>) {
+export function checkIntersection(projectedBase: Array<Array<Point3D>>, projectedTop: Array<Array<Point3D>>, projectedQueryGeometry: Array<Point>) {
     let closestDistance = Infinity;
 
     if (polygonIntersectsMultiPolygon(projectedQueryGeometry, projectedTop)) {
@@ -225,7 +225,7 @@ function checkIntersection(projectedBase: Array<Array<Point3D>>, projectedTop: A
     return closestDistance === Infinity ? false : closestDistance;
 }
 
-function projectExtrusion(tr: Transform, geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: DEMSampler | null | undefined, centroid: vec2, exaggeration: number, lat: number, tileID: CanonicalTileID) {
+export function projectExtrusion(tr: Transform, geometry: Array<Array<Point>>, zBase: number, zTop: number, translation: Point, m: Float32Array, demSampler: DEMSampler | null | undefined, centroid: vec2, exaggeration: number, lat: number, tileID: CanonicalTileID) {
     if (tr.projection.name === 'globe') {
         return projectExtrusionGlobe(tr, geometry, zBase, zTop, translation, m, demSampler, centroid, exaggeration, lat, tileID);
     } else {

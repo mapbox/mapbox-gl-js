@@ -1,7 +1,7 @@
 [
   {
     "type": "Feature",
-    "id": 0,
+    "state": {},
     "geometry": {
       "type": "Polygon",
       "coordinates": [
@@ -30,10 +30,10 @@
       ]
     },
     "properties": {
-      "underground": "false",
-      "extrude": "true"
+      "extrude": "true",
+      "underground": "false"
     },
-    "source": "geojson",
-    "state": {}
+    "id": 0,
+    "source": "geojson"
   }
 ]

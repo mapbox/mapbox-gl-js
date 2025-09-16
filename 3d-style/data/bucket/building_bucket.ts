@@ -108,6 +108,7 @@ interface BuildingFeaturePart {
 };
 
 interface BuildingFeature {
+    promoteId: string | number;
     feature: EvaluationFeature,
     hasFauxFacade: boolean,
     segment: Segment,
@@ -199,6 +200,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
     indexArrayForConflationUploaded: boolean = false;
 
+    featureFootprintLookup = new Map<number, number>();
     footprintLookup: {
         [_: number]: BuildingFootprint | null | undefined;
     };
@@ -319,7 +321,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
         // Next, we process the building footprints, and combine them
         // with the facade data.
-        for (const {feature, index} of features) {
+        for (const {feature, id, index, sourceLayerIndex} of features) {
             const isFacade = vectorTileFeatureTypes[feature.type] === 'LineString';
             if (isFacade) {
                 continue;
@@ -481,6 +483,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             let bloomIndicesOffset = 0;
             let bloomIndicesLength = -1;
 
+            const vertexArrayOffset = building.layoutVertexArray.length;
             const indexArrayRangeStartOffset = building.indexArray.length;
             let footprintHeight = 0;
             for (const mesh of result.meshes) {
@@ -636,7 +639,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
             const buildingFeature: BuildingFeature = {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                feature: evaluationFeature, hasFauxFacade, segment, parts: buildingParts, buildingBloom
+                promoteId: id, feature: evaluationFeature, hasFauxFacade, segment, parts: buildingParts, buildingBloom
             };
             this.buildingFeatures.push(buildingFeature);
 
@@ -716,11 +719,16 @@ export class BuildingBucket implements BucketWithGroundEffect {
                     segment,
                     height: footprintHeight
                 };
+                if (feature.id !== undefined) {
+                    this.featureFootprintLookup.set(feature.id, this.footprints.length);
+                }
                 this.footprints.push(footprint);
             }
 
             this.programConfigurations.populatePaintArrays(building.layoutVertexArray.length, feature, index, {}, options.availableImages, canonical, options.brightness);
             this.groundEffect.addPaintPropertiesData(feature, index, {}, options.availableImages, canonical, options.brightness);
+
+            options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
         }
 
         this.groundEffect.prepareBorderSegments();
@@ -932,8 +940,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
     evaluate(layer: BuildingStyleLayer, featureState: FeatureStates) {
         const aoIntensity = layer.paint.get('building-ambient-occlusion-intensity');
         for (const buildingFeature of this.buildingFeatures) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const state = featureState[buildingFeature.feature.id];
+            const state = featureState[buildingFeature.promoteId];
             const feature = buildingFeature.feature;
 
             feature.properties['building-part'] = 'roof';
@@ -1092,6 +1099,16 @@ export class BuildingBucket implements BucketWithGroundEffect {
         this.indexArrayForConflationUploaded = false;
 
         PerformanceUtils.endMeasure(m);
+    }
+
+    getFootprint(feature: VectorTileFeature) : BuildingFootprint | null {
+        if (feature.id !== undefined) {
+            assert(this.featureFootprintLookup.has(feature.id));
+            const footprintIndex = this.featureFootprintLookup.get(feature.id);
+            return this.footprints[footprintIndex];
+        }
+
+        return null;
     }
 
     getHeightAtTileCoord(x: number, y: number): {
