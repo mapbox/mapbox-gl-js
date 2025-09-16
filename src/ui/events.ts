@@ -10,7 +10,7 @@ import type DragRotateHandler from './handler/shim/drag_rotate';
 import type ScrollZoomHandler from './handler/scroll_zoom';
 import type DoubleClickZoomHandler from './handler/shim/dblclick_zoom';
 import type TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
-import type {Map} from './map';
+import type {Map as MapboxMap} from './map';
 import type {GeoJSONFeature} from '../util/vectortile_to_geojson';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {EventData, EventOf} from '../util/evented';
@@ -71,7 +71,7 @@ export class MapMouseEvent extends Event<MapEvents, MapMouseEventType> {
     /**
      * The `Map` object that fired the event.
      */
-    override target: Map;
+    override target: MapboxMap;
 
     /**
      * The DOM event which caused the map event.
@@ -154,7 +154,7 @@ export class MapMouseEvent extends Event<MapEvents, MapMouseEventType> {
     /**
      * @private
      */
-    constructor(type: MapMouseEventType, map: Map, originalEvent: MouseEvent, data: EventData = {}) {
+    constructor(type: MapMouseEventType, map: MapboxMap, originalEvent: MouseEvent, data: EventData = {}) {
         const point = DOM.mousePos(map.getCanvasContainer(), originalEvent);
         const lngLat = map.unproject(point);
         super(type, Object.assign({point, lngLat, originalEvent}, data) as MapEvents[MapMouseEventType]);
@@ -213,7 +213,7 @@ export class MapTouchEvent extends Event<MapEvents, MapTouchEventType> {
     /**
      * The `Map` object that fired the event.
      */
-    override target: Map;
+    override target: MapboxMap;
 
     /**
      * The DOM event which caused the map event.
@@ -297,7 +297,7 @@ export class MapTouchEvent extends Event<MapEvents, MapTouchEventType> {
     /**
      * @private
      */
-    constructor(type: MapTouchEventType, map: Map, originalEvent: TouchEvent) {
+    constructor(type: MapTouchEventType, map: MapboxMap, originalEvent: TouchEvent) {
         const touches = type === "touchend" ? originalEvent.changedTouches : originalEvent.touches;
         const points = DOM.touchPos(map.getCanvasContainer(), touches);
         const lngLats = points.map((t) => map.unproject(t));
@@ -342,7 +342,7 @@ export class MapWheelEvent extends Event<MapEvents, MapWheelEventType> {
     /**
      * The `Map` object that fired the event.
      */
-    override target: Map;
+    override target: MapboxMap;
 
     /**
      * The DOM event which caused the map event.
@@ -376,7 +376,7 @@ export class MapWheelEvent extends Event<MapEvents, MapWheelEventType> {
     /**
      * @private
      */
-    constructor(map: Map, originalEvent: WheelEvent) {
+    constructor(map: MapboxMap, originalEvent: WheelEvent) {
         super('wheel', {originalEvent} as MapEvents[MapWheelEventType]);
         this._defaultPrevented = false;
     }
@@ -411,7 +411,7 @@ export type MapInteractionEventType = MapMouseEventType | MapTouchEventType | Ma
  */
 export type MapBoxZoomEvent = {
     type: 'boxzoomstart' | 'boxzoomend' | 'boxzoomcancel';
-    target: Map;
+    target: MapboxMap;
     originalEvent: MouseEvent;
 };
 
@@ -428,7 +428,8 @@ export type MapSourceDataEvent = {
     sourceDataType?: 'metadata' | 'content' | 'visibility' | 'error';
     tile?: Tile;
     coord?: Tile['tileID'];
-    resourceTiming?: PerformanceResourceTiming[]
+    resourceTiming?: PerformanceResourceTiming[],
+    responseHeaders?: Map<string, string>;
 };
 
 /**
@@ -1637,6 +1638,6 @@ export type MapEventType = keyof MapEvents & string;
  *
  * type MoveEvent = MapEvent<'move'>; // equivalent to { type: 'move', target: Map, originalEvent?: MouseEvent | WheelEvent | TouchEvent }
  */
-export type MapEventOf<Type extends MapEventType> = EventOf<MapEvents, Type, Map>;
+export type MapEventOf<Type extends MapEventType> = EventOf<MapEvents, Type, MapboxMap>;
 
 export type MapEvent = MapEventOf<MapEventType>;

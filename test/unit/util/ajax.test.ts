@@ -12,6 +12,59 @@ import {
 import config from '../../../src/util/config';
 import webpSupported from '../../../src/util/webp_supported';
 
+class MockXMLHttpRequest {
+    static lastInstance: MockXMLHttpRequest | null = null;
+
+    readyState = 0;
+    status = 0;
+    response = "";
+    responseText = "";
+    responseHeaders: Record<string, string> = {};
+    onreadystatechange: ((this: XMLHttpRequest, ev: Event) => any) | null = null;
+    onload: ((this: XMLHttpRequest, ev: Event) => any) | null = null;
+    onerror: ((this: XMLHttpRequest, ev: Event) => any) | null = null;
+
+    open = vi.fn((method: string, url: string) => {
+        this.readyState = 1;
+        this._triggerChange();
+    });
+
+    send = vi.fn(() => {
+    // Simulate async network delay
+        setTimeout(() => {
+            this.readyState = 4;
+            this.status = 200;
+            this.response = JSON.stringify({ok: true});
+            this.responseText = JSON.stringify({ok: true});
+            this.responseHeaders = {
+                'Content-Type': 'application/json',
+                'X-random-header': 'random-value'
+            };
+
+            this._triggerChange();
+            this.onload?.(new Event("load"));
+        }, 0);
+    });
+
+    setRequestHeader = vi.fn();
+
+    abort = vi.fn();
+
+    constructor() {
+        MockXMLHttpRequest.lastInstance = this;
+    }
+
+    private _triggerChange() {
+        this.onreadystatechange?.(new Event("readystatechange"));
+    }
+
+    getAllResponseHeaders = vi.fn(() => {
+        return Object.entries(this.responseHeaders)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join("\r\n");
+    });
+}
+
 describe('ajax', () => {
     test('getArrayBuffer, 404', async () => {
         // eslint-disable-next-line @typescript-eslint/require-await
@@ -117,6 +170,40 @@ describe('ajax', () => {
                 expect(error.message).toEqual(
                     "Unauthorized: you may have provided an invalid Mapbox access token. See https://docs.mapbox.com/api/overview/#access-tokens-and-token-scopes"
                 );
+                resolve();
+            });
+        });
+    });
+
+    test('makeRequest gets correct headers when using fetch', async () => {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        vi.spyOn(window, 'fetch').mockImplementation(async () => {
+            return new window.Response('{"foo": "bar"}', {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-random-header': 'random-value'
+                }
+            });
+        });
+
+        await new Promise(resolve => {
+            getJSON({url: ''}, (error, body, headers) => {
+                expect(headers.get('X-random-header')).toEqual('random-value');
+                expect(headers.get('Content-Type')).toEqual('application/json');
+                resolve();
+            });
+        });
+    });
+
+    test('makeRequest gets correct headers when using XMLHttpRequest', async () => {
+        vi.spyOn(window, 'XMLHttpRequest').mockImplementation(() => new MockXMLHttpRequest());
+
+        await new Promise(resolve => {
+            getJSON({url: 'file://random'}, (error, body, headers) => {
+                expect(error).toBeNull();
+                expect(headers.get('X-random-header')).toEqual('random-value');
+                expect(headers.get('Content-Type')).toEqual('application/json');
                 resolve();
             });
         });

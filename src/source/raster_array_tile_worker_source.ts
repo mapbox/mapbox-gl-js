@@ -93,7 +93,7 @@ class RasterArrayTileWorkerSource implements WorkerSource {
         const requestParam = params.request;
 
         const workerTile = this.loading[uid] = new RasterArrayWorkerTile(params);
-        const {cancel} = getArrayBuffer(requestParam, (error?: Error, buffer?: ArrayBuffer, cacheControl?: string, expires?: string) => {
+        const {cancel} = getArrayBuffer(requestParam, (error?: Error, buffer?: ArrayBuffer, headers?: Headers) => {
             const aborted = !this.loading[uid];
             delete this.loading[uid];
 
@@ -105,7 +105,7 @@ class RasterArrayTileWorkerSource implements WorkerSource {
 
             workerTile.parse(buffer, (error?: Error | null, mrt?: MapboxRasterTile) => {
                 if (error || !mrt) return callback(error);
-                callback(null, mrt, cacheControl, expires);
+                callback(null, mrt, headers);
             });
 
             this.loaded[uid] = workerTile;

@@ -1,4 +1,4 @@
-import {pick} from '../util/util';
+import {getExpiryDataFromHeaders, pick} from '../util/util';
 import {getImage, ResourceType} from '../util/ajax';
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import loadTileJSON from './load_tilejson';
@@ -207,7 +207,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
     loadTile(tile: Tile, callback: Callback<undefined>) {
         const use2x = browser.devicePixelRatio >= 2;
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), use2x, this.tileSize);
-        tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (error, data, cacheControl, expires) => {
+        tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (error, data, responseHeaders) => {
             delete tile.request;
 
             if (tile.aborted) {
@@ -222,7 +222,8 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
 
             if (!data) return callback(null);
 
-            if (this.map._refreshExpiredTiles) tile.setExpiryData({cacheControl, expires});
+            const expiryData = getExpiryDataFromHeaders(responseHeaders);
+            if (this.map._refreshExpiredTiles) tile.setExpiryData(expiryData);
             tile.setTexture(data, this.map.painter);
             tile.state = 'loaded';
 

@@ -147,7 +147,7 @@ class RasterArrayTile extends Tile implements Tile {
         // A buffer, in case range requests were ignored
         this.entireBuffer = null;
 
-        this.request = getArrayBuffer(headerRequestParams, (error?: Error | null, dataBuffer?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
+        this.request = getArrayBuffer(headerRequestParams, (error?: Error | null, dataBuffer?: ArrayBuffer | null, headers?: Headers) => {
             if (error) {
                 callback(error);
                 return;
@@ -175,7 +175,7 @@ class RasterArrayTile extends Tile implements Tile {
                     this.entireBuffer = dataBuffer;
                 }
 
-                callback(null, (this.entireBuffer || dataBuffer), cacheControl, expires);
+                callback(null, (this.entireBuffer || dataBuffer), headers);
             } catch (error) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 callback(error);

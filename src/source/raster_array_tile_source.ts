@@ -13,6 +13,7 @@ import {getPointLonLat} from '../data/mrt/mrt.query';
 import LngLat from '../geo/lng_lat';
 import browser from '../util/browser';
 import {makeFQID} from '../util/fqid';
+import {getExpiryDataFromHeaders} from '../util/util';
 
 import type RasterArrayTile from './raster_array_tile';
 import type Texture from '../render/texture';
@@ -104,7 +105,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         tile.requestParams = request;
         if (!tile.actor) tile.actor = this.dispatcher.getActor();
 
-        const done = (error?: AJAXError | null, data?: MapboxRasterTile, cacheControl?: string, expires?: string) => {
+        const done = (error?: AJAXError | null, data?: MapboxRasterTile, responseHeaders?: Headers) => {
             delete tile.request;
 
             if (tile.aborted) {
@@ -120,7 +121,8 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             }
 
             if (this.map._refreshExpiredTiles && data) {
-                tile.setExpiryData({cacheControl, expires});
+                const expiryData = getExpiryDataFromHeaders(responseHeaders);
+                tile.setExpiryData(expiryData);
             }
 
             if (this.partial && tile.state !== 'expired') {
@@ -360,7 +362,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             partial: false
         };
 
-        tile.actor.send('loadTile', requestParams, (error: AJAXError | null, data?: MapboxRasterTile, cacheControl?: string, expires?: string) => {
+        tile.actor.send('loadTile', requestParams, (error: AJAXError | null, data?: MapboxRasterTile, responseHeaders?: Headers) => {
             if (error) {
                 this._loadTilePending[tile.uid].forEach(cb => cb(error, null));
                 delete this._loadTilePending[tile.uid];
@@ -374,7 +376,8 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
             }
 
             if (this.map._refreshExpiredTiles && data) {
-                tile.setExpiryData({cacheControl, expires});
+                const expiryData = getExpiryDataFromHeaders(responseHeaders);
+                tile.setExpiryData(expiryData);
             }
 
             tile._mrt = data;

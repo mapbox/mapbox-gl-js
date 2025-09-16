@@ -311,7 +311,7 @@ describe('VectorTileSource', () => {
                 };
                 source.loadTile(tile, () => {});
                 expect(tile.state).toEqual('loading');
-                source.loadTile(tile, withAsync((_, doneRef) => {
+                source.loadTile(tile, withAsync((_, __, doneRef) => {
                     expect(events).toStrictEqual(['loadTile', 'tileLoaded', 'enforceCacheSizeLimit', 'reloadTile', 'tileLoaded']);
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     doneRef.resolve();

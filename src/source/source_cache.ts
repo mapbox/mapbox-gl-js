@@ -23,6 +23,7 @@ import type {Callback} from '../types/callback';
 import type {FeatureState} from '../style-spec/expression/index';
 import type {QueryGeometry, TilespaceQueryGeometry} from '../style/query_geometry';
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
+import type {LoadVectorTileResult} from './load_vector_tile';
 
 /**
  * `SourceCache` is responsible for
@@ -262,7 +263,7 @@ class SourceCache extends Evented {
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded(tile: Tile, id: number, previousState: TileState, err?: AJAXError | null) {
+    _tileLoaded(tile: Tile, id: number, previousState: TileState, err?: AJAXError | null, data?: LoadVectorTileResult | null) {
         if (err) {
             tile.state = 'errored';
             if (err.status !== 404) this._source.fire(new ErrorEvent(err, {tile}));
@@ -294,8 +295,10 @@ class SourceCache extends Evented {
         this._setTileReloadTimer(id, tile);
         if (this._source.type === 'raster-dem' && tile.dem) this._backfillDEM(tile);
         this._state.initializeTileState(tile, this.map ? this.map.painter : null);
+        let responseHeaders: Map<string, string> = new Map();
+        if (data && data.responseHeaders) responseHeaders = data.responseHeaders;
 
-        this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID, 'sourceCacheId': this.id}));
+        this._source.fire(new Event('data', {dataType: 'source', tile, coord: tile.tileID, 'sourceCacheId': this.id, responseHeaders}));
     }
 
     /**

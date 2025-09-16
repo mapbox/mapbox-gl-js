@@ -9,11 +9,8 @@ import type Scheduler from '../util/scheduler';
 export type LoadVectorTileResult = {
     rawData: ArrayBuffer;
     vectorTile?: VectorTile;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expires?: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    cacheControl?: any;
     resourceTiming?: Array<PerformanceResourceTiming>;
+    responseHeaders?: Map<string, string>
 };
 
 /**
@@ -112,15 +109,14 @@ export function loadVectorTile(
     const key = JSON.stringify(params.request);
 
     const makeRequest = (callback: LoadVectorDataCallback) => {
-        const request = getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
+        const request = getArrayBuffer(params.request, (err?: Error | null, data?: ArrayBuffer | null, responseHeaders?: Headers) => {
             if (err) {
                 callback(err);
             } else if (data) {
                 callback(null, {
                     vectorTile: skipParse ? undefined : new VectorTile(new Protobuf(data)),
                     rawData: data,
-                    cacheControl,
-                    expires
+                    responseHeaders: new Map(responseHeaders.entries())
                 });
             }
         });

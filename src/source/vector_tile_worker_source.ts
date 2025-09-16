@@ -5,6 +5,7 @@ import {getPerformanceMeasurement} from '../util/performance';
 import {Evented} from '../util/evented';
 import tileTransform from '../geo/projection/tile_transform';
 import {loadVectorTile, DedupedRequest} from './load_vector_tile';
+import {getExpiryDataFromHeaders} from '../util/util';
 
 import type {
     WorkerSource,
@@ -94,10 +95,9 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
             const rawTileData = response.rawData;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const cacheControl: Record<string, any> = {};
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            if (response.expires) cacheControl.expires = response.expires;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            if (response.cacheControl) cacheControl.cacheControl = response.cacheControl;
+            const expiryData = getExpiryDataFromHeaders(response.responseHeaders);
+            if (expiryData && expiryData.expires) cacheControl.expires = expiryData.expires;
+            if (expiryData && expiryData.cacheControl) cacheControl.cacheControl = expiryData.cacheControl;
 
             // response.vectorTile will be present in the GeoJSON worker case (which inherits from this class)
             // because we stub the vector tile interface around JSON data instead of parsing it directly
@@ -118,7 +118,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
                             resourceTiming.resourceTiming = JSON.parse(JSON.stringify(resourceTimingData));
                         }
                     }
-                    callback(null, Object.assign({rawTileData: rawTileData.slice(0)}, result, cacheControl, resourceTiming));
+                    callback(null, Object.assign({rawTileData: rawTileData.slice(0), responseHeaders: response.responseHeaders}, result, cacheControl, resourceTiming));
                 };
                 workerTile.parse(workerTile.vectorTile, this.layerIndex, this.availableImages, this.availableModels, this.actor, WorkerSourceVectorTileCallback);
             };

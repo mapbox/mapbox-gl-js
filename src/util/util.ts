@@ -665,6 +665,13 @@ export function parseCacheControl(cacheControl: string): Record<string, number> 
     return header as Record<string, number>;
 }
 
+export function getExpiryDataFromHeaders(responseHeaders: Headers | Map<string, string> | undefined) {
+    if (!responseHeaders) return {cacheControl: undefined, expires: undefined};
+    const cacheControl = responseHeaders.get('Cache-Control');
+    const expires = responseHeaders.get('Expires');
+    return {cacheControl, expires};
+}
+
 let _isSafari: boolean | null = null;
 
 export function _resetSafariCheckForTest() {

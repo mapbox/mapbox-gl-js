@@ -75,8 +75,7 @@ export type RequestParameters = {
 export type ResponseCallback<T> = (
     error?: Error | DOMException | AJAXError | null,
     data?: T | null,
-    cacheControl?: string | null,
-    expires?: string | null,
+    headers?: Headers
 ) => void;
 
 export class AJAXError extends Error {
@@ -185,7 +184,7 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
                 cachePut(request, cacheableResponse, requestTime);
             }
             complete = true;
-            callback(null, result, response.headers.get('Cache-Control'), response.headers.get('Expires'));
+            callback(null, result, response.headers);
         }).catch(err => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             if (!aborted) callback(new Error(err.message));
@@ -234,7 +233,15 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
                     return callback(err);
                 }
             }
-            callback(null, data, xhr.getResponseHeader('Cache-Control'), xhr.getResponseHeader('Expires'));
+            const headersObject = new Headers();
+            const headers = xhr.getAllResponseHeaders();
+            headers.trim().split(/[\r\n]+/).forEach(line => {
+                const parts = line.split(': ');
+                const header = parts.shift();
+                const value = parts.join(': ');
+                headersObject.append(header, value);
+            });
+            callback(null, data, headersObject);
         } else {
             callback(new AJAXError(xhr.statusText, xhr.status, requestParameters.url));
         }
@@ -369,7 +376,7 @@ export const getImage = function (
 
     // request the image with XHR to work around caching issues
     // see https://github.com/mapbox/mapbox-gl-js/issues/1470
-    const request = getArrayBuffer(requestParameters, (err?: Error | null, data?: ArrayBuffer | null, cacheControl?: string | null, expires?: string | null) => {
+    const request = getArrayBuffer(requestParameters, (err?: Error | null, data?: ArrayBuffer | null, headers?: Headers) => {
 
         advanceImageRequestQueue();
 
@@ -377,9 +384,9 @@ export const getImage = function (
             callback(err);
         } else if (data) {
             if (self.createImageBitmap) {
-                arrayBufferToImageBitmap(data, (err, imgBitmap) => callback(err, imgBitmap, cacheControl, expires));
+                arrayBufferToImageBitmap(data, (err, imgBitmap) => callback(err, imgBitmap, headers));
             } else {
-                arrayBufferToImage(data, (err, img) => callback(err, img, cacheControl, expires));
+                arrayBufferToImage(data, (err, img) => callback(err, img, headers));
             }
         }
     });

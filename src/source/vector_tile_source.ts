@@ -1,5 +1,5 @@
 import {Event, ErrorEvent, Evented} from '../util/evented';
-import {pick} from '../util/util';
+import {getExpiryDataFromHeaders, pick} from '../util/util';
 import loadTileJSON from './load_tilejson';
 import {postTurnstileEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
@@ -245,7 +245,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
         return Object.assign({}, this._options);
     }
 
-    loadTile(tile: Tile, callback: Callback<undefined>) {
+    loadTile(tile: Tile, callback: Callback<WorkerSourceVectorTileResult>) {
         const tileUrl = tile.tileID.canonical.url(this.tiles, this.scheme);
         const url = this.map._requestManager.normalizeTileURL(tileUrl);
         const request = this.map._requestManager.transformRequest(url, ResourceType.Tile);
@@ -296,12 +296,11 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                     if (err || !data) {
                         done.call(this, err);
                     } else {
+                        const expiryData = getExpiryDataFromHeaders(data.responseHeaders);
                         // the worker will skip the network request if the data is already there
                         params.data = {
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                            cacheControl: data.cacheControl,
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                            expires: data.expires,
+                            cacheControl: expiryData.cacheControl,
+                            expires: expiryData.expires,
                             rawData: data.rawData.slice(0)
                         };
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -346,7 +345,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             cacheEntryPossiblyAdded(this.dispatcher);
 
-            callback(null);
+            callback(null, data);
 
             if (tile.reloadCallback) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access

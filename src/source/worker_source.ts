@@ -116,6 +116,7 @@ export type WorkerSourceVectorTileResult = {
     rawTileData?: ArrayBuffer;
     resourceTiming?: Array<PerformanceResourceTiming>;
     brightness: number;
+    responseHeaders?: Map<string, string>;
     // Only used for benchmarking:
     glyphMap?: GlyphMap;
     iconMap?: StyleImageMap<StringifiedImageVariant>;
