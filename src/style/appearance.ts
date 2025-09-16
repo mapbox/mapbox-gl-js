@@ -70,7 +70,9 @@ class SymbolAppearance {
 
         result['condition'] = this.condition.expression.serialize() as ExpressionSpecification;
         if (this.name) result['name'] = this.name;
-        if (this.properties) result['properties'] = this.properties;
+        if (this.unevaluatedLayout) {
+            result['properties'] = this.unevaluatedLayout.serialize();
+        }
 
         return result;
     }

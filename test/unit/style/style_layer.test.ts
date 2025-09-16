@@ -296,8 +296,18 @@ describe('StyleLayer#serialize', () => {
             },
             appearances: [
                 {
-                    name: 'selected',
-                    condition: ["==", ["feature-state", "availability"], "partial"]
+                    "condition": ["==", ["feature-state", "availability"], "partial"],
+                    "properties": {
+                        "icon-image": ["image", "charging-station", {"params": {"fill": "orange"}}],
+                        "icon-size": 1.1
+                    }
+                },
+                {
+                    "condition": ["==", ["feature-state", "availability"], "none"],
+                    "properties": {
+                        "icon-image": ["image", "charging-station", {"params": {"fill": "red"}}],
+                        "icon-size": 1
+                    }
                 }
             ]
         }, layer);
