@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test-purpose": "Verify that icon bounding box is correctly offset when icon-offset is used in an appearance, and the icon has a specified content area.",
+    "test": {
+      "width": 256,
+      "height": 256,
+      "collisionDebug": true
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/rect",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(255, 255, 255, 1)"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "rect"
+      },
+      "appearances": [{
+        "condition": ["config", "showAppearance"],
+        "properties": {
+           "icon-offset": [-30, -30]
+        }
+      }]
+    }
+  ]
+}

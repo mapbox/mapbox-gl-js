@@ -107,7 +107,18 @@ const todo = [
     // https://mapbox.atlassian.net/browse/MAPSNAT-2636
     "render-tests/icon-text-fit/stretch-nine-part-content-interpolate-text-size",
     // https://mapbox.atlassian.net/browse/GLJS-1189
-    "render-tests/background-pattern/image-update/delayed/same-size-before-color-theme-change"
+    "render-tests/background-pattern/image-update/delayed/same-size-before-color-theme-change",
+
+    // https://mapbox.atlassian.net/browse/GLJS-1395
+    "render-tests/appearance/icon-bbox/different-icon-image",
+    "render-tests/appearance/icon-bbox/same-icon-image",
+    "render-tests/appearance/icon-bbox/icon-text-fit",
+    "render-tests/appearance/icon-bbox/icon-with-offset",
+    "render-tests/appearance/icon-bbox/icon-with-padding",
+    "render-tests/appearance/icon-bbox/icon-with-rotate",
+    "render-tests/appearance/icon-bbox/icon-with-padding-2",
+    "render-tests/appearance/icon-bbox/multiple-appearances",
+    "render-tests/appearance/icon-bbox/icon-with-offset-2"
 ];
 
 const skip = [

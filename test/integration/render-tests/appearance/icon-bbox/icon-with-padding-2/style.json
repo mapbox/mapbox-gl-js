@@ -1,0 +1,48 @@
+{
+  "version": 8,
+  "metadata": {
+    "test-purpose": "Verify that icon bounding box is correctly padded when icon-padding is set with appearances, and the icon is a normal one without specified content area.",
+    "test": {
+      "width": 150,
+      "height": 150,
+      "collisionDebug": true
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(255, 255, 255, 1)"
+      }
+    },
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "fav-rocket-18",
+        "icon-padding": 10
+      },
+      "appearances": [{
+        "condition": ["config", "showAppearance"],
+        "properties": {
+           "icon-size": 3
+        }
+      }]
+    }
+  ]
+}
