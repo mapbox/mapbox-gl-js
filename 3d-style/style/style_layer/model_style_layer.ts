@@ -101,7 +101,7 @@ class ModelStyleLayer extends StyleLayer {
                 const model = modelManager.getModel(modelId, this.scope);
                 if (!model) return false;
 
-                let matrix = mat4.create();
+                let matrix: mat4 = [];
                 const position = new LngLat(0, 0);
                 const id = bucket.canonical;
                 let minDepth = Number.MAX_VALUE;
@@ -111,8 +111,8 @@ class ModelStyleLayer extends StyleLayer {
 
                     const va = instances.instancedDataArray.float32;
                     const translation: [number, number, number] = [va[offset + 4], va[offset + 5], va[offset + 6]];
-                    const pointX = va[offset];
-                    const pointY = va[offset + 1] | 0; // point.y stored in integer part
+                    const pointX = Math.floor(va[offset]); // point.x stored in integer part
+                    const pointY = Math.floor(va[offset + 1]); // point.y stored in integer part
 
                     tileToLngLat(id, position, pointX, pointY);
 

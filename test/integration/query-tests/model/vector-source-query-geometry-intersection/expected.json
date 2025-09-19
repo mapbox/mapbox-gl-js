@@ -1,0 +1,17 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        -74.49999991804361,
+        39.99999996437472
+      ],
+      "type": "Point"
+    },
+    "properties": {
+      "id": "object-one"
+    },
+    "source": "layer-source",
+    "state": {},
+    "type": "Feature"
+  }
+]

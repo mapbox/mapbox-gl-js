@@ -1,0 +1,72 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "wait"
+        ]
+      ],
+      "queryGeometry": [
+        165,
+        279
+      ]
+    }
+  },
+  "sources": {
+    "layer-source": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "properties": {
+          "id": "object-one"
+        },
+        "geometry": {
+          "coordinates": [
+            -74.5,
+            40
+          ],
+          "type": "Point"
+        }
+      }
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "models": {
+    "model-glb": "local://models/Box.glb"
+  },
+  "pitch": 50,
+  "bearing": 45,
+  "zoom": 22,
+  "center": [
+    -74.5,
+    40
+  ],
+  "layers": [
+    {
+      "id": "model-layer",
+      "source": "layer-source",
+      "type": "model",
+      "layout": {
+        "model-id": "model-glb"
+      },
+      "paint": {
+        "model-scale": [
+          2,
+          2,
+          2
+        ]
+      }
+    }
+  ]
+}
