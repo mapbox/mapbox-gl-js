@@ -2581,7 +2581,7 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        let layer;
+        let layer: TypedStyleLayer;
         if (layerObject.type === 'custom') {
             if (emitValidationErrors(this, validateCustomStyleLayer(layerObject))) return;
             layer = createStyleLayer(layerObject, this.scope, this._styleColorTheme.lut, this.options);
@@ -2597,14 +2597,11 @@ class Style extends Evented<MapEvents> {
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
             layer = createStyleLayer(layerObject as LayerSpecification, this.scope, this._styleColorTheme.lut, this.options);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._validateLayer(layer);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             layer.setEventedParent(this, {layer: {id}});
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
         if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
 
         let index = this._order.length;
@@ -2619,29 +2616,22 @@ class Style extends Evented<MapEvents> {
             // or it has the same slot as the 'before' layer,
             // then we can insert the new layer before the existing one.
             const beforeLayer = this._layers[before];
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (layer.slot === beforeLayer.slot) index = beforeIndex;
             else warnOnce(`Layer with id "${before}" has a different slot. Layers can only be rearranged within the same slot.`);
         }
 
         this._order.splice(index, 0, id);
         this._layerOrderChanged = true;
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this._layers[id] = layer;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const sourceCache = this.getOwnLayerSourceCache(layer);
         const shadowsEnabled = !!this.directionalLight && this.directionalLight.shadowsEnabled();
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         if (sourceCache && layer.canCastShadows() && shadowsEnabled) {
             sourceCache.castsShadows = true;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const removedLayer = this._changes.getRemovedLayer(layer);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (removedLayer && layer.source && sourceCache && layer.type !== 'custom') {
             // If, in the current batch, we have already removed this layer
             // and we are now re-adding it with a different `type`, then we
@@ -2650,11 +2640,8 @@ class Style extends Evented<MapEvents> {
             // buffers that are set up for the _previous_ version of this
             // layer, causing, e.g.:
             // https://github.com/mapbox/mapbox-gl-js/issues/3633
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._changes.discardLayerRemoval(layer);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
             const fqid = makeFQID(layer.source, layer.scope);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (removedLayer.type !== layer.type) {
                 this._changes.updateSourceCache(fqid, 'clear');
             } else {
@@ -2663,18 +2650,13 @@ class Style extends Evented<MapEvents> {
             }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._updateLayer(layer);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (layer.onAdd) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             layer.onAdd(this.map);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         layer.scope = this.scope;
-
         this.mergeLayers();
     }
 
