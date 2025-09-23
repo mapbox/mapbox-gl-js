@@ -203,7 +203,7 @@ class ReplacementSource {
                 const prev = this._prevRegions[idx];
 
                 regionsChanged = curr.priority !== prev.priority || !boundsEquals(curr, prev) || (curr.order !== prev.order) || (curr.clipMask !== prev.clipMask || !deepEqual(curr.clipScope, prev.clipScope));
-
+                this._activeRegions[idx].hiddenByOverlap = prev.hiddenByOverlap;
                 ++idx;
             }
         }
