@@ -275,11 +275,15 @@ export class BuildingBucket implements BucketWithGroundEffect {
         buildingGen.setStructuralOptions(true);
         buildingGen.setFacadeClassifierOptions(3.0);
 
-        // First, we process facade data
+        // First, we process facade data. For building parts, facades are linked to the
+        // parent building, so we also crate a map linking feature id to source id to
+        // query later.
+        const featureSourceIdMap = new Map<string | number, string | number | boolean>();
         const facadeDataForFeature = new Map<string | number | boolean, Facade[]>();
         for (const {feature} of features) {
             const isFacade = vectorTileFeatureTypes[feature.type] === 'LineString';
             if (!isFacade) {
+                featureSourceIdMap.set(feature.id, feature.properties.source_id);
                 continue;
             }
 
@@ -360,7 +364,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             buildingGen.setFacadeOptions(4.0, true);
             buildingGen.setFauxFacadeOptions(hasFauxFacade, false, 1.0);
 
-            const sourceId = feature.properties.source_id;
+            const sourceId = featureSourceIdMap.get(id);
             let facades: Facade[];
             if (facadeDataForFeature.has(sourceId)) {
                 facades = facadeDataForFeature.get(sourceId);
