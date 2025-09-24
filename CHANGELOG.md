@@ -1,3 +1,15 @@
+## 3.16.0-beta.1
+
+### Features and improvements ✨
+- Add response headers to the `sourcedata` event data.
+- Improve TypeScript types for style specification.
+
+### Bug fixes 🐞
+- Fix flickering of fill-extrusion buildings when using clip layers.
+- Fix inaccuracies in 3D model query intersection.
+- Fix the passing of `GeolocationPosition` to `geolocate` event listeners.
+- Fix the placement of line-aligned text with a non-default `scaleFactor`.
+
 ## 3.15.0
 
 ### Features and improvements ✨
