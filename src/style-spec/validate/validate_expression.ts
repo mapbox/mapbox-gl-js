@@ -4,7 +4,7 @@ import {deepUnbundle} from '../util/unbundle_jsonlint';
 import {isStateConstant, isGlobalPropertyConstant, isFeatureConstant} from '../expression/is_constant';
 import CompoundExpression from '../expression/compound_expression';
 
-import type {StylePropertySpecification} from '../../style-spec/style-spec';
+import type {StylePropertySpecification} from '../style-spec';
 import type {Expression} from '../expression/expression';
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
