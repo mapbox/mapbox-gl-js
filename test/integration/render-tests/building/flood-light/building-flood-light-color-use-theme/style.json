@@ -133,7 +133,8 @@
         ],
         "building-ambient-occlusion-intensity": 1,
         "building-flood-light-intensity": 1.0,
-        "building-flood-light-color": "hsl(30, 79%, 81%)"
+        "building-flood-light-color": "hsl(30, 79%, 81%)",
+        "building-flood-light-color-use-theme": "none"
       }
     }
   ]

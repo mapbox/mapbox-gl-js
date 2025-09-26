@@ -4,6 +4,7 @@
 in vec3 a_pos_3f;
 in vec3 a_normal_3;
 in vec3 a_centroid_3;
+in float a_flood_light_wall_radius_1i16;
 
 in vec4 a_faux_facade_data;
 in vec2 a_faux_facade_vertical_range;
@@ -37,10 +38,16 @@ out highp vec4 v_pos_light_view_1;
 out float v_depth_shadows;
 #endif
 
+#ifdef FLOOD_LIGHT
+out highp float v_flood_radius; // in tile coordinates
+out float v_has_flood_light;
+#endif
+
 const float MAX_UINT_16 = 65535.0;
 const float MAX_INT_16 = 32767.0;
 const float MAX_UINT_8 = 255.0;
 const float TWO_POW_8 = 256.0;
+const float FLOOD_LIGHT_MAX_RADIUS_METER = 2048.0;
 
 vec3 sRGBToLinear(vec3 srgbIn) {
     return pow(srgbIn, vec3(2.2));
@@ -59,6 +66,11 @@ mat3 get_tbn(in vec3 normal) {
 void main() {
     #pragma mapbox: initialize-attribute-custom highp vec2 part_color_emissive
     #pragma mapbox: initialize-attribute-custom highp vec2 faux_facade_color_emissive
+
+#ifdef FLOOD_LIGHT
+    v_flood_radius = (a_flood_light_wall_radius_1i16 / MAX_INT_16 * FLOOD_LIGHT_MAX_RADIUS_METER);
+    v_has_flood_light = step(0.0, v_flood_radius);
+#endif
 
     vec4 color_emissive = decode_color(part_color_emissive);
     v_color = vec4(sRGBToLinear(color_emissive.rgb), color_emissive.a);

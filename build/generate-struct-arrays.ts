@@ -151,7 +151,7 @@ import lineAttributesPattern from '../src/data/bucket/line_attributes_pattern';
 import {patternAttributes} from '../src/data/bucket/pattern_attributes';
 import dashAttributes from '../src/data/bucket/dash_attributes';
 import skyboxAttributes from '../src/render/skybox_attributes';
-import {fillExtrusionGroundAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes, wallAttributes} from '../src/data/bucket/fill_extrusion_attributes';
+import {fillExtrusionGroundAttributes, fillExtrusionGroundRadiusAttributes, fillExtrusionAttributes, fillExtrusionAttributesExt, centroidAttributes, hiddenByLandmarkAttributes, wallAttributes} from '../src/data/bucket/fill_extrusion_attributes';
 import {
     buildingPositionAttributes,
     buildingNormalAttributes,
@@ -160,7 +160,8 @@ import {
     buildingFacadePaintAttributes,
     buildingFacadeDataAttributes,
     buildingFacadeVerticalRangeAttributes,
-    buildingBloomAttenuationAttributes
+    buildingBloomAttenuationAttributes,
+    buildingFloodLightWallRadiusAttributes
 } from '../3d-style/data/building_attributes';
 // eslint-disable-next-line import/order
 import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, instanceAttributes, featureAttributes} from '../3d-style/data/model_attributes';
@@ -175,6 +176,7 @@ const layoutAttributes = {
     fillIntersectionsNormal: intersectionsNormalAttributes,
     'fill-extrusion': fillExtrusionAttributes,
     'fill-extrusion-ground': fillExtrusionGroundAttributes,
+    'fill-extrusion-ground-radius': fillExtrusionGroundRadiusAttributes,
     heatmap: circleAttributes,
     line: lineLayoutAttributes,
     lineExt: lineAttributesExt,
@@ -339,6 +341,7 @@ createStructArrayType('building_facade_paint', buildingFacadePaintAttributes);
 createStructArrayType('building_facade_data', buildingFacadeDataAttributes);
 createStructArrayType('building_facade_vertical_range', buildingFacadeVerticalRangeAttributes);
 createStructArrayType('building_bloom_attenuation', buildingBloomAttenuationAttributes);
+createStructArrayType('building_flood_light_wall_radius', buildingFloodLightWallRadiusAttributes);
 
 // Globe extension arrays
 createStructArrayType('circle_globe_ext', circleGlobeAttributesExt);

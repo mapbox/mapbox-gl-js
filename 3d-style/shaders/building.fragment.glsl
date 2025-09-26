@@ -29,11 +29,19 @@ in highp vec4 v_pos_light_view_1;
 in float v_depth_shadows;
 #endif
 
+#ifdef FLOOD_LIGHT
+in highp float v_flood_radius; // in meter
+in float v_has_flood_light;
+#endif
+
 uniform lowp float u_opacity;
 uniform vec3 u_camera_pos; // in tile coordinates
 uniform highp float u_tile_to_meter;
 
 uniform float u_facade_emissive_chance;
+
+uniform vec3 u_flood_light_color;
+uniform float u_flood_light_intensity;
 
 vec3 linearTosRGB(in vec3 color) {
     return pow(color, vec3(1./2.2));
@@ -151,7 +159,6 @@ void main() {
     vec3 normal = normalize(v_normal);
     vec3 base_color = v_color.rgb;
     float emissive = v_color.a;
-
 #ifdef BUILDING_FAUX_FACADE
     if (v_faux_facade > 0.0) {
         mat3 tbn = mat3(v_tbn_0, v_tbn_1, v_tbn_2);
@@ -197,15 +204,19 @@ void main() {
 #else
     shadowed_lighting_factor = dot(normal, u_lighting_directional_dir);
 #endif
-
     color.rgb = apply_lighting_linear(color.rgb, xy_flipped_normal, shadowed_lighting_factor);
-    color.rgb = mix(color.rgb, base_color.rgb, emissive);
+    color.rgb = linearTosRGB(color.rgb);
+#ifdef FLOOD_LIGHT
+    float flood_radiance = (1.0 - min(v_pos.z / v_flood_radius, 1.0)) * u_flood_light_intensity * v_has_flood_light;
+    color.rgb = mix(color.rgb, u_flood_light_color, flood_radiance);
+#endif
+
+    color.rgb = mix(color.rgb, linearTosRGB(base_color.rgb), emissive);
     
 #ifdef FOG
     color = fog_dither(fog_apply_premultiplied(color, v_fog_pos, v_pos.z));
 #endif
 
-    color.rgb = linearTosRGB(color.rgb);
     color *= u_opacity;
 
 #ifdef INDICATOR_CUTOUT

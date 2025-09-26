@@ -130,6 +130,19 @@
                 ]
             ],
             "layout": {
+                "building-flood-light-wall-radius": [
+                    "case",
+                    [">", ["number", ["get", "height"]], 200],
+                    ["/", ["number", ["get", "height"]], 3],
+                    0
+                ],
+                "building-flood-light-ground-radius": [
+                    "step",
+                    ["number", ["get", "height"]],
+                    0,
+                    30,
+                    ["random", 30, 100, ["id"]]
+                ],
                 "building-roof-shape": [
                     "case",
                     [
@@ -293,6 +306,16 @@
                 ]
             },
             "paint": {
+                "building-flood-light-intensity": [
+                    "interpolate",
+                    ["linear"],
+                    ["measure-light", "brightness"],
+                    0.015,
+                    ["match", ["config", "theme"], "monochrome", 0, 0.3],
+                    0.026,
+                    0
+                ],
+                "building-flood-light-color": "hsl(30, 79%, 81%)",
                 "building-cutoff-fade-range": 0.5,
                 "building-facade-emissive-chance": [
                     "interpolate",

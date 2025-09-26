@@ -7,7 +7,7 @@ import {
     PosArray,
     FillExtrusionWallArray,
 } from '../array_types';
-import {members as layoutAttributes, fillExtrusionGroundAttributes, centroidAttributes, fillExtrusionAttributesExt, hiddenByLandmarkAttributes, wallAttributes} from './fill_extrusion_attributes';
+import {members as layoutAttributes, fillExtrusionGroundAttributes, fillExtrusionGroundRadiusAttributes, centroidAttributes, fillExtrusionAttributesExt, hiddenByLandmarkAttributes, wallAttributes} from './fill_extrusion_attributes';
 import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';
 import {TriangleIndexArray} from '../index_array_type';
@@ -35,6 +35,7 @@ import {dropBufferConnectionLines, createLineWallGeometry} from '../../geo/line_
 import {PerformanceUtils} from '../../util/performance';
 
 import type {Elevation} from '../../terrain/elevation';
+import type {FillExtrusionGroundRadiusLayoutArray} from '../array_types';
 import type {Frustum} from '../../util/primitives';
 import type {Region, ReplacementSource} from '../../../3d-style/source/replacement_source';
 import type {Feature} from "../../style-spec/expression";
@@ -378,6 +379,9 @@ export class GroundEffect {
     indexArray: TriangleIndexArray;
     indexBuffer: IndexBuffer;
 
+    groundRadiusArray: FillExtrusionGroundRadiusLayoutArray = null;
+    groundRadiusBuffer: VertexBuffer = null;
+
     _segments: SegmentVector;
 
     _segmentToGroundQuads: {
@@ -559,6 +563,9 @@ export class GroundEffect {
         if (!this.hasData()) return;
         this.vertexBuffer = context.createVertexBuffer(this.vertexArray, fillExtrusionGroundAttributes.members);
         this.indexBuffer = context.createIndexBuffer(this.indexArray);
+        if (this.groundRadiusArray != null) {
+            this.groundRadiusBuffer = context.createVertexBuffer(this.groundRadiusArray, fillExtrusionGroundRadiusAttributes.members);
+        }
     }
 
     uploadPaintProperties(context: Context) {
@@ -610,6 +617,9 @@ export class GroundEffect {
         this.indexBuffer.destroy();
         if (this.hiddenByLandmarkVertexBuffer) {
             this.hiddenByLandmarkVertexBuffer.destroy();
+        }
+        if (this.groundRadiusBuffer) {
+            this.groundRadiusBuffer.destroy();
         }
         if (this._segments) this._segments.destroy();
         this.programConfigurations.destroy();

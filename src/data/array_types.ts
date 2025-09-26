@@ -1682,6 +1682,7 @@ export {
     StructArrayLayout3i8 as FillIntersectionsNormalLayoutArray,
     StructArrayLayout4i8 as FillExtrusionLayoutArray,
     StructArrayLayout5i10 as FillExtrusionGroundLayoutArray,
+    StructArrayLayout1f4 as FillExtrusionGroundRadiusLayoutArray,
     StructArrayLayout2i4 as HeatmapLayoutArray,
     StructArrayLayout2i4ub1f12 as LineLayoutArray,
     StructArrayLayout3f12 as LineExtLayoutArray,
@@ -1730,5 +1731,6 @@ export {
     StructArrayLayout4ui8 as BuildingFacadeDataArray,
     StructArrayLayout2ui4 as BuildingFacadeVerticalRangeArray,
     StructArrayLayout4f16 as BuildingBloomAttenuationArray,
+    StructArrayLayout1ui2 as BuildingFloodLightWallRadiusArray,
     StructArrayLayout6i12 as CircleGlobeExtArray
 };

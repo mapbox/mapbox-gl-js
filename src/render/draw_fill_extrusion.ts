@@ -523,7 +523,7 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
     const gl = context.gl;
     const tr = painter.transform;
     const zoom = painter.transform.zoom;
-    const defines: DynamicDefinesType[] = [];
+    const defines: Array<DynamicDefinesType> = [];
 
     const paintPropertyTranslate = props.translate;
     const paintPropertyTranslateAnchor = props.translateAnchor;
@@ -548,9 +548,14 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
     }
 
     const renderGroundEffectTile = (coord: OverscaledTileID, groundEffect: GroundEffect, segments: SegmentVector, matrix: mat4, meterToTile: number) => {
+        let programDefines = defines;
+        if (groundEffect.groundRadiusBuffer != null) {
+            programDefines = defines.concat('HAS_ATTRIBUTE_a_flood_light_ground_radius');
+        }
+
         const programConfiguration = groundEffect.programConfigurations.get(layer.id);
         const affectedByFog = painter.isTileAffectedByFog(coord);
-        const program = painter.getOrCreateProgram('fillExtrusionGroundEffect', {config: programConfiguration, defines, overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram('fillExtrusionGroundEffect', {config: programConfiguration, defines: programDefines, overrideFog: affectedByFog});
 
         const ao: [number, number] = [aoIntensity, aoRadius * meterToTile];
 
@@ -561,6 +566,9 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
         const dynamicBuffers = [];
         if (replacementActive) dynamicBuffers.push(groundEffect.hiddenByLandmarkVertexBuffer);
 
+        if (groundEffect.groundRadiusBuffer != null) {
+            dynamicBuffers.push(groundEffect.groundRadiusBuffer);
+        }
         painter.uploadCommonUniforms(context, program, coord.toUnwrapped(), null, cutoffParams);
 
         program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,

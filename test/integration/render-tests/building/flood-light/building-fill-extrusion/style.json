@@ -13,23 +13,26 @@
   "lights": [
     {
       "type": "ambient",
-      "id": "environment"
+      "id": "environment",
+      "properties": {
+        "intensity": 0.0099999904632569
+      }
     },
     {
       "type": "directional",
       "id": "sun_light",
       "properties": {
         "cast-shadows": true,
-        "intensity": 0.8599999904632569,
+        "intensity": 0.2099999904632569,
         "direction": [
-          311.9219970703125,
+          230.9219970703125,
           82.37799835205078  
         ]
       }
     }
   ],
   "sources": {
-    "geojson": {
+    "geojson-1": {
       "type": "geojson",
       "data": {
         "type": "FeatureCollection",
@@ -46,23 +49,23 @@
               "coordinates": [
                 [
                   [
-                    11.5746263783388,
+                    11.5745263783388,
                     48.1375592849677
                   ],
                   [
-                    11.5746263783388,
+                    11.5745263783388,
                     48.1373765725484
                   ],
                   [
-                    11.5749991824917,
+                    11.5748991824917,
                     48.1373765725484
                   ],
                   [
-                    11.5749991824917,
+                    11.5748991824917,
                     48.1375592849677
                   ],
                   [
-                    11.5746263783388,
+                    11.5745263783388,
                     48.1375592849677
                   ]
                 ]
@@ -83,18 +86,26 @@
             "geometry": {
               "type": "LineString",
               "coordinates": 
+              [
                 [
-                  [
-                    11.5746263783388,
-                    48.1373765725484
-                  ],
-                  [
-                    11.5749991824917,
-                    48.1373765725484
-                  ]
+                  11.5745263783388,
+                  48.1373765725484
+                ],
+                [
+                  11.5748991824917,
+                  48.1373765725484
                 ]
-              }
-          },
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "geojson-2": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
           {
             "type": "Feature",
             "properties": {
@@ -130,50 +141,18 @@
               ],
               "type": "Polygon"
             }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "min_height": 0,
-              "cross_perc": 0,
-              "source_id": 127046657,
-              "entrances": "[0.3]",
-              "distance_to_road": 33.34
-            },
-            "id": 127046657,
-            "geometry": {
-              "type": "LineString",
-              "coordinates": 
-                [
-                  [
-                    11.5750263783388,
-                    48.1373765725484
-                  ],
-                  [
-                    11.5753991824917,
-                    48.1373765725484
-                  ]
-                ]
-              }
           }
         ]
       }
-    },
-    "file-system-tiles": {
-      "type": "batched-model",
-      "maxzoom": 14,
-      "tiles": [
-        "local://models/landmark/mbx/{x}-{y}-{z}.glb"
-      ]
     }
   },
-  "zoom": 18.8,
+  "zoom": 17.2,
   "center": [
-    11.5749625,
-    48.1374424
+    11.5750625,
+    48.1381424
   ],
   "pitch": 58,
-  "bearing": 0.0,
+  "bearing": 10.0,
   "layers": [
     {
       "type": "background",
@@ -209,14 +188,14 @@
     {
       "id": "building",
       "type": "building",
-      "source": "geojson",
+      "source": "geojson-1",
       "minzoom": 16,
       "layout": {
         "building-roof-shape": "parapet",
         "building-base": 0,
-        "building-height": 10,
-        "building-flood-light-wall-radius": 10,
-        "building-flood-light-ground-radius": 10
+        "building-height": 100,
+        "building-flood-light-wall-radius": 50,
+        "building-flood-light-ground-radius": 15
       },
       "paint": {
         "building-color": [
@@ -245,82 +224,20 @@
       }
     },
     {
-      "minzoom": 14.0,
-      "type": "model",
-      "source": "file-system-tiles",
-      "paint": {
-        "model-color-mix-intensity": [
-          "match",
-          [
-            "get",
-            "part"
-          ],
-          "logo",
-          0.0,
-          "roof",
-          0.0,
-          1.0
-        ],
-        "model-emissive-strength": [
-          "match",
-          [
-            "get",
-            "part"
-          ],
-          "door",
-          1.7,
-          "logo",
-          0.0,
-          "window",
-          0.456,
-          0.0
-        ],
-        "model-scale": [
-          1.0,
-          1.0,
-          1.0
-        ],
-        "model-color": [
-          "match",
-          [
-            "get",
-            "part"
-          ],
-          "door",
-          [
-            "rgba",
-            128.0,
-            255.0,
-            255.0,
-            1.0
-          ],
-          "roof",
-          [
-            "rgba",
-            178.5,
-            178.5,
-            178.5,
-            1.0
-          ],
-          "window",
-          [
-            "rgba",
-            255.0,
-            255.0,
-            0.0,
-            1.0
-          ],
-          [
-            "rgba",
-            255.0,
-            255.0,
-            255.0,
-            1.0
-          ]
-        ],
-        "model-opacity": 1.0
+      "id": "fill-extrusion",
+      "type": "fill-extrusion",
+      "source": "geojson-2",
+      "minzoom": 16,
+      "layout": {
       },
-      "id": "landmarks"
+      "paint": {
+        "fill-extrusion-color": ["hsl", 41, 90, 90],
+        "fill-extrusion-height": 100,
+        "fill-extrusion-flood-light-wall-radius": 50,
+        "fill-extrusion-flood-light-ground-radius": 15,
+        "fill-extrusion-flood-light-intensity": 0.26,
+        "fill-extrusion-flood-light-color": "hsl(30, 79%, 81%)"
+      }
     }
   ]
 }

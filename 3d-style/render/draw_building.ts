@@ -33,6 +33,8 @@ interface DrawParams {
     verticalScale: number;
     facadeEmissiveChance: number;
     facadeAOIntensity: number;
+    floodLightIntensity: number;
+    floodLightColor: [number, number, number];
 }
 
 function drawTiles(params: DrawParams) {
@@ -49,6 +51,10 @@ function drawTiles(params: DrawParams) {
     const cutoffParams = getCutoffParams(painter, layer.paint.get('building-cutoff-fade-range'));
     if (cutoffParams.shouldRenderCutoff) {
         defines = defines.concat('RENDER_CUTOFF');
+    }
+
+    if (params.floodLightIntensity > 0.0) {
+        defines = defines.concat('FLOOD_LIGHT');
     }
 
     for (const coord of coords) {
@@ -112,7 +118,7 @@ function drawTiles(params: DrawParams) {
                 mercCameraPos.z * tiles * EXTENT
             ];
 
-            uniformValues = buildingUniformValues(matrix, normalMatrix, params.opacity, params.facadeAOIntensity, cameraPos, bucket.tileToMeter, params.facadeEmissiveChance);
+            uniformValues = buildingUniformValues(matrix, normalMatrix, params.opacity, params.facadeAOIntensity, cameraPos, bucket.tileToMeter, params.facadeEmissiveChance, params.floodLightColor, params.floodLightIntensity);
 
             programWithoutFacades =  painter.getOrCreateProgram('building',
                 {config: programConfiguration, defines, overrideFog: false});
@@ -137,7 +143,7 @@ function drawTiles(params: DrawParams) {
         const renderBuilding = (building: BuildingGeometry, program) => {
             if (!isBloomPass) {
                 const segments = building.segmentsBucket;
-                let dynamicBuffers = [building.layoutNormalBuffer, building.layoutCentroidBuffer, building.layoutColorBuffer];
+                let dynamicBuffers = [building.layoutNormalBuffer, building.layoutCentroidBuffer, building.layoutColorBuffer, building.layoutFloodLightDataBuffer];
                 if (building.layoutFacadePaintBuffer) {
                     dynamicBuffers = dynamicBuffers.concat([building.layoutFacadeDataBuffer, building.layoutFacadeVerticalRangeBuffer, building.layoutFacadePaintBuffer]);
                 }
@@ -330,7 +336,9 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
             opacity,
             verticalScale,
             facadeEmissiveChance: 0,
-            facadeAOIntensity: 0
+            facadeAOIntensity: 0,
+            floodLightIntensity: 0,
+            floodLightColor: [0, 0, 0]
         });
 
     } else if (painter.renderPass === 'translucent' && drawLayer) {
@@ -357,6 +365,12 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
         const facadeEmissiveChance = layer.paint.get('building-facade-emissive-chance');
         const facadeAOIntensity = layer.paint.get('building-ambient-occlusion-intensity');
 
+        const floodLightIntensity = layer.paint.get('building-flood-light-intensity');
+        const ignoreLut = layer.paint.get('building-flood-light-color-use-theme').constantOr('default') === "none";
+        const floodLightColor = layer.paint.get('building-flood-light-color').toNonPremultipliedRenderColor(ignoreLut ? null : layer.lut).toArray01().slice(0, 3) as [number, number, number];
+        const floodLightGroundAttenuation = layer.paint.get('building-flood-light-ground-attenuation');
+        const floodLightEnabled = floodLightIntensity > 0;
+
         const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, painter.depthRangeFor3D);
         if (opacity < 1.0) {
             // Draw transparent buildings in two passes so that only the closest surface is drawn.
@@ -372,7 +386,9 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
                 opacity,
                 verticalScale,
                 facadeEmissiveChance,
-                facadeAOIntensity
+                facadeAOIntensity,
+                floodLightIntensity,
+                floodLightColor
             });
         }
 
@@ -388,11 +404,16 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
             opacity,
             verticalScale,
             facadeEmissiveChance,
-            facadeAOIntensity
+            facadeAOIntensity,
+            floodLightIntensity,
+            floodLightColor
         });
 
         if (aoEnabled) {
-            drawGroundEffect(painter, source, layer, coords, true, opacity, aoIntensity, aoRadius, 0, [0, 0, 0], aoGroundAttenuation, conflateLayer, false);
+            drawGroundEffect(painter, source, layer, coords, true, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, aoGroundAttenuation, conflateLayer, false);
+        }
+        if (floodLightEnabled) {
+            drawGroundEffect(painter, source, layer, coords, false, opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, floodLightGroundAttenuation, conflateLayer, false);
         }
     } else if (painter.renderPass === 'light-beam' && drawLayer) {
         const definesForPass: Array<DynamicDefinesType> = [
@@ -414,7 +435,9 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
             opacity,
             verticalScale,
             facadeEmissiveChance: 0,
-            facadeAOIntensity: 0
+            facadeAOIntensity: 0,
+            floodLightIntensity: 0,
+            floodLightColor: [0, 0, 0]
         });
     }
 

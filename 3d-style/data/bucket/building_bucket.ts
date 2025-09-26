@@ -6,7 +6,9 @@ import {
     BuildingFacadePaintArray,
     BuildingFacadeDataArray,
     BuildingFacadeVerticalRangeArray,
-    BuildingBloomAttenuationArray
+    BuildingBloomAttenuationArray,
+    BuildingFloodLightWallRadiusArray,
+    FillExtrusionGroundRadiusLayoutArray
 } from '../../../src/data/array_types';
 import {calculateLightsMesh} from '../../source/model_loader';
 import {clamp, warnOnce} from '../../../src/util/util';
@@ -19,7 +21,8 @@ import {
     buildingFacadePaintAttributes,
     buildingFacadeDataAttributes,
     buildingFacadeVerticalRangeAttributes,
-    buildingBloomAttenuationAttributes
+    buildingBloomAttenuationAttributes,
+    buildingFloodLightWallRadiusAttributes
 } from '../building_attributes';
 import loadGeometry from '../../../src/data/load_geometry';
 import {ProgramConfigurationSet} from '../../../src/data/program_configuration';
@@ -69,6 +72,7 @@ const MAX_INT_16 = 32767.0;
 
 // Refer to https://github.com/mapbox/geodata-exports/blob/e863d358e04ade6301db95c6f96d1340560f7b93/pipelines/export_map_data/dags/mts_recipes/procedural_buildings_v1/procedural_buildings.json#L62
 const BUILDING_TILE_PADDING = 163; // ~= 2.0% * 8192 according to the buffer_size used to generate the tile set.
+const FLOOD_LIGHT_MAX_RADIUS_METER = 2048;
 
 function geometryFullyInsideTile(geometry: Point[][], padding: number): boolean {
     const extentWithPadding = EXTENT + padding;
@@ -155,6 +159,9 @@ export class BuildingGeometry {
     layoutFacadeVerticalRangeArray: BuildingFacadeVerticalRangeArray = null;
     layoutFacadeVerticalRangeBuffer: VertexBuffer;
 
+    layoutFloodLightDataArray = new BuildingFloodLightWallRadiusArray();
+    layoutFloodLightDataBuffer: VertexBuffer;
+
     layoutAOArray: Array<number> = [];
 
     indexArray = new TriangleIndexArray();
@@ -229,6 +236,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
         this.projection = options.projection;
 
         this.groundEffect = new GroundEffect(options);
+        this.groundEffect.groundRadiusArray = new FillExtrusionGroundRadiusLayoutArray();
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
@@ -348,17 +356,26 @@ export class BuildingBucket implements BucketWithGroundEffect {
             }
 
             const layer = this.layers[0];
-            const base = layer.layout.get('building-base').evaluate(feature, {}, canonical);
-            const height = layer.layout.get('building-height').evaluate(feature, {}, canonical);
             const buildingRoofShape = layer.layout.get('building-roof-shape').evaluate(feature, {}, canonical);
-            const aoIntensity = layer.paint.get('building-ambient-occlusion-intensity');
-            const aoGroundRadius = layer.paint.get('building-ambient-occlusion-ground-radius');
-            const maxRadius = aoGroundRadius / this.tileToMeter;
-
             // Skip flat roofs -> render as fill-extrusion
             if (buildingRoofShape === 'flat') {
                 continue;
             }
+
+            const base = layer.layout.get('building-base').evaluate(feature, {}, canonical);
+            const height = layer.layout.get('building-height').evaluate(feature, {}, canonical);
+            const floodLightGroundRadius = layer.layout.get('building-flood-light-ground-radius').evaluate(feature, {}, canonical);
+            const aoIntensity = layer.paint.get('building-ambient-occlusion-intensity');
+            const maxRadius = floodLightGroundRadius / this.tileToMeter;
+
+            // Note: For procedural buildings we can set an upper limit for the radius walls.
+            // This is possible because procedural buildings are in practice visible at high zoom levels (i.e. no globe)
+            // and unlike fill-extrusions they are not repurposed to achieve different effects (e.g. gradient effect).
+            // This allows us to use a short integer which should give us more than enough precision and desireable visuals.
+            // In the case of ground flood lighting we're still using fill_extrusion_ground_effect shaders.
+            let floodLightWallRadius = layer.layout.get('building-flood-light-wall-radius').evaluate(feature, {}, canonical);
+            floodLightWallRadius = clamp(floodLightWallRadius, 0.0, FLOOD_LIGHT_MAX_RADIUS_METER);
+            const floodLightWallRadiusNormalized = floodLightWallRadius / FLOOD_LIGHT_MAX_RADIUS_METER * MAX_INT_16;
 
             const hasFauxFacade = layer.layout.get('building-facade').evaluate(feature, {}, canonical);
             buildingGen.setFacadeOptions(4.0, true);
@@ -559,6 +576,12 @@ export class BuildingBucket implements BucketWithGroundEffect {
                 const ch = Math.floor(footprintHeight);
                 for (let p = 0; p < mesh.positions.length; p += 3) {
                     building.layoutCentroidArray.emplaceBack(cx, cy, ch);
+
+                    if (mesh.buildingPart === "wall") {
+                        building.layoutFloodLightDataArray.emplaceBack(floodLightWallRadiusNormalized);
+                    } else {
+                        building.layoutFloodLightDataArray.emplaceBack(0);
+                    }
                 }
 
                 for (let n = 0; n < mesh.normals.length; n += 3) {
@@ -684,6 +707,9 @@ export class BuildingBucket implements BucketWithGroundEffect {
             }
 
             const groundEffectVertexLength = this.groundEffect.vertexArray.length - groundEffectVertexOffset;
+            for (let v = 0; v < groundEffectVertexLength; v++) {
+                this.groundEffect.groundRadiusArray.emplaceBack(floodLightGroundRadius);
+            }
 
             // Check if the feature crosses tile borders
             if (bboxMin.x < 0 || bboxMax.x > EXTENT || bboxMin.y < 0 || bboxMax.y > EXTENT) {
@@ -762,6 +788,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             building.layoutVertexBuffer = context.createVertexBuffer(building.layoutVertexArray, buildingPositionAttributes.members);
             building.layoutNormalBuffer = context.createVertexBuffer(building.layoutNormalArray, buildingNormalAttributes.members);
             building.layoutCentroidBuffer = context.createVertexBuffer(building.layoutCentroidArray, buildingCentroidAttributes.members);
+            building.layoutFloodLightDataBuffer = context.createVertexBuffer(building.layoutFloodLightDataArray, buildingFloodLightWallRadiusAttributes.members);
 
             if (building.layoutFacadeDataArray && building.layoutFacadeDataArray.length) {
                 building.layoutFacadeDataBuffer = context.createVertexBuffer(building.layoutFacadeDataArray, buildingFacadeDataAttributes.members);

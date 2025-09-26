@@ -11,6 +11,10 @@ export const fillExtrusionGroundAttributes: StructArrayLayout = createLayout([
     {name: 'a_angular_offset_factor', components: 1, type: 'Int16'}
 ]);
 
+export const fillExtrusionGroundRadiusAttributes: StructArrayLayout = createLayout([
+    {name: 'a_flood_light_ground_radius', components: 1, type: 'Float32'}
+]);
+
 export const centroidAttributes: StructArrayLayout = createLayout([
     {name: 'a_centroid_pos',  components: 2, type: 'Uint16'}
 ]);
