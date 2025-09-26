@@ -298,7 +298,6 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
             this._userLocationDotMarker.removeClassName('mapboxgl-user-location-dot-stale');
         }
 
-        console.log(position);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.fire(new Event('geolocate', Object.assign({coords: position.coords, timestamp: position.timestamp}, position.toJSON ? {toJSON: position.toJSON.bind(position)} : {}) as GeolocationPosition));
         this._finish();
