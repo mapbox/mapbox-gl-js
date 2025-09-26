@@ -1,3 +1,5 @@
+Please refer to the Mapbox GL JS [CHANGELOG.md](../../CHANGELOG.md) for details on latest changes to the style specification.
+
 ## 13.27.0
 
 ### Bug fixes 🐞
