@@ -181,6 +181,10 @@
     bool isOccluded(vec4 frag) {
         vec3 coord = frag.xyz / frag.w;
 
+        #ifdef CLIP_ZERO_TO_ONE
+            coord.z = -1.0 + 2.0 * coord.z; 
+        #endif
+
         #ifdef DEPTH_D24
             float depth = unpack_depth(texture(u_depth, (coord.xy + 1.0) * 0.5).r);
         #else // DEPTH_D24
@@ -219,6 +223,10 @@
         highp vec3 coord = frag.xyz / frag.w;
         highp vec2 uv = 0.5 * coord.xy + 0.5;
 
+        #ifdef CLIP_ZERO_TO_ONE
+            coord.z = -1.0 + 2.0 * coord.z; 
+        #endif
+
         int NX = 3;
         int NY = 4;
 
@@ -248,6 +256,10 @@
     // Used by circles layer
     highp float occlusionFade(vec4 frag) {
         highp vec3 coord = frag.xyz / frag.w;
+
+        #ifdef CLIP_ZERO_TO_ONE
+            coord.z = -1.0 + 2.0 * coord.z; 
+        #endif
 
         highp vec4 depth = getCornerDepths(coord.xy);
 
