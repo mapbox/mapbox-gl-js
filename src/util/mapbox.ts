@@ -308,10 +308,11 @@ function parseAccessToken(accessToken?: string | null): {u?: string} | null {
 
 type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth' | 'gljs.performance' | 'style.load';
 
-class TelemetryEvent {
+export class TelemetryEvent {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     eventData: any;
     anonId: string | null | undefined;
+    anonIdTimestamp: number | null | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     queue: Array<any>;
     type: TelemetryEventType;
@@ -321,6 +322,7 @@ class TelemetryEvent {
     constructor(type: TelemetryEventType) {
         this.type = type;
         this.anonId = null;
+        this.anonIdTimestamp = null;
         this.eventData = {};
         this.queue = [];
         this.pendingRequest = null;
@@ -343,6 +345,7 @@ class TelemetryEvent {
         const isLocalStorageAvailable = storageAvailable('localStorage');
         const storageKey = this.getStorageKey();
         const uuidKey = this.getStorageKey('uuid');
+        const uuidTimestampKey = this.getStorageKey('uuidTimestamp');
 
         if (isLocalStorageAvailable) {
             //Retrieve cached data
@@ -353,25 +356,49 @@ class TelemetryEvent {
                     this.eventData = JSON.parse(data);
                 }
 
-                const uuid = localStorage.getItem(uuidKey);
-                if (uuid) this.anonId = uuid;
+                const currentUuid = localStorage.getItem(uuidKey);
+                if (currentUuid) {
+                    this.anonId = currentUuid;
+                }
+
+                const uuidTimestamp = localStorage.getItem(uuidTimestampKey);
+                if (uuidTimestamp) {
+                    this.anonIdTimestamp = Number(uuidTimestamp);
+                }
+
+                // Refresh the uuid after 24 hours
+                const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+                if (!this.anonIdTimestamp || this.anonIdTimestamp < twentyFourHoursAgo) {
+                    this.refreshUUID();
+                }
             } catch (e) {
                 warnOnce('Unable to read from LocalStorage');
             }
         }
     }
 
+    refreshUUID() {
+        this.anonId = uuid();
+        this.anonIdTimestamp = Date.now();
+    }
+
     saveEventData() {
         const isLocalStorageAvailable = storageAvailable('localStorage');
         const storageKey =  this.getStorageKey();
         const uuidKey = this.getStorageKey('uuid');
+        const uuidTimestampKey = this.getStorageKey('uuidTimestamp');
         const anonId = this.anonId;
+        const anonIdTimestamp = this.anonIdTimestamp;
         if (isLocalStorageAvailable && anonId) {
             try {
                 localStorage.setItem(uuidKey, anonId);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 if (Object.keys(this.eventData).length >= 1) {
                     localStorage.setItem(storageKey, JSON.stringify(this.eventData));
+                }
+
+                if (anonIdTimestamp) {
+                    localStorage.setItem(uuidTimestampKey, anonIdTimestamp.toString());
                 }
             } catch (e) {
                 warnOnce('Unable to write to LocalStorage');
@@ -495,12 +522,12 @@ export class MapLoadEvent extends TelemetryEvent {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (id && this.success[id]) return;
 
-        if (!this.anonId) {
+        if (!this.anonId || !this.anonIdTimestamp) {
             this.fetchEventData();
         }
 
         if (!validateUuid(this.anonId)) {
-            this.anonId = uuid();
+            this.refreshUUID();
         }
 
         const additionalPayload = {
@@ -704,7 +731,7 @@ export class TurnstileEvent extends TelemetryEvent {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (!this.anonId || !this.eventData.lastSuccess || !this.eventData.tokenU) {
+        if (!this.anonId || !this.anonIdTimestamp || !this.eventData.lastSuccess || !this.eventData.tokenU) {
             //Retrieve cached data
             this.fetchEventData();
         }
@@ -716,7 +743,7 @@ export class TurnstileEvent extends TelemetryEvent {
         let dueForEvent = tokenU !== this.eventData.tokenU;
 
         if (!validateUuid(this.anonId)) {
-            this.anonId = uuid();
+            this.refreshUUID();
             dueForEvent = true;
         }
 

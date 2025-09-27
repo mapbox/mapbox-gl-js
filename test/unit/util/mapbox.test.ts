@@ -496,6 +496,70 @@ describe("mapbox", () => {
         webpSupported.supported = true;
     });
 
+    describe('TelemetryEvent', () => {
+        let event: mapbox.TelemetryEvent;
+        beforeEach(() => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            window.useFakeXMLHttpRequest();
+            event = new mapbox.TelemetryEvent();
+
+            vi.stubGlobal('localStorage', {
+                data: {},
+                setItem(id, val) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    this.data[id] = String(val);
+                },
+                getItem(id) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                    return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
+                },
+                removeItem(id) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                    if (this.hasOwnProperty(id)) delete this[id];
+                }
+            });
+        });
+
+        test('Does not refresh the uuid if exists and it was set less than 24h ago', () => {
+            const anonId = uuid();
+            window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, anonId);
+            window.localStorage.setItem(`mapbox.eventData.uuidTimestamp:${config.ACCESS_TOKEN}`, Date.now().toString());
+
+            event.fetchEventData();
+
+            expect(event.anonId).toEqual(anonId);
+        });
+
+        test('Does refresh the uuid if exists and it was set more than 24h ago', () => {
+            const anonId = uuid();
+            window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, anonId);
+            const yesterday = Date.now() - 25 * 60 * 60 * 1000;
+            window.localStorage.setItem(`mapbox.eventData.uuidTimestamp:${config.ACCESS_TOKEN}`, yesterday);
+
+            event.fetchEventData();
+
+            expect(event.anonId).not.toEqual(anonId);
+        });
+
+        test('Does refresh the uuid if it doesn\'t exist and it was set more than 24h ago', () => {
+            event.fetchEventData();
+
+            expect(event.anonId).not.toEqual(null);
+            expect(event.anonIdTimestamp).not.toEqual(null);
+        });
+
+        test('Does refresh the uuid if timestamp doesn\'t exist', () => {
+            const anonId = uuid();
+            window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, anonId);
+
+            event.fetchEventData();
+
+            expect(event.anonId).not.toEqual(anonId);
+            expect(event.anonId).not.toEqual(null);
+            expect(event.anonIdTimestamp).not.toEqual(null);
+        });
+    });
+
     describe('PerformanceEvent', () => {
         let event: any;
 
@@ -1221,6 +1285,7 @@ describe("mapbox", () => {
             test('uses the same uuid as TurnstileEvent', async () => {
                 const anonId = uuid();
                 window.localStorage.setItem(`mapbox.eventData.uuid:${config.ACCESS_TOKEN}`, anonId);
+                window.localStorage.setItem(`mapbox.eventData.uuidTimestamp:${config.ACCESS_TOKEN}`, Date.now().toString());
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 turnstileEvent.postTurnstileEvent(mapboxTileURLs);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
