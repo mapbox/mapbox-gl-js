@@ -125,6 +125,7 @@ import type {StyleModelMap} from './style_mode';
 import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {RasterQueryParameters, RasterQueryResult} from '../source/raster_array_tile_source';
+import type {IndoorVectorTileOptions} from './indoor_data';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -230,6 +231,8 @@ export type StyleOptions = {
         [key: string]: ConfigSpecification;
     };
     configDependentLayers?: Set<string>;
+    activeFloors?: Set<string> | null;
+    indoorDependentLayers?: Set<string>;
 };
 
 export type StyleSetterOptions = {
@@ -299,6 +302,7 @@ class Style extends Evented<MapEvents> {
     resolvedImports: Set<string>;
 
     options: ConfigOptions;
+    activeFloors: Set<string> | null;
 
     // Merged layers and sources
     _mergedOrder: Array<string>;
@@ -339,6 +343,7 @@ class Style extends Evented<MapEvents> {
     _markersNeedUpdate: boolean;
     _brightness: number | null | undefined;
     _configDependentLayers: Set<string>;
+    _indoorDependentLayers: Set<string>;
     _config: ConfigSpecification | null | undefined;
     _initialConfig: {
         [key: string]: ConfigSpecification;
@@ -369,6 +374,7 @@ class Style extends Evented<MapEvents> {
 
         // Empty string indicates the root Style scope.
         this.scope = options.scope || '';
+        this.activeFloors = options.activeFloors;
 
         this.globalId = null;
 
@@ -443,6 +449,7 @@ class Style extends Evented<MapEvents> {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.options = options.configOptions ? options.configOptions : new Map();
         this._configDependentLayers = options.configDependentLayers ? options.configDependentLayers : new Set();
+        this._indoorDependentLayers = options.indoorDependentLayers ? options.indoorDependentLayers : new Set();
         this._config = options.config;
         this._styleColorTheme = {
             lut: null,
@@ -719,7 +726,8 @@ class Style extends Evented<MapEvents> {
             config,
             configOptions: this.options,
             colorThemeOverride: importSpec["color-theme"],
-            configDependentLayers: this._configDependentLayers
+            configDependentLayers: this._configDependentLayers,
+            indoorDependentLayers: this._indoorDependentLayers
         });
 
         // Bubble all events fired by the style to the map.
@@ -732,6 +740,7 @@ class Style extends Evented<MapEvents> {
         this.mergeAll();
         this._updateMapProjection();
         this.updateConfigDependencies();
+        this._updateIndoorDependantLayers();
         this.map._triggerCameraUpdate(this.camera);
 
         this.dispatcher.broadcast('setLayers', {
@@ -810,7 +819,8 @@ class Style extends Evented<MapEvents> {
             this._layers = {};
             for (const layer of layers) {
                 const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
-                if (styleLayer.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
+                if (styleLayer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
+                if (styleLayer.expressionDependencies.isIndoorDependent) this._indoorDependentLayers.add(styleLayer.fqid);
                 styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
                 this._layers[styleLayer.id] = styleLayer;
 
@@ -2277,6 +2287,15 @@ class Style extends Evented<MapEvents> {
         return !!this.ambientLight && !!this.directionalLight;
     }
 
+    getIndoorVectorTileOptions(): IndoorVectorTileOptions | null {
+        // Get indoor sourceId and sourceLayers from style instead of hardcode
+        return {
+            isEnabled: false,
+            sourceLayers: new Set(['indoor_structure_metadata', 'indoor_floor_metadata']),
+            activeFloors: this.activeFloors
+        };
+    }
+
     /**
      * Returns nested fragment style associated with the provided fragmentId.
      * If no fragmentId is provided, returns itself.
@@ -2386,6 +2405,13 @@ class Style extends Evented<MapEvents> {
         const expressions = fragmentStyle.options.get(fqid);
         const expression = expressions ? expressions.value || expressions.default : null;
         return expression ? expression.serialize() : null;
+    }
+
+    _setActiveFloors(activeFloors: Set<string> | null) {
+        this.activeFloors = activeFloors;
+        this._updateIndoorDependantLayers();
+        this.map._styleDirty = true;
+        this.map.triggerRepaint();
     }
 
     setConfigProperty(fragmentId: string, key: string, value: unknown) {
@@ -2517,18 +2543,25 @@ class Style extends Evented<MapEvents> {
         }
     }
 
-    updateConfigDependencies(configKey?: string) {
-        for (const id of this._configDependentLayers) {
+    _updateLayers(layerIds: Set<string>, condition: (layer: TypedStyleLayer) => boolean = () => true) {
+        for (const id of layerIds) {
             const layer = this.getLayer(id);
-            if (layer) {
-                if (configKey && !layer.configDependencies.has(configKey)) {
-                    continue;
-                }
-
+            if (layer && condition(layer)) {
                 layer.possiblyEvaluateVisibility();
                 this._updateLayer(layer);
+                this._changes.setDirty();
             }
         }
+    }
+
+    _updateIndoorDependantLayers() {
+        this._updateLayers(this._indoorDependentLayers);
+    }
+
+    updateConfigDependencies(configKey?: string) {
+        this._updateLayers(this._configDependentLayers, (layer) => {
+            return configKey ? layer.expressionDependencies.configDependencies.has(configKey) : true;
+        });
 
         if (this.ambientLight) {
             this.ambientLight.updateConfig(this.options);
@@ -2602,7 +2635,9 @@ class Style extends Evented<MapEvents> {
             layer.setEventedParent(this, {layer: {id}});
         }
 
-        if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
+        const fqid = makeFQID(layer.source, layer.scope);
+        if (layer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(fqid);
+        if (layer.expressionDependencies.isIndoorDependent) this._indoorDependentLayers.add(fqid);
 
         let index = this._order.length;
         if (before) {
@@ -2728,6 +2763,7 @@ class Style extends Evented<MapEvents> {
         this._layerOrderChanged = true;
 
         this._configDependentLayers.delete(layer.fqid);
+        this._indoorDependentLayers.delete(layer.fqid);
         this._changes.removeLayer(layer);
 
         const sourceCache = this.getOwnLayerSourceCache(layer);
@@ -2884,7 +2920,8 @@ class Style extends Evented<MapEvents> {
         }
 
         layer.setLayoutProperty(name, value);
-        if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
+        if (layer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
+        if (layer.expressionDependencies.isIndoorDependent) this._indoorDependentLayers.add(layer.fqid);
         this._updateLayer(layer);
     }
 
@@ -2924,7 +2961,8 @@ class Style extends Evented<MapEvents> {
         }
 
         const requiresRelayout = layer.setPaintProperty(name, value);
-        if (layer.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
+        if (layer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
+        if (layer.expressionDependencies.isIndoorDependent) this._indoorDependentLayers.add(layer.fqid);
         if (requiresRelayout) {
             this._updateLayer(layer);
         }
@@ -4411,6 +4449,10 @@ class Style extends Evented<MapEvents> {
             // request them during Style#updateImageProviders
             this.fire(new Event('data', {dataType: 'style'}));
         }
+    }
+
+    setIndoorData(mapId: string, params: ActorMessages['setIndoorData']['params']) {
+        this.map.indoor.setIndoorData(params);
     }
 
     rasterizeImages(mapId: string, params: ActorMessages['rasterizeImages']['params'], callback: ActorMessages['rasterizeImages']['callback']) {

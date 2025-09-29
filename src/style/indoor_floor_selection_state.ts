@@ -1,6 +1,5 @@
-import IndoorFeaturesStorage from './indoor_features_storage';
-
-import type {IndoorData, IndoorDataFloor} from './indoor_data_query';
+import type IndoorFeaturesStorage from './indoor_features_storage';
+import type {IndoorData, IndoorDataFloor} from './indoor_data';
 
 export default class IndoorFloorSelectionState {
     _selectedFloorId: string | null;
@@ -9,17 +8,16 @@ export default class IndoorFloorSelectionState {
     _lastActiveFloors: Array<IndoorDataFloor>;
     _featuresStorage: IndoorFeaturesStorage;
 
-    constructor() {
+    constructor(featuresStorage: IndoorFeaturesStorage) {
         this._selectedFloorId = null;
         this._selectedBuildingId = null;
         this._lastActiveFloors = [];
         this._showBuildingsOverview = false;
-        this._featuresStorage = new IndoorFeaturesStorage();
+        this._featuresStorage = featuresStorage;
     }
 
     setIndoorData(indoorData: IndoorData): boolean {
         const hasChanges = this._featuresStorage.append(indoorData);
-        this._selectedBuildingId = indoorData.building ? indoorData.building.id : null;
         return hasChanges;
     }
 
@@ -40,6 +38,14 @@ export default class IndoorFloorSelectionState {
         return hasChanges;
     }
 
+    setBuildingId(buildingId: string): boolean {
+        const hasChanges = this._selectedBuildingId !== buildingId;
+        if (hasChanges) {
+            this._selectedBuildingId = buildingId;
+        }
+        return hasChanges;
+    }
+
     getCurrentBuildingSelection(): {selectedFloorId: string | null, floors: Array<IndoorDataFloor>} {
         if (!this._selectedBuildingId) {
             return {
@@ -51,11 +57,10 @@ export default class IndoorFloorSelectionState {
         const currentBuildingFloors = this._featuresStorage.getFloors(this._selectedBuildingId);
         const activeFloors = this.getActiveFloors();
         const currentBuildingActiveFloor = activeFloors.find(floor => {
-            const buildingIdsString = floor.buildingIds;
-            if (!buildingIdsString) {
+            const buildingIds = floor.buildingIds;
+            if (!buildingIds) {
                 return false;
             }
-            const buildingIds = buildingIdsString.split(';');
             return this._selectedBuildingId ? buildingIds.includes(this._selectedBuildingId) : false;
         });
 
@@ -89,14 +94,6 @@ export default class IndoorFloorSelectionState {
         return activeFloors;
     }
 
-    hasBuildingChanged(indoorData: IndoorData): boolean {
-        return this._selectedBuildingId !== (indoorData.building ? indoorData.building.id : null);
-    }
-
-    hasActiveBuilding(): boolean {
-        return this._selectedBuildingId !== null;
-    }
-
     isEmpty(): boolean {
         return this._selectedFloorId === null && this._selectedBuildingId === null && this._lastActiveFloors.length === 0;
     }
@@ -117,11 +114,11 @@ export default class IndoorFloorSelectionState {
     }
 
     _getConnectedFloors(selectedFloor: IndoorDataFloor, allFloors: Array<IndoorDataFloor>): Array<IndoorDataFloor> {
-        const connectedFloorsString = selectedFloor.connectedFloorIds;
-        if (!connectedFloorsString) return [];
+        const connectedFloorIds = selectedFloor.connectedFloorIds;
+        if (!connectedFloorIds) return [];
 
-        const connectedFloorIds = new Set(connectedFloorsString.split(';'));
-        return allFloors.filter(floor => connectedFloorIds.has(floor.id));
+        const connectedFloorIdsSet = new Set(connectedFloorIds);
+        return allFloors.filter(floor => connectedFloorIdsSet.has(floor.id));
     }
 
     _buildExplicitSelectionFloors(selectedFloor: IndoorDataFloor, connectedFloors: Array<IndoorDataFloor>, defaultFloors: Array<IndoorDataFloor>): Array<IndoorDataFloor> {
@@ -172,7 +169,7 @@ export default class IndoorFloorSelectionState {
         floors.forEach(floor => {
             const conflictedIds = floor.conflictedFloorIds;
             if (conflictedIds) {
-                conflictedIds.split(';').forEach(id => conflictingIds.add(id));
+                conflictedIds.forEach(id => conflictingIds.add(id));
             }
         });
         return conflictingIds;
@@ -204,11 +201,10 @@ export default class IndoorFloorSelectionState {
     _isFloorConflicted(floor: IndoorDataFloor, activeFloors: Array<IndoorDataFloor>): boolean {
         const floorId = floor.id;
         const hasFloorConflict = activeFloors.some(activeFloor => {
-            const conflictedFloorIdsString = activeFloor.conflictedFloorIds;
-            if (!conflictedFloorIdsString) {
+            const conflictedFloorIds = activeFloor.conflictedFloorIds;
+            if (!conflictedFloorIds) {
                 return false;
             }
-            const conflictedFloorIds = conflictedFloorIdsString.split(';');
             return conflictedFloorIds.includes(floorId);
         });
 

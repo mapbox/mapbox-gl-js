@@ -111,6 +111,10 @@ export class PropertyValue<T, R> {
         this.expression = normalizePropertyExpression(value === undefined ? property.specification.default : value, property.specification, scope, options, iconImageUseTheme);
     }
 
+    isIndoorDependent(): boolean {
+        return this.expression.isIndoorDependent;
+    }
+
     isDataDriven(): boolean {
         return this.expression.kind === 'source' || this.expression.kind === 'composite';
     }
@@ -189,6 +193,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
     _scope: string | null | undefined;
     _options: ConfigOptions | null | undefined;
     _iconImageUseTheme?: string | null;
+    _isIndoorDependent: boolean;
     configDependencies: Set<string>;
 
     constructor(properties: Properties<Props>, scope?: string | null, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
@@ -198,6 +203,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         this._scope = scope;
         this._options = options;
         this._iconImageUseTheme = iconImageUseTheme;
+        this._isIndoorDependent = false;
         this.configDependencies = new Set();
     }
 
@@ -214,6 +220,7 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
         this._values[name].value = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme);
         if (this._values[name].value.expression.configDependencies) {
             this.configDependencies = new Set([...this.configDependencies, ...this._values[name].value.expression.configDependencies]);
+            this._isIndoorDependent = this._isIndoorDependent || this._values[name].value.isIndoorDependent();
         }
     }
 
@@ -279,6 +286,10 @@ export class Transitionable<Props extends {[Key in keyof Props]: Props[Key]}> {
             result._values[property] = this._values[property].untransitioned();
         }
         return result;
+    }
+
+    isIndoorDependent(): boolean {
+        return this._isIndoorDependent;
     }
 }
 
@@ -447,6 +458,7 @@ export class Layout<Props extends {
     _scope: string;
     _options: ConfigOptions | null | undefined;
     _iconImageUseTheme: string | null | undefined;
+    _isIndoorDependent: boolean;
     configDependencies: Set<string>;
 
     constructor(properties: Properties<Props>, scope: string, options?: ConfigOptions | null, iconImageUseTheme?: string | null) {
@@ -456,6 +468,7 @@ export class Layout<Props extends {
         this._scope = scope;
         this._options = options;
         this._iconImageUseTheme = iconImageUseTheme;
+        this._isIndoorDependent = false;
         this.configDependencies = new Set();
     }
 
@@ -467,6 +480,7 @@ export class Layout<Props extends {
         this._values[name] = new PropertyValue(this._values[name].property, value === null ? undefined : clone(value), this._scope, this._options, this._iconImageUseTheme) as PropertyValues<Props>[S];
         if (this._values[name].expression.configDependencies) {
             this.configDependencies = new Set([...this.configDependencies, ...this._values[name].expression.configDependencies]);
+            this._isIndoorDependent = this._isIndoorDependent || this._values[name].isIndoorDependent();
         }
     }
 
@@ -493,6 +507,10 @@ export class Layout<Props extends {
             result._values[property] = this._values[property].possiblyEvaluate(parameters, canonical, availableImages, iconImageUseTheme);
         }
         return result;
+    }
+
+    isIndoorDependent(): boolean {
+        return this._isIndoorDependent;
     }
 }
 

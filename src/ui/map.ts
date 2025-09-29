@@ -763,7 +763,7 @@ export class Map extends Camera {
             this.setProjection(options.projection);
         }
 
-        this.indoor = new IndoorManager(this);
+        this._setupIndoor(false);
 
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         if (options.hash) this._hash = (new Hash(hashName)).addTo(this);
@@ -4168,6 +4168,21 @@ export class Map extends Camera {
         }
     }
 
+    _setupIndoor(isIndoorEnabled: boolean) {
+        if (isIndoorEnabled) {
+            this.indoor = new IndoorManager(this.style);
+
+            this.on('load', () => {
+                this._addIndoorControl();
+                this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
+
+                this.on('move', () => {
+                    this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
+                });
+            });
+        }
+    }
+
     _setupContainer() {
         const container = this._container;
         container.classList.add('mapboxgl-map');
@@ -4853,7 +4868,9 @@ export class Map extends Camera {
         if (this.style) {
             this.style.destroy();
         }
-        this.indoor.destroy();
+        if (this.indoor) {
+            this.indoor.destroy();
+        }
         this.painter.destroy();
         if (this.handlers) this.handlers.destroy();
         this.handlers = undefined;

@@ -1,115 +1,73 @@
 function isSelectedFloor() {
     // True if the current level is selected
-    return ["in", ["get", "floor_id"],
-        ["config", "activeFloors"]
-    ]
+    return ["is-active-floor", ["get", "floor_id"]]
 }
 
 function isSelectedFloorBase() {
     // True if the current level is selected
-    return ["in", ["get", "id"],
-        ["config", "activeFloors"]
-    ]
+    return ["is-active-floor", ["get", "id"]]
 }
 
 const indoorLayers = [{
         "type": "clip",
         "id": "clip-area",
         "source": "indoor-source",
-        "source-layer": "indoor_structure",
-        "minzoom": 16.0,
+        "source-layer": "indoor_structure_metadata",
+        "minzoom": 15.0,
         "filter": [
             "all",
-            [">", ["length", ["config", "activeFloors"]], 0],
-            ["==", ["get", "shape_type"], "building"],
+            ["==", ["get", "type"], "building"],
+            [">", ["step", ["zoom"], 0, 16, 1], 0]
         ],
         "layout": {
             "clip-layer-types": ["model", "symbol"]
         }
     },
     {
-        "type": "fill-extrusion",
-        "id": "building",
-        "source": "indoor-source",
-        "source-layer": "indoor_structure",
-        "minzoom": 16.0,
-        "slot": "middle",
-        "filter": [
-            "all",
-            [">", ["length", ["config", "activeFloors"]], 0],
-            ["==", ["geometry-type"], "Polygon"],
-            ["in", ["get", "shape_type"],
-                ["literal", ["building"]]
-            ],
-        ],
-        "paint": {
-            "fill-extrusion-color": "#fbfbfb",
-            "fill-extrusion-opacity": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                16,
-                0,
-                16.5,
-                0.8
-            ],
-            "fill-extrusion-height": 1
-        }
-    },
-    // NOTE: In reality we mustn't rely on *_metadata layers, but in current example we need to use them due to internal implementation of indoor with QRF, this will be changed 
-    {
-        "type": "fill",
-        "id": "building-metadata",
-        "source": "indoor-source",
-        "source-layer": "indoor_structure_metadata",
-        "minzoom": 15.0,
-        "slot": "middle",
-        "filter": [
-            "all",
-            ["==", ["geometry-type"], "Polygon"],
-            ["in", ["get", "type"],
-                ["literal", ["building"]]
-            ],
-        ],
-        "paint": {
-            // Note: We should keep opacity above zero to enable queries of the footprint,
-            // Keep 0.01 do be not visible, 0.1 useful to debug and see metadata geometries
-            "fill-opacity": 0.01,
-            "fill-color": "#e8a5b8"
-        }
-    },
-    // NOTE: In reality we mustn't rely on *_metadata layers, but in current example we need to use them due to internal implementation of indoor with QRF, this will be changed 
-    {
-        "type": "fill",
-        "id": "floor-metadata",
-        "source": "indoor-source",
-        "source-layer": "indoor_floor_metadata",
-        "minzoom": 15.0,
-        "slot": "middle",
-        "filter": [
-            "all",
-            ["in", ["get", "type"],
-                ["literal", ["floor"]]
-            ],
-        ],
-        "paint": {
-            // Note: We should keep opacity above zero to enable queries of the footprint
-            "fill-opacity": 0.01,
-            "fill-color": "#fbfbfb"
-        }
+      "type": "fill",
+      "id": "building-footprint",
+      "source": "indoor-source",
+      "source-layer": "indoor_structure",
+      "minzoom": 15,
+      "slot": "middle",
+      "paint": {
+          "fill-color": "hsl(0, 0.00%, 100.00%)",
+          "fill-opacity": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              15.9,
+              0,
+              16,
+              0.4,
+              17,
+              1
+          ]
+      }
     },
     {
         "type": "fill-extrusion",
         "id": "floor-current",
         "source": "indoor-source",
         "source-layer": "indoor_floor",
-        "minzoom": 16,
+        "minzoom": 15,
         "slot": "middle",
         "filter": isSelectedFloorBase(),
         "paint": {
+            "fill-extrusion-color": "hsl(0, 0.00%, 100.00%)",
             "fill-extrusion-height": 3,
-            "fill-extrusion-base": 1,
-            "fill-extrusion-color": "hsl(220, 16%, 95%)"
+            "fill-extrusion-base": 0,
+            "fill-extrusion-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                15.9,
+                0,
+                16,
+                0,
+                17,
+                1
+            ]
         }
     },
     {
@@ -768,50 +726,11 @@ const style = {
         url: '',
         data: {
             version: 8,
-            schema: {
-                "activeFloors": {
-                    "default": "[]",
-                }
-            },
-            // NOTE: In reality we mustn't rely on *_metadata layers, but in current example we need to use them due to internal implementation of indoor with QRF, this will be changed
-            featuresets: {
-                "building-metadata": {
-                    "selectors": [{
-                        "layer": "building-metadata",
-                        "properties": {
-                            "id": ["get", "id"],
-                            "type": ["get", "type"],
-                            "name": ["get", "name"],
-                        }
-                    }]
-                },
-                "floor-metadata": {
-                    "selectors": [{
-                        "layer": "floor-metadata",
-                        "properties": {
-                            "id": ["get", "id"],
-                            "is_default": ["get", "is_default"],
-                            "building_ids": ["get", "building_ids"],
-                            "type": ["get", "type"],
-                            "name": ["get", "name"],
-                            "short_name": ["get", "short_name"],
-                            "z_index": ["get", "z_index"],
-                            "connected_floor_ids": ["get", "connected_floor_ids"],
-                            "conflicted_floor_ids": ["get", "conflicted_floor_ids"]
-                        }
-                    }]
-                },
-            },
             sources: {
                 "indoor-source": {
                     "type": "vector",
-                    "url": "mapbox://mapbox-geodata.indoor-v2-next"
-                }
-            },
-            // Left it style but empty as indoor_manager depends on it to be present, will change it in future
-            indoor: {
-                floorplanFeaturesetId: "",
-                buildingFeaturesetId: ""
+                    "url": "mapbox://mapbox-geodata.indoor-v3-0-1/"
+                },
             },
             layers: indoorLayers,
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",

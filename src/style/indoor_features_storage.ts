@@ -1,4 +1,4 @@
-import type {IndoorData, IndoorDataBuilding, IndoorDataFloor} from "./indoor_data_query";
+import type {IndoorData, IndoorDataBuilding, IndoorDataFloor} from "./indoor_data";
 
 export default class IndoorFeaturesStorage {
     _floors: Map<string, IndoorDataFloor>;
@@ -10,17 +10,15 @@ export default class IndoorFeaturesStorage {
     }
 
     append(indoorData: IndoorData): boolean {
-        const building = indoorData.building;
         let hasChanges = false;
-        if (building) {
-            const buildingId = building.id;
-            if (buildingId) {
-                this._buildings.set(buildingId, building);
-                if (!hasChanges && !this._buildings.has(buildingId)) {
-                    hasChanges = true;
-                }
+
+        indoorData.buildings.forEach(newBuilding => {
+            const buildingId = newBuilding.id;
+            if (!hasChanges && !this._buildings.has(buildingId)) {
+                hasChanges = true;
             }
-        }
+            this._buildings.set(buildingId, newBuilding);
+        });
 
         indoorData.floors.forEach(newFloor => {
             const floorId = newFloor.id;
@@ -46,12 +44,15 @@ export default class IndoorFeaturesStorage {
                 if (!buildingIds) {
                     return false;
                 }
-                const buildingIdsArray = buildingIds.split(';');
-                const isBuildingId = buildingIdsArray.includes(buildingId);
+                const isBuildingId = buildingIds.includes(buildingId);
                 return isBuildingId;
             });
             return floors;
         }
         return floorFeatures;
+    }
+
+    getBuildings(): Array<IndoorDataBuilding> {
+        return Array.from(this._buildings.values());
     }
 }

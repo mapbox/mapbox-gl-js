@@ -266,6 +266,19 @@ CompoundExpression.register(expressions, {
         [],
         (ctx) => ctx.globals.worldview || ""
     ],
+    'is-active-floor': [
+        BooleanType,
+        varargs(StringType),
+        (ctx, args) => {
+            const hasActiveFloors = ctx.globals.activeFloors && ctx.globals.activeFloors.size > 0;
+            if (!hasActiveFloors) { return false; }
+            const floorIds: Set<string> = ctx.globals.activeFloors;
+            return args.some(arg => {
+                const value = arg.evaluate(ctx) as string;
+                return floorIds.has(value);
+            });
+        }
+    ],
     'id': [
         ValueType,
         [],

@@ -53,6 +53,7 @@ export type PopulateParameters = {
     brightness: number | null | undefined;
     scaleFactor: number;
     elevationFeatures: ElevationFeature[] | undefined;
+    activeFloors: Set<string> | undefined;
 };
 
 export type IndexedFeature = {

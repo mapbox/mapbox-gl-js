@@ -1,0 +1,16 @@
+{
+  "expression": ["is-active-floor", ["get", "id"]],
+  "inputs": [
+    [{}, {"properties": {"id": "123"}}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "boolean"
+    },
+    "outputs": [false],
+    "serialized": ["is-active-floor", ["string", ["get", "id"]]]
+  }
+}

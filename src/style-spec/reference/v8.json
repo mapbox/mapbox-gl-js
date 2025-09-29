@@ -5746,6 +5746,18 @@
           }
         }
       },
+      "is-active-floor": {
+        "doc": "Experimental. Returns `true` if the input floor id belongs to one of the active indoor floors, `false` otherwise. In case of array of strings, returns `true` if any of the input floor ids belongs to one of the active indoor floors, `false` otherwise. Only supported in filters.",
+        "group": "Indoor",
+        "experimental": true,
+        "sdk-support": {
+          "basic functionality": {
+            "js": "3.16.0",
+            "android": "11.16.0",
+            "ios": "11.16.0"
+          }
+        }
+      },
       "random": {
         "doc": "Returns a random value in the specified range (first two input numbers) based on a supplied seed (third input). The seed can be an expression or a constant number or string value.",
         "group": "Math",

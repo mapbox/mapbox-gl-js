@@ -10,6 +10,7 @@ type EvaluationParametersOptions = {
     transition?: TransitionSpecification;
     brightness?: number;
     worldview?: string;
+    activeFloors?: Set<string>;
 };
 
 class EvaluationParameters {
@@ -20,6 +21,7 @@ class EvaluationParameters {
     transition: TransitionSpecification;
     brightness: number | undefined;
     worldview: string | undefined;
+    activeFloors: Set<string> | undefined;
 
     constructor(zoom: number, options?: EvaluationParametersOptions) {
         this.zoom = zoom;
@@ -31,6 +33,7 @@ class EvaluationParameters {
             this.pitch = options.pitch;
             this.brightness = options.brightness;
             this.worldview = options.worldview;
+            this.activeFloors = options.activeFloors;
         } else {
             this.now = 0;
             this.fadeDuration = 0;

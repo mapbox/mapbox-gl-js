@@ -21,6 +21,7 @@ import {ElevationFeatures} from '../../3d-style/elevation/elevation_feature';
 import {HD_ELEVATION_SOURCE_LAYER, PROPERTY_ELEVATION_ID} from '../../3d-style/elevation/elevation_constants';
 import {ElevationPortalGraph} from '../../3d-style/elevation/elevation_graph';
 import {ImageId} from '../style-spec/expression/types/image_id';
+import {parseIndoorData} from '../render/indoor_parser';
 
 import type {VectorTile} from '@mapbox/vector-tile';
 import type {CanonicalTileID} from './tile_id';
@@ -43,6 +44,7 @@ import type {RasterizedImageMap, ImageRasterizationTasks} from '../render/image_
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';
+import type {IndoorVectorTileOptions} from '../style/indoor_data';
 
 type RasterizationStatus = {iconsPending: boolean, patternsPending: boolean};
 class WorkerTile {
@@ -69,6 +71,7 @@ class WorkerTile {
     tileTransform: TileTransform;
     brightness: number;
     scaleFactor: number;
+    indoor: IndoorVectorTileOptions | null;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -104,6 +107,7 @@ class WorkerTile {
         this.tessellationStep = params.tessellationStep;
         this.scaleFactor = params.scaleFactor;
         this.worldview = params.worldview;
+        this.indoor = params.indoor;
     }
 
     parse(data: VectorTile, layerIndex: StyleLayerIndex, availableImages: ImageId[], availableModels: StyleModelMap, actor: Actor, callback: WorkerSourceVectorTileCallback) {
@@ -131,11 +135,19 @@ class WorkerTile {
             availableImages,
             brightness: this.brightness,
             scaleFactor: this.scaleFactor,
-            elevationFeatures: undefined
+            elevationFeatures: undefined,
+            activeFloors: undefined
         };
+
+        if (this.indoor && this.indoor.isEnabled) {
+            const indoorData = parseIndoorData(data, this.indoor.sourceLayers);
+            options.activeFloors = this.indoor.activeFloors ? this.indoor.activeFloors : indoorData.defaultFloors;
+            actor.send('setIndoorData', indoorData);
+        }
 
         const asyncBucketLoads: Promise<unknown>[] = [];
         const layerFamilies = layerIndex.familiesBySource[this.source];
+
         for (const sourceLayerId in layerFamilies) {
             const sourceLayer = data.layers[sourceLayerId];
             if (!sourceLayer) {

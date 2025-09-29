@@ -28,39 +28,8 @@
 
     mapboxgl.accessToken = getAccessToken();
     </script>
-    <script src='/debug/indoor/indoor_data.js'></script>
     <script src='/debug/indoor/indoor_style.js'></script>
     <script>
-
-        // Create a container div for the partial screen rectangle
-        var smallSquareContainer = document.createElement('div');
-        smallSquareContainer.style.position = 'absolute';
-        smallSquareContainer.style.left = '50%';
-        smallSquareContainer.style.top = '50%';
-        smallSquareContainer.style.transform = 'translate(-50%, -50%)';
-        const minDimension = Math.min(window.innerWidth, window.innerHeight);
-        smallSquareContainer.style.width = `${minDimension * 0.125}px`;  // 1/10 of the minimum screen dimension
-        smallSquareContainer.style.height = `${minDimension * 0.125}px`; // 1/10 of the minimum screen dimension
-        smallSquareContainer.style.border = '2px solid rgba(255, 165, 0, 0.5)'; // Orange border
-        smallSquareContainer.style.backgroundColor = 'rgba(255, 165, 0, 0.2)'; // Very light orange background
-        smallSquareContainer.style.pointerEvents = 'none';
-        smallSquareContainer.style.zIndex = '999';
-        document.body.appendChild(smallSquareContainer);
-
-        // Create a container div for the partial screen rectangle
-        var partialScreenContainer = document.createElement('div');
-        partialScreenContainer.style.position = 'absolute';
-        partialScreenContainer.style.left = '50%';
-        partialScreenContainer.style.top = '50%';
-        partialScreenContainer.style.transform = 'translate(-50%, -50%)';
-        partialScreenContainer.style.width = '66.67%';  // 2/3 of the screen width
-        partialScreenContainer.style.height = '66.67%'; // 2/3 of the screen height
-        partialScreenContainer.style.border = '2px solid rgba(255, 165, 0, 0.5)'; // Orange border
-        partialScreenContainer.style.backgroundColor = 'rgba(255, 165, 0, 0.2)'; // Very light orange background
-        partialScreenContainer.style.pointerEvents = 'none';
-        partialScreenContainer.style.zIndex = '999';
-
-        // Create the map
         var map = window.map = new mapboxgl.Map({
             container: 'map',
             devtools: true,

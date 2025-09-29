@@ -176,10 +176,6 @@ const indoorStyle = {
 describe('IndoorManager', () => {
     test('created with map', () => {
         const map = createMap({interactive: true, style: indoorStyle});
-        expect(map.indoor._map).toEqual(map);
-        expect(map.indoor._indoorDataQuery).toBeFalsy();
-        expect(map.indoor._floorSelectionState).toBeTruthy();
-        expect(map.indoor._floorSelectionState._selectedFloorId).toEqual(null);
-        expect(map.indoor._floorSelectionState._selectedBuildingId).toEqual(null);
+        expect(map.indoor).toEqual(undefined);
     });
 });

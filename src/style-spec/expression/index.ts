@@ -9,6 +9,7 @@ import Coalesce from './definitions/coalesce';
 import Let from './definitions/let';
 import definitions from './definitions/index';
 import * as isConstant from './is_constant';
+import * as expressionDependencies from './expression_dependencies';
 import RuntimeError from './runtime_error';
 import {success, error} from '../util/result';
 import {
@@ -60,16 +61,17 @@ export interface GlobalProperties {
     accumulated?: Value;
     brightness?: number;
     worldview?: string;
+    activeFloors?: Set<string>;
 }
 
 export class StyleExpression {
     expression: Expression;
-
     _evaluator: EvaluationContext;
     _defaultValue: Value;
     _warningHistory: {[key: string]: boolean};
     _enumValues?: {[_: string]: unknown};
     configDependencies: Set<string>;
+    isIndoorDependent: boolean;
 
     constructor(expression: Expression, propertySpec?: StylePropertySpecification, scope?: string, options?: ConfigOptions, iconImageUseTheme?: string) {
         this.expression = expression;
@@ -77,7 +79,8 @@ export class StyleExpression {
         this._evaluator = new EvaluationContext(scope, options, iconImageUseTheme);
         this._defaultValue = propertySpec ? getDefaultValue(propertySpec) : null;
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
-        this.configDependencies = isConstant.getConfigDependencies(expression);
+        this.configDependencies = expressionDependencies.getConfigDependencies(expression);
+        this.isIndoorDependent = expressionDependencies.isIndoorDependent(expression);
     }
 
     evaluateWithoutErrorHandling(
@@ -124,7 +127,6 @@ export class StyleExpression {
         this._evaluator.featureTileCoord = featureTileCoord || null;
         this._evaluator.featureDistanceData = featureDistanceData || null;
         this._evaluator.iconImageUseTheme = iconImageUseTheme || null;
-
         try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const val = this.expression.evaluate(this._evaluator);
@@ -190,6 +192,7 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
     kind: Kind;
     isStateDependent: boolean;
     configDependencies: Set<string>;
+    isIndoorDependent: boolean;
     _styleExpression: StyleExpression;
     isLightConstant: boolean | null | undefined;
     isLineProgressConstant: boolean | null | undefined;
@@ -200,7 +203,8 @@ export class ZoomConstantExpression<Kind extends EvaluationKind> {
         this.isLightConstant = isLightConstant;
         this.isLineProgressConstant = isLineProgressConstant;
         this.isStateDependent = kind !== ('constant' as EvaluationKind) && !isConstant.isStateConstant(expression.expression);
-        this.configDependencies = isConstant.getConfigDependencies(expression.expression);
+        this.configDependencies = expressionDependencies.getConfigDependencies(expression.expression);
+        this.isIndoorDependent = expressionDependencies.isIndoorDependent(expression.expression);
     }
 
     evaluateWithoutErrorHandling(
@@ -233,6 +237,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
     kind: Kind;
     zoomStops: Array<number>;
     isStateDependent: boolean;
+    isIndoorDependent: boolean;
     isLightConstant: boolean | null | undefined;
     isLineProgressConstant: boolean | null | undefined;
     configDependencies: Set<string>;
@@ -245,9 +250,10 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
         this.zoomStops = zoomStops;
         this._styleExpression = expression;
         this.isStateDependent = kind !== ('camera' as EvaluationKind) && !isConstant.isStateConstant(expression.expression);
+        this.isIndoorDependent = expressionDependencies.isIndoorDependent(expression.expression);
         this.isLightConstant = isLightConstant;
         this.isLineProgressConstant = isLineProgressConstant;
-        this.configDependencies = isConstant.getConfigDependencies(expression.expression);
+        this.configDependencies = expressionDependencies.getConfigDependencies(expression.expression);
         this.interpolationType = interpolationType;
     }
 
@@ -287,6 +293,7 @@ export class ZoomDependentExpression<Kind extends EvaluationKind> {
 export type ConstantExpression = {
     kind: 'constant';
     configDependencies: Set<string>;
+    isIndoorDependent: boolean;
     readonly evaluate: <T = unknown>(
         globals: GlobalProperties,
         feature?: Feature,
@@ -301,6 +308,7 @@ export type ConstantExpression = {
 export type SourceExpression = {
     kind: 'source';
     isStateDependent: boolean;
+    isIndoorDependent: boolean;
     isLightConstant: boolean | null | undefined;
     isLineProgressConstant: boolean | null | undefined;
     configDependencies: Set<string>;
@@ -317,6 +325,7 @@ export type SourceExpression = {
 export type CameraExpression = {
     kind: 'camera';
     isStateDependent: boolean;
+    isIndoorDependent: boolean;
     configDependencies: Set<string>;
     readonly evaluate: <T = unknown>(
         globals: GlobalProperties,
@@ -333,6 +342,7 @@ export type CameraExpression = {
 export interface CompositeExpression {
     kind: 'composite';
     isStateDependent: boolean;
+    isIndoorDependent: boolean;
     isLightConstant: boolean | null | undefined;
     isLineProgressConstant: boolean | null | undefined;
     configDependencies: Set<string>;
@@ -484,6 +494,7 @@ export function normalizePropertyExpression<T>(
         return {
             kind: 'constant',
             configDependencies: new Set(),
+            isIndoorDependent: false,
             evaluate: () => constant
         } as ConstantExpression;
     }

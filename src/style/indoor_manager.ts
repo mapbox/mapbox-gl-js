@@ -1,128 +1,67 @@
 import {bindAll} from '../util/util';
-import {Event, Evented, ErrorEvent} from '../util/evented';
-import {type IndoorData, IndoorDataQuery} from './indoor_data_query';
+import {Event, Evented} from '../util/evented';
 import IndoorFloorSelectionState from './indoor_floor_selection_state';
+import IndoorFeaturesStorage from './indoor_features_storage';
+import LngLat from '../geo/lng_lat';
 
-import type {Map} from '../ui/map';
+import type {IndoorData, IndoorDataBuilding, IndoorEvents} from './indoor_data';
 import type Style from './style';
-
-type IndoorEvents = {
-    'indoorupdate': {
-        selectedFloorId: string;
-        showBuildingsOverview: boolean;
-        floors: Array<{
-            id: string;
-            name: string;
-            shortName: string;
-            levelOrder: number;
-        }>;
-    };
-};
+import type {LngLatBounds} from '../geo/lng_lat';
 
 export default class IndoorManager extends Evented<IndoorEvents> {
-    _map: Map;
-    _scope: string | null;
+    _style: Style;
     _floorSelectionState: IndoorFloorSelectionState | null;
-    _indoorDataQuery: IndoorDataQuery | null;
+    _featuresStorage: IndoorFeaturesStorage | null;
+    _indoorMinimumZoom: number = 16.0;
 
-    constructor(map: Map) {
+    constructor(style: Style) {
         super();
+        this._style = style;
+        const featuresStorage = new IndoorFeaturesStorage();
+        this._featuresStorage = featuresStorage;
+        this._floorSelectionState = new IndoorFloorSelectionState(featuresStorage);
 
         bindAll([
-            '_onLoad',
-            '_onMove',
+            '_updateUI',
         ], this);
-
-        this._map = map;
-        this._floorSelectionState = new IndoorFloorSelectionState();
-        this._indoorDataQuery = null;
-        this._map.on('load', this._onLoad);
-        this._map.on('move', this._onMove);
     }
 
     destroy() {
-        this._map.off('load', this._onLoad);
-        this._map.off('move', this._onMove);
-        this._map = null;
         this._floorSelectionState = null;
+        this._featuresStorage = null;
     }
 
     selectFloor(floorId: string | null) {
         const hasChanges = this._floorSelectionState.setFloorId(floorId);
         if (hasChanges) {
-            this._updateIndoorConfig(true);
+            this._updateActiveFloors(true);
             this._updateIndoorSelector();
         }
     }
 
     setShowBuildingsOverview(showBuildingsOverview: boolean) {
         this._floorSelectionState.setShowBuildingsOverview(showBuildingsOverview);
-        this._updateIndoorConfig(false);
+        this._updateActiveFloors(false);
         this._updateIndoorSelector();
     }
 
-    _onLoad() {
-        this._map.style.forEachFragmentStyle((style: Style) => {
-            // Find a style import with an indoor property
-            if (style.stylesheet.indoor) {
-                if (!this._indoorDataQuery) {
-                    this._scope = style.scope;
-                    this._indoorDataQuery = new IndoorDataQuery();
-                } else {
-                    this.fire(new ErrorEvent(new Error('Multiple indoor map styles detected, simultaneous usage is not allowed currently.')));
-                }
-            }
-        });
-
-        this._map._addIndoorControl();
-        this._queryIndoor();
-    }
-
-    _onMove() {
-        this._queryIndoor();
-    }
-
-    _queryIndoor() {
-        if (!this._indoorDataQuery || !this._map.isStyleLoaded()) {
-            return;
+    setIndoorData(indoorData: IndoorData) {
+        if (indoorData.buildings.length > 0 || indoorData.floors.length > 0) {
+            this._floorSelectionState.setIndoorData(indoorData);
         }
+    }
 
-        // Starting from this zoom level, the data query is executed to retrieve the data before it is necessary to display.
-        const dataQueryMinimumZoom = 15.0;
-        // Starting from this zoom level, the data is displayed.
-        const indoorDisplayMinimumZoom = 16.0;
-
-        if (this._map.transform.zoom < dataQueryMinimumZoom) {
+    _updateUI(zoom: number, mapCenter: LngLat, mapBounds: LngLatBounds) {
+        if (zoom < this._indoorMinimumZoom) {
             this._clearIndoorData();
             return;
         }
 
-        const indoorData: IndoorData | null = this._indoorDataQuery.execute(this._map);
-        if (!indoorData || indoorData.floors.length === 0 || this._map.transform.zoom < indoorDisplayMinimumZoom) {
-            this._clearIndoorData();
-            return;
-        }
-
-        if (this._floorSelectionState.hasBuildingChanged(indoorData)) {
-            if (!indoorData.building && this._floorSelectionState.getActiveFloors().length <= 0) {
-                this._clearIndoorData();
-                return;
-            }
-
-            this._setIndoorData(indoorData);
-
-            if (indoorData.building) {
-                this._updateIndoorSelector();
-            }
-        } else {
-            this._setIndoorData(indoorData);
-        }
-    }
-
-    _setIndoorData(indoorData: IndoorData) {
-        const hasChanges = this._floorSelectionState.setIndoorData(indoorData);
+        const buildings = this._featuresStorage.getBuildings();
+        const closestBuildingId = findClosestBuildingId(buildings, mapCenter, mapBounds);
+        const hasChanges = this._floorSelectionState.setBuildingId(closestBuildingId);
         if (hasChanges) {
-            this._updateIndoorConfig();
+            this._updateIndoorSelector();
         }
     }
 
@@ -133,7 +72,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
 
         this._floorSelectionState.reset();
         this._updateIndoorSelector();
-        this._map.setConfigProperty(this._scope, "activeFloors", ["literal", []]);
+        this._style._setActiveFloors(null);
     };
 
     _updateIndoorSelector() {
@@ -152,16 +91,31 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         }));
     }
 
-    // eslint-disable-next-line no-warning-comments
-    // TODO: Replace use of config with the style expressions
-    _updateIndoorConfig(isExplicitSelection: boolean = false) {
+    _updateActiveFloors(isExplicitSelection: boolean = false) {
         if (this._floorSelectionState.getShowBuildingsOverview()) {
-            this._map.setConfigProperty(this._scope, "activeFloors", ["literal", []]);
             return;
         }
 
         const activeFloors = this._floorSelectionState.getActiveFloors(isExplicitSelection);
         const activeFloorsIds = activeFloors.map(floor => floor.id) || [];
-        this._map.setConfigProperty(this._scope, "activeFloors", ["literal", activeFloorsIds]);
+        this._style._setActiveFloors(new Set(activeFloorsIds));
     }
+}
+
+function findClosestBuildingId(buildings: Array<IndoorDataBuilding>, mapCenter: LngLat, mapBounds: LngLatBounds): string | null {
+    let closestBuildingId: string | null = null;
+    let minDistance = Number.MAX_SAFE_INTEGER;
+
+    for (const building of buildings) {
+        const buildingCenter = building.center;
+        if (buildingCenter) {
+            const distance = mapCenter.distanceTo(LngLat.convert(buildingCenter));
+            if (distance < minDistance && mapBounds.contains(buildingCenter)) {
+                minDistance = distance;
+                closestBuildingId = building.id;
+            }
+        }
+    }
+
+    return closestBuildingId;
 }

@@ -14,6 +14,7 @@ import type {TDecodingResult, TProcessingBatch} from '../data/mrt/types';
 import type {WorkerPerformanceMetrics} from './performance';
 import type {WorkerSourceRequest, WorkerSourceTileRequest} from '../source/worker_source';
 import type {StyleModelMap} from '../style/style_mode';
+import type {IndoorData} from '../style/indoor_data';
 
 /**
  * Message registry maps message types to their data and result types.
@@ -166,6 +167,11 @@ export type ActorMessages = {
 
     'setReferrer': {
         params: string;
+        callback: void;
+    };
+
+    'setIndoorData': {
+        params: IndoorData;
         callback: void;
     };
 

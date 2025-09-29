@@ -36,6 +36,7 @@ function createSource(options, {transformCallback, customAccessToken} = {}) {
             clearSource: () => {},
             getLut: () => { return null; },
             getBrightness: () => { return 0.0; },
+            getIndoorVectorTileOptions: () => { return null; },
         }
     });
 

@@ -626,7 +626,7 @@ class SymbolBucket implements Bucket {
         const icons = options.iconDependencies;
         const stacks = options.glyphDependencies;
         const availableImages = options.availableImages;
-        const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview});
+        const globalProperties = new EvaluationParameters(this.zoom, {worldview: this.worldview, activeFloors: options.activeFloors});
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
 
