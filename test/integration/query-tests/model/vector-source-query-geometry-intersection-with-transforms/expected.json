@@ -1,0 +1,32 @@
+[
+  {
+    "geometry": {
+      "coordinates": [
+        -74.49979992583394,
+        39.99995000967394
+      ],
+      "type": "Point"
+    },
+    "properties": {
+      "id": "object-small"
+    },
+    "source": "layer-source",
+    "state": {},
+    "type": "Feature"
+  },
+  {
+    "geometry": {
+      "coordinates": [
+        -74.49979992583394,
+        40.00020003964812
+      ],
+      "type": "Point"
+    },
+    "properties": {
+      "id": "object-large"
+    },
+    "source": "layer-source",
+    "state": {},
+    "type": "Feature"
+  }
+]

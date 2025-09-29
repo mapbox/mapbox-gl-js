@@ -467,6 +467,18 @@ class Tile {
         this._lastUpdatedBrightness = brightness;
     }
 
+    // Evaluate maximum query padding required for all buckets of this tile
+    evaluateQueryRenderedFeaturePadding() {
+        let maxRadius = 0;
+        for (const bucketId in this.buckets) {
+            const bucket = this.buckets[bucketId];
+            if (bucket.evaluateQueryRenderedFeaturePadding) {
+                maxRadius = Math.max(maxRadius, bucket.evaluateQueryRenderedFeaturePadding());
+            }
+        }
+        return maxRadius;
+    }
+
     // Queries non-symbol features rendered for this tile.
     // Symbol features are queried globally
     queryRenderedFeatures(
@@ -497,6 +509,8 @@ class Tile {
             return {};
         }
 
+        const maxFeatureQueryRadius = this.evaluateQueryRenderedFeaturePadding();
+
         const pixelPosMatrix = getPixelPosMatrix(sourceCacheTransform, this.tileID);
 
         return this.latestFeatureIndex.query(
@@ -507,7 +521,8 @@ class Tile {
                 transform,
                 availableImages,
                 tileTransform: this.tileTransform,
-                worldview: this.worldview
+                worldview: this.worldview,
+                queryRadius: maxFeatureQueryRadius
             }
         );
     }

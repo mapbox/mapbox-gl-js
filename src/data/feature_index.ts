@@ -41,6 +41,7 @@ type QueryParameters = {
     tileTransform: TileTransform;
     availableImages: ImageId[];
     worldview: string | undefined;
+    queryRadius?: number;
 };
 
 type FeatureIndices = FeatureIndexStruct | {
@@ -137,9 +138,12 @@ class FeatureIndex {
         this.loadVTLayers();
         this.serializedLayersCache.clear();
 
+        const queryRadius = params.queryRadius ? params.queryRadius : 0;
+
         const bounds = tilespaceGeometry.bufferedTilespaceBounds;
         const queryPredicate = (bx1: number, by1: number, bx2: number, by2: number) => {
-            return polygonIntersectsBox(tilespaceGeometry.bufferedTilespaceGeometry, bx1, by1, bx2, by2);
+            const isects = polygonIntersectsBox(tilespaceGeometry.bufferedTilespaceGeometry, bx1 - queryRadius, by1 - queryRadius, bx2 + queryRadius, by2 + queryRadius);
+            return isects;
         };
 
         const matching = this.grid.query(bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y, queryPredicate);

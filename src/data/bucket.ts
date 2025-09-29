@@ -105,6 +105,7 @@ export interface Bucket {
     stateDependentLayers: Array<TypedStyleLayer>;
     readonly stateDependentLayerIds: Array<string>;
     readonly worldview: string | undefined;
+    evaluateQueryRenderedFeaturePadding?: () => number;
     prepare?: () => Promise<unknown>;
     populate: (
         features: Array<IndexedFeature>,

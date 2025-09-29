@@ -1,0 +1,103 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "wait"
+        ]
+      ],
+      "queryGeometry": [
+        284,
+        226
+      ]
+    }
+  },
+  "sources": {
+    "layer-source": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "object-small"
+            },
+            "geometry": {
+              "coordinates": [
+                -74.4998,
+                39.99995
+              ],
+              "type": "Point"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "object-large"
+            },
+            "geometry": {
+              "coordinates": [
+                -74.4998,
+                40.0002
+              ],
+              "type": "Point"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "models": {
+    "model-glb": "local://models/Box.glb"
+  },
+  "pitch": 50,
+  "bearing": 45,
+  "zoom": 19,
+  "center": [
+    -74.5,
+    40
+  ],
+  "layers": [
+    {
+      "id": "model-layer",
+      "source": "layer-source",
+      "type": "model",
+      "layout": {
+        "model-id": "model-glb"
+      },
+      "paint": {
+        "model-scale": [
+          "case",
+          ["==", ["get", "id"], "object-large"],
+          [30, 30, 30],
+          [10, 10, 10]
+        ],
+         "model-rotation": [
+          "case",
+          ["==", ["get", "id"], "object-large"],
+          [0, 0, 45],
+          [0, 45, 0]
+        ],
+         "model-translation": [
+          "case",
+          ["==", ["get", "id"], "object-large"],
+          [0, -10, 0],
+          [-5, -2, 0]
+        ]
+      }
+    }
+  ]
+}

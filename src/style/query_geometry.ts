@@ -247,7 +247,7 @@ export class QueryGeometry {
         // Floating point errors when projecting into tilespace could leave a feature
         // outside the query volume even if it looks like it overlaps visually, a 1px bias value overcomes that.
         const bias = 1;
-        const padding = tile.queryPadding / transform._pixelsPerMercatorPixel + bias;
+        const padding = Math.max(tile.queryPadding, tile.evaluateQueryRenderedFeaturePadding()) / transform._pixelsPerMercatorPixel + bias;
 
         const cachedQuery = use3D ?
             this._bufferedCameraMercator(padding, transform) :

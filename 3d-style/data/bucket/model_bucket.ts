@@ -66,6 +66,8 @@ class PerModelAttributes {
 
     features: Array<ModelFeature>;
     idToFeaturesIndex: Partial<Record<string | number, number>>; // via this.features, enable lookup instancedDataArray based on feature ID.
+    maxScale: number = 1;
+    maxXYTranslationDistance: number = 0;
 
     constructor() {
         this.instancedDataArray = new InstanceVertexArray();
@@ -188,10 +190,36 @@ class ModelBucket implements Bucket {
                 // to add some padding to envelope calculated for grid index lookup, in order to
                 // prevent false negatives in FeatureIndex's coarse check.
                 // Envelope padding is a half of featureIndex.grid cell size.
+
+                // Padding is just and estimated suitable for models only covering <= 1/16 of tile EXTENTS.
+                // Actual model bounds are not yet available at this stage. To compensate for larger models,
+                // 'maxFeatureQueryRadius()' is used to query largest model bounds
                 options.featureIndex.insert(feature, bucketFeature.geometry, index, sourceLayerIndex, this.index, this.instancesPerModel[modelId].instancedDataArray.length, EXTENT / 32);
             }
         }
         this.lookup = null;
+    }
+
+    evaluateQueryRenderedFeaturePadding() {
+        const modelManager = this.layers[0].modelManager;
+        const scope = this.layers[0].scope;
+
+        let maxQueryRadius = 0;
+
+        for (const modelId of this.modelUris) {
+            const model = modelManager.getModel(modelId, scope);
+            if (!model) {
+                continue;
+            }
+
+            // Use max scaling of any instance of this model to ensure full extent is covered
+            const modelInstances = this.instancesPerModel[modelId];
+            const radius = vec3.distance(model.aabb.max, model.aabb.min) * 0.5 * modelInstances.maxScale + modelInstances.maxXYTranslationDistance;
+            const radiusInTileUnits = Math.min(EXTENT, Math.max(radius / this.tileToMeter, EXTENT / 32));
+
+            maxQueryRadius = Math.max(radiusInTileUnits, maxQueryRadius);
+        }
+        return maxQueryRadius;
     }
 
     update(states: FeatureStates, vtLayer: VectorTileLayer, availableImages: ImageId[], imagePositions: SpritePositions) {
@@ -432,6 +460,12 @@ class ModelBucket implements Bucket {
         color.a = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
         const rotationScaleYZFlip = [];
         if (this.maxVerticalOffset < translation[2]) this.maxVerticalOffset = translation[2];
+
+        // Track per model and per bucket maximum scaling as well as per instance translation
+        const translationDistanceXYSq = translation[0] * translation[0] + translation[1] * translation[1];
+        const translationDistanceXY = translationDistanceXYSq > 0 ? Math.sqrt(translationDistanceXYSq) : 0;
+        perModelVertexArray.maxScale = Math.max(Math.max(perModelVertexArray.maxScale, scale[0]), Math.max(scale[1], scale[2]));
+        perModelVertexArray.maxXYTranslationDistance = Math.max(perModelVertexArray.maxXYTranslationDistance, translationDistanceXY);
         this.maxScale = Math.max(Math.max(this.maxScale, scale[0]), Math.max(scale[1], scale[2]));
 
         rotationScaleYZFlipMatrix(rotationScaleYZFlip, rotation, scale);
