@@ -3512,6 +3512,32 @@ export class Map extends Camera {
         return this.style.getLayoutProperty(layerId, name);
     }
 
+    /**
+     * Sets the value of a layout or paint property in the specified style layer.
+     *
+     * @param {string} layerId The ID of the layer to set the layout or paint property in.
+     * @param {string} name The name of the layout or paint property to set.
+     * @param {*} value The value of the layout or paint property. Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @param {Object} [options] Options object.
+     * @param {boolean} [options.validate=true] Whether to check if `value` conforms to the Mapbox GL Style Specification. Disabling validation is a performance optimization that should only be used if you have previously validated the values you will be passing to this function.
+     * @returns {Map} Returns itself to allow for method chaining.
+     * @example
+     * map.setLayerProperty('my-layer', 'visibility', 'none');
+     */
+    setLayerProperty<T extends keyof (LayoutSpecification | PaintSpecification)>(
+        layerId: string,
+        name: T,
+        value: LayoutSpecification[T] | PaintSpecification[T],
+        options: StyleSetterOptions = {},
+    ): this {
+        if (!this._isValidId(layerId)) {
+            return this;
+        }
+
+        this.style.setLayerProperty(layerId, name, value, options);
+        return this._update(true);
+    }
+
     /** @section Style properties */
 
     /**

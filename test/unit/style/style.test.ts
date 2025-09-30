@@ -410,6 +410,7 @@ describe('Style#setState', () => {
             'removeLayer',
             'setPaintProperty',
             'setLayoutProperty',
+            'setLayerProperty',
             'setFilter',
             'addSource',
             'removeSource',
@@ -1471,6 +1472,166 @@ describe('Style#setLayoutProperty', () => {
 
         style.setLayoutProperty('line', 'line-cap', 'differentinvalidcap');
         expect(console.error).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('Style#setLayerProperty', () => {
+    test('#5802 clones the input', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [
+                {
+                    "id": "line",
+                    "type": "line",
+                    "source": "geojson"
+                }
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        const value = {stops: [[0, 'butt'], [10, 'round']]};
+        style.setLayerProperty('line', 'line-cap', value);
+        expect(style.getLayoutProperty('line', 'line-cap')).not.toBe(value);
+        expect(style._changes.isDirty()).toBeTruthy();
+
+        style.update({});
+        expect(style._changes.isDirty()).toBeFalsy();
+
+        value.stops[0][0] = 1;
+        style.setLayerProperty('line', 'line-cap', value);
+        expect(style._changes.isDirty()).toBeTruthy();
+    });
+
+    test('respects validate option', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": []
+                    }
+                }
+            },
+            "layers": [
+                {
+                    "id": "line",
+                    "type": "line",
+                    "source": "geojson"
+                }
+            ]
+        });
+
+        await waitFor(style, "style.load");
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        style.setLayerProperty('line', 'line-cap', 'invalidcap', {validate: false});
+        expect(console.error).not.toHaveBeenCalled();
+        expect(style._changes.isDirty()).toBeTruthy();
+        style.update({});
+
+        style.setLayerProperty('line', 'line-cap', 'differentinvalidcap');
+        expect(console.error).toHaveBeenCalledTimes(1);
+    });
+
+    test(
+        '#4738 postpones source reload until layers have been broadcast to workers',
+        async () => {
+            const style = new Style(new StubMap());
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            style.loadJSON(Object.assign(createStyleJSON(), {
+                "sources": {
+                    "geojson": {
+                        "type": "geojson",
+                        "data": {"type": "FeatureCollection", "features": []}
+                    }
+                },
+                "layers": [
+                    {
+                        "id": "circle",
+                        "type": "circle",
+                        "source": "geojson"
+                    }
+                ]
+            }));
+
+            const tr = new Transform();
+            tr.resize(512, 512);
+
+            await waitFor(style, "style.load");
+            style.update({zoom: tr.zoom, fadeDuration: 0});
+            const sourceCache = style.getOwnSourceCache('geojson');
+            const source = style.getSource('geojson');
+
+            let begun = false;
+            let styleUpdateCalled = false;
+
+            await new Promise(resolve => {
+                source.on('data', (e) => setTimeout(() => {
+                    if (!begun && sourceCache.loaded()) {
+                        begun = true;
+                        vi.spyOn(sourceCache, 'reload').mockImplementation(() => {
+                            expect(styleUpdateCalled).toBeTruthy(); // loadTile called before layer data broadcast
+                            resolve();
+                        });
+
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                        source.setData({"type": "FeatureCollection", "features": []});
+                        style.setLayerProperty('circle', 'circle-color', {type: 'identity', property: 'foo'});
+                    }
+
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    if (begun && e.sourceDataType === 'content') {
+                        // setData() worker-side work is complete; simulate an
+                        // animation frame a few ms later, so that this test can
+                        // confirm that SourceCache#reload() isn't called until
+                        // after the next Style#update()
+                        setTimeout(() => {
+                            styleUpdateCalled = true;
+                            style.update({});
+                        }, 50);
+                    }
+                }), 0);
+            });
+        });
+
+    test('#5802 clones the input', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background"
+                }
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        const value = {stops: [[0, 'red'], [10, 'blue']]};
+        style.setLayerProperty('background', 'background-color', value);
+        expect(style.getPaintProperty('background', 'background-color')).not.toBe(value);
+        expect(style._changes.isDirty()).toBeTruthy();
+
+        style.update({});
+        expect(style._changes.isDirty()).toBeFalsy();
+
+        value.stops[0][0] = 1;
+        style.setLayerProperty('background', 'background-color', value);
+        expect(style._changes.isDirty()).toBeTruthy();
     });
 });
 

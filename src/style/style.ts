@@ -152,6 +152,7 @@ const supportedDiffOperations = pick(diffOperations, [
     'setLights',
     'setPaintProperty',
     'setLayoutProperty',
+    'setLayerProperty',
     'setSlot',
     'setFilter',
     'addSource',
@@ -2923,6 +2924,19 @@ class Style extends Evented<MapEvents> {
         if (layer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(layer.fqid);
         if (layer.expressionDependencies.isIndoorDependent) this._indoorDependentLayers.add(layer.fqid);
         this._updateLayer(layer);
+    }
+
+    setLayerProperty<T extends keyof (PaintSpecification | LayoutSpecification)>(layerId: string, name: T, value: PaintSpecification[T] | LayoutSpecification[T], options: StyleSetterOptions = {}) {
+        this._checkLoaded();
+
+        const layer = this._checkLayer(layerId);
+        if (!layer) return;
+
+        if (layer.isPaintProperty(name)) {
+            this.setPaintProperty(layerId, name, value, options);
+        } else {
+            this.setLayoutProperty(layerId, name, value, options);
+        }
     }
 
     /**

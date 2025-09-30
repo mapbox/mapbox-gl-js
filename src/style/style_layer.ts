@@ -225,6 +225,14 @@ class StyleLayer extends Evented {
         }
     }
 
+    isPaintProperty<T extends keyof PaintSpecification>(name: T): boolean {
+        const paint = this._transitionablePaint;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const specProps = paint._properties.properties;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        return !!specProps[name];
+    }
+
     setPaintProperty<T extends keyof PaintSpecification>(name: T, value: PaintSpecification[T]): boolean {
         const paint = this._transitionablePaint;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
