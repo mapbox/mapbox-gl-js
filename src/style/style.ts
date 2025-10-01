@@ -362,6 +362,7 @@ class Style extends Evented<MapEvents> {
     _hasSymbolLayers: boolean;
 
     _worldview: string | undefined;
+    _hasAppearances: boolean;
 
     // exposed to allow stubbing by unit tests
     static getSourceType: typeof getSourceType;
@@ -397,6 +398,7 @@ class Style extends Evented<MapEvents> {
         this._mergedOtherSourceCaches = {};
         this._mergedSymbolSourceCaches = {};
         this._clipLayerPresent = false;
+        this._hasAppearances = false;
 
         this._has3DLayers = false;
         this._hasCircleLayers = false;
@@ -822,6 +824,7 @@ class Style extends Evented<MapEvents> {
                 const styleLayer = createStyleLayer(layer, this.scope, this._styleColorTheme.lut, this.options);
                 if (styleLayer.expressionDependencies.configDependencies.size !== 0) this._configDependentLayers.add(styleLayer.fqid);
                 if (styleLayer.expressionDependencies.isIndoorDependent) this._indoorDependentLayers.add(styleLayer.fqid);
+                this._hasAppearances = this._hasAppearances || styleLayer.getAppearances().length !== 0;
                 styleLayer.setEventedParent(this, {layer: {id: styleLayer.id}});
                 this._layers[styleLayer.id] = styleLayer;
 
@@ -904,6 +907,10 @@ class Style extends Evented<MapEvents> {
 
     isRootStyle(): boolean {
         return this.importDepth === 0;
+    }
+
+    hasAppearances(): boolean {
+        return this._hasAppearances;
     }
 
     mergeAll() {

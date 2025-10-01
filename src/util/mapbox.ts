@@ -306,7 +306,7 @@ function parseAccessToken(accessToken?: string | null): {u?: string} | null {
     }
 }
 
-type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth' | 'gljs.performance' | 'style.load';
+type TelemetryEventType = 'appUserTurnstile' | 'map.load' | 'map.auth' | 'gljs.performance' | 'style.load' | 'metrics';
 
 export class TelemetryEvent {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -636,6 +636,63 @@ export class StyleLoadEvent extends TelemetryEvent {
     }
 }
 
+type MetricsEventAttribute = {
+    name: string,
+    value?: string
+};
+
+type MetricsEventCounter = {
+    name: string,
+    value?: number
+};
+
+type MetricsEventPayload = {
+    attributes?: MetricsEventAttribute[],
+    counters?: MetricsEventCounter[]
+};
+class MetricsEvent extends TelemetryEvent {
+    data: MetricsEventPayload;
+    constructor(data?: MetricsEventPayload) {
+        super('metrics');
+        if (data) this.data = data;
+    }
+
+    postMetricsEvent(customAccessToken: string | null | undefined) {
+
+        if (!config.EVENTS_URL || !(customAccessToken || config.ACCESS_TOKEN)) {
+            return;
+        }
+
+        if (!this.anonId) {
+            this.fetchEventData();
+        }
+
+        if (!validateUuid(this.anonId)) {
+            this.refreshUUID();
+        }
+
+        const payload: MetricsEventPayload = Object.assign({}, this.data, {sessionId: this.anonId});
+
+        this.queueRequest({
+            timestamp: Date.now(),
+            payload
+        }, customAccessToken);
+    }
+
+    override processRequests(customAccessToken?: string | null) {
+        // Override processRequests to allow multiple events sent per map
+        if (this.pendingRequest || this.queue.length === 0) {
+            return;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const {timestamp, payload} = this.queue.shift();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        this.postEvent(timestamp, payload, () => {}, customAccessToken);
+    }
+}
+
 export class MapSessionAPI extends TelemetryEvent {
     readonly success: {
         [_: number]: boolean;
@@ -804,6 +861,10 @@ export const postMapLoadEvent: (
 export const styleLoadEvent: StyleLoadEvent = new StyleLoadEvent();
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const postStyleLoadEvent: (arg1: string | null | undefined, arg2: StyleLoadEventInput) => void = styleLoadEvent.postStyleLoadEvent.bind(styleLoadEvent);
+
+export const styleWithAppearanceEvent = new MetricsEvent({attributes: [{name: 'maps/js/layer-animations/style-with-appearances'}]});
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+export const postStyleWithAppearanceEvent: (arg1: string | null | undefined) => void = styleWithAppearanceEvent.postMetricsEvent.bind(styleWithAppearanceEvent);
 
 export const performanceEvent_: PerformanceEvent = new PerformanceEvent();
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

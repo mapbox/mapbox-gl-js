@@ -13,7 +13,8 @@ import {
     postStyleLoadEvent,
     AUTH_ERR_MSG,
     storeAuthState,
-    removeAuthState
+    removeAuthState,
+    postStyleWithAppearanceEvent
 } from '../util/mapbox';
 import Style from '../style/style';
 import IndoorManager from '../style/indoor_manager';
@@ -801,6 +802,7 @@ export class Map extends Camera {
                 this.jumpTo((this.style.stylesheet as unknown));
             }
             this._postStyleLoadEvent();
+            this._postStyleWithAppearanceEvent();
         });
 
         this.on('data', (event) => {
@@ -4816,6 +4818,14 @@ export class Map extends Camera {
             style: this.style.globalId,
             importedStyles: this.style.getImportGlobalIds()
         });
+    }
+
+    _postStyleWithAppearanceEvent() {
+        if (!this.style.globalId || !this.style.hasAppearances()) {
+            return;
+        }
+
+        postStyleWithAppearanceEvent(this._requestManager._customAccessToken);
     }
 
     _updateTerrain() {

@@ -661,5 +661,81 @@ describe('Map', () => {
                 return wait;
             });
         });
+
+        test('sends appearance event', async () => {
+            const fetchSpy = vi.spyOn(window, 'fetch').mockImplementation(() => {
+                return Promise.resolve(new Response(JSON.stringify({})));
+            });
+            const map = createMap({
+                accessToken: 'access-token',
+                style: {
+                    version: 8,
+                    sources: {
+                        "fake": {
+                            "type": "geojson",
+                            "data": {
+                                "type": "Feature",
+                                "geometry": {
+                                    "type": "Point",
+                                    "coordinates": [-77.0323, 38.9131]
+                                },
+                                "properties": {
+                                    "title": "Mapbox DC",
+                                    "marker-symbol": "monument"
+                                }
+                            }
+                        }
+                    },
+                    layers: [
+                        {
+                            id: 'layer-with-appearances',
+                            source: 'fake',
+                            type: 'symbol',
+                            layout: {
+                                "icon-image": "charging-station",
+                                "icon-size": 1.2
+                            },
+                            appearances: [
+                                {
+                                    "condition": ["==", ["feature-state", "availability"], "partial"],
+                                    "properties": {
+                                        "icon-image": ["image", "charging-station", {"params": {"fill": "orange"}}],
+                                        "icon-size": 1.1
+                                    }
+                                },
+                                {
+                                    "condition": ["==", ["feature-state", "availability"], "none"],
+                                    "properties": {
+                                        "icon-image": ["image", "charging-station", {"params": {"fill": "red"}}],
+                                        "icon-size": 1
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            });
+            await waitFor(map, "idle");
+            map.triggerRepaint();
+            await waitFor(map, "idle");
+            expect(map._fullyLoaded).toBeTruthy();
+            expect(map._loaded).toBeTruthy();
+
+            async function getEventNames() {
+                const events = await Promise.all(fetchSpy.mock.calls.map(async ([arg]: [any]) => {
+                    const requestBody = await getRequestBody(arg);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
+                    return JSON.parse(requestBody.slice(1, requestBody.length - 1));
+                }));
+
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                return events.map(e => e.event);
+            }
+            expect(await getEventNames()).toEqual([
+                'style.load',
+                'metrics'
+            ]);
+            performanceEvent_.pendingRequest = null;
+        });
     });
 });
