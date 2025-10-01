@@ -223,6 +223,10 @@ void main() {
     color = applyCutout(color, v_pos.z);
 #endif
 
+#ifdef FEATURE_CUTOUT
+    color = apply_feature_cutout(color, gl_FragCoord);
+#endif
+
     glFragColor = color; 
 
 #ifdef DEBUG_SHOW_NORMALS
