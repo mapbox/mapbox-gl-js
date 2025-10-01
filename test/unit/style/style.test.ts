@@ -1633,6 +1633,45 @@ describe('Style#setLayerProperty', () => {
         style.setLayerProperty('background', 'background-color', value);
         expect(style._changes.isDirty()).toBeTruthy();
     });
+
+    test('appearances', async () => {
+        const style = new Style(new StubMap());
+        style.loadJSON({
+            "version": 8,
+            "sources": {},
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background"
+                }
+            ]
+        });
+
+        await waitFor(style, 'style.load');
+        const value = [
+            {
+                "condition": ["==", ["feature-state", "availability"], "partial"],
+                "properties": {
+                    "icon-image": ["image", "charging-station", {"params": {"fill": "orange"}}],
+                    "icon-size": 1.1
+                }
+            },
+            {
+                "name": "No availability",
+                "condition": ["==", ["feature-state", "availability"], "none"],
+                "properties": {
+                    "icon-image": ["image", "charging-station", {"params": {"fill": "red"}}],
+                    "icon-size": 1
+                }
+            }
+        ];
+        style.setLayerProperty('background', 'appearances', value);
+        expect(style._layers['background'].appearances.length).not.toBe(0);
+        expect(style._changes.isDirty()).toBeTruthy();
+
+        style.update({});
+        expect(style._changes.isDirty()).toBeFalsy();
+    });
 });
 
 describe('Style#getLayoutProperty', () => {

@@ -20,7 +20,8 @@ import type {
     LayoutSpecification,
     PaintSpecification,
     FilterSpecification,
-    PropertyValueSpecification
+    PropertyValueSpecification,
+    AppearanceSpecification
 } from '../style-spec/types';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Map as MapboxMap} from '../ui/map';
@@ -138,9 +139,7 @@ class StyleLayer extends Evented {
         if (layer.slot) this.slot = layer.slot;
 
         if (layer.appearances) {
-            layer.appearances.forEach(a => {
-                this.appearances.push(new SymbolAppearance(a.condition, a.name, a.properties as AppearanceProps, this.scope, options, this.iconImageUseTheme));
-            });
+            this.setAppearances(layer.appearances);
         }
 
         if (properties.layout) {
@@ -206,6 +205,13 @@ class StyleLayer extends Evented {
         if (name === 'visibility') {
             this.possiblyEvaluateVisibility();
         }
+    }
+
+    setAppearances(appearances: AppearanceSpecification[]) {
+        this.appearances = [];
+        appearances.forEach(a => {
+            this.appearances.push(new SymbolAppearance(a.condition, a.name, a.properties as AppearanceProps, this.scope, this.options, this.iconImageUseTheme));
+        });
     }
 
     possiblyEvaluateVisibility() {

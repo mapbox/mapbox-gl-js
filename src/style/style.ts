@@ -96,7 +96,8 @@ import type {
     CameraSpecification,
     FeaturesetsSpecification,
     IconsetSpecification,
-    ModelsSpecification
+    ModelsSpecification,
+    AppearanceSpecification
 } from '../style-spec/types';
 import type {Callback} from '../types/callback';
 import type {StyleImage, StyleImageMap} from './style_image';
@@ -2933,16 +2934,19 @@ class Style extends Evented<MapEvents> {
         this._updateLayer(layer);
     }
 
-    setLayerProperty<T extends keyof (PaintSpecification | LayoutSpecification)>(layerId: string, name: T, value: PaintSpecification[T] | LayoutSpecification[T], options: StyleSetterOptions = {}) {
+    setLayerProperty<T extends keyof (PaintSpecification | LayoutSpecification)>(layerId: string, name: T | "appearances", value: PaintSpecification[T] | LayoutSpecification[T] | AppearanceSpecification[], options: StyleSetterOptions = {}) {
         this._checkLoaded();
 
         const layer = this._checkLayer(layerId);
         if (!layer) return;
 
-        if (layer.isPaintProperty(name)) {
-            this.setPaintProperty(layerId, name, value, options);
+        if (name === 'appearances') {
+            layer.setAppearances(value);
+            this._changes.setDirty();
+        } else if (layer.isPaintProperty(name)) {
+            this.setPaintProperty(layerId, name, value as PaintSpecification[T], options);
         } else {
-            this.setLayoutProperty(layerId, name, value, options);
+            this.setLayoutProperty(layerId, name, value as LayoutSpecification[T], options);
         }
     }
 
