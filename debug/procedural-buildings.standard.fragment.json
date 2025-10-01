@@ -11,7 +11,9 @@
     },
     "sprite": "",
     "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-    "projection": {"name": "globe"},
+    "projection": {
+        "name": "globe"
+    },
     "schema": {
         "colorBuildingHighlight": {
             "default": "hsl(34, 30%, 93%)",
@@ -36,35 +38,35 @@
                 "mapbox:title": "Buildings",
                 "mapbox:description": "Featureset describing the buildings.",
                 "mapbox:states": [
-                {
-                    "id": "highlight",
-                    "type": "boolean",
-                    "doc": "When `true`, the building is highlighted. Use this state to create a temporary effect (e.g. hover).",
-                    "importConfigs": ["colorBuildingHighlight"]
-                },
-                {
-                    "id": "select",
-                    "type": "boolean",
-                    "doc": "When `true`, the building is selected. Use this state to create a permanent effect. Note: the `select` state has a higher priority than `highlight`.",
-                    "importConfigs": ["colorBuildingSelect"]
-                }
+                    {
+                        "id": "highlight",
+                        "type": "boolean",
+                        "doc": "When `true`, the building is highlighted. Use this state to create a temporary effect (e.g. hover).",
+                        "importConfigs": ["colorBuildingHighlight"]
+                    },
+                    {
+                        "id": "select",
+                        "type": "boolean",
+                        "doc": "When `true`, the building is selected. Use this state to create a permanent effect. Note: the `select` state has a higher priority than `highlight`.",
+                        "importConfigs": ["colorBuildingSelect"]
+                    }
                 ],
                 "mapbox:properties": [
-                {
-                    "name": "group",
-                    "type": "string",
-                    "doc": "A high-level building group like building-2d, building-3d, etc."
-                }
+                    {
+                        "name": "group",
+                        "type": "string",
+                        "doc": "A high-level building group like building-2d, building-3d, etc."
+                    }
                 ]
             },
             "selectors": [
                 {
-                "layer": "procedural-buildings",
-                "properties": {
-                    "group": "building-3d"
-                },
-                "featureNamespace": "building-A",
-                "_uniqueFeatureID": true
+                    "layer": "procedural-buildings",
+                    "properties": {
+                        "group": "building-3d"
+                    },
+                    "featureNamespace": "building-A",
+                    "_uniqueFeatureID": true
                 }
             ]
         }
@@ -171,7 +173,7 @@
                             "get",
                             "vertex_count"
                         ],
-                        9
+                        16
                     ],
                     "parapet",
                     [
@@ -189,8 +191,19 @@
                     "min_height"
                 ],
                 "building-height": [
-                    "get",
-                    "height"
+                    "+",
+                    [
+                        "get",
+                        "height"
+                    ],
+                    [
+                        "random",
+                        0.3,
+                        1,
+                        [
+                            "id"
+                        ]
+                    ]
                 ],
                 "building-facade": [
                     "all",
@@ -219,29 +232,78 @@
                             "get",
                             "height"
                         ],
-                        20
+                        25
                     ],
                     [
                         "/",
                         [
                             "-",
                             [
-                                "get",
-                                "height"
+                                "*",
+                                10,
+                                [
+                                    "ceil",
+                                    [
+                                        "/",
+                                        [
+                                            "get",
+                                            "height"
+                                        ],
+                                        10
+                                    ]
+                                ]
                             ],
                             [
                                 "get",
                                 "min_height"
                             ]
                         ],
+                        4.5
+                    ],
+                    [
+                        "all",
                         [
-                            "random",
-                            6,
-                            8,
+                            ">=",
                             [
-                                "id"
-                            ]
+                                "get",
+                                "height"
+                            ],
+                            25
+                        ],
+                        [
+                            "!=",
+                            [
+                                "get",
+                                "roof_type"
+                            ],
+                            "parapet"
                         ]
+                    ],
+                    [
+                        "/",
+                        [
+                            "-",
+                            [
+                                "*",
+                                10,
+                                [
+                                    "ceil",
+                                    [
+                                        "/",
+                                        [
+                                            "get",
+                                            "height"
+                                        ],
+                                        10
+                                    ]
+                                ]
+                            ],
+                            [
+                                "get",
+                                "min_height"
+                            ]
+                        ],
+                        4.5
                     ],
                     [
                         "/",
@@ -266,25 +328,58 @@
                         ]
                     ]
                 ],
-                "building-facade-unit-width": [
-                    "at",
-                    ["%", ["to-number", ["id"], 0], 4],
-                    [3.1, 5.3, 10.5, 20.0]
-                ],
                 "building-facade-window": [
                     "case",
                     [
-                        "==",
+                        "all",
                         [
-                            "get",
-                            "roof_type"
+                            "<",
+                            [
+                                "get",
+                                "height"
+                            ],
+                            25
                         ],
-                        "parapet"
+                        [
+                            "<=",
+                            [
+                                "get",
+                                "area"
+                            ],
+                            2000
+                        ]
+                    ],
+                    [
+                        0.5,
+                        0.7
+                    ],
+                    [
+                        "all",
+                        [
+                            ">=",
+                            [
+                                "get",
+                                "height"
+                            ],
+                            25
+                        ],
+                        [
+                            "!=",
+                            [
+                                "get",
+                                "roof_type"
+                            ],
+                            "parapet"
+                        ]
+                    ],
+                    [
+                        0.5,
+                        0.7
                     ],
                     [
                         [
                             "random",
-                            0.7,
+                            0.8,
                             0.95,
                             [
                                 "id"
@@ -292,16 +387,81 @@
                         ],
                         [
                             "random",
-                            0.9,
+                            0.95,
                             1,
                             [
                                 "id"
                             ]
                         ]
+                    ]
+                ],
+                "building-facade-unit-width": [
+                    "case",
+                    [
+                        "all",
+                        [
+                            "<",
+                            [
+                                "get",
+                                "height"
+                            ],
+                            25
+                        ],
+                        [
+                            "<=",
+                            [
+                                "get",
+                                "area"
+                            ],
+                            2000
+                        ]
+                    ],
+                    3,
+                    [
+                        "all",
+                        [
+                            "<",
+                            [
+                                "get",
+                                "height"
+                            ],
+                            25
+                        ],
+                        [
+                            ">",
+                            [
+                                "get",
+                                "area"
+                            ],
+                            2000
+                        ]
                     ],
                     [
-                        0.5,
-                        0.9
+                        "random",
+                        3,
+                        6,
+                        [
+                            "id"
+                        ]
+                    ],
+                    [
+                        "at",
+                        [
+                            "%",
+                            [
+                                "to-number",
+                                [
+                                    "id"
+                                ],
+                                0
+                            ],
+                            3
+                        ],
+                        [
+                            8,
+                            10,
+                            12
+                        ]
                     ]
                 ]
             },
@@ -359,31 +519,38 @@
                             "get",
                             "building-part"
                         ],
+                        "roof",
+                        0.02,
                         "window",
                         [
-                            "interpolate",
+                            "match",
                             [
-                                "linear"
+                                "config",
+                                "lightPreset"
                             ],
-                            [
-                                "measure-light",
-                                "brightness"
-                            ],
-                            0.1,
+                            "day",
+                            0,
                             [
                                 "random",
                                 0,
-                                0.1,
+                                0.2,
                                 [
                                     "id"
                                 ]
-                            ],
-                            0.4,
-                            0.8
+                            ]
                         ],
                         "door",
                         0.5,
-                        0
+                        [
+                            "match",
+                            [
+                                "config",
+                                "lightPreset"
+                            ],
+                            "day",
+                            0.6,
+                            0
+                        ]
                     ]
                 ],
                 "building-color": [
@@ -402,30 +569,85 @@
                         [
                             "hsl",
                             38,
+                            5,
                             [
                                 "random",
-                                10,
-                                20,
+                                90,
+                                94,
                                 [
                                     "id"
                                 ]
-                            ],
-                            90
+                            ]
                         ],
                         "wall",
-                        "hsl(38, 40%, 96%)",
+                        [
+                            "case",
+                            [
+                                "all",
+                                [
+                                    "has",
+                                    "building_id"
+                                ],
+                                [
+                                    ">=",
+                                    [
+                                        "get",
+                                        "height"
+                                    ],
+                                    25
+                                ]
+                            ],
+                            "hsl(40, 43%, 95%)",
+                            [
+                                "hsl",
+                                40,
+                                50,
+                                [
+                                    "random",
+                                    92,
+                                    98,
+                                    [
+                                        "id"
+                                    ]
+                                ]
+                            ]
+                        ],
                         "roof",
                         [
-                            "match",
+                            "case",
                             [
-                                "get",
-                                "roof_type"
-                            ],
-                            [
-                                "gabled",
-                                "hipped",
-                                "mansard",
-                                "pyramidal"
+                                "all",
+                                [
+                                    "<=",
+                                    [
+                                        "get",
+                                        "vertex_count"
+                                    ],
+                                    16
+                                ],
+                                [
+                                    "<=",
+                                    [
+                                        "get",
+                                        "height"
+                                    ],
+                                    25
+                                ],
+                                [
+                                    "in",
+                                    [
+                                        "get",
+                                        "roof_type"
+                                    ],
+                                    [
+                                        "literal",
+                                        [
+                                            "gabled",
+                                            "hipped",
+                                            "pyramidal"
+                                        ]
+                                    ]
+                                ]
                             ],
                             [
                                 "hsl",
@@ -437,52 +659,38 @@
                                         "id"
                                     ]
                                 ],
-                                65,
-                                [
-                                    "at",
-                                    [
-                                        "round",
-                                        [
-                                            "random",
-                                            0,
-                                            1,
-                                            [
-                                                "id"
-                                            ]
-                                        ]
-                                    ],
-                                    [
-                                        92,
-                                        96
-                                    ]
-                                ]
-                            ],
-                            "skillion",
-                            [
-                                "hsl",
-                                32,
-                                80,
-                                95
-                            ],
-                            [
-                                "hsl",
-                                [
-                                    "random",
-                                    20,
-                                    30,
-                                    [
-                                        "id"
-                                    ]
-                                ],
                                 50,
                                 [
                                     "random",
-                                    90,
-                                    94,
+                                    88,
+                                    92,
                                     [
                                         "id"
                                     ]
                                 ]
+                            ],
+                            [
+                                "==",
+                                [
+                                    "get",
+                                    "roof_type"
+                                ],
+                                "skillion"
+                            ],
+                            "hsl(23, 80%, 97%)",
+                            [
+                                "interpolate",
+                                [
+                                    "linear"
+                                ],
+                                [
+                                    "get",
+                                    "height"
+                                ],
+                                0,
+                                "hsl(40, 39%, 92%)",
+                                200,
+                                "hsl(23, 80%, 97%)"
                             ]
                         ],
                         "door",
