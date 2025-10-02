@@ -454,9 +454,10 @@ export class ShadowRenderer {
     }
 
     calculateShadowPassMatrixFromMatrix(matrix: mat4): mat4 {
+        const result = mat4.clone(matrix);
         const lightMatrix = this._cascades[this.painter.currentShadowCascade].matrix;
-        mat4.multiply(matrix, lightMatrix, matrix);
-        return Float32Array.from(matrix);
+        mat4.multiply(result, lightMatrix, matrix);
+        return result;
     }
 
     setupShadows(unwrappedTileID: UnwrappedTileID, program: Program<ShadowsUniformsType>, normalOffsetMode?: ShadowNormalOffsetMode | null) {

@@ -1,0 +1,174 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0015
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "cast-shadows": true,
+        "shadow-intensity": 1.0
+      }
+    }
+  ],
+  "sources": {
+    "3d-model-source": {
+      "type": "model",
+      "models": {
+        "ego-car-1" : {
+          "uri": "local://models/ego_car.glb",
+          "position": [-74.013495, 40.7153],
+          "orientation": [0, 0, 195],
+          "materialOverrides": [
+            "body",
+            "lights-front_turn-left",
+            "lights-front_turn-right",
+            "lights_front",
+            "lights-front_turn-left_volume",
+            "lights-front_turn-right_volume",
+            "lights_front_volume"
+          ],
+          "nodeOverrides": [
+            "trunk"
+          ]
+        },
+        "ego-car-2" : {
+          "uri": "local://models/ego_car.glb",
+          "position": [-74.013755, 40.7153],
+          "orientation": [0, 0, -15],
+          "materialOverrides": {
+            "body": {
+              "model-color": [0.00775, 0.03458, 0.43854],
+              "model-color-mix-intensity": 1.0
+            },
+            "lights_brakes": {
+              "model-color": [0.88, 0.0, 0.0],
+              "model-color-mix-intensity": 1.0,
+              "model-emissive-strength": 0.8
+            },
+            "lights-brakes_reverse": {
+              "model-color": [0.88, 0.0, 0.0],
+              "model-color-mix-intensity": 1.0,
+              "model-emissive-strength": 0.8
+            },
+            "lights_brakes_volume": {
+              "model-color": [0.88, 0.0, 0.0],
+              "model-color-mix-intensity": 1.0,
+              "model-emissive-strength": 0.8,
+              "model-opacity": 1.0
+            },
+            "lights-brakes_reverse_volume": {
+              "model-color": [0.88, 0.0, 0.0],
+              "model-color-mix-intensity": 1.0,
+              "model-emissive-strength": 0.8,
+              "model-opacity": 1.0
+            }
+          },
+          "nodeOverrides": {
+            "trunk": {
+              "orientation": [-45.0, 0.0, 0.0]
+            }
+          }
+        }
+      }
+    }
+  },
+  "pitch": 55,
+  "zoom": 19.50,
+  "bearing": 0,
+  "center": [
+    -74.013625,
+    40.7153
+  ],
+  "camera": {
+    "camera-projection": "orthographic"
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "3d-model-layer",
+      "type": "model",
+      "source": "3d-model-source",
+      "paint": {
+        "model-scale": [
+          10,
+          10,
+          10
+        ],
+        "model-type": "location-indicator",
+        "model-color": [
+          "case",
+            ["==", ["id"], "ego-car-1"],
+            ["match",
+              ["get", "part"],
+              "lights_front_volume",
+              "rgba(255, 255, 255, 1)",
+              "rgba(112, 109, 2, 1)"
+            ],            
+            "rgba(255, 255, 255, 1)"
+          ],
+        "model-color-mix-intensity": [
+          "case",
+            ["==", ["id"], "ego-car-1"],
+            ["match",
+              ["get", "part"],
+              "body",
+              1.0,
+              "lights_front_volume",
+              1.0,
+              0.0
+            ],
+            0.0
+        ],
+        "model-emissive-strength": [
+          "case",
+            ["==", ["id"], "ego-car-1"],
+            ["match",
+              ["get", "part"],
+              "lights_front",
+              1.0,
+              "lights_front_volume",
+              1.0,
+              0.0
+            ],
+            0.0
+        ],
+        "model-opacity": [
+          "case",
+            ["==", ["id"], "ego-car-1"],
+            ["match",
+              ["get", "part"],
+              "lights-front_turn-left_volume",
+              0.0,
+              "lights-front_turn-right_volume",
+              0.0,
+              "lights_front",
+              1.0,
+              1.0
+            ],
+            1.0
+        ]
+      }
+    }
+  ]
+}

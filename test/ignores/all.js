@@ -272,6 +272,8 @@ const skip = [
     // fill-extrusions always get removed. This will be separated (similar to symbol and model) in future.
     "render-tests/clip-layer/clip-layer-keep-fill-extrusions",
 
+    // Requires support for hd-roads-markup/elevationId - not yet supported in gl-js
+    "render-tests/model-layer/model-elevation-reference/hd-road-markup/with-elevation-id",
     "render-tests/building/terrain/terrain-toggle-conflation-works",
     "render-tests/building/terrain/terrain-unsupported",
     "render-tests/building/globe-unsupported"

@@ -14,7 +14,8 @@
       "type": "vector",
       "tiles": [
         "local://tiles/{z}-{x}-{y}.mvt"
-      ]
+      ],
+      "maxzoom": 3
     }
   },
   "projection": {

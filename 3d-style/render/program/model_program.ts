@@ -13,7 +13,7 @@ import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {UniformValues} from '../../../src/render/uniform_binding';
 import type Context from '../../../src/gl/context';
 import type Painter from '../../../src/render/painter';
-import type {Material} from '../../data/model';
+import type {Material, MaterialOverride} from '../../data/model';
 
 export type ModelUniformsType = {
     ['u_matrix']: UniformMatrix4f;
@@ -94,6 +94,8 @@ const modelUniformValues = (
     layer: ModelStyleLayer,
     cameraPos: [number, number, number] = [0, 0, 0],
     occlusionTextureTransform?: [number, number, number, number] | null,
+    materialOverride?: MaterialOverride | null,
+    modelColorMix?: [number, number, number, number]
 ): UniformValues<ModelUniformsType> => {
 
     const light = painter.style.light;
@@ -113,8 +115,23 @@ const modelUniformValues = (
     const aoIntensity = layer.paint.get('model-ambient-occlusion-intensity');
 
     const colorMix = layer.paint.get('model-color').constantOr(Color.white).toNonPremultipliedRenderColor(null);
-
     colorMix.a = layer.paint.get('model-color-mix-intensity').constantOr(0.0);
+
+    if (modelColorMix) {
+        colorMix.r = modelColorMix[0];
+        colorMix.g = modelColorMix[1];
+        colorMix.b = modelColorMix[2];
+        colorMix.a = modelColorMix[3];
+    }
+
+    if (materialOverride) {
+        colorMix.r = materialOverride.color.r;
+        colorMix.g = materialOverride.color.g;
+        colorMix.b = materialOverride.color.b;
+        colorMix.a = materialOverride.colorMix;
+        emissiveStrength = materialOverride.emissionStrength;
+        opacity = materialOverride.opacity;
+    }
 
     const uniformValues = {
         'u_matrix': matrix as Float32Array,

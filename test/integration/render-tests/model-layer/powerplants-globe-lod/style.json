@@ -4,24 +4,42 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.00061,
+      "allowed": 0.0006,
       "operations": [
-        ["wait"]
+        [
+          "setProjection",
+          "globe"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setZoom",
+          5.01
+        ],
+        [
+          "wait"
+        ]
       ]
     }
   },
   "models": {
-    "oak1": "local://models/oak1.glb",
     "power_plant": "local://models/powerplant_no_draco.glb",
     "power_plant_low": "local://models/powerplant_low_no_draco.gltf",
     "power_plant_low_transparent": "local://models/powerplant_low_transparent_no_draco.gltf"
   },
-  "center": [ -80.4664, 27.0873 ],
-  "zoom": 6.31,
-  "pitch": 75,
-  "bearing": 342.85,
+  "center": [
+    -80.1664,
+    29.0873
+  ],
+  "zoom": 5.01,
+  "pitch": 60,
+  "bearing": 337.85,
   "transition": {
     "duration": 0
+  },
+  "fog": {
+    "star-intensity": 0.0
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sources": {
@@ -157,24 +175,95 @@
     },
     {
       "paint": {
-        "model-scale": [20000, 20000, 20000]
+        "model-scale": [
+          "interpolate",
+          [
+            "exponential",
+            0.8
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          [
+            100000,
+            100000,
+            100000
+          ],
+          10,
+          [
+            1000,
+            1000,
+            1000
+          ]
+        ]
       },
       "id": "powerPlantsLayer",
       "layout": {
         "model-id": [
           "step",
-          ["zoom"],
-          "oak1",
-          4.6,
+          [
+            "zoom"
+          ],
           "power_plant_low_transparent",
-          6.1,
+          5,
           "power_plant_low",
-          7.5,          
+          6,
           "power_plant"
         ]
       },
       "source": "powerPlants",
       "type": "model"
+    },
+    {
+      "minzoom": 3.0,
+      "type": "symbol",
+      "paint": {
+        "text-halo-width": 1.0,
+        "text-halo-color": [
+          "rgba",
+          255.0,
+          255.0,
+          255.0,
+          1.0
+        ],
+        "text-color": [
+          "rgba",
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source-layer": "place_label",
+      "layout": {
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-letter-spacing": 0.15000000596046449,
+        "text-max-width": 6.0,
+        "text-size": 15,
+        "text-field": [
+          "format",
+          [
+            "coalesce",
+            [
+              "get",
+              "name_en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ],
+          {}
+        ],
+        "text-transform": "uppercase"
+      },
+      "id": "state-label",
+      "source": "mapbox",
+      "maxzoom": 9.0
     }
   ]
 }

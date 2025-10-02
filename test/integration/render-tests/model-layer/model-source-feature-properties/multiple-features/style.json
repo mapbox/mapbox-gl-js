@@ -1,0 +1,124 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "allowed": 0.0015
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "cast-shadows": true,
+        "shadow-intensity": 1.0
+      }
+    }
+  ],
+  "sources": {
+    "3d-model-source": {
+      "type": "model",
+      "models": {
+        "ego-car-1" : {
+          "uri": "local://models/ego_car.glb",
+          "position": [-74.013495, 40.7153],
+          "orientation": [0, 0, 15],
+          "materialOverrides": [
+            "body"
+          ],
+          "nodeOverrides": [
+            "trunk"
+          ]
+        },
+        "ego-car-2" : {
+          "uri": "local://models/ego_car.glb",
+          "position": [-74.013755, 40.7153],
+          "orientation": [0, 0, -15],
+          "materialOverrides": [
+            "body"
+          ],
+          "nodeOverrides": [
+            "trunk"
+          ],
+          "featureProperties": {
+            "translation-z": 10.0
+          }
+        }
+      }
+    }
+  },
+  "pitch": 55,
+  "zoom": 17.50,
+  "bearing": 0,
+  "center": [
+    -74.013625,
+    40.7153
+  ],
+  "camera": {
+    "camera-projection": "orthographic"
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "3d-model-layer",
+      "type": "model",
+      "source": "3d-model-source",
+      "paint": {
+        "model-scale": [
+          10,
+          10,
+          10
+        ],
+        "model-type": "location-indicator",
+        "model-translation": [
+          0.0,
+          0.0,
+          ["get", "translation-z"]
+        ],
+        "model-color": [
+          "case",
+            ["==", ["id"], "ego-car-1"],
+            "rgba(112, 109, 2, 1)",
+            "rgba(2, 9, 112, 1)"
+          ],
+        "model-color-mix-intensity": [
+          "match",
+          [
+            "get",
+            "part"
+          ],
+          "body",
+          1.0,
+          0.0
+        ],
+        "model-rotation": [
+          "match",
+          ["get", "part"],
+          "trunk",
+          ["case",
+            ["==", ["id"], "ego-car-2"],
+            [-45.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0]
+          ],
+          [0.0, 0.0, 0.0]
+        ]
+      }
+    }
+  ]
+}

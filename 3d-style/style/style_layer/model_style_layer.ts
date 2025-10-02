@@ -174,7 +174,7 @@ class ModelStyleLayer extends StyleLayer {
     }
 }
 
-function tileToLngLat(id: CanonicalTileID, position: LngLat, pointX: number, pointY: number) {
+export function tileToLngLat(id: CanonicalTileID, position: LngLat, pointX: number, pointY: number) {
     const tileCount = 1 << id.z;
     position.lat = latFromMercatorY((pointY / EXTENT + id.y) / tileCount);
     position.lng = lngFromMercatorX((pointX / EXTENT + id.x) / tileCount);
@@ -208,7 +208,7 @@ export function loadMatchingModelFeature(bucket: Tiled3dModelBucket, featureInde
     const projectedQueryGeometry = screenQuery.isPointQuery() ? screenQuery.screenBounds : screenQuery.screenGeometry;
 
     const checkNode = function (n: ModelNode) {
-        const worldViewProjectionForNode = mat4.multiply([], modelMatrix, n.matrix);
+        const worldViewProjectionForNode = mat4.multiply([] as unknown as mat4, modelMatrix, n.globalMatrix);
         mat4.multiply(worldViewProjectionForNode, transform.expandedFarZProjMatrix, worldViewProjectionForNode);
         for (let i = 0; i < n.meshes.length; ++i) {
             const mesh = n.meshes[i];

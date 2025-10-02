@@ -54,7 +54,7 @@ function addAABBsToGridIndex(node: ModelNode, key: number, grid: GridIndex) {
     if (node.meshes) {
         for (const mesh of node.meshes) {
             if (mesh.aabb.min[0] === Infinity) continue;
-            const meshAabb = Aabb.applyTransform(mesh.aabb, node.matrix);
+            const meshAabb = Aabb.applyTransform(mesh.aabb, node.globalMatrix);
             grid.insert(key, meshAabb.min[0], meshAabb.min[1], meshAabb.max[0], meshAabb.max[1]);
         }
     }
@@ -118,7 +118,7 @@ export class Tiled3dModelFeature {
             const aabb = new Aabb([Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]);
             for (const mesh of this.node.meshes) {
                 if (this.node.lightMeshIndex !== i) {
-                    mesh.transformedAabb = Aabb.applyTransformFast(mesh.aabb, this.node.matrix);
+                    mesh.transformedAabb = Aabb.applyTransformFast(mesh.aabb, this.node.globalMatrix);
                     aabb.encapsulate(mesh.transformedAabb);
                 }
                 i++;
@@ -609,7 +609,7 @@ class Tiled3dModelBucket implements Bucket {
 
             assert(mesh.heightmap);
 
-            mat4.invert(nodeInverse, nodeInfo.node.matrix);
+            mat4.invert(nodeInverse, nodeInfo.node.globalMatrix);
             tmpVertex[0] = x;
             tmpVertex[1] = y;
             vec3.transformMat4(tmpVertex as [number, number, number], tmpVertex as [number, number, number], nodeInverse);

@@ -14,11 +14,12 @@ import {regionsEquals, transformPointToTile, pointInFootprint, skipClipping} fro
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import {isValidUrl} from '../../../src/style-spec/validate/validate_model';
 import {type FeatureState} from '../../../src/style-spec/expression/index';
+import Point from '@mapbox/point-geometry';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
 import type {ReplacementSource, Region} from '../../../3d-style/source/replacement_source';
-import type Point from '@mapbox/point-geometry';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
+import type {mat3, mat4} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../../src/source/tile_id';
 import type {
     Bucket,
@@ -75,12 +76,71 @@ class PerModelAttributes {
         this.features = [];
         this.idToFeaturesIndex = {};
     }
+
+    colorForInstance(index: number): [number, number, number, number] {
+        const offset = index * 16;
+        const va = this.instancedDataArray.float32;
+
+        // Decompose: Math.round(100.0 * color.a) + color.b / 1.05;
+        let a = Math.floor(va[offset + 2]);
+        const b = (va[offset + 2] - a) * 1.05;
+        a /= 100.0;
+        // 0 & 1: tile coordinates stored in integer part of float, R and G color components,
+        // originally in range [0..1], scaled to range [0..0.952(arbitrary, just needs to be
+        // under 1)].
+        const r = (va[offset] % 1) * 1.05;
+        const g = (va[offset + 1] % 1) * 1.05;
+        return [r, g, b, a];
+    }
+
+    tileCoordinatesForInstance(index: number): Point {
+        const offset = index * 16;
+        const va = this.instancedDataArray.float32;
+        let x_ = va[offset + 0];
+        const wasHidden = x_ > EXTENT;
+        x_ = wasHidden ? x_ - EXTENT : x_;
+        // Position is stored in integer part of value, fractional part is used for color
+        const x = Math.trunc(x_);
+        const y = Math.trunc(va[offset + 1]);
+        return new Point(x, y);
+    }
+
+    translationForInstance(index: number): vec3 {
+        const offset = index * 16;
+        const va = this.instancedDataArray.float32;
+        return [va[offset + 4], va[offset + 5], va[offset + 6]];
+    }
+
+    rotationScaleForInstance(index: number): mat3 {
+        const offset = index * 16;
+        const va = this.instancedDataArray.float32;
+        return [va[offset + 7],
+            va[offset + 8],
+            va[offset + 9],
+            va[offset + 10],
+            va[offset + 11],
+            va[offset + 12],
+            va[offset + 13],
+            va[offset + 14],
+            va[offset + 15]];
+    }
+
+    transformForInstance(index: number): mat4 {
+        const offset = index * 16;
+        const va = this.instancedDataArray.float32;
+        return [
+            va[offset + 7], va[offset + 8], va[offset + 9], va[offset + 4],
+            va[offset + 10], va[offset + 11], va[offset + 12], va[offset + 5],
+            va[offset + 13], va[offset + 14], va[offset + 15], va[offset + 6],
+            0, 0, 0, 1.0];
+    }
 }
 
 class ModelBucket implements Bucket {
     zoom: number;
     index: number;
     canonical: CanonicalTileID;
+    overscaledZ: number;
     layers: Array<ModelStyleLayer>;
     layerIds: Array<string>;
     stateDependentLayers: Array<ModelStyleLayer>;
@@ -123,6 +183,7 @@ class ModelBucket implements Bucket {
     constructor(options: BucketParameters<ModelStyleLayer>) {
         this.zoom = options.zoom;
         this.canonical = options.canonical;
+        this.overscaledZ = this.canonical.z + Math.log2(options.overscaling);
         this.layers = options.layers;
         this.layerIds = this.layers.map(layer => layer.fqid);
         this.projection = options.projection;
@@ -299,7 +360,7 @@ class ModelBucket implements Bucket {
                     const wasHidden = x_ > EXTENT;
                     x_ = wasHidden ? x_ - EXTENT : x_;
                     const x = Math.floor(x_);
-                    const y = va.float32[i16 + 1];
+                    const y = Math.floor(va.float32[i16 + 1]);
 
                     let hidden = false;
                     for (const region of this.activeReplacements) {
@@ -493,18 +554,18 @@ class ModelBucket implements Bucket {
             // originally in range [0..1], scaled to range [0..0.952(arbitrary, just needs to be
             // under 1)].
             const pointY = va[offset + 1] | 0; // point.y stored in integer part
-            va[offset]      = (va[offset] | 0) + color.r / 1.05; // point.x stored in integer part
-            va[offset + 1]  = pointY + color.g / 1.05;
+            va[offset] = (va[offset] | 0) + color.r / 1.05; // point.x stored in integer part
+            va[offset + 1] = pointY + color.g / 1.05;
             // Element 2: packs color's alpha (as integer part) and blue component in fractional part.
-            va[offset + 2]  = vaOffset2;
+            va[offset + 2] = vaOffset2;
             // tileToMeter is taken at center of tile. Prevent recalculating it over again for
             // thousands of trees.
             // Element 3: tileUnitsToMeter conversion.
-            va[offset + 3]  = 1.0 / (canonical.z > constantTileToMeterAcrossTile ? this.tileToMeter : tileToMeter(canonical, pointY));
+            va[offset + 3] = 1.0 / (canonical.z > constantTileToMeterAcrossTile ? this.tileToMeter : tileToMeter(canonical, pointY));
             // Elements [4..6]: translation evaluated for the feature.
-            va[offset + 4]  = translation[0];
-            va[offset + 5]  = translation[1];
-            va[offset + 6]  = translation[2] + terrainElevationContribution;
+            va[offset + 4] = translation[0];
+            va[offset + 5] = translation[1];
+            va[offset + 6] = translation[2] + terrainElevationContribution;
             // Elements [7..16] Instance modelMatrix holds combined rotation and scale 3x3,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             va[offset + 7]  = rotationScaleYZFlip[0];

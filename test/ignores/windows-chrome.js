@@ -44,6 +44,7 @@ const todo = [
 
     // Debug rendering
     "render-tests/terrain/wireframe",
+    "render-tests/wireframe/globe-high-exaggeration",
 
     // Procedural buildings has a few differences all over the place, with no discernible cause.
     // The appearance looks acceptable.

@@ -4,24 +4,30 @@
     "test": {
       "width": 512,
       "height": 512,
-      "allowed": 0.00061,
       "operations": [
+        ["setProjection", "globe"],
+        ["wait"],
+        ["setZoom", 4.01],
         ["wait"]
-      ]
+      ],
+      "allowed": 0.00107
     }
   },
   "models": {
-    "oak1": "local://models/oak1.glb",
     "power_plant": "local://models/powerplant_no_draco.glb",
     "power_plant_low": "local://models/powerplant_low_no_draco.gltf",
     "power_plant_low_transparent": "local://models/powerplant_low_transparent_no_draco.gltf"
   },
-  "center": [ -80.4664, 27.0873 ],
-  "zoom": 6.31,
-  "pitch": 75,
-  "bearing": 342.85,
+  "center": [ -80.1664, 29.0873 ],
+  "zoom": 4.01,
+  "pitch": 70,
+  "bearing": 337.85,
   "transition": {
     "duration": 0
+  },
+  "fog": {
+    "star-intensity": 0.0,
+    "color": "red"
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "sources": {
@@ -157,19 +163,38 @@
     },
     {
       "paint": {
-        "model-scale": [20000, 20000, 20000]
+        "model-scale": [
+          "interpolate",
+          [
+            "exponential",
+            0.8
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          [
+            100000,
+            100000,
+            100000
+          ],
+          10,
+          [
+            1000,
+            1000,
+            1000
+          ]
+        ]
       },
       "id": "powerPlantsLayer",
       "layout": {
         "model-id": [
           "step",
           ["zoom"],
-          "oak1",
-          4.6,
           "power_plant_low_transparent",
-          6.1,
+          5,
           "power_plant_low",
-          7.5,          
+          6,
           "power_plant"
         ]
       },

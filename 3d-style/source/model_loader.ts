@@ -54,7 +54,8 @@ function convertMaterial(materialDesc: Partial<MaterialDescription>, textures: A
         normalTexture,
         occlusionTexture,
         emissiveTexture,
-        doubleSided
+        doubleSided,
+        name
     } = materialDesc;
 
     const {
@@ -74,6 +75,7 @@ function convertMaterial(materialDesc: Partial<MaterialDescription>, textures: A
     }
 
     return {
+        name,
         pbrMetallicRoughness: {
             baseColorFactor: new Color(...baseColorFactor as [number, number, number, number]),
             metallicFactor,
@@ -272,10 +274,11 @@ function convertMeshes(gltf: GLTF, textures: Array<ModelTexture>): Array<Array<M
 }
 
 function convertNode(nodeDesc: GLTFNode, gltf: GLTF, meshes: Array<Array<Mesh>>): ModelNode {
-    const {matrix, rotation, translation, scale, mesh, extras, children} = nodeDesc;
+    const {matrix, rotation, translation, scale, mesh, extras, children, name} = nodeDesc;
     const node = {} as ModelNode;
-
-    node.matrix = matrix || mat4.fromRotationTranslationScale([], rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
+    node.name = name;
+    node.localMatrix = matrix || mat4.fromRotationTranslationScale([], rotation || [0, 0, 0, 1], translation || [0, 0, 0], scale || [1, 1, 1]);
+    node.globalMatrix = mat4.clone(node.localMatrix);
     if (mesh !== undefined) {
         node.meshes = meshes[mesh];
         const anchor: vec2 = node.anchor = [0, 0];
@@ -295,6 +298,9 @@ function convertNode(nodeDesc: GLTFNode, gltf: GLTF, meshes: Array<Array<Mesh>>)
 
         if (extras.lights) {
             node.lights = decodeLights(extras.lights as string);
+        }
+        if (extras['MAPBOX_geometry_bloom']) {
+            node.isGeometryBloom = extras['MAPBOX_geometry_bloom'] as boolean;
         }
     }
 
@@ -499,7 +505,7 @@ function convertFootprints(convertedNodes: ModelNode[], sceneNodes: number[], mo
         let fpMesh: FootprintMesh | null | undefined = null;
 
         if (node.id in nodeFootprintLookup) {
-            fpMesh = parseNodeFootprintMesh(convertedNodes[nodeFootprintLookup[node.id]].meshes, node.matrix);
+            fpMesh = parseNodeFootprintMesh(convertedNodes[nodeFootprintLookup[node.id]].meshes, node.localMatrix);
         }
 
         if (!fpMesh) {

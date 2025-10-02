@@ -127,6 +127,7 @@ class FreeCameraOptions {
      *
      * @param {LngLatLike} location Location of the focus point on the map.
      * @param {vec3?} up Up vector of the camera is necessary in certain scenarios where bearing can't be deduced from the viewing direction.
+     * @param {number?} altitude Altitude of the focus point on the map. By default ground level is used.
      * @example
      * const camera = map.getFreeCameraOptions();
      *
@@ -138,15 +139,15 @@ class FreeCameraOptions {
      * // Apply camera changes
      * map.setFreeCameraOptions(camera);
      */
-    lookAtPoint(location: LngLatLike, up?: vec3) {
+    lookAtPoint(location: LngLatLike, up?: vec3, altitude?: number) {
         this.orientation = null;
         if (!this.position) {
             return;
         }
 
         const pos: MercatorCoordinate = this.position;
-        const altitude = this._elevation ? this._elevation.getAtPointOrZero(MercatorCoordinate.fromLngLat(location)) : 0;
-        const target = MercatorCoordinate.fromLngLat(location, altitude);
+        const targetAltitude = altitude ? altitude : (this._elevation ? this._elevation.getAtPointOrZero(MercatorCoordinate.fromLngLat(location)) : 0);
+        const target = MercatorCoordinate.fromLngLat(location, targetAltitude);
         const forward: vec3 = [target.x - pos.x, target.y - pos.y, target.z - pos.z];
         if (!up)
             up = [0, 0, 1];

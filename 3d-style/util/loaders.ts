@@ -209,6 +209,7 @@ export type GLTFNode = {
     mesh: number;
     extras: Record<string, unknown>;
     children: number[];
+    name?: string;
 };
 
 export type GLTF = {

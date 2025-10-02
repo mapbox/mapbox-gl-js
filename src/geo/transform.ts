@@ -1334,9 +1334,9 @@ class Transform {
                 }
             }
 
-            if (!isMercator) {
+            if (!(isMercator || isGlobe)) {
                 const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                let distToSplit = (1 << maxZoom - it.zoom) * zoomSplitDistance * tileScaleAdjustment;
+                let distToSplit = (1 << (maxZoom - it.zoom)) * zoomSplitDistance * tileScaleAdjustment;
                 distToSplit = distToSplit * distToSplitScale(Math.max(dz, cameraHeight), distance);
                 return distance < distToSplit;
             }

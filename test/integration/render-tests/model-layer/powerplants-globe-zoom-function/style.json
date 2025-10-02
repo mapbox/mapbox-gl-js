@@ -1,0 +1,78 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00094,
+      "width": 700,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait"],
+        ["setZoom", 4],
+        ["wait"]
+      ]
+    }
+  },
+   "models": {
+    "power_plant": "local://models/powerplant_low_transparent_no_draco.gltf"
+  },
+  "center": [ 5, 39 ],
+  "zoom": 3.00,
+  "pitch": 60,
+  "fog": {
+    "star-intensity": 0.0,
+    "color": "blue"
+  },
+  "sources": {
+    "powerPlants": {
+      "type": "geojson",
+      "data": "local://data/powerplants.geojson"
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+          "background-color": "brown"
+      }
+    },
+    {
+      "paint": {
+        "model-scale": [
+          "interpolate",
+          [
+            "exponential",
+            0.8
+          ],
+          [
+            "zoom"
+          ],
+          3.0,
+          [
+            "literal",
+            [
+              150000.0,
+              150000.0,
+              150000.0
+            ]
+          ],
+          4.0,
+          [
+            "literal",
+            [
+              50000.0,
+              50000.0,
+              50000.0
+            ]
+          ]
+        ]
+      },
+      "id": "powerPlantsLayer",
+      "layout": {
+        "model-id": "power_plant"
+      },
+      "source": "powerPlants",
+      "type": "model"
+    }
+  ]
+}

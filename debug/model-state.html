@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapbox GL JS model-state debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+
+    <script src='../dist/mapbox-gl-dev.js'></script>
+    <script src='../debug/access_token_generated.js'></script>
+    <script>
+
+        const style = {
+            "version": 8,
+            "metadata": {
+                "test": {
+                    "width": 512,
+                    "height": 512,
+                    "allowed": 0.0015,
+                    "operations": [
+                        ["wait"],
+                        [
+                            "setFeatureState",
+                            {
+                                "source": "3d-model-source",
+                                "sourceLayer": "",
+                                "id": "ego-car"
+                            },
+                            {
+                                "vehicle-color": "rgba(2, 9, 112, 1)",
+                                "brake-light-color": "rgba(225, 0, 0, 1)",
+                                "brake-light-emission": 0.8,
+                                "doors-front-left": [0.0, -45.0, 0.0],
+                                "hood": [45.0, 0.0, 0.0],
+                                "trunk": [-45.0, 0.0, 0.0]
+                            }
+                        ],
+                        ["wait"]
+                    ]
+                }
+            },
+            "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+            "lights": [
+                {
+                    "type": "ambient",
+                    "id": "environment",
+                    "properties": {
+                        "intensity": 0.4
+                    }
+                },
+                {
+                    "type": "directional",
+                    "id": "sun_light",
+                    "properties": {
+                        "intensity": 0.6,
+                        "cast-shadows": true,
+                        "shadow-intensity": 1.0
+                    }
+                }
+            ],
+            "sources": {
+                "3d-model-source": {
+                    "type": "model",
+                    "models": {
+                        "ego-car": {
+                            "uri": "/test/integration/models/ego_car.glb",
+                            "position": [-74.0135, 40.7153],
+                            "orientation": [0, 0, 0],
+                            "materialOverrides": [
+                                "body",
+                                "lights_brakes",
+                                "lights-brakes_reverse",
+                                "lights_brakes_volume",
+                                "lights-brakes_reverse_volume"
+                            ],
+                            "nodeOverrides": [
+                                "doors_front-left",
+                                "doors_front-right",
+                                "hood",
+                                "trunk"
+                            ]
+                        }
+                    }
+                },
+                "3d-model-source-for-source-based-updates": {
+                    "type": "model",
+                    "models": {
+                        "ego-car": {
+                            "uri": "/test/integration/models/ego_car.glb",
+                            "position": [-74.0138, 40.7154],
+                            "orientation": [0, 0, 0]
+                        }
+                    }
+                },
+                "ego-car-labels": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "properties": {
+                                    "name": "Feature state based overrides"
+                                },
+                                "geometry": {
+                                    "type": "Point",
+                                    "coordinates": [-74.0135, 40.7153, 2.0]
+                                }
+                            },
+                            {
+                                "type": "Feature",
+                                "properties": {
+                                    "name": "Model source based overrides"
+                                },
+                                "geometry": {
+                                    "type": "Point",
+                                    "coordinates": [-74.0138, 40.7154, 2.0]
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "pitch": 55,
+            "zoom": 19.50,
+            //"zoom": 5.50,
+            "bearing": 35,
+            "center": [
+                -74.0135,
+                40.7153
+            ],
+            "camera": {
+                "camera-projection": "orthographic"
+            },
+            "layers": [
+                {
+                    "id": "background",
+                    "type": "background",
+                    "paint": {
+                        "background-color": "lightgray"
+                    }
+                },
+                {
+                    "id": "3d-model-layer-for-source-based-updates",
+                    "type": "model",
+                    "source": "3d-model-source-for-source-based-updates",
+                    "paint": {
+                        "model-scale": [10, 10, 10],
+                        "model-type": "location-indicator"
+                    }
+                },
+                {
+                    "id": "3d-model-layer",
+                    "type": "model",
+                    "source": "3d-model-source",
+                    "paint": {
+                        "model-scale": [10, 10, 10],
+                        "model-type": "location-indicator",
+                        "model-color": [
+                            "match",
+                            ["get", "part"],
+                            "lights_brakes",
+                            ["feature-state", "brake-light-color"],
+                            "lights-brakes_reverse",
+                            ["feature-state", "brake-light-color"],
+                             "lights_brakes_volume",
+                            ["feature-state", "brake-light-color"],
+                            "lights-brakes_reverse_volume",
+                            ["feature-state", "brake-light-color"],
+                            ["feature-state", "vehicle-color"]
+                        ],
+                        "model-color-mix-intensity": [
+                            "match",
+                            ["get", "part"],
+                            "body",
+                            1.0,
+                            "lights_brakes",
+                            ["feature-state", "brake-light-emission"],
+                            "lights-brakes_reverse",
+                            ["feature-state", "brake-light-emission"],
+                            "lights_brakes_volume",
+                            ["feature-state", "brake-light-emission"],
+                            "lights-brakes_reverse_volume",
+                            ["feature-state", "brake-light-emission"],
+                            0.0
+                        ],
+                        "model-emissive-strength": [
+                            "match",
+                            ["get", "part"],
+                            "lights_brakes",
+                            ["feature-state", "brake-light-emission"],
+                            "lights_brakes_volume",
+                            ["feature-state", "brake-light-emission"],
+                            "lights-brakes_reverse",
+                            ["feature-state", "brake-light-emission"],
+                             "lights-brakes_reverse_volume",
+                            ["feature-state", "brake-light-emission"],
+                            0.0
+                        ],
+                        "model-rotation": [
+                            "match",
+                            ["get", "part"],
+                            "doors_front-left",
+                            ["feature-state", "doors-front-left"],
+                            "doors_front-right",
+                            ["feature-state", "doors-front-right"],
+                            "hood",
+                            ["feature-state", "hood"],
+                            "trunk",
+                            ["feature-state", "trunk"],
+                            [0.0, 0.0, 0.0]
+                        ],
+                        "model-opacity": [
+                             "match",
+                            ["get", "part"],
+                            "lights_brakes_volume",
+                            ["feature-state", "brake-light-emission"],
+                            "lights-brakes_reverse_volume",
+                            ["feature-state", "brake-light-emission"],
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "id": "ego-car-labels",
+                    "type": "symbol",
+                    "source": "ego-car-labels",
+                    "layout": {
+                        "text-field": ["get", "name"],
+                        "text-font": [
+                            "Open Sans Semibold",
+                            "Arial Unicode MS Bold"
+                        ],
+                        "text-size": 16,
+                        "text-allow-overlap": true,
+                        "text-anchor": "bottom",
+                        "text-offset": [0, -10]
+                    },
+                    "paint": {
+                        "text-color": "black",
+                        "text-halo-color": "white",
+                        "text-halo-width": 2
+                    }
+                }
+            ]
+        };
+
+
+        var map = window.map = new mapboxgl.Map({
+            container: 'map',
+            devtools: true,
+            projection: 'globe',
+            style
+        });
+
+        const egoCarParams = {
+            doorsFrontLeft: 0.5,
+            doorsFrontRight: 0,
+            trunk: 0,
+            hood: 0,
+            brakeLights: 0,
+            color: { r: 255, g: 255, b: 255, a: 1 }
+        };
+
+        function mix(t, a, b) {
+            return b * t - a * (t - 1);
+        }
+
+        function updateModelState() {
+            const doorOpeningDegMax = 80;
+
+            // Method 1: Update feature state
+            const egoCarFeatureState =
+            {
+                "vehicle-color": `rgba(${egoCarParams.color.r}, ${egoCarParams.color.g}, ${egoCarParams.color.b}, 1)`,
+                "brake-light-color": "rgba(225, 0, 0, 1)",
+                "brake-light-emission": egoCarParams.brakeLights,
+                "doors-front-left": [0.0, mix(egoCarParams.doorsFrontLeft, 0, -doorOpeningDegMax), 0.0],
+                "doors-front-right": [0.0, mix(egoCarParams.doorsFrontRight, 0, doorOpeningDegMax), 0.0],
+                "hood": [mix(egoCarParams.hood, 0, 45), 0.0, 0.0],
+                "trunk": [mix(egoCarParams.trunk, 0, -60), 0.0, 0.0]
+            };
+            map.setFeatureState({ source: '3d-model-source', sourceLayer: '', id: 'ego-car' }, egoCarFeatureState);
+
+            // Method 2: Drive overrides by updating model source directly
+            const modelSource = map.getSource("3d-model-source-for-source-based-updates");
+            if (modelSource) {
+                const modelsSpec = {
+                    "ego-car": {
+                        "uri": "/test/integration/models/ego_car.glb",
+                        "position": [-74.0138, 40.7154],
+                        "orientation": [0, 0, 0],
+                        "materialOverrides": {
+                            "body": {
+                                "model-color": [egoCarParams.color.r / 255.0, egoCarParams.color.g / 255.0, egoCarParams.color.b / 255.0],
+                                "model-color-mix-intensity": 1.0
+                            },
+                            "lights_brakes": {
+                                "model-color": [0.88, 0.0, 0.0],
+                                "model-color-mix-intensity": egoCarParams.brakeLights,
+                                "model-emissive-strength": egoCarParams.brakeLights
+                            },
+                            "lights-brakes_reverse": {
+                                "model-color": [0.88, 0.0, 0.0],
+                                "model-color-mix-intensity": egoCarParams.brakeLights,
+                                "model-emissive-strength": egoCarParams.brakeLights
+                            },
+                            "lights_brakes_volume": {
+                                "model-color": [0.88, 0.0, 0.0],
+                                "model-color-mix-intensity": 1.0,
+                                "model-emissive-strength": 0.8,
+                                "model-opacity": egoCarParams.brakeLights
+                            },
+                            "lights-brakes_reverse_volume": {
+                                "model-color": [0.88, 0.0, 0.0],
+                                "model-color-mix-intensity": 1.0,
+                                "model-emissive-strength": 0.8,
+                                "model-opacity": egoCarParams.brakeLights
+                            }
+                        },
+                        "nodeOverrides": {
+                            "doors_front-left": {
+                                "orientation": [0.0, mix(egoCarParams.doorsFrontLeft, 0, -doorOpeningDegMax), 0.0]
+                            },
+                            "doors_front-right": {
+                                "orientation": [0.0, mix(egoCarParams.doorsFrontRight, 0, doorOpeningDegMax), 0.0]
+                            },
+                            "hood": {
+                                "orientation": [mix(egoCarParams.hood, 0, 45), 0.0, 0.0]
+                            },
+                            "trunk": {
+                                "orientation": [mix(egoCarParams.trunk, 0, -60), 0.0, 0.0]
+                            }
+                        }
+                    }
+                };
+
+                modelSource.setModels(modelsSpec);
+            }
+        }
+
+
+        // Setup UI for parameters
+        {
+            const dbgTrackedParams = map._tp;
+            const scope = ["Model State"];
+            const scopeDoors = [...scope, "Doors"];
+            const scopeLights = [...scope, "Lights"];
+
+            dbgTrackedParams.registerParameter(egoCarParams, scope, "color", { label: "Vehicle Color", type: 'float', picker: 'inline' }, () => {
+                updateModelState();
+            });
+            dbgTrackedParams.registerParameter(egoCarParams, scope, "trunk", { label: "Trunk", min: 0, max: 1.0 }, () => {
+                updateModelState();
+            });
+
+            dbgTrackedParams.registerParameter(egoCarParams, scope, "hood", { label: "Hood", min: 0, max: 1.0 }, () => {
+                updateModelState();
+            });
+
+            dbgTrackedParams.registerParameter(egoCarParams, scopeDoors, "doorsFrontLeft", { label: "Front Left", min: 0, max: 1.0 }, () => {
+                updateModelState();
+            });
+            dbgTrackedParams.registerParameter(egoCarParams, scopeDoors, "doorsFrontRight", { label: "Front Right", min: 0, max: 1.0 }, () => {
+                updateModelState();
+            });
+
+            dbgTrackedParams.registerParameter(egoCarParams, scopeLights, "brakeLights", { label: "Brake", min: 0, max: 1.0 }, () => {
+                updateModelState();
+            });
+        }
+
+        console.time('load');
+
+
+        map.on('load', () => {
+
+            updateModelState();
+
+            console.timeEnd('load');
+        });
+
+    </script>
+</body>
+
+</html>
