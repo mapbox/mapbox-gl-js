@@ -92,6 +92,11 @@ uniform highp vec2 u_depth_range_unpack;
 bool isOccluded() {
     highp vec2 coord = gl_FragCoord.xy * u_inv_depth_size;
 
+    #ifdef FLIP_Y
+        coord.y = 1.0 - coord.y;
+    #endif
+
+
     #ifdef DEPTH_D24
         highp float depth = unpack_depth(texture(u_depthTexture, coord).r);
     #else

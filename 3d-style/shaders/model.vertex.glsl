@@ -149,7 +149,14 @@ void main() {
 
 #ifdef TERRAIN_FRAGMENT_OCCLUSION
     v_depth = gl_Position.z / gl_Position.w;
+
+    #ifdef CLIP_ZERO_TO_ONE
+        v_depth = -1.0 + 2.0 * v_depth; 
+    #endif
+
 #endif
+
+
 
 #ifdef HAS_ATTRIBUTE_a_normal_3f
 #ifdef MODEL_POSITION_ON_GPU
