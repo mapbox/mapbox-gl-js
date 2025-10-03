@@ -25,6 +25,7 @@ import {evaluateSizeForFeature, evaluateSizeForZoom, type InterpolatedSize} from
 import EXTENT from '../style-spec/data/extent';
 import {Texture3D} from '../render/texture';
 import TextureSlots from '../../3d-style/render/texture_slots';
+import {Elevation} from '../terrain/elevation';
 
 import type Tile from '../source/tile';
 import type Transform from '../geo/transform';
@@ -215,8 +216,10 @@ function updateVariableAnchorsForBucket(bucket: SymbolBucket, rotateWithMap: boo
 
         } else {
             let dx = 0, dy = 0, dz = 0;
-            if (elevation) {
-                const h = elevation ? elevation.getAtTileOffset(coord, tileAnchorX, tileAnchorY) : 0.0;
+            const renderElevatedRoads = bucket.elevationType === 'road';
+            if (elevation || renderElevatedRoads) {
+                const elevationFeature = renderElevatedRoads ? bucket.getElevationFeatureForText(s) : null;
+                const h = Elevation.getAtTileOffset(coord, new Point(tileAnchorX, tileAnchorY), elevation, elevationFeature);
                 const [ux, uy, uz] = projection.upVector(coord.canonical, tileAnchorX, tileAnchorY);
                 dx = h * ux * metersToTile;
                 dy = h * uy * metersToTile;
@@ -516,8 +519,7 @@ function drawLayerSymbols(
             // Unpitched point labels need to have their rotation applied after projection
 
             if (alongLine && bucket.icon) {
-                const elevation = tr.elevation;
-                const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, bucket.getProjection()) : null;
+                const getElevation = Elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, bucket.getProjection());
                 const labelPlaneMatrixPlacement = symbolProjection.getLabelPlaneMatrixForPlacement(tileMatrix, tile.tileID.canonical, iconPitchWithMap, iconRotateWithMap, tr, bucket.getProjection(), s);
                 const iconSizeScaleRange = layer.layout.get('icon-size-scale-range');
                 const iconScaleFactor = clamp(painter.scaleFactor, iconSizeScaleRange[0], iconSizeScaleRange[1]);
@@ -640,8 +642,8 @@ function drawLayerSymbols(
             const labelPlaneMatrixInv = painter.terrain && textPitchWithMap && alongLine ? mat4.invert(mat4.create(), labelPlaneMatrixRendering) : identityMat4;
 
             if (alongLine && bucket.text) {
-                const elevation = tr.elevation;
-                const getElevation = elevation ? elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, bucket.getProjection()) : null;
+                const getElevation = Elevation.getAtTileOffsetFunc(coord, tr.center.lat, tr.worldSize, bucket.getProjection());
+
                 const labelPlaneMatrixPlacement = symbolProjection.getLabelPlaneMatrixForPlacement(tileMatrix, tile.tileID.canonical, textPitchWithMap, textRotateWithMap, tr, bucket.getProjection(), s);
 
                 symbolProjection.updateLineLabels(bucket, tileMatrix, painter, true, labelPlaneMatrixPlacement, glCoordMatrix, textPitchWithMap, textKeepUpright, getElevation, coord, textScaleFactor);

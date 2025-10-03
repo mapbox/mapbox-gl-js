@@ -770,6 +770,7 @@ function addTextVertices(bucket: SymbolBucket,
                          sizes: Sizes,
                          availableImages: ImageId[],
                          canonical: CanonicalTileID,
+                         symbolInstanceIndex: number,
                          brightness?: number | null) {
     const glyphQuads = getGlyphQuads(tileAnchor, shapedText, textOffset,
                             layer, textAlongLine, feature, imageMap, bucket.allowVerticalPlacement);
@@ -810,7 +811,8 @@ function addTextVertices(bucket: SymbolBucket,
         availableImages,
         canonical,
         brightness,
-        false);
+        false,
+        symbolInstanceIndex);
 
     // The placedSymbolArray is used at render time in drawTileSymbols
     // These indices allow access to the array at collision detection time
@@ -1039,7 +1041,8 @@ function addSymbol(bucket: SymbolBucket,
             availableImages,
             canonical,
             brightness,
-            hasAnySecondaryIcon);
+            hasAnySecondaryIcon,
+            bucket.symbolInstances.length);
 
         placedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
 
@@ -1064,7 +1067,8 @@ function addSymbol(bucket: SymbolBucket,
                 availableImages,
                 canonical,
                 brightness,
-                hasAnySecondaryIcon);
+                hasAnySecondaryIcon,
+                bucket.symbolInstances.length);
 
             verticalPlacedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
         }
@@ -1092,7 +1096,7 @@ function addSymbol(bucket: SymbolBucket,
             bucket, globe, anchor, shaping, imageMap, layer, textAlongLine, feature, textOffset, lineArray,
             shapedTextOrientations.vertical ? WritingMode.horizontal : WritingMode.horizontalOnly,
             singleLine ? keys(shapedTextOrientations.horizontal) : [justification],
-            placedTextSymbolIndices, placedIconSymbolIndex, sizes, availableImages, canonical, brightness);
+            placedTextSymbolIndices, placedIconSymbolIndex, sizes, availableImages, canonical, bucket.symbolInstances.length, brightness);
 
         if (singleLine) {
             break;
@@ -1103,7 +1107,7 @@ function addSymbol(bucket: SymbolBucket,
         numVerticalGlyphVertices += addTextVertices(
             bucket, globe, anchor, shapedTextOrientations.vertical, imageMap, layer, textAlongLine, feature,
             textOffset, lineArray, WritingMode.vertical, ['vertical'], placedTextSymbolIndices,
-            verticalPlacedIconSymbolIndex, sizes, availableImages, canonical, brightness);
+            verticalPlacedIconSymbolIndex, sizes, availableImages, canonical, bucket.symbolInstances.length, brightness);
     }
 
     // Check if runtime collision circles should be used for any of the collision features.

@@ -13,6 +13,7 @@ import * as projection from './projection';
 import {getAnchorAlignment, WritingMode} from './shaping';
 import {evaluateVariableOffset, getAnchorJustification} from './symbol_layout';
 import {evaluateSizeForFeature, evaluateSizeForZoom} from './symbol_size';
+import {Elevation} from '../terrain/elevation';
 
 import type {ReplacementSource} from '../../3d-style/source/replacement_source';
 import type {CollisionBoxArray, CollisionVertexArray, SymbolInstance} from '../data/array_types';
@@ -614,11 +615,13 @@ export class Placement {
                 verticalTextFeatureIndex = collisionArrays.verticalTextFeatureIndex;
             }
 
+            const elevationFeature = bucket.elevationFeatures ? bucket.elevationFeatures[symbolInstance.elevationFeatureIndex] : undefined;
+
             const updateBoxData = (box: SingleCollisionBox) => {
                 box.tileID = this.retainedQueryData[bucket.bucketInstanceId].tileID;
                 const elevation = this.transform.elevation;
 
-                box.elevation = (elevationFromSea ? symbolZOffsetValue : symbolZOffsetValue + (elevation ? elevation.getAtTileOffset(box.tileID, box.tileAnchorX, box.tileAnchorY) : 0));
+                box.elevation = (elevationFromSea ? symbolZOffsetValue : symbolZOffsetValue + (Elevation.getAtTileOffset(box.tileID, new Point(box.tileAnchorX, box.tileAnchorY), elevation, elevationFeature)));
                 box.elevation += symbolInstance.zOffset;
             };
 
@@ -815,6 +818,7 @@ export class Placement {
                         bucket,
                         textAllowOverlap,
                         placedSymbol,
+                        placedSymbolIndex,
                         bucket.lineVertexArray,
                         bucket.glyphOffsetArray,
                         fontSize,

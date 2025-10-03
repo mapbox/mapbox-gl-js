@@ -1,0 +1,193 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "mapMode": "static",
+            "collisionDebug": true,
+            "operations": [
+                ["wait"],
+                ["waitFrameReady", 30]
+            ],
+            "allowed": 0.00025,
+            "spriteFormat": "raster"
+        }
+    },
+    "center": [
+        11.596549,
+        48.173775
+    ],
+    "zoom": 18.75,
+    "pitch": 58.5,
+    "bearing": 58.9,
+    "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+    "sources": {
+        "hd-roads": {
+            "type": "vector",
+            "tileSize": 512,
+            "maxzoom": 18,
+            "tiles": [
+                "local://tiles/3d-intersections-hd-labels/{z}-{x}-{y}.mvt"
+            ]
+        },
+
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{
+                  "type": "Feature",
+                  "properties": {
+					"3d_elevation_id":3474545696571393
+				  },
+                    "geometry": {
+                      "type": "MultiPoint",
+                      "coordinates": [ 
+                        [11.5406, 48.1763]
+                    ]
+                  }
+                }]
+              }
+          }
+    },
+    "sprite": "local://sprites/3d_intersections",
+    "lights": [
+        {
+            "id": "ambient",
+            "type": "ambient",
+            "properties": {
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.8
+            }
+        },
+        {
+            "id": "directional",
+            "type": "directional",
+            "properties": {
+                "direction": [
+                    "literal",
+                    [
+                        180,
+                        20
+                    ]
+                ],
+                "color": "hsl(0, 0%, 100%)",
+                "intensity": 0.2
+            }
+        }
+    ],
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "rgb(234, 243, 240)"
+            }
+        },
+        {
+            "id": "road-base",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "road"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "fill-elevation-reference": "hd-road-base"
+            },
+            "paint": {
+                "fill-color": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    16,
+                    "hsl(212, 25%, 80%)",
+                    18,
+                    "hsl(212, 25%, 71%)"
+                ],
+                "fill-opacity": 0
+            }
+        },
+        {
+            "id": "road-base-bridge",
+            "type": "fill",
+            "source": "hd-roads",
+            "source-layer": "hd_road_polygon",
+            "filter": [
+                "all",
+                [
+                    "match",
+                    [
+                        "get",
+                        "class"
+                    ],
+                    [
+                        "bridge"
+                    ],
+                    true,
+                    false
+                ]
+            ],
+            "layout": {
+                "fill-elevation-reference": "hd-road-base"
+            },
+            "paint": {
+                "fill-color": [
+                    "interpolate",
+                    [
+                        "linear"
+                    ],
+                    [
+                        "zoom"
+                    ],
+                    16,
+                    "hsl(212, 25%, 80%)",
+                    18,
+                    "hsl(212, 25%, 71%)"
+                ],
+                "fill-opacity": 0
+            }
+        },
+        {
+            "id": "hd-road-labels",
+            "type": "symbol",
+            "source": "hd-roads",
+            "source-layer": "hd_road_centerlines",
+            "minzoom": 14,
+            "layout": {
+              "text-size": 18,
+              "symbol-elevation-reference": "hd-road-markup",
+              "text-max-angle": 30,
+              "text-transform": "uppercase",
+              "symbol-placement": "line-center",
+              "text-padding": 15,
+              "text-pitch-alignment": "viewport",
+              "text-field": ["to-string", ["get", "name"]],
+              "text-letter-spacing": 0.15,
+              "text-font": [
+                "Open Sans Semibold",
+                "Arial Unicode MS Bold"
+              ]
+            },
+            "paint": {
+              "text-color": "hsl(0,  0%, 5%)",
+              "text-occlusion-opacity": 0.5
+            }
+        }
+    ]
+}

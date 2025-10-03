@@ -81,8 +81,8 @@ import type {LUT} from '../../util/lut';
 import type {SpritePositions} from '../../util/image';
 import type {TypedStyleLayer} from '../../style/style_layer/typed_style_layer';
 import type {ElevationType} from '../../../3d-style/elevation/elevation_constants';
-import type {ElevationFeature} from '../../../3d-style/elevation/elevation_feature';
 import type {ImageId} from '../../style-spec/expression/types/image_id';
+import type {ElevationFeature} from '../../../3d-style/elevation/elevation_feature';
 
 export type SingleCollisionBox = {
     x1: number;
@@ -246,6 +246,8 @@ export class SymbolBuffers {
 
     placedSymbolArray: PlacedSymbolArray;
 
+    symbolInstanceIndices: number[];
+
     constructor(programConfigurations: ProgramConfigurationSet<SymbolStyleLayer>) {
         this.layoutVertexArray = new SymbolLayoutArray();
         this.indexArray = new TriangleIndexArray();
@@ -258,6 +260,7 @@ export class SymbolBuffers {
         this.globeExtVertexArray = new SymbolGlobeExtArray();
         this.zOffsetVertexArray = new ZOffsetVertexArray();
         this.orientationVertexArray = new SymbolOrientationArray();
+        this.symbolInstanceIndices = [];
     }
 
     isEmpty(): boolean {
@@ -835,6 +838,10 @@ class SymbolBucket implements Bucket {
                     symbolInstance.zOffset = newZOffset;
                 }
 
+                if (newZOffset !== 0) {
+                    this.hasAnyZOffset = true;
+                }
+
                 const slopeNormal = elevationFeature.computeSlopeNormal(anchor, metersToTile);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const rotation = quat.rotationTo(quat.create(), vec3.fromValues(0, 0, 1), slopeNormal);
@@ -1021,7 +1028,8 @@ class SymbolBucket implements Bucket {
                availableImages: ImageId[],
                canonical: CanonicalTileID,
                brightness: number | null | undefined,
-               hasAnySecondaryIcon: boolean) {
+               hasAnySecondaryIcon: boolean,
+               symbolInstanceIndex: number) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
         const globeExtVertexArray = arrays.globeExtVertexArray;
@@ -1097,6 +1105,8 @@ class SymbolBucket implements Bucket {
             // flipState is unknown initially; will be updated to flipRequired(1)/flipNotRequired(2) during line label reprojection
             0
         );
+
+        arrays.symbolInstanceIndices.push(symbolInstanceIndex);
     }
 
     _commitLayoutVertex(array: StructArray, boxTileAnchorX: number, boxTileAnchorY: number, boxTileAnchorZ: number, tileAnchorX: number, tileAnchorY: number, extrude: Point) {
@@ -1435,6 +1445,22 @@ class SymbolBucket implements Bucket {
 
         if (this.text.indexBuffer) this.text.indexBuffer.updateData(this.text.indexArray);
         if (this.icon.indexBuffer) this.icon.indexBuffer.updateData(this.icon.indexArray);
+    }
+
+    getElevationFeatureForText(placedSymbolIdx: number): ElevationFeature | undefined {
+        const placedSymbols = this.text.placedSymbolArray;
+        assert(this.text.symbolInstanceIndices.length === placedSymbols.length);
+        const symbolInstanceIndex = this.text.symbolInstanceIndices[placedSymbolIdx];
+        const symbolInstance = this.symbolInstances.get(symbolInstanceIndex);
+        assert(symbolInstance);
+        const elevationFeatureIndex = symbolInstance.elevationFeatureIndex;
+        assert(elevationFeatureIndex === 0xffff || elevationFeatureIndex < this.elevationFeatures.length);
+
+        let elevationFeature: ElevationFeature | undefined;
+        if (this.elevationFeatures && elevationFeatureIndex < this.elevationFeatures.length) {
+            elevationFeature = this.elevationFeatures[elevationFeatureIndex];
+        }
+        return elevationFeature;
     }
 }
 

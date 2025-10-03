@@ -4,12 +4,14 @@ import EXTENT from '../style-spec/data/extent';
 import {vec3} from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
 import {OverscaledTileID} from '../source/tile_id';
+import assert from 'assert';
 
 import type DEMData from '../data/dem_data';
 import type {vec4} from 'gl-matrix';
 import type SourceCache from '../source/source_cache';
 import type Projection from '../geo/projection/projection';
 import type Tile from '../source/tile';
+import type {ElevationFeature} from '../../3d-style/elevation/elevation_feature';
 /**
  * Options common to {@link Map#queryTerrainElevation} and {@link Map#unproject3d}, used to control how elevation
  * data is returned.
@@ -110,26 +112,33 @@ export class Elevation {
     }
 
     /*
-     * x and y are offset within tile, in 0 .. EXTENT coordinate space.
+     * point.x and point.y are offset within tile, in 0 .. EXTENT coordinate space.
      */
-    getAtTileOffset(tileID: OverscaledTileID, x: number, y: number): number {
+    static getAtTileOffset(tileID: OverscaledTileID, point: Point, elevation: Elevation | null, elevationFeature: ElevationFeature | null): number {
         const tilesAtTileZoom = 1 << tileID.canonical.z;
-        return this.getAtPointOrZero(new MercatorCoordinate(
-            tileID.wrap + (tileID.canonical.x + x / EXTENT) / tilesAtTileZoom,
-            (tileID.canonical.y + y / EXTENT) / tilesAtTileZoom));
+        if (elevationFeature) {
+            return elevationFeature.pointElevation(point);
+        } else if (elevation) {
+            return elevation.getAtPointOrZero(new MercatorCoordinate(
+                tileID.wrap + (tileID.canonical.x + point.x / EXTENT) / tilesAtTileZoom,
+                (tileID.canonical.y + point.y / EXTENT) / tilesAtTileZoom));
+        } else {
+            return 0.0;
+        }
     }
 
-    getAtTileOffsetFunc(
+    static getAtTileOffsetFunc(
         tileID: OverscaledTileID,
         lat: number,
         worldSize: number,
         projection: Projection,
-    ): (arg1: Point) => [number, number, number] {
-        return ((p: Point) => {
-            const elevation = this.getAtTileOffset(tileID, p.x, p.y);
+    ): (arg1: Point, arg2: Elevation, arg3?: ElevationFeature) => [number, number, number] {
+        return ((p: Point, elevation: Elevation, elevationFeature?: ElevationFeature) => {
+            assert(p);
+            const z = this.getAtTileOffset(tileID, p, elevation, elevationFeature);
             const upVector = projection.upVector(tileID.canonical, p.x, p.y);
             const upVectorScale = projection.upVectorScale(tileID.canonical, lat, worldSize).metersToTile;
-            vec3.scale(upVector, upVector, elevation * upVectorScale);
+            vec3.scale(upVector, upVector, z * upVectorScale);
             return upVector;
         });
     }

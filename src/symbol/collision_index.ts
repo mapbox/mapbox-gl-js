@@ -12,6 +12,7 @@ import {clipLines} from '../util/line_clipping';
 import EXTENT from '../style-spec/data/extent';
 import {number as mix} from '../style-spec/util/interpolate';
 import {globeToMercatorTransition} from '../geo/projection/globe_util';
+import {Elevation} from '../terrain/elevation';
 
 import type {OverscaledTileID} from '../source/tile_id';
 import type {vec3} from 'gl-matrix';
@@ -187,6 +188,7 @@ class CollisionIndex {
         bucket: SymbolBucket,
         allowOverlap: boolean,
         symbol: PlacedSymbol,
+        symbolIndex: number,
         lineVertexArray: SymbolLineVertexArray,
         glyphOffsetArray: GlyphOffsetArray,
         fontSize: number,
@@ -203,12 +205,25 @@ class CollisionIndex {
         const placedCollisionCircles = [];
         const elevation = this.transform.elevation;
         const projection = bucket.getProjection();
-        const getElevation = elevation ? elevation.getAtTileOffsetFunc(tileID, this.transform.center.lat, this.transform.worldSize, projection) : null;
+        const renderElevatedRoads = bucket.elevationType === 'road';
+        const hasElevation = !!elevation || renderElevatedRoads;
+
+        const getElevation = Elevation.getAtTileOffsetFunc(tileID, this.transform.center.lat, this.transform.worldSize, projection);
+
+        const tileAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
 
         const tileUnitAnchorPoint = new Point(symbol.tileAnchorX, symbol.tileAnchorY);
         let {x: anchorX, y: anchorY, z: anchorZ} = projection.projectTilePoint(tileUnitAnchorPoint.x, tileUnitAnchorPoint.y, tileID.canonical);
-        if (getElevation) {
-            const [dx, dy, dz] = getElevation(tileUnitAnchorPoint);
+        let elevationParams: symbolProjection.ElevationParams | null = null;
+        if (hasElevation) {
+            const elevationFeature = renderElevatedRoads ? bucket.getElevationFeatureForText(symbolIndex) : null;
+            elevationParams = {
+                getElevation,
+                elevation,
+                elevationFeature
+            };
+
+            const [dx, dy, dz] = getElevation(tileAnchorPoint, elevation, elevationFeature);
             anchorX += dx;
             anchorY += dy;
             anchorZ += dz;
@@ -234,7 +249,7 @@ class CollisionIndex {
             glyphOffsetArray,
             lineOffsetX,
             lineOffsetY,
-            /*flip*/ false,
+            (renderElevatedRoads && symbol.flipState === 1), // FlipState.flipRequired
             // @ts-expect-error - TS2345 - Argument of type 'vec4' is not assignable to parameter of type 'vec3'.
             labelPlaneAnchorPoint,
             tileUnitAnchorPoint,
@@ -242,8 +257,8 @@ class CollisionIndex {
             lineVertexArray,
             labelPlaneMatrix,
             projectionCache,
-            elevation && !pitchWithMap ? getElevation : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
-            pitchWithMap && !!elevation,
+            (hasElevation && !pitchWithMap) ? elevationParams : null, // pitchWithMap: no need to sample elevation as it has no effect when projecting using scale/rotate to tile space labelPlaneMatrix.
+            (pitchWithMap && hasElevation),
             projection,
             tileID,
             pitchWithMap,
@@ -280,8 +295,11 @@ class CollisionIndex {
             if (labelToScreenMatrix) {
                 assert(pitchWithMap);
                 projectedPath = projectedPath.map(([x, y, z]: [number, number, number], index) => {
-                    if (getElevation && !isGlobe) {
-                        z = getElevation(index < firstLen - 1 ? first.tilePath[firstLen - 1 - index] : last.tilePath[index - firstLen + 2])[2];
+                    if (hasElevation && !isGlobe) {
+                        const point = index < firstLen - 1 ? first.tilePath[firstLen - 1 - index] : last.tilePath[index - firstLen + 2];
+                        assert(point);
+                        assert(elevationParams);
+                        z = getElevation(point, elevation, elevationParams.elevationFeature)[2];
                     }
                     return symbolProjection.project(x, y, z, labelToScreenMatrix);
                 });

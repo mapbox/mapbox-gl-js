@@ -146,7 +146,8 @@ function computeDepthBias(tr: Transform): number {
 }
 
 export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<OverscaledTileID>, pass: DepthPrePass) {
-    if (!layer.layout || layer.layout.get('fill-elevation-reference') === 'none') return;
+    if (!layer.layout || layer.layout.get('fill-elevation-reference') === 'none' || layer.paint.get('fill-opacity').constantOr(1) === 0) return;
+
     const gl = painter.context.gl;
 
     assert(!(painter.terrain && painter.terrain.enabled));
@@ -229,9 +230,7 @@ export function drawDepthPrepass(painter: Painter, sourceCache: SourceCache, lay
 }
 
 export function drawGroundShadowMask(painter: Painter, sourceCache: SourceCache, layer: FillStyleLayer, coords: Array<OverscaledTileID>) {
-    if (!layer.layout || layer.layout.get('fill-elevation-reference') === 'none') {
-        return;
-    }
+    if (!layer.layout || layer.layout.get('fill-elevation-reference') === 'none' || layer.paint.get('fill-opacity').constantOr(1) === 0) return;
 
     assert(!(painter.terrain && painter.terrain.enabled));
 
