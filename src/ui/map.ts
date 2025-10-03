@@ -4207,6 +4207,10 @@ export class Map extends Camera {
                 this.on('move', () => {
                     this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
                 });
+
+                this.on('idle', () => {
+                    this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
+                });
             });
         }
     }

@@ -84,7 +84,8 @@ test('VectorTileWorkerSource#reloadTile reloads a previously-loaded tile', () =>
         '0': {
             status: 'done',
             vectorTile: {},
-            parse
+            parse,
+            updateParameters: () => {}
         }
     };
 
@@ -105,7 +106,8 @@ test('VectorTileWorkerSource#reloadTile queues a reload when parsing is in progr
         '0': {
             status: 'done',
             vectorTile: {},
-            parse
+            parse,
+            updateParameters: () => {}
         }
     };
 
@@ -139,7 +141,8 @@ test('VectorTileWorkerSource#reloadTile handles multiple pending reloads', () =>
         '0': {
             status: 'done',
             vectorTile: {},
-            parse
+            parse,
+            updateParameters: () => {}
         }
     };
 
@@ -187,7 +190,8 @@ test('VectorTileWorkerSource#reloadTile does not reparse tiles with no vectorTil
     source.loaded = {
         '0': {
             status: 'done',
-            parse
+            parse,
+            updateParameters: () => {}
         }
     };
 

@@ -126,7 +126,6 @@ import type {StyleModelMap} from './style_mode';
 import type {TypedStyleLayer} from './style_layer/typed_style_layer';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {RasterQueryParameters, RasterQueryResult} from '../source/raster_array_tile_source';
-import type {IndoorVectorTileOptions} from './indoor_data';
 
 export type QueryRenderedFeaturesParams = {
     layers?: string[];
@@ -233,7 +232,6 @@ export type StyleOptions = {
         [key: string]: ConfigSpecification;
     };
     configDependentLayers?: Set<string>;
-    activeFloors?: Set<string> | null;
     indoorDependentLayers?: Set<string>;
 };
 
@@ -304,7 +302,6 @@ class Style extends Evented<MapEvents> {
     resolvedImports: Set<string>;
 
     options: ConfigOptions;
-    activeFloors: Set<string> | null;
 
     // Merged layers and sources
     _mergedOrder: Array<string>;
@@ -377,7 +374,6 @@ class Style extends Evented<MapEvents> {
 
         // Empty string indicates the root Style scope.
         this.scope = options.scope || '';
-        this.activeFloors = options.activeFloors;
 
         this.globalId = null;
 
@@ -744,7 +740,7 @@ class Style extends Evented<MapEvents> {
         this.mergeAll();
         this._updateMapProjection();
         this.updateConfigDependencies();
-        this._updateIndoorDependantLayers();
+        this._updateLayers(this._indoorDependentLayers);
         this.map._triggerCameraUpdate(this.camera);
 
         this.dispatcher.broadcast('setLayers', {
@@ -2296,15 +2292,6 @@ class Style extends Evented<MapEvents> {
         return !!this.ambientLight && !!this.directionalLight;
     }
 
-    getIndoorVectorTileOptions(): IndoorVectorTileOptions | null {
-        // Get indoor sourceId and sourceLayers from style instead of hardcode
-        return {
-            isEnabled: false,
-            sourceLayers: new Set(['indoor_structure_metadata', 'indoor_floor_metadata']),
-            activeFloors: this.activeFloors
-        };
-    }
-
     /**
      * Returns nested fragment style associated with the provided fragmentId.
      * If no fragmentId is provided, returns itself.
@@ -2416,9 +2403,12 @@ class Style extends Evented<MapEvents> {
         return expression ? expression.serialize() : null;
     }
 
-    _setActiveFloors(activeFloors: Set<string> | null) {
-        this.activeFloors = activeFloors;
-        this._updateIndoorDependantLayers();
+    setIndoorData(mapId: string, params: ActorMessages['setIndoorData']['params']) {
+        this.map.indoor.setIndoorData(params);
+    }
+
+    updateIndoorDependentLayers() {
+        this._updateLayers(this._indoorDependentLayers);
         this.map._styleDirty = true;
         this.map.triggerRepaint();
     }
@@ -2561,10 +2551,6 @@ class Style extends Evented<MapEvents> {
                 this._changes.setDirty();
             }
         }
-    }
-
-    _updateIndoorDependantLayers() {
-        this._updateLayers(this._indoorDependentLayers);
     }
 
     updateConfigDependencies(configKey?: string) {
@@ -4474,10 +4460,6 @@ class Style extends Evented<MapEvents> {
             // request them during Style#updateImageProviders
             this.fire(new Event('data', {dataType: 'style'}));
         }
-    }
-
-    setIndoorData(mapId: string, params: ActorMessages['setIndoorData']['params']) {
-        this.map.indoor.setIndoorData(params);
     }
 
     rasterizeImages(mapId: string, params: ActorMessages['rasterizeImages']['params'], callback: ActorMessages['rasterizeImages']['callback']) {

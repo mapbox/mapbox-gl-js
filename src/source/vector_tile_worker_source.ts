@@ -3,7 +3,6 @@ import Protobuf from 'pbf';
 import WorkerTile from './worker_tile';
 import {getPerformanceMeasurement} from '../util/performance';
 import {Evented} from '../util/evented';
-import tileTransform from '../geo/projection/tile_transform';
 import {loadVectorTile, DedupedRequest} from './load_vector_tile';
 import {getExpiryDataFromHeaders} from '../util/util';
 
@@ -152,15 +151,7 @@ class VectorTileWorkerSource extends Evented implements WorkerSource {
 
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
-            workerTile.scaleFactor = params.scaleFactor;
-            workerTile.showCollisionBoxes = params.showCollisionBoxes;
-            workerTile.projection = params.projection;
-            workerTile.brightness = params.brightness;
-            workerTile.tileTransform = tileTransform(params.tileID.canonical, params.projection);
-            workerTile.extraShadowCaster = params.extraShadowCaster;
-            workerTile.lut = params.lut;
-            workerTile.worldview = params.worldview;
-            workerTile.indoor = params.indoor;
+            workerTile.updateParameters(params);
             const done = (err?: Error | null, data?: WorkerSourceVectorTileResult | null) => {
                 const reloadCallback = workerTile.reloadCallback;
                 if (reloadCallback) {

@@ -44,7 +44,7 @@ import type {RasterizedImageMap, ImageRasterizationTasks} from '../render/image_
 import type {StringifiedImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';
-import type {IndoorVectorTileOptions} from '../style/indoor_data';
+import type {IndoorTileOptions} from '../style/indoor_data';
 
 type RasterizationStatus = {iconsPending: boolean, patternsPending: boolean};
 class WorkerTile {
@@ -71,7 +71,7 @@ class WorkerTile {
     tileTransform: TileTransform;
     brightness: number;
     scaleFactor: number;
-    indoor: IndoorVectorTileOptions | null;
+    indoor: IndoorTileOptions | null;
 
     status: 'parsing' | 'done';
     data: VectorTile;
@@ -139,10 +139,8 @@ class WorkerTile {
             activeFloors: undefined
         };
 
-        if (this.indoor && this.indoor.isEnabled) {
-            const indoorData = parseIndoorData(data, this.indoor.sourceLayers);
-            options.activeFloors = this.indoor.activeFloors ? this.indoor.activeFloors : indoorData.defaultFloors;
-            actor.send('setIndoorData', indoorData);
+        if (this.indoor) {
+            options.activeFloors = parseIndoorData(data, this.indoor, actor);
         }
 
         const asyncBucketLoads: Promise<unknown>[] = [];
@@ -467,6 +465,18 @@ class WorkerTile {
         } else {
             prepareTile();
         }
+    }
+
+    updateParameters(params: WorkerSourceVectorTileRequest) {
+        this.scaleFactor = params.scaleFactor;
+        this.showCollisionBoxes = params.showCollisionBoxes;
+        this.projection = params.projection;
+        this.brightness = params.brightness;
+        this.tileTransform = tileTransform(params.tileID.canonical, params.projection);
+        this.extraShadowCaster = params.extraShadowCaster;
+        this.lut = params.lut;
+        this.worldview = params.worldview;
+        this.indoor = params.indoor;
     }
 
     rasterizeIfNeeded(actor: Actor, outputMap: StyleImageMap<StringifiedImageVariant> | undefined, tasks: ImageRasterizationTasks, callback: () => void) {

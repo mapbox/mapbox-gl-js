@@ -23,7 +23,7 @@ import type {RasterizedImageMap} from '../render/image_manager';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 import type {StyleModelMap} from '../style/style_mode';
-import type {IndoorVectorTileOptions} from '../style/indoor_data.js';
+import type {IndoorTileOptions} from '../style/indoor_data.js';
 
 /**
  * The parameters passed to the {@link MapWorker#getWorkerSource}.
@@ -73,7 +73,7 @@ export type WorkerSourceVectorTileRequest = WorkerSourceTileRequest & {
     tessellationStep?: number // test purpose only;
     worldview?: string | null;
     localizableLayerIds?: Set<string>;
-    indoor?: IndoorVectorTileOptions | null;
+    indoor?: IndoorTileOptions | null;
 };
 
 /**

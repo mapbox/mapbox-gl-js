@@ -1,118 +1,161 @@
 import {bindAll} from '../util/util';
 import {Event, Evented} from '../util/evented';
-import IndoorFloorSelectionState from './indoor_floor_selection_state';
-import IndoorFeaturesStorage from './indoor_features_storage';
 import LngLat from '../geo/lng_lat';
 
-import type {IndoorData, IndoorDataBuilding, IndoorEvents} from './indoor_data';
+import type {IndoorBuilding, IndoorData, IndoorEvents, IndoorState, IndoorTileOptions} from './indoor_data';
 import type Style from './style';
 import type {LngLatBounds} from '../geo/lng_lat';
 
 export default class IndoorManager extends Evented<IndoorEvents> {
     _style: Style;
-    _floorSelectionState: IndoorFloorSelectionState | null;
-    _featuresStorage: IndoorFeaturesStorage | null;
-    _indoorMinimumZoom: number = 16.0;
+    _selectedFloorId: string | null;
+    _closestBuildingId: string | null;
+    _buildings: Record<string, IndoorBuilding> | null;
+
+    _activeFloors: Set<string> | null;
+    _indoorState: IndoorState | null;
+    _showBuildingsOverview: boolean;
 
     constructor(style: Style) {
         super();
         this._style = style;
-        const featuresStorage = new IndoorFeaturesStorage();
-        this._featuresStorage = featuresStorage;
-        this._floorSelectionState = new IndoorFloorSelectionState(featuresStorage);
-
-        bindAll([
-            '_updateUI',
-        ], this);
+        this._buildings = {};
+        this._activeFloors = new Set();
+        this._indoorState = {selectedFloorId: null, lastActiveFloors: null};
+        bindAll(['_updateUI'], this);
     }
 
     destroy() {
-        this._floorSelectionState = null;
-        this._featuresStorage = null;
+        this._buildings = {};
+        this._activeFloors = new Set();
+        this._indoorState = null;
     }
 
     selectFloor(floorId: string | null) {
-        const hasChanges = this._floorSelectionState.setFloorId(floorId);
-        if (hasChanges) {
-            this._updateActiveFloors(true);
-            this._updateIndoorSelector();
+        if (floorId === this._selectedFloorId) {
+            return;
         }
+
+        this._selectedFloorId = floorId;
+        this._updateActiveFloors();
     }
 
     setShowBuildingsOverview(showBuildingsOverview: boolean) {
-        this._floorSelectionState.setShowBuildingsOverview(showBuildingsOverview);
-        this._updateActiveFloors(false);
+        this._showBuildingsOverview = showBuildingsOverview;
+        this._style.updateIndoorDependentLayers();
+    }
+
+    /// Fan in data sent from different tiles and sources and merge it into the one state
+    /// Both buildings and active floors updates are additive-only
+    setIndoorData(indoorData: IndoorData) {
+        for (const [id, building] of Object.entries(indoorData.buildings)) {
+            if (this._buildings[id]) {
+                for (const floorId of building.floorIds) {
+                    if (this._buildings[id].floors[floorId]) {
+                        continue;
+                    }
+                    this._buildings[id].floors[floorId] = building.floors[floorId];
+                }
+            } else {
+                this._buildings[id] = building;
+            }
+        }
+
+        for (const floorId of indoorData.activeFloors) {
+            this._activeFloors.add(floorId);
+        }
+
+        // Next step: Add debouncing to prevent excessive selector updates, though not visible
         this._updateIndoorSelector();
     }
 
-    setIndoorData(indoorData: IndoorData) {
-        if (indoorData.buildings.length > 0 || indoorData.floors.length > 0) {
-            this._floorSelectionState.setIndoorData(indoorData);
+    getIndoorTileOptions(sourceId: string, scope: string): IndoorTileOptions | null {
+        // Next step: Remove hardcoded sourceLayersId and sourceIds and make it dynamic based on style
+        if (sourceId === "indoor-source") {
+            const sourceLayers = ["indoor_structure_metadata", "indoor_floor_metadata"];
+            if (!sourceLayers || !this._indoorState) {
+                return null;
+            }
+
+            return {
+                sourceLayers: new Set(sourceLayers),
+                indoorState: this._indoorState
+            };
         }
+
+        return null;
     }
 
     _updateUI(zoom: number, mapCenter: LngLat, mapBounds: LngLatBounds) {
-        if (zoom < this._indoorMinimumZoom) {
-            this._clearIndoorData();
-            return;
-        }
-
-        const buildings = this._featuresStorage.getBuildings();
-        const closestBuildingId = findClosestBuildingId(buildings, mapCenter, mapBounds);
-        const hasChanges = this._floorSelectionState.setBuildingId(closestBuildingId);
-        if (hasChanges) {
+        const closestBuildingId = findClosestBuildingId(this._buildings, mapCenter, mapBounds, zoom);
+        if (closestBuildingId !== this._closestBuildingId) {
+            this._closestBuildingId = closestBuildingId;
             this._updateIndoorSelector();
         }
     }
 
-    _clearIndoorData() {
-        if (this._floorSelectionState.isEmpty()) {
+    _updateIndoorSelector() {
+        const buildings = this._buildings;
+        const closestBuildingId = this._closestBuildingId;
+        const closestBuilding = (closestBuildingId && buildings) ? buildings[closestBuildingId] : undefined;
+
+        if (!closestBuilding) {
+            this.fire(new Event('selector-update', {
+                selectedFloorId: null,
+                showBuildingsOverview: false,
+                floors: []
+            }));
             return;
         }
 
-        this._floorSelectionState.reset();
-        this._updateIndoorSelector();
-        this._style._setActiveFloors(null);
-    };
+        let buildingActiveFloorId: string | null = null;
+        for (const floorId of closestBuilding.floorIds) {
+            if (this._activeFloors && this._activeFloors.has(floorId)) {
+                buildingActiveFloorId = floorId;
+                break;
+            }
+        }
 
-    _updateIndoorSelector() {
-        const currentBuildingSelection = this._floorSelectionState.getCurrentBuildingSelection();
-        const floors = currentBuildingSelection.floors.map((floor) => ({
-            id: floor.id,
-            name: floor.name,
-            shortName: floor.zIndex.toString(),
-            levelOrder: floor.zIndex
-        }));
+        const floors = Array.from(closestBuilding.floorIds).map((floorId) => ({
+            id: floorId,
+            name: closestBuilding.floors[floorId].name,
+            zIndex: closestBuilding.floors[floorId].zIndex,
+        })).sort((a, b) => b.zIndex - a.zIndex);
 
-        this.fire(new Event('indoorupdate', {
-            selectedFloorId: currentBuildingSelection.selectedFloorId,
-            showBuildingsOverview: this._floorSelectionState.getShowBuildingsOverview(),
+        this.fire(new Event('selector-update', {
+            selectedFloorId: buildingActiveFloorId,
+            showBuildingsOverview: false,
             floors
         }));
     }
 
-    _updateActiveFloors(isExplicitSelection: boolean = false) {
-        if (this._floorSelectionState.getShowBuildingsOverview()) {
-            return;
-        }
-
-        const activeFloors = this._floorSelectionState.getActiveFloors(isExplicitSelection);
-        const activeFloorsIds = activeFloors.map(floor => floor.id) || [];
-        this._style._setActiveFloors(new Set(activeFloorsIds));
+    // Update previous state and pass it to tiles
+    // Resolve active floors to construct new set based on data from tiles
+    // Tiles will resolve individual subsets of activeFloors and send it in setIndoorData
+    _updateActiveFloors() {
+        const lastActiveFloors = this._activeFloors;
+        this._activeFloors = new Set();
+        this._indoorState = {selectedFloorId: this._selectedFloorId, lastActiveFloors};
+        this._style.updateIndoorDependentLayers();
     }
 }
 
-function findClosestBuildingId(buildings: Array<IndoorDataBuilding>, mapCenter: LngLat, mapBounds: LngLatBounds): string | null {
+function findClosestBuildingId(buildings: Record<string, IndoorBuilding>, mapCenter: LngLat, mapBounds: LngLatBounds, zoom: number): string | null {
+    const indoorMinimumZoom: number = 16.0;
     let closestBuildingId: string | null = null;
     let minDistance = Number.MAX_SAFE_INTEGER;
 
-    for (const building of buildings) {
+    if (zoom < indoorMinimumZoom) {
+        return null;
+    }
+
+    for (const [id, building] of Object.entries(buildings)) {
         const buildingCenter = building.center;
         if (buildingCenter) {
             const distance = mapCenter.distanceTo(LngLat.convert(buildingCenter));
             if (distance < minDistance && mapBounds.contains(buildingCenter)) {
                 minDistance = distance;
-                closestBuildingId = building.id;
+                closestBuildingId = id;
             }
         }
     }
