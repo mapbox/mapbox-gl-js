@@ -726,6 +726,12 @@ const style = {
         url: '',
         data: {
             version: 8,
+            indoor: {
+              "airports": {
+                "sourceId": "indoor-source",
+                "sourceLayers": ["indoor_structure_metadata", "indoor_floor_metadata"]
+              }
+            },
             sources: {
                 "indoor-source": {
                     "type": "vector",

@@ -306,6 +306,7 @@ class Style extends Evented<MapEvents> {
     // Merged layers and sources
     _mergedOrder: Array<string>;
     _mergedLayers: Record<string, TypedStyleLayer>;
+    _mergedIndoor: Record<string, Set<string>>;
     _mergedSlots: Array<string>;
     _mergedSourceCaches: Record<string, SourceCache>;
     _mergedOtherSourceCaches: Record<string, SourceCache>;
@@ -391,6 +392,7 @@ class Style extends Evented<MapEvents> {
         this._mergedOrder = [];
         this._drapedFirstOrder = [];
         this._mergedLayers = {};
+        this._mergedIndoor = {};
         this._mergedSourceCaches = {};
         this._mergedOtherSourceCaches = {};
         this._mergedSymbolSourceCaches = {};
@@ -1005,6 +1007,7 @@ class Style extends Evented<MapEvents> {
 
         this.mergeSources();
         this.mergeLayers();
+        this.mergeIndoor();
     }
 
     forEachFragmentStyle(fn: (style: Style) => void) {
@@ -1113,6 +1116,18 @@ class Style extends Evented<MapEvents> {
         this._mergedSourceCaches = mergedSourceCaches;
         this._mergedOtherSourceCaches = mergedOtherSourceCaches;
         this._mergedSymbolSourceCaches = mergedSymbolSourceCaches;
+    }
+
+    mergeIndoor() {
+        this.forEachFragmentStyle((style: Style) => {
+            if (style.stylesheet && style.stylesheet.indoor) {
+                for (const indoor of Object.values(style.stylesheet.indoor)) {
+                    const indoorSpec = indoor;
+                    const fqid = makeFQID(indoorSpec.sourceId, style.scope);
+                    this._mergedIndoor[fqid] = new Set(indoorSpec.sourceLayers || []);
+                }
+            }
+        });
     }
 
     mergeLayers() {
@@ -2401,6 +2416,15 @@ class Style extends Evented<MapEvents> {
         const expressions = fragmentStyle.options.get(fqid);
         const expression = expressions ? expressions.value || expressions.default : null;
         return expression ? expression.serialize() : null;
+    }
+
+    isIndoorEnabled(): boolean {
+        return Object.keys(this._mergedIndoor).length > 0;
+    }
+
+    getIndoorSourceLayers(sourceId: string, scope: string): Set<string> | null {
+        const fqid = makeFQID(sourceId, scope);
+        return this._mergedIndoor[fqid];
     }
 
     setIndoorData(mapId: string, params: ActorMessages['setIndoorData']['params']) {

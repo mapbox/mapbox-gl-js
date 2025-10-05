@@ -70,20 +70,15 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     }
 
     getIndoorTileOptions(sourceId: string, scope: string): IndoorTileOptions | null {
-        // Next step: Remove hardcoded sourceLayersId and sourceIds and make it dynamic based on style
-        if (sourceId === "indoor-source") {
-            const sourceLayers = ["indoor_structure_metadata", "indoor_floor_metadata"];
-            if (!sourceLayers || !this._indoorState) {
-                return null;
-            }
-
-            return {
-                sourceLayers: new Set(sourceLayers),
-                indoorState: this._indoorState
-            };
+        const sourceLayers = this._style.getIndoorSourceLayers(sourceId, scope);
+        if (!sourceLayers || !this._indoorState) {
+            return null;
         }
 
-        return null;
+        return {
+            sourceLayers,
+            indoorState: this._indoorState
+        };
     }
 
     _updateUI(zoom: number, mapCenter: LngLat, mapBounds: LngLatBounds) {

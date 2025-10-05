@@ -329,14 +329,18 @@ export type ImportSpecification = {
 };
 
 export type IndoorSpecification = {
+    [_: string]: IndoorSourceSpecification
+};
+
+export type IndoorSourceSpecification = {
     /**
      * @experimental This property is experimental and subject to change in future versions.
      */
-    "floorplanFeaturesetId"?: ExpressionSpecification,
+    "sourceId"?: string,
     /**
      * @experimental This property is experimental and subject to change in future versions.
      */
-    "buildingFeaturesetId"?: ExpressionSpecification
+    "sourceLayers"?: Array<string>
 };
 
 export type ConfigSpecification = {

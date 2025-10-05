@@ -125,6 +125,7 @@
     },
     "indoor": {
       "type": "indoor",
+      "private": true,
       "experimental": true,
       "doc": "Controls the behaviour of indoor features."
     },
@@ -5750,6 +5751,7 @@
         "doc": "Experimental. Returns `true` if the input floor id belongs to one of the active indoor floors, `false` otherwise. In case of array of strings, returns `true` if any of the input floor ids belongs to one of the active indoor floors, `false` otherwise. Only supported in filters.",
         "group": "Indoor",
         "experimental": true,
+        "private": true,
         "sdk-support": {
           "basic functionality": {
             "js": "3.16.0",
@@ -6586,26 +6588,29 @@
       }
     }
   },
-  "indoor": {
-    "floorplanFeaturesetId": {
+  "indoor_source": {
+    "sourceId": {
       "type": "string",
-      "doc": "An ID of a featureset to be used to query indoor floorplans.",
+      "doc": "Source ID of a source to be used to retrieve indoor data.",
       "experimental": true,
+      "private": true,
       "transition": false,
-      "property-type": "data-constant",
-      "expression": {
-        "interpolated": false
-      }
+      "property-type": "data-constant"
     },
-    "buildingFeaturesetId": {
-      "type": "string",
-      "doc": "An ID of a featureset to be used to add interactivity for building selection.",
+    "sourceLayers": {
+      "type": "array",
+      "value": "string",
+      "doc": "An array of source layers to be used to retrieve indoor data.",
       "experimental": true,
+      "private": true,
       "transition": false,
-      "property-type": "data-constant",
-      "expression": {
-        "interpolated": false
-      }
+      "property-type": "data-constant"
+    }
+  },
+  "indoor": {
+    "*": {
+      "type": "indoor_source",
+      "doc": "Specification of an indoor source - sourceId and sourceLayer required for vector source, for GeoJSON sourceLayers should be omitted."
     }
   },
   "light": {

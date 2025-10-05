@@ -67,7 +67,7 @@ function tsType(property, overrideFn?: (any) => string) {
             return 'unknown';
         default:
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            return `${property.type.slice(0, 1).toUpperCase()}${property.type.slice(1)}Specification`;
+            return `${property.type.split('_').map(part => part.slice(0, 1).toUpperCase() + part.slice(1)).join('')}Specification`;
         }
     })();
 
@@ -400,6 +400,8 @@ ${tsObjectDeclaration('ProjectionSpecification', spec.projection)}
 ${tsObjectDeclaration('ImportSpecification', spec.import)}
 
 ${tsObjectDeclaration('IndoorSpecification', spec.indoor)}
+
+${tsObjectDeclaration('IndoorSourceSpecification', spec.indoor_source)}
 
 ${tsObjectDeclaration('ConfigSpecification', spec.config)}
 

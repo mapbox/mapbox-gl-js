@@ -764,8 +764,6 @@ export class Map extends Camera {
             this.setProjection(options.projection);
         }
 
-        this._setupIndoor(false);
-
         const hashName = (typeof options.hash === 'string' && options.hash) || undefined;
         if (options.hash) this._hash = (new Hash(hashName)).addTo(this);
         // don't set position from options if set through hash
@@ -803,6 +801,7 @@ export class Map extends Camera {
             }
             this._postStyleLoadEvent();
             this._postStyleWithAppearanceEvent();
+            this._setupIndoor();
         });
 
         this.on('data', (event) => {
@@ -4196,23 +4195,25 @@ export class Map extends Camera {
         }
     }
 
-    _setupIndoor(isIndoorEnabled: boolean) {
-        if (isIndoorEnabled) {
-            this.indoor = new IndoorManager(this.style);
-
-            this.on('load', () => {
-                this._addIndoorControl();
-                this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
-
-                this.on('move', () => {
-                    this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
-                });
-
-                this.on('idle', () => {
-                    this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
-                });
-            });
+    _setupIndoor() {
+        if (!this.style.isIndoorEnabled()) {
+            return;
         }
+
+        this.indoor = new IndoorManager(this.style);
+
+        this.on('load', () => {
+            this._addIndoorControl();
+            this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
+
+            this.on('move', () => {
+                this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
+            });
+
+            this.on('idle', () => {
+                this.indoor._updateUI(this.transform.zoom, this.transform.center, this.transform.getBounds());
+            });
+        });
     }
 
     _setupContainer() {
