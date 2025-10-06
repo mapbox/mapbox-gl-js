@@ -59,14 +59,12 @@ function validateNonExpressionFilter(options: FilterValidatorOptions): Validatio
     case '<':
     case '<=':
     case '>':
-    // @ts-expect-error - falls through
     case '>=':
         if (value.length >= 2 && unbundle(value[1]) === '$type') {
             errors.push(new ValidationError(key, value, `"$type" cannot be use with operator "${value[0]}"`));
         }
         /* falls through */
     case '==':
-    // @ts-expect-error - falls through
     case '!=':
         if (value.length !== 3) {
             errors.push(new ValidationError(key, value, `filter array for operator "${value[0]}" must have 3 elements`));

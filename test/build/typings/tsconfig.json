@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -7,12 +8,11 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
-    "strict": true,
+    "strict": false,
     "target": "es2021",
-    "types": [],
+    "types": ["node", "geojson"],
   },
   "files": [
-    "index.ts",
-    "compatibility-test.ts"
+    "mapbox__mapbox-gl-style-spec.test.ts"
   ]
 }
