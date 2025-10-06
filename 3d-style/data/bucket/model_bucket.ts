@@ -13,7 +13,7 @@ import {instanceAttributes} from '../model_attributes';
 import {regionsEquals, transformPointToTile, pointInFootprint, skipClipping} from '../../../3d-style/source/replacement_source';
 import {LayerTypeMask} from '../../../3d-style/util/conflation';
 import {isValidUrl} from '../../../src/style-spec/validate/validate_model';
-import {type FeatureState} from '../../../src/style-spec/expression/index';
+import {type FeatureState, type GlobalProperties} from '../../../src/style-spec/expression/index';
 import Point from '@mapbox/point-geometry';
 
 import type ModelStyleLayer from '../../style/style_layer/model_style_layer';
@@ -218,6 +218,9 @@ class ModelBucket implements Bucket {
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
+    }
+
+    updateAppearances(_canonical?: CanonicalTileID, _featureState?: FeatureStates, _availableImages?: Array<ImageId>, _globalProperties?: GlobalProperties) {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {

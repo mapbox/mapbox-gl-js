@@ -1,0 +1,82 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.00037,
+      "pixelRatio": 2,
+      "height": 64,
+      "width": 64,
+      "operations": [
+            ["wait"],
+            ["setPitch", 45],
+            ["wait"]
+        ]
+    }
+  },
+  "camera": {"camera-projection": "orthographic"},
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.7
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "color": "rgba(255.0, 255.0, 255.0, 1.0)",
+        "intensity": 0.8,
+        "direction": [
+          200.0,
+          30.0
+        ],
+        "cast-shadows": true
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "image": "bank-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "icon",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "bank-12"
+      },
+      "appearances": [
+        {
+          "name": "test",
+          "condition": [">=", ["measure-light", "brightness"], 0.5],
+          "properties": {
+            "icon-image": "bakery-12"
+          }
+        }
+      ]
+    }
+  ]
+}

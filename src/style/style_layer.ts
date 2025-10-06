@@ -5,6 +5,7 @@ import {supportsPropertyExpression} from '../style-spec/util/properties';
 import featureFilter from '../style-spec/feature_filter/index';
 import {makeFQID} from '../util/fqid';
 import {createExpression, type FeatureState} from '../style-spec/expression/index';
+import {isStateConstant} from '../style-spec/expression/is_constant';
 import latest from '../style-spec/reference/latest';
 import assert from 'assert';
 import SymbolAppearance from './appearance';
@@ -413,6 +414,14 @@ class StyleLayer extends Evented {
                 return true;
             }
         }
+
+        // Check if any appearance condition depends on feature state
+        for (const appearance of this.appearances) {
+            if (!isStateConstant(appearance.condition.expression)) {
+                return true;
+            }
+        }
+
         return false;
     }
 

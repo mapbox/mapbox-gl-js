@@ -38,7 +38,7 @@ import type {Elevation} from '../../terrain/elevation';
 import type {FillExtrusionGroundRadiusLayoutArray} from '../array_types';
 import type {Frustum} from '../../util/primitives';
 import type {Region, ReplacementSource} from '../../../3d-style/source/replacement_source';
-import type {Feature} from "../../style-spec/expression";
+import type {Feature, GlobalProperties} from "../../style-spec/expression";
 import type {ClippedPolygon} from '../../util/polygon_clipping';
 import type {vec3} from 'gl-matrix';
 import type {CanonicalTileID, OverscaledTileID, UnwrappedTileID} from '../../source/tile_id';
@@ -752,6 +752,9 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
+    }
+
+    updateAppearances(_canonical?: CanonicalTileID, _featureState?: FeatureStates, _availableImages?: Array<ImageId>, _globalProperties?: GlobalProperties) {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {

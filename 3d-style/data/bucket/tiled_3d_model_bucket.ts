@@ -29,8 +29,9 @@ import type FeatureIndex from '../../../src/data/feature_index';
 import type {GridIndex} from '../../../src/types/grid-index';
 import type {TileFootprint} from '../../../3d-style/util/conflation';
 import type {FeatureStates} from '../../../src/source/source_state';
-import type {FeatureState} from '../../../src/style-spec/expression/index';
+import type {FeatureState, GlobalProperties} from '../../../src/style-spec/expression/index';
 import type {PossiblyEvaluatedValue} from '../../../src/style/properties';
+import type {ImageId} from '../../../src/style-spec/expression/types/image_id';
 
 const lookup = new Float32Array(512 * 512);
 const passLookup = new Uint8Array(512 * 512);
@@ -205,6 +206,9 @@ class Tiled3dModelBucket implements Bucket {
                 id
             });
         }
+    }
+
+    updateAppearances(_canonical?: CanonicalTileID, _featureState?: FeatureStates, _availableImages?: Array<ImageId>, _globalProperties?: GlobalProperties) {
     }
 
     update(states: FeatureStates) {

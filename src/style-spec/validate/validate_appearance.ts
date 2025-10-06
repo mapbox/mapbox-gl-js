@@ -37,7 +37,7 @@ export default function validateAppearance(options: AppearanceValidatorOptions):
         }
     });
 
-    if (name !== 'hidden' && !condition) {
+    if (name !== 'hidden' && condition === undefined) {
         errors.push(new ValidationError(options.key, 'name', `Appearance with name different than "hidden" must have a condition`));
     }
 

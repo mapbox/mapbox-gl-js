@@ -421,11 +421,26 @@ class Tile {
         return this.buckets[layer.fqid];
     }
 
-    upload(context: Context) {
+    upload(context: Context, painter?: Painter) {
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
             if (bucket.uploadPending()) {
-                bucket.upload(context);
+                let featureStates: FeatureStates = {};
+                let availableImages: ImageId[] = [];
+
+                if (painter && painter.style) {
+                    availableImages = painter.style.listImages();
+
+                    const bucketLayer = bucket.layers[0];
+                    const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
+                    const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
+
+                    if (sourceCache) {
+                        featureStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
+                    }
+                }
+
+                bucket.upload(context, this.tileID.canonical, featureStates, availableImages);
             }
         }
 
@@ -456,6 +471,7 @@ class Tile {
         if (!painter || !this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData) {
             return;
         }
+        this.updateBucketAppearances(painter);
         const brightness = painter.style.getBrightness();
         if (!this._lastUpdatedBrightness && !brightness) {
             return;
@@ -680,6 +696,42 @@ class Tile {
             const layer = painter && painter.style && painter.style.getOwnLayer(id);
             if (layer) {
                 this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket));
+            }
+        }
+    }
+
+    updateBucketAppearances(painter: Painter, isBrightnessChanged?: boolean) {
+        if (!this.latestFeatureIndex) return;
+        if (!painter.style) return;
+
+        const availableImages = painter.style.listImages();
+
+        for (const id in this.buckets) {
+            if (!painter.style.hasLayer(id)) continue;
+
+            const bucket = this.buckets[id];
+            const bucketLayer = bucket.layers[0];
+            // Buckets are grouped by common source-layer
+            const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
+            const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
+
+            let sourceLayerStates: FeatureStates = {};
+            if (sourceCache) {
+                sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
+            }
+
+            const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
+            const hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
+
+            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged || hasAppearances) {
+                // Construct global properties for appearance evaluation
+                const globalProperties = {
+                    zoom: painter.transform.zoom,
+                    pitch: painter.transform.pitch,
+                    brightness: painter.style.getBrightness() || 0,
+                    worldview: painter.worldview
+                };
+                bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, availableImages, globalProperties);
             }
         }
     }

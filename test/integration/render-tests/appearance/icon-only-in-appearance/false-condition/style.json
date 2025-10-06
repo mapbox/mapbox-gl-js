@@ -1,0 +1,45 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "description": "Test that appearance-based icons work when icon-image is not present in layout properties"
+    }
+  },
+  "pitch": 75,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0, 0]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(255, 255, 255, 1)"
+      }
+    },
+    {
+      "id": "icon-only-appearance",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {},
+      "appearances": [
+        {
+          "name": "show-icon", 
+          "condition": ["<", ["pitch"], 40],
+          "properties": {
+            "icon-image": "bank-12"
+          }
+        }
+      ]
+    }
+  ]
+}

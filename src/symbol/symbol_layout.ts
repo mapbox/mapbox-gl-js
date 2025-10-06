@@ -481,6 +481,7 @@ export function checkCrossFadeImagePositions(primary: ImageVariant, secondary: I
 export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: SymbolBucketData, showCollisionBoxes: boolean,
     availableImages: ImageId[], canonical: CanonicalTileID, tileZoom: number, projection: Projection, brightness: number | null, imageMap: StyleImageMap<StringifiedImageVariant>, imageAtlas: ImageAtlas) {
 
+    bucket.iconAtlasPositions = imageAtlas.iconPositions;
     const {featureData, hasAnySecondaryIcon, sizes, textAlongLine, symbolPlacement} = bucketData;
 
     for (const data of featureData) {

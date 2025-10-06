@@ -118,7 +118,7 @@ const todo = [
     "render-tests/appearance/icon-bbox/icon-with-rotate",
     "render-tests/appearance/icon-bbox/icon-with-padding-2",
     "render-tests/appearance/icon-bbox/multiple-appearances",
-    "render-tests/appearance/icon-bbox/icon-with-offset-2"
+    "render-tests/appearance/icon-bbox/icon-with-offset-2",
 ];
 
 const skip = [

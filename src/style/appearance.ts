@@ -7,6 +7,9 @@ import type {Feature, FeatureState, GlobalProperties, StyleExpression} from "../
 import type {AppearanceSpecification, ExpressionSpecification} from "../style-spec/types";
 import type ResolvedImage from "../style-spec/expression/types/resolved_image";
 import type {CanonicalTileID} from "../source/tile_id";
+import type EvaluationParameters from "./evaluation_parameters";
+import type {ImageId} from "../style-spec/expression/types/image_id";
+import type {ImageVariant} from "../style-spec/expression/types/image_variant";
 
 export type ConditionCheckParams = {
     globals: GlobalProperties,
@@ -21,8 +24,11 @@ class SymbolAppearance {
     name?: string;
     properties?: PossiblyEvaluated<AppearanceProps>;
     unevaluatedLayout?: Layout<AppearanceProps>;
+    cachedIconPrimary?: ImageVariant;
 
     constructor(condition: AppearanceSpecification["condition"], name: string | undefined, properties: AppearanceProps | undefined, scope: string, options: ConfigOptions, iconImageUseTheme: string) {
+        this.cachedIconPrimary = null;
+
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const conditionSpec = latest['appearance']['condition'];
 
@@ -44,6 +50,18 @@ class SymbolAppearance {
         }
     }
 
+    hasCachedIconPrimary() {
+        return this.cachedIconPrimary !== null;
+    }
+
+    setCachedIconPrimary(iconPrimary: ImageVariant) {
+        this.cachedIconPrimary = iconPrimary;
+    }
+
+    getCachedIconPrimary() {
+        return this.cachedIconPrimary;
+    }
+
     isActive(context: ConditionCheckParams): boolean {
         if (!this.condition && context.isHidden && this.name === 'hidden') return true;
         return this.condition.evaluate(context.globals, context.feature, context.featureState, context.canonical) as boolean;
@@ -63,6 +81,13 @@ class SymbolAppearance {
 
     getUnevaluatedProperties(): Layout<AppearanceProps> {
         return this.unevaluatedLayout;
+    }
+
+    recalculate(parameters: EvaluationParameters, availableImages: ImageId[], iconImageUseTheme?: string) {
+        if (this.unevaluatedLayout) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+            (this as any).properties = this.unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages, iconImageUseTheme);
+        }
     }
 
     serialize(): AppearanceSpecification {

@@ -22,16 +22,17 @@ import FormatExpression from '../../style-spec/expression/definitions/format';
 import Literal from '../../style-spec/expression/definitions/literal';
 import ProgramConfiguration from '../../data/program_configuration';
 
-import type {FormattedSection} from '../../style-spec/expression/types/formatted';
-import type {FormattedSectionExpression} from '../../style-spec/expression/definitions/format';
-import type {CreateProgramParams} from '../../render/painter';
-import type {ConfigOptions, Properties,
+import type {
+    PropertyValue,
+    ConfigOptions, Properties,
     Transitionable,
     Transitioning,
     Layout,
-    PossiblyEvaluated,
-    PropertyValue
+    PossiblyEvaluated
 } from '../properties';
+import type {FormattedSection} from '../../style-spec/expression/types/formatted';
+import type {FormattedSectionExpression} from '../../style-spec/expression/definitions/format';
+import type {CreateProgramParams} from '../../render/painter';
 import type {BucketParameters} from '../../data/bucket';
 import type {LayoutProps, PaintProps} from './symbol_style_layer_properties';
 import type EvaluationParameters from '../evaluation_parameters';
@@ -42,6 +43,8 @@ import type {CanonicalTileID} from '../../source/tile_id';
 import type {LUT} from "../../util/lut";
 import type {ImageId} from '../../style-spec/expression/types/image_id';
 import type {ProgramName} from '../../render/program';
+import type SymbolAppearance from '../appearance';
+import type {AppearanceProps} from '../appearance_properties';
 
 let properties: {
     layout: Properties<LayoutProps>;
@@ -94,6 +97,12 @@ class SymbolStyleLayer extends StyleLayer {
 
     override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
+
+        if (this.appearances) {
+            this.appearances.forEach(a => {
+                a.recalculate(parameters, availableImages, this.iconImageUseTheme);
+            });
+        }
 
         if (this.layout.get('icon-rotation-alignment') === 'auto') {
             if (this.layout.get('symbol-placement') !== 'point') {
@@ -172,6 +181,25 @@ class SymbolStyleLayer extends StyleLayer {
         const unevaluated = this._unevaluatedLayout._values[name];
         if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
             return resolveTokens(feature.properties, value);
+        }
+
+        return value;
+    }
+
+    getAppearanceValueAndResolveTokens<T extends keyof AppearanceProps>(
+        appearance: SymbolAppearance,
+        name: T,
+        feature: Feature,
+        canonical: CanonicalTileID,
+        availableImages: ImageId[],
+    ) {
+        const property = appearance.getProperty(name) as unknown as PossiblyEvaluatedPropertyValue<LayoutProps[T]>;
+        if (!property) return;
+
+        const value = property.evaluate(feature, {}, canonical, availableImages);
+        const unevaluated = appearance.getUnevaluatedProperties()._values[name];
+        if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
+            return resolveTokens(feature.properties, value as unknown as string);
         }
 
         return value;

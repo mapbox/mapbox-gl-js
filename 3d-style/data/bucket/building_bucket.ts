@@ -51,6 +51,7 @@ import type Context from '../../../src/gl/context';
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type {FeatureStates} from '../../../src/source/source_state';
 import type {ImageId} from '../../../src/style-spec/expression/types/image_id';
+import type {GlobalProperties} from "../../../src/style-spec/expression";
 import type IndexBuffer from '../../../src/gl/index_buffer';
 import type {LUT} from '../../../src/util/lut';
 import type {SpritePositions} from '../../../src/util/image';
@@ -246,6 +247,9 @@ export class BuildingBucket implements BucketWithGroundEffect {
                 id: _id
             });
         }
+    }
+
+    updateAppearances(_canonical?: CanonicalTileID, _featureState?: FeatureStates, _availableImages?: Array<ImageId>, _globalProperties?: GlobalProperties) {
     }
 
     prepare(): Promise<unknown> {
