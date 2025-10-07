@@ -520,7 +520,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
                     // the bottom corners, and the other two are the top corners. We use the bottom
                     // corners to calculate the position and normal of the area light, and only one
                     // of the top vertices to calculate the door height.
-                    for (let i = 0; i < mesh.indices.length; i += 12) {
+                    for (let i = 0; i < mesh.positions.length; i += 12) {
                         const x0 = mesh.positions[i + 0];
                         const y0 = mesh.positions[i + 1];
                         const x1 = mesh.positions[i + 3];

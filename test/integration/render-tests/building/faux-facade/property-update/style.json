@@ -13,7 +13,18 @@
             ["get", "building-part"],
             "window",
             ["hsl", 52, 86.3, 62.7],
+            "door",
+            ["hsl", 0, 100, 100],
             ["hsl", 41, 90, 90]
+          ]
+        ],
+        ["setPaintProperty", "building", "building-emissive-strength",
+          [
+            "match",
+            ["get", "building-part"],
+            "door",
+            2.5,
+            0
           ]
         ],
         ["wait"]
@@ -32,9 +43,10 @@
       "type": "directional",
       "id": "sun_light",
       "properties": {
-        "intensity": 0.6,
+        "cast-shadows": true,
+        "intensity": 0.2,
         "direction": [
-          15,
+          125,
           30
         ]
       }
@@ -47,8 +59,10 @@
         "type": "FeatureCollection",
         "features": [
           {
+            "id": 1,
             "type": "Feature",
             "properties": {
+              "source_id": 1
             },
             "geometry": {
               "coordinates": [
@@ -77,6 +91,56 @@
               ],
               "type": "Polygon"
             }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "min_height": 0,
+              "cross_perc": 0,
+              "source_id": 1,
+              "entrances": "[0.35]",
+              "distance_to_road": 33.34
+            },
+            "id": 1,
+            "geometry": {
+              "type": "LineString",
+              "coordinates": 
+              [
+                [
+                  11.568937291974436,
+                  48.132286810394845
+                ],
+                [
+                  11.56931009612731,
+                  48.132286810394845
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "min_height": 0,
+              "cross_perc": 0,
+              "source_id": 1,
+              "entrances": "[0.35]",
+              "distance_to_road": 33.34
+            },
+            "id": 2,
+            "geometry": {
+              "type": "LineString",
+              "coordinates": 
+              [
+                [
+                  11.56931009612731,
+                  48.132286810394845
+                ],
+                [
+                  11.56931009612731,
+                  48.13246952281412
+                ]
+              ]
+            }
           }
         ]
       }
@@ -94,7 +158,7 @@
       "id": "background",
       "type": "background",
       "paint": {
-        "background-color": "white"
+        "background-color": "grey"
       }
     },
     {
@@ -141,6 +205,8 @@
             35.3,
             67.3
           ],
+          "door",
+          ["hsl", 0, 100, 100],
           [
             "hsl",
             41,

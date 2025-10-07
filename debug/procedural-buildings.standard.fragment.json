@@ -495,23 +495,41 @@
                     "case",
                     ["to-boolean", ["feature-state", "select"]],
                     [
-                        "interpolate",
-                        ["linear"],
-                        ["at", 2, ["to-hsla", ["config", "colorBuildingSelect"]]],
-                        50,
-                        0.6,
-                        90,
-                        0.4
+                        "match",
+                        [
+                            "get",
+                            "building-part"
+                        ],
+                        "door",
+                        5.0,
+                        [
+                            "interpolate",
+                            ["linear"],
+                            ["at", 2, ["to-hsla", ["config", "colorBuildingSelect"]]],
+                            50,
+                            0.6,
+                            90,
+                            0.4
+                        ]
                     ],
                     ["to-boolean", ["feature-state", "highlight"]],
                     [
-                        "interpolate",
-                        ["linear"],
-                        ["at", 2, ["to-hsla", ["config", "colorBuildingHighlight"]]],
-                        50,
-                        0.6,
-                        90,
-                        0.4
+                        "match",
+                        [
+                            "get",
+                            "building-part"
+                        ],
+                        "door",
+                        5.0,
+                        [
+                            "interpolate",
+                            ["linear"],
+                            ["at", 2, ["to-hsla", ["config", "colorBuildingHighlight"]]],
+                            50,
+                            0.6,
+                            90,
+                            0.4
+                        ]
                     ],
                     [
                         "match",
@@ -556,9 +574,37 @@
                 "building-color": [
                     "case",
                     ["to-boolean", ["feature-state", "select"]],
-                    ["config", "colorBuildingSelect"],
+                    [
+                        "match",
+                        [
+                            "get",
+                            "building-part"
+                        ],
+                        "door",
+                        [
+                            "hsl",
+                            0.0,
+                            0.0,
+                            100.0
+                        ],
+                        ["config", "colorBuildingSelect"]
+                    ],
                     ["to-boolean", ["feature-state", "highlight"]],
-                    ["config", "colorBuildingHighlight"],
+                    [
+                        "match",
+                        [
+                            "get",
+                            "building-part"
+                        ],
+                        "door",
+                        [
+                            "hsl",
+                            0.0,
+                            0.0,
+                            100.0
+                        ],
+                        ["config", "colorBuildingHighlight"]
+                    ],
                     [
                         "match",
                         [
