@@ -31,7 +31,7 @@ import {TriangleIndexArray, LineIndexArray} from '../index_array_type';
 import transformText from '../../symbol/transform_text';
 import mergeLines from '../../symbol/mergelines';
 import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/script_detection';
-import {WritingMode} from '../../symbol/shaping';
+import {WritingMode, shapeIcon} from '../../symbol/shaping';
 import loadGeometry from '../load_geometry';
 import toEvaluationFeature, {type EvaluationFeature} from '../evaluation_feature';
 import {VectorTileFeature} from '@mapbox/vector-tile';
@@ -93,6 +93,8 @@ export type AppearanceFeatureData = {
     id?: string | number | null;
     properties: Record<PropertyKey, unknown>;
     usesAppearanceIconAsPlaceholder: boolean;
+    isUsingAppearanceVertexData: boolean;
+    layoutBasedVertexData: [number, number, number, number][];
 };
 
 export type SingleCollisionBox = {
@@ -282,14 +284,33 @@ export class SymbolBuffers {
             this.iconTransitioningVertexArray.length === 0;
     }
 
-    updateIconTextureCoordinates(vertexIndex: number, newTx: number, newTy: number) {
+    getIconVertexData(offset, numVertices) {
+        const data: [number, number, number, number][] = [];
+        assert(offset >= 0 && offset < this.layoutVertexArray.length, 'Invalid vertex offset');
+
+        const uint16Array = this.layoutVertexArray.uint16;
+
+        // SymbolLayoutArray has 12 uint16 values per vertex: [tileAnchorX, tileAnchorY, ox, oy, tx, ty, ...]
+        // Position offsets (ox, oy) are at indices 2 and 3
+        // Texture coordinates (tx, ty) are at indices 4 and 5
+        for (let i = 0; i < numVertices; ++i) {
+            const baseOffset = (offset + i) * 12;
+            data.push([uint16Array[baseOffset + 2], uint16Array[baseOffset + 3], uint16Array[baseOffset + 4], uint16Array[baseOffset + 5]]);
+        }
+        return data;
+    }
+
+    updateIconVertexData(vertexIndex: number, newOx: number, newOy: number, newTx: number, newTy: number, transform: boolean = true) {
         assert(vertexIndex >= 0 && vertexIndex < this.layoutVertexArray.length, 'Invalid vertex start index');
 
         const uint16Array = this.layoutVertexArray.uint16;
 
         // SymbolLayoutArray has 12 uint16 values per vertex: [tileAnchorX, tileAnchorY, ox, oy, tx, ty, ...]
+        // Position offsets (ox, oy) are at indices 2 and 3
         // Texture coordinates (tx, ty) are at indices 4 and 5
         const baseOffset = vertexIndex * 12;
+        uint16Array[baseOffset + 2] = transform ? Math.round(newOx * 32) : newOx;  // ox
+        uint16Array[baseOffset + 3] = transform ? Math.round(newOy * 32) : newOy;  // oy
         uint16Array[baseOffset + 4] = newTx;  // tx
         uint16Array[baseOffset + 5] = newTy;  // ty
     }
@@ -792,7 +813,9 @@ class SymbolBucket implements Bucket {
             this.appearanceFeatureData.push({
                 id: feature.id,
                 properties: feature.properties,
-                usesAppearanceIconAsPlaceholder: usesAppearanceIconAsFallback
+                usesAppearanceIconAsPlaceholder: usesAppearanceIconAsFallback,
+                isUsingAppearanceVertexData: false,
+                layoutBasedVertexData: []
             });
 
             if (icon) {
@@ -953,15 +976,10 @@ class SymbolBucket implements Bucket {
                     const position = this.iconAtlasPositions && this.iconAtlasPositions.get(primaryImageSerialized);
 
                     if (position) {
-                        // Create a positioned icon using the new position
-                        const shapedIcon = {
-                            imagePrimary: position,
-                            imageSecondary: undefined,
-                            left: position.tl[0],
-                            right: position.br[0],
-                            top: position.tl[1],
-                            bottom: position.br[1]
-                        };
+                        const iconOffsetValue = layer.getAppearanceValueAndResolveTokens(activeAppearance, 'icon-offset', evaluationFeature, canonical, availableImages);
+                        const iconOffset = (iconOffsetValue && Array.isArray(iconOffsetValue) ? iconOffsetValue : [0, 0]) as [number, number];
+                        const iconAnchor = layer.layout.get('icon-anchor').evaluate(evaluationFeature, {}, canonical);
+                        const shapedIcon = shapeIcon(position, undefined, iconOffset, iconAnchor);
 
                         // Get icon rotation from appearance and other settings from layer/position
                         const iconRotateValue = layer.getAppearanceValueAndResolveTokens(activeAppearance, 'icon-rotate', evaluationFeature, canonical, availableImages);
@@ -969,33 +987,56 @@ class SymbolBucket implements Bucket {
                         const isSDFIcon = position.sdf;
                         const hasIconTextFit = layer.layout.get('icon-text-fit').constantOr('none') !== 'none';
 
-                        // Generate new icon quads with updated texture coordinates
-                        const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, iconScaleFactor);
+                        // Get appearance-specific icon-size and calculate combined scale factor
+                        const iconSizeValue = layer.getAppearanceValueAndResolveTokens(activeAppearance, 'icon-size', evaluationFeature, canonical, availableImages);
+                        const effectiveIconSize = typeof iconSizeValue === 'number' ? iconSizeValue : 1;
+                        const combinedIconScale = effectiveIconSize * iconScaleFactor;
 
-                        // Update texture coordinates for each vertex in the quads
+                        // Generate new icon quads with updated texture coordinates and size
+                        const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, combinedIconScale);
+
+                        // Store the layout-based vertex data to restore it later if it's the first time we use an appearance for this feature
+                        if (!featureData.isUsingAppearanceVertexData) {
+                            featureData.isUsingAppearanceVertexData = true;
+                            featureData.layoutBasedVertexData = this.icon.getIconVertexData(vertexOffset, symbolInstance.numIconVertices);
+                        }
+
+                        // Update texture coordinates and vertex positions for each vertex in the quads
                         for (let j = 0; j < iconQuads.length; ++j) {
                             const quad = iconQuads[j];
-                            this.icon.updateIconTextureCoordinates(vertexOffset, quad.texPrimary.x, quad.texPrimary.y);
-                            this.icon.updateIconTextureCoordinates(vertexOffset + 1, quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y);
-                            this.icon.updateIconTextureCoordinates(vertexOffset + 2, quad.texPrimary.x, quad.texPrimary.y + quad.texPrimary.h);
-                            this.icon.updateIconTextureCoordinates(vertexOffset + 3, quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y + quad.texPrimary.h);
+                            this.icon.updateIconVertexData(vertexOffset, quad.tl.x, quad.tl.y, quad.texPrimary.x, quad.texPrimary.y);
+                            this.icon.updateIconVertexData(vertexOffset + 1, quad.tr.x, quad.tr.y, quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y);
+                            this.icon.updateIconVertexData(vertexOffset + 2, quad.bl.x, quad.bl.y, quad.texPrimary.x, quad.texPrimary.y + quad.texPrimary.h);
+                            this.icon.updateIconVertexData(vertexOffset + 3, quad.br.x, quad.br.y, quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y + quad.texPrimary.h);
                             vertexOffset += 4;
                         }
 
                         reuploadBuffer = true;
+                    } else {
+                        vertexOffset += symbolInstance.numIconVertices;
                     }
                 } else if (featureData.usesAppearanceIconAsPlaceholder) {
                     // For features that use the placeholder icon without active appearances, hide the icon by setting texture coordinates to zero
                     // This effectively makes the icon invisible while preserving the vertex buffer structure
                     if (this.layers[0].appearances && this.layers[0].appearances.length > 0) {
                         // Only hide if there are appearances but none are active (this means we had a placeholder)
-                        this.icon.updateIconTextureCoordinates(vertexOffset, 0, 0);
-                        this.icon.updateIconTextureCoordinates(vertexOffset + 1, 0, 0);
-                        this.icon.updateIconTextureCoordinates(vertexOffset + 2, 0, 0);
-                        this.icon.updateIconTextureCoordinates(vertexOffset + 3, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset + 1, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset + 2, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset + 3, 0, 0, 0, 0);
                         reuploadBuffer = true;
                     }
-                    vertexOffset += 4; // Each icon quad has 4 vertices
+                    vertexOffset += symbolInstance.numIconVertices;
+                } else if (featureData.isUsingAppearanceVertexData) {
+                    // If there are no active appearances but there were before, the vertex data will
+                    // still point to the active appearance. We need to reset it to use the layout icon
+                    for (let i = 0; i < featureData.layoutBasedVertexData.length; ++i) {
+                        const [ox, oy, tx, ty] = featureData.layoutBasedVertexData[i];
+                        this.icon.updateIconVertexData(vertexOffset + i, ox, oy, tx, ty, false);
+                    }
+                    vertexOffset += featureData.layoutBasedVertexData.length;
+                    featureData.isUsingAppearanceVertexData = false;
+                    reuploadBuffer = true;
                 }
             }
         }
@@ -1180,7 +1221,7 @@ class SymbolBucket implements Bucket {
         return !this.uploaded || this.text.programConfigurations.needsUpload || this.icon.programConfigurations.needsUpload;
     }
 
-    upload(context: Context, canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>) {
+    upload(context: Context, canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties) {
         if (!this.uploaded && this.hasDebugData()) {
             this.textCollisionBox.upload(context);
             this.iconCollisionBox.upload(context);
@@ -1188,7 +1229,7 @@ class SymbolBucket implements Bucket {
 
         let reuploadBuffer = false;
         if (featureState && availableImages) {
-            reuploadBuffer = this.updateAppearanceBasedIconTextures(canonical, featureState, availableImages);
+            reuploadBuffer = this.updateAppearanceBasedIconTextures(canonical, featureState, availableImages, globalProperties);
         }
         this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload, this.zOffsetBuffersNeedUpload, false); // text doesn't need dynamic buffer for now
 

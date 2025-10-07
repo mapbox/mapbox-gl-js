@@ -39,7 +39,7 @@
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "icon-image": "bank-12",
+        "icon-image": "bakery-12",
         "icon-size": 1,
         "icon-rotate": 0,
         "icon-offset": [0, 0]
@@ -49,7 +49,6 @@
           "name": "test",
           "condition": true,
           "properties": {
-            "icon-image": "bakery-12",
             "icon-size": 2,
             "icon-rotate": 90,
             "icon-offset": [10, 10]

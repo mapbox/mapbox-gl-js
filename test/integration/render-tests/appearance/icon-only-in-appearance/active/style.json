@@ -2,6 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
+      "allowed": 0.00074,
       "width": 64,
       "height": 64,
       "description": "Test that appearance-based icons work when icon-image is not present in layout properties"
@@ -35,7 +36,10 @@
           "name": "show-icon", 
           "condition": true,
           "properties": {
-            "icon-image": "bank-12"
+            "icon-image": "bank-12",
+            "icon-size": 2,
+            "icon-rotate": 90,
+            "icon-offset": [10, 10]
           }
         }
       ]

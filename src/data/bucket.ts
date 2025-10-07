@@ -124,7 +124,7 @@ export interface Bucket {
         brightness?: number | null
     ) => void;
     isEmpty: () => boolean;
-    upload: (context: Context, canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>) => void;
+    upload: (context: Context, canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties) => void;
     uploadPending: () => boolean;
     /**
      * Release the WebGL resources associated with the buffers. Note that because

@@ -5,7 +5,14 @@
       "allowed": 0.00074,
       "pixelRatio": 2,
       "height": 64,
-      "width": 64
+      "width": 64,
+      "operations": [
+            ["wait"],
+            ["setZoom", 12],
+            ["wait"],
+            ["setZoom", 10],
+            ["wait"]
+        ]
     }
   },
   "camera": {"camera-projection": "orthographic"},
@@ -17,9 +24,7 @@
         "features": [
           {
             "type": "Feature",
-            "properties": {
-              "image": "bank-12"
-            },
+            "id": 1,
             "geometry": {
               "type": "Point",
               "coordinates": [
@@ -47,7 +52,7 @@
       "appearances": [
         {
           "name": "test",
-          "condition": true,
+          "condition": [">=", ["zoom"], 12],
           "properties": {
             "icon-image": "bakery-12",
             "icon-size": 2,

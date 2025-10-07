@@ -198,8 +198,8 @@ class SymbolStyleLayer extends StyleLayer {
 
         const value = property.evaluate(feature, {}, canonical, availableImages);
         const unevaluated = appearance.getUnevaluatedProperties()._values[name];
-        if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value) {
-            return resolveTokens(feature.properties, value as unknown as string);
+        if (!unevaluated.isDataDriven() && !isExpression(unevaluated.value) && value && typeof value === 'string') {
+            return resolveTokens(feature.properties, value);
         }
 
         return value;

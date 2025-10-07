@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from './access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+    style: 'mapbox://styles/mapbox/standard',
+    zoom: 15,
+    center: [-71.97722138410576, -13.517379300798098]
+});
+
+// Wait until the map has finished loading.
+map.on('load', () => {
+    map.setConfigProperty('basemap', 'lightPreset', 'dusk');
+    map.loadImage(
+        'https://docs.mapbox.com/mapbox-gl-js/assets/cat.png',
+        (error, image) => {
+            if (error) throw error;
+
+            // Add the image to the map style.
+            map.addImage('cat', image);
+            // Add a custom vector tileset source. This tileset contains
+            // point features.
+            map.addSource('museums', {
+                type: 'vector',
+                url: 'mapbox://mapbox.2opop9hr'
+            });
+            // Add a layer to show a circle on each point
+            map.addLayer({
+                'id': 'circles',
+                'type': 'circle',
+                'source': 'museums',
+                'paint': {
+                    'circle-color': 'red'
+                },
+                'layout': {
+                    'visibility': 'visible',
+                },
+                'source-layer': 'museum-cusco'
+            });
+            // Add a layer to show icons on top of the points.
+            // Icons will grow when hovered and when clicked.
+            map.addLayer({
+                'id': 'museums',
+                'type': 'symbol',
+                'source': 'museums',
+                'layout': {
+                    'visibility': 'visible',
+                    'icon-image': "cat",
+                    'icon-size': 0.2,
+                },
+                'appearances': [
+                    {
+                        'name': 'clicked',
+                        'condition': ['==', ['boolean', ['feature-state', 'clicked'], false], true],
+                        'properties': {
+                            'icon-size': 0.5,
+                        }
+                    },
+                    {
+                        'name': 'hovered',
+                        'condition': ['==', ['boolean', ['feature-state', 'hover'], false], true],
+                        'properties': {
+                            'icon-size': 0.3,
+                        }
+                    },
+                ],
+                'source-layer': 'museum-cusco'
+            });
+        }
+    );
+});
+
+let selectedFeature = null;
+map.addInteraction('hover-in', {
+    type: 'mouseenter',
+    target: { layerId: 'museums' },
+    handler: (e) => {
+        map.setFeatureState(e.feature, {hover: true});
+        map.getCanvas().style.cursor = 'pointer';
+    }
+});
+
+map.addInteraction('hover-out', {
+    type: 'mouseleave',
+    target: { layerId: 'museums' },
+    handler: (e) => {
+        map.setFeatureState(e.feature, {hover: false});
+        map.getCanvas().style.cursor = '';
+    }
+});
+
+map.addInteraction('click', {
+    type: 'click',
+    target: { layerId: 'museums' },
+    handler: (e) => {
+        if (selectedFeature) {
+            map.setFeatureState(selectedFeature, {clicked: false});
+        }
+        selectedFeature = e.feature;
+        map.setFeatureState(e.feature, {clicked: true});
+    }
+});
+
+map.addInteraction('map-click', {
+    type: 'click',
+    handler: () => {
+        if (selectedFeature) {
+            map.setFeatureState(selectedFeature, { clicked: false });
+            selectedFeature = null;
+        }
+    }
+});
+
+</script>
+</body>
+</html>

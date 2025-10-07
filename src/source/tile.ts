@@ -427,20 +427,35 @@ class Tile {
             if (bucket.uploadPending()) {
                 let featureStates: FeatureStates = {};
                 let availableImages: ImageId[] = [];
+                let globalProperties = {
+                    zoom: 0,
+                    pitch: 0,
+                    brightness: 0,
+                    worldview: ""
+                };
 
-                if (painter && painter.style) {
-                    availableImages = painter.style.listImages();
+                if (painter) {
+                    if (painter.style) {
+                        availableImages = painter.style.listImages();
 
-                    const bucketLayer = bucket.layers[0];
-                    const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
-                    const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
+                        const bucketLayer = bucket.layers[0];
+                        const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
+                        const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
 
-                    if (sourceCache) {
-                        featureStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
+                        if (sourceCache) {
+                            featureStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
+                        }
                     }
+
+                    globalProperties = {
+                        zoom: painter.transform.zoom || 0,
+                        pitch: painter.transform.pitch || 0,
+                        brightness: painter.style.getBrightness() || 0,
+                        worldview: painter.worldview || ""
+                    };
                 }
 
-                bucket.upload(context, this.tileID.canonical, featureStates, availableImages);
+                bucket.upload(context, this.tileID.canonical, featureStates, availableImages, globalProperties);
             }
         }
 
