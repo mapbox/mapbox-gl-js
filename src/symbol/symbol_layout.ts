@@ -11,7 +11,7 @@ import findPoleOfInaccessibility from '../util/find_pole_of_inaccessibility';
 import classifyRings from '../util/classify_rings';
 import EXTENT from '../style-spec/data/extent';
 import EvaluationParameters from '../style/evaluation_parameters';
-import {getRasterizedIconSize, SIZE_PACK_FACTOR, type SizeData} from './symbol_size';
+import {getRasterizedIconSize, getSizeData, SIZE_PACK_FACTOR, type SizeData} from './symbol_size';
 import ONE_EM from './one_em';
 import Point from '@mapbox/point-geometry';
 import murmur3 from 'murmurhash-js';
@@ -86,6 +86,108 @@ export const SymbolBucketConstants = {
     // but we expect there to be many fewer boxes/lines than glyphs
     MAX_GLYPHS: 65535
 } as const;
+
+/**
+ * Represents a bounding box for symbols that can cover all the symbol variants
+ * in either layout or appearances. Used for collision detection calculations.
+ */
+export type SymbolBoundingBox = {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+    scaled: boolean;
+};
+
+/**
+ * Scale a SymbolBoundingBox by the given factor
+ */
+function scaleBoundingBox(bbox: SymbolBoundingBox, scale: number): void {
+    bbox.top *= scale;
+    bbox.bottom *= scale;
+    bbox.left *= scale;
+    bbox.right *= scale;
+    bbox.scaled = true;
+}
+
+/**
+ * Rotate a SymbolBoundingBox by the given angle in degrees
+ */
+function rotateBoundingBox(bbox: SymbolBoundingBox, rotateDegrees: number): void {
+    if (!rotateDegrees) return;
+
+    const rotateRadians = degToRad(rotateDegrees);
+
+    // Create the four corners of the bounding box
+    const tl = new Point(bbox.left, bbox.top);
+    const tr = new Point(bbox.right, bbox.top);
+    const bl = new Point(bbox.left, bbox.bottom);
+    const br = new Point(bbox.right, bbox.bottom);
+
+    // Rotate each corner around the origin (0, 0)
+    tl._rotateAround(rotateRadians, new Point(0, 0));
+    tr._rotateAround(rotateRadians, new Point(0, 0));
+    bl._rotateAround(rotateRadians, new Point(0, 0));
+    br._rotateAround(rotateRadians, new Point(0, 0));
+
+    // Take the envelope of the rotated geometry
+    bbox.left = Math.min(tl.x, tr.x, bl.x, br.x);
+    bbox.right = Math.max(tl.x, tr.x, bl.x, br.x);
+    bbox.top = Math.min(tl.y, tr.y, bl.y, br.y);
+    bbox.bottom = Math.max(tl.y, tr.y, bl.y, br.y);
+}
+
+/**
+ * Updates an icon bounding box by calculating the bounds from a positioned icon,
+ * applying transformations, and merging with the existing bounding box.
+ * This is equivalent to the updateIconBoundingBox function in GL Native.
+ */
+function updateIconBoundingBox(
+    shapedIcon: PositionedIcon,
+    iconBBox: SymbolBoundingBox | null | undefined,
+    rotate: number,
+    iconScale?: number
+): SymbolBoundingBox {
+    // Extract collision padding if available
+    const collisionPadding = shapedIcon.collisionPadding || [0, 0, 0, 0];
+
+    // Calculate bounding box from shaped icon
+    const top = shapedIcon.top - collisionPadding[1];
+    const bottom = shapedIcon.bottom + collisionPadding[3];
+    const left = shapedIcon.left - collisionPadding[0];
+    const right = shapedIcon.right + collisionPadding[2];
+
+    const newIconBBox: SymbolBoundingBox = {
+        top,
+        bottom,
+        left,
+        right,
+        scaled: false
+    };
+
+    // Apply scaling if provided
+    if (iconScale !== undefined) {
+        scaleBoundingBox(newIconBBox, iconScale);
+    }
+
+    // Apply rotation if provided
+    if (rotate) {
+        rotateBoundingBox(newIconBBox, rotate);
+    }
+
+    // Merge with existing bounding box or return the new one
+    if (!iconBBox) {
+        return newIconBBox;
+    } else {
+        return {
+            top: Math.min(iconBBox.top, newIconBBox.top),
+            bottom: Math.max(iconBBox.bottom, newIconBBox.bottom),
+            left: Math.min(iconBBox.left, newIconBBox.left),
+            right: Math.max(iconBBox.right, newIconBBox.right),
+            scaled: iconBBox.scaled || newIconBBox.scaled
+        };
+    }
+}
 
 export function evaluateVariableOffset(anchor: TextAnchor, [offsetX, offsetY]: [number, number]): [number, number] {
     let x = 0, y = 0;
@@ -177,7 +279,9 @@ export type SymbolFeatureData = {
     textOffset: [number, number],
     isSDFIcon: boolean,
     iconTextFit: "none" | "width" | "height" | "both",
-    iconOffset: [number, number]
+    iconOffset: [number, number],
+    iconCollisionBounds?: SymbolBoundingBox | null,
+    iconVerticalCollisionBounds?: SymbolBoundingBox | null
 };
 
 export type SymbolBucketData = {
@@ -419,13 +523,129 @@ export function performSymbolLayout(bucket: SymbolBucket,
 
         shapedIcon = defaultShapedIcon;
 
-        featureData.push({feature, shapedTextOrientations, shapedText, shapedIcon, iconPrimary, iconSecondary, iconOffset, iconAnchor, verticallyShapedIcon, layoutTextSize, layoutIconSize, textOffset, isSDFIcon, iconTextFit});
+        const {iconBBox, iconVerticalBBox} = mergeAppearancesBboxes(bucket, shapedIcon, verticallyShapedIcon,
+            layout, feature, canonical, layoutIconSize, iconOffset, sizes, imagePositions, iconAnchor);
+
+        featureData.push({
+            feature,
+            shapedTextOrientations,
+            shapedText,
+            shapedIcon,
+            iconPrimary,
+            iconSecondary,
+            iconOffset,
+            iconAnchor,
+            verticallyShapedIcon,
+            layoutTextSize,
+            layoutIconSize,
+            textOffset,
+            isSDFIcon,
+            iconTextFit,
+            iconCollisionBounds: iconBBox,
+            iconVerticalCollisionBounds: iconVerticalBBox
+        });
 
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return {featureData, sizes, hasAnySecondaryIcon, textAlongLine, symbolPlacement};
 
+}
+
+function mergeAppearancesBboxes(bucket: SymbolBucket, shapedIcon: PositionedIcon, verticallyShapedIcon: PositionedIcon, layout: PossiblyEvaluated<LayoutProps>,
+    feature: SymbolFeature, canonical: CanonicalTileID, layoutIconSize: number, iconOffset: [number, number], sizes: Sizes, imagePositions: ImagePositionMap,
+    iconAnchor: SymbolAnchor
+) {
+    const symbolLayer = bucket.layers[0];
+    const appearances = symbolLayer.appearances;
+    if (appearances.length === 0) {
+        return {iconBBox: null, iconVerticalBBox: null};
+    }
+
+    // Calculate combined icon bounding box that encompasses the main icon and all appearance variants
+    let iconBBox: SymbolBoundingBox | null = null;
+    let iconVerticalBBox: SymbolBoundingBox | null = null;
+    const baseIconRotate = layout.get('icon-rotate').evaluate(feature, {}, canonical);
+
+    if (shapedIcon) {
+        iconBBox = updateIconBoundingBox(shapedIcon, iconBBox, baseIconRotate, layoutIconSize);
+
+        if (verticallyShapedIcon) {
+            const verticalIconRotate = baseIconRotate + 90.0;
+            iconVerticalBBox = updateIconBoundingBox(verticallyShapedIcon, iconVerticalBBox, verticalIconRotate, layoutIconSize);
+        }
+    }
+
+    const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
+    const iconScaleFactor = clamp(1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
+    for (const appearance of appearances) {
+        const unevaluatedProperties = appearance.getUnevaluatedProperties();
+        const iconImageProperty = unevaluatedProperties._values['icon-image'].value !== undefined;
+        const iconSizeProperty = unevaluatedProperties._values['icon-size'].value !== undefined;
+        const iconOffsetProperty = unevaluatedProperties._values['icon-offset'].value !== undefined;
+        const iconRotateProperty = unevaluatedProperties._values['icon-rotate'].value !== undefined;
+
+        if (iconImageProperty || iconSizeProperty || iconOffsetProperty || iconRotateProperty) {
+            // Get appearance-specific properties, falling back to base values
+            const appearanceIconOffsetValue = iconOffsetProperty ?
+                symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-offset', feature, canonical, []) :
+                null;
+
+            const appearanceIconOffset = (appearanceIconOffsetValue && Array.isArray(appearanceIconOffsetValue)) ?
+                appearanceIconOffsetValue as unknown as [number, number] :
+                iconOffset;
+
+            const appearanceIconRotateValue = iconRotateProperty ?
+                symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-rotate', feature, canonical, []) :
+                null;
+            const appearanceIconRotate = (typeof appearanceIconRotateValue === 'number') ?
+                appearanceIconRotateValue :
+                baseIconRotate;
+
+            const appearanceIconSizeValue = iconSizeProperty ?
+                symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-size', feature, canonical, []) :
+                null;
+            const appearanceIconSize = (typeof appearanceIconSizeValue === 'number') ?
+                appearanceIconSizeValue * sizes.iconScaleFactor :
+                layoutIconSize;
+
+            let appearanceShapedIcon: PositionedIcon | null = null;
+            let appearanceVerticallyShapedIcon: PositionedIcon | null = null;
+
+            let imagePositionToUse: ImagePosition = null;
+            if (iconImageProperty) {
+                const appearanceIconImage = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', feature, canonical, []);
+                if (appearanceIconImage) {
+                    const icon = bucket.getResolvedImageFromTokens(appearanceIconImage as string);
+                    const unevaluatedIconSize = unevaluatedProperties._values['icon-size'];
+                    const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview);
+                    const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview);
+                    imagePositionToUse = imagePositions.get(imageVariant.iconPrimary.toString());
+                }
+            } else if (shapedIcon) {
+                // Use the main icon's image position
+                imagePositionToUse = shapedIcon.imagePrimary;
+            }
+
+            if (imagePositionToUse) {
+                appearanceShapedIcon = shapeIcon(imagePositionToUse, null, appearanceIconOffset, iconAnchor);
+                if (bucket.allowVerticalPlacement) {
+                    appearanceVerticallyShapedIcon = shapeIcon(imagePositionToUse, null, appearanceIconOffset, iconAnchor);
+                }
+            }
+
+            // Add this appearance's contribution to the unified bounding boxes
+            if (appearanceShapedIcon) {
+                iconBBox = updateIconBoundingBox(appearanceShapedIcon, iconBBox, appearanceIconRotate, appearanceIconSize);
+            }
+            if (appearanceVerticallyShapedIcon) {
+                const verticalAppearanceIconRotate = appearanceIconRotate + 90.0;
+                iconVerticalBBox = updateIconBoundingBox(appearanceVerticallyShapedIcon, iconVerticalBBox, verticalAppearanceIconRotate, appearanceIconSize);
+            }
+        }
+    }
+
+    return {iconBBox, iconVerticalBBox};
 }
 
 function scaleShapedIconImage(outImagePosition: ImagePosition, image: StyleImage, variant: ImageVariant, beforeFitIcon: PositionedIcon, afterFitIcon: PositionedIcon,
@@ -486,7 +706,7 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
 
     for (const data of featureData) {
         const {shapedIcon, verticallyShapedIcon, feature, shapedTextOrientations, shapedText, layoutTextSize, layoutIconSize,
-            textOffset, isSDFIcon, iconPrimary, iconSecondary, iconTextFit, iconOffset} = data;
+            textOffset, isSDFIcon, iconPrimary, iconSecondary, iconTextFit, iconOffset, iconCollisionBounds, iconVerticalCollisionBounds} = data;
 
         // Image positions in shapedIcon and shapedText need to be updated since after rasterization, positions in the atlas will have
         // changed
@@ -498,7 +718,7 @@ export function postRasterizationSymbolLayout(bucket: SymbolBucket, bucketData: 
         if (shapedText || shapedIcon) {
             addFeature(bucket, feature, shapedTextOrientations, shapedIcon, verticallyShapedIcon, imageMap, sizes, layoutTextSize,
                 layoutIconSize, textOffset, isSDFIcon, availableImages, canonical, projection, brightness, hasAnySecondaryIcon, iconTextFit,
-                iconOffset, textAlongLine, symbolPlacement);
+                iconOffset, textAlongLine, symbolPlacement, iconCollisionBounds, iconVerticalCollisionBounds);
         }
     }
 
@@ -622,7 +842,9 @@ function addFeature(bucket: SymbolBucket,
                     iconTextFit: "none" | "width" | "height" | "both",
                     iconOffset: [number, number],
                     textAlongLine: boolean,
-                    symbolPlacement: "point" | "line" | "line-center") {
+                    symbolPlacement: "point" | "line" | "line-center",
+                    iconCollisionBounds?: SymbolBoundingBox | null,
+                    iconVerticalCollisionBounds?: SymbolBoundingBox | null) {
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.
     // bucket calculates text-size at a high zoom level so that all tiles can
@@ -682,7 +904,8 @@ function addFeature(bucket: SymbolBucket,
             bucket.index, textPadding, textAlongLine, textOffset,
             iconBoxScale, iconPadding, iconAlongLine, iconOffset,
             feature, sizes, isSDFIcon, availableImages, canonical,
-            brightness, hasAnySecondaryIcon, iconTextFit, elevationFeatureIndex);
+            brightness, hasAnySecondaryIcon, iconTextFit, elevationFeatureIndex,
+            iconCollisionBounds, iconVerticalCollisionBounds);
     };
 
     if (symbolPlacement === 'line') {
@@ -845,12 +1068,15 @@ export function evaluateBoxCollisionFeature(
     shaped: Shaping | PositionedIcon,
     padding: number,
     rotate: number,
-    textOffset?: [number, number] | null
+    textOffset?: [number, number] | null,
+    collisionBounds?: SymbolBoundingBox
 ): number {
-    let y1 = shaped.top;
-    let y2 = shaped.bottom;
-    let x1 = shaped.left;
-    let x2 = shaped.right;
+    let y1: number, y2: number, x1: number, x2: number;
+
+    y1 = collisionBounds ? collisionBounds.top : shaped.top;
+    y2 = collisionBounds ? collisionBounds.bottom : shaped.bottom;
+    x1 = collisionBounds ? collisionBounds.left : shaped.left;
+    x2 = collisionBounds ? collisionBounds.right : shaped.right;
 
     if (isPositionedIcon(shaped) && shaped.collisionPadding) {
         const collisionPadding = shaped.collisionPadding;
@@ -945,7 +1171,9 @@ function addSymbol(bucket: SymbolBucket,
                    brightness: number | null | undefined,
                    hasAnySecondaryIcon: boolean,
                    iconTextFit: "none" | "width" | "height" | "both",
-                   elevationFeatureIndex: number) {
+                   elevationFeatureIndex: number,
+                   iconCollisionBounds?: SymbolBoundingBox | null,
+                   iconVerticalCollisionBounds?: SymbolBoundingBox | null) {
     const lineArray = bucket.addToLineVertexArray(anchor, line);
     let textBoxIndex, iconBoxIndex, verticalTextBoxIndex, verticalIconBoxIndex;
     let textCircle, verticalTextCircle, verticalIconCircle;
@@ -985,7 +1213,7 @@ function addSymbol(bucket: SymbolBucket,
             const verticalTextRotation = textRotation + 90.0;
             verticalTextBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticalShaping, textPadding, verticalTextRotation, textOffset);
             if (verticallyShapedIcon) {
-                verticalIconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconPadding, verticalTextRotation);
+                verticalIconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, verticallyShapedIcon, iconPadding, verticalTextRotation, null, iconVerticalCollisionBounds);
             }
         }
     }
@@ -1000,7 +1228,7 @@ function addSymbol(bucket: SymbolBucket,
         const iconRotate = layer.layout.get('icon-rotate').evaluate(feature, {}, canonical);
         const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, sizes.iconScaleFactor);
         const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit, sizes.iconScaleFactor) : undefined;
-        iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconRotate, null);
+        iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconRotate, null, iconCollisionBounds);
         numIconVertices = iconQuads.length * 4;
 
         let iconSizeData = null;
