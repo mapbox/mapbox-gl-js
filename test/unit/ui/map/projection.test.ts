@@ -153,7 +153,7 @@ describe('Map#projection', () => {
             expect(map._showingGlobe()).toBeFalsy();
 
             map.setProjection({name: 'mercator'});
-            expect(map.painter.clearBackgroundTiles).not.toHaveBeenCalled();
+            expect(map.painter.clearBackgroundTiles).to.toHaveBeenCalledTimes(1);
             expect(map.getProjection().name).toEqual('mercator');
             expect(map.transform.getProjection().name).toEqual(`mercator`);
             expect(map._showingGlobe()).toBeFalsy();
@@ -161,7 +161,7 @@ describe('Map#projection', () => {
             map.setZoom(3);
             await waitFor(map, "render");
             map.setProjection({name: 'globe'});
-            expect(map.painter.clearBackgroundTiles).toHaveBeenCalledTimes(1);
+            expect(map.painter.clearBackgroundTiles).toHaveBeenCalledTimes(2);
             expect(map.getProjection().name).toEqual('globe');
             expect(map.transform.getProjection().name).toEqual(`globe`);
             expect(map._showingGlobe()).toBeTruthy();

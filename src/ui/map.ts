@@ -1494,6 +1494,7 @@ export class Map extends Camera {
 
     _updateProjection(projection: ProjectionSpecification): this {
         let projectionHasChanged;
+        const oldMercatorFromTransition = this.transform.mercatorFromTransition;
 
         if (projection.name === 'globe' && this.transform.zoom >= GLOBE_ZOOM_THRESHOLD_MAX) {
             projectionHasChanged = this.transform.setMercatorFromTransition();
@@ -1503,7 +1504,11 @@ export class Map extends Camera {
 
         this.style.applyProjectionUpdate();
 
-        if (projectionHasChanged) {
+        // If we were in a transition state but the new projection is not globe
+        // we need to ensure that we cleaned the globe projection tiles cache
+        const mercatorWasInTransition = projection.name === 'mercator' && oldMercatorFromTransition !== this.transform.mercatorFromTransition;
+
+        if (projectionHasChanged || mercatorWasInTransition) {
             this.painter.clearBackgroundTiles();
             this.style.clearSources();
 
