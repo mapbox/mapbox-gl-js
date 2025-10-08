@@ -1037,6 +1037,8 @@ class SymbolBucket implements Bucket {
                     vertexOffset += featureData.layoutBasedVertexData.length;
                     featureData.isUsingAppearanceVertexData = false;
                     reuploadBuffer = true;
+                } else {
+                    vertexOffset += symbolInstance.numIconVertices;
                 }
             }
         }

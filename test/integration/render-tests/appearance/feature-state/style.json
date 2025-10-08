@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00037,
+      "allowed": 0.00043,
       "pixelRatio": 2,
       "height": 64,
       "width": 64,
@@ -10,7 +10,7 @@
             ["wait"],
             ["setFeatureState", {
                 "source": "geojson",
-                "id": 1
+                "id": 2
             }, {
                 "hover": true
             }],
@@ -18,7 +18,6 @@
         ]
     }
   },
-  "camera": {"camera-projection": "orthographic"},
   "sources": {
     "geojson": {
       "type": "geojson",
@@ -34,7 +33,21 @@
             "geometry": {
               "type": "Point",
               "coordinates": [
-                0,
+                -5,
+                0
+              ]
+            }
+          },
+          {
+            "id": 2,
+            "type": "Feature",
+            "properties": {
+              "image": "bank-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                5,
                 0
               ]
             }
@@ -50,6 +63,7 @@
       "type": "symbol",
       "source": "geojson",
       "layout": {
+        "icon-allow-overlap": true,
         "icon-image": "bank-12",
         "icon-size": 1,
         "icon-rotate": 0,
