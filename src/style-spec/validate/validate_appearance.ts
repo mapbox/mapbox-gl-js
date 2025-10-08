@@ -7,6 +7,7 @@ import latest from '../reference/latest';
 
 import type {StyleSpecification, LayerSpecification, AppearanceSpecification} from '../types';
 import type {StyleReference} from '../reference/latest';
+import type {StylePropertySpecification} from '../style-spec';
 
 export type AppearanceValidatorOptions = {
     key: string;
@@ -49,10 +50,8 @@ function validateProperties(options: AppearanceValidatorOptions): Array<Validati
 
     const {styleSpec, layer, layerType} = options;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const paintProperties = styleSpec[`paint_${layerType}`];
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const layoutProperties = styleSpec[`layout_${layerType}`];
+    const paintProperties = styleSpec[`paint_${layerType}`] as Record<string, StylePropertySpecification> | undefined;
+    const layoutProperties = styleSpec[`layout_${layerType}`] as Record<string, StylePropertySpecification> | undefined;
     const properties = options.object[options.objectKey] as object;
 
     for (const propertyKey in properties) {
@@ -73,8 +72,7 @@ function validateProperties(options: AppearanceValidatorOptions): Array<Validati
             layer,
             layerType,
             value: properties[propertyKey] as unknown,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            valueSpec: (propertyType === 'paint' ? paintProperties[propertyKey] : layoutProperties[propertyKey]) as object,
+            valueSpec: (propertyType === 'paint' ? paintProperties[propertyKey] : layoutProperties[propertyKey]),
         });
 
         errors.push(...validateProperty(propertyValidationOptions, propertyType));

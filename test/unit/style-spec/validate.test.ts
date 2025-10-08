@@ -15,7 +15,8 @@ describe('Validate style', () => {
             for (const error of result) {
                 if (error.error) error.error = {};
             }
-            await expect(JSON.stringify(result, null, 2)).toMatchFileSnapshot(`./fixture/${fixtureName}.output.json`);
+            const snapshot = `./fixture/${fixtureName}.output.json`;
+            await expect(JSON.stringify(result, null, 2)).toMatchFileSnapshot(snapshot, snapshot);
         });
     });
 });

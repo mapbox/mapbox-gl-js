@@ -1,0 +1,34 @@
+{
+  "version": 8,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v8"
+    }
+  },
+  "layers": [
+    {
+      "id": "tunnel",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "source-layer",
+      "paint": {
+        "line-color-use-theme": "none"
+      }
+    },
+    {
+      "id": "2d-building",
+      "type": "fill-extrusion",
+      "source": "vector",
+      "source-layer": "source-layer",
+      "paint": {
+        "fill-extrusion-color-use-theme": [
+          "case",
+          ["to-boolean", ["feature-state", "select"]], "none",
+          ["to-boolean", ["feature-state", "highlight"]], "none",
+          "default"
+        ]
+      }
+    }
+  ]
+}

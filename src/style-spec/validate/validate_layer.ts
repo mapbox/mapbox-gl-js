@@ -10,6 +10,7 @@ import validateSpec from './validate';
 import {isObject, isString} from '../util/get_type';
 
 import type {StyleReference} from '../reference/latest';
+import type {PropertyValidatorOptions} from './validate_property';
 import type {StyleSpecification, LayerSpecification, GeoJSONSourceSpecification} from '../types';
 
 type LayerValidatorOptions = {
@@ -138,7 +139,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                     style: options.style,
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
-                        '*'(options) {
+                        '*'(options: PropertyValidatorOptions) {
                             return validateLayoutProperty(Object.assign({layerType: type}, options));
                         }
                     }
@@ -153,7 +154,7 @@ export default function validateLayer(options: LayerValidatorOptions): Validatio
                     style: options.style,
                     styleSpec: options.styleSpec,
                     objectElementValidators: {
-                        '*'(options) {
+                        '*'(options: PropertyValidatorOptions) {
                             return validatePaintProperty(Object.assign({layerType: type, layer}, options));
                         }
                     }
