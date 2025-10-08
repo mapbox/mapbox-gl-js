@@ -278,10 +278,12 @@ class ModelBucket implements Bucket {
 
             // Use max scaling of any instance of this model to ensure full extent is covered
             const modelInstances = this.instancesPerModel[modelId];
-            const radius = vec3.distance(model.aabb.max, model.aabb.min) * 0.5 * modelInstances.maxScale + modelInstances.maxXYTranslationDistance;
-            const radiusInTileUnits = Math.min(EXTENT, Math.max(radius / this.tileToMeter, EXTENT / 32));
+            if (modelInstances) {
+                const radius = vec3.distance(model.aabb.max, model.aabb.min) * 0.5 * modelInstances.maxScale + modelInstances.maxXYTranslationDistance;
+                const radiusInTileUnits = Math.min(EXTENT, Math.max(radius / this.tileToMeter, EXTENT / 32));
 
-            maxQueryRadius = Math.max(radiusInTileUnits, maxQueryRadius);
+                maxQueryRadius = Math.max(radiusInTileUnits, maxQueryRadius);
+            }
         }
         return maxQueryRadius;
     }
