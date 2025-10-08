@@ -1,3 +1,18 @@
+## 3.16.0-beta.2
+
+### Features and improvements ✨
+
+- Introduce experimental Appearances API for managing layer styling based on feature state.
+- Add `Map` `setLayerProperty` that combines `setLayoutProperty` & `setPaintProperty` into one method for convenience.
+- Add support for node/material overrides & other improvements to `model` source and layer.
+- Various improvements & fixes for upcoming 3D features (indoor, procedural buildings & elevated roads).
+
+### Bug fixes 🐞
+
+- Improve accuracy of `queryRenderedFeatures` for model layers.
+- Fix a bug with heatmap sometimes disappearing after switching projection.
+- Fix rendering of model layer with vector source on globe projection.
+
 ## 3.16.0-beta.1
 
 ### Features and improvements ✨
