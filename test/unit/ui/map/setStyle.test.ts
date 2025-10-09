@@ -245,10 +245,11 @@ describe('Map#setStyle', () => {
 
         map.setProjection('globe');
         expect(map.getProjection().name).toEqual('globe');
+        expect(map.painter.clearBackgroundTiles).toHaveBeenCalledTimes(1);
 
         map.setZoom(4);
         expect(map.getProjection().name).toEqual('globe');
-        expect(map.painter.clearBackgroundTiles).not.toHaveBeenCalled();
+        expect(map.painter.clearBackgroundTiles).toHaveBeenCalledTimes(1);
     });
 
     test('Setting terrain to null disables the terrain but does not affect draping', async () => {

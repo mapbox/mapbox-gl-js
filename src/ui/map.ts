@@ -1506,7 +1506,7 @@ export class Map extends Camera {
 
         // If we were in a transition state but the new projection is not globe
         // we need to ensure that we cleaned the globe projection tiles cache
-        const mercatorWasInTransition = projection.name === 'mercator' && oldMercatorFromTransition !== this.transform.mercatorFromTransition;
+        const mercatorWasInTransition = this.transform.getProjection().name === 'mercator' && oldMercatorFromTransition !== this.transform.mercatorFromTransition;
 
         if (projectionHasChanged || mercatorWasInTransition) {
             this.painter.clearBackgroundTiles();
