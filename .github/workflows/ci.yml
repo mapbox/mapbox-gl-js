@@ -62,12 +62,11 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
-        node-version-file: '.nvmrc'
         cache: npm
+        node-version-file: '.nvmrc'
         cache-dependency-path: 'package-lock.json'
     - run: npm ci --no-audit --no-fund
-    - run: npm run build-dts
-    - run: (cd ./test/build/typings && npm ci && npm run tsc)
+    - run: npm test --workspace test/build/typings
 
   test-unit:
     runs-on: ubuntu-latest
