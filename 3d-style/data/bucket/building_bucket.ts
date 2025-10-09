@@ -381,10 +381,6 @@ export class BuildingBucket implements BucketWithGroundEffect {
             floodLightWallRadius = clamp(floodLightWallRadius, 0.0, FLOOD_LIGHT_MAX_RADIUS_METER);
             const floodLightWallRadiusNormalized = floodLightWallRadius / FLOOD_LIGHT_MAX_RADIUS_METER * MAX_INT_16;
 
-            const hasFauxFacade = layer.layout.get('building-facade').evaluate(feature, {}, canonical);
-            buildingGen.setFacadeOptions(4.0, true);
-            buildingGen.setFauxFacadeOptions(hasFauxFacade, false, 1.0);
-
             const sourceId = featureSourceIdMap.get(id);
             let facades: Facade[];
             if (facadeDataForFeature.has(sourceId)) {
@@ -392,6 +388,10 @@ export class BuildingBucket implements BucketWithGroundEffect {
             } else {
                 facades = [];
             }
+
+            const hasFauxFacade = facades.length !== 0 && layer.layout.get('building-facade').evaluate(feature, {}, canonical);
+            buildingGen.setFacadeOptions(4.0, true);
+            buildingGen.setFauxFacadeOptions(hasFauxFacade, false, 1.0);
 
             let windowXPerc = 0.0;
             let windowYPerc = 0.0;

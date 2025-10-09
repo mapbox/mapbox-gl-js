@@ -41,6 +41,7 @@
           {
             "type": "Feature",
             "properties": {
+              "source_id": 127046656
             },
             "geometry": {
               "coordinates": [
@@ -68,6 +69,102 @@
                 ]
               ],
               "type": "Polygon"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "min_height": 0,
+              "cross_perc": 0,
+              "source_id": 127046656,
+              "entrances": "",
+              "distance_to_road": 33.34
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": 
+              [
+                [
+                  11.568937291974436,
+                  48.13246952281412
+                ],
+                [
+                  11.568937291974436,
+                  48.132286810394845
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "min_height": 0,
+              "cross_perc": 0,
+              "source_id": 127046656,
+              "entrances": "",
+              "distance_to_road": 33.34
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": 
+              [
+                [
+                  11.568937291974436,
+                  48.132286810394845
+                ],
+                [
+                  11.56931009612731,
+                  48.132286810394845
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "min_height": 0,
+              "cross_perc": 0,
+              "source_id": 127046656,
+              "entrances": "",
+              "distance_to_road": 33.34
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": 
+              [
+                [
+                  11.56931009612731,
+                  48.132286810394845
+                ],
+                [
+                  11.56931009612731,
+                  48.13246952281412
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "min_height": 0,
+              "cross_perc": 0,
+              "source_id": 127046656,
+              "entrances": "",
+              "distance_to_road": 33.34
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": 
+              [
+                [
+                  11.56931009612731,
+                  48.13246952281412
+                ],
+                [
+                  11.568937291974436,
+                  48.13246952281412
+                ]
+              ]
             }
           }
         ]
@@ -97,7 +194,7 @@
       "layout": {
         "building-facade": true,
         "building-roof-shape": "parapet",
-        "building-facade-floors": 4,
+        "building-facade-floors": 5,
         "building-facade-window": [
           0.9,
           0.8
