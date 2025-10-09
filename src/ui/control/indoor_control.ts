@@ -80,22 +80,23 @@ class IndoorControl implements IControl {
 
         if (model.floors.length > 0) {
             this.addBuildingsToggleButton();
-            this.addCurrentFloors(model.floors, !model.showBuildingsOverview);
+            this.addCurrentFloors(model.floors, model.activeFloorsVisible);
             this._updateBuildingsButtonState();
         }
     }
 
     addBuildingsToggleButton() {
         const buildingsButton = this._createButton('mapboxgl-ctrl-buildings-toggle', () => {
-            if (this._model && this._map) {
-                this._map._setIndoorOptions(!this._model.showBuildingsOverview);
+            const map = this._map;
+            if (this._model && map) {
+                map._setIndoorActiveFloorsVisibility(!this._model.activeFloorsVisible);
             }
         });
         DOM.create('span', `mapboxgl-ctrl-icon`, buildingsButton).setAttribute('aria-hidden', 'true');
 
         buildingsButton.classList.add('mapboxgl-ctrl-level-button', 'mapboxgl-ctrl-buildings-toggle');
 
-        if (this._model && this._model.showBuildingsOverview) {
+        if (this._model && !this._model.activeFloorsVisible) {
             buildingsButton.classList.add('mapboxgl-ctrl-level-button-selected');
         }
 
@@ -106,7 +107,7 @@ class IndoorControl implements IControl {
     _updateBuildingsButtonState() {
         const buildingsButton = this._container.querySelector('.mapboxgl-ctrl-buildings-toggle');
         if (buildingsButton && this._model) {
-            if (this._model.showBuildingsOverview) {
+            if (!this._model.activeFloorsVisible) {
                 buildingsButton.classList.add('mapboxgl-ctrl-level-button-selected');
             } else {
                 buildingsButton.classList.remove('mapboxgl-ctrl-level-button-selected');

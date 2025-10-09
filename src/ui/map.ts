@@ -4145,8 +4145,8 @@ export class Map extends Camera {
         this.indoor.selectFloor(floorId);
     }
 
-    _setIndoorOptions(showBuildingsOverview: boolean) {
-        this.indoor.setShowBuildingsOverview(showBuildingsOverview);
+    _setIndoorActiveFloorsVisibility(activeFloorsVisible: boolean) {
+        this.indoor.setActiveFloorsVisibility(activeFloorsVisible);
     }
 
     _addIndoorControl() {

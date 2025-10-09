@@ -12,12 +12,12 @@ const indoorLayers = [{
         "type": "clip",
         "id": "clip-area",
         "source": "indoor-source",
-        "source-layer": "indoor_structure_metadata",
+        "source-layer": "indoor_floor_metadata",
         "minzoom": 15.0,
         "filter": [
             "all",
-            ["==", ["get", "type"], "building"],
-            [">", ["step", ["zoom"], 0, 16, 1], 0]
+            ["==", ["get", "type"], "floor"],
+            isSelectedFloorBase(),
         ],
         "layout": {
             "clip-layer-types": ["model", "symbol"]
@@ -36,10 +36,10 @@ const indoorLayers = [{
               "interpolate",
               ["linear"],
               ["zoom"],
-              15.9,
+              14.9,
               0,
               16,
-              0.4,
+              0.8,
               17,
               1
           ]

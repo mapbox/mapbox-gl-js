@@ -4,12 +4,12 @@ import type {VectorTile, VectorTileFeature} from "@mapbox/vector-tile";
 import type {IndoorBuilding, IndoorData, IndoorTileOptions} from "../style/indoor_data";
 import type Actor from "../util/actor";
 
-export function parseIndoorData(data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: Actor): Set<string> {
+export function parseIndoorData(data: VectorTile, indoorTileOptions: IndoorTileOptions, actor: Actor): IndoorData {
     const sourceLayers = calculateIndoorSourceLayers(indoorTileOptions.sourceLayers, new Set(Object.keys(data.layers)));
     const indoorState = indoorTileOptions.indoorState;
     const indoorData = parseData(data, sourceLayers, indoorState.lastActiveFloors, indoorState.selectedFloorId);
     actor.send('setIndoorData', indoorData);
-    return indoorData.activeFloors;
+    return indoorData;
 }
 
 // This function is used to parse the indoor data from the vector tile

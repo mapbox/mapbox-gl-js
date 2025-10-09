@@ -14,14 +14,15 @@ export default class IndoorManager extends Evented<IndoorEvents> {
 
     _activeFloors: Set<string> | null;
     _indoorState: IndoorState | null;
-    _showBuildingsOverview: boolean;
+    _activeFloorsVisible: boolean;
 
     constructor(style: Style) {
         super();
         this._style = style;
         this._buildings = {};
         this._activeFloors = new Set();
-        this._indoorState = {selectedFloorId: null, lastActiveFloors: null};
+        this._activeFloorsVisible = true;
+        this._indoorState = {selectedFloorId: null, lastActiveFloors: null, activeFloorsVisible: true};
         bindAll(['_updateUI'], this);
     }
 
@@ -32,17 +33,19 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     }
 
     selectFloor(floorId: string | null) {
-        if (floorId === this._selectedFloorId) {
+        if (floorId === this._selectedFloorId && this._activeFloorsVisible) {
             return;
         }
 
         this._selectedFloorId = floorId;
+        this._activeFloorsVisible = true;
         this._updateActiveFloors();
     }
 
-    setShowBuildingsOverview(showBuildingsOverview: boolean) {
-        this._showBuildingsOverview = showBuildingsOverview;
-        this._style.updateIndoorDependentLayers();
+    setActiveFloorsVisibility(activeFloorsVisible: boolean) {
+        this._activeFloorsVisible = activeFloorsVisible;
+        this._updateActiveFloors();
+        this._updateIndoorSelector();
     }
 
     /// Fan in data sent from different tiles and sources and merge it into the one state
@@ -97,7 +100,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
         if (!closestBuilding) {
             this.fire(new Event('selector-update', {
                 selectedFloorId: null,
-                showBuildingsOverview: false,
+                activeFloorsVisible: this._activeFloorsVisible,
                 floors: []
             }));
             return;
@@ -119,7 +122,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
 
         this.fire(new Event('selector-update', {
             selectedFloorId: buildingActiveFloorId,
-            showBuildingsOverview: false,
+            activeFloorsVisible: this._activeFloorsVisible,
             floors
         }));
     }
@@ -130,7 +133,7 @@ export default class IndoorManager extends Evented<IndoorEvents> {
     _updateActiveFloors() {
         const lastActiveFloors = this._activeFloors;
         this._activeFloors = new Set();
-        this._indoorState = {selectedFloorId: this._selectedFloorId, lastActiveFloors};
+        this._indoorState = {selectedFloorId: this._selectedFloorId, lastActiveFloors, activeFloorsVisible: this._activeFloorsVisible};
         this._style.updateIndoorDependentLayers();
     }
 }

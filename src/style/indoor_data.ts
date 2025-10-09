@@ -26,7 +26,7 @@ export type IndoorControlFloor = {
 
 export type IndoorControlModel = {
     selectedFloorId: string;
-    showBuildingsOverview: boolean;
+    activeFloorsVisible: boolean;
     floors: Array<IndoorControlFloor>;
 };
 
@@ -36,6 +36,7 @@ export type IndoorTileOptions = {
 };
 
 export type IndoorState = {
+    activeFloorsVisible: boolean;
     selectedFloorId: string | null;
     lastActiveFloors: Set<string> | null;
 };

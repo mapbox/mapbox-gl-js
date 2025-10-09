@@ -140,7 +140,9 @@ class WorkerTile {
         };
 
         if (this.indoor) {
-            options.activeFloors = parseIndoorData(data, this.indoor, actor);
+            const activeFloorsVisible = this.indoor.indoorState.activeFloorsVisible;
+            const indoorData = parseIndoorData(data, this.indoor, actor);
+            options.activeFloors = activeFloorsVisible ? indoorData.activeFloors : undefined;
         }
 
         const asyncBucketLoads: Promise<unknown>[] = [];
