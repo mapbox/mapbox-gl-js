@@ -1,0 +1,70 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512,
+      "width": 512,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "wait"
+        ]
+      ],
+      "queryGeometry": [
+        165,
+        279
+      ]
+    }
+  },
+  "sources": {
+    "layer-source": {
+      "type": "model",
+      "models": {
+        "cube-1": {
+          "uri": "local://models/Box.glb",
+          "position": [
+            -74.5,
+            40
+          ],
+          "orientation": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "pitch": 50,
+  "bearing": 45,
+  "zoom": 22,
+  "center": [
+    -74.5,
+    40
+  ],
+  "layers": [
+    {
+      "id": "model-layer",
+      "source": "layer-source",
+      "type": "model",
+      "layout": {
+        "model-id": "model-glb"
+      },
+      "paint": {
+        "model-scale": [
+          2,
+          2,
+          2
+        ]
+      }
+    }
+  ]
+}

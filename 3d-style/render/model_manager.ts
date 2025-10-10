@@ -49,7 +49,7 @@ class ModelManager extends Evented {
                 if (!gltf) return;
 
                 const nodes = convertModel(gltf);
-                const model = new Model(id, undefined, undefined, nodes);
+                const model = new Model(id, url, undefined, undefined, nodes);
                 model.computeBoundsAndApplyParent();
                 return model;
             })

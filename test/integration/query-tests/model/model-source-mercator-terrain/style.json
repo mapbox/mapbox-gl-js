@@ -1,0 +1,82 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["wait"],
+        ["wait"]
+      ],
+      "queryGeometry": [
+        [
+          291,
+          262
+        ],
+        [
+          292,
+          264
+        ]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(255, 255, 255, 1)",
+        "intensity": 0.1
+      }
+    }
+  ],
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/11-351-817-terrain-512.png"
+      ],
+      "maxzoom": 11,
+      "minzoom": 11,
+      "tileSize": 512
+    },
+    "model": {
+      "type": "model",
+      "models": {
+        "model-1" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-122.394457, 37.794784],
+          "orientation": [0, 0, 0]
+        },
+         "model-2" : {
+          "uri": "local://models/low-poly-car.gltf",
+          "position": [-122.394467, 37.79502],
+          "orientation": [0, 0, 0]
+        }
+      }
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 2.0
+  },
+  "pitch": 54,
+  "zoom": 17.2,
+  "bearing": -150,
+  "center": [
+    -122.39431,
+    37.794477
+  ],
+  "layers": [
+    {
+      "id": "model",
+      "type": "model",
+      "source": "model",
+      "paint": {
+        "model-opacity" : 0.5,
+        "model-scale": [10, 10, 10],
+        "model-elevation-reference": "ground"
+      }
+    }
+  ]
+}

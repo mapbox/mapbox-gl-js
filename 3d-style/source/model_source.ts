@@ -113,7 +113,7 @@ class ModelSource extends Evented<SourceEvents> implements ISource {
                 const modelPromise = loadGLTF(this.map._requestManager.transformRequest(modelSpec.uri, ResourceType.Model).url).then(gltf => {
                     if (!gltf) return;
                     const nodes = convertModel(gltf);
-                    const model = new Model(modelId, modelSpec.position, modelSpec.orientation, nodes);
+                    const model = new Model(modelId, modelSpec.uri, modelSpec.position, modelSpec.orientation, nodes);
                     ModelSource.applyModelSpecification(model, modelSpec);
                     model.computeBoundsAndApplyParent();
                     this.models.push(model);

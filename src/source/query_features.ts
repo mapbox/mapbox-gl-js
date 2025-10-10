@@ -117,6 +117,16 @@ export function queryRenderedFeatures(
         }
     }
 
+    for (const layerId in query.layers) {
+        const layer = query.layers[layerId];
+        if (layer.styleLayer) {
+            const queryResults = layer.styleLayer.queryRenderedFeatures(queryGeometry, query.sourceCache, transform);
+            if (Object.keys(queryResults).length) {
+                renderedFeatureLayers.push({wrappedTileID: 0, queryResults});
+            }
+        }
+    }
+
     if (renderedFeatureLayers.length === 0) {
         return {};
     }

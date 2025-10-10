@@ -1,0 +1,24 @@
+[
+  {
+    "type": "Feature",
+    "id": "cube-1",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -74.5,
+        40.0
+      ]
+    },
+    "properties": {
+      "layer": "model-layer",
+      "uri": "local://models/Box.glb",
+      "orientation": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "source": "layer-source",
+    "state": {}
+  }
+]

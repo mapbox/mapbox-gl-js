@@ -26,7 +26,7 @@ import type {
 } from '../style-spec/types';
 import type {CustomLayerInterface} from './style_layer/custom_style_layer';
 import type {Map as MapboxMap} from '../ui/map';
-import type {TilespaceQueryGeometry} from './query_geometry';
+import type {QueryGeometry, TilespaceQueryGeometry} from './query_geometry';
 import type {DEMSampler} from '../terrain/elevation';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 import type {CreateProgramParams} from '../render/painter';
@@ -36,6 +36,7 @@ import type {LUT} from '../util/lut';
 import type {ImageId} from '../style-spec/expression/types/image_id';
 import type {ProgramName} from '../render/program';
 import type {AppearanceProps} from './appearance_properties';
+import type {QueryResult} from '../source/query_features';
 
 const TRANSITION_SUFFIX = '-transition';
 
@@ -461,6 +462,12 @@ class StyleLayer extends Evented {
     getAppearances() {
         return this.appearances;
     }
+
+    queryRenderedFeatures(
+        queryGeometry: QueryGeometry,
+        sourceCache: SourceCache,
+        transform: Transform
+    ) : QueryResult { return {}; }
 
     // @ts-expect-error - TS2355 - A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
     queryRadius(_bucket: Bucket): number {}

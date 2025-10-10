@@ -297,8 +297,11 @@ export default class Model {
     nodeOverrideNames: string[] = [];
     featureProperties: Record<string, unknown> = {};
 
-    constructor(id: string, position: [number, number] | null | undefined, orientation: [number, number, number] | null | undefined, nodes: Array<ModelNode>) {
+    uri: string;
+
+    constructor(id: string, uri: string, position: [number, number] | null | undefined, orientation: [number, number, number] | null | undefined, nodes: Array<ModelNode>) {
         this.id = id;
+        this.uri = uri;
         this.position = position != null ? new LngLat(position[0], position[1]) : new LngLat(0, 0);
 
         this.orientation = orientation != null ? orientation : [0, 0, 0];

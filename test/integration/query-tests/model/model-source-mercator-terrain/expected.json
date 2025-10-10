@@ -1,0 +1,24 @@
+[
+  {
+    "type": "Feature",
+    "state": {},
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -122.394457,
+        37.794784
+      ]
+    },
+    "properties": {
+      "layer": "model",
+      "uri": "local://models/low-poly-car.gltf",
+      "orientation": [
+        0,
+        0,
+        0
+      ]
+    },
+    "id": "model-1",
+    "source": "model"
+  }
+]

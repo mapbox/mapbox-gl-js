@@ -9,14 +9,16 @@ import {latFromMercatorY, lngFromMercatorX} from '../../../src/geo/mercator_coor
 import EXTENT from '../../../src/style-spec/data/extent';
 import {convertModelMatrixForGlobe, queryGeometryIntersectsProjectedAabb} from '../../util/model_util';
 import Tiled3dModelBucket from '../../data/bucket/tiled_3d_model_bucket';
+import Feature from '../../../src/util/vectortile_to_geojson';
+import {type Feature as ExpressionEvalFeature, type FeatureState} from '../../../src/style-spec/expression/index';
+import ModelSource from '../../source/model_source';
 
 import type {Layout, Transitionable, Transitioning, PossiblyEvaluated, PropertyValue, ConfigOptions} from '../../../src/style/properties';
 import type Point from '@mapbox/point-geometry';
-import type {LayerSpecification} from '../../../src/style-spec/types';
+import type {LayerSpecification, ModelLayerSpecification} from '../../../src/style-spec/types';
 import type {PaintProps, LayoutProps} from './model_style_layer_properties';
 import type {BucketParameters, Bucket} from '../../../src/data/bucket';
-import type {TilespaceQueryGeometry} from '../../../src/style/query_geometry';
-import type {FeatureState} from '../../../src/style-spec/expression/index';
+import type {QueryGeometry, TilespaceQueryGeometry} from '../../../src/style/query_geometry';
 import type Transform from '../../../src/geo/transform';
 import type ModelManager from '../../render/model_manager';
 import type {ModelNode} from '../../data/model';
@@ -25,6 +27,8 @@ import type {CanonicalTileID} from '../../../src/source/tile_id';
 import type {LUT} from "../../../src/util/lut";
 import type {EvaluationFeature} from '../../../src/data/evaluation_feature';
 import type {ProgramName} from '../../../src/render/program';
+import type {QueryResult} from '../../../src/source/query_features';
+import type SourceCache from '../../../src/source/source_cache';
 
 class ModelStyleLayer extends StyleLayer {
     override type: 'model';
@@ -37,6 +41,7 @@ class ModelStyleLayer extends StyleLayer {
     override paint: PossiblyEvaluated<PaintProps>;
 
     modelManager: ModelManager;
+    layer: ModelLayerSpecification;
 
     constructor(layer: LayerSpecification, scope: string, lut: LUT | null, options?: ConfigOptions | null) {
         const properties = {
@@ -44,6 +49,7 @@ class ModelStyleLayer extends StyleLayer {
             paint: getPaintProperties()
         };
         super(layer, properties, scope, lut, options);
+        this.layer = layer as ModelLayerSpecification;
         this._stats = {numRenderedVerticesInShadowPass: 0, numRenderedVerticesInTransparentPass: 0};
     }
 
@@ -77,6 +83,81 @@ class ModelStyleLayer extends StyleLayer {
 
     override queryRadius(bucket: Bucket): number {
         return (bucket instanceof Tiled3dModelBucket) ? EXTENT - 1 : 0;
+    }
+
+    override queryRenderedFeatures(
+        queryGeometry: QueryGeometry,
+        sourceCache: SourceCache,
+        transform: Transform
+    ): QueryResult {
+        const source = sourceCache.getSource<ModelSource>();
+        if (!source || !(source instanceof ModelSource)) return {};
+        const modelSource: ModelSource = source;
+
+        const result: QueryResult = {};
+        result[this.id] = [];
+        const layerResult = result[this.id];
+
+        let modelFeatureIndex = 0;
+        for (const model of modelSource.models) {
+            const modelFeatureState = sourceCache.getFeatureState(this.sourceLayer, model.id);
+
+            const modelFeatureForEval: ExpressionEvalFeature = {
+                type: 'Unknown',
+                id: model.id,
+                properties: model.featureProperties
+            };
+            const rotation = this.paint.get('model-rotation').evaluate(modelFeatureForEval, modelFeatureState);
+            const scale = this.paint.get('model-scale').evaluate(modelFeatureForEval, modelFeatureState);
+            const translation = this.paint.get('model-translation').evaluate(modelFeatureForEval, modelFeatureState);
+            const elevationReference = this.paint.get('model-elevation-reference');
+            const shouldFollowTerrainSlope = elevationReference === 'ground';
+            const shouldApplyElevation = elevationReference === 'ground';
+
+            let matrix: mat4 = [];
+            calculateModelMatrix(matrix,
+                                         model,
+                                         transform,
+                                         model.position,
+                                         rotation,
+                                         scale,
+                                         translation,
+                                         shouldApplyElevation,
+                                         shouldFollowTerrainSlope,
+                                         false);
+
+            if (transform.projection.name === 'globe') {
+                matrix = convertModelMatrixForGlobe(matrix, transform);
+            }
+            const worldViewProjection = mat4.multiply([], transform.projMatrix, matrix);
+
+            const projectedQueryGeometry = queryGeometry.isPointQuery() ? queryGeometry.screenBounds : queryGeometry.screenGeometry;
+
+            const depth = queryGeometryIntersectsProjectedAabb(projectedQueryGeometry, transform, worldViewProjection, model.aabb);
+            if (depth != null) {
+                const modelFeature: Feature = new Feature(undefined, 0, 0, 0, model.id);
+                modelFeature.layer = this.layer;
+                // Use unsafe assignment for now, due to restriction of GeoJSON/Feature properties to number, string and boolean.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+                modelFeature.properties = structuredClone(model.featureProperties) as any;
+                modelFeature.properties['layer'] = this.id;
+                modelFeature.properties['uri'] = model.uri;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+                modelFeature.properties['orientation'] = model.orientation as any;
+                modelFeature.sourceLayer = this.sourceLayer;
+                modelFeature.geometry = {
+                    type: 'Point',
+                    coordinates: [model.position.lng, model.position.lat]
+                };
+                modelFeature.state = modelFeatureState;
+                modelFeature.source = this.source;
+                layerResult.push({featureIndex: modelFeatureIndex, feature: modelFeature, intersectionZ: depth});
+            }
+
+            ++modelFeatureIndex;
+        }
+
+        return result;
     }
 
     override queryIntersectsFeature(
