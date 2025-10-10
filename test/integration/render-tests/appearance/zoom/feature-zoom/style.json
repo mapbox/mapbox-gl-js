@@ -25,6 +25,7 @@
             "properties": {
               "image": "bank-12"
             },
+            "id": 1,
             "geometry": {
               "type": "Point",
               "coordinates": [
@@ -44,10 +45,8 @@
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "icon-image": "bank-12",
-        "icon-size": 1,
-        "icon-rotate": 0,
-        "icon-offset": [0, 0]
+       "icon-image": "bakery-12",
+        "icon-size": ["case", ["==", ["id"], 1], 0.5, 1]
       },
       "appearances": [
         {

@@ -1,6 +1,8 @@
 #include "_prelude_terrain.vertex.glsl"
 #include "_prelude_shadow.vertex.glsl"
 
+#define APPEARANCE_ICON 1.0
+
 in vec4 a_pos_offset;
 in vec4 a_tex_size;
 in vec4 a_pixeloffset;
@@ -122,14 +124,19 @@ void main() {
     vec2 a_size = a_tex_size.zw;
 
     float a_size_min = floor(a_size[0] * 0.5);
+    float a_size_max =  floor(a_size[1] * 0.5);
+    float a_apperance_icon = a_size[1] - 2.0 * a_size_max;
     vec2 a_pxoffset = a_pixeloffset.xy;
     vec2 a_min_font_scale = a_pixeloffset.zw / 256.0;
 
     highp float segment_angle = -a_projected_pos[3];
     float size;
 
-    if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
-        size = mix(a_size_min, a_size[1], u_size_t) / 128.0;
+    // When rendering icons for appearances, we use a_size_max to store the icon size
+    if (a_apperance_icon == APPEARANCE_ICON) {
+        size = a_size_max / 128.0;
+    } else if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
+        size = mix(a_size_min, a_size_max, u_size_t) / 128.0;
     } else if (u_is_size_zoom_constant && !u_is_size_feature_constant) {
         size = a_size_min / 128.0;
     } else {

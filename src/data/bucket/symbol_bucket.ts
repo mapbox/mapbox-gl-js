@@ -37,7 +37,7 @@ import toEvaluationFeature, {type EvaluationFeature} from '../evaluation_feature
 import {VectorTileFeature} from '@mapbox/vector-tile';
 const vectorTileFeatureTypes = VectorTileFeature.types;
 import {verticalizedCharacterMap} from '../../util/verticalize_punctuation';
-import {evaluateSizeForFeature, evaluateSizeForZoom, getSizeData} from '../../symbol/symbol_size';
+import {evaluateSizeForFeature, evaluateSizeForZoom, getSizeData, SIZE_PACK_FACTOR} from '../../symbol/symbol_size';
 import {getScaledImageVariant, MAX_PACKED_SIZE} from '../../symbol/symbol_layout';
 import {register} from '../../util/web_worker_transfer';
 import EvaluationParameters from '../../style/evaluation_parameters';
@@ -94,7 +94,7 @@ export type AppearanceFeatureData = {
     properties: Record<PropertyKey, unknown>;
     usesAppearanceIconAsPlaceholder: boolean;
     isUsingAppearanceVertexData: boolean;
-    layoutBasedVertexData: [number, number, number, number][];
+    layoutBasedVertexData: [number, number, number, number, number][];
 };
 
 export type SingleCollisionBox = {
@@ -161,7 +161,6 @@ const shaderOpacityAttributes: ReadonlyArray<StructArrayMember> = [
 function addVertex(array: SymbolLayoutArray, tileAnchorX: number, tileAnchorY: number, ox: number, oy: number, tx: number, ty: number, sizeVertex: number[], isSDF: boolean, pixelOffsetX: number, pixelOffsetY: number, minFontScaleX: number, minFontScaleY: number) {
     const aSizeX = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[0])) : 0;
     const aSizeY = sizeVertex ? Math.min(MAX_PACKED_SIZE, Math.round(sizeVertex[1])) : 0;
-
     array.emplaceBack(
         // a_pos_offset
         tileAnchorX,
@@ -170,10 +169,10 @@ function addVertex(array: SymbolLayoutArray, tileAnchorX: number, tileAnchorY: n
         Math.round(oy * 32),
 
         // a_data
-        tx, // x coordinate of symbol on glyph atlas texture
-        ty, // y coordinate of symbol on glyph atlas texture
+        tx, // x coordinate of symbol on atlas texture
+        ty, // y coordinate of symbol on atlas texture
         (aSizeX << 1) + (isSDF ? 1 : 0),
-        aSizeY,
+        (aSizeY << 1) + 0,  // pack isAppearanceIcon flag in last bit, 0 for non-appearance icon
         pixelOffsetX * 16,
         pixelOffsetY * 16,
         minFontScaleX * 256,
@@ -285,7 +284,7 @@ export class SymbolBuffers {
     }
 
     getIconVertexData(offset, numVertices) {
-        const data: [number, number, number, number][] = [];
+        const data: [number, number, number, number, number][] = [];
         assert(offset >= 0 && offset < this.layoutVertexArray.length, 'Invalid vertex offset');
 
         const uint16Array = this.layoutVertexArray.uint16;
@@ -293,14 +292,15 @@ export class SymbolBuffers {
         // SymbolLayoutArray has 12 uint16 values per vertex: [tileAnchorX, tileAnchorY, ox, oy, tx, ty, ...]
         // Position offsets (ox, oy) are at indices 2 and 3
         // Texture coordinates (tx, ty) are at indices 4 and 5
+        // Icon size (aSizeY) is at 7, and we pack the last bit with isAppearanceIcon flag
         for (let i = 0; i < numVertices; ++i) {
             const baseOffset = (offset + i) * 12;
-            data.push([uint16Array[baseOffset + 2], uint16Array[baseOffset + 3], uint16Array[baseOffset + 4], uint16Array[baseOffset + 5]]);
+            data.push([uint16Array[baseOffset + 2], uint16Array[baseOffset + 3], uint16Array[baseOffset + 4], uint16Array[baseOffset + 5], uint16Array[baseOffset + 7]]);
         }
         return data;
     }
 
-    updateIconVertexData(vertexIndex: number, newOx: number, newOy: number, newTx: number, newTy: number, transform: boolean = true) {
+    updateIconVertexData(vertexIndex: number, newOx: number, newOy: number, newTx: number, newTy: number, newSizeY: number, transform: boolean = true) {
         assert(vertexIndex >= 0 && vertexIndex < this.layoutVertexArray.length, 'Invalid vertex start index');
 
         const uint16Array = this.layoutVertexArray.uint16;
@@ -308,11 +308,13 @@ export class SymbolBuffers {
         // SymbolLayoutArray has 12 uint16 values per vertex: [tileAnchorX, tileAnchorY, ox, oy, tx, ty, ...]
         // Position offsets (ox, oy) are at indices 2 and 3
         // Texture coordinates (tx, ty) are at indices 4 and 5
+        // Icon size (sSizeX, sSizeY) is at indices 6 and 7, and isAppearanceIcon info is packed at last bit of aSizeY
         const baseOffset = vertexIndex * 12;
         uint16Array[baseOffset + 2] = transform ? Math.round(newOx * 32) : newOx;  // ox
         uint16Array[baseOffset + 3] = transform ? Math.round(newOy * 32) : newOy;  // oy
         uint16Array[baseOffset + 4] = newTx;  // tx
         uint16Array[baseOffset + 5] = newTy;  // ty
+        uint16Array[baseOffset + 7] = newSizeY; // aSizeY, pack isAppearanceIcon flag in last bit
     }
 
     upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, update?: boolean, createZOffsetBuffer?: boolean, hasAppearances?: boolean) {
@@ -992,10 +994,9 @@ class SymbolBucket implements Bucket {
                         // Get appearance-specific icon-size and calculate combined scale factor
                         const iconSizeValue = layer.getAppearanceValueAndResolveTokens(activeAppearance, 'icon-size', evaluationFeature, canonical, availableImages);
                         const effectiveIconSize = typeof iconSizeValue === 'number' ? iconSizeValue : 1;
-                        const combinedIconScale = effectiveIconSize * iconScaleFactor;
-
+                        const newSizeY = (Math.min(MAX_PACKED_SIZE, Math.round(effectiveIconSize * SIZE_PACK_FACTOR)) << 1) + 1; // pack isAppearance flag in lowest bit
                         // Generate new icon quads with updated texture coordinates and size
-                        const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, combinedIconScale);
+                        const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, iconScaleFactor);
 
                         // Store the layout-based vertex data to restore it later if it's the first time we use an appearance for this feature
                         if (!featureData.isUsingAppearanceVertexData) {
@@ -1006,10 +1007,10 @@ class SymbolBucket implements Bucket {
                         // Update texture coordinates and vertex positions for each vertex in the quads
                         for (let j = 0; j < iconQuads.length; ++j) {
                             const quad = iconQuads[j];
-                            this.icon.updateIconVertexData(vertexOffset, quad.tl.x, quad.tl.y, quad.texPrimary.x, quad.texPrimary.y);
-                            this.icon.updateIconVertexData(vertexOffset + 1, quad.tr.x, quad.tr.y, quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y);
-                            this.icon.updateIconVertexData(vertexOffset + 2, quad.bl.x, quad.bl.y, quad.texPrimary.x, quad.texPrimary.y + quad.texPrimary.h);
-                            this.icon.updateIconVertexData(vertexOffset + 3, quad.br.x, quad.br.y, quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y + quad.texPrimary.h);
+                            this.icon.updateIconVertexData(vertexOffset, quad.tl.x, quad.tl.y, quad.texPrimary.x, quad.texPrimary.y, newSizeY);
+                            this.icon.updateIconVertexData(vertexOffset + 1, quad.tr.x, quad.tr.y, quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y, newSizeY);
+                            this.icon.updateIconVertexData(vertexOffset + 2, quad.bl.x, quad.bl.y, quad.texPrimary.x, quad.texPrimary.y + quad.texPrimary.h, newSizeY);
+                            this.icon.updateIconVertexData(vertexOffset + 3, quad.br.x, quad.br.y, quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y + quad.texPrimary.h, newSizeY);
                             vertexOffset += 4;
                         }
 
@@ -1022,10 +1023,10 @@ class SymbolBucket implements Bucket {
                     // This effectively makes the icon invisible while preserving the vertex buffer structure
                     if (this.layers[0].appearances && this.layers[0].appearances.length > 0) {
                         // Only hide if there are appearances but none are active (this means we had a placeholder)
-                        this.icon.updateIconVertexData(vertexOffset, 0, 0, 0, 0);
-                        this.icon.updateIconVertexData(vertexOffset + 1, 0, 0, 0, 0);
-                        this.icon.updateIconVertexData(vertexOffset + 2, 0, 0, 0, 0);
-                        this.icon.updateIconVertexData(vertexOffset + 3, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset, 0, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset + 1, 0, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset + 2, 0, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset + 3, 0, 0, 0, 0, 0);
                         reuploadBuffer = true;
                     }
                     vertexOffset += symbolInstance.numIconVertices;
@@ -1033,8 +1034,8 @@ class SymbolBucket implements Bucket {
                     // If there are no active appearances but there were before, the vertex data will
                     // still point to the active appearance. We need to reset it to use the layout icon
                     for (let i = 0; i < featureData.layoutBasedVertexData.length; ++i) {
-                        const [ox, oy, tx, ty] = featureData.layoutBasedVertexData[i];
-                        this.icon.updateIconVertexData(vertexOffset + i, ox, oy, tx, ty, false);
+                        const [ox, oy, tx, ty, aSizeY] = featureData.layoutBasedVertexData[i];
+                        this.icon.updateIconVertexData(vertexOffset + i, ox, oy, tx, ty, aSizeY, false);
                     }
                     vertexOffset += featureData.layoutBasedVertexData.length;
                     featureData.isUsingAppearanceVertexData = false;
