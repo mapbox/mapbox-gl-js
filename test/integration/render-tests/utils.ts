@@ -6,6 +6,7 @@ import {setupHTML} from '../../util/html_generator.js';
 import {applyOperations} from '../lib/operation-handlers.js';
 import {mapboxgl} from '../lib/mapboxgl.js';
 import {renderTestNow} from '../lib/constants.js';
+import {transformRequest} from '../lib/transform-request.js';
 
 import type {Map as MapboxMap} from '../../../src/ui/map';
 
@@ -160,7 +161,9 @@ export async function renderMap(style, options, currentTestName) {
             // ordinary instancing is enabled by default, manual is disabled
             forceManualRenderingForInstanceIDShaders: options.forceManualRenderingForInstanceIDShaders,
         },
-        worldview: options.worldview
+        worldview: options.worldview,
+        transformRequest,
+        testMode: true
     });
 
     mapRef.current?.on('error', (e) => {

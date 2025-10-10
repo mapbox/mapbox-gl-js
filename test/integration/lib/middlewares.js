@@ -4,7 +4,6 @@ import path, {dirname} from 'path';
 import serveStatic from 'serve-static';
 import {fileURLToPath} from 'url';
 import {createRequire} from 'module';
-import {localizeSourceURLs} from './localize-urls.js';
 
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -61,7 +60,6 @@ export async function tilesets(req, res) {
     const json = JSON.parse(fileContent);
 
     const port = req.socket.localPort;
-    localizeSourceURLs(json, port);
 
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end(JSON.stringify(json));

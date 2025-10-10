@@ -19,13 +19,19 @@
         import {getAccessToken} from './access_token_generated.js';
 
         mapboxgl.accessToken = getAccessToken();
-        import {applyOperations} from 'http://localhost:9966/test/integration/lib/operation-handlers.js';
+        import {applyOperations} from '../test/integration/lib/operation-handlers.js';
+        import {transformRequest as baseTransformRequest} from '../test/integration/lib/transform-request.js';
+
+        function transformRequest(url, resourceTypeEnum) {
+            const req = baseTransformRequest(url, resourceTypeEnum);
+            return {url: req.url.replace(location.origin, `${location.origin}/test/integration/`)};
+        }
 
         async function fetchStyle() {
             let test = new URLSearchParams(location.search).get('test');
             if (!test) test = prompt('test name:', 'geometry/point');
 
-            const response = await fetch(`http://localhost:9966/test/integration/query-tests/${test}/style.json`);
+            const response = await fetch(`../test/integration/query-tests/${test}/style.json`);
             const style = await response.json();
 
             history.replaceState({}, '', `${location.pathname}?test=${test}`);
@@ -48,8 +54,6 @@
         const container = document.getElementById('map');
         container.style.width = width + 'px';
         container.style.height = height + 'px';
-
-        const transformRequest = url => ({url: url.replace('local://', 'http://localhost:9966/test/integration/')});
 
         const map = window.map = new mapboxgl.Map({
             container,

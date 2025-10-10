@@ -21,11 +21,12 @@ import {uuid, validateUuid, storageAvailable, b64DecodeUnicode, b64EncodeUnicode
 import {postData, getData} from './ajax';
 import {getLivePerformanceMetrics} from '../util/live_performance';
 
+import type {ResourceType as ResourceTypeEnum, RequestParameters} from './ajax';
 import type {LivePerformanceData} from '../util/live_performance';
-import type {RequestParameters, ResourceType as ResourceTypeEnum} from './ajax';
 import type {Cancelable} from '../types/cancelable';
 import type {TileJSON} from '../types/tilejson';
 import type {Map as MapboxMap} from "../ui/map";
+
 import '../types/import-meta.d';
 
 export type ResourceType = keyof typeof ResourceTypeEnum;
@@ -143,7 +144,6 @@ export class RequestManager {
         if (this._isSkuTokenExpired()) {
             this._createSkuToken();
         }
-
         if (tileURL && !isMapboxURL(tileURL)) return tileURL;
 
         const urlObject = parseUrl(tileURL);

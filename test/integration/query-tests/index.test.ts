@@ -14,6 +14,7 @@ import {integrationTests} from 'virtual:integration-tests';
 import {getStatsHTML, setupHTML, updateHTML} from '../../util/html_generator';
 import {mapboxgl} from '../lib/mapboxgl.js';
 import {sendFragment} from '../lib/utils';
+import {transformRequest} from '../lib/transform-request.js';
 
 setupHTML();
 
@@ -116,7 +117,9 @@ const getTest = (queryTestName) => async () => {
             fadeDuration: options.fadeDuration || 0,
             localIdeographFontFamily: options.localIdeographFontFamily || false,
             crossSourceCollisions: typeof options.crossSourceCollisions === "undefined" ? true : options.crossSourceCollisions,
-            performanceMetricsCollection: false
+            performanceMetricsCollection: false,
+            transformRequest,
+            testMode: true
         });
 
         if (options.collisionDebug) {
