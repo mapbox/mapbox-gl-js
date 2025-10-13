@@ -267,7 +267,7 @@ export class InteractionSet {
                     const targetFeatureId = getFeatureTargetKey(variant, feature, id);
 
                     // refresh feature state for features from delegated events (they're cached from previous move event)
-                    if (delegated) targetFeature.state = this.map.getFeatureState(targetFeature);
+                    if (delegated && targetFeature.id !== undefined) targetFeature.state = this.map.getFeatureState(targetFeature);
 
                     const hovered = isMouseEnter ? this.prevHoveredFeatures.get(targetFeatureId) : null;
                     const interactionEvent = new InteractionEvent(event, id, interaction, targetFeature);

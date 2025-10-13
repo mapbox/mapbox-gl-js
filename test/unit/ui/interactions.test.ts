@@ -130,6 +130,29 @@ const style = {
                     }
                 ]
             }
+        },
+        "geojson3": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": null,
+                        "geometry": {"type": "Point", "coordinates": [0, 0]}
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": null,
+                        "geometry": {"type": "Point", "coordinates": [0, 0]}
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": null,
+                        "geometry": {"type": "Point", "coordinates": [0.01, 0.01]}
+                    }
+                ]
+            }
         }
     },
     "featuresets": {
@@ -163,6 +186,11 @@ const style = {
             "id": "circle-2",
             "type": "circle",
             "source": "geojson2"
+        },
+        {
+            "id": "circle-3",
+            "type": "circle",
+            "source": "geojson3"
         }
     ]
 };
@@ -402,6 +430,29 @@ describe('Interaction', () => {
                 properties: {foo: 3},
                 state: {hover: false} // state after mouseleave
             });
+        });
+
+        test('Hover works on features without ids', () => {
+            const mouseenter = vi.fn((e: InteractionEvent): boolean | void => {});
+
+            map.addInteraction('mouseenter-idless', {
+                type: 'mouseenter',
+                target: {layerId: 'circle-3'},
+                handler: mouseenter
+            });
+
+            const onerror = vi.fn();
+
+            map.on('error', onerror);
+
+            dispatchEvent(map, 'mousemove', point);
+            dispatchEvent(map, 'mouseout', point);
+            dispatchEvent(map, 'mousemove', point);
+
+            expect(mouseenter).toHaveBeenCalledTimes(2);
+            expect(mouseleave).toHaveBeenCalledTimes(1);
+
+            expect(onerror).toHaveBeenCalledTimes(0);
         });
     });
 
