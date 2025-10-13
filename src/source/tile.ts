@@ -486,12 +486,12 @@ class Tile {
         if (!painter || !this.latestFeatureIndex || !this.latestFeatureIndex.rawTileData) {
             return;
         }
-        this.updateBucketAppearances(painter);
         const brightness = painter.style.getBrightness();
-        if (!this._lastUpdatedBrightness && !brightness) {
+        const hasAppearances = this.hasAppearances(painter);
+        if (!this._lastUpdatedBrightness && !brightness && !hasAppearances) {
             return;
         }
-        if (this._lastUpdatedBrightness && brightness && Math.abs(this._lastUpdatedBrightness - brightness) < 0.001) {
+        if (!hasAppearances && this._lastUpdatedBrightness && brightness && Math.abs(this._lastUpdatedBrightness - brightness) < 0.001) {
             return;
         }
         this.updateBuckets(painter, this._lastUpdatedBrightness !== brightness);
@@ -674,6 +674,16 @@ class Tile {
         this.updateBuckets(painter);
     }
 
+    hasAppearances(painter: Painter) {
+        for (const id in this.buckets) {
+            if (!painter.style.hasLayer(id)) continue;
+            const bucket = this.buckets[id];
+            const hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
+            if (hasAppearances) return true;
+        }
+        return false;
+    }
+
     updateBuckets(painter: Painter, isBrightnessChanged?: boolean) {
         if (!this.latestFeatureIndex) return;
         if (!painter.style) return;
@@ -699,9 +709,19 @@ class Tile {
 
             const imagePositions: SpritePositions = this.imageAtlas ? Object.fromEntries(this.imageAtlas.patternPositions) : {};
             const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
+            const hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
             const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
             if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged) {
                 bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
+            }
+            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged || hasAppearances) {
+                const globalProperties = {
+                    zoom: painter.transform.zoom,
+                    pitch: painter.transform.pitch,
+                    brightness: painter.style.getBrightness() || 0,
+                    worldview: painter.worldview
+                };
+                bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, availableImages, globalProperties);
             }
             if (bucket instanceof LineBucket || bucket instanceof FillBucket) {
                 if (painter._terrain && painter._terrain.enabled && sourceCache && bucket.uploadPending()) {
@@ -711,42 +731,6 @@ class Tile {
             const layer = painter && painter.style && painter.style.getOwnLayer(id);
             if (layer) {
                 this.queryPadding = Math.max(this.queryPadding, layer.queryRadius(bucket));
-            }
-        }
-    }
-
-    updateBucketAppearances(painter: Painter, isBrightnessChanged?: boolean) {
-        if (!this.latestFeatureIndex) return;
-        if (!painter.style) return;
-
-        const availableImages = painter.style.listImages();
-
-        for (const id in this.buckets) {
-            if (!painter.style.hasLayer(id)) continue;
-
-            const bucket = this.buckets[id];
-            const bucketLayer = bucket.layers[0];
-            // Buckets are grouped by common source-layer
-            const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
-            const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
-
-            let sourceLayerStates: FeatureStates = {};
-            if (sourceCache) {
-                sourceLayerStates = sourceCache._state.getState(sourceLayerId, undefined) as FeatureStates;
-            }
-
-            const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
-            const hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
-
-            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged || hasAppearances) {
-                // Construct global properties for appearance evaluation
-                const globalProperties = {
-                    zoom: painter.transform.zoom,
-                    pitch: painter.transform.pitch,
-                    brightness: painter.style.getBrightness() || 0,
-                    worldview: painter.worldview
-                };
-                bucket.updateAppearances(this.tileID.canonical, sourceLayerStates, availableImages, globalProperties);
             }
         }
     }
