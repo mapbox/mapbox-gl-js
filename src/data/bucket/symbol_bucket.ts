@@ -714,7 +714,8 @@ class SymbolBucket implements Bucket {
             }
         };
 
-        for (const {feature, id, index, sourceLayerIndex} of features) {
+        for (const indexedFeature of features) {
+            const {feature, id, index, sourceLayerIndex} = indexedFeature;
 
             const needGeometry = layer._featureFilter.needGeometry;
             const evaluationFeature = toEvaluationFeature(feature, needGeometry);
@@ -810,8 +811,9 @@ class SymbolBucket implements Bucket {
             this.features.push(symbolFeature);
 
             // Store minimal data needed for appearance evaluation
+            // Use the promoted ID from IndexedFeature (resolved in worker thread) instead of raw feature.id
             this.appearanceFeatureData.push({
-                id: feature.id,
+                id, // This is already the promoted ID from IndexedFeature
                 properties: feature.properties,
                 usesAppearanceIconAsPlaceholder: usesAppearanceIconAsFallback,
                 isUsingAppearanceVertexData: false,
