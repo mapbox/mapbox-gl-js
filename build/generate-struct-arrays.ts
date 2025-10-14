@@ -12,7 +12,7 @@ import fs from 'fs';
 import ejs from 'ejs';
 import {createLayout, viewTypes} from '../src/util/struct_array';
 
-// eslint-disable-next-line import/order
+// eslint-disable-next-line import-x/order
 import type {ViewType, StructArrayLayout, StructArrayMember} from '../src/util/struct_array';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -136,7 +136,7 @@ global.camelize = camelize;
 
 import particleAttributes from '../src/data/particle_attributes';
 import posAttributes, {posAttributesGlobeExt} from '../src/data/pos_attributes';
-// eslint-disable-next-line import/order
+// eslint-disable-next-line import-x/order
 import boundsAttributes from '../src/data/bounds_attributes';
 
 createStructArrayType('pos', posAttributes);
@@ -163,7 +163,7 @@ import {
     buildingBloomAttenuationAttributes,
     buildingFloodLightWallRadiusAttributes
 } from '../3d-style/data/building_attributes';
-// eslint-disable-next-line import/order
+// eslint-disable-next-line import-x/order
 import {modelAttributes, color3fAttributes, color4fAttributes, normalAttributes, texcoordAttributes, instanceAttributes, featureAttributes} from '../3d-style/data/model_attributes';
 
 // layout vertex arrays
@@ -193,7 +193,7 @@ for (const name in layoutAttributes) {
 createStructArrayType('fill_extrusion_ext', fillExtrusionAttributesExt);
 
 // symbol layer specific arrays
-// eslint-disable-next-line import/order
+// eslint-disable-next-line import-x/order
 import {
     symbolLayoutAttributes,
     symbolGlobeExtAttributes,
@@ -233,20 +233,20 @@ createStructArrayType('z_offset_vertex', zOffsetAttributes);
 createStructArrayType('symbol_orientation', orientationAttributes);
 
 import globeAttributes from '../src/terrain/globe_attributes';
-// eslint-disable-next-line import/order
+// eslint-disable-next-line import-x/order
 import {atmosphereLayout} from '../src/render/atmosphere_attributes';
 createStructArrayType('globe_vertex', globeAttributes);
 createStructArrayType('atmosphere_vertex', atmosphereLayout);
 
-// eslint-disable-next-line import/order
+// eslint-disable-next-line import-x/order
 import {starsLayout} from '../src/render/stars_attributes';
 createStructArrayType('stars_vertex', starsLayout);
 
-// eslint-disable-next-line import/order
+// eslint-disable-next-line import-x/order
 import {snowLayout} from '../src/precipitation/snow_attributes.js';
 createStructArrayType('snow_vertex', snowLayout);
 
-// eslint-disable-next-line import/order
+// eslint-disable-next-line import-x/order
 import {rainLayout} from '../src/precipitation/rain_attributes.js';
 createStructArrayType('rain_vertex', rainLayout);
 

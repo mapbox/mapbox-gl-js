@@ -4,7 +4,7 @@ import {test, expect, vi} from '../../util/vitest';
 import parseGlyphPBF from '../../../src/style/parse_glyph_pbf';
 import GlyphManager, {LocalGlyphMode} from '../../../src/render/glyph_manager';
 
-// eslint-disable-next-line import/extensions
+// eslint-disable-next-line import-x/extensions
 import glyphStub from '/test/fixtures/0-255.pbf?arraybuffer';
 
 const glyphData: Record<string, any> = {};

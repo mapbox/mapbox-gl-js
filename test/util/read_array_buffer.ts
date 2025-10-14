@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/extensions
 import {server} from '@vitest/browser/context';
 
 export async function readArrayBuffer(path: string) {

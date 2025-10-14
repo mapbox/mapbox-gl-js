@@ -3,7 +3,8 @@ import {fileURLToPath} from 'node:url';
 import jsdoc from 'eslint-plugin-jsdoc';
 import config from 'eslint-config-mourner';
 import tseslint from 'typescript-eslint';
-import importPlugin from 'eslint-plugin-import';
+import {createNodeResolver, importX} from 'eslint-plugin-import-x';
+import {createTypeScriptImportResolver} from 'eslint-import-resolver-typescript';
 import {globalIgnores} from 'eslint/config';
 import {includeIgnoreFile} from '@eslint/compat';
 import tsConfig from './tsconfig.json' with {type: 'json'};
@@ -19,7 +20,7 @@ export default tseslint.config(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     ...config,
     tseslint.configs.recommendedTypeChecked,
-    importPlugin.flatConfigs.recommended,
+    importX.flatConfigs.recommended,
     jsdoc.configs['flat/recommended'],
 
     // Settings
@@ -32,16 +33,11 @@ export default tseslint.config(
         },
 
         settings: {
-            'import/parsers': {
+            'import-x/parsers': {
                 '@typescript-eslint/parser': ['.ts'],
             },
 
-            'import/resolver': {
-                node: true,
-                typescript: {
-                    project: './tsconfig.json',
-                },
-            },
+            'import-x/resolver-next': [createTypeScriptImportResolver(), createNodeResolver()],
 
             jsdoc: {
                 mode: 'typescript',
@@ -74,7 +70,7 @@ export default tseslint.config(
             'array-bracket-spacing': 'off',
             'consistent-return': 'off',
             'global-require': 'off',
-            'import/no-commonjs': 'error',
+            'import-x/no-commonjs': 'error',
             'key-spacing': 'off',
             'no-eq-null': 'off',
             'no-lonely-if': 'off',
@@ -163,16 +159,16 @@ export default tseslint.config(
     // Import plugin rules
     {
         rules: {
-            'import/named': 'off',
-            'import/namespace': 'off',
-            'import/default': 'off',
-            'import/no-named-as-default-member': 'off',
-            'import/no-unresolved': 'off',
-            'import/no-named-as-default': 'off',
+            'import-x/named': 'off',
+            'import-x/namespace': 'off',
+            'import-x/default': 'off',
+            'import-x/no-named-as-default-member': 'off',
+            'import-x/no-unresolved': 'off',
+            'import-x/no-named-as-default': 'off',
             'no-duplicate-imports': 'off',
-            'import/no-duplicates': 'error',
+            'import-x/no-duplicates': 'error',
 
-            'import/order': ['error', {
+            'import-x/order': ['error', {
                 groups: [[
                     'builtin',
                     'external',
@@ -187,14 +183,14 @@ export default tseslint.config(
                 'newlines-between': 'always',
             }],
 
-            'import/no-restricted-paths': ['error', {
+            'import-x/no-restricted-paths': ['error', {
                 zones: [{
                     target: './src/style-spec',
                     from: ['./src/!(style-spec)/**/*', './3d-style/**/*'],
                 }],
             }],
 
-            'import/extensions': ['error', {
+            'import-x/extensions': ['error', {
                 ts: 'ignorePackages',
                 js: 'always',
                 json: 'always',

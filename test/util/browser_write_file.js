@@ -1,5 +1,5 @@
 /* eslint-env browser */
-/* eslint-disable import/no-commonjs */
+/* eslint-disable import-x/no-commonjs */
 /* global WorkerGlobalScope */
 
 // Tests running in the browser need to be able to persist files to disk in certain situations.

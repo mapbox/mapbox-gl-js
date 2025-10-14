@@ -3,8 +3,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import fs from 'node:fs';
 import {fileURLToPath} from 'node:url';
-import isBuiltin from 'is-builtin-module';
-import {createRequire} from 'node:module';
+import {createRequire, isBuiltin} from 'node:module';
 import {rollup} from 'rollup';
 import rollupConfig from '../../src/style-spec/rollup.config.js';
 

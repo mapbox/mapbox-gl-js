@@ -1,13 +1,12 @@
 
 import path from 'path';
-import fs from 'fs';
-import {globSync} from 'glob';
+import * as fs from 'fs';
 import shuffleSeed from 'shuffle-seed';
 import {queue} from 'd3-queue';
-import chalk from 'chalk';
+import {styleText} from 'node:util';
 import template from 'lodash/template.js';
 import createServer from './server.js';
-// eslint-disable-next-line import/order
+// eslint-disable-next-line import-x/order
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -21,10 +20,11 @@ export default function (directory, implementation, options, run) {
     const tests = options.tests || [];
     const ignores = options.ignores || {'todo': [], 'skip': []};
 
-    let sequence = globSync(`**/${options.fixtureFilename || 'style.json'}`, {cwd: directory})
+    let sequence = fs.globSync(`**/${options.fixtureFilename || 'style.json'}`, {cwd: directory})
         .sort((a, b) => a.localeCompare(b, 'en'))
         .map(fixture => {
-            const id = path.dirname(fixture);
+            // Normalize path separators to forward slashes for cross-platform compatibility
+            const id = path.dirname(fixture).replace(/\\/g, '/');
             const style = require(path.join(directory, fixture));
 
             server.localizeURLs(style);
@@ -50,12 +50,12 @@ export default function (directory, implementation, options, run) {
             }
 
             if (implementation === 'native' && process.env.BUILDTYPE !== 'Debug' && test.id.match(/^debug\//)) {
-                console.log(chalk.gray(`* skipped ${test.id}`));
+                console.log(styleText('gray', `* skipped ${test.id}`));
                 return false;
             }
 
             if (test.skip) {
-                console.log(chalk.gray(`* skipped ${test.id}`));
+                console.log(styleText('gray', `* skipped ${test.id}`));
                 return false;
             }
 
@@ -63,7 +63,7 @@ export default function (directory, implementation, options, run) {
         });
 
     if (options.shuffle) {
-        console.log(chalk.white(`* shuffle seed: `) + chalk.bold(`${options.seed}`));
+        console.log(styleText('white', `* shuffle seed: `) + styleText('bold', `${options.seed}`));
         sequence = shuffleSeed.shuffle(sequence, options.seed);
     }
 
@@ -87,23 +87,23 @@ export default function (directory, implementation, options, run) {
                 if (test.ignored && !test.ok) {
                     test.color = '#9E9E9E';
                     test.status = 'ignored failed';
-                    console.log(chalk.white(`* ignore ${test.id} (${test.ignored})`));
+                    console.log(styleText('white', `* ignore ${test.id} (${test.ignored})`));
                 } else if (test.ignored) {
                     test.color = '#E8A408';
                     test.status = 'ignored passed';
-                    console.log(chalk.yellow(`* ignore ${test.id} (${test.ignored})`));
+                    console.log(styleText('yellow', `* ignore ${test.id} (${test.ignored})`));
                 } else if (test.error) {
                     test.color = 'red';
                     test.status = 'errored';
-                    console.log(chalk.red(`* errored ${test.id}`));
+                    console.log(styleText('red', `* errored ${test.id}`));
                 } else if (!test.ok) {
                     test.color = 'red';
                     test.status = 'failed';
-                    console.log(chalk.red(`* failed ${test.id}`));
+                    console.log(styleText('red', `* failed ${test.id}`));
                 } else {
                     test.color = 'green';
                     test.status = 'passed';
-                    console.log(chalk.green(`* passed ${test.id}`));
+                    console.log(styleText('green', `* passed ${test.id}`));
                 }
 
                 callback(null, test);
@@ -150,27 +150,27 @@ export default function (directory, implementation, options, run) {
         const totalCount = passedCount + ignorePassCount + ignoreCount + failedCount + erroredCount;
 
         if (passedCount > 0) {
-            console.log(chalk.green('%d passed (%s%)'),
+            console.log(styleText('green', '%d passed (%s%)'),
                 passedCount, (100 * passedCount / totalCount).toFixed(1));
         }
 
         if (ignorePassCount > 0) {
-            console.log(chalk.yellow('%d passed but were ignored (%s%)'),
+            console.log(styleText('yellow', '%d passed but were ignored (%s%)'),
                 ignorePassCount, (100 * ignorePassCount / totalCount).toFixed(1));
         }
 
         if (ignoreCount > 0) {
-            console.log(chalk.white('%d ignored (%s%)'),
+            console.log(styleText('white', '%d ignored (%s%)'),
                 ignoreCount, (100 * ignoreCount / totalCount).toFixed(1));
         }
 
         if (failedCount > 0) {
-            console.log(chalk.red('%d failed (%s%)'),
+            console.log(styleText('red', '%d failed (%s%)'),
                 failedCount, (100 * failedCount / totalCount).toFixed(1));
         }
 
         if (erroredCount > 0) {
-            console.log(chalk.red('%d errored (%s%)'),
+            console.log(styleText('red', '%d errored (%s%)'),
                 erroredCount, (100 * erroredCount / totalCount).toFixed(1));
         }
 

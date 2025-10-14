@@ -1,10 +1,10 @@
-// eslint-disable-next-line import/extensions
+// eslint-disable-next-line import-x/extensions
 import {run} from './integration/lib/expression';
 import {createPropertyExpression} from '../src/style-spec/expression/index';
 import {isFunction} from '../src/style-spec/function/index';
 import convertFunction from '../src/style-spec/function/convert';
 import {toString} from '../src/style-spec/expression/types';
-// eslint-disable-next-line import/extensions
+// eslint-disable-next-line import-x/extensions
 import ignores from './ignores/all';
 import {CanonicalTileID} from '../src/source/tile_id';
 import MercatorCoordinate from '../src/geo/mercator_coordinate';

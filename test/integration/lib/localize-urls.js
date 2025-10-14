@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
-import chalk from 'chalk';
-// eslint-disable-next-line import/order
+import {styleText} from 'node:util';
+// eslint-disable-next-line import-x/order
 import {fileURLToPath} from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -33,14 +33,14 @@ export default function localizeURLs(style, port) {
                         styleJSON = fs.readFileSync(path.join(__dirname, '..', relativePath));
                     }
                 } catch (error) {
-                    console.log(chalk.blue(`* ${error}`));
+                    console.log(styleText('blue', `* ${error}`));
                     return;
                 }
 
                 try {
                     styleJSON = JSON.parse(styleJSON.toString());
                 } catch (error) {
-                    console.log(chalk.blue(`* Error while parsing ${op[1]}: ${error}`));
+                    console.log(styleText('blue', `* Error while parsing ${op[1]}: ${error}`));
                     return;
                 }
 

@@ -1,7 +1,6 @@
 import {basename as pathBasename} from 'node:path';
-import {readFileSync} from 'node:fs';
+import {readFileSync, globSync} from 'node:fs';
 import {mergeConfig, defineConfig} from 'vitest/config';
-import {globSync} from 'glob';
 import baseConfig from './vitest.config.base';
 
 const isCI = process.env.CI === 'true';

@@ -1,7 +1,5 @@
-// Use linux 'path' syntax on all operating systems to preserve compatability with 'glob'
-import fs from 'fs';
-import {posix as path} from 'path';
-import {globSync} from 'glob';
+import * as fs from 'fs';
+import * as path from 'path';
 import localizeURLs from './localize-urls.js';
 
 /**
@@ -17,7 +15,7 @@ export function getAllStyleFixturePaths(suiteDir) {
     ];
 
     const jsonGlob = path.join(suiteDir, '/**/*.json');
-    const stylePaths = globSync(jsonGlob, {ignore: ignoreStylePaths, posix: true}).sort((a, b) => a.localeCompare(b, 'en'));
+    const stylePaths = fs.globSync(jsonGlob, {exclude: ignoreStylePaths}).sort((a, b) => a.localeCompare(b, 'en'));
     if (!stylePaths.length) throw new Error(`No style fixture files found in ${jsonGlob}`);
     return stylePaths;
 }
@@ -53,7 +51,8 @@ export function generateFixtureJson(suiteDir, stylePaths, includeImages = false)
     for (const stylePath of stylePaths) {
         const dirName = path.dirname(stylePath);
 
-        const testName = path.relative(suiteDir, dirName);
+        // Normalize path separators to forward slashes for cross-platform compatibility
+        const testName = path.relative(suiteDir, dirName).replace(/\\/g, '/');
         try {
             const json = parseJsonFromFile(stylePath);
 

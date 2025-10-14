@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/extensions
+// eslint-disable-next-line import-x/extensions
 import {server} from '@vitest/browser/context';
 import {test, assert, afterEach, afterAll} from 'vitest';
 import ignoresAll from '../../ignores/all.js';

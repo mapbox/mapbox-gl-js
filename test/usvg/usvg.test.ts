@@ -1,5 +1,4 @@
 import Pbf from 'pbf';
-// eslint-disable-next-line import/extensions
 import {server, page} from '@vitest/browser/context';
 import pixelmatch from 'pixelmatch';
 import {describe, test, expect, afterEach, afterAll, onTestFailed, onTestFinished} from 'vitest';

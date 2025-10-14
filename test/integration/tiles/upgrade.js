@@ -1,4 +1,4 @@
-/* eslint-disable import/no-commonjs */
+/* eslint-disable import-x/no-commonjs */
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const mapnik = require('mapnik');

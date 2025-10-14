@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/extensions
+// eslint-disable-next-line import-x/extensions
 import {server} from '@vitest/browser/context';
 import ignoresAll from '../../ignores/all.js';
 import ignoreWindowsChrome from '../../ignores/windows-chrome.js';

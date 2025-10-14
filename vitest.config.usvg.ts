@@ -1,7 +1,6 @@
 import {basename} from 'path';
-import {readFileSync} from 'fs';
+import {readFileSync, globSync} from 'fs';
 import virtual from '@rollup/plugin-virtual';
-import {globSync} from 'glob';
 import {mergeConfig, defineConfig} from 'vitest/config';
 import baseConfig from './vitest.config.base';
 
