@@ -1669,7 +1669,7 @@
       "value": "appearance",
       "supported-layer-types": ["symbol"],
       "private": true,
-      "doc": "Conditional styling applied to layer features based on dynamic conditions. If multiple conditions are true, only the first matching appearance will be applied. Only properties marked with 'Can be used in appearances' are supported."
+      "doc": "Conditional styling applied to symbol layer features based on dynamic conditions. If multiple conditions are true, only the first matching appearance will be applied. Only properties marked with 'Works with appearances' are supported."
     }
   },
   "appearance": {
