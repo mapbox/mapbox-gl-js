@@ -638,6 +638,37 @@ class SymbolBucket implements Bucket {
         }
     }
 
+    calculateEffectiveAppearanceIconSize(
+        activeAppearance: SymbolAppearance,
+        currentZoom: number,
+        evaluationFeature: EvaluationFeature,
+        canonical: CanonicalTileID,
+        availableImages: Array<ImageId>,
+        iconScaleFactor: number
+    ): number {
+        let effectiveIconSize = 1;
+        const unevaluatedIconSize = activeAppearance.getUnevaluatedProperties()._values['icon-size'];
+        const iconSizeData = getSizeData(this.zoom, unevaluatedIconSize, this.worldview);
+        const sizeValue = evaluateSizeForZoom(iconSizeData, currentZoom);
+        if (iconSizeData.kind === 'constant' || iconSizeData.kind === 'camera') {
+            effectiveIconSize = sizeValue.uSize;
+        }
+        if (iconSizeData.kind === 'composite') {
+            const {minZoom, maxZoom} = iconSizeData;
+            const possibleSizeMin = unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(minZoom, {worldview: this.worldview}), canonical);
+            const possibleSizeMax = unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(maxZoom, {worldview: this.worldview}), canonical);
+            const sizeMin = possibleSizeMin.evaluate(evaluationFeature, {}, canonical, availableImages);
+            const sizeMax = possibleSizeMax.evaluate(evaluationFeature, {}, canonical, availableImages);
+            effectiveIconSize = sizeMin + (sizeMax - sizeMin) * sizeValue.uSizeT;
+        }
+        if (iconSizeData.kind === 'source') {
+            const possibleSize = unevaluatedIconSize.possiblyEvaluate(new EvaluationParameters(this.zoom, {worldview: this.worldview}), canonical);
+            effectiveIconSize = possibleSize.evaluate(evaluationFeature, {}, canonical, availableImages);
+        }
+
+        return effectiveIconSize * iconScaleFactor;
+    }
+
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
     }
 
@@ -992,8 +1023,14 @@ class SymbolBucket implements Bucket {
                         const hasIconTextFit = layer.layout.get('icon-text-fit').constantOr('none') !== 'none';
 
                         // Get appearance-specific icon-size and calculate combined scale factor
-                        const iconSizeValue = layer.getAppearanceValueAndResolveTokens(activeAppearance, 'icon-size', evaluationFeature, canonical, availableImages);
-                        const effectiveIconSize = typeof iconSizeValue === 'number' ? iconSizeValue : 1;
+                        const effectiveIconSize = this.calculateEffectiveAppearanceIconSize(
+                            activeAppearance,
+                            globalProperties.zoom,
+                            evaluationFeature,
+                            canonical,
+                            availableImages,
+                            iconScaleFactor
+                        );
                         const newSizeY = (Math.min(MAX_PACKED_SIZE, Math.round(effectiveIconSize * SIZE_PACK_FACTOR)) << 1) + 1; // pack isAppearance flag in lowest bit
                         // Generate new icon quads with updated texture coordinates and size
                         const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, iconScaleFactor);
