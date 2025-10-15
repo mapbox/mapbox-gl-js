@@ -35,6 +35,7 @@ interface DrawParams {
     facadeAOIntensity: number;
     floodLightIntensity: number;
     floodLightColor: [number, number, number];
+    depthOnly?: boolean;
 }
 
 function drawTiles(params: DrawParams) {
@@ -123,15 +124,24 @@ function drawTiles(params: DrawParams) {
             programWithoutFacades =  painter.getOrCreateProgram('building',
                 {config: programConfiguration, defines, overrideFog: false});
 
-            const facadeDefines = defines.concat(["BUILDING_FAUX_FACADE", "HAS_ATTRIBUTE_a_faux_facade_color_emissive"]);
-            programWithFacades =  painter.getOrCreateProgram('building',
+            // Use cheaper non-facade shader for depth-only pass (used by two pass translucent rendering)
+            if (params.depthOnly === true) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                programWithFacades = programWithoutFacades;
+            } else {
+                const facadeDefines = defines.concat(["BUILDING_FAUX_FACADE", "HAS_ATTRIBUTE_a_faux_facade_color_emissive"]);
+                programWithFacades =  painter.getOrCreateProgram('building',
                 {config: programConfiguration, defines: facadeDefines, overrideFog: false});
+            }
 
             if (shadowRenderer) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 shadowRenderer.setupShadowsFromMatrix(tileMatrix, programWithoutFacades, true);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                shadowRenderer.setupShadowsFromMatrix(tileMatrix, programWithFacades, true);
+
+                if (programWithFacades !== programWithoutFacades) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                    shadowRenderer.setupShadowsFromMatrix(tileMatrix, programWithFacades, true);
+                }
             }
         } else {
             programWithFacades = programWithoutFacades =  painter.getOrCreateProgram('buildingBloom',
@@ -170,11 +180,11 @@ function drawTiles(params: DrawParams) {
             renderBuilding(bucket.buildingWithoutFacade, programWithoutFacades);
         }
 
-        if (programWithFacades !== programWithoutFacades) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            painter.uploadCommonUniforms(context, programWithFacades, coord.toUnwrapped(), null, cutoffParams);
-        }
         if (bucket.buildingWithFacade) {
+            if (programWithFacades !== programWithoutFacades) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                painter.uploadCommonUniforms(context, programWithFacades, coord.toUnwrapped(), null, cutoffParams);
+            }
             renderBuilding(bucket.buildingWithFacade, programWithFacades);
         }
     }
@@ -292,6 +302,9 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
     let drawLayer = true;
 
     const verticalScale = layer.paint.get('building-vertical-scale');
+    if (verticalScale <= 0) {
+        return;
+    }
 
     Debug.run(() => {
         const debugParams = DrawBuildingsDebugParams.getOrCreateInstance(painter);
@@ -388,7 +401,8 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
                 facadeEmissiveChance,
                 facadeAOIntensity,
                 floodLightIntensity,
-                floodLightColor
+                floodLightColor,
+                depthOnly: true
             });
         }
 

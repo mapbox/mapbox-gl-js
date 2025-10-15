@@ -8,7 +8,8 @@ import {
     BuildingFacadeVerticalRangeArray,
     BuildingBloomAttenuationArray,
     BuildingFloodLightWallRadiusArray,
-    FillExtrusionGroundRadiusLayoutArray
+    FillExtrusionGroundRadiusLayoutArray,
+    StructArrayLayout1f4
 } from '../../../src/data/array_types';
 import {calculateLightsMesh} from '../../source/model_loader';
 import {clamp, warnOnce} from '../../../src/util/util';
@@ -163,7 +164,7 @@ export class BuildingGeometry {
     layoutFloodLightDataArray = new BuildingFloodLightWallRadiusArray();
     layoutFloodLightDataBuffer: VertexBuffer;
 
-    layoutAOArray: Array<number> = [];
+    layoutAOArray: StructArrayLayout1f4 = new StructArrayLayout1f4();
 
     indexArray = new TriangleIndexArray();
     indexArrayForConflation = new TriangleIndexArray();
@@ -596,7 +597,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
                 }
 
                 for (let a = 0; a < mesh.ao.length; a++) {
-                    building.layoutAOArray.push(mesh.ao[a]);
+                    building.layoutAOArray.emplaceBack(mesh.ao[a]);
                 }
 
                 for (let c = 0; c < mesh.colors.length; c += 3) {
@@ -1017,7 +1018,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
                 for (let i = 0; i < buildingPart.vertexLength; i++) {
                     const vertexOffset = buildingPart.vertexOffset + i;
-                    const colorFactor = 1.0 + (building.layoutAOArray[vertexOffset] - 1.0) * aoIntensity;
+                    const colorFactor = 1.0 + (building.layoutAOArray.float32[vertexOffset] - 1.0) * aoIntensity;
 
                     const r = color.r * colorFactor * 255;
                     const g = color.g * colorFactor * 255;
