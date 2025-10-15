@@ -16,7 +16,6 @@ import {DEMSampler} from '../terrain/elevation';
 import Tiled3dModelBucket from '../../3d-style/data/bucket/tiled_3d_model_bucket';
 import {loadMatchingModelFeature} from '../../3d-style/style/style_layer/model_style_layer';
 import {createExpression} from '../style-spec/expression/index';
-import EvaluationContext from '../style-spec/expression/evaluation_context';
 
 import type {OverscaledTileID} from '../source/tile_id';
 import type Point from '@mapbox/point-geometry';
@@ -490,11 +489,6 @@ class FeatureIndex {
                             warnOnce(`Failed to create expression for promoteId: ${error}`);
                             return undefined;
                         }
-                    }
-                    // _evaluator is explicitly omitted from serialization here https://github.com/mapbox/mapbox-gl-js-internal/blob/internal/src/util/web_worker_transfer.ts#L112
-                    // and promoteIdExpression is first created in worker thread and will later be used in main thread, so a reinitialize will be needed.
-                    if (!this.promoteIdExpression._evaluator) {
-                        this.promoteIdExpression._evaluator = new EvaluationContext();
                     }
                     id = this.promoteIdExpression.evaluate({zoom: 0}, feature) as string | number;
                 } else {

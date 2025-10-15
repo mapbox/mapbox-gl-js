@@ -58,6 +58,26 @@ function packColor(color: PremultipliedRenderColor): [number, number] {
     ];
 }
 
+function shouldIgnoreLut(
+    lutExpression: PossiblyEvaluatedValue<string>,
+    feature: Feature,
+    featureState: FeatureState,
+    availableImages: ImageId[],
+    canonical?: CanonicalTileID,
+    brightness?: number | null,
+    formattedSection?: FormattedSection,
+    worldview?: string
+): boolean {
+    if (!lutExpression) return false;
+
+    if (lutExpression.kind === 'composite' || lutExpression.kind === 'source') {
+        const value = lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, featureState, canonical, availableImages, formattedSection);
+        return value === 'none';
+    }
+
+    return lutExpression.value === 'none';
+}
+
 /**
  *  `Binder` is the interface definition for the strategies for constructing,
  *  uploading, and binding paint property data as GLSL attributes. Most style-
@@ -250,7 +270,7 @@ class SourceExpressionBinder implements AttributeBinder {
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const value = (this.expression.kind === 'composite' || this.expression.kind === 'source') ? this.expression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection) : this.expression.kind === 'constant' && this.expression.value;
-        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection) : this.lutExpression.value) === 'none' : false;
+        const ignoreLut = shouldIgnoreLut(this.lutExpression, feature, {}, availableImages, canonical, brightness, formattedSection, worldview);
 
         this.paintVertexArray.resize(newLength);
         this._setPaintValue(start, newLength, value, ignoreLut ? null : this.context.lut);
@@ -259,7 +279,7 @@ class SourceExpressionBinder implements AttributeBinder {
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], spritePositions: SpritePositions, brightness: number, worldview: string | undefined) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const value = (this.expression.kind === 'composite' || this.expression.kind === 'source') ? this.expression.evaluate({zoom: 0, brightness, worldview}, feature, featureState, undefined, availableImages) : this.expression.kind === 'constant' && this.expression.value;
-        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, featureState, undefined, availableImages) : this.lutExpression.value) === 'none' : false;
+        const ignoreLut = shouldIgnoreLut(this.lutExpression, feature, featureState, availableImages, undefined, brightness, undefined, worldview);
 
         this._setPaintValue(start, end, value, ignoreLut ? null : this.context.lut);
     }
@@ -334,7 +354,7 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     populatePaintArray(newLength: number, feature: Feature, imagePositions: SpritePositions, availableImages: ImageId[], canonical?: CanonicalTileID, brightness?: number | null, formattedSection?: FormattedSection, worldview?: string) {
         const min = this.expression.evaluate(new EvaluationParameters(this.context.zoom, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection);
         const max = this.expression.evaluate(new EvaluationParameters(this.context.zoom + 1, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection);
-        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, {}, canonical, availableImages, formattedSection) : this.lutExpression.value) === 'none' : false;
+        const ignoreLut = shouldIgnoreLut(this.lutExpression, feature, {}, availableImages, canonical, brightness, formattedSection, worldview);
 
         const start = this.paintVertexArray.length;
         this.paintVertexArray.resize(newLength);
@@ -344,13 +364,13 @@ class CompositeExpressionBinder implements AttributeBinder, UniformBinder {
     updatePaintArray(start: number, end: number, feature: Feature, featureState: FeatureState, availableImages: ImageId[], spritePositions: SpritePositions, brightness: number, worldview: string) {
         const min = this.expression.evaluate({zoom: this.context.zoom, brightness, worldview}, feature, featureState, undefined, availableImages);
         const max = this.expression.evaluate({zoom: this.context.zoom + 1, brightness, worldview}, feature, featureState, undefined, availableImages);
-        const ignoreLut = this.lutExpression ? (this.lutExpression.kind === 'composite' || this.lutExpression.kind === 'source' ? this.lutExpression.evaluate(new EvaluationParameters(0, {brightness, worldview}), feature, featureState, undefined, availableImages) : this.lutExpression.value) === 'none' : false;
+        const ignoreLut = shouldIgnoreLut(this.lutExpression, feature, featureState, availableImages, undefined, brightness, undefined, worldview);
 
         this._setPaintValue(start, end, min, max, ignoreLut ? null : this.context.lut);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _setPaintValue(start: number, end: number, min: any, max: any, lut: LUT) {
+    _setPaintValue(start: number, end: number, min: any, max: any, lut?: LUT) {
         if (this.type === 'color') {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const minColor = packColor(min.toPremultipliedRenderColor(lut));

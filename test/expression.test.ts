@@ -165,6 +165,10 @@ run('js', {ignores, tests}, (fixture) => {
             try {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 const feature = {properties: input[1].properties || {}} as GeoJSON.Feature;
+
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                const featureState = input[2] || {};
+
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 availableImages = input[0].availableImages || [];
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -194,7 +198,7 @@ run('js', {ignores, tests}, (fixture) => {
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                let value = expression.evaluateWithoutErrorHandling(input[0], feature, {}, canonical, availableImages);
+                let value = expression.evaluateWithoutErrorHandling(input[0], feature, featureState, canonical, availableImages);
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (type.kind === 'color') {

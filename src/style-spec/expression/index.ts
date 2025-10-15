@@ -66,7 +66,10 @@ export interface GlobalProperties {
 
 export class StyleExpression {
     expression: Expression;
-    _evaluator: EvaluationContext;
+    _scope?: string;
+    _options?: ConfigOptions;
+    _iconImageUseTheme?: string;
+    _evaluator?: EvaluationContext;
     _defaultValue: Value;
     _warningHistory: {[key: string]: boolean};
     _enumValues?: {[_: string]: unknown};
@@ -76,6 +79,9 @@ export class StyleExpression {
     constructor(expression: Expression, propertySpec?: StylePropertySpecification, scope?: string, options?: ConfigOptions, iconImageUseTheme?: string) {
         this.expression = expression;
         this._warningHistory = {};
+        this._scope = scope;
+        this._options = options;
+        this._iconImageUseTheme = iconImageUseTheme;
         this._evaluator = new EvaluationContext(scope, options, iconImageUseTheme);
         this._defaultValue = propertySpec ? getDefaultValue(propertySpec) : null;
         this._enumValues = propertySpec && propertySpec.type === 'enum' ? propertySpec.values : null;
@@ -118,6 +124,11 @@ export class StyleExpression {
         iconImageUseTheme?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
+        if (!this._evaluator) {
+            // `_evaluator` is explicitly omitted from serialization in src/util/web_worker_transfer.ts
+            this._evaluator = new EvaluationContext(this._scope, this._options, this._iconImageUseTheme);
+        }
+
         this._evaluator.globals = globals;
         this._evaluator.feature = feature || null;
         this._evaluator.featureState = featureState || null;

@@ -1,0 +1,35 @@
+{
+  "propertySpec": {
+    "type": "string",
+    "property-type": "data-driven",
+    "expression": {"parameters": ["zoom", "feature"]}
+  },
+  "expression": ["case", ["to-boolean", ["feature-state", "select"]], "none", ["to-boolean", ["feature-state", "highlight"]], "none", "default"],
+  "inputs": [
+    [{}, {}, {"select": true, "highlight": true}],
+    [{}, {}, {"select": true, "highlight": false}],
+    [{}, {}, {"select": false, "highlight": true}],
+    [{}, {}, {"select": false, "highlight": false}],
+    [{}, {}, {"select": false}],
+    [{}, {}, {"highlight": false}],
+    [{}, {}, {}]
+  ],
+  "expected": {
+    "compiled": {
+      "result": "success",
+      "isFeatureConstant": false,
+      "isZoomConstant": true,
+      "type": "string"
+    },
+    "outputs": [
+      "none",
+      "none",
+      "none",
+      "default",
+      "default",
+      "default",
+      "default"
+    ],
+    "serialized": ["case", ["to-boolean", ["feature-state", "select"]], "none", ["to-boolean", ["feature-state", "highlight"]], "none", "default"]
+  }
+}
