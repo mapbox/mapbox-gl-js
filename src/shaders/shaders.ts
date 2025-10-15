@@ -211,6 +211,8 @@ import modelDepthFrag from '../../3d-style/shaders/model_depth.fragment.glsl';
 import preludeShadowVert from '../../3d-style/shaders/_prelude_shadow.vertex.glsl';
 // @ts-expect-error - GLSL import
 import preludeShadowFrag from '../../3d-style/shaders/_prelude_shadow.fragment.glsl';
+// @ts-expect-error - GLSL import
+import preludeMaterialTableVert from './_prelude_material_table.vertex.glsl';
 
 import type {ShaderSource} from '../render/program';
 import type {DynamicDefinesType} from '../render/program/program_uniforms';
@@ -230,6 +232,8 @@ export const includeMap = {
     '_prelude_terrain.vertex.glsl': preludeTerrainVert,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     '_prelude_shadow.vertex.glsl': preludeShadowVert,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    '_prelude_material_table.vertex.glsl': preludeMaterialTableVert,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     '_prelude_fog.fragment.glsl': preludeFogFrag,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -461,7 +465,10 @@ uniform ${precision} ${type} u_${name};
 
     vertexSource = vertexSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const materialOffsetNameDefineName = `MATERIAL_ATTRIBUTE_OFFSET_${name}`;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const attrType = type === 'float' ? 'vec2' : type;
+        const materialAttribExpression = `GET_ATTRIBUTE_${attrType}(a_${name}, materialInfo, ${materialOffsetNameDefineName})`;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const unpackType = name.match(/color/) ? 'color' : attrType;
 
@@ -477,7 +484,9 @@ in ${precision} ${type} a_${name};
                 return `
 #ifndef HAS_UNIFORM_u_${name}
 uniform lowp float u_${name}_t;
-in ${precision} ${attrType} a_${name};
+    #if !defined(${materialOffsetNameDefineName})
+        in ${precision} ${attrType} a_${name};
+    #endif
 out ${precision} ${type} ${name};
 #else
 uniform ${precision} ${type} u_${name};
@@ -495,8 +504,12 @@ uniform ${precision} ${type} u_${name};
 `;
                 } else {
                     return `
-#ifndef HAS_UNIFORM_u_${name}
-    ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
+#if !defined(HAS_UNIFORM_u_${name}) 
+    #ifdef ${materialOffsetNameDefineName}
+        ${name} = unpack_mix_${unpackType}(${materialAttribExpression}, u_${name}_t);
+    #else
+        ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
+    #endif
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif
@@ -521,7 +534,9 @@ uniform ${precision} ${type} u_${name};
                 return `
 #ifndef HAS_UNIFORM_u_${name}
 uniform lowp float u_${name}_t;
-in ${precision} ${attrType} a_${name};
+    #if !defined(${materialOffsetNameDefineName})
+        in ${precision} ${attrType} a_${name};
+    #endif  
 #else
 uniform ${precision} ${type} u_${name};
 #endif
@@ -558,7 +573,11 @@ uniform ${precision} ${type} u_${name};
                     // vec4 attributes are only used for cross-faded properties, and are not packed
                     return `
 #ifndef HAS_UNIFORM_u_${name}
-    ${precision} ${type} ${name} = a_${name};
+    #ifdef ${materialOffsetNameDefineName}
+        ${precision} ${type} ${name} = ${materialAttribExpression};
+    #else
+        ${precision} ${type} ${name} = a_${name};
+    #endif
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif
@@ -566,7 +585,11 @@ uniform ${precision} ${type} u_${name};
                 } else /* */ {
                     return `
 #ifndef HAS_UNIFORM_u_${name}
-    ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
+    #ifdef ${materialOffsetNameDefineName}
+        ${precision} ${type} ${name} = unpack_mix_${unpackType}(${materialAttribExpression}, u_${name}_t);
+    #else
+        ${precision} ${type} ${name} = unpack_mix_${unpackType}(a_${name}, u_${name}_t);
+    #endif
 #else
     ${precision} ${type} ${name} = u_${name};
 #endif

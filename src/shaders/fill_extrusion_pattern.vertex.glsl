@@ -1,6 +1,7 @@
 #include "_prelude_fog.vertex.glsl"
 #include "_prelude_terrain.vertex.glsl"
 #include "_prelude_lighting.glsl"
+#include "_prelude_material_table.vertex.glsl"
 
 uniform mat4 u_matrix;
 uniform vec2 u_pixel_coord_upper;
@@ -62,6 +63,9 @@ out vec3 v_normal;
 #pragma mapbox: define highp float line_width
 
 void main() {
+
+    DECLARE_MATERIAL_TABLE_INFO
+
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp vec4 color

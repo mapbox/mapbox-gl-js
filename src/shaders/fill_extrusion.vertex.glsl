@@ -2,6 +2,7 @@
 #include "_prelude_terrain.vertex.glsl"
 #include "_prelude_shadow.vertex.glsl"
 #include "_prelude_lighting.glsl"
+#include "_prelude_material_table.vertex.glsl"
 
 uniform mat4 u_matrix;
 uniform vec3 u_lightcolor;
@@ -87,6 +88,9 @@ vec3 sRGBToLinear(vec3 srgbIn) {
 #pragma mapbox: define highp float emissive_strength
 
 void main() {
+
+    DECLARE_MATERIAL_TABLE_INFO
+
     #pragma mapbox: initialize highp float base
     #pragma mapbox: initialize highp float height
     #pragma mapbox: initialize highp vec4 color

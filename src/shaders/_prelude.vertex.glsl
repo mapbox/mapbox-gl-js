@@ -142,3 +142,14 @@ vec3 decomposeToPosAndSkirt(vec2 posWithComposedSkirt)
     vec2 pos = posWithComposedSkirt - vec2(skirt * skirtOffset, 0.0);
     return vec3(pos, skirt);
 }
+
+
+
+#ifndef HAS_SHADER_STORAGE_BLOCK_material_buffer
+
+#define GET_ATTRIBUTE_float(attrib, matInfo, attrib_id) attrib
+#define GET_ATTRIBUTE_vec4(attrib, matInfo, attrib_id) attrib
+#define GET_ATTRIBUTE_vec2(attrib, matInfo, attrib_id) attrib
+#define DECLARE_MATERIAL_TABLE_INFO
+
+#endif
