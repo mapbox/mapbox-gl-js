@@ -1515,14 +1515,13 @@ class Style extends Evented<MapEvents> {
     }
 
     _serializeLayers(ids: Array<string>): Array<LayerSpecification> {
-        const serializedLayers = [];
+        const serializedLayers: LayerSpecification[] = [];
         for (const id of ids) {
             const layer = this._layers[id];
             if (layer && layer.type !== 'custom') {
                 serializedLayers.push(layer.serialize());
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return serializedLayers;
     }
 
@@ -3525,13 +3524,12 @@ class Style extends Evented<MapEvents> {
             this._validate(validateFilter, 'querySourceFeatures.filter', filter, null, params);
         }
 
-        let results = [];
+        let results: Array<Feature> = [];
         const sourceCaches = this.getOwnSourceCaches(sourceId);
         for (const sourceCache of sourceCaches) {
             results = results.concat(querySourceFeatures(sourceCache, params));
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return results;
     }
 
@@ -3877,8 +3875,8 @@ class Style extends Evented<MapEvents> {
             return;
         }
 
-        const draped = [];
-        const nonDraped = [];
+        const draped: string[] = [];
+        const nonDraped: string[] = [];
         for (const layerId of this._mergedOrder) {
             const layer = this._mergedLayers[layerId];
             if (this.isLayerDraped(layer)) {
@@ -3889,9 +3887,7 @@ class Style extends Evented<MapEvents> {
         }
 
         this._drapedFirstOrder = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._drapedFirstOrder.push(...draped);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._drapedFirstOrder.push(...nonDraped);
     }
 

@@ -46,7 +46,7 @@ function checkMaxAngle(
     index++;
 
     // store recent corners and their total angle difference
-    const recentCorners = [];
+    const recentCorners: Array<{distance: number; angleDelta: number}> = [];
     let recentAngleDelta = 0;
 
     // move forwards by the length of the label and check angles along the way
@@ -69,9 +69,7 @@ function checkMaxAngle(
         recentAngleDelta += angleDelta;
 
         // remove corners that are far enough away from the list of recent anchors
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         while (anchorDistance - recentCorners[0].distance > windowSize) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             recentAngleDelta -= recentCorners.shift().angleDelta;
         }
 

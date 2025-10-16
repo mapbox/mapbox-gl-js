@@ -964,7 +964,7 @@ class Transform {
         }
 
         // Remove higher zoom new IDs that overlap with other new IDs
-        const nonOverlappingIds = [];
+        const nonOverlappingIds: OverscaledTileID[] = [];
 
         for (const id of out) {
             if (!out.some(ancestorCandidate => id.isChildOf(ancestorCandidate))) {
@@ -973,14 +973,11 @@ class Transform {
         }
 
         // Remove identical IDs
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         out = nonOverlappingIds.filter(newId => !coveringTiles.some(oldId => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
             if (newId.overscaledZ < maxZoom && oldId.isChildOf(newId)) {
                 return true;
             }
             // Remove identical IDs or children of existing IDs
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             return newId.equals(oldId) || newId.isChildOf(oldId);
         }));
 
@@ -1155,7 +1152,7 @@ class Transform {
 
         // When calculating tile cover for terrain, create deep AABB for nodes, to ensure they intersect frustum: for sources,
         // other than DEM, use minimum of visible DEM tiles and center altitude as upper bound (pitch is always less than 90°).
-        let maxRange;
+        let maxRange: number;
         if (this._elevation && options.isTerrainDEM) {
             maxRange = this._elevation.exaggeration() * 10000;
         } else if (this._elevation) {
@@ -1164,7 +1161,7 @@ class Transform {
         } else {
             maxRange = this._centerAltitude;
         }
-        const minRange = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
+        const minRange: number = options.isTerrainDEM ? -maxRange : this._elevation ? this._elevation.getMinElevationBelowMSL() : 0;
 
         const scaleAdjustment = this.projection.isReprojectedInTileSpace ? getScaleAdjustment(this) : 1.0;
 
@@ -1196,19 +1193,19 @@ class Transform {
         };
 
         const newRootTile = (wrap: number): RootTile => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const max = maxRange;
             const min = minRange;
             return {
                 // With elevation, this._elevation provides z coordinate values. For 2D:
                 // All tiles are on zero elevation plane => z difference is zero
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                 aabb: tileAABB(this, numTiles, 0, 0, 0, wrap, min, max, this.projection),
                 zoom: 0,
                 x: 0,
                 y: 0,
                 minZ: min,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 maxZ: max,
                 wrap,
                 fullyVisible: false
@@ -1508,12 +1505,11 @@ class Transform {
                 if (elevation && sqDist > fogCullDistSq && horizonLineFromTop !== 0) {
                     const projMatrix = this.calculateProjMatrix(entry.tileID.toUnwrapped());
 
-                    let minmax;
+                    let minmax: {min: number; max: number} | null | undefined;
                     if (!options.isTerrainDEM) {
                         minmax = elevation.getMinMaxForTile(entry.tileID);
                     }
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     if (!minmax) { minmax = {min: minRange, max: maxRange}; }
 
                     // ensure that we want `this.rotation` instead of `this.bearing` here
@@ -1522,11 +1518,10 @@ class Transform {
                     const farX = cornerFar[0] * EXTENT;
                     const farY = cornerFar[1] * EXTENT;
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    const worldFar = [farX, farY, minmax.max];
+                    const worldFar: [number, number, number] = [farX, farY, minmax.max];
 
                     // World to NDC
-                    vec3.transformMat4(worldFar as [number, number, number], worldFar as [number, number, number], projMatrix);
+                    vec3.transformMat4(worldFar, worldFar, projMatrix);
 
                     // NDC to Screen
                     const screenCoordY = (1 - worldFar[1]) * this.height * 0.5;

@@ -879,7 +879,7 @@ function fitIconToText(
 
     const image = shapedIcon.imagePrimary;
 
-    let collisionPadding;
+    let collisionPadding: [number, number, number, number] | undefined;
     if (image.content) {
         const content = image.content;
         const pixelRatio = image.pixelRatio || 1;
@@ -898,7 +898,10 @@ function fitIconToText(
     const textLeft = shapedText.left * fontScale;
     const textRight = shapedText.right * fontScale;
 
-    let top, right, bottom, left;
+    let top: number;
+    let right: number;
+    let bottom: number;
+    let left: number;
     if (textFit === 'width' || textFit === 'both') {
         // Stretched horizontally to the text width
         left = iconOffset[0] + textLeft - padding[3];
@@ -906,7 +909,6 @@ function fitIconToText(
     } else {
         // Centered on the text
         left = iconOffset[0] + (textLeft + textRight - image.displaySize[0]) / 2;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         right = left + image.displaySize[0];
     }
 
@@ -919,11 +921,9 @@ function fitIconToText(
     } else {
         // Centered on the text
         top = iconOffset[1] + (textTop + textBottom - image.displaySize[1]) / 2;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         bottom = top + image.displaySize[1];
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return {imagePrimary: image, imageSecondary: undefined, top, right, bottom, left, collisionPadding};
 }
 

@@ -12,8 +12,8 @@ export default function classifyRings(rings: Ring[], maxRings: number): Array<Ri
     if (len <= 1) return [rings];
 
     const polygons: Array<Ring[]> = [];
-    let polygon,
-        ccw;
+    let polygon: Ring[] | undefined;
+    let ccw: boolean | undefined;
 
     for (let i = 0; i < len; i++) {
         const area = calculateSignedArea(rings[i]);
@@ -24,16 +24,13 @@ export default function classifyRings(rings: Ring[], maxRings: number): Array<Ri
         if (ccw === undefined) ccw = area < 0;
 
         if (ccw === area < 0) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (polygon) polygons.push(polygon);
             polygon = [rings[i]];
 
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            (polygon).push(rings[i]);
+            polygon.push(rings[i]);
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (polygon) polygons.push(polygon);
 
     // Earcut performance degrades with the # of rings in a polygon. For this

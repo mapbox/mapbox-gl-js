@@ -56,29 +56,26 @@ class FeatureWrapper implements VectorTileFeature {
 
     loadGeometry(): Array<Array<Point>> {
         if (this._feature.type === 1) {
-            const geometry = [];
+            const geometry: Array<Array<Point>> = [];
             for (const point of this._feature.geometry) {
                 geometry.push([new Point(point[0], point[1])]);
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return geometry;
         } else {
-            const geometry = [];
+            const geometry: Array<Array<Point>> = [];
             for (const ring of this._feature.geometry) {
-                const newRing = [];
+                const newRing: Array<Point> = [];
                 for (const point of ring) {
                     newRing.push(new Point(point[0], point[1]));
                 }
                 geometry.push(newRing);
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return geometry;
         }
     }
 
     toGeoJSON(x: number, y: number, z: number): GeoJSON.Feature {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return toGeoJSON.call(this, x, y, z);
+        return toGeoJSON.call(this, x, y, z) as GeoJSON.Feature;
     }
 }
 

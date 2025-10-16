@@ -40,6 +40,7 @@ import type Painter from './painter';
 import type Tile from '../source/tile';
 import type {Terrain} from '../terrain/terrain';
 import type Context from '../gl/context';
+import type VertexBuffer from '../gl/vertex_buffer';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {GroundEffect, PartData} from '../data/bucket/fill_extrusion_bucket';
 import type {
@@ -478,7 +479,7 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
                 }
             }
         }
-        const dynamicBuffers = [];
+        const dynamicBuffers: Array<VertexBuffer | null | undefined> = [];
         if (painter.terrain || replacementActive) dynamicBuffers.push(bucket.centroidVertexBuffer);
         if (isGlobeProjection) dynamicBuffers.push(bucket.layoutVertexExtBuffer);
         if (wallMode) dynamicBuffers.push(bucket.wallVertexBuffer);
@@ -486,7 +487,6 @@ function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillEx
         program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
             segments, layer.paint, painter.transform.zoom,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             programConfiguration, dynamicBuffers);
     }
 
@@ -563,7 +563,7 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
         const fbSize = framebufferCopyTexture ? framebufferCopyTexture.size[0] : 0;
         const uniformValues = fillExtrusionGroundEffectUniformValues(painter, matrix, opacity, aoPass, meterToTile, ao, floodLightIntensity, floodLightColor, attenuation, edgeRadiusTile, fbSize);
 
-        const dynamicBuffers = [];
+        const dynamicBuffers: Array<VertexBuffer | null | undefined> = [];
         if (replacementActive) dynamicBuffers.push(groundEffect.hiddenByLandmarkVertexBuffer);
 
         if (groundEffect.groundRadiusBuffer != null) {
@@ -574,7 +574,6 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
         program.draw(painter, context.gl.TRIANGLES, depthMode, stencilMode, colorMode, cullFaceMode,
             uniformValues, layer.id, groundEffect.vertexBuffer, groundEffect.indexBuffer,
             segments, layer.paint, zoom,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             programConfiguration, dynamicBuffers);
     };
 

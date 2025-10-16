@@ -220,10 +220,10 @@ export default class DemMinMaxQuadTree {
         if (t == null)
             return null;
 
-        const tHits = [];
-        const sortedHits = [];
-        const boundsMin = [];
-        const boundsMax = [];
+        const tHits: number[] = [];
+        const sortedHits: number[] = [];
+        const boundsMin: number[] = [];
+        const boundsMax: number[] = [];
 
         const stack = [{
             idx: 0,
@@ -239,7 +239,7 @@ export default class DemMinMaxQuadTree {
 
             if (this.leaves[idx]) {
                 // Create 2 triangles to approximate the surface plane for more precise tests
-                decodeBounds(nodex, nodey, depth, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin as number[], boundsMax as number[]);
+                decodeBounds(nodex, nodey, depth, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin, boundsMax);
 
                 const scale = 1 << depth;
                 const minxUv = (nodex + 0) / scale;
@@ -254,20 +254,20 @@ export default class DemMinMaxQuadTree {
                 const dz = sampleElevation(minxUv, maxyUv, this.dem) * exaggeration;
 
                 const t0 = triangleRayIntersect(
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                     boundsMin[0], boundsMin[1], az,     // A
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                     boundsMax[0], boundsMin[1], bz,     // B
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                     boundsMax[0], boundsMax[1], cz,     // C
                     p, d);
 
                 const t1 = triangleRayIntersect(
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                     boundsMax[0], boundsMax[1], cz,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                     boundsMin[0], boundsMax[1], dz,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                     boundsMin[0], boundsMin[1], az,
                     p, d);
 
@@ -279,9 +279,9 @@ export default class DemMinMaxQuadTree {
                 // This covers the case of skirt geometry between two dem tiles of different zoom level
                 if (tMin === Number.MAX_VALUE) {
                     const hitPos = vec3.scaleAndAdd([], p, d, t);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                     const fracx = frac(hitPos[0], boundsMin[0], boundsMax[0]);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                     const fracy = frac(hitPos[1], boundsMin[1], boundsMax[1]);
 
                     if (bilinearLerp(az, bz, dz, cz, fracx, fracy) >= hitPos[2])
@@ -302,7 +302,7 @@ export default class DemMinMaxQuadTree {
                 const childNodeY = (nodey << 1) + this._siblingOffset[i][1];
 
                 // Decode node aabb from the morton code
-                decodeBounds(childNodeX, childNodeY, depth + 1, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin as number[], boundsMax as number[]);
+                decodeBounds(childNodeX, childNodeY, depth + 1, rootMinx, rootMiny, rootMaxx, rootMaxy, boundsMin, boundsMax);
 
                 boundsMin[2] = -aabbSkirtPadding;
                 boundsMax[2] = this.maximums[this.childOffsets[idx] + i] * exaggeration;
@@ -316,7 +316,6 @@ export default class DemMinMaxQuadTree {
 
                     let added = false;
                     for (let j = 0; j < hitCount && !added; j++) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                         if (tHit >= tHits[sortedHits[j]]) {
                             sortedHits.splice(j, 0, i);
                             added = true;
@@ -330,16 +329,11 @@ export default class DemMinMaxQuadTree {
 
             // Continue recursion from closest to furthest
             for (let i = 0; i < hitCount; i++) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const hitIdx = sortedHits[i];
                 stack.push({
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     idx: this.childOffsets[idx] + hitIdx,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     t: tHits[hitIdx],
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     nodex: (nodex << 1) + this._siblingOffset[hitIdx][0],
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     nodey: (nodey << 1) + this._siblingOffset[hitIdx][1],
                     depth: depth + 1
                 });

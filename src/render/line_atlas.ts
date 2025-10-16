@@ -65,7 +65,7 @@ class LineAtlas {
         // are dashes and should be joined seamlessly.
         const oddDashArray = dasharray.length % 2 === 1;
 
-        const ranges = [];
+        const ranges: DashRange[] = [];
 
         let left = oddDashArray ? -dasharray[dasharray.length - 1] * stretch : 0;
         let right = dasharray[0] * stretch;
@@ -85,7 +85,6 @@ class LineAtlas {
             ranges.push({left, right, isDash, zeroLength: dashLength === 0});
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return ranges;
     }
 

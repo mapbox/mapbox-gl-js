@@ -66,7 +66,7 @@ class ClipBucket implements Bucket {
     }
 
     populate(features: Array<IndexedFeature>, options: PopulateParameters, canonical: CanonicalTileID, tileTransform: TileTransform) {
-        const bucketFeatures = [];
+        const bucketFeatures: BucketFeature[] = [];
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
@@ -89,14 +89,10 @@ class ClipBucket implements Bucket {
         }
 
         for (const bucketFeature of bucketFeatures) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const {geometry, index, sourceLayerIndex} = bucketFeature;
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.addFeature(bucketFeature, geometry, index, canonical, {}, options.availableImages, options.brightness);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const feature = features[index].feature;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }

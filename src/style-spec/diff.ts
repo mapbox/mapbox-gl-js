@@ -629,8 +629,7 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         const sourcesRemoved: Record<string, true> = {};
 
         // First collect the {add,remove}Source commands
-        const removeOrAddSourceCommands = [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        const removeOrAddSourceCommands: Command[] = [];
         diffSources(before.sources, after.sources, removeOrAddSourceCommands, sourcesRemoved);
 
         // Push a removeLayer command for each style layer that depends on a
@@ -638,7 +637,7 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         // Also, exclude any such layers them from the input to `diffLayers`
         // below, so that diffLayers produces the appropriate `addLayers`
         // command
-        const beforeLayers = [];
+        const beforeLayers: LayerSpecification[] = [];
         if (before.layers) {
             before.layers.forEach((layer) => {
                 if (layer.source && sourcesRemoved[layer.source]) {
@@ -667,7 +666,7 @@ export default function diffStyles(before: StyleSpecification, after: StyleSpeci
         }
 
         // Handle changes to `layers`
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         diffLayers(beforeLayers, after.layers, commands);
     } catch (e) {
         // fall back to setStyle

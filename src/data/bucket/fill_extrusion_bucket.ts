@@ -433,7 +433,7 @@ export class GroundEffect {
                 this._segmentToGroundQuads[sid] = [];
                 this._segmentToRegionTriCounts[sid] = [0, 0, 0, 0, 0];
             }
-            let prevFactor;
+            let prevFactor: number;
             {
                 const pa = polyline[n - 1];
                 const pb = polyline[0];
@@ -453,7 +453,6 @@ export class GroundEffect {
                 const na = pb.sub(pa)._perp()._unit();
                 const nb = pc.sub(pb)._perp()._unit();
                 const factor = getAngularOffsetFactor(na, nb);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const a0 = prevFactor;
                 const a1 = factor;
 
@@ -465,9 +464,8 @@ export class GroundEffect {
 
                 const idx = segment.vertexLength;
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 addGroundVertex(this.vertexArray, pa, pb, 1, 1, a0);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                 addGroundVertex(this.vertexArray, pa, pb, 1, 0, a0);
                 addGroundVertex(this.vertexArray, pa, pb, 0, 1, a1);
                 addGroundVertex(this.vertexArray, pa, pb, 0, 0, a1);
@@ -938,8 +936,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             wallGeometry = createLineWallGeometry(geometry[0]);
             geometry = [wallGeometry.geometry];
         }
-        const isPointOnInnerWall = (index, polygon) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const isPointOnInnerWall = (index: number, polygon: Array<Point>) => {
             return index < ((polygon.length - 1) / 2.0) || index === polygon.length - 1;
         };
 
@@ -1026,7 +1023,8 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     const groundPolyline: Array<Point> = [];
 
                     // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
-                    let na, nb;
+                    let na: Point;
+                    let nb: Point;
                     {
                         const p0 = ring[0];
                         const p1 = ring[1];
@@ -1045,18 +1043,13 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
                         if (edgeRadius) {
                             nb = p2.sub(p1)._perp()._unit();
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                             const nm = na.add(nb)._unit();
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                             const cosHalfAngle = na.x * nm.x + na.y * nm.y;
                             const offset = edgeRadius * Math.min(4, 1 / cosHalfAngle);
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                             q.x += offset * nm.x;
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                             q.y += offset * nm.y;
                             q.x = Math.round(q.x);
                             q.y = Math.round(q.y);
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             na = nb;
                         }
 
@@ -1134,10 +1127,11 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                 // Geometry used by ground flood light and AO.
                 const groundPolyline: Array<Point> = [];
 
-                let kFirst;
+                let kFirst: number | undefined;
 
                 // The following vectors are used to avoid duplicate normal calculations when going over the vertices.
-                let na, nb;
+                let na: Point;
+                let nb: Point;
                 {
                     const p0 = ring[0];
                     const p1 = ring[1];
@@ -1188,7 +1182,6 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                     if (edgeRadius) {
                         nb = p2.sub(p1)._perp()._unit();
 
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         const cosHalfAngle = getCosHalfAngle(na, nb);
                         let offsetNext = _getRoundedEdgeOffset(p0, p1, p2, cosHalfAngle, edgeRadius);
 
@@ -1198,7 +1191,6 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
                         p1 = p1.add(nEdge.mult(-offsetNext))._round();
                         offsetPrev = offsetNext;
 
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         na = nb;
 
                         if (onGround && this.zoom >= 17) {
@@ -1261,17 +1253,13 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
 
                         // Make sure to fill in the gap in the corner only when both corresponding edges are in tile bounds.
                         if (!isEdgeOutsideBounds(p2, ring[i], bounds)) {
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             const l = i === ring.length - 1 ? kFirst : segment.vertexLength;
 
                             // vertical side chamfer i.e. the space between consecutive walls.
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             this.indexArray.emplaceBack(k + 2, k + 3, l);
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             this.indexArray.emplaceBack(k + 3, l + 1, l);
 
                             // top corner where the top(roof) and two sides(walls) meet.
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             this.indexArray.emplaceBack(k + 3, t1, l + 1);
 
                             segment.primitiveLength += 3;

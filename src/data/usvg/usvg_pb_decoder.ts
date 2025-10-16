@@ -82,20 +82,18 @@ function readIconSetField(tag: number, obj: IconSet, pbf: Pbf) {
 }
 
 export function buildStretchedAreas(metadata: {stretch_x?: number[]; stretch_y?: number[]}, axis: "x" | "y"): void {
-    const areas = [];
+    const areas: Array<[number, number]> = [];
     const stretch = metadata[`stretch_${axis}`];
-    let left = null;
+    let left: number | null = null;
 
     for (let i = 0; i < stretch.length; i++) {
         if (left === null) {
             if (areas.length === 0) {
                 left = stretch[0];
             } else {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 left = areas[areas.length - 1][1] + stretch[i];
             }
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const right = left + stretch[i];
             areas.push([left, right]);
             left = null;

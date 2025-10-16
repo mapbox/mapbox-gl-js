@@ -316,7 +316,7 @@ class HandlerManager {
     }
 
     _getMapTouches(touches: TouchList): TouchList {
-        const mapTouches = [];
+        const mapTouches: Touch[] = [];
         for (const t of touches) {
             const target = (t.target as Node);
             if (this._el.contains(target)) {

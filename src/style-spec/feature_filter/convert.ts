@@ -70,7 +70,7 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
     const op = filter[0];
     if (filter.length <= 1) return (op !== 'any');
 
-    let converted;
+    let converted: unknown;
 
     if (
         op === '==' ||
@@ -89,7 +89,7 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
             const types: Record<string, any> = {};
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const child = _convertFilter(f, types);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             const typechecks = runtimeTypeChecks(types);
             return typechecks === true ? child : ['case', typechecks, child, false];
         }) as ExpressionSpecification;
@@ -128,23 +128,21 @@ function _convertFilter(filter: FilterSpecification, expectedTypes: ExpectedType
 //   ['==', ['typeof', ['get', 'name'], 'string']],
 //   ['==', ['typeof', ['get', 'population'], 'number]]
 // ]
-function runtimeTypeChecks(expectedTypes: ExpectedTypes) {
-    const conditions = [];
+function runtimeTypeChecks(expectedTypes: ExpectedTypes): true | unknown[] {
+    const conditions: unknown[] = [];
     for (const property in expectedTypes) {
         const get = property === '$id' ? ['id'] : ['get', property];
         conditions.push(['==', ['typeof', get], expectedTypes[property]]);
     }
     if (conditions.length === 0) return true;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    if (conditions.length === 1) return conditions[0];
-    return ['all'].concat(conditions);
+    if (conditions.length === 1) return conditions[0] as unknown[];
+    return (['all'] as unknown[]).concat(conditions);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function convertComparisonOp(property: string, value: any, op: string, expectedTypes?: ExpectedTypes | null) {
-    let get;
+function convertComparisonOp(property: string, value: any, op: string, expectedTypes?: ExpectedTypes | null): unknown {
+    let get: unknown[];
     if (property === '$type') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [op, ['geometry-type'], value];
     } else if (property === '$id') {
         get = ['id'];
@@ -171,7 +169,6 @@ function convertComparisonOp(property: string, value: any, op: string, expectedT
         ];
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return [op, get, value];
 }
 

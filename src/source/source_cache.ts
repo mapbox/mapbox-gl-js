@@ -801,7 +801,7 @@ class SourceCache extends Evented {
         this._loadedParentTiles = {};
 
         for (const tileKey in this._tiles) {
-            const path = [];
+            const path: number[] = [];
             let parentTile: Tile | null | undefined;
             let currentId = this._tiles[tileKey].tileID;
 
@@ -829,7 +829,6 @@ class SourceCache extends Evented {
 
             // Cache the result of this traversal to all newly visited tiles
             for (const key of path) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 this._loadedParentTiles[key] = parentTile;
             }
         }
@@ -963,10 +962,9 @@ class SourceCache extends Evented {
         use3DQuery: boolean,
         visualizeQueryGeometry: boolean,
     ): TilespaceQueryGeometry[] {
-        const tileResults = [];
+        const tileResults: TilespaceQueryGeometry[] = [];
 
         const transform = this.transform;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         if (!transform) return tileResults;
 
         const isGlobe = transform.projection.name === 'globe';
@@ -1020,7 +1018,6 @@ class SourceCache extends Evented {
                 }
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return tileResults;
     }
 

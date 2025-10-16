@@ -1615,7 +1615,7 @@ export class Terrain extends Elevation {
         let sourceTileID = tile ? tile.tileID : tileID;
         let z = sourceTileID.overscaledZ;
         const minzoom = sourceCache.getSource().minzoom;
-        const path = [];
+        const path: number[] = [];
         if (!key) {
             const maxzoom = sourceCache.getSource().maxzoom;
             if (tileID.canonical.z >= maxzoom) {
@@ -1637,7 +1637,6 @@ export class Terrain extends Elevation {
         }
 
         const pathToLookup = (key?: number | null) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             path.forEach(id => { lookup[id] = key; });
             path.length = 0;
         };

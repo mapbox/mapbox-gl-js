@@ -629,7 +629,7 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                 this._geolocateButton.setAttribute('aria-pressed', 'true');
 
                 this._numberOfWatches++;
-                let positionOptions;
+                let positionOptions: PositionOptions | undefined;
                 if (this._numberOfWatches > 1) {
                     positionOptions = {maximumAge: 600000, timeout: 0};
                     this._noTimeout = true;
@@ -639,7 +639,6 @@ class GeolocateControl extends Evented<GeolocateControlEvents> implements IContr
                 }
 
                 this._geolocationWatchID = this.options.geolocation.watchPosition(
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     this._onSuccess, this._onError, positionOptions);
 
                 if (this.options.showUserHeading) {

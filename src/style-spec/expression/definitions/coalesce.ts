@@ -56,7 +56,7 @@ class Coalesce implements Expression {
     evaluate(ctx: EvaluationContext): any {
         let result = null;
         let argCount = 0;
-        let firstImage;
+        let firstImage: ResolvedImage | undefined;
         for (const arg of this.args) {
             argCount++;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

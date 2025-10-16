@@ -1535,7 +1535,6 @@ export type MapEvents = {
      */
     'style.load': void;
 
-    /* eslint-disable jsdoc/valid-types */
     /**
      * Fired immediately after imported style resources have been downloaded
      * and the first visually complete rendering of the base style extended with the imported style has occurred.
@@ -1553,7 +1552,6 @@ export type MapEvents = {
      * });
      */
     'style.import.load': void;
-    /* eslint-enable jsdoc/valid-types */
 
     /**
      * Fired after speed index calculation is completed if `speedIndexTiming` option has been set to `true`.

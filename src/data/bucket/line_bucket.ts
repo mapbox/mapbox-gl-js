@@ -241,7 +241,7 @@ class LineBucket implements Bucket {
         const crossSlope = this.layers[0].layout.get('line-cross-slope');
         this.hasCrossSlope = this.elevationType === 'offset' && crossSlope !== undefined;
 
-        const bucketFeatures = [];
+        const bucketFeatures: BucketFeature[] = [];
 
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const needGeometry = this.layers[0]._featureFilter.needGeometry;
@@ -270,9 +270,8 @@ class LineBucket implements Bucket {
 
         if (lineSortKey) {
             bucketFeatures.sort((a, b) => {
-                // a.sortKey is always a number when in use
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                return (a.sortKey as number) - (b.sortKey as number);
+                // a.sortKey is always a number when lineSortKey is defined
+                return a.sortKey - b.sortKey;
             });
         }
 
@@ -280,29 +279,23 @@ class LineBucket implements Bucket {
         const hasFeatureDashes = this.addConstantDashes(lineAtlas);
 
         for (const bucketFeature of bucketFeatures) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const {geometry, index, sourceLayerIndex} = bucketFeature;
 
             if (hasFeatureDashes) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.addFeatureDashes(bucketFeature, lineAtlas);
             }
 
             if (this.hasPattern) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const patternBucketFeature = addPatternDependencies('line', this.layers, bucketFeature, this.zoom, this.pixelRatio, options);
                 // pattern features are added only once the pattern is loaded into the image atlas
                 // so are stored during populate until later updated with positions by tile worker in addFeatures
                 this.patternFeatures.push(patternBucketFeature);
 
             } else {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.addFeature(bucketFeature, geometry, index, canonical, lineAtlas.positions, options.availableImages, options.brightness, options.elevationFeatures);
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const feature = features[index].feature;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index);
         }
     }

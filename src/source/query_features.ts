@@ -143,7 +143,7 @@ export function queryRenderedSymbols(
     availableImages: ImageId[],
     collisionIndex: CollisionIndex,
     retainedQueryData: Record<number, RetainedQueryData>,
-    worldview
+    worldview: string | undefined
 ): QueryResult {
     const result: QueryResult = {};
     const renderedSymbols = collisionIndex.queryRenderedSymbols(queryGeometry);
@@ -160,7 +160,6 @@ export function queryRenderedSymbols(
             queryData.sourceLayerIndex,
             query,
             availableImages,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             worldview
         );
 

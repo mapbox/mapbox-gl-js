@@ -41,12 +41,11 @@ export function translate(
         pt._rotate(-bearing);
     }
 
-    const translated = [];
+    const translated: Point[] = [];
     for (let i = 0; i < queryGeometry.length; i++) {
         const point = queryGeometry[i];
         translated.push(point.sub(pt));
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return translated;
 }
 

@@ -141,8 +141,8 @@ class BuildingIndex {
     }
 
     _getHeightAtTileOffset(tid: OverscaledTileID, x: number, y: number): number {
-        let availableHeight;
-        let maxFillExtrusionHeight;
+        let availableHeight: number | undefined;
+        let maxFillExtrusionHeight: number | undefined;
         // use FE data when landmark height is not available. Instead of assuming order, process
         // fill extrusions before landmarks
         for (let i = 0; i < this.layers.length; ++i) {
@@ -161,11 +161,9 @@ class BuildingIndex {
                 availableHeight = heightData.height;
                 continue;
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             maxFillExtrusionHeight = Math.max(heightData.height * verticalScale, maxFillExtrusionHeight || 0);
         }
         if (maxFillExtrusionHeight !== undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return maxFillExtrusionHeight;
         }
 
@@ -181,7 +179,6 @@ class BuildingIndex {
             const b = bucket as Tiled3dModelBucket;
             const heightData = b.getHeightAtTileCoord(tileX, tileY);
             if (!heightData || heightData.hidden) continue;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             if (heightData.height === undefined && availableHeight !== undefined) return Math.min(heightData.maxHeight, availableHeight) * heightData.verticalScale;
             return heightData.height ? heightData.height * heightData.verticalScale : Number.NEGATIVE_INFINITY;
         }

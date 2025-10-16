@@ -204,7 +204,7 @@ class TileCache {
      * @param {function} filterFn Determines whether the tile is filtered. If the supplied function returns false, the tile will be filtered out.
      */
     filter(filterFn: (tile: Tile) => boolean) {
-        const removed = [];
+        const removed: Array<{value: Tile; timeout: number | null | undefined}> = [];
         for (const key in this.data) {
             for (const entry of this.data[key]) {
                 if (!filterFn(entry.value)) {
@@ -213,7 +213,6 @@ class TileCache {
             }
         }
         for (const r of removed) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             this.remove(r.value.tileID, r);
         }
     }

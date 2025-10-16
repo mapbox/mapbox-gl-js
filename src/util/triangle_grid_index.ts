@@ -76,7 +76,7 @@ class TriangleGridIndex {
         this.xScale = 1.0 / cellSize;
         this.yScale = 1.0 / cellSize;
 
-        const associatedTriangles = [];
+        const associatedTriangles: Array<{cellIdx: number; triIdx: number}> = [];
 
         // For each triangle find all intersecting cells
         for (let t = 0; t < this.triangleCount; t++) {
@@ -118,24 +118,19 @@ class TriangleGridIndex {
         }
 
         // Store cell payload (a list of contained triangles) in adjacent memory cell by cell
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         associatedTriangles.sort((a, b) => a.cellIdx - b.cellIdx || a.triIdx - b.triIdx);
 
         let idx = 0;
         while (idx < associatedTriangles.length) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             const cellIdx = associatedTriangles[idx].cellIdx;
             const cell = {start: this.payload.length, len: 0};
 
             // Find all triangles belonging to the current cell
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             while (idx < associatedTriangles.length && associatedTriangles[idx].cellIdx === cellIdx) {
                 ++cell.len;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                 this.payload.push(associatedTriangles[idx++].triIdx);
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             this.cells[cellIdx] = cell;
         }
     }

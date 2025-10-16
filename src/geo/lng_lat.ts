@@ -294,7 +294,8 @@ export class LngLatBounds {
     extend(obj: LngLatLike | LngLatBoundsLike): this {
         const sw = this._sw,
             ne = this._ne;
-        let sw2, ne2;
+        let sw2: LngLat | undefined;
+        let ne2: LngLat | undefined;
 
         if (obj instanceof LngLat) {
             sw2 = obj;
@@ -321,19 +322,13 @@ export class LngLatBounds {
         }
 
         if (!sw && !ne) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             this._sw = new LngLat(sw2.lng, sw2.lat);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             this._ne = new LngLat(ne2.lng, ne2.lat);
 
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             sw.lng = Math.min(sw2.lng, sw.lng);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             sw.lat = Math.min(sw2.lat, sw.lat);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             ne.lng = Math.max(ne2.lng, ne.lng);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             ne.lat = Math.max(ne2.lat, ne.lat);
         }
 

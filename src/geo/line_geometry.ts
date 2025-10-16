@@ -51,15 +51,14 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         first++;
     }
 
-    let currentVertex;
-    let prevVertex = (undefined as Point);
-    let nextVertex = (undefined as Point);
-    let prevNormal = (undefined as Point);
-    let nextNormal = (undefined as Point);
+    let currentVertex: Point | undefined;
+    let prevVertex: Point | undefined;
+    let nextVertex: Point | undefined;
+    let prevNormal: Point | undefined;
+    let nextNormal: Point | undefined;
 
     if (isPolygon) {
         currentVertex = vertices[len - 2];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         nextNormal = vertices[first].sub(currentVertex)._unit()._perp();
     }
 
@@ -73,7 +72,6 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         if (nextVertex && vertices[i].equals(nextVertex)) continue;
 
         if (nextNormal) prevNormal = nextNormal;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         if (currentVertex) prevVertex = currentVertex;
 
         currentVertex = vertices[i];
@@ -81,7 +79,6 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
         // Calculate the normal towards the next vertex in this line. In case
         // there is no next vertex, pretend that the line is continuing straight,
         // meaning that we are just using the previous normal.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         nextNormal = nextVertex ? nextVertex.sub(currentVertex)._unit()._perp() : prevNormal;
 
         // If we still don't have a previous normal, this is the beginning of a

@@ -185,7 +185,7 @@ class LineStyleLayer extends StyleLayer {
             this.paint.get('line-gap-width').evaluate(feature, featureState));
         const lineOffset = this.paint.get('line-offset').evaluate(feature, featureState);
         if (lineOffset) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             geometry = offsetLine(geometry, lineOffset * queryGeometry.pixelToTileUnitsFactor);
         }
 
@@ -215,12 +215,12 @@ function getLineWidth(lineWidth: number, lineGapWidth: number) {
     }
 }
 
-function offsetLine(rings: Array<Array<Point>>, offset: number) {
-    const newRings = [];
+function offsetLine(rings: Array<Array<Point>>, offset: number): Array<Array<Point>> {
+    const newRings: Array<Array<Point>> = [];
     const zero = new Point(0, 0);
     for (let k = 0; k < rings.length; k++) {
         const ring = rings[k];
-        const newRing = [];
+        const newRing: Array<Point> = [];
         for (let i = 0; i < ring.length; i++) {
             const a = ring[i - 1];
             const b = ring[i];
@@ -236,6 +236,5 @@ function offsetLine(rings: Array<Array<Point>>, offset: number) {
         }
         newRings.push(newRing);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return newRings;
 }

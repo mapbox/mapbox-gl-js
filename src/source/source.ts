@@ -165,8 +165,7 @@ export const create = function (
 };
 
 export const getType = function (name: string): Class<ISource> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return sourceTypes[name];
+    return sourceTypes[name as Source['type']];
 };
 
 export const setType = function (name: string, type: Class<ISource>) {
