@@ -720,5 +720,5 @@ function normalizeOffset(offset: Offset = new Point(0, 0), anchor: Anchor = 'bot
     }
 
     // input specifies an offset per position
-    return Point.convert(offset[anchor] || [0, 0]);
+    return Point.convert(offset?.[anchor] ?? [0, 0]); 
 }
