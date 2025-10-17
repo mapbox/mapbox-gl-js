@@ -6,13 +6,13 @@
   },
   "expression": ["case", ["to-boolean", ["feature-state", "select"]], "none", ["to-boolean", ["feature-state", "highlight"]], "none", "default"],
   "inputs": [
-    [{}, {}, {"select": true, "highlight": true}],
-    [{}, {}, {"select": true, "highlight": false}],
-    [{}, {}, {"select": false, "highlight": true}],
-    [{}, {}, {"select": false, "highlight": false}],
-    [{}, {}, {"select": false}],
-    [{}, {}, {"highlight": false}],
-    [{}, {}, {}]
+    [{}, {"id": 1}, {"select": true, "highlight": true}],
+    [{}, {"id": 1}, {"select": true, "highlight": false}],
+    [{}, {"id": 1}, {"select": false, "highlight": true}],
+    [{}, {"id": 1}, {"select": false, "highlight": false}],
+    [{}, {"id": 1}, {"select": false}],
+    [{}, {"id": 1}, {"highlight": false}],
+    [{}, {"id": 1}, {}]
   ],
   "expected": {
     "compiled": {
