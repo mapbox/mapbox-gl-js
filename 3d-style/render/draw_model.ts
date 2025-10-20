@@ -39,6 +39,7 @@ import type VertexBuffer from '../../src/gl/vertex_buffer';
 import type {CutoffParams} from '../../src/render/cutoff';
 import type {LUT} from "../../src/util/lut";
 import type {ModelUniformsType, ModelDepthUniformsType} from '../render/program/model_program';
+import type {Source} from '../../src/source/source';
 
 export default drawModels;
 
@@ -259,12 +260,19 @@ function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLay
             undefined, dynamicBuffers);
 }
 
+function getScope(source: Source, layer: ModelStyleLayer, importedAsBasemap: boolean) {
+    // When using geojson layers, models are always set in the root scope to avoid model duplication
+    // But when the root style is defined as a fragment or has an schema, we use the well-known "basemap"
+    // scope to load the style so models will be set there.
+    return source.type === 'vector' ? layer.scope : importedAsBasemap ? "basemap" : "";
+}
+
 export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painter: Painter) {
     const modelSource = sourceCache.getSource();
     if (!modelSource.loaded()) return;
 
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
-        const scope = modelSource.type === 'vector' ? layer.scope : "";
+        const scope = getScope(modelSource, layer, painter.style._importedAsBasemap);
         if (painter.modelManager) {
             // Do it here, to prevent modelManager handling in Painter.
             // geojson models are always set in the root scope to avoid model duplication
@@ -439,7 +447,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
     }
 
     if (modelSource.type === 'vector' || modelSource.type === 'geojson') {
-        const scope = modelSource.type === 'vector' ? layer.scope : "";
+        const scope = getScope(modelSource, layer, painter.style._importedAsBasemap);
         drawVectorLayerModels(painter, sourceCache, layer, coords, scope);
         cleanup();
         return;

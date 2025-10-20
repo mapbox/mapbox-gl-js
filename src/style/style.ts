@@ -350,6 +350,7 @@ class Style extends Evented<MapEvents> {
     } | null | undefined;
     _buildingIndex: BuildingIndex;
     _transition: TransitionSpecification;
+    _importedAsBasemap: boolean;
 
     crossTileSymbolIndex: CrossTileSymbolIndex;
     pauseablePlacement: PauseablePlacement;
@@ -402,6 +403,8 @@ class Style extends Evented<MapEvents> {
         this._has3DLayers = false;
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
+
+        this._importedAsBasemap = false;
 
         this._changes = options.styleChanges || new StyleChanges();
 
@@ -763,7 +766,12 @@ class Style extends Evented<MapEvents> {
         // it as an import with the well-known ID "basemap" to make sure that we don't expose the internals.
         if (this._isInternalStyle(json)) {
             const basemap = {id: 'basemap', data: json, url: ''};
-            const style = Object.assign({}, empty, {imports: [basemap]});
+            const style = Object.assign({}, empty, {imports: [basemap]}, json.center ? {center: json.center} : {},
+                json.bearing ? {bearing: json.bearing} : {},
+                json.pitch ? {pitch: json.pitch} : {},
+                json.zoom ? {zoom: json.zoom} : {},
+                json.light ? {light: json.light} : {}) as StyleSpecification;
+            this._importedAsBasemap = true;
             this._load(style, validate);
             return;
         }

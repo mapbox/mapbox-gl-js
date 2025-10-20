@@ -521,9 +521,11 @@ class ModelBucket implements Bucket {
 
         const translation = feature.translation = layer.paint.get('model-translation').evaluate(evaluationFeature, featureState, canonical);
 
-        const color = layer.paint.get('model-color').evaluate(evaluationFeature, featureState, canonical);
-
+        // When layer.paint.get('model-color') is constant, evaluate returns the object defined in the spec.
+        // If we don't create a new object here we would be updating that, causing problems afterwards
+        const color = Object.assign({}, layer.paint.get('model-color').evaluate(evaluationFeature, featureState, canonical));
         color.a = layer.paint.get('model-color-mix-intensity').evaluate(evaluationFeature, featureState, canonical);
+
         const rotationScaleYZFlip = [];
         if (this.maxVerticalOffset < translation[2]) this.maxVerticalOffset = translation[2];
 
