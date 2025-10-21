@@ -1,7 +1,7 @@
 import Anchor from './anchor';
 import {getAnchors, getCenterAnchor} from './get_anchors';
 import {shapeText, shapeIcon, WritingMode, fitIconToText, isPositionedIcon, getPositionedIconSize, isFullyStretchableX, isFullyStretchableY} from './shaping';
-import {getGlyphQuads, getIconQuads} from './quads';
+import {getGlyphQuads, getIconQuads, getIconQuadsNumber, type SymbolQuad} from './quads';
 import {warnOnce, degToRad, clamp} from '../util/util';
 import {
     allowsVerticalWritingMode,
@@ -857,11 +857,23 @@ function addFeature(bucket: SymbolBucket,
     }
     const layout = bucket.layers[0].layout;
 
+    const glyphSize = ONE_EM;
+    const fontScale = layoutTextSize * sizes.textScaleFactor / glyphSize;
+
     const defaultShaping = getDefaultHorizontalShaping(shapedTextOrientations.horizontal) || shapedTextOrientations.vertical;
+
+    // Store text shaping data for icon-text-fit appearance updates
+    if (iconTextFit !== 'none' && bucket.appearanceFeatureData && feature.index < bucket.appearanceFeatureData.length) {
+        const featureData = bucket.appearanceFeatureData[feature.index];
+        if (featureData) {
+            featureData.textShaping = defaultShaping;
+            featureData.iconTextFitPadding = layout.get('icon-text-fit-padding').evaluate(feature, {}, canonical);
+            featureData.fontScale = fontScale;
+        }
+    }
     const isGlobe = projection.name === 'globe';
 
-    const glyphSize = ONE_EM,
-        textMaxBoxScale = bucket.tilePixelRatio * textMaxSize / glyphSize,
+    const textMaxBoxScale = bucket.tilePixelRatio * textMaxSize / glyphSize,
         iconBoxScale = bucket.tilePixelRatio * layoutIconSize,
         symbolMinDistance = tilePixelRatioForSymbolSpacing(bucket.overscaling, bucket.zoom) * layout.get('symbol-spacing'),
         textPadding = layout.get('text-padding') * bucket.tilePixelRatio,
@@ -1036,7 +1048,8 @@ function addTextVertices(bucket: SymbolBucket,
         canonical,
         brightness,
         false,
-        symbolInstanceIndex);
+        symbolInstanceIndex,
+        glyphQuads.length);
 
     // The placedSymbolArray is used at render time in drawTileSymbols
     // These indices allow access to the array at collision detection time
@@ -1229,7 +1242,12 @@ function addSymbol(bucket: SymbolBucket,
         const iconQuads = getIconQuads(shapedIcon, iconRotate, isSDFIcon, hasIconTextFit, sizes.iconScaleFactor);
         const verticalIconQuads = verticallyShapedIcon ? getIconQuads(verticallyShapedIcon, iconRotate, isSDFIcon, hasIconTextFit, sizes.iconScaleFactor) : undefined;
         iconBoxIndex = evaluateBoxCollisionFeature(collisionBoxArray, collisionFeatureAnchor, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconPadding, iconRotate, null, iconCollisionBounds);
-        numIconVertices = iconQuads.length * 4;
+        // Calculate maximum quads needed across layout icon and all appearance variants
+        // to prevent vertex buffer overflow during appearance updates
+        const maxQuadCount = calculateMaxIconQuadCount(bucket, iconQuads, verticalIconQuads,
+            layer.layout, feature, canonical, bucket.iconAtlasPositions,
+            hasIconTextFit);
+        numIconVertices = maxQuadCount * 4;
 
         let iconSizeData = null;
 
@@ -1271,12 +1289,13 @@ function addSymbol(bucket: SymbolBucket,
             canonical,
             brightness,
             hasAnySecondaryIcon,
-            bucket.symbolInstances.length);
+            bucket.symbolInstances.length,
+            maxQuadCount);
 
         placedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
 
         if (verticalIconQuads) {
-            numVerticalIconVertices = verticalIconQuads.length * 4;
+            numVerticalIconVertices = maxQuadCount * 4;
 
             bucket.addSymbols(
                 bucket.icon,
@@ -1297,7 +1316,8 @@ function addSymbol(bucket: SymbolBucket,
                 canonical,
                 brightness,
                 hasAnySecondaryIcon,
-                bucket.symbolInstances.length);
+                bucket.symbolInstances.length,
+                maxQuadCount);
 
             verticalPlacedIconSymbolIndex = bucket.icon.placedSymbolArray.length - 1;
         }
@@ -1427,4 +1447,59 @@ function anchorIsTooClose(bucket: SymbolBucket, text: string, repeatDistance: nu
     // If anchor is not within repeatDistance of any other anchor, add to array
     compareText[text].push(anchor);
     return false;
+}
+
+function calculateMaxIconQuadCount(
+    bucket: SymbolBucket,
+    iconQuads: Array<SymbolQuad>,
+    verticalIconQuads: Array<SymbolQuad> | undefined,
+    layout: PossiblyEvaluated<LayoutProps>,
+    feature: SymbolFeature,
+    canonical: CanonicalTileID,
+    imagePositions: ImagePositionMap,
+    hasIconTextFit: boolean,
+): number {
+    const symbolLayer = bucket.layers[0];
+    const appearances = symbolLayer.appearances;
+
+    // Start with the layout icon quad count
+    let maxQuadCount = iconQuads.length;
+
+    // Check vertical icon quads if they exist
+    if (verticalIconQuads) {
+        maxQuadCount = Math.max(maxQuadCount, verticalIconQuads.length);
+    }
+
+    if (appearances.length === 0) {
+        return maxQuadCount;
+    }
+
+    const [iconSizeScaleRangeMin, iconSizeScaleRangeMax] = layout.get('icon-size-scale-range');
+    const iconScaleFactor = clamp(1, iconSizeScaleRangeMin, iconSizeScaleRangeMax);
+
+    // Check each appearance that has an icon to find maximum quad count needed
+    for (const appearance of appearances) {
+        const unevaluatedProperties = appearance.getUnevaluatedProperties();
+        const iconImageProperty = unevaluatedProperties._values['icon-image'].value !== undefined;
+
+        if (iconImageProperty) {
+            const appearanceIconImage = symbolLayer.getAppearanceValueAndResolveTokens(appearance, 'icon-image', feature, canonical, []);
+            if (appearanceIconImage) {
+                const icon = bucket.getResolvedImageFromTokens(appearanceIconImage as string);
+                if (icon) {
+                    // Ideally we shouldn't need to compute the scaled image variant because all
+                    // different sized versions of the same icon have the same number of stretchable
+                    // areas, which is what we need but unfortunately, since imagePositions stores the
+                    // position by the stringified sized icon we need to compute it
+                    const unevaluatedIconSize = unevaluatedProperties._values['icon-size'];
+                    const iconSizeData = getSizeData(bucket.zoom, unevaluatedIconSize, bucket.worldview);
+                    const imageVariant = getScaledImageVariant(icon, iconSizeData, unevaluatedIconSize, canonical, bucket.zoom, feature, bucket.pixelRatio, iconScaleFactor, bucket.worldview);
+                    const imagePosition = imagePositions.get(imageVariant.iconPrimary.toString());
+                    maxQuadCount = Math.max(maxQuadCount, getIconQuadsNumber(imagePosition, hasIconTextFit));
+                }
+            }
+        }
+    }
+
+    return maxQuadCount;
 }

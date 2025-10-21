@@ -6,6 +6,7 @@ import {isVerticalClosePunctuation, isVerticalOpenPunctuation} from '../util/ver
 import ONE_EM from './one_em';
 import {warnOnce} from '../util/util';
 
+import type {ImagePosition} from '../render/image_atlas';
 import type Anchor from './anchor';
 import type {PositionedIcon, Shaping} from './shaping';
 import type SymbolStyleLayer from '../style/style_layer/symbol_style_layer';
@@ -200,6 +201,22 @@ export function getIconQuads(
     return quads;
 }
 
+export function getIconQuadsNumber(image: ImagePosition, hasIconTextFit: boolean): number {
+    const imageWidth = image.paddedRect.w - 2 * border;
+    const imageHeight = image.paddedRect.h - 2 * border;
+
+    const stretchX = image.stretchX || [[0, imageWidth]];
+    const stretchY = image.stretchY || [[0, imageHeight]];
+
+    if (!hasIconTextFit || (!image.stretchX && !image.stretchY)) {
+        return 1;
+    }
+
+    const xCuts = stretchZonesNumber(stretchX);
+    const yCuts = stretchZonesNumber(stretchY);
+    return xCuts * yCuts;
+}
+
 function sumWithinRange(ranges: Array<[number, number]>, min: number, max: number) {
     let sum = 0;
     for (const range of ranges) {
@@ -227,6 +244,12 @@ function stretchZonesToCuts(stretchZones: Array<[number, number]>, fixedSize: nu
         stretch: stretchSize
     });
     return cuts;
+}
+
+function stretchZonesNumber(stretchZones: Array<[number, number]>) {
+    // We create two cuts per stretch zone plus an extra one
+    // See stretchZonesToCuts
+    return 2 * stretchZones.length + 1;
 }
 
 function getEmOffset(stretchOffset: number, stretchSize: number, iconSize: number, iconOffset: number) {
