@@ -152,6 +152,7 @@ class Tiled3dModelBucket implements Bucket {
     states: FeatureStates;
     filter: FeatureFilter | null;
     worldview: string | undefined;
+    hasAppearances: boolean | null;
     constructor(
         layers: Array<ModelStyleLayer>,
         nodes: Array<ModelNode>,
@@ -193,6 +194,7 @@ class Tiled3dModelBucket implements Bucket {
             featureIndex.featureIndexArray.emplaceBack(this.nodesInfo.length - 1, 0 /*sourceLayerIndex*/, featureIndex.bucketLayerIDs.length - 1, 0);
         }
         this.states = {};
+        this.hasAppearances = null;
     }
 
     updateFootprints(id: UnwrappedTileID, footprints: Array<TileFootprint>) {

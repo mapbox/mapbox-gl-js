@@ -179,6 +179,7 @@ class ModelBucket implements Bucket {
     activeReplacements: Array<Region>;
     replacementUpdateTime: number;
     styleDefinedModelURLs: StyleModelMap;
+    hasAppearances: boolean | null;
 
     constructor(options: BucketParameters<ModelStyleLayer>) {
         this.zoom = options.zoom;
@@ -215,6 +216,7 @@ class ModelBucket implements Bucket {
         this.activeReplacements = [];
         this.replacementUpdateTime = 0;
         this.styleDefinedModelURLs = options.styleDefinedModelURLs;
+        this.hasAppearances = null;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {

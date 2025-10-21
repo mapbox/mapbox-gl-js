@@ -175,6 +175,7 @@ class LineBucket implements Bucket {
     heightRange: Range | undefined;
 
     worldview: string;
+    hasAppearances: boolean | null;
 
     constructor(options: BucketParameters<LineStyleLayer>) {
         this.zoom = options.zoom;
@@ -209,6 +210,7 @@ class LineBucket implements Bucket {
         this.tessellationStep = options.tessellationStep ? options.tessellationStep : (EXTENT / 64);
 
         this.worldview = options.worldview;
+        this.hasAppearances = null;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {

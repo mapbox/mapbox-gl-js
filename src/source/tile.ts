@@ -177,6 +177,7 @@ class Tile {
     _tileDebugTextIndexBuffer: IndexBuffer;
     _globeTileDebugTextBuffer: VertexBuffer | null | undefined;
     _lastUpdatedBrightness: number | null | undefined;
+    _hasAppearances: boolean | null;
 
     worldview: string | undefined;
 
@@ -215,6 +216,7 @@ class Tile {
         }
 
         this.worldview = worldview;
+        this._hasAppearances = null;
     }
 
     registerFadeDuration(duration: number) {
@@ -487,11 +489,13 @@ class Tile {
             return;
         }
         const brightness = painter.style.getBrightness();
-        const hasAppearances = this.hasAppearances(painter);
-        if (!this._lastUpdatedBrightness && !brightness && !hasAppearances) {
+        if (this._hasAppearances === null) {
+            this._hasAppearances = this.hasAppearances(painter);
+        }
+        if (!this._lastUpdatedBrightness && !brightness && !this._hasAppearances) {
             return;
         }
-        if (!hasAppearances && this._lastUpdatedBrightness && brightness && Math.abs(this._lastUpdatedBrightness - brightness) < 0.001) {
+        if (!this._hasAppearances && this._lastUpdatedBrightness && brightness && Math.abs(this._lastUpdatedBrightness - brightness) < 0.001) {
             return;
         }
         this.updateBuckets(painter, this._lastUpdatedBrightness !== brightness);
@@ -709,12 +713,12 @@ class Tile {
 
             const imagePositions: SpritePositions = this.imageAtlas ? Object.fromEntries(this.imageAtlas.patternPositions) : {};
             const withStateUpdates = Object.keys(sourceLayerStates).length > 0 && !isBrightnessChanged;
-            const hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
+            bucket.hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
             const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
             if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged) {
                 bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
             }
-            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged || hasAppearances) {
+            if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged || bucket.hasAppearances) {
                 const globalProperties = {
                     zoom: painter.transform.zoom,
                     pitch: painter.transform.pitch,

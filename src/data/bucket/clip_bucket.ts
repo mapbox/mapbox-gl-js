@@ -39,6 +39,7 @@ class ClipBucket implements Bucket {
     footprints: Array<Footprint>;
 
     worldview: string;
+    hasAppearances: boolean | null;
 
     constructor(options: BucketParameters<ClipStyleLayer>) {
         this.zoom = options.zoom;
@@ -51,6 +52,7 @@ class ClipBucket implements Bucket {
         this.footprints = [];
 
         this.worldview = options.worldview;
+        this.hasAppearances = null;
     }
 
     updateFootprints(id: UnwrappedTileID, footprints: Array<TileFootprint>) {

@@ -104,6 +104,7 @@ export interface Bucket {
     hasPattern: boolean;
     layers: TypedStyleLayer[];
     stateDependentLayers: Array<TypedStyleLayer>;
+    hasAppearances: boolean | null;
     readonly stateDependentLayerIds: Array<string>;
     readonly worldview: string | undefined;
     evaluateQueryRenderedFeaturePadding?: () => number;

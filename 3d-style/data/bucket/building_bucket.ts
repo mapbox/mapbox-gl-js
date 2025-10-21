@@ -215,6 +215,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
     };
 
     lut: LUT;
+    hasAppearances: boolean | null;
 
     constructor(options: BucketParameters<BuildingStyleLayer>) {
 
@@ -239,6 +240,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
         this.groundEffect = new GroundEffect(options);
         this.groundEffect.groundRadiusArray = new FillExtrusionGroundRadiusLayoutArray();
+        this.hasAppearances = null;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {

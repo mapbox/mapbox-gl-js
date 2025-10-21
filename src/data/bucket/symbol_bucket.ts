@@ -95,6 +95,7 @@ export type AppearanceFeatureData = {
     usesAppearanceIconAsPlaceholder: boolean;
     isUsingAppearanceVertexData: boolean;
     layoutBasedVertexData: [number, number, number, number, number][];
+    activeAppearance: SymbolAppearance | null;
 };
 
 export type SingleCollisionBox = {
@@ -532,6 +533,8 @@ class SymbolBucket implements Bucket {
 
     worldview: string;
     iconAtlasPositions: ImagePositionMap;
+    hasAppearances: boolean | null;
+    lastActiveApperance: number | null;
 
     constructor(options: BucketParameters<SymbolStyleLayer>) {
         this.collisionBoxArray = options.collisionBoxArray;
@@ -594,6 +597,8 @@ class SymbolBucket implements Bucket {
         this.activeReplacements = [];
         this.replacementUpdateTime = 0;
         this.hasAnySecondaryIcon = false;
+        this.hasAppearances = null;
+        this.lastActiveApperance = null;
     }
 
     hasAnyAppearanceProperty(propertyName: keyof AppearanceProps): boolean {
@@ -850,7 +855,8 @@ class SymbolBucket implements Bucket {
                 properties: feature.properties,
                 usesAppearanceIconAsPlaceholder: usesAppearanceIconAsFallback,
                 isUsingAppearanceVertexData: false,
-                layoutBasedVertexData: []
+                layoutBasedVertexData: [],
+                activeAppearance: null
             });
 
             if (icon) {
@@ -986,8 +992,10 @@ class SymbolBucket implements Bucket {
                 };
 
                 const activeAppearance = this.layers[0].appearances && this.layers[0].appearances.find(a => a.isActive({globals: globalProperties, feature: evaluationFeature, canonical, featureState: featureStateForThis}));
+                if (featureData.activeAppearance === activeAppearance) continue;
 
                 if (activeAppearance) {
+                    featureData.activeAppearance = activeAppearance;
                     const minimalFeature: SymbolFeature = {
                         sortKey: undefined,
                         text: undefined,
@@ -1067,6 +1075,7 @@ class SymbolBucket implements Bucket {
                         reuploadBuffer = true;
                     }
                     vertexOffset += symbolInstance.numIconVertices;
+                    featureData.activeAppearance = null;
                 } else if (featureData.isUsingAppearanceVertexData) {
                     // If there are no active appearances but there were before, the vertex data will
                     // still point to the active appearance. We need to reset it to use the layout icon
@@ -1076,9 +1085,11 @@ class SymbolBucket implements Bucket {
                     }
                     vertexOffset += featureData.layoutBasedVertexData.length;
                     featureData.isUsingAppearanceVertexData = false;
+                    featureData.activeAppearance = null;
                     reuploadBuffer = true;
                 } else {
                     vertexOffset += symbolInstance.numIconVertices;
+                    featureData.activeAppearance = null;
                 }
             }
         }
@@ -1269,15 +1280,12 @@ class SymbolBucket implements Bucket {
             this.iconCollisionBox.upload(context);
         }
 
-        let reuploadBuffer = false;
-        if (featureState && availableImages) {
-            reuploadBuffer = this.updateAppearanceBasedIconTextures(canonical, featureState, availableImages, globalProperties);
-        }
         this.text.upload(context, this.sortFeaturesByY, !this.uploaded, this.text.programConfigurations.needsUpload, this.zOffsetBuffersNeedUpload, false); // text doesn't need dynamic buffer for now
 
-        // Check if we need dynamic buffers for appearance updates
-        const hasAppearances = this.layers.some(layer => layer.appearances && layer.appearances.length > 0);
-        this.icon.upload(context, this.sortFeaturesByY, !this.uploaded, this.icon.programConfigurations.needsUpload || reuploadBuffer, this.zOffsetBuffersNeedUpload, hasAppearances);
+        if (this.hasAppearances === null) {
+            this.hasAppearances = this.layers.some(layer => layer.appearances && layer.appearances.length > 0);
+        }
+        this.icon.upload(context, this.sortFeaturesByY, !this.uploaded, this.icon.programConfigurations.needsUpload, this.zOffsetBuffersNeedUpload, this.hasAppearances);
         this.uploaded = true;
     }
 

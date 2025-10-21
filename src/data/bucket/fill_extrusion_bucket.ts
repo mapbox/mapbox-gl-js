@@ -711,6 +711,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     polygonSegments: Array<PolygonSegment>;
 
     worldview: string;
+    hasAppearances: boolean | null;
 
     constructor(options: BucketParameters<FillExtrusionStyleLayer>) {
         this.zoom = options.zoom;
@@ -747,6 +748,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         this.polygonSegments = [];
 
         this.worldview = options.worldview;
+        this.hasAppearances = null;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {

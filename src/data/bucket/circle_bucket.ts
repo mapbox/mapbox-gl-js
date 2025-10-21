@@ -73,6 +73,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
     hasElevation: boolean;
 
     worldview: string | undefined;
+    hasAppearances: boolean | null;
 
     constructor(options: BucketParameters<Layer>) {
         this.zoom = options.zoom;
@@ -96,6 +97,7 @@ class CircleBucket<Layer extends CircleStyleLayer | HeatmapStyleLayer = CircleSt
         }
 
         this.worldview = options.worldview;
+        this.hasAppearances = null;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {

@@ -159,6 +159,7 @@ class FillBucket implements Bucket {
     sourceLayerIndex: number;
 
     worldview: string;
+    hasAppearances: boolean | null;
 
     constructor(options: BucketParameters<FillStyleLayer>) {
         this.zoom = options.zoom;
@@ -182,6 +183,7 @@ class FillBucket implements Bucket {
         this.sourceLayerIndex = options.sourceLayerIndex;
 
         this.worldview = options.worldview;
+        this.hasAppearances = null;
     }
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
