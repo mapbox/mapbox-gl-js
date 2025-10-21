@@ -94,7 +94,7 @@ export type AppearanceFeatureData = {
     properties: Record<PropertyKey, unknown>;
     usesAppearanceIconAsPlaceholder: boolean;
     isUsingAppearanceVertexData: boolean;
-    layoutBasedVertexData: [number, number, number, number, number][];
+    layoutBasedVertexData: number[];
     activeAppearance: SymbolAppearance | null;
 };
 
@@ -285,7 +285,7 @@ export class SymbolBuffers {
     }
 
     getIconVertexData(offset, numVertices) {
-        const data: [number, number, number, number, number][] = [];
+        const data: number[] = [];
         assert(offset >= 0 && offset < this.layoutVertexArray.length, 'Invalid vertex offset');
 
         const uint16Array = this.layoutVertexArray.uint16;
@@ -294,14 +294,15 @@ export class SymbolBuffers {
         // Position offsets (ox, oy) are at indices 2 and 3
         // Texture coordinates (tx, ty) are at indices 4 and 5
         // Icon size (aSizeY) is at 7, and we pack the last bit with isAppearanceIcon flag
+        // pixel offsets are at 8 and 9
         for (let i = 0; i < numVertices; ++i) {
             const baseOffset = (offset + i) * 12;
-            data.push([uint16Array[baseOffset + 2], uint16Array[baseOffset + 3], uint16Array[baseOffset + 4], uint16Array[baseOffset + 5], uint16Array[baseOffset + 7]]);
+            data.push(uint16Array[baseOffset + 2], uint16Array[baseOffset + 3], uint16Array[baseOffset + 4], uint16Array[baseOffset + 5], uint16Array[baseOffset + 7], uint16Array[baseOffset + 8], uint16Array[baseOffset + 9]);
         }
         return data;
     }
 
-    updateIconVertexData(vertexIndex: number, newOx: number, newOy: number, newTx: number, newTy: number, newSizeY: number, transform: boolean = true) {
+    updateIconVertexData(vertexIndex: number, newOx: number, newOy: number, newTx: number, newTy: number, newSizeY: number, pixelOffsetX: number, pixelOffsetY: number) {
         assert(vertexIndex >= 0 && vertexIndex < this.layoutVertexArray.length, 'Invalid vertex start index');
 
         const uint16Array = this.layoutVertexArray.uint16;
@@ -310,12 +311,15 @@ export class SymbolBuffers {
         // Position offsets (ox, oy) are at indices 2 and 3
         // Texture coordinates (tx, ty) are at indices 4 and 5
         // Icon size (sSizeX, sSizeY) is at indices 6 and 7, and isAppearanceIcon info is packed at last bit of aSizeY
+        // Vertex offset, which depends on icon size, is at indices 8 and 9
         const baseOffset = vertexIndex * 12;
-        uint16Array[baseOffset + 2] = transform ? Math.round(newOx * 32) : newOx;  // ox
-        uint16Array[baseOffset + 3] = transform ? Math.round(newOy * 32) : newOy;  // oy
+        uint16Array[baseOffset + 2] = newOx;  // ox
+        uint16Array[baseOffset + 3] = newOy;  // oy
         uint16Array[baseOffset + 4] = newTx;  // tx
         uint16Array[baseOffset + 5] = newTy;  // ty
         uint16Array[baseOffset + 7] = newSizeY; // aSizeY, pack isAppearanceIcon flag in last bit
+        uint16Array[baseOffset + 8] = pixelOffsetX;
+        uint16Array[baseOffset + 9] = pixelOffsetY;
     }
 
     upload(context: Context, dynamicIndexBuffer: boolean, upload?: boolean, update?: boolean, createZOffsetBuffer?: boolean, hasAppearances?: boolean) {
@@ -1052,10 +1056,11 @@ class SymbolBucket implements Bucket {
                         // Update texture coordinates and vertex positions for each vertex in the quads
                         for (let j = 0; j < iconQuads.length; ++j) {
                             const quad = iconQuads[j];
-                            this.icon.updateIconVertexData(vertexOffset, quad.tl.x, quad.tl.y, quad.texPrimary.x, quad.texPrimary.y, newSizeY);
-                            this.icon.updateIconVertexData(vertexOffset + 1, quad.tr.x, quad.tr.y, quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y, newSizeY);
-                            this.icon.updateIconVertexData(vertexOffset + 2, quad.bl.x, quad.bl.y, quad.texPrimary.x, quad.texPrimary.y + quad.texPrimary.h, newSizeY);
-                            this.icon.updateIconVertexData(vertexOffset + 3, quad.br.x, quad.br.y, quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y + quad.texPrimary.h, newSizeY);
+
+                            this.icon.updateIconVertexData(vertexOffset, Math.round(quad.tl.x * 32), Math.round(quad.tl.y * 32), quad.texPrimary.x, quad.texPrimary.y, newSizeY, quad.pixelOffsetTL.x * 16, quad.pixelOffsetTL.y * 16);
+                            this.icon.updateIconVertexData(vertexOffset + 1, Math.round(quad.tr.x * 32), Math.round(quad.tr.y * 32), quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y, newSizeY, quad.pixelOffsetBR.x * 16, quad.pixelOffsetTL.y * 16);
+                            this.icon.updateIconVertexData(vertexOffset + 2, Math.round(quad.bl.x * 32), Math.round(quad.bl.y * 32), quad.texPrimary.x, quad.texPrimary.y + quad.texPrimary.h, newSizeY, quad.pixelOffsetTL.x * 16, quad.pixelOffsetBR.y * 16);
+                            this.icon.updateIconVertexData(vertexOffset + 3, Math.round(quad.br.x * 32), Math.round(quad.br.y * 32), quad.texPrimary.x + quad.texPrimary.w, quad.texPrimary.y + quad.texPrimary.h, newSizeY, quad.pixelOffsetBR.x * 16, quad.pixelOffsetBR.y * 16);
                             vertexOffset += 4;
                         }
 
@@ -1068,10 +1073,10 @@ class SymbolBucket implements Bucket {
                     // This effectively makes the icon invisible while preserving the vertex buffer structure
                     if (this.layers[0].appearances && this.layers[0].appearances.length > 0) {
                         // Only hide if there are appearances but none are active (this means we had a placeholder)
-                        this.icon.updateIconVertexData(vertexOffset, 0, 0, 0, 0, 0);
-                        this.icon.updateIconVertexData(vertexOffset + 1, 0, 0, 0, 0, 0);
-                        this.icon.updateIconVertexData(vertexOffset + 2, 0, 0, 0, 0, 0);
-                        this.icon.updateIconVertexData(vertexOffset + 3, 0, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset, 0, 0, 0, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset + 1, 0, 0, 0, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset + 2, 0, 0, 0, 0, 0, 0, 0);
+                        this.icon.updateIconVertexData(vertexOffset + 3, 0, 0, 0, 0, 0, 0, 0);
                         reuploadBuffer = true;
                     }
                     vertexOffset += symbolInstance.numIconVertices;
@@ -1079,11 +1084,15 @@ class SymbolBucket implements Bucket {
                 } else if (featureData.isUsingAppearanceVertexData) {
                     // If there are no active appearances but there were before, the vertex data will
                     // still point to the active appearance. We need to reset it to use the layout icon
-                    for (let i = 0; i < featureData.layoutBasedVertexData.length; ++i) {
-                        const [ox, oy, tx, ty, aSizeY] = featureData.layoutBasedVertexData[i];
-                        this.icon.updateIconVertexData(vertexOffset + i, ox, oy, tx, ty, aSizeY, false);
+                    const layoutNumVertices = featureData.layoutBasedVertexData.length / 7;
+                    for (let i = 0; i < layoutNumVertices; ++i) {
+                        const base = i * 7; // There are 7 items per vertex in the array
+                        this.icon.updateIconVertexData(vertexOffset + i, featureData.layoutBasedVertexData[base + 0],
+                            featureData.layoutBasedVertexData[base + 1], featureData.layoutBasedVertexData[base + 2],
+                            featureData.layoutBasedVertexData[base + 3], featureData.layoutBasedVertexData[base + 4],
+                            featureData.layoutBasedVertexData[base + 5], featureData.layoutBasedVertexData[base + 6]);
                     }
-                    vertexOffset += featureData.layoutBasedVertexData.length;
+                    vertexOffset += layoutNumVertices;
                     featureData.isUsingAppearanceVertexData = false;
                     featureData.activeAppearance = null;
                     reuploadBuffer = true;

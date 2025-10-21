@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 200,
+      "height": 150,
+      "operations": [
+            ["wait"],
+            ["setZoom", 1],
+            ["wait"]
+        ]
+    }
+  },
+  "zoom": 0.5,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/anchors.json"
+    }
+  },
+  "sprite": "local://sprites/stretch",
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "icons",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "nine-part",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true
+      },
+      "appearances": [
+        {
+          "name": "test",
+          "condition": [">=", ["zoom"], 1],
+          "properties": {
+            "icon-image": "nine-part-content"
+          }
+        }
+      ]
+    }
+  ]
+}
