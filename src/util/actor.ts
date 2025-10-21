@@ -135,9 +135,7 @@ class Actor {
                 // We're using a MessageChannel object to get throttle the process() flow to one at a time.
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const callback = this.callbacks[id];
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                const metadata = (callback && callback.metadata) || {type: 'message'};
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                const metadata = (callback && (callback as ActorCallback).metadata) || {type: 'message'};
                 const cancel = this.scheduler.add(() => this.processTask(id, data), metadata);
                 if (cancel) this.cancelCallbacks[id] = cancel;
             } else {

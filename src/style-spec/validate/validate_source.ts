@@ -135,17 +135,15 @@ export default function validateSource(options: SourceValidatorOptions): Validat
 }
 
 function getSourceTypeValues(styleSpec: StyleReference): string[] {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    return styleSpec.source.reduce((memo: string[], source: string) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const sourceType = styleSpec[source];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const sourceArray = styleSpec.source as string[];
+    return sourceArray.reduce((memo: string[], source: string) => {
+
+        const sourceType = (styleSpec as Record<string, unknown>)[source] as {type: {type: string; values?: Record<string, unknown>}};
         if (sourceType.type.type === 'enum') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-            memo = memo.concat(Object.keys(sourceType.type.values));
+            memo = memo.concat(Object.keys(sourceType.type.values || {}));
         }
         return memo;
-    }, []) as string[];
+    }, []);
 }
 
 type PromoteIdValidatorOptions = {

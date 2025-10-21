@@ -122,18 +122,12 @@ export function createLineWallGeometry(vertices: Array<Point>): WallGeometry {
             if (miterLength < miterLimit) currentJoin = 'miter';
         }
 
-        const addWallJoin = (vert, normal, outerOffset, innerOffset) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+        const addWallJoin = (vert: Point, normal: Point, outerOffset: number, innerOffset: number) => {
             const innerPoint = new Point(vert.x, vert.y);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             const outerPoint = new Point(vert.x, vert.y);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             innerPoint.x += normal.x * innerOffset;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             innerPoint.y += normal.y * innerOffset;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
             outerPoint.x -= normal.x * Math.max(outerOffset, 1.0);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
             outerPoint.y -= normal.y * Math.max(outerOffset, 1.0);
 
             joinNormals.push(normal);

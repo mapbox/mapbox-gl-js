@@ -11,10 +11,9 @@ export function getMaximumPaintValue(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     bucket: CircleBucket<any> | LineBucket,
 ): number {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const value = ((layer.paint as any).get(property) as PossiblyEvaluatedPropertyValue<any>).value;
+
+    const value = ((layer.paint as {get: (prop: string) => PossiblyEvaluatedPropertyValue<number>}).get(property)).value;
     if (value.kind === 'constant') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return value.value;
     } else {
         return bucket.programConfigurations.get(layer.id).getMaxValue(property);

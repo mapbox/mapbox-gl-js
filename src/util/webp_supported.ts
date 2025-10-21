@@ -5,9 +5,9 @@ const exported = {
 
 export default exported;
 
-let glForTesting;
+let glForTesting: WebGL2RenderingContext | null;
 let webpCheckComplete = false;
-let webpImgTest;
+let webpImgTest: HTMLImageElement | undefined;
 let webpImgTestOnloadComplete = false;
 
 /**
@@ -17,19 +17,15 @@ const window = typeof self !== 'undefined' ? self : {} as Window;
 
 if (window.document) {
     webpImgTest = window.document.createElement('img');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     webpImgTest.onload = function () {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (glForTesting) testWebpTextureUpload(glForTesting);
         glForTesting = null;
         webpImgTestOnloadComplete = true;
     };
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     webpImgTest.onerror = function () {
         webpCheckComplete = true;
         glForTesting = null;
     };
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     webpImgTest.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAAfQ//73v/+BiOh/AAA=';
 }
 
@@ -58,7 +54,6 @@ function testWebpTextureUpload(gl: WebGL2RenderingContext) {
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, webpImgTest);
 
         // The error does not get triggered in Edge if the context is lost

@@ -90,8 +90,7 @@ function validateCondition(options: AppearanceValidatorOptions): Array<Validatio
     errors.push(...validateExpression({
         key: options.key,
         value: condition,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        valueSpec: latest['appearance']['condition'],
+        valueSpec: (latest['appearance'] as Record<string, unknown>)['condition'] as StylePropertySpecification,
         expressionContext: 'appearance'
     }));
 

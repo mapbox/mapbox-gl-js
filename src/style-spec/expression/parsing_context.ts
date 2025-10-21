@@ -162,8 +162,7 @@ class ParsingContext {
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         parsed = new Literal(parsed.type, parsed.evaluate(ec));
                     } catch (e) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-                        this.error(e.message);
+                        this.error((e as Error).message);
                         return null;
                     }
                 }

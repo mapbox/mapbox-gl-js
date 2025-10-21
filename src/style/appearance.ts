@@ -5,6 +5,7 @@ import {getAppearanceProperties, type AppearanceProps} from "./appearance_proper
 
 import type {Feature, FeatureState, GlobalProperties, StyleExpression} from "../style-spec/expression";
 import type {AppearanceSpecification, ExpressionSpecification} from "../style-spec/types";
+import type {StylePropertySpecification} from "../style-spec/style-spec";
 import type ResolvedImage from "../style-spec/expression/types/resolved_image";
 import type {CanonicalTileID} from "../source/tile_id";
 import type EvaluationParameters from "./evaluation_parameters";
@@ -29,10 +30,8 @@ class SymbolAppearance {
     constructor(condition: AppearanceSpecification["condition"], name: string | undefined, properties: AppearanceProps | undefined, scope: string, options: ConfigOptions, iconImageUseTheme: string) {
         this.cachedIconPrimary = null;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        const conditionSpec = latest['appearance']['condition'];
+        const conditionSpec = (latest['appearance'] as Record<string, unknown>)['condition'] as StylePropertySpecification;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const compiledExpression = createExpression(condition, conditionSpec);
         if (compiledExpression.result === 'success') {
             this.condition = compiledExpression.value;
@@ -85,8 +84,8 @@ class SymbolAppearance {
 
     recalculate(parameters: EvaluationParameters, availableImages: ImageId[], iconImageUseTheme?: string) {
         if (this.unevaluatedLayout) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-            (this as any).properties = this.unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages, iconImageUseTheme);
+
+            (this as {properties: PossiblyEvaluated<AppearanceProps>}).properties = this.unevaluatedLayout.possiblyEvaluate(parameters, undefined, availableImages, iconImageUseTheme);
         }
     }
 

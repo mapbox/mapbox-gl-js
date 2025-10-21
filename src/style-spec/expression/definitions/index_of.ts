@@ -71,14 +71,13 @@ class IndexOf implements Expression {
             throw new RuntimeError(`Expected second argument to be of type array or string, but found ${toString(typeOf(haystack))} instead.`);
         }
 
+        // Type assertions safe due to isValidNativeType checks above
         if (this.fromIndex) {
             const fromIndex = (this.fromIndex.evaluate(ctx) as number);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            return haystack.indexOf(needle, fromIndex);
+            return (haystack as string | unknown[]).indexOf(needle as string, fromIndex);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        return haystack.indexOf(needle);
+        return (haystack as string | unknown[]).indexOf(needle as string);
     }
 
     eachChild(fn: (_: Expression) => void) {

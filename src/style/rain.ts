@@ -6,13 +6,14 @@ import {Transitionable, PossiblyEvaluated} from './properties';
 import Color from '../style-spec/util/color';
 import {getProperties, type RainProps as Props} from '../../3d-style/style/rain_properties';
 
+import type {vec2, vec3} from 'gl-matrix';
 import type {Validator} from './validate_style';
 import type {RainSpecification} from '../style-spec/types';
 import type EvaluationParameters from './evaluation_parameters';
 import type {TransitionParameters, ConfigOptions, Transitioning} from './properties';
 import type Transform from '../geo/transform';
 import type {StyleSetterOptions} from '../style/style';
-import type {vec2, vec3} from 'gl-matrix';
+import type {StylePropertySpecification} from '../style-spec/style-spec';
 
 interface RainState {
     density: number;
@@ -78,12 +79,11 @@ class Rain extends Evented {
         }
 
         const properties = Object.assign({}, rain);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        for (const name of Object.keys(styleSpec.rain)) {
+        const rainSpec = styleSpec.rain as Record<PropertyKey, StylePropertySpecification>;
+        for (const name of Object.keys(rainSpec)) {
             // Fallback to use default style specification when the properties wasn't set
             if (properties[name] === undefined) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                properties[name] = styleSpec.rain[name].default;
+                properties[name] = rainSpec[name].default;
             }
         }
 

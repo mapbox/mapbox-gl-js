@@ -6,13 +6,14 @@ import {Transitionable, PossiblyEvaluated} from './properties';
 import Color from '../style-spec/util/color';
 import {getProperties, type SnowProps as Props} from '../../3d-style/style/snow_properties';
 
+import type {vec3} from 'gl-matrix';
 import type {Validator} from './validate_style';
 import type {SnowSpecification} from '../style-spec/types';
 import type EvaluationParameters from './evaluation_parameters';
 import type {TransitionParameters, ConfigOptions, Transitioning} from './properties';
 import type Transform from '../geo/transform';
 import type {StyleSetterOptions} from '../style/style';
-import type {vec3} from 'gl-matrix';
+import type {StylePropertySpecification} from '../style-spec/style-spec';
 
 interface SnowState {
     density: number;
@@ -76,12 +77,11 @@ class Snow extends Evented {
         }
 
         const properties = Object.assign({}, snow);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        for (const name of Object.keys(styleSpec.snow)) {
+        const snowSpec = styleSpec.snow as Record<PropertyKey, StylePropertySpecification>;
+        for (const name of Object.keys(snowSpec)) {
             // Fallback to use default style specification when the properties wasn't set
             if (properties[name] === undefined) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                properties[name] = styleSpec.snow[name].default;
+                properties[name] = snowSpec[name].default;
             }
         }
 

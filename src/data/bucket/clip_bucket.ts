@@ -146,16 +146,14 @@ class ClipBucket implements Bucket {
                 }
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-            const indices = earcut(flattened, holeIndices);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            // earcut library lacks proper type definitions
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            const indices = earcut(flattened, holeIndices) as number[];
             assert(indices.length % 3 === 0);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const grid = new TriangleGridIndex(points, indices, 8, 256);
             this.footprints.push({
                 vertices: points,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 indices,
                 grid,
                 min,

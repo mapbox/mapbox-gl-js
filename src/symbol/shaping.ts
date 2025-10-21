@@ -240,7 +240,7 @@ class TaggedString {
 }
 
 function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<TaggedString> {
-    const lines = [];
+    const lines: TaggedString[] = [];
     const text = input.text;
     let start = 0;
     for (const lineBreak of lineBreakPoints) {
@@ -251,7 +251,6 @@ function breakLines(input: TaggedString, lineBreakPoints: Array<number>): Array<
     if (start < text.length) {
         lines.push(input.substring(start, text.length));
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return lines;
 }
 

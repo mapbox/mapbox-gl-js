@@ -254,13 +254,12 @@ class SymbolStyleLayer extends StyleLayer {
 
     static hasPaintOverride(layout: PossiblyEvaluated<LayoutProps>, propertyName: string): boolean {
         const textField = layout.get('text-field');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const property = getProperties().paint.properties[propertyName];
+
+        const property = getProperties().paint.properties[propertyName] as {overrides?: {hasOverride: (o: unknown) => boolean}};
         let hasOverrides = false;
 
         const checkSections = (sections: Array<FormattedSection> | Array<FormattedSectionExpression>) => {
             for (const section of sections) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                 if (property.overrides && property.overrides.hasOverride(section)) {
                     hasOverrides = true;
                     return;

@@ -7,6 +7,7 @@ import {supportsLightExpression, supportsPropertyExpression, supportsZoomExpress
 import {isGlobalPropertyConstant, isFeatureConstant, isStateConstant} from '../expression/is_constant';
 import {createPropertyExpression, isExpression} from '../expression/index';
 
+import type {Expression} from '../expression/expression';
 import type {StyleReference} from '../reference/latest';
 import type {StylePropertySpecification} from '../style-spec';
 import type {StyleSpecification, LayerSpecification} from '../types';
@@ -104,12 +105,12 @@ export default function validateProperty(options: PropertyValidatorOptions, prop
         if (supportsPropertyExpression(valueSpec) && (supportsLightExpression(valueSpec) || supportsZoomExpression(valueSpec))) {
             // Performance related style spec limitation: zoom and light expressions are not allowed for e.g. trees.
             const expression = createPropertyExpression(deepUnbundle(value), valueSpec);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-            const expressionObj = (expression.value as any).expression || (expression.value as any)._styleExpression.expression;
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            const expressionValue = expression.value as {expression?: Expression} | {_styleExpression?: {expression?: Expression}};
+            const expressionObj = ('expression' in expressionValue && expressionValue.expression) ||
+                                  ('_styleExpression' in expressionValue && expressionValue._styleExpression && expressionValue._styleExpression.expression);
+
             if (expressionObj && !isGlobalPropertyConstant(expressionObj, ['measure-light'])) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 if (propertyKey !== 'model-emissive-strength' || (!isFeatureConstant(expressionObj) || !isStateConstant(expressionObj))) {
                     errors.push(new ValidationError(key, value, `${propertyKey} does not support measure-light expressions when the model layer source is vector tile or GeoJSON.`));
                 }

@@ -782,7 +782,7 @@ export class Terrain extends Elevation {
             uniforms['u_dem_size'] = demTexture.size[0] === 1 ? 1 : demTexture.size[0] - 2;
         };
 
-        let demTexture = null;
+        let demTexture: Texture | null = null;
         if (!this.enabled) {
             demTexture = this.emptyDEMTexture;
         } else if (prevDemTile && demTile) {
@@ -799,9 +799,7 @@ export class Terrain extends Elevation {
         assert(demTexture);
         context.activeTexture.set(gl.TEXTURE2);
         if (demTexture) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             setDemSizeUniform(demTexture);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             demTexture.bind(filteringForDemTile(demTile), gl.CLAMP_TO_EDGE);
         }
 

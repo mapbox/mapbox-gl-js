@@ -63,13 +63,12 @@ export function mousePos(el: HTMLElement, e: MouseEvent | WheelEvent): Point {
 }
 
 export function touchPos(el: HTMLElement, touches: TouchList): Array<Point> {
-    const rect = el.getBoundingClientRect(),
-        points = [];
+    const rect = el.getBoundingClientRect();
+    const points: Point[] = [];
 
     for (let i = 0; i < touches.length; i++) {
         points.push(getScaledPoint(el, rect, touches[i]));
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return points;
 }
 

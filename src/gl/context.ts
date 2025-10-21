@@ -157,8 +157,8 @@ class Context {
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query_webgl2');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        this.maxPointSize = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)[1];
+        // gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE) returns Float32Array per WebGL spec
+        this.maxPointSize = (gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE) as Float32Array)[1];
     }
 
     setDefault() {

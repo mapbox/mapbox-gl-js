@@ -114,7 +114,8 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
         useStencilMaskRenderPass = false;
     }
 
-    let lineOpacityForOcclusion; // line opacity uniform gets amend by line occlusion opacity
+    // line opacity uniform gets amended by line occlusion opacity
+    let lineOpacityForOcclusion: {value: number} | undefined;
     if (occlusionOpacity !== 0 && painter.depthOcclusion) {
         const value = layer.paint._values["line-opacity"];
 
@@ -271,8 +272,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
             const renderLine = (stencilMode: StencilMode) => {
                 if (lineOpacityForOcclusion != null) {
-
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     lineOpacityForOcclusion.value = lineOpacity * occlusionOpacity;
                 }
                 program.draw(painter, gl.TRIANGLES, depthMode,
@@ -280,7 +279,6 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
                     layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer, bucket.segments,
                     layer.paint, painter.transform.zoom, programConfiguration, [bucket.layoutVertexBuffer2, bucket.patternVertexBuffer, bucket.zOffsetVertexBuffer]);
                 if (lineOpacityForOcclusion != null) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     lineOpacityForOcclusion.value = lineOpacity; //restore
                 }
             };

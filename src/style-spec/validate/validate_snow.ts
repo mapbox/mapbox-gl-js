@@ -4,6 +4,7 @@ import {getType, isObject} from '../util/get_type';
 
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
+import type {StylePropertySpecification} from '../style-spec';
 
 type SnowValidatorOptions = {
     key: string;
@@ -16,8 +17,7 @@ export default function validateSnow(options: SnowValidatorOptions): ValidationE
     const snow = options.value;
     const style = options.style;
     const styleSpec = options.styleSpec;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const snowSpec = styleSpec.snow;
+    const snowSpec = styleSpec.snow as Record<PropertyKey, StylePropertySpecification>;
 
     if (snow === undefined) {
         return [];
@@ -31,7 +31,6 @@ export default function validateSnow(options: SnowValidatorOptions): ValidationE
     for (const key in snow) {
         const transitionMatch = key.match(/^(.*)-transition$/);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (transitionMatch && snowSpec[transitionMatch[1]] && snowSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
@@ -41,12 +40,11 @@ export default function validateSnow(options: SnowValidatorOptions): ValidationE
                 style,
                 styleSpec
             }));
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (snowSpec[key]) {
             errors = errors.concat(validate({
                 key,
                 value: snow[key],
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                 valueSpec: snowSpec[key],
                 style,
                 styleSpec

@@ -464,7 +464,7 @@ uniform ${precision} ${type} u_${name};
     });
 
     vertexSource = vertexSource.replace(pragmaRegex, (match, operation, precision, type, name) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         const materialOffsetNameDefineName = `MATERIAL_ATTRIBUTE_OFFSET_${name}`;
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const attrType = type === 'float' ? 'vec2' : type;

@@ -4,6 +4,7 @@ import {getType, isObject} from '../util/get_type';
 
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
+import type {StylePropertySpecification} from '../style-spec';
 
 type RainValidatorOptions = {
     key: string;
@@ -16,8 +17,7 @@ export default function validateRain(options: RainValidatorOptions): ValidationE
     const rain = options.value;
     const style = options.style;
     const styleSpec = options.styleSpec;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const rainSpec = styleSpec.rain;
+    const rainSpec = styleSpec.rain as Record<PropertyKey, StylePropertySpecification>;
 
     if (rain === undefined) {
         return [];
@@ -31,7 +31,6 @@ export default function validateRain(options: RainValidatorOptions): ValidationE
     for (const key in rain) {
         const transitionMatch = key.match(/^(.*)-transition$/);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (transitionMatch && rainSpec[transitionMatch[1]] && rainSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({
                 key,
@@ -41,12 +40,11 @@ export default function validateRain(options: RainValidatorOptions): ValidationE
                 style,
                 styleSpec
             }));
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         } else if (rainSpec[key]) {
             errors = errors.concat(validate({
                 key,
                 value: rain[key],
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                 valueSpec: rainSpec[key],
                 style,
                 styleSpec

@@ -109,8 +109,7 @@ export default class FormatExpression implements Expression {
                     null,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     section.scale ? section.scale.evaluate(ctx) : null,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                    section.font ? section.font.evaluate(ctx).join(',') : null,
+                    section.font ? (section.font.evaluate(ctx) as string[]).join(',') : null,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     section.textColor ? section.textColor.evaluate(ctx) : null
             );

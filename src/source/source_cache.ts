@@ -74,16 +74,14 @@ class SourceCache extends Evented {
         this.id = id;
         this._onlySymbols = onlySymbols;
 
-        source.on('data', (e) => {
+        source.on('data', (e: {dataType?: string; sourceDataType?: string}) => {
             // this._sourceLoaded signifies that the TileJSON is loaded if applicable.
             // if the source type does not come with a TileJSON, the flag signifies the
             // source data has loaded (in other words, GeoJSON has been tiled on the worker and is ready)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') this._sourceLoaded = true;
 
             // for sources with mutable data, this event fires when the underlying data
             // to a source is changed (for example, using [GeoJSONSource#setData](https://docs.mapbox.com/mapbox-gl-js/api/sources/#geojsonsource#setdata) or [ImageSource#setCoordinates](https://docs.mapbox.com/mapbox-gl-js/api/sources/#imagesource#setcoordinates))
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (this._sourceLoaded && !this._paused && e.dataType === "source" && e.sourceDataType === 'content') {
                 this.reload();
                 if (this.transform) {

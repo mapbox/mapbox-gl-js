@@ -130,8 +130,8 @@ class LineStyleLayer extends StyleLayer {
 
     override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        (this.paint._values as any)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
+
+        (this.paint._values as Record<string, unknown>)['line-floorwidth'] = getLineFloorwidthProperty().possiblyEvaluate(this._transitioningPaint._values['line-width'].value, parameters);
     }
 
     createBucket(parameters: BucketParameters<LineStyleLayer>): LineBucket {

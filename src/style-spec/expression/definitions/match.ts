@@ -101,9 +101,7 @@ class Match implements Expression {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evaluate(ctx: EvaluationContext): any {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const input = (this.input.evaluate(ctx));
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+        const input = (this.input.evaluate(ctx)) as number | string;
         const output = (typeEquals(typeOf(input), this.inputType) && this.outputs[this.cases[input]]) || this.otherwise;
         return output.evaluate(ctx);
     }

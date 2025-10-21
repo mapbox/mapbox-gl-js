@@ -26,7 +26,7 @@ class Coalesce implements Expression {
         if (expectedType && expectedType.kind !== 'value') {
             outputType = expectedType;
         }
-        const parsedArgs = [];
+        const parsedArgs: Expression[] = [];
 
         for (const arg of args.slice(1)) {
             const parsed = context.parse(arg, 1 + parsedArgs.length, outputType, undefined, {typeAnnotation: 'omit'});
@@ -42,13 +42,10 @@ class Coalesce implements Expression {
         // Thus, if any of our arguments would have needed an annotation, we
         // need to wrap the enclosing coalesce expression with it instead.
         const needsAnnotation = expectedType &&
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             parsedArgs.some(arg => checkSubtype(expectedType, arg.type));
 
         return needsAnnotation ?
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             new Coalesce(ValueType, parsedArgs) :
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             new Coalesce(outputType, parsedArgs);
     }
 

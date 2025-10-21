@@ -207,7 +207,7 @@ export function querySourceFeatures(sourceCache: SourceCache, params?: {
         return sourceCache.getTileByID(id);
     });
 
-    const result = [];
+    const result: Feature[] = [];
 
     const dataTiles: Record<string, boolean> = {};
     for (let i = 0; i < tiles.length; i++) {
@@ -215,12 +215,10 @@ export function querySourceFeatures(sourceCache: SourceCache, params?: {
         const dataID = tile.tileID.canonical.key;
         if (!dataTiles[dataID]) {
             dataTiles[dataID] = true;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             tile.querySourceFeatures(result, params);
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return result;
 }
 

@@ -4,6 +4,7 @@ import validate from './validate';
 
 import type {StyleReference} from '../reference/latest';
 import type {StyleSpecification} from '../types';
+import type {StylePropertySpecification} from '../style-spec';
 
 type ProjectionValidatorOptions = {
     key: string;
@@ -15,8 +16,7 @@ type ProjectionValidatorOptions = {
 export default function validateProjection(options: ProjectionValidatorOptions): ValidationError[] {
     const projection = options.value;
     const styleSpec = options.styleSpec;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const projectionSpec = styleSpec.projection;
+    const projectionSpec = styleSpec.projection as Record<PropertyKey, StylePropertySpecification>;
     const style = options.style;
 
     if (isObject(projection)) {
@@ -26,7 +26,7 @@ export default function validateProjection(options: ProjectionValidatorOptions):
             errors = errors.concat(validate({
                 key,
                 value: projection[key],
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
                 valueSpec: projectionSpec[key],
                 style,
                 styleSpec

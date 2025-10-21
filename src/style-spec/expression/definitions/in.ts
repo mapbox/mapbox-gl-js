@@ -65,8 +65,8 @@ class In implements Expression {
             throw new RuntimeError(`Expected second argument to be of type array or string, but found ${toString(typeOf(haystack))} instead.`);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        return haystack.indexOf(needle) >= 0;
+        // Type assertions safe due to isValidNativeType checks above
+        return (haystack as string | unknown[]).indexOf(needle as string) >= 0;
     }
 
     eachChild(fn: (_: Expression) => void) {

@@ -80,8 +80,8 @@ export default function validateObject(options: ObjectValidatorOptions): Validat
             continue;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (elementSpecs[elementSpecKey].required && elementSpecs[elementSpecKey]['default'] === undefined && object[elementSpecKey] === undefined) {
+        const elementSpec = elementSpecs[elementSpecKey] as {required?: boolean; default?: unknown};
+        if (elementSpec.required && elementSpec['default'] === undefined && object[elementSpecKey] === undefined) {
             errors.push(new ValidationError(key, object, `missing required property "${elementSpecKey}"`));
         }
     }
