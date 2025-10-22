@@ -86,6 +86,7 @@ out highp float v_depth;
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define lowp float offset
 #pragma mapbox: define mediump float width
+#pragma mapbox: define mediump float side_z_offset
 #pragma mapbox: define lowp float border_width
 #pragma mapbox: define lowp vec4 border_color
 
@@ -98,6 +99,7 @@ void main() {
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize lowp float offset
     #pragma mapbox: initialize mediump float width
+    #pragma mapbox: initialize mediump float side_z_offset
     #pragma mapbox: initialize lowp float border_width
     #pragma mapbox: initialize lowp vec4 border_color
 
@@ -126,8 +128,10 @@ void main() {
     gapwidth = gapwidth / 2.0;
     float halfwidth;
 #ifdef VARIABLE_LINE_WIDTH
-    float left = a_pos_normal.y - 2.0 * floor(a_pos_normal.y * 0.5);
-    halfwidth = (u_width_scale * (left == 1.0 ? a_z_offset_width.y : a_z_offset_width.z)) / 2.0;
+    bool left = normal.y == 1.0;
+    halfwidth = (u_width_scale * (left ? a_z_offset_width.y : a_z_offset_width.z)) / 2.0;
+    a_z_offset += left ? side_z_offset : 0.0;
+    v_normal = side_z_offset > 0.0 && left ? vec2(0.0) : v_normal;
 #else
     halfwidth = (u_width_scale * width) / 2.0;
 #endif

@@ -51,6 +51,7 @@ uniform float u_emissive_strength;
 #pragma mapbox: define lowp vec4 dash
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
+#pragma mapbox: define mediump float side_z_offset
 #pragma mapbox: define lowp float border_width
 #pragma mapbox: define lowp vec4 border_color
 
@@ -64,6 +65,7 @@ void main() {
     #pragma mapbox: initialize lowp vec4 dash
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize mediump float side_z_offset
     #pragma mapbox: initialize lowp float border_width
     #pragma mapbox: initialize lowp vec4 border_color
 
@@ -75,6 +77,7 @@ void main() {
     // (v_width2.s)
     float blur2 = (u_width_scale * blur + 1.0 / u_device_pixel_ratio) * v_gamma_scale;
     float alpha = clamp(min(dist - (v_width2.t - blur2), v_width2.s - dist) / blur2, 0.0, 1.0);
+    alpha = side_z_offset > 0.0 ? 1.0 - alpha : alpha;
 #ifdef RENDER_LINE_DASH
     float sdfdist = texture(u_dash_image, v_tex).r;
     float sdfgamma = 1.0 / (2.0 * u_device_pixel_ratio) / dash.z;
