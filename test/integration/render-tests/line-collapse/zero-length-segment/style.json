@@ -1,0 +1,57 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "description": "When combined with 0 tolerance on the source, a segment with identical endpoints renders as a point with line caps."
+    }
+  },
+  "zoom": 8,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "tolerance": 0,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [0, 0],
+                [0, 0]
+              ],
+              "type": "LineString"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "center": [0, 0],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#222"
+      }
+    },
+    {
+      "id": "square",
+      "source": "geojson",
+      "type": "line",
+      "layout": {
+        "line-cap": "square",
+        "line-collapse": true
+      },
+      "paint": {
+        "line-width": 20,
+        "line-color": "#FF0000",
+        "line-opacity": 1
+      }
+    }
+  ]
+}

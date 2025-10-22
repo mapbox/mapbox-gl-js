@@ -693,6 +693,7 @@ export type LineLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "line-cap"?: DataDrivenPropertyValueSpecification<"butt" | "round" | "square">,
+        "line-collapse"?: PropertyValueSpecification<boolean>,
         "line-join"?: DataDrivenPropertyValueSpecification<"bevel" | "round" | "miter" | "none">,
         "line-miter-limit"?: PropertyValueSpecification<number>,
         "line-round-limit"?: PropertyValueSpecification<number>,
