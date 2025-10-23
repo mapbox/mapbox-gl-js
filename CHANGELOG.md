@@ -1,4 +1,4 @@
-## 3.16.0-beta.2
+## 3.16.0
 
 ### Features and improvements ✨
 
@@ -6,20 +6,17 @@
 - Add `Map` `setLayerProperty` that combines `setLayoutProperty` & `setPaintProperty` into one method for convenience.
 - Add support for node/material overrides & other improvements to `model` source and layer.
 - Various improvements & fixes for upcoming 3D features (indoor, procedural buildings & elevated roads).
-
-### Bug fixes 🐞
-
-- Improve accuracy of `queryRenderedFeatures` for model layers.
-- Fix a bug with heatmap sometimes disappearing after switching projection.
-- Fix rendering of model layer with vector source on globe projection.
-
-## 3.16.0-beta.1
-
-### Features and improvements ✨
 - Add response headers to the `sourcedata` event data.
 - Improve TypeScript types for style specification.
 
 ### Bug fixes 🐞
+
+- Fix raster particle layer not rendering correctly on styles with emissive light.
+- Fix icons of different sizes rendering incorrectly in appearances.
+- Fix worldview filtering with dynamic expressions.
+- Improve accuracy of `queryRenderedFeatures` for model layers.
+- Fix a bug with heatmap sometimes disappearing after switching projection.
+- Fix rendering of model layer with vector source on globe projection.
 - Fix flickering of fill-extrusion buildings when using clip layers.
 - Fix inaccuracies in 3D model query intersection.
 - Fix the passing of `GeolocationPosition` to `geolocate` event listeners.
