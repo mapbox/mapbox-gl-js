@@ -53,8 +53,9 @@ function parseData(
             const feature = sourceLayer.feature(index);
 
             if (isValidBuildingFeature(feature)) {
-                const {id: buildingId, center} = parseBuilding(feature);
-                upsertBuilding(buildings, buildingId, center);
+                const {id, center} = parseBuilding(feature);
+                upsertBuilding(buildings, id, center);
+                newActiveFloors.add(id);
                 continue;
             }
 

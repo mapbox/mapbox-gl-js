@@ -12,13 +12,9 @@ const indoorLayers = [{
         "type": "clip",
         "id": "clip-area",
         "source": "indoor-source",
-        "source-layer": "indoor_floor_metadata",
+        "source-layer": "indoor_structure",
         "minzoom": 15.0,
-        "filter": [
-            "all",
-            ["==", ["get", "type"], "floor"],
-            isSelectedFloorBase(),
-        ],
+        "filter": isSelectedFloorBase(),
         "layout": {
             "clip-layer-types": ["model", "symbol"]
         }
