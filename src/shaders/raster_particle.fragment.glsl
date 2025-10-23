@@ -26,7 +26,7 @@ void main() {
     vec3 out_color = color.rgb;
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting_with_emission_ground(vec4(out_color, 1.0), 0.0).rgb;
+    out_color = apply_lighting_with_emission_ground(vec4(out_color, 1.0), 1.0).rgb;
 #endif
 #ifdef FOG
     highp float fog_limit_high_meters = 1000000.0;
