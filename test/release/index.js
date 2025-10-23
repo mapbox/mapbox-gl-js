@@ -215,15 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.replaceChildren();
 
-        // For local pages with "latest" version, load directly without rewriting
-        if (page.url && state.version === 'latest') {
-            const iframe = document.createElement('iframe');
-            iframe.src = page.url;
-            container.appendChild(iframe);
-            return;
-        }
-
-        // For remote pages or non-latest versions, fetch and rewrite
         abortController = new AbortController();
         const url = page.url || `https://docs.mapbox.com/mapbox-gl-js/assets/${page.key}-demo.html`;
         const {js, css} = getUrls(state.version);
@@ -236,13 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             let doc = await response.text();
-
-            // Apply correct sanitization based on content source
             doc = page.url ?
                 sanitizeLocalContent(doc, js, css) :
                 sanitizeRemoteContent(doc, js, css);
 
-            // Create and populate iframe
             const iframe = document.createElement('iframe');
             container.appendChild(iframe);
             const iframeDoc = iframe.contentWindow.document.open("text/html", "replace");
@@ -262,28 +250,21 @@ document.addEventListener('DOMContentLoaded', () => {
         console.clear();
 
         const page = pages[pageIndex];
-
-        // Update state
         state.page = page.key;
         state.index = pageIndex;
 
-        // Update UI
         titleElement.innerText = page.title;
         versionNumber.innerText = state.version;
 
-        // Update navigation buttons
         prevButton.classList.toggle('disabled', pageIndex === 0);
         nextButton.classList.toggle('disabled', pageIndex + 1 === pages.length);
 
-        // Update URL hash
         let hash = `page=${page.key}`;
         if (state.version !== 'latest') {
             hash += `&version=${state.version}`;
         }
 
         location.hash = hash;
-
-        // Load content
         loadContent(page);
     }
 

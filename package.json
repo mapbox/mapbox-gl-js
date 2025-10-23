@@ -133,7 +133,7 @@
     "start-range-server": "node build/range-request-server.js",
     "start": "run-p build-token watch-css watch-dev start-server",
     "start-debug": "run-p build-token watch-css watch-dev start-server",
-    "prepare-release-pages": "ln -sfn $PWD/dist test/release/dist && ln -sfn $PWD/debug test/release/debug",
+    "prepare-release-pages": "ln -sfn $PWD/dist test/release/dist && ln -sfn $PWD/debug test/release/debug && cp debug/access_token_generated.js test/release/",
     "start-release": "run-s build-token build-prod-min build-css print-release-url prepare-release-pages start-server",
     "lint": "eslint --cache src 3d-style test",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
