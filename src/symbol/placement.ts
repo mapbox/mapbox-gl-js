@@ -566,6 +566,7 @@ export class Placement {
                 const globals = {
                     zoom: this.transform.zoom,
                     pitch: this.transform.pitch,
+                    worldview: bucket.worldview
                 };
 
                 const canonicalTileId = this.retainedQueryData[bucket.bucketInstanceId].tileID.canonical;
