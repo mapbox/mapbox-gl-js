@@ -69,6 +69,7 @@ import type {AreaLight} from '../model';
 export const BUILDING_VISIBLE: number = 0x0;
 export const BUILDING_HIDDEN_BY_REPLACEMENT: number = 0x1;
 export const BUILDING_HIDDEN_BY_TILE_BORDER_DEDUPLICATION: number = 0x2;
+const BUILDING_HIDDEN_WITH_INCOMPLETE_PARTS: number = 0x4;
 
 const MAX_INT_16 = 32767.0;
 
@@ -245,10 +246,13 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
     updateFootprints(_id: UnwrappedTileID, _footprints: Array<TileFootprint>) {
         for (const footprint of this.footprints) {
-            _footprints.push({
-                footprint,
-                id: _id
-            });
+            const buildingIncomplete = footprint.hiddenFlags & BUILDING_HIDDEN_WITH_INCOMPLETE_PARTS;
+            if (!buildingIncomplete) {
+                _footprints.push({
+                    footprint,
+                    id: _id
+                });
+            }
         }
     }
 
@@ -291,7 +295,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
         buildingGen.setFacadeClassifierOptions(3.0);
 
         // First, we process facade data. For building parts, facades are linked to the
-        // parent building, so we also crate a map linking feature id to source id to
+        // parent building, so we also create a map linking feature id to source id to
         // query later.
         const featureSourceIdMap = new Map<string | number, string | number | boolean>();
         const facadeDataForFeature = new Map<string | number | boolean, Facade[]>();
@@ -338,7 +342,24 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
         this.maxHeight = 0;
 
-        // Next, we process the building footprints, and combine them
+        // We keep track of buildings which have been disabled because
+        // a building part was removed. When disabling a building, we
+        // remove all existing parts (via conflation) and stop adding
+        // new parts.
+        const disabledFootprintLookup = new Array<{buildingId: number, footprintIndex: number}>();
+        const disabledBuildings = new Set<number>();
+        const disableBuilding = (buildingId: number | null) => {
+            if (buildingId != null) {
+                disabledBuildings.add(buildingId);
+            }
+        };
+        const addBuildingFootprint = (buildingId: number | null, footprintIndex: number) => {
+            if (buildingId == null) {
+                return;
+            }
+            disabledFootprintLookup.push({buildingId, footprintIndex});
+        };
+        // Now we process the building footprints, and combine them
         // with the facade data.
         for (const {feature, id, index, sourceLayerIndex} of features) {
             const isFacade = vectorTileFeatureTypes[feature.type] === 'LineString';
@@ -352,22 +373,39 @@ export class BuildingBucket implements BucketWithGroundEffect {
             if (!this.layers[0]._featureFilter.filter(new EvaluationParameters(this.zoom), evaluationFeature, canonical))
                 continue;
 
+            let buildingId: number | null = null;
+            if (feature.properties && feature.properties.hasOwnProperty('building_id')) {
+                buildingId = feature.properties['building_id'] as number;
+                if (disabledBuildings.has(buildingId)) {
+                    continue;
+                }
+            }
+
             const geometry = needGeometry ? evaluationFeature.geometry : loadGeometry(feature, canonical, tileTransform);
 
             const EARCUT_MAX_RINGS = 500;
             const classifiedRings = classifyRings(geometry, EARCUT_MAX_RINGS);
+            // We don't support complex buildings with holes for now. So we skip them, and fall back to fill-extrusions.
+            let hasHoles = false;
+            for (const ring of classifiedRings) {
+                if (ring.length !== 1) {
+                    hasHoles = true;
+                    break;
+                }
+            }
+            if (hasHoles) {
+                disableBuilding(buildingId);
+                continue;
+            }
 
             // Do not render data beyond tile buffer/padding
             if (!geometryFullyInsideTile(geometry, BUILDING_TILE_PADDING)) {
+                disableBuilding(buildingId);
                 continue;
             }
 
             const layer = this.layers[0];
             const buildingRoofShape = layer.layout.get('building-roof-shape').evaluate(feature, {}, canonical);
-            // Skip flat roofs -> render as fill-extrusion
-            if (buildingRoofShape === 'flat') {
-                continue;
-            }
 
             const base = layer.layout.get('building-base').evaluate(feature, {}, canonical);
             const height = layer.layout.get('building-height').evaluate(feature, {}, canonical);
@@ -493,9 +531,11 @@ export class BuildingBucket implements BucketWithGroundEffect {
             const result = buildingGen.generateMesh(buildingGenFeatures, facades);
             if (typeof result === 'string') {
                 warnOnce(`Unable to generate building ${feature.id}: ${result}`);
+                disableBuilding(buildingId);
                 continue;
             }
             if (result.meshes.length === 0 || result.modifiedPolygonRings.length === 0) {
+                disableBuilding(buildingId);
                 continue;
             }
 
@@ -732,11 +772,6 @@ export class BuildingBucket implements BucketWithGroundEffect {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const grid = new TriangleGridIndex(footprintflattenedPts, indices, 8, 256);
 
-                let buildingOrFeatureId = feature.id;
-                if (feature.properties && feature.properties.hasOwnProperty('building_id')) {
-                    buildingOrFeatureId = feature.properties['building_id'] as number;
-                }
-
                 const footprint = {
                     vertices: footprintflattenedPts,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -744,7 +779,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
                     grid,
                     min: footprintBoundsMin,
                     max: footprintBoundsMax,
-                    buildingId: buildingOrFeatureId,
+                    buildingId: buildingId != null ? buildingId : feature.id,
                     hiddenFlags: BUILDING_VISIBLE,
                     indicesOffset: indexArrayRangeStartOffset,
                     indicesLength: indexArrayRangeLength,
@@ -756,9 +791,11 @@ export class BuildingBucket implements BucketWithGroundEffect {
                     segment,
                     height: footprintHeight
                 };
+                const footprintIndex = this.footprints.length;
                 if (feature.id !== undefined) {
-                    this.featureFootprintLookup.set(feature.id, this.footprints.length);
+                    this.featureFootprintLookup.set(feature.id, footprintIndex);
                 }
+                addBuildingFootprint(buildingId, footprintIndex);
                 this.footprints.push(footprint);
             }
 
@@ -767,6 +804,13 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
             options.featureIndex.insert(feature, geometry, index, sourceLayerIndex, this.index, vertexArrayOffset);
         }
+
+        disabledFootprintLookup.forEach(({buildingId, footprintIndex}) => {
+            if (disabledBuildings.has(buildingId)) {
+                const footprint = this.footprints[footprintIndex];
+                footprint.hiddenFlags = BUILDING_HIDDEN_WITH_INCOMPLETE_PARTS;
+            }
+        });
 
         this.groundEffect.prepareBorderSegments();
         this.evaluate(this.layers[0], {});
