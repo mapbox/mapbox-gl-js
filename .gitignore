@@ -18,7 +18,8 @@ coverage
 tests-to-run.txt
 **/test/**/__screenshots__/
 **/test/unit/**/vitest
-**/test/release/dist/
+**/test/release/dist
+**/test/release/debug
 **/test/release/*.html
 !**/test/release/index.html
 **/test/integration/**/vitest

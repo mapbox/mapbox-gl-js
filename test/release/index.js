@@ -1,7 +1,7 @@
 /* eslint-env browser */
 /* global mapboxglVersions */
 /* eslint-disable prefer-arrow-callback, prefer-template, no-promise-executor-return, jsdoc/require-property-description */
-import {getAccessToken} from './access_token_generated.js';
+import {getAccessToken} from './debug/access_token_generated.js';
 
 const accessToken = getAccessToken();
 
@@ -28,17 +28,17 @@ const pages = [
     {
         "key": "standard-style",
         "title": "Standard Style",
-        "url": "./standard-style.html"
+        "url": "./debug/standard-style.html"
     },
     {
         "key": "animate-point-along-route",
         "title": "Animate route",
-        "url": "./animate-point-along-route.html"
+        "url": "./debug/animate-point-along-route.html"
     },
     {
         "key": "filter-features-within-map-view",
         "title": "Filter features within map view",
-        "url": "./filter-features-with-globe.html"
+        "url": "./debug/filter-features-with-globe.html"
     },
     {
         "key": "mapbox-gl-geocoder",
@@ -63,12 +63,12 @@ const pages = [
     {
         "key": "heatmap-layer",
         "title": "Add a heatmap layer",
-        "url": "./heatmap-layer.html"
+        "url": "./debug/heatmap-layer.html"
     },
     {
         "key": "threejs-antenna",
         "title": "Add a 3d model on terrain with ThreeJS",
-        "url": "./threejs-antenna.html"
+        "url": "./debug/threejs-antenna.html"
     },
     {
         "key": "free-camera-path",
@@ -85,52 +85,52 @@ const pages = [
     {
         "key": "image-on-a-map",
         "title": "Image Source",
-        "url": "./image-on-globe.html"
+        "url": "./debug/image-on-globe.html"
     },
     {
         "key": "extrusion-query",
         "title": "Extrusion Query",
-        "url": "./extrusion-query.html"
+        "url": "./debug/extrusion-query.html"
     },
     {
         "key": "projections",
         "title": "Projections",
-        "url": "./projections.html"
+        "url": "./debug/projections.html"
     },
     {
         "key": "featurestate",
         "title": "Feature state",
-        "url": "./featurestate.html"
+        "url": "./debug/featurestate.html"
     },
     {
         "key": "markers",
         "title": "Markers",
-        "url": "./markers.html"
+        "url": "./debug/markers.html"
     },
     {
         "key": "video",
         "title": "Video",
-        "url": "./video.html"
+        "url": "./debug/video.html"
     },
     {
         "key": "globe-with-video",
         "title": "Globe with Video",
-        "url": "./globe-with-video.html"
+        "url": "./debug/globe-with-video.html"
     },
     {
         "key": "interactions",
         "title": "Interactions",
-        "url": "./featuresets.html"
+        "url": "./debug/featuresets.html"
     },
     {
         "key": "precipitation",
         "title": "Precipitation",
-        "url": "./precipitation.html"
+        "url": "./debug/precipitation.html"
     },
     {
         "key": "raster-array",
         "title": "Raster Array",
-        "url": "./raster-array.html"
+        "url": "./debug/raster-array.html"
     }
 ];
 
@@ -215,6 +215,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.replaceChildren();
 
+        // For local pages with "latest" version, load directly without rewriting
+        if (page.url && state.version === 'latest') {
+            const iframe = document.createElement('iframe');
+            iframe.src = page.url;
+            container.appendChild(iframe);
+            return;
+        }
+
+        // For remote pages or non-latest versions, fetch and rewrite
         abortController = new AbortController();
         const url = page.url || `https://docs.mapbox.com/mapbox-gl-js/assets/${page.key}-demo.html`;
         const {js, css} = getUrls(state.version);
@@ -250,6 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} pageIndex
      */
     function loadPage(pageIndex) {
+        console.clear();
+
         const page = pages[pageIndex];
 
         // Update state

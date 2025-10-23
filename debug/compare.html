@@ -4,7 +4,7 @@
     <title>Mapbox GL JS comparison page</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel='stylesheet' href='./dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
     <style>
         body {
             overflow: hidden;
@@ -65,14 +65,14 @@
             const url = new URL(window.location.href);
             return url.searchParams.get(name);
         }
-        
+
         var accessToken = getURLParameter('access_token');
         if (!accessToken) {
             // This default access token is scoped to localhost and internal mapbox pages
             accessToken = 'pk.eyJ1IjoiZ2wtanMtdGVhbSIsImEiOiJjbTV1d3l0d3AwMThnMmpzZ2M5OTNyeDE1In0.2nygBIo7PXbkFCCt6LEBgw'
         }
     </script>
-    <script src='./dist/mapbox-gl-dev.js'></script>
+    <script src='../dist/mapbox-gl-dev.js'></script>
     <script>
         window.thisMapbox = mapboxgl;
         window.thisMapbox.accessToken = accessToken;
