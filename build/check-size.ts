@@ -7,6 +7,7 @@ type Size = {
     name: string;
     size: number;
     passed: boolean;
+    formattedDiff?: string;
 };
 
 const CHECK_NAME = 'GL JS Size';
@@ -34,34 +35,27 @@ if (priorSummary) {
     }
 }
 
-// Calculate new sizes
 let passed = true;
-const titles = [];
 const newSizes = getSizes();
 for (const size of newSizes) {
     passed = passed && size.passed;
-
     const priorSize = priorSizes[size.name]?.size;
-    if (!priorSize) {
-        titles.push(`${size.name} ${formatSize(size.size)}`);
-        continue;
-    }
-
-    const diff = size.size - priorSize;
+    const diff = priorSize ? size.size - priorSize : 0;
+    const formattedSize = formatSize(size.size);
     if (diff === 0) {
-        titles.push(`${size.name} ${formatSize(size.size)}`);
-        continue;
+        size.formattedDiff = `No changes (${formattedSize})`;
+    } else {
+        const percent = (diff / priorSize) * 100;
+        size.formattedDiff = `${diff >= 0 ? '+' : ''}${formatSize(diff)} ${percent.toFixed(3)}% (${formattedSize})`;
     }
-
-    const percent = (diff / priorSize) * 100;
-    titles.push(`${size.name} ${diff >= 0 ? '+' : ''}${formatSize(diff)} ${percent.toFixed(3)}% (${formatSize(size.size)})`);
 }
 
-const title = titles.join('; ');
-const summary = JSON.stringify(newSizes);
-console.log(title);
+const jsSize = newSizes.find(s => s.name === 'dist/mapbox-gl.js');
+const message = jsSize?.formattedDiff || '';
+console.log(message);
 
-await createCheck(currentSha, CHECK_NAME, title, summary, passed ? 'success' : 'failure');
+const title = newSizes.map(size => `${size.name}: ${size.formattedDiff}`).join('; ');
+await createCheck(currentSha, CHECK_NAME, title, JSON.stringify(newSizes), passed ? 'success' : 'failure');
 
 process.on('unhandledRejection', (error: unknown) => {
     console.error((error as Error)?.message || 'Error');

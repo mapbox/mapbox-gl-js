@@ -45,7 +45,6 @@ async function getSuppressions() {
         for (const message of result.messages) {
             if (message.ruleId === '@typescript-eslint/ban-ts-comment') {
                 tsComments++;
-                console.log(`${tsComments}. ${result.filePath}: ${message.message}`);
             }
         }
     }
@@ -63,20 +62,23 @@ const priorSuppressions: number | undefined = await getCheckSummary(priorCommit,
 // Calculate new suppressions
 const newSuppressions: number = await getSuppressions();
 
-let title = `Total ${newSuppressions} suppressions. `;
+let message = '';
 if (!priorSuppressions) {
-    title += 'No prior suppressions found.';
+    message = `First check (${newSuppressions} total)`;
 } else if (newSuppressions > priorSuppressions) {
-    title += `This PR adds ${newSuppressions - priorSuppressions} suppressions.`;
+    const diff = newSuppressions - priorSuppressions;
+    message = `+${diff} suppression${diff > 1 ? 's' : ''} (now ${newSuppressions} total)`;
 } else if (newSuppressions < priorSuppressions) {
-    title += `This PR removes ${priorSuppressions - newSuppressions} suppressions.`;
-} else if (newSuppressions === priorSuppressions) {
-    title += 'No changes in suppressions.';
+    const diff = priorSuppressions - newSuppressions;
+    message = `-${diff} suppression${diff > 1 ? 's' : ''} (now ${newSuppressions} total)`;
+} else {
+    message = `No changes (${newSuppressions} total)`;
 }
 
-console.log(title);
+console.log(message);
+
 const summary = JSON.stringify(newSuppressions);
-await createCheck(currentSha, CHECK_NAME, title, summary, 'success');
+await createCheck(currentSha, CHECK_NAME, message, summary, 'success');
 
 process.on('unhandledRejection', (error: unknown) => {
     console.error((error as Error)?.message || 'Error');
