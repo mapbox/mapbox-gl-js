@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "description": "Segment renders as a line, as always, when sufficiently zoomed in.  Direction is maintained."
+    }
+  },
+  "zoom": 8,
+  "sources": {
+    "line-segment": {
+      "type": "geojson",
+      "lineMetrics": true,
+      "tolerance": 5e-324,
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [0.638929, -21.815239],
+                [0.643040, -21.810678]
+              ],
+              "type": "LineString"
+            }
+          }]
+      }
+    }
+  },
+  "center": [0.638929, -21.815239],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#222"
+      }
+    },
+    {
+      "id": "line-collapse-true",
+      "source": "line-segment",
+      "type": "line",
+      "layout": {
+        "line-cap": "square",
+        "line-collapse": true
+      },
+      "paint": {
+        "line-width": 20,
+        "line-color": "#FF0000",
+        "line-opacity": 1
+      }
+    }
+  ]
+}
