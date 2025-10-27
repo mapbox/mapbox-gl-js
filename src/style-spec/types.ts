@@ -329,6 +329,9 @@ export type ImportSpecification = {
 };
 
 export type IndoorSpecification = {
+    /**
+     * @experimental This property is experimental and subject to change in future versions.
+     */
     [_: string]: IndoorSourceSpecification
 };
 

@@ -6610,6 +6610,8 @@
   "indoor": {
     "*": {
       "type": "indoor_source",
+      "private": true,
+      "experimental": true,
       "doc": "Specification of an indoor source - sourceId and sourceLayer required for vector source, for GeoJSON sourceLayers should be omitted."
     }
   },
