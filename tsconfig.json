@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
