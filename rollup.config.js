@@ -45,13 +45,7 @@ export default ({watch}) => {
             minifyInternalExports: production
         },
         onwarn: production ? onwarn : false,
-        treeshake: production ? {
-            moduleSideEffects: (id, external) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                return !id.endsWith("tracked_parameters.ts");
-            },
-            preset: "recommended"
-        } : false,
+        treeshake: production ? {preset: 'recommended', moduleSideEffects: (id) => !id.endsWith('devtools.ts')} : false,
         plugins: plugins({minified, production, bench, test: false, keepClassNames: false, mode: BUILD})
     }, {
         // Next, bundle together the three "chunks" produced in the previous pass

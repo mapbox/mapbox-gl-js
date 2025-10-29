@@ -16,6 +16,7 @@ import {TriangleIndexArray, StarsVertexArray} from '../data/array_types';
 import {starsLayout} from './stars_attributes';
 import {starsUniformValues} from '../terrain/stars_program';
 import {mulberry32} from '../style-spec/util/random';
+import {DevTools} from '../ui/devtools';
 
 import type Fog from '../style/fog';
 import type Painter from './painter';
@@ -68,10 +69,10 @@ class Atmosphere {
         this.params = new StarsParams();
         this.updateNeeded = true;
 
-        painter.tp.registerParameter(this.params, ["Stars"], "starsCount", {min: 100, max: 16000, step: 1}, () => { this.updateNeeded = true; });
-        painter.tp.registerParameter(this.params, ["Stars"], "sizeMultiplier", {min: 0.01, max: 2.0, step: 0.01});
-        painter.tp.registerParameter(this.params, ["Stars"], "sizeRange", {min: 0.0, max: 200.0, step: 1}, () => { this.updateNeeded = true; });
-        painter.tp.registerParameter(this.params, ["Stars"], "intensityRange", {min: 0.0, max: 200.0, step: 1}, () => { this.updateNeeded = true; });
+        DevTools.addParameter(this.params, 'starsCount', 'Stars', {min: 100, max: 16000, step: 1}, () => { this.updateNeeded = true; });
+        DevTools.addParameter(this.params, 'sizeMultiplier', 'Stars', {min: 0.01, max: 2.0, step: 0.01});
+        DevTools.addParameter(this.params, 'sizeRange', 'Stars', {min: 0.0, max: 200.0, step: 1}, () => { this.updateNeeded = true; });
+        DevTools.addParameter(this.params, 'intensityRange', 'Stars', {min: 0.0, max: 200.0, step: 1}, () => { this.updateNeeded = true; });
     }
 
     update(painter: Painter) {

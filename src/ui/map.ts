@@ -44,8 +44,7 @@ import {Debug} from '../util/debug';
 import config from '../util/config';
 import {isFQID} from '../util/fqid';
 import defaultLocale from './default_locale';
-import {TrackedParameters} from '../tracked-parameters/tracked_parameters';
-import {TrackedParametersMock} from '../tracked-parameters/tracked_parameters_base';
+import {DevTools} from './devtools';
 import {InteractionSet} from './interactions';
 import {ImageId} from '../style-spec/expression/types/image_id';
 
@@ -99,7 +98,6 @@ import type {Source, SourceClass} from '../source/source';
 import type {EasingOptions} from './camera';
 import type {ContextOptions} from '../gl/context';
 import type {GeoJSONFeature, FeaturesetDescriptor, TargetFeature, TargetDescriptor} from '../util/vectortile_to_geojson';
-import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 import type {Callback} from '../types/callback';
 import type {Interaction} from './interactions';
 import type {SpriteFormat} from '../render/image_manager';
@@ -436,7 +434,7 @@ const defaultOptions = {
  * @see [Example: Check if Mapbox GL JS is supported](https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/)
  */
 export class Map extends Camera {
-    style: Style;
+    style?: Style;
     indoor: IndoorManager;
     painter: Painter;
 
@@ -573,7 +571,6 @@ export class Map extends Camera {
     touchPitch: TouchPitchHandler;
 
     _contextCreateOptions: ContextOptions;
-    _tp: ITrackedParameters;
 
     // Current frame id, iterated on each render
     _frameId: number;
@@ -701,31 +698,20 @@ export class Map extends Camera {
 
         this._setupContainer();
 
-        Debug.run(() => {
-            if (options.devtools) {
-                this._tp = new TrackedParameters(this);
-            }
-        });
-        if (!this._tp) {
-            this._tp = new TrackedParametersMock();
-        }
+        if (options.devtools) DevTools.addTo(this);
 
-        this._tp.registerParameter(this, ["Debug"], "showOverdrawInspector");
-        this._tp.registerParameter(this, ["Debug"], "showTileBoundaries");
-        this._tp.registerParameter(this, ["Debug"], "showParseStatus");
-        this._tp.registerParameter(this, ["Debug"], "repaint");
-        this._tp.registerParameter(this, ["Debug"], "showTileAABBs");
-        this._tp.registerParameter(this, ["Debug"], "showPadding");
-        this._tp.registerParameter(this, ["Debug"], "showCollisionBoxes", {noSave: true});
-        this._tp.registerParameter(this.transform, ["Debug"], "freezeTileCoverage", {noSave: true}, () => {
-            this._update();
-        });
-        this._tp.registerParameter(this, ["Debug", "Wireframe"], "showTerrainWireframe");
-        this._tp.registerParameter(this, ["Debug", "Wireframe"], "showLayers2DWireframe");
-        this._tp.registerParameter(this, ["Debug", "Wireframe"], "showLayers3DWireframe");
-        this._tp.registerParameter(this, ["Scaling"], "_scaleFactor", {min: 0.1, max: 10.0, step: 0.1}, () => {
-            this.setScaleFactor(this._scaleFactor);
-        });
+        DevTools.addParameter(this, 'showOverdrawInspector', 'Debug');
+        DevTools.addParameter(this, 'showTileBoundaries', 'Debug');
+        DevTools.addParameter(this, 'showParseStatus', 'Debug');
+        DevTools.addParameter(this, 'repaint', 'Debug');
+        DevTools.addParameter(this, 'showTileAABBs', 'Debug');
+        DevTools.addParameter(this, 'showPadding', 'Debug');
+        DevTools.addParameter(this, 'showCollisionBoxes', 'Debug', {}, () => this._update());
+        DevTools.addParameter(this.transform, 'freezeTileCoverage', 'Debug', {}, () => this._update());
+        DevTools.addParameter(this, 'showTerrainWireframe', 'Debug');
+        DevTools.addParameter(this, 'showLayers2DWireframe', 'Debug');
+        DevTools.addParameter(this, 'showLayers3DWireframe', 'Debug');
+        DevTools.addParameter(this, '_scaleFactor', 'Scaling', {label: 'scaleFactor', min: 0.1, max: 10.0, step: 0.1}, () => this.setScaleFactor(this._scaleFactor));
 
         this._setupPainter();
         if (this.painter === undefined) {
@@ -1254,7 +1240,7 @@ export class Map extends Camera {
     setScaleFactor(scaleFactor: number): this {
         this._scaleFactor = scaleFactor;
         this.painter.scaleFactor = scaleFactor;
-        this._tp.refreshUI();
+        DevTools.refresh();
 
         this._scaleFactorChanged = true;
 
@@ -4304,7 +4290,7 @@ export class Map extends Camera {
 
         storeAuthState(gl, true);
 
-        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._scaleFactor, this._tp, this._worldview);
+        this.painter = new Painter(gl, this._contextCreateOptions, this.transform, this._scaleFactor, this._worldview);
         this.on('data', (event) => {
             if (event.dataType === 'source') {
                 this.painter.setTileLoadedFlag(true);
@@ -5034,7 +5020,7 @@ export class Map extends Camera {
     set showTileBoundaries(value: boolean) {
         if (this._showTileBoundaries === value) return;
         this._showTileBoundaries = value;
-        this._tp.refreshUI();
+        DevTools.refresh();
         this._update();
     }
 
@@ -5056,7 +5042,7 @@ export class Map extends Camera {
     set showParseStatus(value: boolean) {
         if (this._showParseStatus === value) return;
         this._showParseStatus = value;
-        this._tp.refreshUI();
+        DevTools.refresh();
         this._update();
     }
 
@@ -5077,7 +5063,7 @@ export class Map extends Camera {
     set showTerrainWireframe(value: boolean) {
         if (this._showTerrainWireframe === value) return;
         this._showTerrainWireframe = value;
-        this._tp.refreshUI();
+        DevTools.refresh();
         this._update();
     }
 
@@ -5098,7 +5084,7 @@ export class Map extends Camera {
     set showLayers2DWireframe(value: boolean) {
         if (this._showLayers2DWireframe === value) return;
         this._showLayers2DWireframe = value;
-        this._tp.refreshUI();
+        DevTools.refresh();
         this._update();
     }
 
@@ -5119,7 +5105,7 @@ export class Map extends Camera {
     set showLayers3DWireframe(value: boolean) {
         if (this._showLayers3DWireframe === value) return;
         this._showLayers3DWireframe = value;
-        this._tp.refreshUI();
+        DevTools.refresh();
         this._update();
     }
 
@@ -5154,7 +5140,7 @@ export class Map extends Camera {
     set showPadding(value: boolean) {
         if (this._showPadding === value) return;
         this._showPadding = value;
-        this._tp.refreshUI();
+        DevTools.refresh();
         this._update();
     }
 
@@ -5173,8 +5159,8 @@ export class Map extends Camera {
     set showCollisionBoxes(value: boolean) {
         if (this._showCollisionBoxes === value) return;
         this._showCollisionBoxes = value;
-        this._tp.refreshUI();
-        if (value) {
+        DevTools.refresh();
+        if (this.style && value) {
             // When we turn collision boxes on we have to generate them for existing tiles
             // When we turn them off, there's no cost to leaving existing boxes in place
             this.style._generateCollisionBoxes();
@@ -5200,7 +5186,7 @@ export class Map extends Camera {
     set showOverdrawInspector(value: boolean) {
         if (this._showOverdrawInspector === value) return;
         this._showOverdrawInspector = value;
-        this._tp.refreshUI();
+        DevTools.refresh();
         this._update();
     }
 
@@ -5218,7 +5204,7 @@ export class Map extends Camera {
     set repaint(value: boolean) {
         if (this._repaint !== value) {
             this._repaint = value;
-            this._tp.refreshUI();
+            DevTools.refresh();
             this.triggerRepaint();
         }
     }
@@ -5236,7 +5222,7 @@ export class Map extends Camera {
     set showTileAABBs(value: boolean) {
         if (this._showTileAABBs === value) return;
         this._showTileAABBs = value;
-        this._tp.refreshUI();
+        DevTools.refresh();
         if (!value) { Debug.clearAabbs(); return; }
         this._update();
     }

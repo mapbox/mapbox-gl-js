@@ -40,7 +40,6 @@
     "pbf": "^4.0.1",
     "potpack": "^2.0.0",
     "quickselect": "^3.0.0",
-    "serialize-to-js": "^3.1.2",
     "supercluster": "^8.0.1",
     "tinyqueue": "^3.0.0"
   },

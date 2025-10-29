@@ -17,13 +17,7 @@ const config = (input, file, format) => ({
         indent: false,
         banner
     },
-    treeshake: {
-        moduleSideEffects: (id, external) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            return !id.endsWith("tracked_parameters.ts");
-        },
-        preset: "recommended"
-    },
+    treeshake: {preset: 'recommended', moduleSideEffects: (id) => !id.endsWith('devtools.ts')},
     plugins: plugins({minified: true, production: true, keepClassNames: true, test: false, bench: false, mode: 'production'})
 });
 

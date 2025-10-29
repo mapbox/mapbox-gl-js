@@ -33,6 +33,7 @@ import {Float32Image} from '../util/image';
 import {globeMetersToEcef} from '../geo/projection/globe_util';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
 import {number as interpolate} from '../style-spec/util/interpolate';
+import {DevTools} from '../ui/devtools';
 
 import type Framebuffer from '../gl/framebuffer';
 import type Program from '../render/program';
@@ -299,13 +300,13 @@ export class Terrain extends Elevation {
         super();
 
         this._debugParams = {sortTilesHiZFirst: true, disableRenderCache: false};
-        painter.tp.registerParameter(this._debugParams, ["Terrain"], "sortTilesHiZFirst", {}, () => {
+        DevTools.addParameter(this._debugParams, 'sortTilesHiZFirst', 'Terrain', {}, () => {
             this._style.map.triggerRepaint();
         });
-        painter.tp.registerParameter(this._debugParams, ["Terrain"], "disableRenderCache", {}, () => {
+        DevTools.addParameter(this._debugParams, 'disableRenderCache', 'Terrain', {}, () => {
             this._style.map.triggerRepaint();
         });
-        painter.tp.registerButton(["Terrain"], "Invalidate Render Cache", () => {
+        DevTools.addButton('Terrain', 'Invalidate Render Cache', () => {
             this.invalidateRenderCache = true;
             this._style.map.triggerRepaint();
         });

@@ -10,9 +10,9 @@ import {snowUniformValues} from './snow_program';
 import {mulberry32} from '../style-spec/util/random';
 import {snowLayout} from "./snow_attributes";
 import {PrecipitationRevealParams} from './precipitation_reveal_params';
-import {createTpBindings} from './vignette';
+import {createDevToolsBindings} from './vignette';
 import {boxWrap, generateUniformDistributedPointsInsideCube, lerpClamp, PrecipitationBase} from './common';
-import {Debug} from '../util/debug';
+import {DevTools} from '../ui/devtools';
 
 import type Painter from '../render/painter';
 import type {VignetteParams} from './vignette';
@@ -75,9 +75,8 @@ export class Snow extends PrecipitationBase {
             direction: {x: -50, y: -35},
         };
 
-        const tp = painter.tp;
-        const scope = ["Precipitation", "Snow"];
-        this._revealParams = new PrecipitationRevealParams(painter.tp, scope);
+        const folder = 'Precipitation > Snow';
+        this._revealParams = new PrecipitationRevealParams(folder);
         this._vignetteParams = {
             strength: 0.3,
             start: 0.78,
@@ -87,43 +86,37 @@ export class Snow extends PrecipitationBase {
         };
         this.particlesCount = 16000;
 
-        Debug.run(() => {
-            tp.registerParameter(this._params, scope, 'overrideStyleParameters');
-            tp.registerParameter(this._params, scope, 'intensity', {min: 0.0, max: 1.0});
-            tp.registerParameter(this._params, scope, 'timeFactor', {min: 0.0, max: 1.0, step: 0.01});
-            tp.registerParameter(this._params, scope, 'velocityConeAperture', {min: 0.0, max: 160.0, step: 1.0});
-            tp.registerParameter(this._params, scope, 'velocity', {min: 0.0, max: 500.0, step: 0.5});
-            tp.registerParameter(this._params, scope, 'horizontalOscillationRadius', {min: 0.0, max: 10.0, step: 0.1});
-            tp.registerParameter(this._params, scope, 'horizontalOscillationRate', {min: 0.3, max: 3.0, step: 0.05});
-            tp.registerParameter(this._params, scope, 'boxSize', {min: 100.0, max: 10000.0, step: 50.0});
-            tp.registerParameter(this._params, scope, 'billboardSize', {min: 0.1, max: 10.0, step: 0.01});
+        DevTools.addParameter(this._params, 'overrideStyleParameters', folder);
+        DevTools.addParameter(this._params, 'intensity', folder, {min: 0.0, max: 1.0});
+        DevTools.addParameter(this._params, 'timeFactor', folder, {min: 0.0, max: 1.0, step: 0.01});
+        DevTools.addParameter(this._params, 'velocityConeAperture', folder, {min: 0.0, max: 160.0, step: 1.0});
+        DevTools.addParameter(this._params, 'velocity', folder, {min: 0.0, max: 500.0, step: 0.5});
+        DevTools.addParameter(this._params, 'horizontalOscillationRadius', folder, {min: 0.0, max: 10.0, step: 0.1});
+        DevTools.addParameter(this._params, 'horizontalOscillationRate', folder, {min: 0.3, max: 3.0, step: 0.05});
+        DevTools.addParameter(this._params, 'boxSize', folder, {min: 100.0, max: 10000.0, step: 50.0});
+        DevTools.addParameter(this._params, 'billboardSize', folder, {min: 0.1, max: 10.0, step: 0.01});
 
-            const thinningScope = [...scope, "ScreenThinning"];
+        DevTools.addParameter(this._params.screenThinning, 'intensity', `${folder} > ScreenThinning`, {min: 0.0, max: 1.0});
+        DevTools.addParameter(this._params.screenThinning, 'start', `${folder} > ScreenThinning`, {min: 0.0, max: 2.0});
+        DevTools.addParameter(this._params.screenThinning, 'range', `${folder} > ScreenThinning`, {min: 0.0, max: 2.0});
+        DevTools.addParameter(this._params.screenThinning, 'fadePower', `${folder} > ScreenThinning`, {min: -1.0, max: 1.0, step: 0.01});
+        DevTools.addParameter(this._params.screenThinning, 'affectedRatio', `${folder} > ScreenThinning`, {min: 0.0, max: 1.0, step: 0.01});
+        DevTools.addParameter(this._params.screenThinning, 'particleOffset', `${folder} > ScreenThinning`, {min: -1.0, max: 1.0, step: 0.01});
 
-            tp.registerParameter(this._params.screenThinning, thinningScope, 'intensity', {min: 0.0, max: 1.0});
-            tp.registerParameter(this._params.screenThinning, thinningScope, 'start', {min: 0.0, max: 2.0});
-            tp.registerParameter(this._params.screenThinning, thinningScope, 'range', {min: 0.0, max: 2.0});
-            tp.registerParameter(this._params.screenThinning, thinningScope, 'fadePower', {min: -1.0, max: 1.0, step: 0.01});
-            tp.registerParameter(this._params.screenThinning, thinningScope, 'affectedRatio', {min: 0.0, max: 1.0, step: 0.01});
-            tp.registerParameter(this._params.screenThinning, thinningScope, 'particleOffset', {min: -1.0, max: 1.0, step: 0.01});
+        DevTools.addParameter(this._params, 'shapeFadeStart', `${folder} > Shape`, {min: 0.0, max: 1.0, step: 0.01});
+        DevTools.addParameter(this._params, 'shapeFadePower', `${folder} > Shape`, {min: -1.0, max: 0.99, step: 0.01});
 
-            const shapeScope = [...scope, "Shape"];
-            tp.registerParameter(this._params, shapeScope, 'shapeFadeStart', {min: 0.0, max: 1.0, step: 0.01});
-            tp.registerParameter(this._params, shapeScope, 'shapeFadePower', {min: -1.0, max: 0.99, step: 0.01});
+        DevTools.addParameter(this._params, 'color', folder, {
+            color: {type: 'float'},
+        });
 
-            tp.registerParameter(this._params, scope, 'color', {
-                color: {type: 'float'},
-            });
+        createDevToolsBindings(this._vignetteParams, painter, `${folder} > Vignette`);
 
-            const vignetteScope = [...scope, "Vignette"];
-            createTpBindings(this._vignetteParams, painter, vignetteScope);
-
-            tp.registerParameter(this._params, scope, 'direction', {
-                picker: 'inline',
-                expanded: true,
-                x: {min: -200, max: 200},
-                y: {min: -200, max: 200},
-            });
+        DevTools.addParameter(this._params, 'direction', folder, {
+            picker: 'inline',
+            expanded: true,
+            x: {min: -200, max: 200},
+            y: {min: -200, max: 200},
         });
     }
 

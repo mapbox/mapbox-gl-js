@@ -40,6 +40,7 @@ import {BuildingTileBorderManager} from '../../3d-style/render/building_tile_bor
 import {GlobeSharedBuffers, globeToMercatorTransition} from '../geo/projection/globe_util';
 import {Terrain, defaultTerrainUniforms} from '../terrain/terrain';
 import {Debug} from '../util/debug';
+import {DevTools} from '../ui/devtools';
 import Tile from '../source/tile';
 import {RGBAImage} from '../util/image';
 import {LayerTypeMask} from '../../3d-style/util/conflation';
@@ -65,7 +66,6 @@ import type GlyphManager from './glyph_manager';
 import type {ContextOptions} from '../gl/context';
 import type {CutoffParams} from '../render/cutoff';
 import type {DepthRangeType, DepthMaskType, DepthFuncType} from '../gl/types';
-import type {ITrackedParameters} from '../tracked-parameters/tracked_parameters_base';
 import type {LightsUniformsType} from '../../3d-style/render/lights';
 import type {OverscaledTileID, UnwrappedTileID} from '../source/tile_id';
 import type {ProgramName} from './program';
@@ -241,8 +241,6 @@ class Painter {
     _shadowRenderer?: ShadowRenderer;
     _wireframeDebugCache: WireframeDebugCache;
 
-    tp: ITrackedParameters;
-
     _debugParams: {
         forceEnablePrecipitation: boolean;
         showTerrainProxyTiles: boolean;
@@ -273,14 +271,13 @@ class Painter {
 
     worldview: string;
 
-    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, tp: ITrackedParameters, worldview: string | undefined) {
+    constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, worldview: string | undefined) {
         this.context = new Context(gl, contextCreateOptions);
 
         this.transform = transform;
         this._tileTextures = {};
         this.frameCopies = [];
         this.loadTimeStamps = [];
-        this.tp = tp;
 
         this._timeStamp = browser.now();
         this._averageFPS = 0;
@@ -303,34 +300,32 @@ class Painter {
             this._debugParams.enabledLayers[layerType] = true;
         }
 
-        tp.registerParameter(this._debugParams, ["Terrain"], "showTerrainProxyTiles", {}, () => {
+        DevTools.addParameter(this._debugParams, 'showTerrainProxyTiles', 'Terrain', {}, () => {
             this.style.map.triggerRepaint();
         });
-
-        tp.registerParameter(this._debugParams, ["Precipitation"], "forceEnablePrecipitation");
-
-        tp.registerParameter(this._debugParams, ["FPS"], "fpsWindow", {min: 1, max: 100, step: 1});
-        tp.registerBinding(this._debugParams, ["FPS"], 'continousRedraw', {
+        DevTools.addParameter(this._debugParams, 'forceEnablePrecipitation', 'Precipitation');
+        DevTools.addParameter(this._debugParams, 'fpsWindow', 'FPS', {min: 1, max: 100, step: 1});
+        DevTools.addBinding(this._debugParams, 'continousRedraw', 'FPS', {
             readonly: true,
-            label: "continuous redraw"
+            label: 'continuous redraw'
         });
-        tp.registerBinding(this, ["FPS"], '_averageFPS', {
+        DevTools.addBinding(this, '_averageFPS', 'FPS', {
             readonly: true,
-            label: "value"
+            label: 'value'
         });
-        tp.registerBinding(this, ["FPS"], '_averageFPS', {
+        DevTools.addBinding(this, '_averageFPS', 'FPS', {
             readonly: true,
-            label: "graph",
+            label: 'graph',
             view: 'graph',
             min: 0,
             max: 200
         });
-        // Layers
+
         for (const layerType of layerTypes) {
-            tp.registerParameter(this._debugParams.enabledLayers, ["Debug", "Layers"], layerType);
+            DevTools.addParameter(this._debugParams.enabledLayers, layerType, 'Debug > Layers');
         }
 
-        this.occlusionParams = new OcclusionParams(tp);
+        this.occlusionParams = new OcclusionParams();
 
         this.setup();
 

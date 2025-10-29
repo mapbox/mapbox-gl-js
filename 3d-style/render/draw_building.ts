@@ -7,6 +7,7 @@ import {mat4} from 'gl-matrix';
 import StencilMode from '../../src/gl/stencil_mode';
 import {getMetersPerPixelAtLatitude} from '../../src/geo/mercator_coordinate';
 import {Debug} from '../../src/util/debug';
+import {DevTools} from '../../src/ui/devtools';
 import {drawGroundEffect as fillExtrusionDrawGroundEffect, GroundEffectProperties, frustumCullShadowCaster} from '../../src/render/draw_fill_extrusion';
 import Color from '../../src/style-spec/util/color';
 import ColorMode from '../../src/gl/color_mode';
@@ -209,16 +210,16 @@ class DrawBuildingsDebugParams {
     }
 
     constructor(painter: Painter) {
-        painter.tp.registerParameter(this, ["Buildings"], "drawTranslucentPass", {label: "Draw Translucent Pass"}, () => {
+        DevTools.addParameter(this, 'drawTranslucentPass', 'Buildings', {label: 'Draw Translucent Pass'}, () => {
             painter.style.map.triggerRepaint();
         });
-        painter.tp.registerParameter(this, ["Buildings"], "drawShadowPass", {label: "Draw Shadow Pass"}, () => {
+        DevTools.addParameter(this, 'drawShadowPass', 'Buildings', {label: 'Draw Shadow Pass'}, () => {
             painter.style.map.triggerRepaint();
         });
-        painter.tp.registerParameter(this, ["Buildings"], "showNormals", {label: "Show normals"}, () => {
+        DevTools.addParameter(this, 'showNormals', 'Buildings', {label: 'Show normals'}, () => {
             painter.style.map.triggerRepaint();
         });
-        painter.tp.registerParameter(this, ["Buildings"], "drawGroundAO", {label: "Ground AO"}, () => {
+        DevTools.addParameter(this, 'drawGroundAO', 'Buildings', {label: 'Ground AO'}, () => {
             painter.style.map.triggerRepaint();
         });
     }

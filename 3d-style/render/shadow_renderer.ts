@@ -8,6 +8,7 @@ import Color from '../../src/style-spec/util/color';
 import {FreeCamera} from '../../src/ui/free_camera';
 import {mercatorZfromAltitude, tileToMeter} from '../../src/geo/mercator_coordinate';
 import {cartesianPositionToSpherical, sphericalPositionToCartesian, clamp, linearVec3TosRGB} from '../../src/util/util';
+import {DevTools} from '../../src/ui/devtools';
 import {defaultShadowUniformValues} from '../render/shadow_uniforms';
 import TextureSlots from './texture_slots';
 import assert from 'assert';
@@ -187,11 +188,11 @@ export class ShadowRenderer {
 
         this.useNormalOffset = false;
 
-        painter.tp.registerParameter(this, ["Shadows"], "_forceDisable", {label: "forceDisable"}, () => { this.painter.style.map.triggerRepaint(); });
-        painter.tp.registerParameter(shadowParameters, ["Shadows"], "cascadeCount", {min: 1, max: 2, step: 1});
-        painter.tp.registerParameter(shadowParameters, ["Shadows"], "normalOffset", {min: 0, max: 10, step: 0.05});
-        painter.tp.registerParameter(shadowParameters, ["Shadows"], "shadowMapResolution", {min: 32, max: 2048, step: 32});
-        painter.tp.registerBinding(this, ["Shadows"], "_numCascadesToRender", {readonly: true, label: 'numCascadesToRender'});
+        DevTools.addParameter(this, '_forceDisable', 'Shadows', {label: 'forceDisable'}, () => { this.painter.style.map.triggerRepaint(); });
+        DevTools.addParameter(shadowParameters, 'cascadeCount', 'Shadows', {min: 1, max: 2, step: 1});
+        DevTools.addParameter(shadowParameters, 'normalOffset', 'Shadows', {min: 0, max: 10, step: 0.05});
+        DevTools.addParameter(shadowParameters, 'shadowMapResolution', 'Shadows', {min: 32, max: 2048, step: 32});
+        DevTools.addBinding(this, '_numCascadesToRender', 'Shadows', {readonly: true, label: 'numCascadesToRender'});
     }
 
     destroy() {
