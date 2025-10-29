@@ -55,23 +55,7 @@ function validateNonExpressionFilter(options: FilterValidatorOptions): Validatio
         valueSpec: styleSpec.filter_operator
     });
 
-    switch (unbundle(value[0])) {
-    case '<':
-    case '<=':
-    case '>':
-    case '>=':
-        if (value.length >= 2 && unbundle(value[1]) === '$type') {
-            errors.push(new ValidationError(key, value, `"$type" cannot be use with operator "${value[0]}"`));
-        }
-        /* falls through */
-    case '==':
-    case '!=':
-        if (value.length !== 3) {
-            errors.push(new ValidationError(key, value, `filter array for operator "${value[0]}" must have 3 elements`));
-        }
-        /* falls through */
-    case 'in':
-    case '!in':
+    const validate = () => {
         if (value.length >= 2) {
             if (!isString(value[1])) {
                 errors.push(new ValidationError(`${key}[1]`, value[1], `string expected, ${getType(value[1])} found`));
@@ -89,6 +73,33 @@ function validateNonExpressionFilter(options: FilterValidatorOptions): Validatio
                 errors.push(new ValidationError(`${key}[${i}]`, value[i], `string, number, or boolean expected, ${getType(value[i])} found.`));
             }
         }
+    };
+
+    switch (unbundle(value[0])) {
+    case '<':
+    case '<=':
+    case '>':
+    case '>=':
+        if (value.length >= 2 && unbundle(value[1]) === '$type') {
+            errors.push(new ValidationError(key, value, `"$type" cannot be use with operator "${value[0]}"`));
+        }
+        if (value.length !== 3) {
+            errors.push(new ValidationError(key, value, `filter array for operator "${value[0]}" must have 3 elements`));
+        }
+        validate();
+        break;
+
+    case '==':
+    case '!=':
+        if (value.length !== 3) {
+            errors.push(new ValidationError(key, value, `filter array for operator "${value[0]}" must have 3 elements`));
+        }
+        validate();
+        break;
+
+    case 'in':
+    case '!in':
+        validate();
         break;
 
     case 'any':
