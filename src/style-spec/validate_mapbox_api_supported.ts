@@ -108,10 +108,9 @@ function getSourcesErrors(sources: SourcesSpecification): {
     return {errors, sourcesCount};
 }
 
-function getImportErrors(imports: ImportSpecification[] = []): {errors: Array<ValidationError>; sourcesCount: number} {
+function getImportErrors(imports: ImportSpecification[] = []): Array<ValidationError> {
     let errors: Array<ValidationError> = [];
 
-    let sourcesCount = 0;
     const validateImports = (imports: ImportSpecification[] = []) => {
         for (const importSpec of imports) {
             const style = importSpec.data;
@@ -125,7 +124,6 @@ function getImportErrors(imports: ImportSpecification[] = []): {errors: Array<Va
 
             if (style.sources) {
                 const sourcesErrors = getSourcesErrors(style.sources);
-                sourcesCount += sourcesErrors.sourcesCount;
                 errors = errors.concat(sourcesErrors.errors);
             }
         }
@@ -136,7 +134,7 @@ function getImportErrors(imports: ImportSpecification[] = []): {errors: Array<Va
         errors.push(new ValidationError(null, null, 'Duplicate ids of imports'));
     }
 
-    return {errors, sourcesCount};
+    return errors;
 }
 
 function getRootErrors(style: MapboxStyleSpecification, specKeys: string[]): Array<ValidationError> {
@@ -238,8 +236,7 @@ export default function validateMapboxApiSupported(style: MapboxStyleSpecificati
 
     if (s.imports) {
         const importsErrors = getImportErrors(s.imports);
-        sourcesCount += importsErrors.sourcesCount;
-        errors = errors.concat(importsErrors.errors);
+        errors = errors.concat(importsErrors);
     }
 
     errors = errors.concat(getMaxSourcesErrors(sourcesCount));
