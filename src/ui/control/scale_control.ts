@@ -44,15 +44,10 @@ class ScaleControl implements IControl {
     _map: Map;
     _container: HTMLElement;
     _language?: string | string[];
-    _isNumberFormatSupported: boolean;
     options: ScaleControlOptions;
 
     constructor(options: ScaleControlOptions = {}) {
         this.options = Object.assign({}, defaultOptions, options);
-
-        // Some old browsers (e.g., Safari < 14.1) don't support the "unit" style in NumberFormat.
-        // This is a workaround to display the scale without proper internationalization support.
-        this._isNumberFormatSupported = isNumberFormatSupported();
 
         bindAll([
             '_update',
@@ -104,7 +99,7 @@ class ScaleControl implements IControl {
             const distance = getRoundNum(maxDistance);
             const ratio = distance / maxDistance;
 
-            if (this._isNumberFormatSupported && unit !== 'nautical-mile') {
+            if (unit !== 'nautical-mile') {
                 this._container.innerHTML = new Intl.NumberFormat(this._language, {style: 'unit', unitDisplay: 'short', unit}).format(distance);
             } else {
                 this._container.innerHTML = `${distance}&nbsp;${unitAbbr[unit]}`;
@@ -149,15 +144,6 @@ class ScaleControl implements IControl {
 }
 
 export default ScaleControl;
-
-function isNumberFormatSupported() {
-    try {
-        new Intl.NumberFormat('en', {style: 'unit', unitDisplay: 'short', unit: 'meter'});
-        return true;
-    } catch (_: unknown) {
-        return false;
-    }
-}
 
 function getDecimalRoundNum(d: number) {
     const multiplier = Math.pow(10, Math.ceil(-Math.log(d) / Math.LN10));
