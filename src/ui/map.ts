@@ -2828,9 +2828,7 @@ export class Map extends Camera {
         return this.style.listImages().map((image) => image.name);
     }
 
-    /** @section Models
-     * @private
-     */
+    /** @section Models */
 
     /**
      * Add a model to the style. This model can be displayed on the map like any other model in the style
@@ -2853,8 +2851,6 @@ export class Map extends Camera {
      *         "model-id": "tree"
      *     }
      *});
-     *
-     * @private
      */
     addModel(id: string, url: string) {
         this._lazyInitEmptyStyle();
@@ -2872,8 +2868,6 @@ export class Map extends Camera {
      * // Check if a model with the ID 'tree' exists in
      * // the style.
      * const treeModelExists = map.hasModel('tree');
-     *
-     * @private
      */
     hasModel(id: string): boolean {
         if (!id) {
@@ -2893,24 +2887,20 @@ export class Map extends Camera {
      * // If an model with the ID 'tree' exists in
      * // the style, remove it.
      * if (map.hasModel('tree')) map.removeModel('tree');
-     *
-     * @private
      */
     removeModel(id: string) {
         this.style.removeModel(id);
     }
 
     /**
-    * Returns an Array of strings containing the IDs of all models currently available in the map.
-    * This includes both models from the style and any models that have been added at runtime using {@link Map#addModel}.
-    *
-    * @returns {Array<string>} An Array of strings containing the names of all model IDs currently available in the map.
-    *
-    * @example
-    * const allModels = map.listModels();
-    *
-    * @private
-    */
+     * Returns an Array of strings containing the IDs of all models currently available in the map.
+     * This includes both models from the style and any models that have been added at runtime using {@link Map#addModel}.
+     *
+     * @returns {Array<string>} An Array of strings containing the names of all model IDs currently available in the map.
+     *
+     * @example
+     * const allModels = map.listModels();
+     */
     listModels(): Array<string> {
         return this.style.listModels();
     }

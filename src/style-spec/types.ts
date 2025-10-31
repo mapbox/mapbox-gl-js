@@ -1466,9 +1466,6 @@ export type ModelLayerSpecification = {
         "model-height-based-emissive-strength-multiplier-transition"?: TransitionSpecification,
         "model-cutoff-fade-range"?: ExpressionSpecification,
         "model-front-cutoff"?: PropertyValueSpecification<[number, number, number]>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "model-elevation-reference"?: "sea" | "ground" | "hd-road-markup" | ExpressionSpecification
     },
     /**

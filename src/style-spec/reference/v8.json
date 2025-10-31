@@ -1564,7 +1564,6 @@
         },
         "model": {
           "doc": "A 3D model",
-          "experimental": true,
           "sdk-support": {
             "basic functionality": {
               "js": "3.0.0",
@@ -11399,9 +11398,11 @@
         "interpolated": false
       },
       "property-type": "data-constant",
-      "experimental": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "3.17.0",
+          "android": "11.10.0",
+          "ios": "11.10.0"
         }
       }
     }
