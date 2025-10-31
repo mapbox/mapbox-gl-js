@@ -265,7 +265,12 @@ const skip = [
     "render-tests/model-layer/model-elevation-reference/hd-road-markup/with-elevation-id",
     "render-tests/building/terrain/terrain-toggle-conflation-works",
     "render-tests/building/terrain/terrain-unsupported",
-    "render-tests/building/globe-unsupported"
+    "render-tests/building/globe-unsupported",
+
+    // Ignore procedural buiding clip layer render tests for now.
+    "render-tests/building/clip-layer/default",
+    "render-tests/building/clip-layer/lower-order-clipping-skipped",
+    "render-tests/building/clip-layer/with-FE-and-landmarks"
 ];
 
 export default {todo, skip};

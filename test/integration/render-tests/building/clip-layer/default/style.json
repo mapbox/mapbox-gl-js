@@ -1,0 +1,226 @@
+{
+  "version": 8,
+   "metadata": {
+    "test": {
+      "allowed": 0.0016,
+      "width": 512,
+      "height": 512,
+      "operations": [
+        ["wait"]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment"
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "cast-shadows": true,
+        "intensity": 0.8599999904632569,
+        "direction": [
+          311.9219970703125,
+          82.37799835205078  
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "composite": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.vector.pbf"
+      ]
+    },
+    "eraser": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    -73.7987642254511,
+                    40.655044291000536
+                  ],
+                  [
+                    -73.7987642254511,
+                    40.63371667325009
+                  ],
+                  [
+                    -73.77146573660352,
+                    40.63371667325009
+                  ],
+                  [
+                    -73.77146573660352,
+                    40.655044291000536
+                  ],
+                  [
+                    -73.7987642254511,
+                    40.655044291000536
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.574414043765472,
+                    48.139688295627366
+                  ],
+                  [
+                    11.573990853708949,
+                    48.13907305935794
+                  ],
+                  [
+                    11.575502246765467,
+                    48.13897220025004
+                  ],
+                  [
+                    11.575691170898523,
+                    48.1393252062617
+                  ],
+                  [
+                    11.574414043765472,
+                    48.139688295627366
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.573008450067931,
+                    48.13832669751798
+                  ],
+                  [
+                    11.57266838663034,
+                    48.1377971772917
+                  ],
+                  [
+                    11.574852349596938,
+                    48.13722730656525
+                  ],
+                  [
+                    11.575215083931369,
+                    48.13806950266144
+                  ],
+                  [
+                    11.573953070728464,
+                    48.13834182658718
+                  ],
+                  [
+                    11.573008450067931,
+                    48.13832669751798
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "zoom": 16.1,
+  "center": [
+    11.574606,
+    48.138809
+  ],
+  "layers": [
+    {
+      "type": "background",
+      "paint": {
+        "background-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11.0,
+          [
+            "rgba",
+            239.00001525878907,
+            233.00001525878907,
+            225.00001525878907,
+            1.0
+          ],
+          13.0,
+          [
+            "rgba",
+            230.00001525878907,
+            228.00001525878907,
+            224.00001525878907,
+            1.0
+          ]
+        ]
+      },
+      "id": "land"
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "composite",
+      "source-layer": "procedural_buildings",
+      "minzoom": 15,
+      "layout": {
+        "building-roof-shape": "parapet",
+        "building-height": [
+          "number",
+          [
+            "get",
+            "height"
+          ]
+        ],
+        "building-base": [
+          "number",
+          [
+            "get",
+            "min_height"
+          ]
+        ]
+      },
+      "paint": {
+        "building-color": [
+          "match",
+          ["get", "building-part"],
+          "wall",
+          ["hsl", 41, 90, 90],
+          "roof",
+          ["hsl", 25, 43, 80],
+          ["hsl", 41, 90, 90]
+        ],
+        "building-ambient-occlusion-intensity": 1
+      }
+    },
+    {
+      "id": "eraser",
+      "type": "clip",
+      "source": "eraser",
+      "minzoom": 16,
+      "maxzoom": 17
+    }
+  ]
+}
