@@ -1,0 +1,104 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 128,
+      "height": 128,
+      "allowed": 0.0015
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "cast-shadows": true,
+        "shadow-intensity": 1.0
+      }
+    }
+  ],
+  "sources": {
+    "3d-model-source": {
+      "type": "model",
+      "models": {
+        "ego-car-2" : {
+          "uri": "local://models/ego_car.glb",
+          "position": [-74.0136, 40.7153],
+          "orientation": [0, 0, 0],
+          "materialOverrides": {
+            "lights_brakes": {
+              "model-color": [0.88, 0.0, 0.0],
+              "model-color-mix-intensity": 1.0,
+              "model-emissive-strength": 0.8,
+              "model-opacity": 1.0
+            },
+            "lights-brakes_reverse": {
+              "model-color": [0.88, 0.0, 0.0],
+              "model-color-mix-intensity": 1.0,
+              "model-emissive-strength": 0.8,
+              "model-opacity": 1.0
+            },
+            "lights_brakes_volume": {
+              "model-color": [0.88, 0.0, 0.0],
+              "model-color-mix-intensity": 1.0,
+              "model-emissive-strength": 0.8,
+              "model-opacity": 1.0
+            },
+            "lights-brakes_reverse_volume": {
+              "model-color": [0.88, 0.0, 0.0],
+              "model-color-mix-intensity": 1.0,
+              "model-emissive-strength": 0.8,
+              "model-opacity": 1.0
+            }
+          },
+          "nodeOverrides": {
+            "trunk": {
+              "orientation": [-45.0, 0.0, 0.0]
+            }
+          }
+        }
+      }
+    }
+  },
+  "pitch": 55,
+  "zoom": 17.50,
+  "bearing": 0,
+  "center": [
+    -74.01362,
+    40.7153
+  ],
+  "camera": {
+    "camera-projection": "orthographic"
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "3d-model-layer",
+      "type": "model",
+      "source": "3d-model-source",
+      "paint": {
+        "model-scale": [
+          10,
+          10,
+          10
+        ],
+        "model-type": "location-indicator",
+        "model-opacity": 0.2
+      }
+    }
+  ]
+}

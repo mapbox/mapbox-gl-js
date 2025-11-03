@@ -130,7 +130,7 @@ const modelUniformValues = (
         colorMix.b = materialOverride.color.b;
         colorMix.a = materialOverride.colorMix;
         emissiveStrength = materialOverride.emissionStrength;
-        opacity = materialOverride.opacity;
+        opacity = materialOverride.opacity * opacity;
     }
 
     const uniformValues = {
