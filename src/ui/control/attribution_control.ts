@@ -2,6 +2,7 @@ import * as DOM from '../../util/dom';
 import {bindAll} from '../../util/util';
 import config from '../../util/config';
 import {getHashString} from '../hash';
+import {sanitizeLinks} from '../../util/sanitize';
 
 import type {Map, ControlPosition, IControl} from '../map';
 import type {StyleSpecification} from '../../style-spec/types';
@@ -181,7 +182,7 @@ class AttributionControl implements IControl {
         }
 
         // check if attribution string is different to minimize DOM changes
-        const attribHTML = attributions.join(' | ');
+        const attribHTML = attributions.map(attr => sanitizeLinks(attr)).join(' | ');
         if (attribHTML === this._attribHTML) return;
 
         this._attribHTML = attribHTML;
