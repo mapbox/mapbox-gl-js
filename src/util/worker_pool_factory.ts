@@ -20,7 +20,7 @@ export function getGlobalWorkerPool(): WorkerPool {
 //   - To unblock tiles worker pool when image rasterization is in progress
 export function getImageRasterizerWorkerPool(): WorkerPool {
     if (!imageRasterizerWorkerPool) {
-        imageRasterizerWorkerPool = new WorkerPool();
+        imageRasterizerWorkerPool = new WorkerPool('ImageRasterizer');
     }
 
     return imageRasterizerWorkerPool;

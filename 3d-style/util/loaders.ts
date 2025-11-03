@@ -10,6 +10,7 @@ import {loadBuildingGen} from './building_gen';
 import assert from 'assert';
 import {DracoDecoderModule} from './draco_decoder_gltf';
 import {MeshoptDecoder} from './meshopt_decoder';
+import {PerformanceUtils} from '../../src/util/performance';
 
 import type {vec3, mat4, quat} from 'gl-matrix';
 import type {BuildingGen} from './building_gen';
@@ -52,6 +53,7 @@ export function setDracoUrl(url: string) {
 function waitForDraco() {
     if (draco) return;
     if (dracoLoading != null) return dracoLoading;
+    const startTime = PerformanceUtils.now();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     dracoLoading = DracoDecoderModule(fetch(getDracoUrl()));
@@ -60,6 +62,7 @@ function waitForDraco() {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         draco = module;
         dracoLoading = undefined;
+        PerformanceUtils.measureWithDetails("waitForDraco", "Models", startTime);
     });
 }
 
@@ -92,8 +95,10 @@ export function setMeshoptUrl(url: string) {
 
 function waitForMeshopt() {
     if (meshopt) return;
+    const startTime = PerformanceUtils.now();
     const decoder = MeshoptDecoder(fetch(getMeshoptUrl()));
     return decoder.ready.then(() => {
+        PerformanceUtils.measureWithDetails("waitForMeshopt", "Models", startTime);
         meshopt = decoder;
     });
 }
@@ -101,11 +106,12 @@ function waitForMeshopt() {
 export function waitForBuildingGen(): Promise<unknown> {
     if (buildingGen != null || buildingGenError != null) return null;
     if (buildingGenLoading != null) return buildingGenLoading;
-
+    const m = PerformanceUtils.now();
     const wasmData = fetch(config.BUILDING_GEN_URL);
     buildingGenLoading = loadBuildingGen(wasmData).then((instance) => {
         buildingGenLoading = null;
         buildingGen = instance;
+        PerformanceUtils.measureWithDetails("waitForBuildingGen", "BuildingBucket", m);
         return buildingGen;
     }).catch((error) => {
         warnOnce('Could not load building-gen');
@@ -385,6 +391,8 @@ function loadImage(img: {uri?: string; bufferView?: number; mimeType: string}, g
 }
 
 export function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, baseUrl?: string): Promise<GLTF | void> {
+    const startTime = PerformanceUtils.now();
+
     const gltf: GLTF = {json: null, images: [], buffers: []};
 
     if (new Uint32Array(arrayBuffer, byteOffset, 1)[0] === MAGIC_GLTF) {
@@ -463,6 +471,8 @@ export function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, bas
                     loadMeshoptBuffer(bufferView, gltf);
                 }
             }
+
+            PerformanceUtils.measureWithDetails("decodeGLTF", "Models", startTime);
 
             return gltf;
         });

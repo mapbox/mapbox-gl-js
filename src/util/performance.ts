@@ -55,7 +55,22 @@ type PerformanceMarkOptions = {
 let fullLoadFinished = false;
 let placementTime = 0;
 
+export type PerformanceMeasureDevToolsColor =
+  "primary" | "primary-light" | "primary-dark"
+  | "secondary" | "secondary-light" | "secondary-dark"
+  | "tertiary" | "tertiary-light" | "tertiary-dark"
+  | "error";
+
+// To ensure there is not overlap in zones, use worker name or 'Main' as track and actual track name as trackgroup
+function trackNameOrDefault() {
+    return (isWorker(self) && self.name) ? `${self.name}` : "Main";
+}
+
 export const PerformanceUtils = {
+    now() {
+        return performance.now();
+    },
+
     mark(marker: PerformanceMarker, markOptions?: PerformanceMarkOptions) {
         performance.mark(marker, markOptions);
 
@@ -63,6 +78,43 @@ export const PerformanceUtils = {
             fullLoadFinished = true;
         }
     },
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    measureWithDetails(name: string, track: string, startTime: number, properties?: any[][], color?: PerformanceMeasureDevToolsColor) {
+        performance.measure(name, {start: startTime, detail: {
+            devtools: {
+                trackGroup: track,
+                track: trackNameOrDefault(),
+                properties,
+                color
+            }
+        }});
+    },
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    markWithDetails(name: string, properties?: any[][], color?: PerformanceMeasureDevToolsColor) {
+        performance.mark(name, {
+            detail: {
+                devtools: {
+                    dataType: "marker",
+                    color,
+                    properties,
+                }
+            }
+        });
+    },
+
+    // Based on console.timeStamp()
+    // Records timing measures to DevTools performance panel only
+    // Low overhead, but not recorded on Chrome timeline.
+    measureLowOverhead(label: string,
+                  start?: string | number,
+                  end?: string | number,
+                  trackName?: string) {
+        // @ts-expect-error: TS2554 Chrome extension of console.timeStamp
+        console.timeStamp(label, start, end !== undefined ? end : performance.now(), trackNameOrDefault());
+    },
+
     measure(name: string, begin?: string, end?: string) {
         performance.measure(name, begin, end);
     },
@@ -74,8 +126,17 @@ export const PerformanceUtils = {
             name
         };
     },
-    endMeasure(m: PerformanceMark) {
-        performance.measure(m.name, m.mark);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    endMeasure(m: PerformanceMark, properties?: any[][]) {
+        performance.measure(m.name, {
+            start: m.mark,
+            detail: {
+                devtools: {
+                    track: trackNameOrDefault(),
+                    properties
+                }
+            }
+        });
     },
     recordPlacementTime(time: number) {
         // Ignore placementTimes during loading

@@ -54,6 +54,7 @@ import Framebuffer from '../gl/framebuffer';
 import {OcclusionParams} from './occlusion_params';
 import {Rain} from '../precipitation/draw_rain';
 import {Snow} from '../precipitation/draw_snow';
+import {PerformanceUtils} from '../util/performance';
 
 import type ImageManager from './image_manager';
 import type IndexBuffer from '../gl/index_buffer';
@@ -758,6 +759,8 @@ class Painter {
         this._dt = curTime - this._timeStamp;
         this._timeStamp = curTime;
 
+        const renderStartTime = PerformanceUtils.now();
+
         Debug.run(() => { this.updateAverageFPS(); });
 
         // Update debug cache, i.e. clear all unused buffers
@@ -816,10 +819,13 @@ class Painter {
         let conflationSourcesInStyle = 0;
         let conflationActiveThisFrame = false;
 
+        const prepareStartTime = PerformanceUtils.now();
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
             if (sourceCache.used) {
+                const sourceCachePrepareStartTime = PerformanceUtils.now();
                 sourceCache.prepare(this.context);
+                PerformanceUtils.measureLowOverhead(`prepare: ${sourceCache.id.toString()}`, sourceCachePrepareStartTime, undefined);
 
                 // @ts-expect-error - TS2339 - Property 'usedInConflation' does not exist on type 'Source'.
                 if (sourceCache.getSource().usedInConflation) {
@@ -827,6 +833,7 @@ class Painter {
                 }
             }
         }
+        PerformanceUtils.measureLowOverhead('sourceCaches: prepare', prepareStartTime, undefined);
 
         let clippingActiveThisFrame = false;
         for (const layer of orderedLayers) {
@@ -1098,8 +1105,10 @@ class Painter {
 
         // Shadow pass ==================================================
         if (this._shadowRenderer) {
+            const shadowPassStartTime = PerformanceUtils.now();
             this.renderPass = 'shadow';
             this._shadowRenderer.drawShadowPass(this.style, coordsShadowCasters);
+            PerformanceUtils.measureLowOverhead('Shadow Pass', shadowPassStartTime);
         }
 
         // Rebind the main framebuffer now that all offscreen layers have been rendered:
@@ -1145,7 +1154,7 @@ class Painter {
         // Opaque pass ===============================================
         // Draw opaque layers top-to-bottom first.
         this.renderPass = 'opaque';
-
+        const opaquePassStartTime = PerformanceUtils.now();
         if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere && !this._showOverdrawInspector && shouldRenderAtmosphere) {
             this._atmosphere.drawStars(this, this.style.fog);
         }
@@ -1164,6 +1173,7 @@ class Painter {
         if (this.style.fog && this.transform.projection.supportsFog && this._atmosphere && !this._showOverdrawInspector && shouldRenderAtmosphere) {
             this._atmosphere.drawAtmosphereGlow(this, this.style.fog);
         }
+        PerformanceUtils.measureLowOverhead('Opaque Pass', opaquePassStartTime);
 
         // Sky pass ======================================================
         // Draw all sky layers bottom to top.
@@ -1185,7 +1195,7 @@ class Painter {
         // Translucent pass ===============================================
         // Draw all other layers bottom-to-top.
         this.renderPass = 'translucent';
-
+        const translucentPassStartTime = PerformanceUtils.now();
         function coordsForTranslucentLayer(layer: TypedStyleLayer, sourceCache?: SourceCache) {
             // For symbol layers in the translucent pass, we add extra tiles to the renderable set
             // for cross-tile symbol fading. Symbol layers don't use tile clipping, so no need to render
@@ -1382,6 +1392,8 @@ class Painter {
         if (this._rain) {
             this._rain.draw(this);
         }
+        PerformanceUtils.measureLowOverhead('Translucent Pass', translucentPassStartTime);
+
         if (this.options.showTileBoundaries || this.options.showQueryGeometry || this.options.showTileAABBs) {
             // Use source with highest maxzoom
             let selectedSource = null;
@@ -1435,6 +1447,8 @@ class Painter {
         if (!conflationActiveThisFrame) {
             this.conflationActive = false;
         }
+
+        PerformanceUtils.measureLowOverhead('Painter.render', renderStartTime);
     }
 
     prepareLayer(layer: TypedStyleLayer) {
@@ -1459,12 +1473,15 @@ class Painter {
 
         this.id = layer.id;
 
+        const startTime = PerformanceUtils.now();
         this.gpuTimingStart(layer);
         if ((!painter.transform.projection.unsupportedLayers || !painter.transform.projection.unsupportedLayers.includes(layer.type) ||
             (painter.terrain && layer.type === 'custom')) && layer.type !== 'clip') {
             draw[layer.type](painter, sourceCache, layer, coords, this.style.placement.variableOffsets, this.options.isInitialLoad);
         }
         this.gpuTimingEnd();
+        // PerformanceUtils.measureLowOverhead(`${layer.type.toString()}:${layer.id.toString()}`, startTime, undefined);
+        PerformanceUtils.measureLowOverhead(`renderLayer: ${layer.type.toString()}`, startTime, undefined);
     }
 
     gpuTimingStart(layer: TypedStyleLayer) {

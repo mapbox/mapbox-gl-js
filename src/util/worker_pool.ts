@@ -11,9 +11,10 @@ export default class WorkerPool {
 
     active: Partial<Record<number | string, boolean>>;
     workers: Array<Worker>;
-
-    constructor() {
+    name?: string;
+    constructor(name?: string) {
         this.active = {};
+        this.name = name;
     }
 
     acquire(mapId: number | string, count = WorkerPool.workerCount): Array<Worker> {
@@ -22,7 +23,8 @@ export default class WorkerPool {
             // client code has had a chance to set it.
             this.workers = [];
             while (this.workers.length < count) {
-                this.workers.push(createWorker());
+                const w = createWorker(`${this.name || ''}WorkerPool: ${mapId}-${this.workers.length}`);
+                this.workers.push(w);
             }
         }
 

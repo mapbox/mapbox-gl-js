@@ -301,7 +301,7 @@ class WorkerTile {
                         iconMap: null,
                         glyphPositions: null
                     });
-                    PerformanceUtils.endMeasure(m);
+                    PerformanceUtils.endMeasure(m, [["tileID", this.tileID.toString()], ["source", this.source]]);
                 } else if (glyphMap && iconMap && patternMap) {
                     const m = PerformanceUtils.beginMeasure('parseTile2');
                     const glyphAtlas = new GlyphAtlas(glyphMap);
@@ -372,7 +372,7 @@ class WorkerTile {
                     imageAtlas,
                     brightness: options.brightness
                 });
-                PerformanceUtils.endMeasure(m);
+                PerformanceUtils.endMeasure(m, [["tileID", this.tileID.toString()], ["source", this.source]]);
             };
 
             if (!this.extraShadowCaster) {
@@ -455,7 +455,7 @@ class WorkerTile {
                 }
             }
 
-            PerformanceUtils.endMeasure(m);
+            PerformanceUtils.endMeasure(m, [["tileID", this.tileID.toString()], ["source", this.source]]);
 
             maybePrepare();
         };
