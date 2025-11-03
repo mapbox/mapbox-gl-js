@@ -789,6 +789,8 @@ class Painter {
         let layersRequireTerrainDepth = false;
         let layersRequireFinalDepth = false;
         let buildingLayer = null;
+        let conflationSourcesOrLayersInStyle = 0;
+        let conflationActiveThisFrame = false;
 
         for (const id of layerIds) {
             const layer = layers[id];
@@ -797,6 +799,7 @@ class Painter {
                 layersRequireTerrainDepth = true;
             } else if (layer.type === 'building') {
                 buildingLayer = layer;
+                ++conflationSourcesOrLayersInStyle;
             } else if (layer.type === 'symbol') {
                 if (layer.hasOcclusionOpacityProperties) {
                     layersRequireFinalDepth = true;
@@ -816,9 +819,6 @@ class Painter {
 
         this.imageManager.beginFrame();
 
-        let conflationSourcesInStyle = 0;
-        let conflationActiveThisFrame = false;
-
         const prepareStartTime = PerformanceUtils.now();
         for (const id in sourceCaches) {
             const sourceCache = sourceCaches[id];
@@ -829,7 +829,7 @@ class Painter {
 
                 // @ts-expect-error - TS2339 - Property 'usedInConflation' does not exist on type 'Source'.
                 if (sourceCache.getSource().usedInConflation) {
-                    ++conflationSourcesInStyle;
+                    ++conflationSourcesOrLayersInStyle;
                 }
             }
         }
@@ -875,7 +875,7 @@ class Painter {
             return cache.getSource();
         };
 
-        if (conflationSourcesInStyle || clippingActiveThisFrame || this._clippingActiveLastFrame) {
+        if (conflationSourcesOrLayersInStyle || clippingActiveThisFrame || this._clippingActiveLastFrame) {
             const conflationLayersInStyle: TypedStyleLayer[] = [];
             const conflationLayerIndicesInStyle: number[] = [];
 
