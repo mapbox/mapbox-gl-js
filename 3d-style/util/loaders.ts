@@ -62,7 +62,7 @@ function waitForDraco() {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         draco = module;
         dracoLoading = undefined;
-        PerformanceUtils.measureWithDetails("waitForDraco", "Models", startTime);
+        PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, "waitForDraco", "Models", startTime);
     });
 }
 
@@ -98,7 +98,7 @@ function waitForMeshopt() {
     const startTime = PerformanceUtils.now();
     const decoder = MeshoptDecoder(fetch(getMeshoptUrl()));
     return decoder.ready.then(() => {
-        PerformanceUtils.measureWithDetails("waitForMeshopt", "Models", startTime);
+        PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, "waitForMeshopt", "Models", startTime);
         meshopt = decoder;
     });
 }
@@ -111,7 +111,7 @@ export function waitForBuildingGen(): Promise<unknown> {
     buildingGenLoading = loadBuildingGen(wasmData).then((instance) => {
         buildingGenLoading = null;
         buildingGen = instance;
-        PerformanceUtils.measureWithDetails("waitForBuildingGen", "BuildingBucket", m);
+        PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, "waitForBuildingGen", "BuildingBucket", m);
         return buildingGen;
     }).catch((error) => {
         warnOnce('Could not load building-gen');
@@ -472,7 +472,7 @@ export function decodeGLTF(arrayBuffer: ArrayBuffer, byteOffset: number = 0, bas
                 }
             }
 
-            PerformanceUtils.measureWithDetails("decodeGLTF", "Models", startTime);
+            PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, "decodeGLTF", "Models", startTime);
 
             return gltf;
         });

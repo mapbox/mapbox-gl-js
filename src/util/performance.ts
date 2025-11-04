@@ -66,7 +66,14 @@ function trackNameOrDefault() {
     return (isWorker(self) && self.name) ? `${self.name}` : "Main";
 }
 
+let performanceUtilsGroupsMask: number = 0;
+
 export const PerformanceUtils = {
+    GROUP_NONE: 0,
+    GROUP_COMMON: 1 << 1,
+    GROUP_RENDERING: 1 << 2,
+    GROUP_RENDERING_DETAILED: 1 << 3,
+
     now() {
         return performance.now();
     },
@@ -79,8 +86,19 @@ export const PerformanceUtils = {
         }
     },
 
+    // Bitmask to enable profiling groups
+    // e.g. PerformanceUtils.GROUP_COMMON | PerformanceUtils.GROUP_RENDERING
+    setEnabledGroupsMask(mask: number) {
+        performanceUtilsGroupsMask = mask;
+    },
+
+    enabledGroupsMask(): number {
+        return performanceUtilsGroupsMask;
+    },
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    measureWithDetails(name: string, track: string, startTime: number, properties?: any[][], color?: PerformanceMeasureDevToolsColor) {
+    measureWithDetails(grpMask: number, name: string, track: string, startTime: number, properties?: any[][], color?: PerformanceMeasureDevToolsColor) {
+        if ((grpMask & performanceUtilsGroupsMask) === 0) return;
         performance.measure(name, {start: startTime, detail: {
             devtools: {
                 trackGroup: track,
@@ -92,7 +110,8 @@ export const PerformanceUtils = {
     },
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    markWithDetails(name: string, properties?: any[][], color?: PerformanceMeasureDevToolsColor) {
+    markWithDetails(grpMask: number, name: string, properties?: any[][], color?: PerformanceMeasureDevToolsColor) {
+        if ((grpMask & performanceUtilsGroupsMask) === 0) return;
         performance.mark(name, {
             detail: {
                 devtools: {
@@ -107,10 +126,12 @@ export const PerformanceUtils = {
     // Based on console.timeStamp()
     // Records timing measures to DevTools performance panel only
     // Low overhead, but not recorded on Chrome timeline.
-    measureLowOverhead(label: string,
+    measureLowOverhead(grpMask: number,
+                label: string,
                   start?: string | number,
                   end?: string | number,
                   trackName?: string) {
+        if ((grpMask & performanceUtilsGroupsMask) === 0) return;
         // @ts-expect-error: TS2554 Chrome extension of console.timeStamp
         console.timeStamp(label, start, end !== undefined ? end : performance.now(), trackNameOrDefault());
     },
