@@ -1,3 +1,9 @@
+## main
+
+### Features and improvements ✨
+
+- Add `raster-blend-mode` property for raster layers with hardware-accelerated blend modes (`multiply`, `screen`, `darken`, `lighten`). Uses native WebGL blend functions for zero performance overhead.
+
 ## 3.16.0
 
 ### Features and improvements ✨
