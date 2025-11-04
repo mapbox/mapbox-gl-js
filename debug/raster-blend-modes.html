@@ -105,7 +105,8 @@
 <div id="controls">
     <h3>Raster Blend Modes</h3>
     <p style="margin: 0 0 15px 0; font-size: 12px; color: #666;">
-        WebGL blend functions with neutral color blending. Zero performance overhead.
+        WebGL blend functions with neutral color blending. Zero performance overhead.<br>
+        <strong>Layers:</strong> Satellite (base) + OSM overlay (top, with blend mode applied)
     </p>
 
     <div class="control-group">
@@ -120,9 +121,12 @@
     </div>
 
     <div class="control-group">
-        <label>Opacity:</label>
+        <label>OSM Layer Opacity:</label>
         <input type="range" id="opacity-slider" min="0" max="1" step="0.1" value="0.7">
         <div class="value-display">Current: <span id="opacity-value">0.7</span></div>
+        <p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">
+            Controls opacity of the OSM overlay layer (top layer)
+        </p>
     </div>
 
     <div id="info">
