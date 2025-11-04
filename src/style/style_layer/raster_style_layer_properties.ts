@@ -35,6 +35,7 @@ export type PaintProps = {
     "raster-saturation": DataConstantProperty<number>;
     "raster-contrast": DataConstantProperty<number>;
     "raster-resampling": DataConstantProperty<"linear" | "nearest">;
+    "raster-blend-mode": DataConstantProperty<"multiply" | "screen" | "darken" | "lighten">;
     "raster-fade-duration": DataConstantProperty<number>;
     "raster-emissive-strength": DataConstantProperty<number>;
     "raster-array-band": DataConstantProperty<string>;
@@ -54,6 +55,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "raster-saturation": new DataConstantProperty(styleSpec["paint_raster"]["raster-saturation"]),
     "raster-contrast": new DataConstantProperty(styleSpec["paint_raster"]["raster-contrast"]),
     "raster-resampling": new DataConstantProperty(styleSpec["paint_raster"]["raster-resampling"]),
+    "raster-blend-mode": new DataConstantProperty(styleSpec["paint_raster"]["raster-blend-mode"]),
     "raster-fade-duration": new DataConstantProperty(styleSpec["paint_raster"]["raster-fade-duration"]),
     "raster-emissive-strength": new DataConstantProperty(styleSpec["paint_raster"]["raster-emissive-strength"]),
     "raster-array-band": new DataConstantProperty(styleSpec["paint_raster"]["raster-array-band"]),

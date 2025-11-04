@@ -43,6 +43,8 @@ export type RasterUniformsType = {
     ['u_texture_offset']: Uniform2f;
     ['u_texture_res']: Uniform2f;
     ['u_emissive_strength']: Uniform1f;
+    ['u_is_premultiplied']: Uniform1f;
+    ['u_blend_neutral']: Uniform1f;
 };
 
 export type RasterDefinesType = 'RASTER_COLOR' | 'RENDER_CUTOFF' | 'RASTER_ARRAY' | 'RASTER_ARRAY_LINEAR';
@@ -74,7 +76,9 @@ const rasterUniforms = (context: Context): RasterUniformsType => ({
     'u_color_ramp': new Uniform1i(context),
     'u_texture_offset': new Uniform2f(context),
     'u_texture_res': new Uniform2f(context),
-    'u_emissive_strength': new Uniform1f(context)
+    'u_emissive_strength': new Uniform1f(context),
+    'u_is_premultiplied': new Uniform1f(context),
+    'u_blend_neutral': new Uniform1f(context)
 });
 
 const rasterUniformValues = (
@@ -102,6 +106,8 @@ const rasterUniformValues = (
     tileSize: number,
     buffer: number,
     emissiveStrength: number,
+    isPremultiplied: number,
+    blendNeutral: number,
 ): UniformValues<RasterUniformsType> => ({
     'u_matrix': matrix,
     'u_normalize_matrix': normalizeMatrix,
@@ -136,7 +142,9 @@ const rasterUniformValues = (
         tileSize / (tileSize + 2 * buffer)
     ],
     'u_texture_res': [tileSize + 2 * buffer, tileSize + 2 * buffer],
-    'u_emissive_strength': emissiveStrength
+    'u_emissive_strength': emissiveStrength,
+    'u_is_premultiplied': isPremultiplied,
+    'u_blend_neutral': blendNeutral
 });
 
 const rasterPoleUniformValues = (
@@ -156,6 +164,8 @@ const rasterPoleUniformValues = (
     colorOffset: number,
     colorRange: [number, number],
     emissiveStrength: number,
+    isPremultiplied: number,
+    blendNeutral: number,
 ): UniformValues<RasterUniformsType> => (rasterUniformValues(
     matrix,
     normalizeMatrix,
@@ -178,6 +188,8 @@ const rasterPoleUniformValues = (
     1,
     0,
     emissiveStrength,
+    isPremultiplied,
+    blendNeutral,
 ));
 
 function spinWeights(angle: number): [number, number, number] {

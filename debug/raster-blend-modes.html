@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Raster Blend Modes Test - Mapbox GL JS</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        #controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 1;
+            max-width: 350px;
+        }
+        #controls h3 {
+            margin: 0 0 15px 0;
+        }
+        .control-group {
+            margin-bottom: 20px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        button {
+            padding: 10px;
+            border: 2px solid #2196F3;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #e3f2fd;
+        }
+        button.active {
+            background: #2196F3;
+            color: white;
+        }
+        .slider-group {
+            margin-top: 10px;
+        }
+        .slider-group input {
+            width: 100%;
+            margin-top: 5px;
+        }
+        .value-display {
+            text-align: right;
+            color: #666;
+            font-size: 14px;
+        }
+        #info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        #info .current {
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 8px;
+        }
+        #info .expected {
+            color: #666;
+            line-height: 1.6;
+        }
+        .debug {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<div id="controls">
+    <h3>Raster Blend Modes</h3>
+    <p style="margin: 0 0 15px 0; font-size: 12px; color: #666;">
+        WebGL blend functions with neutral color blending. Zero performance overhead.
+    </p>
+
+    <div class="control-group">
+        <label>Blend Mode:</label>
+        <div class="button-group">
+            <button id="btn-normal" class="active">Normal</button>
+            <button id="btn-multiply">Multiply</button>
+            <button id="btn-screen">Screen</button>
+            <button id="btn-darken">Darken</button>
+            <button id="btn-lighten">Lighten</button>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label>Opacity:</label>
+        <input type="range" id="opacity-slider" min="0" max="1" step="0.1" value="0.7">
+        <div class="value-display">Current: <span id="opacity-value">0.7</span></div>
+    </div>
+
+    <div id="info">
+        <div class="current">Current: <span id="current-mode">normal</span> @ <span id="current-opacity">0.7</span></div>
+        <div class="expected" id="expected-text">
+            Standard alpha blending. OSM layer semi-transparent over satellite imagery.
+        </div>
+    </div>
+
+    <div class="debug">
+        <strong>Debug Info:</strong><br>
+        Shader premultiply: <span id="debug-premult">?</span><br>
+        Actual blend mode: <span id="debug-blend">?</span><br>
+        Actual opacity: <span id="debug-opacity">?</span>
+    </div>
+
+    <div class="debug" id="validation-warning" style="display: none; background: #ffebee; border: 1px solid #f44336;">
+        <strong style="color: #f44336;">⚠️ Compatibility Warning:</strong><br>
+        <span id="warning-text"></span>
+    </div>
+
+    <div class="debug" style="background: #e3f2fd; border: 1px solid #2196F3;">
+        <strong style="color: #2196F3;">📍 Map Position:</strong><br>
+        Center: <span id="map-center">-122.2129, 37.5047</span><br>
+        Zoom: <span id="map-zoom">13.68</span><br>
+        <small style="color: #666;">Move the map to find interesting areas!</small>
+    </div>
+</div>
+
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from './access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+
+const expectedText = {
+    'normal': 'Standard alpha blending (NO blend mode set). Uses only raster-opacity for transparency. This is the default behavior when raster-blend-mode is not specified.',
+    'multiply': 'MULTIPLY (✓ Excellent): Darkens the image. Uses neutral color blending toward white. Note: Middle opacity values (0.3-0.7) appear BRIGHTER than expected due to blending toward white before multiplication. This is expected behavior, not a bug.',
+    'screen': 'SCREEN (✓ Excellent): Lightens the image. Uses neutral color blending toward black. Note: Similar non-linear brightness behavior as multiply - middle opacity values show reduced lightening effect.',
+    'darken': 'DARKEN (⚠️ Limited): Shows darker pixels (MIN operation). WARNING: Limited opacity support - opacity only affects alpha channel, not RGB blending. Use MULTIPLY instead for opacity-controlled darkening.',
+    'lighten': 'LIGHTEN (✓ Excellent): Shows lighter pixels (MAX operation). Uses neutral color blending toward black. Provides most intuitive opacity behavior of all blend modes.'
+};
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: {
+        version: 8,
+        sources: {
+            'satellite': {
+                type: 'raster',
+                url: 'mapbox://mapbox.satellite',
+                tileSize: 256
+            },
+            'osm': {
+                type: 'raster',
+                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                tileSize: 256,
+                attribution: '&copy; OpenStreetMap'
+            }
+        },
+        layers: [
+            {
+                id: 'background',
+                type: 'background',
+                paint: {
+                    'background-color': '#000'
+                }
+            },
+            {
+                id: 'satellite',
+                type: 'raster',
+                source: 'satellite'
+            },
+            {
+                id: 'osm-overlay',
+                type: 'raster',
+                source: 'osm',
+                paint: {
+                    'raster-opacity': 0.7
+                    // No raster-blend-mode set = standard alpha blending
+                }
+            }
+        ]
+    },
+    center: [-122.2129, 37.5047], // San Francisco Bay Area
+    zoom: 13.68
+});
+
+// Add navigation controls
+map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+let currentMode = 'normal';
+let currentOpacity = 0.7;
+
+function updateDebugInfo() {
+    // Check if layer exists before accessing it
+    if (!map.getLayer('osm-overlay')) {
+        return;
+    }
+
+    const blendMode = map.getPaintProperty('osm-overlay', 'raster-blend-mode');
+    const opacity = map.getPaintProperty('osm-overlay', 'raster-opacity');
+    const isPremult = !blendMode ? 1.0 : 0.0;
+
+    document.getElementById('debug-blend').textContent = blendMode || '(not set)';
+    document.getElementById('debug-opacity').textContent = opacity;
+    document.getElementById('debug-premult').textContent = isPremult;
+
+    // Show validation warning for darken with opacity !== 0 or 1
+    const warningDiv = document.getElementById('validation-warning');
+    const warningText = document.getElementById('warning-text');
+
+    if (blendMode === 'darken' && opacity !== 0 && opacity !== 1) {
+        warningText.textContent = `⚠️ DARKEN has limited opacity support. RGB blending remains at full strength (only alpha changes). For opacity-controlled darkening, use MULTIPLY instead. See console for details.`;
+        warningDiv.style.display = 'block';
+    } else {
+        warningDiv.style.display = 'none';
+    }
+}
+
+function setBlendMode(mode) {
+    if (!map.getLayer('osm-overlay')) {
+        console.warn('Layer not ready yet');
+        return;
+    }
+
+    currentMode = mode;
+
+    // For 'normal', remove the blend mode property entirely (uses only opacity)
+    if (mode === 'normal') {
+        // Remove the property to use standard alpha blending
+        map.setPaintProperty('osm-overlay', 'raster-blend-mode', undefined);
+    } else {
+        map.setPaintProperty('osm-overlay', 'raster-blend-mode', mode);
+    }
+
+    // Update UI
+    document.querySelectorAll('.button-group button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(`btn-${mode}`).classList.add('active');
+
+    document.getElementById('current-mode').textContent = mode;
+    document.getElementById('expected-text').textContent = expectedText[mode];
+
+    updateDebugInfo();
+
+    console.log(`Blend mode changed to: ${mode} @ opacity ${currentOpacity}`);
+}
+
+function setOpacity(value) {
+    if (!map.getLayer('osm-overlay')) {
+        console.warn('Layer not ready yet');
+        return;
+    }
+
+    currentOpacity = value;
+    map.setPaintProperty('osm-overlay', 'raster-opacity', parseFloat(value));
+
+    document.getElementById('opacity-value').textContent = value;
+    document.getElementById('current-opacity').textContent = value;
+
+    updateDebugInfo();
+}
+
+// Blend mode buttons
+document.getElementById('btn-normal').addEventListener('click', () => setBlendMode('normal'));
+document.getElementById('btn-multiply').addEventListener('click', () => setBlendMode('multiply'));
+document.getElementById('btn-screen').addEventListener('click', () => setBlendMode('screen'));
+document.getElementById('btn-darken').addEventListener('click', () => setBlendMode('darken'));
+document.getElementById('btn-lighten').addEventListener('click', () => setBlendMode('lighten'));
+
+// Opacity slider
+document.getElementById('opacity-slider').addEventListener('input', (e) => {
+    setOpacity(e.target.value);
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.key === '1') setBlendMode('normal');
+    if (e.key === '2') setBlendMode('multiply');
+    if (e.key === '3') setBlendMode('screen');
+    if (e.key === '4') setBlendMode('darken');
+    if (e.key === '5') setBlendMode('lighten');
+});
+
+map.on('load', () => {
+    console.log('Map loaded successfully');
+    updateDebugInfo();
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('  Mapbox GL JS - Raster Blend Modes Test');
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('Controls:');
+    console.log('  • Click buttons to change blend mode');
+    console.log('  • Use slider to change opacity');
+    console.log('  • Keyboard: 1=Normal, 2=Multiply, 3=Screen, 4=Darken, 5=Lighten');
+    console.log('');
+    console.log('Expected Behavior:');
+    console.log('  • MULTIPLY/SCREEN: Non-linear brightness at middle opacity');
+    console.log('    (This is expected - blends toward neutral color)');
+    console.log('  • LIGHTEN: Excellent opacity support, most intuitive');
+    console.log('  • DARKEN: Limited opacity support (use multiply instead)');
+    console.log('');
+    console.log('Implementation: Neutral color blending (zero overhead)');
+    console.log('  multiply → white, screen → black, lighten → black');
+    console.log('  darken → no neutral (direct output)');
+    console.log('═══════════════════════════════════════════════════════');
+});
+
+map.on('idle', () => {
+    updateDebugInfo();
+});
+
+// Update map position display
+function updateMapPosition() {
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    document.getElementById('map-center').textContent =
+        `${center.lng.toFixed(4)}, ${center.lat.toFixed(4)}`;
+    document.getElementById('map-zoom').textContent = zoom.toFixed(2);
+}
+
+map.on('move', updateMapPosition);
+map.on('zoom', updateMapPosition);
+map.on('load', updateMapPosition);
+
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@ import assert from 'assert';
 import ImageSource from '../source/image_source';
 import StencilMode from '../gl/stencil_mode';
 import DepthMode from '../gl/depth_mode';
+import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import Texture from './texture';
 import {rasterPoleUniformValues, rasterUniformValues} from './program/raster_program';
@@ -84,7 +85,39 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const emissiveStrength = layer.paint.get('raster-emissive-strength');
 
-    const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
+    // Select color mode and blending parameters based on blend mode
+    const blendMode = layer.paint.get('raster-blend-mode');
+    let colorMode: ColorMode;
+    let blendNeutral: number;  // Neutral color for blend modes: 1.0=white (multiply), 0.0=black (screen), -1.0=none
+
+    // If no blend mode specified, use standard alpha blending
+    if (!blendMode) {
+        colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
+        blendNeutral = -1.0;  // Not used for standard alpha blending
+    } else {
+        switch (blendMode) {
+        case 'multiply':
+            colorMode = ColorMode.multiply;
+            blendNeutral = 1.0;  // White is neutral for multiply
+            break;
+        case 'screen':
+            colorMode = ColorMode.screen;
+            blendNeutral = 0.0;  // Black is neutral for screen
+            break;
+        case 'darken':
+            colorMode = ColorMode.darken;
+            blendNeutral = -1.0;  // No neutral blending - darken has limited opacity support
+            break;
+        case 'lighten':
+            colorMode = ColorMode.lighten;
+            blendNeutral = 0.0;  // Black is neutral for lighten (MAX(black, x) = x)
+            break;
+        default:
+            colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
+            blendNeutral = -1.0;  // Fallback to standard alpha blending
+            break;
+        }
+    }
 
     // When rendering to texture, coordinates are already sorted: primary by
     // proxy id and secondary sort is by Z.
@@ -95,12 +128,14 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     if (source instanceof ImageSource && !tileIDs.length && (source.onNorthPole || source.onSouthPole)) {
         const stencilMode = renderingWithElevation ? painter.stencilModeFor3D() : StencilMode.disabled;
+        // Use premultiplied alpha only when no blend mode is specified (standard alpha blending)
+        const isPremultiplied = !blendMode ? 1.0 : 0.0;
         if (source.onNorthPole) {
 
-            drawPole(true, null, painter, sourceCache, layer, emissiveStrength, rasterConfig, CullFaceMode.disabled, stencilMode);
+            drawPole(true, null, painter, sourceCache, layer, emissiveStrength, rasterConfig, CullFaceMode.disabled, stencilMode, colorMode, isPremultiplied, blendNeutral);
         } else {
 
-            drawPole(false, null, painter, sourceCache, layer, emissiveStrength, rasterConfig, CullFaceMode.disabled, stencilMode);
+            drawPole(false, null, painter, sourceCache, layer, emissiveStrength, rasterConfig, CullFaceMode.disabled, stencilMode, colorMode, isPremultiplied, blendNeutral);
         }
         return;
     }
@@ -227,6 +262,14 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 gridMatrix = new Float32Array(9);
             }
 
+            // Determine if we should use premultiplied alpha output
+            // - Normal mode uses premultiplied alpha for standard alpha blending
+            // - Blend modes (multiply, screen) use neutral color blending in shader for opacity control
+            // - Darken/lighten use non-premultiplied with limited opacity support
+            //   (MIN/MAX blend equations ignore blend factors, so opacity only affects alpha channel)
+            // Use premultiplied alpha only when no blend mode is specified (standard alpha blending)
+            const isPremultiplied = !blendMode ? 1.0 : 0.0;
+
             const uniformValues = rasterUniformValues(
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 projMatrix,
@@ -249,7 +292,9 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 rasterConfig.range,
                 tileSize,
                 buffer,
-                emissiveStrength
+                emissiveStrength,
+                isPremultiplied,
+                blendNeutral
             );
             const affectedByFog = painter.isTileAffectedByFog(coord);
 
@@ -287,7 +332,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                     assert(indexBuffer);
                     assert(segments);
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    program.draw(painter, gl.TRIANGLES, depthMode, elevatedStencilMode || stencilMode, painter.colorModeForRenderPass(), cullFaceMode, uniformValues, layer.id, buffer, indexBuffer, segments);
+                    program.draw(painter, gl.TRIANGLES, depthMode, elevatedStencilMode || stencilMode, colorMode, cullFaceMode, uniformValues, layer.id, buffer, indexBuffer, segments);
                 }
             } else {
                 const {tileBoundsBuffer, tileBoundsIndexBuffer, tileBoundsSegments} = painter.getTileBoundsBuffers(tile);
@@ -300,16 +345,39 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
         }
 
         if (!(source instanceof ImageSource) && renderingElevatedOnGlobe) {
+            // Determine if we should use premultiplied alpha output
+            // Normal mode uses premultiplied, all blend modes use non-premultiplied
+            // Use premultiplied alpha only when no blend mode is specified (standard alpha blending)
+            const isPremultiplied = !blendMode ? 1.0 : 0.0;
+            // Set blend neutral values (must match logic above)
+            let poleBlendNeutral: number;
+            switch (blendMode) {
+            case 'multiply':
+                poleBlendNeutral = 1.0;
+                break;
+            case 'screen':
+                poleBlendNeutral = 0.0;
+                break;
+            case 'darken':
+                poleBlendNeutral = -1.0;
+                break;
+            case 'lighten':
+                poleBlendNeutral = 0.0;
+                break;
+            default:
+                poleBlendNeutral = -1.0;
+                break;
+            }
             for (const coord of tiles) {
                 const topCap = coord.canonical.y === 0;
                 const bottomCap = coord.canonical.y === (1 << coord.canonical.z) - 1;
                 if (topCap) {
 
-                    drawPole(true, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode, elevatedStencilMode || StencilMode.disabled);
+                    drawPole(true, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode, elevatedStencilMode || StencilMode.disabled, colorMode, isPremultiplied, poleBlendNeutral);
                 }
                 if (bottomCap) {
 
-                    drawPole(false, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode === CullFaceMode.frontCW ? CullFaceMode.backCW : CullFaceMode.frontCW, elevatedStencilMode || StencilMode.disabled);
+                    drawPole(false, coord, painter, sourceCache, layer, emissiveStrength, rasterConfig, cullFaceMode === CullFaceMode.frontCW ? CullFaceMode.backCW : CullFaceMode.frontCW, elevatedStencilMode || StencilMode.disabled, colorMode, isPremultiplied, poleBlendNeutral);
                 }
             }
         }
@@ -328,7 +396,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     painter.resetStencilClippingMasks();
 }
 
-function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, emissiveStrength: number, rasterConfig: RasterConfig, cullFaceMode: CullFaceMode, stencilMode: StencilMode) {
+function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, painter: Painter, sourceCache: SourceCache, layer: RasterStyleLayer, emissiveStrength: number, rasterConfig: RasterConfig, cullFaceMode: CullFaceMode, stencilMode: StencilMode, colorMode: ColorMode, isPremultiplied: number, blendNeutral: number) {
     const source = sourceCache.getSource();
     const sharedBuffers = painter.globeSharedBuffers;
     if (!sharedBuffers) return;
@@ -355,7 +423,6 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
     const context = painter.context;
     const gl = context.gl;
     const textureFilter = layer.paint.get('raster-resampling') === 'nearest' ? gl.NEAREST : gl.LINEAR;
-    const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
     const defines = rasterConfig.defines;
     defines.push("GLOBE_POLES");
 
@@ -394,7 +461,7 @@ function drawPole(isNorth: boolean, coord: OverscaledTileID | null | undefined, 
     }
     const rasterColorMix = adjustColorMix(rasterConfig.mix);
 
-    const uniformValues = rasterPoleUniformValues(projMatrix, normalizeMatrix, globeMatrix as Float32Array, globeToMercatorTransition(painter.transform.zoom), fade, layer, [0, 0], elevation, RASTER_COLOR_TEXTURE_UNIT, rasterColorMix, rasterConfig.offset, rasterConfig.range, emissiveStrength);
+    const uniformValues = rasterPoleUniformValues(projMatrix, normalizeMatrix, globeMatrix as Float32Array, globeToMercatorTransition(painter.transform.zoom), fade, layer, [0, 0], elevation, RASTER_COLOR_TEXTURE_UNIT, rasterColorMix, rasterConfig.offset, rasterConfig.range, emissiveStrength, isPremultiplied, blendNeutral);
     const program = painter.getOrCreateProgram('raster', {defines});
 
     painter.uploadCommonUniforms(context, program, null);
