@@ -3,4 +3,5 @@ not dead,
 not op_mini all,
 not chrome < 56,
 not safari < 15,
-not android < 56
+not android < 56,
+not ios < 15
