@@ -6,6 +6,8 @@ uniform float u_fade_t;
 uniform float u_opacity;
 uniform highp float u_raster_elevation;
 uniform highp float u_zoom_transition;
+uniform float u_is_premultiplied;
+uniform float u_blend_neutral;
 
 in vec2 v_pos0;
 in vec2 v_pos1;
@@ -119,7 +121,24 @@ void main() {
     out_color = fog_dither(fog_apply(out_color, v_fog_pos, fog_limit));
 #endif
 
-    glFragColor = vec4(out_color * color.a, color.a);
+    // Handle different blend mode output formats
+    vec3 final_color;
+    if (u_is_premultiplied > 0.5) {
+        // Normal mode: premultiplied alpha for standard alpha blending
+        final_color = out_color * color.a;
+    } else if (u_blend_neutral >= 0.0) {
+        // Blend modes with neutral color support (multiply, screen, lighten):
+        // multiply: neutral=1.0 (white has no darkening effect)
+        // screen: neutral=0.0 (black has no lightening effect)
+        // lighten: neutral=0.0 (black has no lightening effect)
+        final_color = mix(vec3(u_blend_neutral), out_color, color.a);
+    } else {
+        // Darken mode: direct non-premultiplied output
+        // Note: Limited opacity support due to WebGL MIN equation constraints
+        // Opacity only affects alpha channel, not RGB blending behavior
+        final_color = out_color;
+    }
+    glFragColor = vec4(final_color, color.a);
 #ifdef PROJECTION_GLOBE_VIEW
     glFragColor *= mix(1.0, 1.0 - smoothstep(0.0, 0.05, u_zoom_transition), smoothstep(0.8, 0.9, v_split_fade));
 #endif

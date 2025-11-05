@@ -1307,6 +1307,7 @@ export type RasterLayerSpecification = {
         "raster-contrast"?: PropertyValueSpecification<number>,
         "raster-contrast-transition"?: TransitionSpecification,
         "raster-resampling"?: PropertyValueSpecification<"linear" | "nearest">,
+        "raster-blend-mode"?: PropertyValueSpecification<"multiply" | "screen" | "darken" | "lighten">,
         "raster-fade-duration"?: PropertyValueSpecification<number>,
         "raster-emissive-strength"?: PropertyValueSpecification<number>,
         "raster-emissive-strength-transition"?: TransitionSpecification,

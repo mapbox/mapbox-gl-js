@@ -73,6 +73,37 @@ class RasterStyleLayer extends StyleLayer {
 
             this.updateColorRamp();
         }
+
+        // Validate blend mode and opacity compatibility
+        if (name === 'raster-blend-mode' || name === 'raster-opacity') {
+            this._validateBlendModeOpacity();
+        }
+    }
+
+    /**
+     * Validates blend mode and opacity compatibility. Warns when darken mode
+     * is used with partial opacity values, as WebGL's MIN equation cannot
+     * properly support opacity interpolation.
+     * @private
+     */
+    _validateBlendModeOpacity() {
+        if (!this.paint) {
+            return;
+        }
+
+        const blendMode = this.paint.get('raster-blend-mode');
+        const opacity = this.paint.get('raster-opacity');
+
+        // Darken mode has fundamental limitations with opacity due to WebGL MIN equation
+        // The MIN operation cannot be interpolated without reading the framebuffer
+        if (blendMode === 'darken' && opacity !== 0 && opacity !== 1) {
+            console.warn(
+                `Layer "${this.id}": raster-blend-mode "darken" has limited opacity support. ` +
+                `Opacity values between 0 and 1 (current: ${opacity.toFixed(2)}) may produce unexpected results. ` +
+                `WebGL's MIN blend equation cannot properly support opacity interpolation. ` +
+                `For opacity-controlled darkening, use "multiply" blend mode instead.`
+            );
+        }
     }
 
     override _clear() {

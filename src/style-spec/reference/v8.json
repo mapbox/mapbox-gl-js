@@ -10268,6 +10268,36 @@
       },
       "property-type": "data-constant"
     },
+    "raster-blend-mode": {
+      "type": "enum",
+      "doc": "Blend mode for compositing the raster layer with underlying layers. Uses native WebGL blend functions for zero performance overhead. If not specified, standard alpha blending is used.",
+      "values": {
+        "multiply": {
+          "doc": "Multiplies the colors, resulting in a darker image. Useful for blending raster overlays with base maps."
+        },
+        "screen": {
+          "doc": "Inverted multiply effect, resulting in a lighter image"
+        },
+        "darken": {
+          "doc": "Selects the darker of the two colors for each pixel. Note: Due to WebGL 1.0 limitations, this mode has limited opacity support. Use opacity values of 0 or 1 only; intermediate values may produce unexpected results."
+        },
+        "lighten": {
+          "doc": "Selects the lighter of the two colors for each pixel. Note: Due to WebGL 1.0 limitations, this mode has limited opacity support. Use opacity values of 0 or 1 only; intermediate values may produce unexpected results."
+        }
+      },
+      "sdk-support": {
+        "basic functionality": {
+          "js": "3.8.0"
+        }
+      },
+      "expression": {
+        "interpolated": false,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    },
     "raster-fade-duration": {
       "type": "number",
       "default": 300,
