@@ -120,9 +120,13 @@
   "scripts": {
     "build-dev": "rollup -c --environment BUILD:dev",
     "watch-dev": "rollup -c --environment BUILD:dev --watch",
-    "build-bench": "rollup -c --environment BUILD:bench,MINIFY:true",
+    "watch-esm": "rollup -c rollup.config.esm.js --environment BUILD:dev --watch",
+    "build-umd-bench": "rollup -c --environment BUILD:bench,MINIFY:true",
+    "build-esm-bench": "rollup -c rollup.config.esm.js --environment BUILD:bench,MINIFY:true",
+    "build-bench": "run-p build-umd-bench build-esm-bench",
     "build-prod": "rollup -c --environment BUILD:production",
     "build-prod-min": "rollup -c --environment BUILD:production,MINIFY:true",
+    "build-esm-prod-min": "rollup -c rollup.config.esm.js --environment BUILD:production,MINIFY:true",
     "build-csp": "rollup -c rollup.config.csp.js",
     "build-css": "postcss -o dist/mapbox-gl.css src/css/mapbox-gl.css",
     "build-style-spec": "npm run build --workspace src/style-spec && mkdir -p dist/style-spec && cp src/style-spec/dist/* dist/style-spec",
@@ -132,9 +136,10 @@
     "start-server": "st --no-cache -H 0.0.0.0 --port 9966 --index index.html .",
     "start-range-server": "node build/range-request-server.js",
     "start": "run-p build-token watch-css watch-dev start-server",
+    "start-esm": "run-p build-token watch-css watch-esm start-server",
     "start-debug": "run-p build-token watch-css watch-dev start-server",
     "prepare-release-pages": "ln -sfn $PWD/dist test/release/dist && ln -sfn $PWD/debug test/release/debug && cp debug/access_token_generated.js test/release/",
-    "start-release": "run-s build-token build-prod-min build-css print-release-url prepare-release-pages start-server",
+    "start-release": "run-s build-token build-prod-min build-esm-prod-min build-css print-release-url prepare-release-pages start-server",
     "lint": "eslint --cache src 3d-style test",
     "lint-css": "stylelint 'src/css/mapbox-gl.css'",
     "test": "run-s lint lint-css test-typings test-unit",
@@ -145,6 +150,7 @@
     "test-usvg": "vitest --config vitest.config.usvg.ts --run",
     "start-usvg": "esbuild src/data/usvg/usvg_pb_renderer.ts src/data/usvg/usvg_pb_decoder.ts --outdir=src/data/usvg/ --bundle --format=esm --watch --serve=9966 --servedir=.",
     "test-build": "node --test --test-timeout 10000 test/build/*.test.js",
+    "test-esm": "npx vitest run --config vitest.config.esm.ts",
     "test-csp": "npm run build-token && vitest --config vitest.config.csp.ts --run",
     "watch-render": "npx vitest watch --config vitest.config.render.chromium.ts",
     "pretest-render": "npm run build-dev",
@@ -163,7 +169,7 @@
     "test-expressions": "tsx ./test/expression.test.ts",
     "test-typings": "tsx ./build/generate-typed-style-spec.ts && npm run tsc",
     "test-style-spec": "npm test --workspace src/style-spec",
-    "prepublishOnly": "run-s build-dev build-prod-min build-prod build-csp build-css build-style-spec build-dts",
+    "prepublishOnly": "run-s build-dev build-prod-min build-esm-prod-min build-prod build-csp build-css build-style-spec build-dts",
     "print-release-url": "node build/print-release-url.js",
     "size": "size-limit",
     "check-size": "tsx build/check-size.ts",
@@ -175,6 +181,7 @@
   "files": [
     "dist/mapbox-gl*",
     "dist/style-spec/",
+    "dist/esm-min/",
     "dist/package.json",
     "LICENSE.txt"
   ],
@@ -183,6 +190,15 @@
       "limit": "450 kb",
       "gzip": true,
       "path": "dist/mapbox-gl.js"
+    },
+    {
+      "limit": "450 kb",
+      "gzip": true,
+      "path": [
+        "dist/esm-min/mapbox-gl.js",
+        "dist/esm-min/shared.js",
+        "dist/esm-min/worker.js"
+      ]
     },
     {
       "limit": "5.4 kb",

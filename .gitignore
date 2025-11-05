@@ -1,5 +1,6 @@
 !build/
 /rollup/build/
+/dist/esm*
 /dist/mapbox-gl*
 /dist/versions*
 /dist/style-spec

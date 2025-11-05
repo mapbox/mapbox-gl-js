@@ -1,6 +1,4 @@
-
 /* eslint-disable camelcase */
-
 import esbuild from 'rollup-plugin-esbuild';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -13,19 +11,28 @@ import {createFilter} from '@rollup/pluginutils';
 import browserslistToEsbuild from 'browserslist-to-esbuild';
 import minifyStyleSpec from './rollup_plugin_minify_style_spec.js';
 
-// Common set of plugins/transformations shared across different rollup
-// builds (main mapboxgl bundle, style-spec package, benchmarks bundle)
-
-export const plugins = ({mode, minified, production, test, bench, keepClassNames}) => [
+/**
+ * Common set of plugins/transformations shared across different rollup
+ * builds (umd and esm mapboxgl bundles, style-spec package, benchmarks bundle)
+ *
+ * @param {Object} options
+ * @param {string | 'dev' | 'bench' | 'production'} [options.mode] - build mode
+ * @param {string | 'esm' | 'umd'} [options.format] - output format
+ * @param {boolean} [options.minified] - whether to minify the output
+ * @param {boolean} [options.production] - whether this is a production build
+ * @param {boolean} [options.test] - whether this is a test build
+ * @param {boolean} [options.bench] - whether this is a benchmark build
+ * @param {boolean} [options.keepClassNames] - whether to keep class names during minification
+ */
+export const plugins = ({mode, format, minified, production, test, bench, keepClassNames}) => [
     minifyStyleSpec(),
     esbuild({
         target: browserslistToEsbuild(),
         minify: false,
         sourceMap: true,
         define: {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             'import.meta.env': JSON.stringify({mode}),
-        },
+        }
     }),
     json({
         exclude: 'src/style-spec/reference/v8.json'
@@ -48,7 +55,6 @@ export const plugins = ({mode, minified, production, test, bench, keepClassNames
     minified ? terser({
         ecma: 2020,
         module: true,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         keep_classnames: keepClassNames,
         compress: {
             pure_getters: true,

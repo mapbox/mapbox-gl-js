@@ -13,7 +13,8 @@ const REGEX_PATTERNS = {
     INSTRUMENTILE_SCRIPT: /<script>if\(window\.map instanceof mapboxgl\.Map\)var i=new instrumentile.*<\/script>/g,
     API_KEY: /pk\..*?"/g,
     LOCAL_JS_SCRIPT: /<script src="(.*)mapbox-gl(.*)\.js"><\/script>/g,
-    LOCAL_CSS_LINK: /<link rel="stylesheet"(.*)mapbox-gl\.css"(.*)\/>/g
+    LOCAL_CSS_LINK: /<link rel="stylesheet"(.*)mapbox-gl\.css"(.*)\/>/g,
+    LOCAL_ESM_SCRIPT: /import mapbox from '\.\.\/dist\/esm-dev\/mapbox-gl\.js';/g
 };
 
 /**
@@ -131,6 +132,11 @@ const pages = [
         "key": "raster-array",
         "title": "Raster Array",
         "url": "./debug/raster-array.html"
+    },
+    {
+        "key": "esm",
+        "title": "ESM Bundle",
+        "url": "./debug/esm.html"
     }
 ];
 
@@ -202,7 +208,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function sanitizeLocalContent(doc, jsUrl, cssUrl) {
         return doc
             .replace(REGEX_PATTERNS.LOCAL_JS_SCRIPT, `<script src="${jsUrl}"></script>`)
-            .replace(REGEX_PATTERNS.LOCAL_CSS_LINK, `<link rel="stylesheet" href="${cssUrl}" />`);
+            .replace(REGEX_PATTERNS.LOCAL_CSS_LINK, `<link rel="stylesheet" href="${cssUrl}" />`)
+            .replace(REGEX_PATTERNS.LOCAL_ESM_SCRIPT, `import mapbox from './dist/esm-min/mapbox-gl.js';`);
     }
 
     /**

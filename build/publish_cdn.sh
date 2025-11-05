@@ -3,12 +3,15 @@
 # which enables them to be served by our CDN.
 # To run locally, you must be logged into AWS,
 # have built the needed files and pass the tag.
+#
 # To build files:
-# npm run build-prod-min && npm run build-prod && npm run build-csp && npm run build-dev && npm run build-css
+# npm run prepublishOnly
+#
 # The tag should be in the form of vx.x.x:
-# ./upload.sh v2.0.0
+# ./publish_cdn.sh v2.0.0
+#
 # You can test your setup with a dry run that prints the s3 command for each file:
-# .upload.sh v2.0.0 --dry-run
+# ./publish_cdn.sh v2.0.0 --dry-run
 
 # exit immediately if any error is encountered
 set -e
@@ -18,7 +21,7 @@ tag=$1
 if [ -z "$tag" ]
 then
 	echo "Error: No tag provided. Please provide a tag in the form of vx.x.x."
-	echo "Example: ./upload.sh v2.0.0"
+	echo "Example: ./publish_cdn.sh v2.0.0"
 	exit 1
 fi
 
@@ -40,6 +43,9 @@ declare -a files=(
 	"mapbox-gl-csp.js.map"
 	"mapbox-gl-csp-worker.js"
 	"mapbox-gl-csp-worker.js.map"
+	"esm-min/mapbox-gl.js"
+	"esm-min/shared.js"
+	"esm-min/worker.js"
 )
 
 # ensure the dist folder exists
