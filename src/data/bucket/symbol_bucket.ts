@@ -1002,7 +1002,10 @@ class SymbolBucket implements Bucket {
                 };
 
                 const activeAppearance = this.layers[0].appearances && this.layers[0].appearances.find(a => a.isActive({globals: globalProperties, feature: evaluationFeature, canonical, featureState: featureStateForThis}));
-                if (featureData.activeAppearance === activeAppearance) continue;
+                if (featureData.activeAppearance === activeAppearance) {
+                    vertexOffset += symbolInstance.numIconVertices;
+                    continue;
+                }
 
                 if (activeAppearance) {
                     featureData.activeAppearance = activeAppearance;

@@ -21,115 +21,283 @@ import {getAccessToken} from './access_token_generated.js';
 mapboxgl.accessToken = getAccessToken();
 
 const map = new mapboxgl.Map({
-    container: 'map',
-    // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
-    style: 'mapbox://styles/mapbox/standard',
-    zoom: 15,
-    center: [-71.97722138410576, -13.517379300798098]
-});
+        container: 'map',
+        // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+        style: 'mapbox://styles/mapbox/standard',
+        // Disable the POI labels to only show the ones we will import
+        config: {
+            basemap: {
+                showPointOfInterestLabels: false
+            }
+        },
+        zoom: 15.5,
+        center: [1.8447281852, 42.10025506]
+    });
 
-// Wait until the map has finished loading.
-map.on('load', () => {
-    map.setConfigProperty('basemap', 'lightPreset', 'dusk');
-    map.loadImage(
-        'https://docs.mapbox.com/mapbox-gl-js/assets/cat.png',
-        (error, image) => {
+    // Wait until the map has finished loading.
+    map.on('load', () => {
+        // Load an image for every feature state.
+        // When all images are loaded, add the layer to the map
+        const numIconsToLoad = 4;
+        let numIconsLoaded = 0;
+        map.loadImage('hotel.png', (error, image) => {
             if (error) throw error;
 
-            // Add the image to the map style.
-            map.addImage('cat', image);
-            // Add a custom vector tileset source. This tileset contains
-            // point features.
-            map.addSource('museums', {
-                type: 'vector',
-                url: 'mapbox://mapbox.2opop9hr'
-            });
-            // Add a layer to show a circle on each point
-            map.addLayer({
-                'id': 'circles',
-                'type': 'circle',
-                'source': 'museums',
-                'paint': {
-                    'circle-color': 'red'
+            map.addImage('hotel', image);
+            numIconsLoaded++;
+            if (numIconsLoaded === numIconsToLoad) addLayer();
+        });
+
+        map.loadImage(
+            'hotel-active.png',
+            (error, image) => {
+                if (error) throw error;
+
+                map.addImage('hotel-active', image);
+                numIconsLoaded++;
+                if (numIconsLoaded === numIconsToLoad) addLayer();
+            }
+        );
+
+        map.loadImage(
+            'hotel-clicked.png',
+            (error, image) => {
+                if (error) throw error;
+
+                map.addImage('hotel-clicked', image);
+                numIconsLoaded++;
+                if (numIconsLoaded === numIconsToLoad) addLayer();
+            }
+        );
+
+        map.loadImage(
+            'hotel-hover.png',
+            (error, image) => {
+                if (error) throw error;
+
+                map.addImage('hotel-hover', image);
+                numIconsLoaded++;
+                if (numIconsLoaded === numIconsToLoad) addLayer();
+            }
+        );
+
+        map.addSource('points', {
+            type: 'geojson',
+            data: getGeoJSONData()
+        });
+    });
+
+    function addLayer() {
+        // Add a layer to show an icon on every point.
+        map.addLayer({
+            'id': 'points',
+            'type': 'symbol',
+            'source': 'points',
+            'layout': {
+                'icon-allow-overlap': true,
+                // Define an icon and size for the default appearance of symbols in this layer
+                'icon-image': 'hotel',
+                'icon-size': 0.75
+            },
+            'appearances': [
+                {
+                    'name': 'clicked',
+                    'condition': [
+                        'boolean',
+                        ['feature-state', 'currentlySelected'],
+                        false
+                    ],
+                    'properties': {
+                        // This icon will be used when the currentlySelected feature state is active
+                        'icon-image': 'hotel-active'
+                    }
                 },
-                'layout': {
-                    'visibility': 'visible',
+                {
+                    'name': 'hovered',
+                    'condition': ['boolean', ['feature-state', 'hover'], false],
+                    'properties': {
+                        // This icon will be used when the hover feature state is active and currentlySelected is not
+                        'icon-image': 'hotel-hover'
+                    }
                 },
-                'source-layer': 'museum-cusco'
-            });
-            // Add a layer to show icons on top of the points.
-            // Icons will grow when hovered and when clicked.
-            map.addLayer({
-                'id': 'museums',
-                'type': 'symbol',
-                'source': 'museums',
-                'layout': {
-                    'visibility': 'visible',
-                    'icon-image': "cat",
-                    'icon-size': 0.2,
+                {
+                    'name': 'has-been-clicked',
+                    'condition': [
+                        'boolean',
+                        ['feature-state', 'hasBeenClicked'],
+                        false
+                    ],
+                    'properties': {
+                        // This icon will be used then the hasBeenClicked feature state is active and neither hover nor currentlySelected are
+                        'icon-image': 'hotel-clicked'
+                    }
+                }
+            ]
+        });
+
+        // Store the currently selected feature and the features that have been
+        // selected some time
+        let selectedFeature = null;
+        const clickedFeatures = [];
+
+        // When the mouse hovers over the feature we set the hover feature state to true
+        // and change the pointer
+        map.addInteraction('hover-in', {
+            type: 'mouseenter',
+            target: { layerId: 'points' },
+            handler: (e) => {
+                map.setFeatureState(e.feature, { hover: true });
+                map.getCanvas().style.cursor = 'pointer';
+            }
+        });
+
+        // When the mouse hovers outside the feature we set the hover feature state to false
+        // and change the pointer
+        map.addInteraction('hover-out', {
+            type: 'mouseleave',
+            target: { layerId: 'points' },
+            handler: (e) => {
+                map.setFeatureState(e.feature, { hover: false });
+                map.getCanvas().style.cursor = '';
+            }
+        });
+
+        // When the mouse is clicked on a feature we set the currentlySelected feature state to true,
+        // unselect the previous select one if any and store this feature both as the selected feature
+        // and in the list of features that have been selected
+        map.addInteraction('click', {
+            type: 'click',
+            target: { layerId: 'points' },
+            handler: (e) => {
+                // If we click on a feature and there was some of it selected, we first
+                // deselect that one
+                if (selectedFeature) {
+                    map.setFeatureState(selectedFeature, {
+                        currentlySelected: false
+                    });
+                }
+                // We store this feature as the currently selected feature and in the list
+                // of feature that have been selected
+                selectedFeature = e.feature;
+                clickedFeatures.push(e.feature);
+                map.setFeatureState(e.feature, {
+                    currentlySelected: true,
+                    hasBeenClicked: true
+                });
+            }
+        });
+
+        // When the mouse is clicked outside of any feature, we unselect the currently selected feature if
+        // there's any or remove all features from the list of feature that have been selected to get back
+        // to the initial state
+        map.addInteraction('map-click', {
+            type: 'click',
+            handler: () => {
+                // When we click on the map we unselect the currently selected feature
+                // If there was none selected we reset the state of all features to the default one
+                if (selectedFeature) {
+                    map.setFeatureState(selectedFeature, {
+                        currentlySelected: false
+                    });
+                    selectedFeature = null;
+                } else {
+                    clickedFeatures.forEach((f) => {
+                        map.setFeatureState(f, { hasBeenClicked: false });
+                    });
+                    clickedFeatures.length = 0;
+                }
+            }
+        });
+    }
+
+    function getGeoJSONData() {
+        return {
+            'type': 'FeatureCollection',
+            'features': [
+                {
+                    'type': 'Feature',
+                    'id': 1,
+                    'properties': {},
+                    'geometry': {
+                        'coordinates': [1.8452993238082342, 42.100164223399275],
+                        'type': 'Point'
+                    }
                 },
-                'appearances': [
-                    {
-                        'name': 'clicked',
-                        'condition': ['==', ['boolean', ['feature-state', 'clicked'], false], true],
-                        'properties': {
-                            'icon-size': 0.5,
-                        }
-                    },
-                    {
-                        'name': 'hovered',
-                        'condition': ['==', ['boolean', ['feature-state', 'hover'], false], true],
-                        'properties': {
-                            'icon-size': 0.3,
-                        }
-                    },
-                ],
-                'source-layer': 'museum-cusco'
-            });
-        }
-    );
-});
-
-let selectedFeature = null;
-map.addInteraction('hover-in', {
-    type: 'mouseenter',
-    target: { layerId: 'museums' },
-    handler: (e) => {
-        map.setFeatureState(e.feature, {hover: true});
-        map.getCanvas().style.cursor = 'pointer';
+                {
+                    'type': 'Feature',
+                    'id': 2,
+                    'properties': {},
+                    'geometry': {
+                        'coordinates': [1.8438590191857145, 42.1004178052402],
+                        'type': 'Point'
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'id': 3,
+                    'properties': {},
+                    'geometry': {
+                        'coordinates': [1.844225198327564, 42.10130533369667],
+                        'type': 'Point'
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'id': 4,
+                    'properties': {},
+                    'geometry': {
+                        'coordinates': [1.8443594640122, 42.0990955459275],
+                        'type': 'Point'
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'id': 5,
+                    'properties': {},
+                    'geometry': {
+                        'coordinates': [1.8449697625811154, 42.09869705141318],
+                        'type': 'Point'
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'id': 6,
+                    'properties': {},
+                    'geometry': {
+                        'coordinates': [1.8471058075726603, 42.09978384873651],
+                        'type': 'Point'
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'id': 7,
+                    'properties': {},
+                    'geometry': {
+                        'coordinates': [1.8455739474818813, 42.10182152060625],
+                        'type': 'Point'
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'id': 8,
+                    'properties': {},
+                    'geometry': {
+                        'coordinates': [1.8427787800360136, 42.10039061289771],
+                        'type': 'Point'
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'id': 9,
+                    'properties': {},
+                    'geometry': {
+                        'coordinates': [1.8433280487479635, 42.0994396753579],
+                        'type': 'Point'
+                    }
+                }
+            ]
+        };
     }
-});
-
-map.addInteraction('hover-out', {
-    type: 'mouseleave',
-    target: { layerId: 'museums' },
-    handler: (e) => {
-        map.setFeatureState(e.feature, {hover: false});
-        map.getCanvas().style.cursor = '';
-    }
-});
-
-map.addInteraction('click', {
-    type: 'click',
-    target: { layerId: 'museums' },
-    handler: (e) => {
-        if (selectedFeature) {
-            map.setFeatureState(selectedFeature, {clicked: false});
-        }
-        selectedFeature = e.feature;
-        map.setFeatureState(e.feature, {clicked: true});
-    }
-});
-
-map.addInteraction('map-click', {
-    type: 'click',
-    handler: () => {
-        if (selectedFeature) {
-            map.setFeatureState(selectedFeature, { clicked: false });
-            selectedFeature = null;
-        }
-    }
-});
 
 </script>
 </body>
