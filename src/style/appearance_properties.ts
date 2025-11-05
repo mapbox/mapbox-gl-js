@@ -14,6 +14,9 @@ export type AppearanceProps = {
     "icon-image": DataDrivenProperty<ResolvedImage>;
     "icon-rotate": DataDrivenProperty<number>;
     "icon-offset": DataDrivenProperty<[number, number]>;
+    "text-size": DataDrivenProperty<number>;
+    "text-rotate": DataDrivenProperty<number>;
+    "text-offset": DataDrivenProperty<[number, number]>;
 };
 
 let properties: Properties<AppearanceProps>;
@@ -22,4 +25,7 @@ export const getAppearanceProperties = (): Properties<AppearanceProps> => proper
     "icon-image": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-image"]),
     "icon-rotate": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-rotate"]),
     "icon-offset": new DataDrivenProperty(styleSpec["layout_symbol"]["icon-offset"]),
+    "text-size": new DataDrivenProperty(styleSpec["layout_symbol"]["text-size"]),
+    "text-rotate": new DataDrivenProperty(styleSpec["layout_symbol"]["text-rotate"]),
+    "text-offset": new DataDrivenProperty(styleSpec["layout_symbol"]["text-offset"]),
 }));
