@@ -1,3 +1,17 @@
+## 3.17.0-beta.1
+
+### Features and improvements ✨
+
+- Experimental ESM support.
+- Remove experimental flag from model layer.
+- Conflate building parts together as a whole building.
+
+### Bug fixes 🐞
+
+- Fix line patterns not elevating properly on HD roads.
+- Sanitize attributions in AttributionControl.
+- Fix appearance optimization that resulted in wrong appearances being rendered.
+
 ## 3.16.0
 
 ### Features and improvements ✨
