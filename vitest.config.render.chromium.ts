@@ -1,9 +1,7 @@
-/// <reference types="@vitest/browser/providers/playwright" />
-
 import os from 'node:os';
 import {mergeConfig, defineConfig} from 'vitest/config';
 import baseRenderConfig from './vitest.config.render';
-
+import {playwright} from '@vitest/browser-playwright';
 const isCI = process.env.CI === 'true';
 
 const args: string[] = [
@@ -28,9 +26,9 @@ if (os.platform() === 'darwin' && os.arch() === 'arm64') {
 export default mergeConfig(baseRenderConfig, defineConfig({
     test: {
         browser: {
-            provider: 'playwright',
+            provider: playwright({launchOptions: {args, channel: isCI ? 'chromium' : 'chrome'}}),
             instances: [
-                {browser: 'chromium', launch: {args, channel: isCI ? 'chromium' : 'chrome'}},
+                {browser: 'chromium'},
             ],
         }
     },

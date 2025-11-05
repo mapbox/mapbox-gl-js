@@ -1,6 +1,7 @@
 import {basename as pathBasename} from 'node:path';
 import {readFileSync, globSync} from 'node:fs';
 import {mergeConfig, defineConfig} from 'vitest/config';
+import {playwright} from '@vitest/browser-playwright';
 import baseConfig from './vitest.config.base';
 
 const isCI = process.env.CI === 'true';
@@ -31,8 +32,9 @@ function styleSpecFixtures() {
 export default mergeConfig(baseConfig, defineConfig({
     test: {
         browser: {
+            provider: playwright({launchOptions: {channel: 'chrome'}}),
             instances: [
-                {browser: 'chromium', launch: {channel: 'chrome'}},
+                {browser: 'chromium'},
             ],
         },
         include: ['test/unit/**/*.test.ts'],

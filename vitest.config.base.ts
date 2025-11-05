@@ -1,6 +1,7 @@
 import {defineConfig} from 'vitest/config';
 import {createFilter} from '@rollup/pluginutils';
 import arraybuffer from 'vite-plugin-arraybuffer';
+import {playwright} from '@vitest/browser-playwright';
 
 const isCI = process.env.CI === 'true';
 
@@ -22,7 +23,7 @@ export default defineConfig({
         retry: isCI ? 2 : 0,
         testTimeout: 5_000,
         browser: {
-            provider: 'playwright',
+            provider: playwright(),
             enabled: true,
             headless: true,
             fileParallelism: false,

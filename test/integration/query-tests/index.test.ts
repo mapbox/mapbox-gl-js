@@ -20,7 +20,7 @@ setupHTML();
 
 function getEnvironmentParams() {
     let timeout = 30000;
-    if (import.meta.env.VITE_CI) {
+    if (import.meta.env.VITE_CI === 'true') {
         let ignoresPlatformSpecific;
         const ua = navigator.userAgent;
         const browser = ua.includes('Firefox') ? 'firefox' :
@@ -160,9 +160,9 @@ const getTest = (queryTestName) => async () => {
 
         testMetaData.status = success ? 'passed' : 'failed';
 
-        if (!import.meta.env.VITE_CI && import.meta.env.VITE_UPDATE) {
+        if (import.meta.env.VITE_CI === 'false' && import.meta.env.VITE_UPDATE === 'true') {
             await server.commands.writeFile(`${testPath}/expected.json`, jsonDiff.replace('+ ', '').trim());
-        } else if (!import.meta.env.VITE_CI) {
+        } else if (import.meta.env.VITE_CI === 'false') {
             await server.commands.writeFile(`${testPath}/actual.png`, testMetaData.actual!.split(',')[1], {encoding: 'base64'});
             await server.commands.writeFile(`${testPath}/actual.json`, JSON.stringify(actual, undefined, 2));
         }

@@ -18,7 +18,7 @@ const errors = [];
 
 function getEnvironmentParams() {
     let timeout = 30000;
-    if (import.meta.env.VITE_CI) {
+    if (import.meta.env.VITE_CI === 'true') {
         let ignoresPlatformSpecific;
         const ua = navigator.userAgent;
         const browser = ua.includes('Firefox') ? 'firefox' :
@@ -78,7 +78,7 @@ async function base64PngToImageDataWithCanvas(base64Png: string): Promise<ImageD
 
 async function getExpectedImages(currentTestName: string, renderTest: Record<string, unknown>): Promise<ImageDataWithCanvas[]> {
     const expectedPaths: string[] = [];
-    
+
     // Use test's path property instead of global suiteDir
     const testPath = renderTest.path;
 
@@ -122,11 +122,11 @@ const getTest = (renderTestName) => async () => {
 
         const actual = getActualImageDataURL(actualImageData, mapRef.current, {w, h}, options);
 
-        if (!import.meta.env.VITE_CI) {
+        if (import.meta.env.VITE_CI === 'false') {
             await server.commands.writeFile(`${testPath}/actual.png`, actual.split(',')[1], {encoding: 'base64'});
         }
 
-        if (expectedImages.length === 0 && !import.meta.env.VITE_UPDATE) {
+        if (expectedImages.length === 0 && import.meta.env.VITE_UPDATE === 'false') {
             throw new Error(`No expected images found for ${renderTestName}. Please run the test with UPDATE=true to generate expected images.`);
         }
 
@@ -139,7 +139,7 @@ const getTest = (renderTestName) => async () => {
             errors
         };
 
-        if (minDiffImage && expectedIndex !== -1 && (!import.meta.env.VITE_CI || !pass)) {
+        if (minDiffImage && expectedIndex !== -1 && (import.meta.env.VITE_CI === 'false' || !pass)) {
             diffCanvas.width = w;
             diffCanvas.height = h;
             const diffImageData = new ImageData(minDiffImage, w, h);
@@ -147,7 +147,7 @@ const getTest = (renderTestName) => async () => {
 
             const imgDiff = diffCanvas.toDataURL();
 
-            if (!import.meta.env.VITE_CI) {
+            if (import.meta.env.VITE_CI === 'false') {
                 await server.commands.writeFile(`${testPath}/diff.png`, imgDiff.split(',')[1], {encoding: 'base64'});
             }
 
@@ -157,7 +157,7 @@ const getTest = (renderTestName) => async () => {
             testMetaData.imgDiff = imgDiff;
         }
 
-        if (!pass && import.meta.env.VITE_UPDATE) {
+        if (!pass && import.meta.env.VITE_UPDATE === 'true') {
             await server.commands.writeFile(`${testPath}/expected.png`, actual.split(',')[1], {encoding: 'base64'});
         } else if (!pass) {
             errorMessage = `Render test ${renderTestName} failed with ${minDiff} diff`;

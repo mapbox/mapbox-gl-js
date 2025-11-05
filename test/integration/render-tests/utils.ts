@@ -60,7 +60,7 @@ export function parseOptions(currentFixture, style) {
         ...((style.metadata && style.metadata.test) || {})
     };
 
-    if (import.meta.env.VITE_SPRITE_FORMAT !== null && !options.spriteFormat) {
+    if (import.meta.env.VITE_SPRITE_FORMAT !== 'null' && !options.spriteFormat) {
         options.spriteFormat = import.meta.env.VITE_SPRITE_FORMAT;
     } else {
         options.spriteFormat = options.spriteFormat ?? 'icon_set';
@@ -126,7 +126,7 @@ export async function getExpectedImages(currentTestName, currentFixture) {
     // depending on platform, i.e. heatmaps use half-float textures for improved rendering where supported
     const expectedImages = await Promise.all(expectedPaths.map((path) => drawImage(expectedCanvas, expectedCtx, path)));
 
-    if (!import.meta.env.VITE_UPDATE && expectedImages.length === 0) {
+    if (import.meta.env.VITE_UPDATE === "false" && expectedImages.length === 0) {
         throw new Error(`No expected*.png files found for "${currentTestName}"; did you mean to run tests with UPDATE=true?`);
     }
 

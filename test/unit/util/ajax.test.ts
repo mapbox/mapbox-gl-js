@@ -12,59 +12,6 @@ import {
 import config from '../../../src/util/config';
 import webpSupported from '../../../src/util/webp_supported';
 
-class MockXMLHttpRequest {
-    static lastInstance: MockXMLHttpRequest | null = null;
-
-    readyState = 0;
-    status = 0;
-    response = "";
-    responseText = "";
-    responseHeaders: Record<string, string> = {};
-    onreadystatechange: ((this: XMLHttpRequest, ev: Event) => any) | null = null;
-    onload: ((this: XMLHttpRequest, ev: Event) => any) | null = null;
-    onerror: ((this: XMLHttpRequest, ev: Event) => any) | null = null;
-
-    open = vi.fn((method: string, url: string) => {
-        this.readyState = 1;
-        this._triggerChange();
-    });
-
-    send = vi.fn(() => {
-    // Simulate async network delay
-        setTimeout(() => {
-            this.readyState = 4;
-            this.status = 200;
-            this.response = JSON.stringify({ok: true});
-            this.responseText = JSON.stringify({ok: true});
-            this.responseHeaders = {
-                'Content-Type': 'application/json',
-                'X-random-header': 'random-value'
-            };
-
-            this._triggerChange();
-            this.onload?.(new Event("load"));
-        }, 0);
-    });
-
-    setRequestHeader = vi.fn();
-
-    abort = vi.fn();
-
-    constructor() {
-        MockXMLHttpRequest.lastInstance = this;
-    }
-
-    private _triggerChange() {
-        this.onreadystatechange?.(new Event("readystatechange"));
-    }
-
-    getAllResponseHeaders = vi.fn(() => {
-        return Object.entries(this.responseHeaders)
-            .map(([key, value]) => `${key}: ${value}`)
-            .join("\r\n");
-    });
-}
-
 describe('ajax', () => {
     test('getArrayBuffer, 404', async () => {
         // eslint-disable-next-line @typescript-eslint/require-await
@@ -197,7 +144,41 @@ describe('ajax', () => {
     });
 
     test('makeRequest gets correct headers when using XMLHttpRequest', async () => {
-        vi.spyOn(window, 'XMLHttpRequest').mockImplementation(() => new MockXMLHttpRequest());
+        vi.spyOn(window, 'XMLHttpRequest').mockImplementation(function () {
+            const responseHeadersRef: {current: Record<string, string>} = {
+                current: {}
+            };
+            const requestHeadersRef: {current: Record<string, string>} = {
+                current: {}
+            };
+
+            this.open = () => {
+                this.readyState = 1;
+                this.onreadystatechange?.(new Event("readystatechange"));
+            };
+            this.getAllResponseHeaders = () => {
+                return Object.entries(responseHeadersRef.current)
+                    .map(([key, value]) => `${key}: ${value}`)
+                    .join("\r\n");
+            };
+            this.setRequestHeader = (key, value) => {
+                requestHeadersRef.current[key] = value;
+            };
+            this.send = () => {
+                setTimeout(() => {
+                    this.readyState = 4;
+                    this.status = 200;
+                    this.response = JSON.stringify({ok: true});
+                    this.responseText = JSON.stringify({ok: true});
+                    responseHeadersRef.current = {
+                        'Content-Type': 'application/json',
+                        'X-random-header': 'random-value'
+                    };
+
+                    this.onload?.(new Event("load"));
+                }, 0);
+            };
+        });
 
         await new Promise(resolve => {
             getJSON({url: 'file://random'}, (error, body, headers) => {

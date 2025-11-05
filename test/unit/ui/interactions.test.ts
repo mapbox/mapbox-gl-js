@@ -1,4 +1,4 @@
-import {vi, describe, test, afterEach, expect, waitFor, createMap} from '../../util/vitest';
+import {vi, describe, test, afterEach, expect, waitFor, createMap, beforeEach} from '../../util/vitest';
 import {mockFetch} from '../../util/network';
 
 import type {Mock} from 'vitest';
@@ -377,6 +377,10 @@ describe('Interaction', () => {
             type: 'mouseleave',
             target: {layerId: 'circle-1'},
             handler: mouseleave
+        });
+
+        beforeEach(() => {
+            vi.resetAllMocks();
         });
 
         test('Mouseleave without mouseenter does not work', () => {

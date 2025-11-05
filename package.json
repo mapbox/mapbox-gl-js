@@ -63,8 +63,9 @@
     "@types/offscreencanvas": "^2019.7.3",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.44.1",
-    "@vitest/browser": "^3.2.4",
-    "@vitest/ui": "^3.2.2",
+    "@vitest/browser": "^4.0.6",
+    "@vitest/browser-playwright": "^4.0.6",
+    "@vitest/ui": "^4.0.6",
     "address": "^2.0.3",
     "browserify": "^17.0.1",
     "browserslist-to-esbuild": "^2.1.1",
@@ -111,7 +112,7 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.1",
     "vite-plugin-arraybuffer": "^0.1.0",
-    "vitest": "^3.2.2"
+    "vitest": "^4.0.6"
   },
   "overrides": {
     "type-fest": "^4.40.1"

@@ -12,9 +12,9 @@ if (existsSync('internal/test/integration/render-tests')) {
 
 export default mergeConfig(baseConfig, defineConfig({
     define: {
-        'import.meta.env.VITE_CI': isCI ? 'true' : 'false',
-        'import.meta.env.VITE_UPDATE': process.env.UPDATE ? 'true' : 'false',
-        'import.meta.env.VITE_SPRITE_FORMAT': process.env.SPRITE_FORMAT ? JSON.stringify(process.env.SPRITE_FORMAT) : 'null',
+        'import.meta.env.VITE_CI': isCI,
+        'import.meta.env.VITE_UPDATE': process.env.UPDATE != null,
+        'import.meta.env.VITE_SPRITE_FORMAT': process.env.SPRITE_FORMAT != null ? JSON.stringify(process.env.SPRITE_FORMAT) : null,
         'import.meta.env.VITE_DIST_BUNDLE': JSON.stringify('dev'),
     },
     test: {
