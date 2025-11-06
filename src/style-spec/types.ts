@@ -429,9 +429,6 @@ export type VectorSourceSpecification = {
     "url"?: string,
     "tiles"?: Array<string>,
     "bounds"?: [number, number, number, number],
-    /**
-     * @experimental This property is experimental and subject to change in future versions.
-     */
     "extra_bounds"?: Array<[number, number, number, number]>,
     "scheme"?: "xyz" | "tms",
     "minzoom"?: number,
@@ -447,9 +444,6 @@ export type RasterSourceSpecification = {
     "url"?: string,
     "tiles"?: Array<string>,
     "bounds"?: [number, number, number, number],
-    /**
-     * @experimental This property is experimental and subject to change in future versions.
-     */
     "extra_bounds"?: Array<[number, number, number, number]>,
     "minzoom"?: number,
     "maxzoom"?: number,
@@ -465,9 +459,6 @@ export type RasterDEMSourceSpecification = {
     "url"?: string,
     "tiles"?: Array<string>,
     "bounds"?: [number, number, number, number],
-    /**
-     * @experimental This property is experimental and subject to change in future versions.
-     */
     "extra_bounds"?: Array<[number, number, number, number]>,
     "minzoom"?: number,
     "maxzoom"?: number,
@@ -486,9 +477,6 @@ export type RasterArraySourceSpecification = {
     "url"?: string,
     "tiles"?: Array<string>,
     "bounds"?: [number, number, number, number],
-    /**
-     * @experimental This property is experimental and subject to change in future versions.
-     */
     "extra_bounds"?: Array<[number, number, number, number]>,
     "minzoom"?: number,
     "maxzoom"?: number,

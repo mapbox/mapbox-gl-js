@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Extra Bounds Debug - Mapbox GL JS</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../dist/mapbox-gl.css" />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<script src="../dist/mapbox-gl-dev.js"></script>
+<script type="module">
+import {getAccessToken} from './access_token_generated.js';
+
+mapboxgl.accessToken = getAccessToken();
+
+// Define extra_bounds regions
+const extraBounds = [
+    [-18.716583, 34.608345, 48.080292, 73.128931],   // Europe/N. Africa
+    [122.871094, 26.431228, 158.730469, 46.800059],  // East Asia
+    [-129.550781, 19.642588, -64.335938, 53.540307]  // North America
+];
+
+// Create simple style with just a background
+const map = window.map = new mapboxgl.Map({
+    container: 'map',
+    style: {
+        version: 8,
+        sources: {},
+        layers: [{
+            id: 'background',
+            type: 'background',
+            paint: { 'background-color': '#f0f0f0' }
+        }]
+    },
+    projection: 'globe',
+    center: [0, 30],
+    zoom: 2,
+    hash: true
+});
+
+// Enable tile boundaries by default
+map.showTileBoundaries = true;
+
+map.on('load', () => {
+    // Add raster source with extra_bounds
+    map.addSource('raster-with-extra-bounds', {
+        type: 'raster',
+        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+        tileSize: 256,
+        maxzoom: 19,
+        extra_bounds: extraBounds
+    });
+
+    // Add the raster layer
+    map.addLayer({
+        id: 'raster-layer',
+        type: 'raster',
+        source: 'raster-with-extra-bounds'
+    });
+
+    // Visualize extra_bounds regions
+    extraBounds.forEach((bounds, index) => {
+        const [west, south, east, north] = bounds;
+        const colors = ['rgba(255, 0, 0, 0.15)', 'rgba(0, 255, 0, 0.15)', 'rgba(0, 0, 255, 0.15)'];
+        const borderColors = ['rgb(255, 0, 0)', 'rgb(0, 255, 0)', 'rgb(0, 0, 255)'];
+
+        map.addSource(`bounds-${index}`, {
+            type: 'geojson',
+            data: {
+                type: 'Feature',
+                geometry: {
+                    type: 'Polygon',
+                    coordinates: [[
+                        [west, north],
+                        [east, north],
+                        [east, south],
+                        [west, south],
+                        [west, north]
+                    ]]
+                }
+            }
+        });
+
+        map.addLayer({
+            id: `bounds-fill-${index}`,
+            type: 'fill',
+            source: `bounds-${index}`,
+            paint: {
+                'fill-color': colors[index],
+                'fill-opacity': 1
+            }
+        });
+
+        map.addLayer({
+            id: `bounds-outline-${index}`,
+            type: 'line',
+            source: `bounds-${index}`,
+            paint: {
+                'line-color': borderColors[index],
+                'line-width': 2
+            }
+        });
+    });
+});
+
+</script>
+</body>
+</html>
