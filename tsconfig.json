@@ -47,8 +47,9 @@
     "./src/style-spec/dist",
     "./test/release/**/*",
     "./test/integration/**/*",
+    "./test/build/vite/**/*",
+    "./test/build/webpack/**/*",
     "./test/build/typings/**/*",
-    "./test/build/transpilation/**/*",
     "./test/build/style-spec.test.js",
     "./test/build/browserify-test-fixture.js"
   ]

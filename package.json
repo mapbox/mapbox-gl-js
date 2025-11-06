@@ -13,6 +13,8 @@
   },
   "workspaces": [
     "src/style-spec",
+    "test/build/vite",
+    "test/build/webpack",
     "test/build/typings"
   ],
   "dependencies": {
