@@ -10,7 +10,6 @@ import type ResolvedImage from "../style-spec/expression/types/resolved_image";
 import type {CanonicalTileID} from "../source/tile_id";
 import type EvaluationParameters from "./evaluation_parameters";
 import type {ImageId} from "../style-spec/expression/types/image_id";
-import type {ImageVariant} from "../style-spec/expression/types/image_variant";
 
 export type ConditionCheckParams = {
     globals: GlobalProperties,
@@ -25,10 +24,8 @@ class SymbolAppearance {
     name?: string;
     properties?: PossiblyEvaluated<AppearanceProps>;
     unevaluatedLayout?: Layout<AppearanceProps>;
-    cachedIconPrimary?: ImageVariant;
 
     constructor(condition: AppearanceSpecification["condition"], name: string | undefined, properties: AppearanceProps | undefined, scope: string, options: ConfigOptions, iconImageUseTheme: string) {
-        this.cachedIconPrimary = null;
 
         const conditionSpec = (latest['appearance'] as Record<string, unknown>)['condition'] as StylePropertySpecification;
 
@@ -47,18 +44,6 @@ class SymbolAppearance {
                 this.unevaluatedLayout.setValue(property as keyof AppearanceProps, properties[property]);
             }
         }
-    }
-
-    hasCachedIconPrimary() {
-        return this.cachedIconPrimary !== null;
-    }
-
-    setCachedIconPrimary(iconPrimary: ImageVariant) {
-        this.cachedIconPrimary = iconPrimary;
-    }
-
-    getCachedIconPrimary() {
-        return this.cachedIconPrimary;
     }
 
     isActive(context: ConditionCheckParams): boolean {

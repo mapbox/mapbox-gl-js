@@ -99,6 +99,7 @@ export type AppearanceFeatureData = {
     textShaping?: Shaping;
     iconTextFitPadding?: [number, number, number, number];
     fontScale?: number;
+    appearanceIcon?: ImageVariant;
 };
 
 export type SingleCollisionBox = {
@@ -1021,11 +1022,14 @@ class SymbolBucket implements Bucket {
                         id: featureData.id
                     };
 
-                    if (!activeAppearance.hasCachedIconPrimary()) {
-                        const iconPrimary = this.getCombinedIconPrimary(activeAppearance, layer, evaluationFeature, canonical, availableImages, minimalFeature, iconScaleFactor);
-                        activeAppearance.setCachedIconPrimary(iconPrimary);
+                    let iconPrimary: ImageVariant | undefined;
+                    if (!featureData.appearanceIcon) {
+                        iconPrimary = this.getCombinedIconPrimary(activeAppearance, layer, evaluationFeature, canonical, availableImages, minimalFeature, iconScaleFactor);
+                        featureData.appearanceIcon = iconPrimary;
+                    } else {
+                        iconPrimary = featureData.appearanceIcon;
                     }
-                    const iconPrimary = activeAppearance.getCachedIconPrimary();
+
                     if (!iconPrimary) continue;
 
                     const primaryImageSerialized = iconPrimary.toString();
