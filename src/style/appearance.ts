@@ -82,6 +82,10 @@ class SymbolAppearance {
         return this.unevaluatedLayout;
     }
 
+    getUnevaluatedProperty(name: keyof AppearanceProps) {
+        return this.unevaluatedLayout._values[name];
+    }
+
     recalculate(parameters: EvaluationParameters, availableImages: ImageId[], iconImageUseTheme?: string) {
         if (this.unevaluatedLayout) {
 
@@ -99,6 +103,27 @@ class SymbolAppearance {
         }
 
         return result;
+    }
+
+    hasIconProperties() {
+        const iconImageProperty = this.hasProperty('icon-image');
+        const iconSizeProperty = this.hasProperty('icon-size');
+        const iconOffsetProperty = this.hasProperty('icon-offset');
+        const iconRotateProperty = this.hasProperty('icon-rotate');
+
+        return (iconImageProperty || iconSizeProperty || iconOffsetProperty || iconRotateProperty);
+    }
+
+    hasTextProperties() {
+        const textSizeProperty = this.hasProperty('text-size');
+        const textOffsetProperty = this.hasProperty('text-offset');
+        const textRotateProperty = this.hasProperty('text-rotate');
+
+        return (textSizeProperty || textOffsetProperty || textRotateProperty);
+    }
+
+    hasProperty(name: keyof AppearanceProps) {
+        return this.getUnevaluatedProperty(name).value !== undefined;
     }
 }
 
