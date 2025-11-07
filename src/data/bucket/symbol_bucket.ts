@@ -543,6 +543,7 @@ class SymbolBucket implements Bucket {
     replacementUpdateTime: number;
 
     worldview: string;
+    localizable: boolean;
     iconAtlasPositions: ImagePositionMap;
     hasAppearances: boolean | null;
     lastActiveApperance: number | null;
@@ -570,6 +571,7 @@ class SymbolBucket implements Bucket {
         const unevaluatedLayoutValues = layer._unevaluatedLayout._values;
 
         this.worldview = options.worldview;
+        this.localizable = options.localizable;
 
         this.textSizeData = getSizeData(this.zoom, unevaluatedLayoutValues['text-size'], this.worldview);
 

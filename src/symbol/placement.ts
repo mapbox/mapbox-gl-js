@@ -559,6 +559,20 @@ export class Placement {
                     sourceLayerIndex: retainedQueryData.sourceLayerIndex,
                     layoutVertexArrayOffset: 0
                 });
+
+                // since we recreate the feature from raw tile data when there's a dynamic filter,
+                // we have to patch it with localization info again
+                const worldview = feature.properties ? feature.properties.worldview : null;
+                if (bucket.localizable && bucket.worldview && typeof worldview === 'string') {
+                    if (worldview === 'all') {
+                        feature.properties['$localized'] = true;
+                    } else if (worldview.split(',').includes(bucket.worldview)) {
+                        feature.properties['$localized'] = true;
+                        feature.properties['worldview'] = bucket.worldview;
+                    } else {
+                        return;
+                    }
+                }
             }
 
             if (clippingData) {

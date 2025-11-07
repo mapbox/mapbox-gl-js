@@ -186,26 +186,27 @@ class WorkerTile {
 
             const sourceLayerIndex = sourceLayerCoder.encode(sourceLayerId);
             const features = [];
+
+            const localizable = this.localizableLayerIds && this.localizableLayerIds.has(sourceLayerId);
+
             let elevationDependency = false;
             for (let index = 0, currentFeatureIndex = 0; index < sourceLayer.length; index++) {
                 const feature = sourceLayer.feature(index);
                 const id = featureIndex.getId(feature, sourceLayerId);
+                const worldview = feature.properties ? feature.properties.worldview : null;
 
                 // Handle feature localization based on the map worldview:
                 // 1. If the feature layer is localizable, check if it has a 'worldview' property
                 // 2. Check if the feature worldview is 'all' (visible in all worldviews) or matches the current map worldview
                 // 3. Mark the feature with '$localized' property or skip it otherwise
-                if (this.localizableLayerIds && this.localizableLayerIds.has(sourceLayerId)) {
-                    const worldview = feature.properties ? feature.properties.worldview : null;
-                    if (this.worldview && typeof worldview === 'string') {
-                        if (worldview === 'all') {
-                            feature.properties['$localized'] = true;
-                        } else if (worldview.split(',').includes(this.worldview)) {
-                            feature.properties['$localized'] = true;
-                            feature.properties['worldview'] = this.worldview;
-                        } else {
-                            continue; // Skip features that don't match the current worldview
-                        }
+                if (localizable && this.worldview && typeof worldview === 'string') {
+                    if (worldview === 'all') {
+                        feature.properties['$localized'] = true;
+                    } else if (worldview.split(',').includes(this.worldview)) {
+                        feature.properties['$localized'] = true;
+                        feature.properties['worldview'] = this.worldview;
+                    } else {
+                        continue; // Skip features that don't match the current worldview
                     }
                 }
 
@@ -252,7 +253,8 @@ class WorkerTile {
                     projection: this.projection.spec,
                     tessellationStep: this.tessellationStep,
                     styleDefinedModelURLs: availableModels,
-                    worldview: this.worldview
+                    worldview: this.worldview,
+                    localizable
                 });
 
                 assert(this.tileTransform.projection.name === this.projection.name);

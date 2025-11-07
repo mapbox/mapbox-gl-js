@@ -38,6 +38,7 @@ export type BucketParameters<Layer extends TypedStyleLayer> = {
     tessellationStep: number | null | undefined;
     styleDefinedModelURLs: StyleModelMap;
     worldview: string | undefined;
+    localizable: boolean;
 };
 
 export type ImageDependenciesMap = Map<StringifiedImageId, Array<ImageVariant>>;
