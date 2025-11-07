@@ -452,17 +452,19 @@ export class BuildingBucket implements BucketWithGroundEffect {
 
                     // Rule is that with buildings with height < 100 we used default facadeHeight from
                     // building-gen which is currently 4m.
-                    // Otherwise
+                    // If below building height is below 10 meters use 3 meters for facadeHeight.
                     let facadeHeight = 4.0;
                     if (height > 100) {
                         const facadeHeights = [10.0, 13.0, 15.0];
                         facadeHeight = facadeHeights[feature.id ? feature.id % facadeHeights.length : 0];
-                        buildingGen.setFacadeOptions(facadeHeight, true);
+                    } else if (height <= 10) {
+                        facadeHeight = 3.0;
                     }
+                    buildingGen.setFacadeOptions(facadeHeight, true);
 
                     // The buffer between geometric facades and the faux facades is based on the height
                     // of the geometric facades multiplied by golden ratio.
-                    startPositionTile = 1.6803 * facadeHeight / tileToMeters;
+                    startPositionTile = (height < 15 ? 1.3 : 1.61803) * facadeHeight / tileToMeters;
                 } else {
                     // No geometric facades when base > 0.
                     startPositionTile = base / tileToMeters;
