@@ -46,12 +46,16 @@ jobs:
     - run: npm run build-dev
     - run: npm run build-prod
     - run: npm run build-prod-min
+    - run: npm run build-esm-prod-min
     - run: npm run build-style-spec
     - run: npm run build-csp
-    - run: npm run test-build
-    - run: (cd ./test/build/transpilation && npm ci && npm run build)
-    - run: xvfb-run -a npm run test-csp
     - run: npm run build-css
+    - run: npm run test-build
+    - run: xvfb-run -a npm run test-csp
+    - run: xvfb-run -a npm run test-esm
+    - run: npm run build-token
+    - run: npm run build -w vite-build-test
+    - run: npm run build -w webpack-build-test
     - run: npm run size
     - run: npm run prepare-release-pages
       if: ${{ always() }}
