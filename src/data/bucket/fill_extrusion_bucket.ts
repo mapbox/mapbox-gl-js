@@ -598,7 +598,6 @@ export class GroundEffect {
         if (!this.hasData() || !this._needsHiddenByLandmarkUpdate) {
             return;
         }
-        const m = PerformanceUtils.beginMeasure('GroundEffect:uploadHiddenByLandmark');
         if (!this.hiddenByLandmarkVertexBuffer && this.hiddenByLandmarkVertexArray.length > 0) {
             // Create centroids vertex buffer
             this.hiddenByLandmarkVertexBuffer = context.createVertexBuffer(this.hiddenByLandmarkVertexArray, hiddenByLandmarkAttributes.members, true);
@@ -606,7 +605,6 @@ export class GroundEffect {
             this.hiddenByLandmarkVertexBuffer.updateData(this.hiddenByLandmarkVertexArray);
         }
         this._needsHiddenByLandmarkUpdate = false;
-        PerformanceUtils.endMeasure(m);
     }
 
     destroy() {
@@ -867,7 +865,6 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         if (!this.needsCentroidUpdate) {
             return;
         }
-        const m = PerformanceUtils.beginMeasure('FillExtrusionBucket:uploadCentroid');
         if (!this.centroidVertexBuffer && this.centroidVertexArray.length > 0) {
             // Create centroids vertex buffer
             this.centroidVertexBuffer = context.createVertexBuffer(this.centroidVertexArray, centroidAttributes.members, true);
@@ -875,7 +872,6 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             this.centroidVertexBuffer.updateData(this.centroidVertexArray);
         }
         this.needsCentroidUpdate = false;
-        PerformanceUtils.endMeasure(m);
     }
 
     destroy() {
@@ -1608,6 +1604,7 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
     }
 
     updateReplacement(coord: OverscaledTileID, source: ReplacementSource, layerIndex: number) {
+        const perfStartTime = PerformanceUtils.now();
         // Replacement has to be re-checked if the source has been updated since last time
         if (source.updateTime === this.replacementUpdateTime) {
             return;
@@ -1621,8 +1618,6 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
         }
 
         this.activeReplacements = newReplacements;
-
-        const m = PerformanceUtils.beginMeasure('FillExtrusionBucket:updateReplacement');
 
         if (this.centroidVertexArray.length === 0) {
             this.createCentroidsBuffer();
@@ -1642,10 +1637,17 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             // would be reported overlapping due to limited precision (16 bit) of tile units.
             const padding = Math.max(1.0, Math.pow(2.0, region.footprintTileId.canonical.z - coord.canonical.z));
 
-            if (region.footprint.buildingId) {
-                const regionFootprintBuildingId = region.footprint.buildingId;
+            if (region.footprint.buildingIds) {
                 for (const centroid of this.centroidData) {
-                    if (centroid.buildingId === regionFootprintBuildingId) {
+                    if (centroid.flags & HIDDEN_BY_REPLACEMENT) {
+                        continue;
+                    }
+                    if (region.min.x > centroid.max.x || centroid.min.x > region.max.x) {
+                        continue;
+                    } else if (region.min.y > centroid.max.y || centroid.min.y > region.max.y) {
+                        continue;
+                    }
+                    if (region.footprint.buildingIds.has(centroid.buildingId)) {
                         centroid.flags |= HIDDEN_BY_REPLACEMENT;
                     }
                 }
@@ -1697,9 +1699,9 @@ class FillExtrusionBucket implements BucketWithGroundEffect {
             this.writeCentroidToBuffer(centroid);
         }
 
-        PerformanceUtils.endMeasure(m);
-
         this.borderDoneWithNeighborZ = [-1, -1, -1, -1];
+
+        PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_COMMON, "FillExtrusionBucket.updateReplacement", "FillExtrusion", perfStartTime);
     }
 
     footprintContainsPoint(x: number, y: number, centroid: PartData): boolean {

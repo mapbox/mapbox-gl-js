@@ -112,7 +112,10 @@ class StructArray implements IStructArrayLayout {
     members: Array<StructArrayMember>;
     bytesPerElement: number;
 
+    _reallocCount: number;
+
     constructor() {
+        this._reallocCount = 0;
         this.capacity = -1;
         this.resize(0);
     }
@@ -182,6 +185,7 @@ class StructArray implements IStructArrayLayout {
      */
     reserve(n: number) {
         if (n > this.capacity) {
+            this._reallocCount++;
             this.capacity = Math.max(n, Math.floor(this.capacity * RESIZE_MULTIPLIER), DEFAULT_CAPACITY);
             this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
 
@@ -189,6 +193,15 @@ class StructArray implements IStructArrayLayout {
             this._refreshViews();
             if (oldUint8Array) this.uint8.set(oldUint8Array);
         }
+    }
+
+    /**
+     * Indicate a planned increase in size, so that any necessary allocation may
+     * be done once, ahead of time.
+     * @param {number} n The expected number of additional elements added to the array.
+     */
+    reserveForAdditional(n: number) {
+        this.reserve(this.length + n);
     }
 
     /**

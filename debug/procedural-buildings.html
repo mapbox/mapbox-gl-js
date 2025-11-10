@@ -89,39 +89,12 @@
             map.triggerRepaint();
         };
 
-        dbgTrackedParams.registerParameter(params, ["Sun"], "sunBearing", { label: "Bearing Angle", min: 0, max: 360 }, () => {
-            updateSunLight();
-            map.triggerRepaint();
-        });
-        dbgTrackedParams.registerParameter(params, ["Sun"], "sunPolarAngle", { label: "Polar Angle", min: 0, max: 90 }, () => {
-            updateSunLight();
-            map.triggerRepaint();
-        });
-
         map.on('load', () => {
             map.showTileBoundaries = true;
         });
 
         map.on('style.load', () => {
             map.addImport({id: 'procedural-buildings', url: 'procedural-buildings.standard.fragment.json'});
-
-            // Store the original style so we can restore it - e.g. if someone
-            // changed the lighting using one of the other debug options.
-            let styleLights = map.getLights();
-
-            dbgTrackedParams.registerParameter(params, ["Sun"], "lightPreset", {
-                label: "Light Preset",
-                options: {
-                    Dawn: "dawn",
-                    Day: "day",
-                    Dusk: "dusk",
-                    Night: "night",
-                }
-            }, () => {
-                map.setLights(styleLights);
-                map.setConfigProperty("basemap", "lightPreset", params.lightPreset);
-            });
-            map.setConfigProperty("basemap", "lightPreset", params.lightPreset);
         });
 
         let selectedBuilding = null;

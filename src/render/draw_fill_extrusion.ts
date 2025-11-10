@@ -30,6 +30,7 @@ import {mat4} from "gl-matrix";
 import {getCutoffParams} from './cutoff';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
 import browser from '../util/browser';
+import {PerformanceUtils} from '../util/performance';
 
 import type {vec3} from 'gl-matrix';
 import type {UniformValues} from './uniform_binding';
@@ -57,6 +58,8 @@ export default draw;
 type GroundEffectSubpassType = 'clear' | 'sdf' | 'color';
 
 function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
+    const perfStartTime = PerformanceUtils.now();
+
     const opacity = layer.paint.get('fill-extrusion-opacity');
     const context = painter.context;
     const gl = context.gl;
@@ -281,6 +284,8 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             }
         }
     }
+
+    PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_RENDERING, `FillExtrusion.draw(${painter.renderPass})`, "FillExtrusion", perfStartTime);
 }
 
 function drawExtrusionTiles(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>, depthMode: DepthMode, stencilMode: StencilMode, colorMode: ColorMode, replacementActive: boolean) {

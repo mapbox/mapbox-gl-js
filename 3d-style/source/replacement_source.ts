@@ -388,7 +388,7 @@ function transformAabbToTile(min: Point, max: Point, id: UnwrappedTileID): {
 function footprintTrianglesIntersect(
     footprint: Footprint,
     vertices: Array<Point>,
-    indices: Array<number> | Uint16Array,
+    indices: Array<number> | Uint16Array | Uint32Array,
     indexOffset: number,
     indexCount: number,
     baseVertex: number,
@@ -470,7 +470,7 @@ function pointInFootprint(p: Point, footprint: Footprint): boolean {
     footprint.grid.queryPoint(p, candidateTriangles);
 
     // finally check if the point is in any of the triangles.
-    const fpIndices: Array<number> = footprint.indices;
+    const fpIndices = footprint.indices;
     const fpVertices: Array<Point> = footprint.vertices;
     for (let j = 0; j < candidateTriangles.length; j++) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

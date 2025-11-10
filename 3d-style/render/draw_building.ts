@@ -282,7 +282,7 @@ function updateBuildingReplacementsAndTileBorderVisibility(painter: Painter, sou
 }
 
 function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, coords: Array<OverscaledTileID>) {
-    const m = PerformanceUtils.beginMeasure(`Building:draw[${painter.renderPass}]`);
+    const perfStartTime = PerformanceUtils.now();
 
     if (painter.currentLayer < painter.firstLightBeamLayer) {
         painter.firstLightBeamLayer = painter.currentLayer;
@@ -459,5 +459,6 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
     if (painter.shadowRenderer) painter.shadowRenderer.useNormalOffset = false;
     painter.resetStencilClippingMasks();
 
-    PerformanceUtils.endMeasure(m);
+    PerformanceUtils.measureWithDetails(PerformanceUtils.GROUP_RENDERING, `Building.draw(${painter.renderPass})`, "Building", perfStartTime);
+
 }
