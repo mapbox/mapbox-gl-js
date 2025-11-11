@@ -495,6 +495,7 @@ class SymbolBucket implements Bucket {
     lineVertexArray: SymbolLineVertexArray;
     features: Array<SymbolFeature>;
     appearanceFeatureData: Array<AppearanceFeatureData>;
+    featureToAppearanceIndex: {[key: number]: number}; // Maps between filtered feature indexes and appearance feature data indexes
     symbolInstances: SymbolInstanceArray;
     hasAnySecondaryIcon: boolean;
     collisionArrays: Array<CollisionArrays>;
@@ -612,6 +613,7 @@ class SymbolBucket implements Bucket {
         this.hasAnySecondaryIcon = false;
         this.hasAppearances = null;
         this.lastActiveApperance = null;
+        this.featureToAppearanceIndex = {};
     }
 
     hasAnyAppearanceProperty(propertyName: keyof AppearanceProps): boolean {
@@ -860,6 +862,7 @@ class SymbolBucket implements Bucket {
                 sortKey
             };
             this.features.push(symbolFeature);
+            this.featureToAppearanceIndex[index] = this.appearanceFeatureData.length;
 
             // Store minimal data needed for appearance evaluation
             // Use the promoted ID from IndexedFeature (resolved in worker thread) instead of raw feature.id
@@ -990,7 +993,8 @@ class SymbolBucket implements Bucket {
 
         for (let s = 0; s < this.symbolInstances.length; s++) {
             const symbolInstance = this.symbolInstances.get(s);
-            const featureData = this.appearanceFeatureData[symbolInstance.featureIndex];
+            const appearanceFeatureDataIndex = this.featureToAppearanceIndex[symbolInstance.featureIndex];
+            const featureData = appearanceFeatureDataIndex !== undefined ? this.appearanceFeatureData[appearanceFeatureDataIndex] : undefined;
 
             if (featureData && symbolInstance.placedIconSymbolIndex >= 0) {
                 const featureId = featureData.id;

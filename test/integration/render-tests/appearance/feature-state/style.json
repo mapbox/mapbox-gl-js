@@ -2,7 +2,7 @@
   "version": 8,
   "metadata": {
     "test": {
-      "allowed": 0.00043,
+      "allowed": 0.00049,
       "pixelRatio": 2,
       "height": 64,
       "width": 64,
@@ -51,6 +51,20 @@
                 0
               ]
             }
+          },
+          {
+            "id": 3,
+            "type": "Feature",
+            "properties": {
+              "image": "bank-12"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                5
+              ]
+            }
           }
         ]
       }
@@ -80,6 +94,11 @@
             "icon-offset": [10, 10]
           }
         }
+      ],
+      "filter": [
+        ">=",
+        ["id"],
+        2
       ]
     }
   ]
