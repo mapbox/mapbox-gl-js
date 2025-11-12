@@ -221,8 +221,6 @@ export const PerformanceUtils = {
     }
 } as const;
 
-PerformanceUtils.setEnabledGroupsMask(PerformanceUtils.GROUP_COMMON | PerformanceUtils.GROUP_RENDERING);
-
 PerformanceUtils.mark(PerformanceMarkers.libraryEvaluate);
 
 export function getPerformanceMeasurement(request?: RequestParameters | null): Array<PerformanceEntry> {
