@@ -692,7 +692,6 @@ class Tile {
         if (!this.latestFeatureIndex) return;
         if (!painter.style) return;
 
-        const vtLayers = this.latestFeatureIndex.loadVTLayers();
         const availableImages = painter.style.listImages();
         const brightness = painter.style.getBrightness();
 
@@ -703,7 +702,6 @@ class Tile {
             const bucketLayer = bucket.layers[0];
             // Buckets are grouped by common source-layer
             const sourceLayerId = bucketLayer['sourceLayer'] || '_geojsonTileLayer';
-            const sourceLayer = vtLayers[sourceLayerId];
             const sourceCache = painter.style.getLayerSourceCache(bucketLayer);
 
             let sourceLayerStates: FeatureStates = {};
@@ -716,6 +714,8 @@ class Tile {
             bucket.hasAppearances = bucket.layers.some(layer => layer.appearances && layer.appearances.length > 0);
             const layers = withStateUpdates ? bucket.stateDependentLayers : bucket.layers;
             if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged) {
+                const vtLayers = this.latestFeatureIndex.loadVTLayers();
+                const sourceLayer = vtLayers[sourceLayerId];
                 bucket.update(sourceLayerStates, sourceLayer, availableImages, imagePositions, layers, isBrightnessChanged, brightness);
             }
             if ((withStateUpdates && bucket.stateDependentLayers.length !== 0) || isBrightnessChanged || bucket.hasAppearances) {
