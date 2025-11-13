@@ -5,7 +5,6 @@
         "procedural-buildings": {
             "type": "vector",
             "url": "mapbox://mapbox-geodata.procedural-buildings-v1",
-            "maxzoom": 15,
             "promoteId": ["coalesce", ["get", "building_id"], ["id"]]
         }
     },
