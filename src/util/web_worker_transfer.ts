@@ -107,9 +107,6 @@ register(Grid as Class<Grid>, 'Grid');
 // serialize points as objects
 delete Point.prototype.constructor;
 
-if (typeof DOMMatrix !== 'undefined') {
-    register(DOMMatrix, 'DOMMatrix');
-}
 register(Color, 'Color');
 register(Error, 'Error');
 register(Formatted, 'Formatted');
@@ -129,12 +126,7 @@ for (const name in expressions) {
 }
 
 function isArrayBuffer(val: unknown): val is ArrayBuffer {
-    return val && typeof ArrayBuffer !== 'undefined' &&
-           (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
-}
-
-function isImageBitmap(val: unknown): val is ImageBitmap {
-    return self.ImageBitmap && val instanceof ImageBitmap;
+    return val && (val instanceof ArrayBuffer || (val.constructor && val.constructor.name === 'ArrayBuffer'));
 }
 
 /**
@@ -165,7 +157,7 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         return input as Serialized;
     }
 
-    if (isArrayBuffer(input) || isImageBitmap(input)) {
+    if (isArrayBuffer(input) || input instanceof ImageBitmap) {
         if (transferables) {
             transferables.add(input);
         }
@@ -207,16 +199,6 @@ export function serialize(input: unknown, transferables?: Set<Transferable> | nu
         let idx = 0;
         for (const value of input.values()) {
             properties[++idx] = serialize(value);
-        }
-        return properties;
-    }
-
-    if (input instanceof DOMMatrix) {
-        const properties: SerializedObject = {'$name': 'DOMMatrix'};
-        const matrixProperties = ['is2D', 'm11', 'm12', 'm13', 'm14', 'm21', 'm22', 'm23', 'm24', 'm31', 'm32', 'm33', 'm34', 'm41', 'm42', 'm43', 'm44', 'a', 'b', 'c', 'd', 'e', 'f'];
-        for (const property of matrixProperties) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            properties[property] = input[property];
         }
         return properties;
     }
@@ -284,7 +266,7 @@ export function deserialize(input: Serialized): unknown {
         input instanceof Date ||
         input instanceof RegExp ||
         isArrayBuffer(input) ||
-        isImageBitmap(input) ||
+        input instanceof ImageBitmap ||
         ArrayBuffer.isView(input) ||
         input instanceof ImageData) {
         return input;
@@ -315,19 +297,6 @@ export function deserialize(input: Serialized): unknown {
                 set.add(deserialize(value));
             }
             return set;
-        }
-
-        if (name === 'DOMMatrix') {
-            let values;
-            if (input['is2D']) { values = [input['a'], input['b'], input['c'], input['d'], input['e'], input['f']]; } else {
-                values = [input['m11'], input['m12'], input['m13'], input['m14'],
-                    input['m21'], input['m22'], input['m23'], input['m24'],
-                    input['m31'], input['m32'], input['m33'], input['m34'],
-                    input['m41'], input['m42'], input['m43'], input['m44']];
-            }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            const matrix = new DOMMatrix(values);
-            return matrix;
         }
 
         if (name === 'BigInt') {

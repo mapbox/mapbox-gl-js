@@ -90,7 +90,7 @@
             const actualContext = actualCanvas.getContext('2d');
             actualContext.clearRect(0, 0, actualCanvas.width, actualCanvas.height);
 
-            const transform = new DOMMatrix().scale(2);
+            const transform = [2, 0, 0, 2, 0, 0];
             const imageData = renderIcon(icon, {params: {transform}});
             actualCanvas.width = imageData.width;
             actualCanvas.height = imageData.height;

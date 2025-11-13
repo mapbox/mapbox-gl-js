@@ -46,8 +46,8 @@ export class ImagePosition implements SpritePosition {
         if (usvg && imageVariant && imageVariant.options && imageVariant.options.transform) {
             const transform = imageVariant.options.transform;
             return {
-                x: transform.a,
-                y: transform.d
+                x: transform[0],
+                y: transform[3]
             };
         } else {
             return {
@@ -116,7 +116,8 @@ function getImageBin(image: StyleImage, padding: number, scale: [number, number]
 
 export function getImagePosition(id: StringifiedImageVariant, src: StyleImage, padding: number) {
     const imageVariant = ImageVariant.parse(id);
-    const bin = getImageBin(src, padding, [imageVariant.options.transform.a, imageVariant.options.transform.d]);
+    const transform = imageVariant.options.transform;
+    const bin = getImageBin(src, padding, [transform[0], transform[3]]);
     return {bin, imagePosition: new ImagePosition(bin, src, padding, imageVariant), imageVariant};
 }
 

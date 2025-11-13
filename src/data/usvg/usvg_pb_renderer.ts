@@ -67,7 +67,7 @@ export function renderIcon(icon: Icon, options: RasterizationOptions): ImageData
     const naturalWidth = tree.width;
     const naturalHeight = tree.height;
 
-    const tr = options.transform ? options.transform : new DOMMatrix();
+    const tr = new DOMMatrix(options.transform);
 
     const renderedWidth = Math.max(1, Math.round(naturalWidth * tr.a)); // transform.sx
     const renderedHeight = Math.max(1, Math.round(naturalHeight * tr.d)); // transform.sy

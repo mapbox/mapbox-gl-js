@@ -86,7 +86,7 @@ describe('uSVG', async () => {
                         }
                     });
 
-                    const transform = new DOMMatrix().scale(scale);
+                    const transform: [number, number, number, number, number, number] = [scale, 0, 0, scale, 0, 0];
                     const actualImageData = renderIcon(icon, {transform, params: {}});
 
                     // align canvas sizes with the image size

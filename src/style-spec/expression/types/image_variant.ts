@@ -18,7 +18,7 @@ export type StringifiedImageVariant = Brand<string, 'ImageVariant'>;
  */
 export type RasterizationOptions = {
     params?: Record<string, Color>;
-    transform?: DOMMatrix;
+    transform?: [number, number, number, number, number, number];
 };
 
 /**
@@ -34,26 +34,16 @@ export class ImageVariant {
 
     constructor(id: string | ImageIdSpec, options: RasterizationOptions = {}) {
         this.id = ImageId.from(id);
-        this.options = Object.assign({}, options);
-
-        if (!options.transform) {
-            this.options.transform = new DOMMatrix([1, 0, 0, 1, 0, 0]);
-        } else {
-            const {a, b, c, d, e, f} = options.transform;
-            this.options.transform = new DOMMatrix([a, b, c, d, e, f]);
-        }
+        this.options = Object.assign({transform: [1, 0, 0, 1, 0, 0]}, options);
     }
 
     toString(): StringifiedImageVariant {
-        const {a, b, c, d, e, f} = this.options.transform;
-
         const serialized = {
             name: this.id.name,
             iconsetId: this.id.iconsetId,
             params: this.options.params,
-            transform: {a, b, c, d, e, f},
+            transform: this.options.transform,
         };
-
         return JSON.stringify(serialized) as StringifiedImageVariant;
     }
 
@@ -70,13 +60,12 @@ export class ImageVariant {
         if (!name) return null;
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const {a, b, c, d, e, f} = transform || {};
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        return new ImageVariant({name, iconsetId}, {params, transform: new DOMMatrix([a, b, c, d, e, f])});
+        return new ImageVariant({name, iconsetId}, {params, transform});
     }
 
-    scaleSelf(factor: number, yFactor?: number): this {
-        this.options.transform.scaleSelf(factor, yFactor);
+    scaleSelf(factor: number, yFactor: number = factor): this {
+        this.options.transform[0] *= factor;
+        this.options.transform[3] *= yFactor;
         return this;
     }
 }
