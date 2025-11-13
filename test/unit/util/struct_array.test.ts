@@ -6,10 +6,10 @@ import {StructArrayLayout3i6, FeatureIndexArray} from '../../../src/data/array_t
 describe('StructArray', () => {
     class TestArray extends StructArrayLayout3i6 {}
 
-    test('array constructs itself', () => {
+    test('array constructs itself, but does not allocate anything yet', () => {
         const array = new TestArray();
         expect(array.length).toEqual(0);
-        expect(array.arrayBuffer).toBeTruthy();
+        expect(array.arrayBuffer).toBeFalsy();
     });
 
     test('emplaceBack', () => {
@@ -17,6 +17,8 @@ describe('StructArray', () => {
 
         expect(0).toEqual(array.emplaceBack(1, 7, 3));
         expect(1).toEqual(array.emplaceBack(4, 2, 5));
+
+        expect(array.arrayBuffer).toBeTruthy();
 
         expect(array.length).toEqual(2);
 
@@ -60,9 +62,9 @@ describe('StructArray', () => {
 
     test('trims', () => {
         const array = new TestArray();
-        const capacityInitial = array.capacity;
 
         array.emplaceBack(1, 1, 1);
+        const capacityInitial = array.capacity;
         expect(array.capacity).toEqual(capacityInitial);
 
         array._trim();
@@ -74,16 +76,17 @@ describe('StructArray', () => {
 describe('FeatureIndexArray', () => {
     class TestArray extends FeatureIndexArray {}
 
-    test('array constructs itself', () => {
+    test('array constructs itself, but does not allocate anything yet', () => {
         const array = new TestArray();
         expect(array.length).toEqual(0);
-        expect(array.arrayBuffer).toBeTruthy();
+        expect(array.arrayBuffer).toBeFalsy();
     });
 
     test('emplace and retrieve', () => {
         const array = new TestArray();
         expect(0).toEqual(array.emplaceBack(1, 7, 3, 6));
         expect(1).toEqual(array.emplaceBack(4, 2, 5, 9));
+        expect(array.arrayBuffer).toBeTruthy();
 
         expect(array.length).toEqual(2);
 
