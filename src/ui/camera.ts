@@ -63,7 +63,7 @@ import type {LngLatLike, LngLatBoundsLike} from '../geo/lng_lat';
  * @property {PaddingOptions} padding Dimensions in pixels applied on each side of the viewport for shifting the vanishing point.
  * Note that when `padding` is used with `jumpTo`, `easeTo`, and `flyTo`, it also sets the global map padding as a side effect,
  * affecting all subsequent camera movements until the padding is reset. To avoid this, add the `retainPadding: false` option.
- * @property {boolean} retainPadding If `false`, the value provided with the `padding` option will not be retained as the global map padding. This is `true` by default.
+ * @property {boolean} retainPadding If `false`, the value provided with the `padding` option will not be retained as the global map padding. When set to `true` the current camera transform will be modified by the function being called with this option. This is `true` by default.
  * @example
  * // set the map's initial perspective with CameraOptions
  * const map = new mapboxgl.Map({
