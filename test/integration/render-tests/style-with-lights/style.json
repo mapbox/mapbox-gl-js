@@ -1,0 +1,233 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "setStyle",
+          {
+            "version": 8,
+            "imports": [
+              {
+                "id": "basemap",
+                "url": "",
+                "data": {
+                  "type": "basemap",
+                  "schema": {
+                    "lightPreset": {
+                      "default": "day",
+                      "type": "string",
+                      "values": [
+                        "dawn",
+                        "day",
+                        "dusk",
+                        "night"
+                      ]
+                    }
+                  },
+                  "lights": [
+                    {
+                      "id": "ambient",
+                      "type": "ambient",
+                      "properties": {
+                        "color": [
+                          "match",
+                          [
+                            "config",
+                            "lightPreset"
+                          ],
+                          "night",
+                          "hsl(217, 100%, 11%)",
+                          "hsl(0, 0%, 100%)"
+                        ],
+                        "intensity": [
+                          "match",
+                          [
+                            "config",
+                            "lightPreset"
+                          ],
+                          "night",
+                          0.5,
+                          0.8
+                        ],
+                        "color-transition": {
+                          "duration": 0
+                        },
+                        "intensity-transition": {
+                          "duration": 0
+                        }
+                      }
+                    },
+                    {
+                      "id": "directional",
+                      "type": "directional",
+                      "properties": {
+                        "direction": [
+                          "literal",
+                          [
+                            315,
+                            4
+                          ]
+                        ],
+                        "color": [
+                          "match",
+                          [
+                            "config",
+                            "lightPreset"
+                          ],
+                          "night",
+                          "hsl(225, 15%, 29%)",
+                          "hsl(0, 0%, 100%)"
+                        ],
+                         "intensity": [
+                            "match",
+                            [
+                              "config",
+                              "lightPreset"
+                            ],
+                            "night",
+                            0.9,
+                            0.2
+                        ],
+                        "cast-shadows": true,
+                        "shadow-intensity": [
+                          "match",
+                          [
+                            "config",
+                            "lightPreset"
+                          ],
+                          "night",
+                          0.5,
+                          1
+                        ],
+                        "shadow-quality": 0.5,
+                        "color-transition": {
+                          "duration": 0
+                        },
+                        "intensity-transition": {
+                          "duration": 0
+                        },
+                        "direction-transition": {
+                          "duration": 0
+                        }
+                      }
+                    }
+                  ],
+                  "sources": {},
+                  "layers": []
+                },
+                "config": {
+                  "lightPreset": "night"
+                }
+              }
+            ],
+            "sources": {},
+            "layers": [
+              {
+                "id": "background",
+                "type": "background",
+                "paint": {
+                  "background-color": [
+                    "case",
+                    [
+                      "<",
+                      [
+                        "measure-light",
+                        "brightness"
+                      ],
+                      0.28
+                    ],
+                    "blue",
+                    "yellow"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "id": "ambient",
+      "type": "ambient",
+      "properties": {
+        "color": "hsl(0, 0%, 100%)",
+        "intensity": 0.8,
+        "color-transition": {
+          "duration": 0
+        },
+        "intensity-transition": {
+          "duration": 0
+        }
+      }
+    },
+    {
+      "id": "directional",
+      "type": "directional",
+      "properties": {
+        "direction": [
+          "literal",
+          [
+            315,
+            4
+          ]
+        ],
+        "color": "hsl(0, 0%, 100%)",
+        "intensity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          0.2,
+          14,
+          0.2
+        ],
+        "cast-shadows": true,
+        "shadow-intensity": 1,
+        "shadow-quality": 0.5,
+        "color-transition": {
+          "duration": 0
+        },
+        "intensity-transition": {
+          "duration": 0
+        },
+        "direction-transition": {
+          "duration": 0
+        }
+      }
+    }
+  ],
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": [
+          "case",
+          [
+            "<",
+            [
+              "measure-light",
+              "brightness"
+            ],
+            0.28
+          ],
+          "blue",
+          "yellow"
+        ]
+      }
+    }
+  ]
+}
