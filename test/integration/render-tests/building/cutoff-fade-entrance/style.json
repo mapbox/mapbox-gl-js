@@ -1,0 +1,148 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.000699,
+      "height": 256,
+      "width": 256,
+      "operations": [
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "environment",
+      "properties": {
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "sun_light",
+      "properties": {
+        "intensity": 0.6,
+        "cast-shadows": true
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "extrude": "true",
+              "underground": "false",
+              "source_id": 127046656
+            },
+            "id": 127046656,
+            "geometry": {
+              "coordinates": [
+                [
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.13246952281412
+                  ],
+                  [
+                    11.568937291974436,
+                    48.13246952281412
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "min_height": 0,
+              "cross_perc": 0,
+              "source_id": 127046656,
+              "entrances": "[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]",
+              "distance_to_road": 33.34
+            },
+            "id": 127046656,
+            "geometry": {
+              "type": "LineString",
+              "coordinates": 
+                [
+                  [
+                    11.568937291974436,
+                    48.132286810394845
+                  ],
+                  [
+                    11.56931009612731,
+                    48.132286810394845
+                  ]
+                ]
+              }
+          }
+        ]
+      }
+    }
+  },
+  "bearing": 56,
+  "pitch": 70,
+  "zoom": 19.8,
+  "center": [11.567829607470173,
+          48.131815316141825],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "grey"
+      }
+    },
+    {
+      "id": "building",
+      "type": "building",
+      "source": "geojson",
+      "minzoom": 16,
+      "layout": {
+        "building-roof-shape": "parapet",
+        "building-base": 0,
+        "building-height": 10
+      },
+      "paint": {
+        "building-color": [
+          "match",
+          ["get", "building-part"],
+          "wall",
+          ["hsl", 41, 90, 90],
+          "roof",
+          ["hsl", 25, 43, 80],
+          "window",
+          ["hsl", 198, 22.4, 64.1],
+          "door",
+          ["hsl", 0, 100, 100],
+          ["hsl", 41, 90, 90]
+        ],
+        "building-emissive-strength": [
+          "match",
+          ["get", "building-part"],
+          "door",
+          2.5,
+          0
+        ],
+        "building-cutoff-fade-range": 1
+      }
+    }
+  ]
+}

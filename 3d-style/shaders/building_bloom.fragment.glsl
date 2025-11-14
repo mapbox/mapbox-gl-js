@@ -19,5 +19,9 @@ void main() {
     opacity *= saturate(1.0 - distance * distance);
 #endif
 
+#ifdef RENDER_CUTOFF
+    opacity *= v_cutoff_opacity;
+#endif
+
     glFragColor = vec4(v_color_emissive.rgb, 1.0) * opacity;
 }
