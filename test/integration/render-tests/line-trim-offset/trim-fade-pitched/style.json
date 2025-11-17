@@ -1,0 +1,212 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 150,
+      "height": 300
+    }
+  },
+  "zoom": 7.5,
+  "center": [0.4, 0.5],
+  "pitch": 70.0,
+  "sources": {
+    "trim_offset": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 1,
+            "geometry": {
+              "coordinates": [
+                [
+                  0.2,
+                  0.0
+                ],
+                [
+                  0.2,
+                  10.0
+                ]
+              ],
+              "type": "LineString"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 2,
+            "geometry": {
+              "coordinates": [
+                [
+                  0.3,
+                  0.0
+                ],
+                [
+                  0.3,
+                  10.0
+                ]
+              ],
+              "type": "LineString"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 3,
+            "geometry": {
+              "coordinates": [
+                [
+                  0.4,
+                  0.0
+                ],
+                [
+                  0.4,
+                  10.0
+                ]
+              ],
+              "type": "LineString"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 4,
+            "geometry": {
+              "coordinates": [
+                [
+                  0.5,
+                  0.0
+                ],
+                [
+                  0.5,
+                  10.0
+                ]
+              ],
+              "type": "LineString"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {},
+            "id": 5,
+            "geometry": {
+              "coordinates": [
+                [
+                  0.6,
+                  0.0
+                ],
+                [
+                  0.6,
+                  10.0
+                ]
+              ],
+              "type": "LineString"
+            }
+          }
+        ]
+      },
+      "lineMetrics": true
+    }
+  },
+  "layers": [
+    {
+      "id": "bg",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "trim-1",
+      "type": "line",
+      "source": "trim_offset",
+      "filter": ["==", ["id"], 1],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-color": "transparent",
+        "line-gradient": [
+          "interpolate",
+          ["linear"],
+          ["line-progress"],
+          0, "purple",
+          0.1, "royalblue",
+          0.3, "cyan",
+          0.5, "lime",
+          0.7, "yellow",
+          1, "red"
+        ],
+        "line-trim-offset": [0.1, 1.0]
+      }
+    },
+    {
+      "id": "trim-2",
+      "type": "line",
+      "source": "trim_offset",
+      "filter": ["==", ["id"], 2],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-color": "transparent",
+        "line-trim-color": "purple",
+        "line-trim-offset": [0.1, 0.2]
+      }
+    },
+    {
+      "id": "trim-3",
+      "type": "line",
+      "source": "trim_offset",
+      "filter": ["==", ["id"], 3],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-color": "orange",
+        "line-trim-offset": [0.1, 0.5]
+      }
+    },
+    {
+      "id": "trim-4",
+      "type": "line",
+      "source": "trim_offset",
+      "filter": ["==", ["id"], 4],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-color": "transparent",
+        "line-trim-color": "purple",
+        "line-trim-offset": [0.1, 0.2],
+        "line-trim-fade-range": [0.01, 0.01]
+      }
+    },
+    {
+      "id": "trim-5",
+      "type": "line",
+      "source": "trim_offset",
+      "filter": ["==", ["id"], 5],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-width": 10,
+        "line-color": "orange",
+        "line-trim-offset": [0.2, 1.0],
+        "line-trim-fade-range": [0.5, 0.01]
+      }
+    }
+  ]
+}
