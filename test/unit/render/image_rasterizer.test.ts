@@ -65,11 +65,11 @@ describe('ImageRasterizer', () => {
     test('expects returns rasterized image from cache', () => {
         const imageVariant = new ImageVariant('square');
         const imageRasterizer = new ImageRasterizer();
-        const rasterizer = vi.fn();
+        const spy = vi.spyOn(imageRasterizer, 'setInCache');
 
         imageRasterizer.rasterize(imageVariant, image, '', 1);
-        imageRasterizer.rasterize(imageVariant, image, '', 1, rasterizer);
-
-        expect(rasterizer).not.toHaveBeenCalled();
+        expect(spy).toHaveBeenCalledTimes(1);
+        imageRasterizer.rasterize(imageVariant, image, '', 1);
+        expect(spy).toHaveBeenCalledTimes(1);
     });
 });

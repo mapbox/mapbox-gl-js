@@ -18,7 +18,8 @@ export type StringifiedImageVariant = Brand<string, 'ImageVariant'>;
  */
 export type RasterizationOptions = {
     params?: Record<string, Color>;
-    transform?: [number, number, number, number, number, number];
+    sx?: number;
+    sy?: number;
 };
 
 /**
@@ -28,44 +29,42 @@ export type RasterizationOptions = {
  *
  * @private
  */
-export class ImageVariant {
+export class ImageVariant implements RasterizationOptions {
     id: ImageId;
-    options: RasterizationOptions;
+    params?: Record<string, Color>;
+    sx: number;
+    sy: number;
 
     constructor(id: string | ImageIdSpec, options: RasterizationOptions = {}) {
         this.id = ImageId.from(id);
-        this.options = Object.assign({transform: [1, 0, 0, 1, 0, 0]}, options);
+        this.params = options.params;
+        this.sx = options.sx || 1;
+        this.sy = options.sy || 1;
     }
 
     toString(): StringifiedImageVariant {
-        const serialized = {
-            name: this.id.name,
-            iconsetId: this.id.iconsetId,
-            params: this.options.params,
-            transform: this.options.transform,
-        };
-        return JSON.stringify(serialized) as StringifiedImageVariant;
+        return JSON.stringify(this) as StringifiedImageVariant;
     }
 
     static parse(str: StringifiedImageVariant): ImageVariant | null {
-        let name, iconsetId, params, transform;
+        let id, params, sx, sy;
 
         try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            ({name, iconsetId, params, transform} = JSON.parse(str) || {});
+            ({id, params, sx, sy} = JSON.parse(str) || {});
         } catch (e) {
             return null;
         }
 
-        if (!name) return null;
+        if (!id) return null;
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        return new ImageVariant({name, iconsetId}, {params, transform});
+        return new ImageVariant(id as ImageIdSpec, {params, sx, sy});
     }
 
     scaleSelf(factor: number, yFactor: number = factor): this {
-        this.options.transform[0] *= factor;
-        this.options.transform[3] *= yFactor;
+        this.sx *= factor;
+        this.sy *= yFactor;
         return this;
     }
 }

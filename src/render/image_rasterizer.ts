@@ -4,10 +4,9 @@ import {LRUCache} from '../util/lru';
 import {makeFQID} from '../util/fqid';
 
 import type {FQID} from '../util/fqid';
-import type {Icon} from '../data/usvg/usvg_pb_decoder';
 import type {StyleImage} from '../style/style_image';
 import type {ImageId, StringifiedImageId} from '../style-spec/expression/types/image_id';
-import type {ImageVariant, StringifiedImageVariant, RasterizationOptions} from '../style-spec/expression/types/image_variant';
+import type {ImageVariant, StringifiedImageVariant} from '../style-spec/expression/types/image_variant';
 
 const MAX_CACHE_SIZE = 150;
 
@@ -74,13 +73,13 @@ export class ImageRasterizer {
         }
     }
 
-    rasterize(imageVariant: ImageVariant, image: StyleImage, scope: string, mapId: number, rasterize: (icon: Icon, options: RasterizationOptions) => ImageData = renderIcon): RGBAImage {
+    rasterize(imageVariant: ImageVariant, image: StyleImage, scope: string, mapId: number): RGBAImage {
         const cachedImage = this.getFromCache(imageVariant, scope, mapId);
         if (cachedImage) {
             return cachedImage.clone();
         }
 
-        const imageData = rasterize(image.icon, imageVariant.options);
+        const imageData = renderIcon(image.icon, imageVariant);
         const imageResult = ImageRasterizer._getImage(imageData);
 
         this.setInCache(imageVariant, imageResult, scope, mapId);

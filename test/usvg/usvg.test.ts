@@ -86,8 +86,7 @@ describe('uSVG', async () => {
                         }
                     });
 
-                    const transform: [number, number, number, number, number, number] = [scale, 0, 0, scale, 0, 0];
-                    const actualImageData = renderIcon(icon, {transform, params: {}});
+                    const actualImageData = renderIcon(icon, {sx: scale, sy: scale, params: {}});
 
                     // align canvas sizes with the image size
                     diffCanvas.width = actualCanvas.width = expectedCanvas.width = actualImageData.width;
