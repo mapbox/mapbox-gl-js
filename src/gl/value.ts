@@ -520,6 +520,13 @@ class FramebufferAttachment<T> extends BaseValue<T | null | undefined> {
 }
 
 export class ColorAttachment extends FramebufferAttachment<WebGLTexture> {
+    attachmentPoint: number;
+
+    constructor(context: Context, parent: WebGLFramebuffer, attachmentIndex: number = 0) {
+        super(context, parent);
+        this.attachmentPoint = context.gl.COLOR_ATTACHMENT0 + attachmentIndex;
+    }
+
     setDirty() {
         this.dirty = true;
     }
@@ -530,7 +537,7 @@ export class ColorAttachment extends FramebufferAttachment<WebGLTexture> {
         // note: it's possible to attach a renderbuffer to the color
         // attachment point, but thus far MBGL only uses textures for color
         const gl = this.gl;
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, v, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, this.attachmentPoint, gl.TEXTURE_2D, v, 0);
         this.current = v;
         this.dirty = false;
     }

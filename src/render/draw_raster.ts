@@ -74,7 +74,8 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     const gl = context.gl;
     const source = sourceCache.getSource();
 
-    const rasterConfig = configureRaster(source, layer, context, gl);
+    const mrt = painter.terrain && painter.terrain.renderingToTexture && painter.emissiveMode === 'mrt-fallback';
+    const rasterConfig = configureRaster(source, layer, context, gl, mrt);
 
     if (source instanceof ImageSource && !tileIDs.length) {
         if (!isGlobeProjection) {
@@ -468,6 +469,7 @@ function configureRaster(
     layer: RasterStyleLayer,
     context: Context,
     gl: WebGL2RenderingContext,
+    mrt: boolean
 ): RasterConfig {
     const isRasterColor = layer.paint.get('raster-color');
     const isRasterArray = source.type === 'raster-array';
@@ -521,6 +523,10 @@ function configureRaster(
         let tex = layer.colorRampTexture;
         if (!tex) tex = layer.colorRampTexture = new Texture(context, layer.colorRamp, gl.RGBA8);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+    }
+
+    if (mrt) {
+        defines.push('USE_MRT1');
     }
 
     return {

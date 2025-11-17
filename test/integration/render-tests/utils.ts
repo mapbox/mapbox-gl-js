@@ -166,6 +166,11 @@ export async function renderMap(style, options, currentTestName) {
         testMode: true
     });
 
+    if (options.forceEmissiveFallback && mapRef.current) {
+        mapRef.current.painter._forceEmissiveMode = true;
+        mapRef.current.painter.emissiveMode = 'mrt-fallback';
+    }
+
     mapRef.current?.on('error', (e) => {
         errors.push({error: e.error.message, stack: e.error.stack});
 

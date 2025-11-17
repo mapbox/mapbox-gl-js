@@ -44,8 +44,6 @@ float luminance(vec3 c) {
     return (c.r + c.r + c.b + c.g + c.g + c.g) * 0.1667;
 }
 
-uniform float u_emissive_strength;
-
 #pragma mapbox: define highp vec4 color
 #pragma mapbox: define lowp float floorwidth
 #pragma mapbox: define lowp vec4 dash
@@ -54,6 +52,7 @@ uniform float u_emissive_strength;
 #pragma mapbox: define mediump float side_z_offset
 #pragma mapbox: define lowp float border_width
 #pragma mapbox: define lowp vec4 border_color
+#pragma mapbox: define lowp float emissive_strength
 
 float linearstep(float edge0, float edge1, float x) {
     return  clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
@@ -68,6 +67,7 @@ void main() {
     #pragma mapbox: initialize mediump float side_z_offset
     #pragma mapbox: initialize lowp float border_width
     #pragma mapbox: initialize lowp vec4 border_color
+    #pragma mapbox: initialize lowp float emissive_strength
 
     // Calculate the distance of the pixel from the line in pixels.
     float dist = length(v_normal) * v_width2.s;
@@ -140,7 +140,7 @@ void main() {
 #endif
 
 #ifdef LIGHTING_3D_MODE
-    out_color = apply_lighting_with_emission_ground(out_color, u_emissive_strength);
+    out_color = apply_lighting_with_emission_ground(out_color, emissive_strength);
 #ifdef RENDER_SHADOWS
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
 #ifdef ELEVATED_ROADS
@@ -165,6 +165,13 @@ void main() {
 #endif
 
     glFragColor = out_color;
+#ifdef DUAL_SOURCE_BLENDING
+    glFragColorSrc1 = vec4(vec3(0.0), emissive_strength);
+#else
+#ifdef USE_MRT1
+    out_Target1 = vec4(emissive_strength * glFragColor.a, 0.0, 0.0, glFragColor.a);
+#endif
+#endif
 
 #ifdef OVERDRAW_INSPECTOR
     glFragColor = vec4(1.0);

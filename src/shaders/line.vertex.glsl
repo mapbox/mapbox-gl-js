@@ -89,6 +89,7 @@ out highp float v_depth;
 #pragma mapbox: define mediump float side_z_offset
 #pragma mapbox: define lowp float border_width
 #pragma mapbox: define lowp vec4 border_color
+#pragma mapbox: define lowp float emissive_strength
 
 void main() {
     #pragma mapbox: initialize highp vec4 color
@@ -102,6 +103,7 @@ void main() {
     #pragma mapbox: initialize mediump float side_z_offset
     #pragma mapbox: initialize lowp float border_width
     #pragma mapbox: initialize lowp vec4 border_color
+    #pragma mapbox: initialize lowp float emissive_strength
 
     float a_z_offset;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)

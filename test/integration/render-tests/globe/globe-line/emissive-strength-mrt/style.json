@@ -1,0 +1,128 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 128,
+      "width": 128,
+      "forceEmissiveFallback": true,
+      "operations": [
+        ["setProjection", "globe"],
+        ["wait"]
+      ]
+    }
+  },
+  "center": [0, 0],
+  "zoom": 0.5,
+  "pitch": 0,
+  "bearing": 0,
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(10, 30, 170, 1)",
+        "intensity": 1.0
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)"
+      }
+    }
+  ],
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "line-1"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [0, 20],
+                [20, 0]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "line-2"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [20, 0],
+                [0, -20]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "line-3"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [0, -20],
+                [-20, 0]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "id": "line-4"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [-20, 0],
+                [0, 20]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "black"
+      }
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "white",
+        "line-width": 8,
+        "line-opacity": 1,
+        "line-emissive-strength": [
+          "match",
+          ["get", "id"],
+          "line-1", 0.2,
+          "line-2", 0.5,
+          "line-3", 0.8,
+          "line-4", 1.0,
+          0.0
+        ]
+      }
+    }
+  ]
+}

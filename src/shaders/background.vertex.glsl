@@ -4,11 +4,11 @@
 in vec2 a_pos;
 
 uniform mat4 u_matrix;
+uniform mediump float u_emissive_strength;
 
 #ifdef LIGHTING_3D_MODE
 uniform mediump vec4 u_color;
 out vec4 v_color;
-uniform float u_emissive_strength;
 #endif
 
 void main() {

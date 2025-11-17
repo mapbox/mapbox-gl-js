@@ -58,7 +58,7 @@ export type PaintProps = {
     "line-trim-offset": DataConstantProperty<[number, number]>;
     "line-trim-fade-range": DataConstantProperty<[number, number]>;
     "line-trim-color": DataConstantProperty<Color>;
-    "line-emissive-strength": DataConstantProperty<number>;
+    "line-emissive-strength": DataDrivenProperty<number>;
     "line-border-width": DataDrivenProperty<number>;
     "line-border-color": DataDrivenProperty<Color>;
     "line-occlusion-opacity": DataConstantProperty<number>;
@@ -85,7 +85,7 @@ export const getPaintProperties = (): Properties<PaintProps> => paint || (paint 
     "line-trim-offset": new DataConstantProperty(styleSpec["paint_line"]["line-trim-offset"]),
     "line-trim-fade-range": new DataConstantProperty(styleSpec["paint_line"]["line-trim-fade-range"]),
     "line-trim-color": new DataConstantProperty(styleSpec["paint_line"]["line-trim-color"]),
-    "line-emissive-strength": new DataConstantProperty(styleSpec["paint_line"]["line-emissive-strength"]),
+    "line-emissive-strength": new DataDrivenProperty(styleSpec["paint_line"]["line-emissive-strength"]),
     "line-border-width": new DataDrivenProperty(styleSpec["paint_line"]["line-border-width"]),
     "line-border-color": new DataDrivenProperty(styleSpec["paint_line"]["line-border-color"]),
     "line-occlusion-opacity": new DataConstantProperty(styleSpec["paint_line"]["line-occlusion-opacity"]),

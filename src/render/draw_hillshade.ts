@@ -59,10 +59,15 @@ function renderHillshade(painter: Painter, coord: OverscaledTileID, tile: Tile, 
     painter.prepareDrawTile();
 
     const affectedByFog = painter.isTileAffectedByFog(coord);
-    const program = painter.getOrCreateProgram('hillshade', {overrideFog: affectedByFog});
+    const definesValues: DynamicDefinesType[] = [];
+    const isDraping = painter.terrain && painter.terrain.renderingToTexture;
+    if (isDraping && painter.emissiveMode === 'mrt-fallback') {
+        definesValues.push('USE_MRT1');
+    }
+    const program = painter.getOrCreateProgram('hillshade', {overrideFog: affectedByFog, defines: definesValues});
 
     context.activeTexture.set(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
+    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment0.get());
 
     const uniformValues = hillshadeUniformValues(painter, tile, layer, painter.terrain ? coord.projMatrix : null);
 
@@ -116,8 +121,8 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
         const renderTexture = new Texture(context, {width: tileSize, height: tileSize, data: null}, gl.RGBA8);
         renderTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
 
-        fbo = tile.hillshadeFBO = context.createFramebuffer(tileSize, tileSize, true, 'renderbuffer');
-        fbo.colorAttachment.set(renderTexture.texture);
+        fbo = tile.hillshadeFBO = context.createFramebuffer(tileSize, tileSize, 1, 'renderbuffer');
+        fbo.colorAttachment0.set(renderTexture.texture);
     }
 
     context.bindFramebuffer.set(fbo.framebuffer);
@@ -127,6 +132,11 @@ function prepareHillshade(painter: Painter, tile: Tile, layer: HillshadeStyleLay
 
     const definesValues: DynamicDefinesType[] = [];
     if (painter.linearFloatFilteringSupported()) definesValues.push('TERRAIN_DEM_FLOAT_FORMAT');
+
+    const isDraping = painter.terrain && painter.terrain.renderingToTexture;
+    if (isDraping && painter.emissiveMode === 'mrt-fallback') {
+        definesValues.push('USE_MRT1');
+    }
 
     painter.getOrCreateProgram('hillshadePrepare', {defines: definesValues}).draw(painter, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, ColorMode.unblended, CullFaceMode.disabled,

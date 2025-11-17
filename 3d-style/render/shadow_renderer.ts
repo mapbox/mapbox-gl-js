@@ -243,13 +243,13 @@ export class ShadowRenderer {
                 const useColor = painter._shadowMapDebug;
 
                 const gl = context.gl;
-                const fbo = context.createFramebuffer(width, height, useColor, 'texture');
+                const fbo = context.createFramebuffer(width, height, useColor ? 1 : 0, 'texture');
                 const depthTexture = new Texture(context, {width, height, data: null}, gl.DEPTH_COMPONENT16);
                 fbo.depthAttachment.set(depthTexture.texture);
 
                 if (useColor) {
                     const colorTexture = new Texture(context, {width, height, data: null}, gl.RGBA8);
-                    fbo.colorAttachment.set(colorTexture.texture);
+                    fbo.colorAttachment0.set(colorTexture.texture);
                 }
 
                 this._cascades.push({

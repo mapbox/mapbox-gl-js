@@ -24,6 +24,9 @@ void main() {
 #endif
 
     glFragColor = out_color * u_opacity;
+#ifdef USE_MRT1
+    out_Target1 = vec4(u_emissive_strength * glFragColor.a, 0.0, 0.0, glFragColor.a);
+#endif
 
 #ifdef OVERDRAW_INSPECTOR
     glFragColor = vec4(1.0);

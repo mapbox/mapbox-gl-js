@@ -221,6 +221,7 @@ type OverlapStencilType = false | 'Clip' | 'Mask';
 type FBO = {
     fb: Framebuffer;
     tex: Texture;
+    emissiveTex?: Texture;
     dirty: boolean;
 };
 
@@ -291,6 +292,8 @@ export class Terrain extends Elevation {
     _pendingGroundEffectLayers: Array<number>;
     framebufferCopyTexture: Texture | null | undefined;
 
+    _emissiveTexture: boolean;
+
     _debugParams: {
         sortTilesHiZFirst: boolean;
         disableRenderCache: boolean;
@@ -346,6 +349,7 @@ export class Terrain extends Elevation {
         this._exaggeration = 1;
         this._mockSourceCache = new MockSourceCache(style.map);
         this._pendingGroundEffectLayers = [];
+        this._emissiveTexture = false;
     }
 
     set style(style: Style) {
@@ -883,6 +887,9 @@ export class Terrain extends Elevation {
 
         const accumulatedDrapes = [];
 
+        const needsEmissiveTexture = painter.emissiveMode === 'mrt-fallback';
+        this._updateFBOs(needsEmissiveTexture);
+
         let poolIndex = 0;
         for (const proxy of proxies) {
             // bind framebuffer and assign texture to the tile (texture used in drawTerrainRaster).
@@ -892,6 +899,7 @@ export class Terrain extends Elevation {
             const useRenderCache = renderCacheIndex !== undefined;
 
             tile.texture = fbo.tex;
+            tile.emissiveTexture = fbo.emissiveTex;
 
             if (useRenderCache && !fbo.dirty) {
                 // Use cached render from previous pass, no need to render again.
@@ -900,6 +908,15 @@ export class Terrain extends Elevation {
             }
 
             context.bindFramebuffer.set(fbo.fb.framebuffer);
+
+            const gl = context.gl;
+            if (painter.emissiveMode === 'mrt-fallback') {
+                assert(fbo.emissiveTex);
+                gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+            } else {
+                gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+            }
+
             this.renderedToTile = false; // reset flag.
             if (fbo.dirty) {
                 // Clear on start.
@@ -926,6 +943,9 @@ export class Terrain extends Elevation {
                 }
                 painter.renderLayer(painter, sourceCache, layer, coords);
             }
+
+            // Reset to single draw buffer
+            gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
 
             const isLastBatch = this._drapedRenderBatches.length === 0;
             if (isLastBatch) {
@@ -1062,8 +1082,18 @@ export class Terrain extends Elevation {
         context.activeTexture.set(gl.TEXTURE0);
         const tex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, gl.RGBA8);
         tex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-        const fb = context.createFramebuffer(bufferSize[0], bufferSize[1], true, null);
-        fb.colorAttachment.set(tex.texture);
+
+        const fb = context.createFramebuffer(bufferSize[0], bufferSize[1], 1, null);
+        fb.colorAttachment0.set(tex.texture);
+
+        let emissiveTex: Texture | undefined;
+        if (this._emissiveTexture) {
+            emissiveTex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, gl.R8);
+            emissiveTex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            fb.createColorAttachment(context, 1);
+            fb.colorAttachment1.set(emissiveTex.texture);
+        }
+
         fb.depthAttachment = new DepthStencilAttachment(context, fb.framebuffer);
 
         if (this._sharedDepthStencil === undefined) {
@@ -1081,7 +1111,41 @@ export class Terrain extends Elevation {
                 context.extTextureFilterAnisotropicMax);
         }
 
-        return {fb, tex, dirty: false};
+        return {fb, tex, emissiveTex, dirty: false};
+    }
+
+    _updateFBOs(needsEmissiveTexture: boolean) {
+        if (this._emissiveTexture === needsEmissiveTexture) return;
+
+        for (const fbo of this.pool) {
+            this._updateFBO(fbo, needsEmissiveTexture);
+        }
+        for (const fbo of this.proxySourceCache.renderCache) {
+            this._updateFBO(fbo, needsEmissiveTexture);
+        }
+
+        this._emissiveTexture = needsEmissiveTexture;
+    }
+
+    _updateFBO(fbo: FBO, needsEmissiveTexture: boolean) {
+        assert(!!fbo.emissiveTex !== needsEmissiveTexture);
+
+        const fb = fbo.fb;
+        const context = this.painter.context;
+        const gl = context.gl;
+        const bufferSize = this.drapeBufferSize;
+        if (needsEmissiveTexture) {
+            const emissiveTex = new Texture(context, {width: bufferSize[0], height: bufferSize[1], data: null}, gl.R8);
+            emissiveTex.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            fbo.emissiveTex = emissiveTex;
+            fb.createColorAttachment(context, 1);
+            fb.colorAttachment1.set(emissiveTex.texture);
+        } else {
+            fbo.emissiveTex = undefined;
+            fb.removeColorAttachment(context, 1);
+        }
+
+        fbo.dirty = true;
     }
 
     _initFBOPool() {
@@ -1140,9 +1204,11 @@ export class Terrain extends Elevation {
             const isHidden = layer.isHidden(this.painter.transform.zoom);
             if (isHidden || layer.type !== 'line') continue;
 
-            // Check if layer has a zoom dependent "line-width" expression
+            // Check if layer has a zoom dependent "line-width" or "line-emissive-strength" expression
             const widthExpression = layer.widthExpression();
-            if (!(widthExpression instanceof ZoomDependentExpression)) continue;
+            const emissiveStrengthExpression = layer.emissiveStrengthExpression();
+            if (!(widthExpression instanceof ZoomDependentExpression) &&
+                !(emissiveStrengthExpression instanceof ZoomDependentExpression)) continue;
 
             // Mark sourceCache as cleared
             clearSourceCaches[sourceCache.id] = true;

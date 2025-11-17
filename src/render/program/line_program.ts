@@ -27,7 +27,6 @@ export type LineUniformsType = {
     ['u_trim_offset']: Uniform2f;
     ['u_trim_fade_range']: Uniform2f;
     ['u_trim_color']: Uniform4f;
-    ['u_emissive_strength']: Uniform1f;
     ['u_zbias_factor']: Uniform1f;
     ['u_tile_to_meter']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
@@ -47,14 +46,13 @@ export type LinePatternUniformsType = {
     ['u_trim_offset']: Uniform2f;
     ['u_trim_fade_range']: Uniform2f;
     ['u_trim_color']: Uniform4f;
-    ['u_emissive_strength']: Uniform1f;
     ['u_zbias_factor']: Uniform1f;
     ['u_tile_to_meter']: Uniform1f;
     ['u_ground_shadow_factor']: Uniform3f;
     ['u_pattern_transition']: Uniform1f;
 };
 
-export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'VARIABLE_LINE_WIDTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA' | 'LINE_PATTERN_TRANSITION';
+export type LineDefinesType = 'RENDER_LINE_GRADIENT' | 'RENDER_LINE_DASH' | 'RENDER_LINE_TRIM_OFFSET' | 'RENDER_LINE_BORDER' | 'LINE_JOIN_NONE' | 'ELEVATED' | 'VARIABLE_LINE_WIDTH' | 'CROSS_SLOPE_VERTICAL' | 'CROSS_SLOPE_HORIZONTAL' | 'ELEVATION_REFERENCE_SEA' | 'LINE_PATTERN_TRANSITION' | 'USE_MRT1' | 'DUAL_SOURCE_BLENDING';
 
 const lineUniforms = (context: Context): LineUniformsType => ({
     'u_matrix': new UniformMatrix4f(context),
@@ -72,7 +70,6 @@ const lineUniforms = (context: Context): LineUniformsType => ({
     'u_trim_offset': new Uniform2f(context),
     'u_trim_fade_range': new Uniform2f(context),
     'u_trim_color': new Uniform4f(context),
-    'u_emissive_strength': new Uniform1f(context),
     'u_zbias_factor': new Uniform1f(context),
     'u_tile_to_meter': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
@@ -92,7 +89,6 @@ const linePatternUniforms = (context: Context): LinePatternUniformsType => ({
     'u_trim_offset': new Uniform2f(context),
     'u_trim_fade_range': new Uniform2f(context),
     'u_trim_color': new Uniform4f(context),
-    'u_emissive_strength': new Uniform1f(context),
     'u_zbias_factor': new Uniform1f(context),
     'u_tile_to_meter': new Uniform1f(context),
     'u_ground_shadow_factor': new Uniform3f(context),
@@ -139,7 +135,6 @@ const lineUniformValues = (
         'u_trim_offset': trimOffset,
         'u_trim_fade_range': layer.paint.get('line-trim-fade-range'),
         'u_trim_color': layer.paint.get('line-trim-color').toPremultipliedRenderColor(ignoreLut ? null : layer.lut).toArray01(),
-        'u_emissive_strength': layer.paint.get('line-emissive-strength'),
         'u_zbias_factor': zbiasFactor,
         'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0),
         'u_ground_shadow_factor': groundShadowFactor,
@@ -182,7 +177,6 @@ const linePatternUniformValues = (
         'u_trim_offset': trimOffset,
         'u_trim_fade_range': layer.paint.get('line-trim-fade-range'),
         'u_trim_color': layer.paint.get('line-trim-color').toPremultipliedRenderColor(ignoreLut ? null : layer.lut).toArray01(),
-        'u_emissive_strength': layer.paint.get('line-emissive-strength'),
         'u_zbias_factor': zbiasFactor,
         'u_tile_to_meter': tileToMeter(tile.tileID.canonical, 0.0),
         'u_ground_shadow_factor': groundShadowFactor,

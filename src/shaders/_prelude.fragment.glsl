@@ -1,6 +1,16 @@
 // NOTE: This prelude is injected in the fragment shader only
 
-out vec4 glFragColor;
+// DUAL_SOURCE_BLENDING and USE_MRT1 are mutually exclusive. Please define only one.
+#ifdef DUAL_SOURCE_BLENDING
+layout(location = 0, index = 0) out vec4 glFragColor;
+layout(location = 0, index = 1) out vec4 glFragColorSrc1;
+#else
+layout(location = 0) out vec4 glFragColor;
+#endif
+
+#ifdef USE_MRT1
+layout(location = 1) out vec4 out_Target1;
+#endif
 
 highp float unpack_depth(highp vec4 rgba_depth)
 {

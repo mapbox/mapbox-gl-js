@@ -55,7 +55,7 @@ import type {Bucket} from '../data/bucket';
 
 export default draw;
 
-type GroundEffectSubpassType = 'clear' | 'sdf' | 'color';
+type GroundEffectSubpassType = 'clear' | 'sdf' | 'color' | 'emissive';
 
 function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLayer, coords: Array<OverscaledTileID>) {
     const perfStartTime = PerformanceUtils.now();
@@ -68,6 +68,8 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
     if (opacity === 0) {
         return;
     }
+
+    const mrt = painter.emissiveMode === 'mrt-fallback';
 
     // Update replacement used with model layer conflation
     const conflateLayer = painter.conflationActive && painter.style.isLayerClipped(layer, source.getSource());
@@ -192,9 +194,24 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             };
 
             if (rtt) {
-                const passDraped = (aoPass: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture) => {
-                    assert(framebufferCopyTexture);
+                const createFramebufferCopyTexture = () => {
+                    const width = terrain.drapeBufferSize[0];
+                    const height = terrain.drapeBufferSize[1];
+                    let framebufferCopyTexture = terrain.framebufferCopyTexture;
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    if (!framebufferCopyTexture || (framebufferCopyTexture && (framebufferCopyTexture.size[0] !== width || framebufferCopyTexture.size[1] !== height))) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                        if (framebufferCopyTexture) framebufferCopyTexture.destroy();
+                        framebufferCopyTexture = terrain.framebufferCopyTexture = new Texture(context,
+                            new RGBAImage({width, height}), gl.RGBA8);
+                    }
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                    framebufferCopyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+                    gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
+                    return framebufferCopyTexture;
+                };
 
+                const passDraped = (aoPass: boolean, renderNeighbors: boolean, framebufferCopyTexture?: Texture) => {
                     const depthMode = painter.depthModeForSublayer(1, DepthMode.ReadOnly, gl.LEQUAL, false);
                     const t = aoPass ? layer.paint.get('fill-extrusion-ambient-occlusion-ground-attenuation') : layer.paint.get('fill-extrusion-flood-light-ground-attenuation');
 
@@ -215,6 +232,12 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilSdfPass, colorSdfPass, CullFaceMode.disabled, aoPass, 'sdf', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors);
                     }
 
+                    if (mrt && !aoPass) {
+                        // Save the alpha channel with the DF values, so it can be used later in the 'emissive' pass.
+                        framebufferCopyTexture = createFramebufferCopyTexture();
+                    }
+                    assert(framebufferCopyTexture);
+
                     {
                         // Draw the effects. The inverse of the alpha channel is used so that in the next pass we can correctly incorporate it with the emissive strength values that are also encoded in the alpha channel (now present in the texture).
                         const srcColorFactor = aoPass ? gl.ZERO : gl.ONE_MINUS_DST_ALPHA; // For AO, it's enough to multiply the color with the intensity.
@@ -224,7 +247,7 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'color', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors);
                     }
 
-                    {
+                    if (!mrt || aoPass) {
                         // Re-write to the alpha channel of the framebuffer based on existing values (of ground effects) and emissive values (saved to texture in earlier step).
                         // Note that in draped mode an alpha value of 1 indicates fully emissiveness for a fragment and a value of 0 means fully lit (3d lighting).
 
@@ -234,28 +257,28 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                         const colorMode = new ColorMode([gl.ONE, gl.ONE, gl.ONE, dstAlphaFactor], Color.transparent, [false, false, false, true], blendEquation);
 
                         drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled, aoPass, 'clear', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors, framebufferCopyTexture);
+                    } else {
+                        // Write emissive values to the secondary render target. This is a fallback for dual-source blending not being available.
+                        // The emissive strength values are read from the 'framebufferCopyTexture' and are blended with the existing emissive values using gl.MAX.
+                        // This pass is required because it's not possible to render to multiple render targets with different blend modes.
+                        gl.drawBuffers([gl.NONE, gl.COLOR_ATTACHMENT1]);
+                        const stencilColorPass = new StencilMode({func: gl.EQUAL, mask: 0xFF}, 0xFE, 0xFF, gl.KEEP, gl.DECR, gl.DECR);
+                        const colorColorPass = new ColorMode([gl.ONE, gl.ONE, gl.ONE, gl.ONE], Color.transparent, [true, false, false, false], gl.MAX);
+
+                        drawGroundEffect(groundEffectProps, painter, source, layer, coords, depthMode, stencilColorPass, colorColorPass, CullFaceMode.disabled, aoPass, 'emissive', opacity, aoIntensity, aoRadius, floodLightIntensity, floodLightColor, attenuation, conflateLayer, renderNeighbors, framebufferCopyTexture);
+                        gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
                     }
                 };
 
                 if (aoEnabled || floodLightEnabled) {
                     painter.prepareDrawTile();
-                    let framebufferCopyTexture;
-                    // Save the alpha channel of the framebuffer used by emissive layers.
-                    if (terrain) { // Condition is anywyas guaranteed by rtt variable. Used only to suppress flow errors.
-                        const width = terrain.drapeBufferSize[0];
-                        const height = terrain.drapeBufferSize[1];
-                        framebufferCopyTexture = terrain.framebufferCopyTexture;
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                        if (!framebufferCopyTexture || (framebufferCopyTexture && (framebufferCopyTexture.size[0] !== width || framebufferCopyTexture.size[1] !== height))) {
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                            if (framebufferCopyTexture) framebufferCopyTexture.destroy();
-                            framebufferCopyTexture = terrain.framebufferCopyTexture = new Texture(context,
-                                new RGBAImage({width, height}), gl.RGBA8);
-                        }
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                        framebufferCopyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-                        gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
+
+                    let framebufferCopyTexture: Texture | undefined;
+                    if (!mrt || aoEnabled) {
+                        // Save the alpha channel of the framebuffer used by emissive layers.
+                        framebufferCopyTexture = createFramebufferCopyTexture();
                     }
+
                     // Render ground AO.
                     if (aoEnabled) {
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -544,6 +567,10 @@ export function drawGroundEffect<StyleLayerType extends TypedStyleLayer>(props: 
         }
     } else if (subpass === 'sdf') {
         defines.push('SDF_SUBPASS');
+    } else if (subpass === 'emissive') {
+        defines.push('USE_MRT1');
+        context.activeTexture.set(gl.TEXTURE0);
+        framebufferCopyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
     }
     if (replacementActive) {
         defines.push('HAS_CENTROID');

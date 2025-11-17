@@ -742,7 +742,7 @@ export type LineLayerSpecification = {
         "line-trim-color"?: PropertyValueSpecification<ColorSpecification>,
         "line-trim-color-transition"?: TransitionSpecification,
         "line-trim-color-use-theme"?: PropertyValueSpecification<string>,
-        "line-emissive-strength"?: PropertyValueSpecification<number>,
+        "line-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
         "line-emissive-strength-transition"?: TransitionSpecification,
         "line-border-width"?: DataDrivenPropertyValueSpecification<number>,
         "line-border-width-transition"?: TransitionSpecification,

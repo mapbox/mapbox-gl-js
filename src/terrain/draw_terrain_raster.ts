@@ -194,6 +194,10 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
                 vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
             }
 
+            if (tile.emissiveTexture) {
+                context.activeTexture.set(gl.TEXTURE1);
+                tile.emissiveTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+            }
             // Bind the main draped texture
             context.activeTexture.set(gl.TEXTURE0);
             if (tile.texture) {
@@ -211,10 +215,11 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             const latitudinalLod = getLatitudinalLod(tileBounds.getCenter().lat);
             const gridMatrix = getGridMatrix(coord.canonical, tileBounds, latitudinalLod, tr.worldSize / tr._pixelsPerMercatorPixel);
             const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
+            const emissiveTexture = painter.emissiveMode === 'mrt-fallback' ? 1.0 : 0.0;
             const uniformValues = globeRasterUniformValues(
                 tr.expandedFarZProjMatrix, globeMatrix, globeMercatorMatrix, normalizeMatrix, globeToMercatorTransition(tr.zoom),
                 mercatorCenter, tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR,
-                tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, skirtHeightValue, tr._farZ, gridMatrix);
+                tr.frustumCorners.BL, tr.globeCenterInViewSpace, tr.globeRadius, viewport, skirtHeightValue, tr._farZ, emissiveTexture, gridMatrix);
 
             setShaderMode(coord, shaderMode);
             if (!program) {
@@ -251,6 +256,10 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
             if (segment && (topCap || bottomCap)) {
                 const tile = sourceCache.getTile(coord);
 
+                if (tile.emissiveTexture) {
+                    context.activeTexture.set(gl.TEXTURE1);
+                    tile.emissiveTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+                }
                 // Bind the main draped texture
                 context.activeTexture.set(gl.TEXTURE0);
                 if (tile.texture) {
@@ -259,12 +268,13 @@ function drawTerrainForGlobe(painter: Painter, terrain: Terrain, sourceCache: So
 
                 let poleMatrix = globePoleMatrixForTile(z, x, tr);
                 const normalizeMatrix = globeNormalizeECEF(globeTileBounds(coord.canonical));
+                const emissiveTexture = painter.emissiveMode === 'mrt-fallback' ? 1.0 : 0.0;
 
                 const drawPole = (program: Program<GlobeRasterUniformsType>, vertexBuffer: VertexBuffer) => program.draw(
                     painter, gl.TRIANGLES, depthMode, StencilMode.disabled, colorMode, CullFaceMode.disabled,
                     globeRasterUniformValues(tr.expandedFarZProjMatrix, poleMatrix, poleMatrix, normalizeMatrix, 0.0, mercatorCenter,
                     tr.frustumCorners.TL, tr.frustumCorners.TR, tr.frustumCorners.BR, tr.frustumCorners.BL,
-                    tr.globeCenterInViewSpace, tr.globeRadius, viewport, 0, tr._farZ), "globe_pole_raster", vertexBuffer,
+                    tr.globeCenterInViewSpace, tr.globeRadius, viewport, 0, tr._farZ, emissiveTexture), "globe_pole_raster", vertexBuffer,
                     indexBuffer, segment);
 
                 terrain.setupElevationDraw(tile, program, elevationOptions);
@@ -346,6 +356,10 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                     vertexMorphing.newMorphing(coord.key, prevDemTile, nextDemTile, now, defaultDuration);
                 }
 
+                if (tile.emissiveTexture) {
+                    context.activeTexture.set(gl.TEXTURE1);
+                    tile.emissiveTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+                }
                 // Bind the main draped texture
                 context.activeTexture.set(gl.TEXTURE0);
                 if (tile.texture) {
@@ -360,7 +374,8 @@ function drawTerrainRaster(painter: Painter, terrain: Terrain, sourceCache: Sour
                     elevationOptions = {morphing: {srcDemTile: morph.from, dstDemTile: morph.to, phase: easeCubicInOut(morph.phase)}};
                 }
 
-                const uniformValues = terrainRasterUniformValues(coord.projMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt, groundShadowFactor);
+                const emissiveTexture = painter.emissiveMode === 'mrt-fallback' ? 1.0 : 0.0;
+                const uniformValues = terrainRasterUniformValues(coord.projMatrix, isEdgeTile(coord.canonical, tr.renderWorldCopies) ? skirt / 10 : skirt, groundShadowFactor, emissiveTexture);
                 setShaderMode(shaderMode);
                 if (!program) {
                     continue;

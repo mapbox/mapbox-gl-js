@@ -30,9 +30,9 @@
       "id": "background",
       "type": "background",
       "paint": {
-        "background-color": "green",
+        "background-color": "white",
         "background-opacity": 1.0,
-        "background-emissive-strength": 0.5
+        "background-emissive-strength": 0.8
       }
     }
   ]

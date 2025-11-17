@@ -1,0 +1,86 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "allowed": 0.03289,
+      "pixelRatio": 2,
+      "width": 512,
+      "height": 512,
+      "forceEmissiveFallback": true,
+      "operations": [
+        [
+          "setZoom",
+          15
+        ],
+        [
+          "setCenter",
+          [
+            -122.45362,
+            37.77049
+          ]
+        ],
+        [
+          "wait"
+        ],
+        [
+          "addSource",
+          "rgbterrain",
+          {
+            "type": "raster-dem",
+            "tiles": [
+              "local://tiles/{z}-{x}-{y}.noterrain.png"
+            ],
+            "maxzoom": 11,
+            "tileSize": 256
+          }
+        ],
+        [
+          "setTerrain",
+          {
+            "source": "rgbterrain"
+          }
+        ],
+        [
+          "wait"
+        ],
+        [
+          "setLights",
+          [
+            {
+              "type": "ambient",
+              "id": "test_ambient",
+              "properties": {
+                "color": "#4287f5",
+                "intensity": 0.2
+              }
+            },
+            {
+              "type": "directional",
+              "id": "test_directional",
+              "properties": {
+                "color": "#d66f2b",
+                "intensity": 0.5
+              }
+            }
+          ]
+        ],
+        [
+          "wait",
+          500
+        ]
+      ]
+    }
+  },
+  "sources": {},
+  "sprite": "local://sprites/standard",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-pattern": "cemetery",
+        "background-emissive-strength": 0.9
+      }
+    }
+  ]
+}

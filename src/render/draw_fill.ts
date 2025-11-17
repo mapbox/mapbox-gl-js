@@ -96,14 +96,16 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         return;
     }
 
+    const mrt = painter.emissiveMode === 'mrt-fallback';
+
     // Draw offset elevation
     if (elevationType === 'offset') {
-        drawFillTiles(drawFillParams, false, painter.stencilModeFor3D());
+        drawFillTiles(drawFillParams, false, mrt, painter.stencilModeFor3D());
         return;
     }
 
     // Draw non-elevated polygons
-    drawFillTiles(drawFillParams, false);
+    drawFillTiles(drawFillParams, false, mrt);
 
     if (elevationType === 'road') {
         const roadElevationActive = !terrainEnabled && painter.renderPass === 'translucent';
@@ -114,7 +116,7 @@ function drawFill(painter: Painter, sourceCache: SourceCache, layer: FillStyleLa
         }
 
         // Draw elevated polygons
-        drawFillTiles(drawFillParams, true, StencilMode.disabled);
+        drawFillTiles(drawFillParams, true, mrt, StencilMode.disabled);
 
         if (roadElevationActive) {
             drawElevatedStructures(drawFillParams);
@@ -339,7 +341,7 @@ function drawElevatedStructures(params: DrawFillParams) {
     draw(false);
 }
 
-function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stencilModeOverride?: StencilMode) {
+function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, multipleRenderTargets: boolean, stencilModeOverride?: StencilMode) {
     const {painter, sourceCache, layer, coords, colorMode, elevationType, terrainEnabled, pass} = params;
     const gl = painter.context.gl;
 
@@ -367,6 +369,7 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
     }
 
     const image = patternProperty && patternProperty.constantOr(1);
+    const isDraping = painter.terrain && painter.terrain.renderingToTexture;
 
     const draw = (depthMode: DepthMode, isOutline: boolean) => {
         let programName: 'fillPattern' | 'fill' | 'fillOutlinePattern' | 'fillOutline';
@@ -404,6 +407,9 @@ function drawFillTiles(params: DrawFillParams, elevatedGeometry: boolean, stenci
             }
             if (renderWithShadows) {
                 dynamicDefines.push('RENDER_SHADOWS', 'DEPTH_TEXTURE', 'NORMAL_OFFSET');
+            }
+            if (isDraping && multipleRenderTargets) {
+                dynamicDefines.push('USE_MRT1');
             }
 
             if (image) {

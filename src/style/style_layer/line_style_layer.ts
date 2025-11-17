@@ -128,6 +128,10 @@ class LineStyleLayer extends StyleLayer {
         return this._transitionablePaint._values['line-width'].value.expression;
     }
 
+    emissiveStrengthExpression(): StylePropertyExpression {
+        return this._transitionablePaint._values['line-emissive-strength'].value.expression;
+    }
+
     override recalculate(parameters: EvaluationParameters, availableImages: ImageId[]) {
         super.recalculate(parameters, availableImages);
 

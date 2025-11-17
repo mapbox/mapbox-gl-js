@@ -16,6 +16,7 @@ import type BackgroundStyleLayer from '../style/style_layer/background_style_lay
 import type {UniformValues} from './uniform_binding';
 import type {ImagePosition} from './image_atlas';
 import type {BackgroundUniformsType, BackgroundPatternUniformsType} from './program/background_program';
+import type {DynamicDefinesType} from './program/program_uniforms';
 
 export default drawBackground;
 
@@ -66,9 +67,15 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         painter.imageManager.bind(painter.context, layer.scope);
     }
 
+    const isDraping = painter.terrain && painter.terrain.renderingToTexture;
+    const defines: DynamicDefinesType[] = [];
+    if (isDraping && painter.emissiveMode === 'mrt-fallback') {
+        defines.push('USE_MRT1');
+    }
+
     if (isViewportPitch) {
         // Set overrideRtt to ignore 3D lights
-        const program = painter.getOrCreateProgram(programName, {overrideFog: false, overrideRtt: true});
+        const program = painter.getOrCreateProgram(programName, {overrideFog: false, overrideRtt: true, defines});
         const matrix = new Float32Array(mat4.identity([]));
         const tileID = new OverscaledTileID(0, 0, 0, 0, 0);
 
@@ -84,7 +91,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
 
     for (const tileID of tileIDs) {
         const affectedByFog = painter.isTileAffectedByFog(tileID);
-        const program = painter.getOrCreateProgram(programName, {overrideFog: affectedByFog});
+        const program = painter.getOrCreateProgram(programName, {overrideFog: affectedByFog, defines});
         const unwrappedTileID = tileID.toUnwrapped();
         const matrix = coords ? tileID.projMatrix : painter.transform.calculateProjMatrix(unwrappedTileID);
         painter.prepareDrawTile();

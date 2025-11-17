@@ -270,6 +270,11 @@ export const preludeLightingSource = preludeLighting;
 export const preludeVertPrecisionQualifiers = `precision highp float;`;
 export const preludeFragPrecisionQualifiers = `precision mediump float;`;
 
+export const preludeFragExtensions = `
+#if defined(GL_EXT_blend_func_extended) && defined(DUAL_SOURCE_BLENDING)
+#extension GL_EXT_blend_func_extended : require
+#endif`;
+
 export default {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     background: compile(backgroundFrag, backgroundVert),

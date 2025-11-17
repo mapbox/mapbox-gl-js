@@ -8,7 +8,7 @@ import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask,
 import type DepthMode from './depth_mode';
 import type StencilMode from './stencil_mode';
 import type CullFaceMode from './cull_face_mode';
-import type {DepthBufferType, ColorMaskType} from './types';
+import type {DepthBufferType, ColorMaskType, WebGL2BlendFuncExtended} from './types';
 import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type';
 import type {
     StructArray,
@@ -85,6 +85,7 @@ class Context {
     extTextureFloatLinear: OES_texture_float_linear;
     options: ContextOptions;
     maxPointSize: number;
+    extBlendFuncExtended: WebGL2BlendFuncExtended | null;
 
     forceManualRenderingForInstanceIDShaders: boolean;
 
@@ -157,8 +158,8 @@ class Context {
         this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query_webgl2');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-        // gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE) returns Float32Array per WebGL spec
-        this.maxPointSize = (gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE) as Float32Array)[1];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        this.extBlendFuncExtended = gl.getExtension('WEBGL_blend_func_extended');
     }
 
     setDefault() {
@@ -257,10 +258,10 @@ class Context {
     createFramebuffer(
         width: number,
         height: number,
-        hasColor: boolean,
-        depthType?: DepthBufferType | null,
+        numColorAttachments: number,
+        depthType?: DepthBufferType | null
     ): Framebuffer {
-        return new Framebuffer(this, width, height, hasColor, depthType);
+        return new Framebuffer(this, width, height, numColorAttachments, depthType);
     }
 
     clear({

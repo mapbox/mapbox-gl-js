@@ -49,8 +49,6 @@ in highp vec4 v_pos_light_view_1;
 in highp float v_depth;
 #endif
 
-uniform float u_emissive_strength;
-
 #pragma mapbox: define mediump vec4 pattern
 #ifdef LINE_PATTERN_TRANSITION
 #pragma mapbox: define mediump vec4 pattern_b
@@ -58,6 +56,7 @@ uniform float u_emissive_strength;
 #pragma mapbox: define mediump float pixel_ratio
 #pragma mapbox: define mediump float blur
 #pragma mapbox: define mediump float opacity
+#pragma mapbox: define lowp float emissive_strength
 
 void main() {
     #pragma mapbox: initialize mediump vec4 pattern
@@ -67,6 +66,7 @@ void main() {
     #pragma mapbox: initialize mediump float pixel_ratio
     #pragma mapbox: initialize mediump float blur
     #pragma mapbox: initialize mediump float opacity
+    #pragma mapbox: initialize lowp float emissive_strength
 
     vec2 pattern_tl = pattern.xy;
     vec2 pattern_br = pattern.zw;
@@ -146,7 +146,7 @@ void main() {
 #endif
 
 #ifdef LIGHTING_3D_MODE
-    color = apply_lighting_with_emission_ground(color, u_emissive_strength);
+    color = apply_lighting_with_emission_ground(color, emissive_strength);
 #ifdef RENDER_SHADOWS
     float light = shadowed_light_factor(v_pos_light_view_0, v_pos_light_view_1, v_depth);
 #ifdef ELEVATED_ROADS
@@ -172,6 +172,13 @@ void main() {
 #endif
 
     glFragColor = color;
+#ifdef DUAL_SOURCE_BLENDING
+    glFragColorSrc1 = vec4(vec3(0.0), emissive_strength);
+#else
+#ifdef USE_MRT1
+    out_Target1 = vec4(emissive_strength * glFragColor.a, 0.0, 0.0, glFragColor.a);
+#endif
+#endif
 
 #ifdef OVERDRAW_INSPECTOR
     glFragColor = vec4(1.0);

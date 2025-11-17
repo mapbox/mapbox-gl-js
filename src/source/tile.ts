@@ -148,6 +148,7 @@ class Tile {
     needsDEMTextureUpload: boolean | null | undefined;
     request: Cancelable | null | undefined;
     texture: Texture | null | undefined | UserManagedTexture;
+    emissiveTexture: Texture | null | undefined | UserManagedTexture;
     hillshadeFBO: Framebuffer | null | undefined;
     demTexture: Texture | null | undefined;
     refreshedUponExpiration: boolean;
@@ -1085,6 +1086,11 @@ class Tile {
         if (!preserveTexture && this.texture && this.texture instanceof Texture) {
             this.texture.destroy();
             delete this.texture;
+        }
+
+        if (this.emissiveTexture && this.emissiveTexture instanceof Texture) {
+            this.emissiveTexture.destroy();
+            delete this.emissiveTexture;
         }
 
         if (this.hillshadeFBO) {

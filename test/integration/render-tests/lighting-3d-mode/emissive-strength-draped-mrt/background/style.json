@@ -1,0 +1,56 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "forceEmissiveFallback": true,
+      "operations": [
+        [ "wait" ]
+      ]
+    }
+  },
+  "sources": {
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 13,
+      "tileSize": 256
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 1.0
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(255, 0, 0, 1)",
+        "intensity": 0.05
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 255, 0, 1)",
+        "intensity": 0.05
+      }
+    }
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white",
+        "background-opacity": 1.0,
+        "background-emissive-strength": 0.8
+      }
+    }
+  ]
+}

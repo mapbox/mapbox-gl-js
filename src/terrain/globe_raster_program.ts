@@ -21,6 +21,7 @@ export type GlobeRasterUniformsType = {
     ['u_zoom_transition']: Uniform1f;
     ['u_merc_center']: Uniform2f;
     ['u_image0']: Uniform1i;
+    ['u_image1']: Uniform1i;
     ['u_grid_matrix']: UniformMatrix3f;
     ['u_skirt_height']: Uniform1f;
     ['u_far_z_cutoff']: Uniform1f;
@@ -31,6 +32,7 @@ export type GlobeRasterUniformsType = {
     ['u_globe_pos']: Uniform3f;
     ['u_globe_radius']: Uniform1f;
     ['u_viewport']: Uniform2f;
+    ['u_emissive_texture_available']: Uniform1f;
 };
 
 export type AtmosphereUniformsType = {
@@ -56,6 +58,7 @@ const globeRasterUniforms = (context: Context): GlobeRasterUniformsType => ({
     'u_zoom_transition': new Uniform1f(context),
     'u_merc_center': new Uniform2f(context),
     'u_image0': new Uniform1i(context),
+    'u_image1': new Uniform1i(context),
     'u_grid_matrix': new UniformMatrix3f(context),
     'u_skirt_height': new Uniform1f(context),
     'u_far_z_cutoff': new Uniform1f(context),
@@ -65,7 +68,8 @@ const globeRasterUniforms = (context: Context): GlobeRasterUniformsType => ({
     'u_frustum_bl': new Uniform3f(context),
     'u_globe_pos': new Uniform3f(context),
     'u_globe_radius': new Uniform1f(context),
-    'u_viewport': new Uniform2f(context)
+    'u_viewport': new Uniform2f(context),
+    'u_emissive_texture_available': new Uniform1f(context)
 });
 
 const atmosphereUniforms = (context: Context): AtmosphereUniformsType => ({
@@ -99,6 +103,7 @@ const globeRasterUniformValues = (
     viewport: [number, number],
     skirtHeight: number,
     farZCutoff: number,
+    emissiveTextureAvailable: number,
     gridMatrix?: mat4 | null,
 ): UniformValues<GlobeRasterUniformsType> => ({
     'u_proj_matrix': Float32Array.from(projMatrix),
@@ -108,6 +113,7 @@ const globeRasterUniformValues = (
     'u_zoom_transition': zoomTransition,
     'u_merc_center': mercCenter,
     'u_image0': 0,
+    'u_image1': 1,
     'u_frustum_tl': frustumDirTl,
     'u_frustum_tr': frustumDirTr,
     'u_frustum_br': frustumDirBr,
@@ -117,7 +123,8 @@ const globeRasterUniformValues = (
     'u_viewport': viewport,
     'u_grid_matrix': gridMatrix ? Float32Array.from(gridMatrix) : new Float32Array(9),
     'u_skirt_height': skirtHeight,
-    'u_far_z_cutoff': farZCutoff
+    'u_far_z_cutoff': farZCutoff,
+    'u_emissive_texture_available': emissiveTextureAvailable
 });
 
 const atmosphereUniformValues = (

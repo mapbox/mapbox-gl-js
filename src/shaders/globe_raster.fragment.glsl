@@ -2,6 +2,10 @@
 #include "_prelude_lighting.glsl"
 
 uniform sampler2D u_image0;
+#ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
+uniform sampler2D u_image1;
+uniform float u_emissive_texture_available;
+#endif
 uniform float u_far_z_cutoff;
 
 in vec2 v_pos0;
@@ -40,7 +44,8 @@ void main() {
     vec4 raster = texture(u_image0, v_pos0);
 #ifdef LIGHTING_3D_MODE
 #ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
-    raster = apply_lighting_with_emission_ground(raster, raster.a);
+    float emissive_strength = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0).r : raster.a;
+    raster = apply_lighting_with_emission_ground(raster, emissive_strength);
     color = vec4(clamp(raster.rgb, vec3(0), vec3(1)) * antialias, antialias);
 #else // LIGHTING_3D_ALPHA_EMISSIVENESS
     raster = apply_lighting_ground(raster);
@@ -53,7 +58,8 @@ void main() {
     color = texture(u_image0, v_pos0);
 #ifdef LIGHTING_3D_MODE
 #ifdef LIGHTING_3D_ALPHA_EMISSIVENESS
-    color = apply_lighting_with_emission_ground(color, color.a);
+    float emissive_strength = u_emissive_texture_available > 0.5 ? texture(u_image1, v_pos0).r : color.a;
+    color = apply_lighting_with_emission_ground(color, emissive_strength);
     color.a = 1.0;
 #else // LIGHTING_3D_ALPHA_EMISSIVENESS
     color = apply_lighting_ground(color);

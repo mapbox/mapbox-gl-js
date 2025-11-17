@@ -135,7 +135,7 @@ function captureSkybox(painter: Painter, layer: SkyLayer, width: number, height:
 
     // Using absence of fbo as a signal for lazy initialization of all resources, cache resources in layer object
     if (!fbo) {
-        fbo = layer.skyboxFbo = context.createFramebuffer(width, height, true, null);
+        fbo = layer.skyboxFbo = context.createFramebuffer(width, height, 1, null);
         layer.skyboxGeometry = new SkyboxGeometry(context);
         layer.skyboxTexture = context.gl.createTexture();
 

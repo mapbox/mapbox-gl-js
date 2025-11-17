@@ -85,6 +85,7 @@ out highp float v_depth;
 #pragma mapbox: define mediump vec4 pattern_b
 #endif
 #pragma mapbox: define mediump float pixel_ratio
+#pragma mapbox: define lowp float emissive_strength
 
 void main() {
     #pragma mapbox: initialize mediump float blur
@@ -98,6 +99,7 @@ void main() {
     #pragma mapbox: initialize mediump vec4 pattern_b
     #endif
     #pragma mapbox: initialize mediump float pixel_ratio
+    #pragma mapbox: initialize lowp float emissive_strength
 
     float a_z_offset;
 #if defined(ELEVATED) || defined(ELEVATED_ROADS)

@@ -4,6 +4,7 @@ import {
     preludeVertPrecisionQualifiers,
     preludeCommonSource,
     includeMap,
+    preludeFragExtensions,
 } from '../shaders/shaders';
 import assert from 'assert';
 import VertexArrayObject from './vertex_array_object';
@@ -128,6 +129,7 @@ class Program<Us extends UniformBindings> {
         const version = '#version 300 es\n';
 
         let fragmentSource = version + defines.concat(
+            preludeFragExtensions,
             preludeFragPrecisionQualifiers,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             preludeCommonSource,

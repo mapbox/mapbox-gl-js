@@ -136,6 +136,10 @@
         if (options.showPadding) map.showPadding = true;
         if (options.collisionDebug) map.showCollisionBoxes = true;
         if (options.fadeDuration) map._isInitialLoad = false;
+        if (options.forceEmissiveFallback) {
+            map.painter._forceEmissiveMode = true;
+            map.painter.emissiveMode = 'mrt-fallback';
+        }
 
         map.repaint = true;
 

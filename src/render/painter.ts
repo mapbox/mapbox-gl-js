@@ -78,6 +78,7 @@ import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
 
 export type RenderPass = 'offscreen' | 'opaque' | 'translucent' | 'sky' | 'shadow' | 'light-beam';
 export type DepthPrePass = 'initialize' | 'reset' | 'geometry';
+export type EmissiveMode = 'constant' | 'dual-source-blending' | 'mrt-fallback';
 
 export type CanvasCopyInstances = {
     canvasCopies: WebGLTexture[];
@@ -272,6 +273,9 @@ class Painter {
 
     worldview: string;
 
+    _forceEmissiveMode: boolean;
+    emissiveMode: EmissiveMode;
+
     constructor(gl: WebGL2RenderingContext, contextCreateOptions: ContextOptions, transform: Transform, scaleFactor: number, worldview: string | undefined) {
         this.context = new Context(gl, contextCreateOptions);
 
@@ -361,6 +365,9 @@ class Painter {
         this.scaleFactor = scaleFactor;
 
         this.worldview = worldview;
+
+        this._forceEmissiveMode = false;
+        this.emissiveMode = 'constant';
     }
 
     updateTerrain(style: Style, adaptCameraAltitude: boolean) {
@@ -674,8 +681,16 @@ class Painter {
 
         const gl = this.context.gl;
         if (deferredDrapingEnabled() && this.renderPass === 'translucent') {
-            return new ColorMode([gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.CONSTANT_ALPHA, gl.ONE_MINUS_SRC_ALPHA],
-                new Color(0, 0, 0, emissiveStrengthForDrapedLayers === undefined ? 0 : emissiveStrengthForDrapedLayers), [true, true, true, true]);
+            if ((emissiveStrengthForDrapedLayers != null && this.emissiveMode !== 'mrt-fallback') || this.emissiveMode === 'constant') {
+                // Color mode for constant emissive strength.
+                return new ColorMode([gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.CONSTANT_ALPHA, gl.ONE_MINUS_SRC_ALPHA], new Color(0, 0, 0, emissiveStrengthForDrapedLayers != null ? emissiveStrengthForDrapedLayers : 0.0), [true, true, true, true]);
+            } else if (this.emissiveMode === 'dual-source-blending') {
+                const extBlendFuncExtended = this.context.extBlendFuncExtended;
+                return new ColorMode([gl.ONE, gl.ONE_MINUS_SRC_ALPHA, extBlendFuncExtended.SRC1_ALPHA_WEBGL, gl.ONE_MINUS_SRC_ALPHA], Color.transparent, [true, true, true, true]);
+            } else {
+                // Fallback to using a secondary render target for emissive strength values. Normal color mode is used for this.
+                return this.colorModeForRenderPass();
+            }
         } else {
             return this.colorModeForRenderPass();
         }
@@ -724,7 +739,7 @@ class Painter {
             }
 
             if (depthWidth !== 0 && depthHeight !== 0) {
-                this.depthFBO = new Framebuffer(this.context, depthWidth, depthHeight, false, 'texture');
+                this.depthFBO = new Framebuffer(this.context, depthWidth, depthHeight, 0, 'texture');
 
                 this.depthTexture = new Texture(this.context, {width: depthWidth, height: depthHeight, data: null}, gl.DEPTH24_STENCIL8);
                 this.depthFBO.depthAttachment.set(this.depthTexture.texture);
@@ -808,6 +823,8 @@ class Painter {
                 }
             }
         }
+
+        this.updateEmissiveMode();
 
         let orderedLayers = layerIds.map(id => layers[id]);
         const sourceCaches = this.style._mergedSourceCaches;
@@ -1960,6 +1977,19 @@ class Painter {
         }
     }
 
+    updateEmissiveMode() {
+        if (this._forceEmissiveMode) return;
+
+        const hasDataDriven = this.style.hasDataDrivenEmissiveStrength();
+
+        if (!hasDataDriven) {
+            this.emissiveMode = 'constant';
+        } else if (this.context.extBlendFuncExtended) {
+            this.emissiveMode = 'dual-source-blending';
+        } else {
+            this.emissiveMode = 'mrt-fallback';
+        }
+    }
 }
 
 export default Painter;

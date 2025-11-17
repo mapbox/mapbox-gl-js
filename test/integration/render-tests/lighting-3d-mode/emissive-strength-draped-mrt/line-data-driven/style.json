@@ -1,0 +1,95 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256,
+      "forceEmissiveFallback": true,
+      "operations": [
+        [ "wait" ]
+      ]
+    }
+  },
+  "center": [
+    13.424058,
+    52.501288
+  ],
+  "zoom": 14.5,
+  "pitch": 47.5,
+  "bearing": 172,
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 0.4
+      }
+    }
+  ],
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 14,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "rgbterrain": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 13,
+      "tileSize": 256
+    }
+  },
+  "terrain": {
+    "source": "rgbterrain",
+    "exaggeration": 2.0
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "blue"
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "paint": {
+        "line-width": 7,
+        "line-color": "#ffaa22",
+        "line-blur": 2,
+        "line-emissive-strength": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+            0,
+            1,
+            14,
+            [    
+              "match",    
+              ["get", "class"],
+              ["street", "street_limited"],
+              1.0,
+              0.4
+            ],
+            16,
+            0.0
+        ]
+      }
+    }
+  ]
+}

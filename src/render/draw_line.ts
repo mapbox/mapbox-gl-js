@@ -61,7 +61,9 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     if (opacity.constantOr(1) === 0 || width.constantOr(1) === 0) return;
 
-    const emissiveStrength = layer.paint.get('line-emissive-strength');
+    const constantEmissiveStrength = layer.paint.get('line-emissive-strength').isConstant();
+    assert(painter.emissiveMode !== 'constant' || constantEmissiveStrength);
+    const emissiveStrengthForDrapedLayers = layer.paint.get('line-emissive-strength').constantOr(0.0);
     const occlusionOpacity = layer.paint.get('line-occlusion-opacity');
     const elevationReference = layer.layout.get('line-elevation-reference');
     const unitInMeters = layer.layout.get('line-width-unit') === 'meters';
@@ -78,7 +80,7 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
     const hasCrossSlope = crossSlope !== undefined;
     const crossSlopeHorizontal = crossSlope < 1.0;
 
-    const colorMode = painter.colorModeForDrapableLayerRenderPass(emissiveStrength);
+    const colorMode = painter.colorModeForDrapableLayerRenderPass(constantEmissiveStrength ? emissiveStrengthForDrapedLayers : null);
     const isDraping = painter.terrain && painter.terrain.renderingToTexture;
     const pixelRatio = isDraping ? 1.0 : browser.devicePixelRatio;
 
@@ -129,6 +131,14 @@ export default function drawLine(painter: Painter, sourceCache: SourceCache, lay
 
     if (width.value.kind !== 'constant' && width.value.isLineProgressConstant === false) {
         definesValues.push("VARIABLE_LINE_WIDTH");
+    }
+
+    if (isDraping) {
+        if (painter.emissiveMode === 'dual-source-blending' && !constantEmissiveStrength) {
+            definesValues.push('DUAL_SOURCE_BLENDING');
+        } else if (painter.emissiveMode === 'mrt-fallback') {
+            definesValues.push('USE_MRT1');
+        }
     }
 
     const renderTiles = (coords: OverscaledTileID[], baseDefines: DynamicDefinesType[], depthMode: DepthMode, stencilMode3D: StencilMode, elevated: boolean, firstPass: boolean) => {

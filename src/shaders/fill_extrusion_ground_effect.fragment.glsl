@@ -56,11 +56,15 @@ void main() {
 #endif // RENDER_CUTOFF
     glFragColor = vec4(vec3(0.0), mix(1.0, d, effect_intensity * u_opacity * fog));
 #else // SDF_SUBPASS
-vec4 color = mix(vec4(u_flood_light_color, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass);
+#ifdef USE_MRT1
+    out_Target1 = vec4(1.0 - texture(u_fb, gl_FragCoord.xy / vec2(u_fb_size)).a, 0.0, 0.0, 0.0);
+#else // USE_MRT1
+    vec4 color = mix(vec4(u_flood_light_color, 1.0), vec4(vec3(0.0), 1.0), u_ao_pass);
 #ifdef OVERDRAW_INSPECTOR
     color = vec4(1.0);
 #endif
     glFragColor = color;
+#endif // !USE_MRT1
 #endif // !SDF_SUBPASS
 HANDLE_WIREFRAME_DEBUG;
 #endif // !CLEAR_SUBPASS

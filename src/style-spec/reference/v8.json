@@ -8727,6 +8727,11 @@
           "js": "3.0.0",
           "android": "11.0.0",
           "ios": "11.0.0"
+        },
+        "data-driven styling": {
+          "js": "3.17.0",
+          "android": "11.17.0",
+          "ios": "11.17.0"
         }
       },
       "expression": {
@@ -8736,7 +8741,7 @@
           "measure-light"
         ]
       },
-      "property-type": "data-constant"
+      "property-type": "data-driven"
     },
     "line-border-width": {
       "type": "number",

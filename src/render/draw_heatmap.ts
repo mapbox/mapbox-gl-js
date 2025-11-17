@@ -108,12 +108,12 @@ function bindFramebuffer(context: Context, painter: Painter, layer: HeatmapStyle
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        fbo = layer.heatmapFbo = context.createFramebuffer(width, height, true, null);
+        fbo = layer.heatmapFbo = context.createFramebuffer(width, height, 1, null);
 
         bindTextureToFramebuffer(context, painter, texture, fbo, width, height);
 
     } else {
-        gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
+        gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment0.get());
         context.bindFramebuffer.set(fbo.framebuffer);
     }
 }
@@ -124,7 +124,7 @@ function bindTextureToFramebuffer(context: Context, painter: Painter, texture: W
     // Otherwise, fall back to a low precision texture
     const type = context.extRenderToTextureHalfFloat ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE;
     gl.texImage2D(gl.TEXTURE_2D, 0, context.extRenderToTextureHalfFloat ? gl.RGBA16F : gl.RGBA, width, height, 0, gl.RGBA, type, null);
-    fbo.colorAttachment.set(texture);
+    fbo.colorAttachment0.set(texture);
 }
 
 function renderTextureToMap(painter: Painter, layer: HeatmapStyleLayer) {
@@ -137,7 +137,7 @@ function renderTextureToMap(painter: Painter, layer: HeatmapStyleLayer) {
     const fbo = layer.heatmapFbo;
     if (!fbo) return;
     context.activeTexture.set(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
+    gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment0.get());
 
     context.activeTexture.set(gl.TEXTURE1);
     let colorRampTexture = layer.colorRampTexture;

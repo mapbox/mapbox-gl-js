@@ -1,0 +1,154 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "allowed": 0.0006,
+      "optimizeForTerrain": true,
+      "forceEmissiveFallback": true,
+      "operations": [
+        ["wait"],
+        ["setTerrain", {
+          "source": "mapbox-dem",
+          "exaggeration": 0
+        }],
+        ["wait"]
+      ]
+    }
+  },
+  "lights": [
+    {
+      "type": "ambient",
+      "id": "test_ambient",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 0.4
+      }
+    },
+    {
+      "type": "directional",
+      "id": "test_directional",
+      "properties": {
+        "color": "rgba(0, 0, 0, 1)",
+        "intensity": 0.4
+      }
+    }
+  ],
+  "sources": {
+    "line1": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "coordinates": [
+                [
+                  -74.00915482847098,
+                  40.71541865226018
+                ],
+                [
+                  -74.0094045419024,
+                  40.715418335918855
+                ],
+                [
+                  -74.00943589491061,
+                  40.71558020271604
+                ],
+                [
+                  -74.00915365463395,
+                  40.715630512080395
+                ],
+                [
+                  -74.0093507055058,
+                  40.71571492495647
+                ],
+                [
+                  -74.00949339061006,
+                  40.715649402286516
+                ],
+                [
+                  -74.0093155797689,
+                  40.71563423881554
+                ]
+              ],
+              "type": "LineString"
+            }
+          }
+        ]
+      }
+    },
+    "mapbox": {
+      "type": "vector",
+      "maxzoom": 16,
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.mvt"
+      ]
+    },
+    "mapbox-dem": {
+      "type": "raster-dem",
+      "tiles": [
+        "local://tiles/dem/{z}-{x}-{y}.terrain.png"
+      ],
+      "maxzoom": 13,
+      "tileSize": 256
+    }
+  },
+  "pitch": 0,
+  "zoom": 19.0,
+  "bearing": 115,
+  "center": [
+    -74.0094,
+    40.71556
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "lightgray"
+      }
+    },
+    {
+      "id": "line1",
+      "source": "line1",
+      "type": "line",
+      "paint": {
+        "line-color": "red",
+        "line-width": 8,
+        "line-translate-anchor": "viewport",
+        "line-emissive-strength": 1,
+        "line-occlusion-opacity": 1
+      }
+    },
+    {
+      "id": "extrusion",
+      "type": "fill-extrusion",
+      "source": "mapbox",
+      "source-layer": "building",
+      "paint": {
+        "fill-extrusion-color": "white",
+        "fill-extrusion-height": [
+          "get",
+          "height"
+        ],
+        "fill-extrusion-opacity": 1.0,
+        "fill-extrusion-flood-light-wall-radius": 30,
+        "fill-extrusion-flood-light-ground-radius": 10,
+        "fill-extrusion-flood-light-color": [
+          "rgb",
+          255,
+          255,
+          127
+        ],
+        "fill-extrusion-flood-light-intensity": 1.0
+      },
+      "layout": {
+        "fill-extrusion-edge-radius": 0.99
+      }
+    }
+  ]
+}

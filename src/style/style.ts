@@ -364,6 +364,8 @@ class Style extends Evented<MapEvents> {
     _worldview: string | undefined;
     _hasAppearances: boolean;
 
+    _hasDataDrivenEmissive: boolean;
+
     // exposed to allow stubbing by unit tests
     static getSourceType: typeof getSourceType;
     static setSourceType: typeof setSourceType;
@@ -407,6 +409,8 @@ class Style extends Evented<MapEvents> {
         this._importedAsBasemap = false;
 
         this._changes = options.styleChanges || new StyleChanges();
+
+        this._hasDataDrivenEmissive = false;
 
         if (options.dispatcher) {
             this.dispatcher = options.dispatcher;
@@ -1230,6 +1234,7 @@ class Style extends Evented<MapEvents> {
         this._mergedLayers = mergedLayers;
         this.updateDrapeFirstLayers();
         this._buildingIndex.processLayersChanged();
+        this._updateDataDrivenEmissiveStrength();
     }
 
     terrainSetForDrapingOnly(): boolean {
@@ -1595,6 +1600,27 @@ class Style extends Evented<MapEvents> {
         }
 
         return false;
+    }
+
+    _updateDataDrivenEmissiveStrength() {
+        for (const layerId in this._mergedLayers) {
+            const layer = this._mergedLayers[layerId];
+
+            if (layer._transitionablePaint && layer._transitionablePaint._values) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const transitionableValue = layer._transitionablePaint._values['line-emissive-strength'];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+                if (transitionableValue && transitionableValue.value && transitionableValue.value.isDataDriven()) {
+                    this._hasDataDrivenEmissive = true;
+                    return;
+                }
+            }
+        }
+        this._hasDataDrivenEmissive = false;
+    }
+
+    hasDataDrivenEmissiveStrength(): boolean {
+        return this._hasDataDrivenEmissive;
     }
 
     get order(): Array<string> {
