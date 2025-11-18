@@ -466,7 +466,7 @@ export class BuildingBucket implements BucketWithGroundEffect {
             // Note: For procedural buildings we can set an upper limit for the radius walls.
             // This is possible because procedural buildings are in practice visible at high zoom levels (i.e. no globe)
             // and unlike fill-extrusions they are not repurposed to achieve different effects (e.g. gradient effect).
-            // This allows us to use a short integer which should give us more than enough precision and desireable visuals.
+            // This allows us to use a short integer which should give us more than enough precision and desirable visuals.
             // In the case of ground flood lighting we're still using fill_extrusion_ground_effect shaders.
             let floodLightWallRadius = layer.layout.get('building-flood-light-wall-radius').evaluate(feature, {}, canonical);
             floodLightWallRadius = clamp(floodLightWallRadius, 0.0, FLOOD_LIGHT_MAX_RADIUS_METER);
