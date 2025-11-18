@@ -53,6 +53,8 @@ function getCanvas(width: number, height: number): OffscreenCanvas | HTMLCanvasE
 
 type Context = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
+let canvas: HTMLCanvasElement | OffscreenCanvas | null = null;
+let context: Context;
 /**
  * Renders a uSVG icon to an ImageData object.
  *
@@ -77,8 +79,13 @@ export function renderIcon(icon: Icon, options: RasterizationOptions): ImageData
         0, 0
     ]);
 
-    const canvas = getCanvas(renderedWidth, renderedHeight);
-    const context = canvas.getContext('2d') as Context;
+    if (canvas === null) {
+        canvas = getCanvas(10, 10);
+        context = canvas.getContext('2d') as Context;
+    }
+
+    canvas.width = renderedWidth;
+    canvas.height = renderedHeight;
 
     renderNodes(context, finalTr, tree, tree as unknown as Group, colorReplacements);
     return context.getImageData(0, 0, renderedWidth, renderedHeight);
