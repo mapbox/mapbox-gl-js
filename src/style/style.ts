@@ -921,7 +921,7 @@ class Style extends Evented<MapEvents> {
     }
 
     hasAppearances(): boolean {
-        return this._hasAppearances;
+        return this._hasAppearances || this.fragments.some((f => f.style.hasAppearances()));
     }
 
     mergeAll() {
