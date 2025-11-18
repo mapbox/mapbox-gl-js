@@ -1,0 +1,69 @@
+{
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 64,
+            "height": 64
+        }
+    },
+    "imports": [
+        {
+            "id": "basemap",
+            "url": "",
+            "data": {
+                "type": "basemap",
+                "schema": {
+                    "lightPreset": {
+                        "default": "day",
+                        "type": "string",
+                        "values": [
+                            "dawn",
+                            "day",
+                            "dusk",
+                            "night"
+                        ]
+                    },
+                    "color": {
+                        "default": "red",
+                        "type": "color"
+                    }
+                },
+                "sources": {},
+                "layers": []
+            },
+            "config": {
+                "lightPreset": "night",
+                "color": [
+                    "match",
+                    ["config", "lightPreset", "basemap"],
+                    "night",
+                    [
+                        "step",
+                        ["zoom"],
+                        "blue",
+                        10,
+                        "yellow"
+                    ],
+                    [
+                        "step",
+                        ["zoom"],
+                        "blue",
+                        10,
+                        "white"
+                    ]
+                ]
+            }
+        }
+    ],
+    "zoom": 12,
+    "sources": {},
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": ["config", "color", "basemap" ]
+            }
+        }
+    ]
+}
