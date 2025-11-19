@@ -55,6 +55,7 @@ type SortedMesh = {
     worldViewProjection: mat4;
     nodeModelMatrix: mat4;
     isLightMesh: boolean;
+    modelOpacity: number;
     materialOverride?: MaterialOverride;
     modelColor?: [number, number, number, number];
 };
@@ -164,7 +165,7 @@ function setupMeshDraw(definesValues: Array<string>, dynamicBuffers: Array<Verte
 }
 
 function drawMesh(sortedMesh: SortedMesh, painter: Painter, layer: ModelStyleLayer, modelParameters: ModelParameters, stencilMode: StencilMode, colorMode: ColorMode) {
-    const opacity = layer.paint.get('model-opacity').constantOr(1.0);
+    const opacity = sortedMesh.modelOpacity;
 
     assert(opacity > 0);
     const context = painter.context;
@@ -295,7 +296,7 @@ export function prepare(layer: ModelStyleLayer, sourceCache: SourceCache, painte
     }
 }
 
-function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, projectionMatrix: mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>, opaqueMeshes: Array<SortedMesh>, materialOverrides: ModelMaterialOverrides, modelColorMix?: [number, number, number, number]) {
+function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, projectionMatrix: mat4, modelIndex: number, transparentMeshes: Array<SortedMesh>, opaqueMeshes: Array<SortedMesh>, materialOverrides: ModelMaterialOverrides, modelOpacity: number, modelColorMix?: [number, number, number, number]) {
 
     const transform = painter.transform;
 
@@ -317,7 +318,7 @@ function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, pro
             if (materialOverride && materialOverride.opacity <= 0) continue;
 
             if (mesh.material.alphaMode !== 'BLEND') {
-                const opaqueMesh: SortedMesh = {mesh, depth: 0.0, modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelColor: modelColorMix};
+                const opaqueMesh: SortedMesh = {mesh, depth: 0.0, modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelOpacity, modelColor: modelColorMix};
                 opaqueMeshes.push(opaqueMesh);
                 continue;
             }
@@ -325,13 +326,13 @@ function prepareMeshes(painter: Painter, node: ModelNode, modelMatrix: mat4, pro
             const centroidPos = vec3.transformMat4([], mesh.centroid, worldViewProjection);
             // Filter meshes behind the camera if in perspective mode
             if (!transform.isOrthographic && centroidPos[2] <= 0.0) continue;
-            const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelColor: modelColorMix};
+            const transparentMesh: SortedMesh = {mesh, depth: centroidPos[2], modelIndex, worldViewProjection, nodeModelMatrix, isLightMesh, materialOverride, modelOpacity, modelColor: modelColorMix};
             transparentMeshes.push(transparentMesh);
         }
     }
     if (node.children) {
         for (const child of node.children) {
-            prepareMeshes(painter, child, modelMatrix, projectionMatrix, modelIndex, transparentMeshes, opaqueMeshes, materialOverrides, modelColorMix);
+            prepareMeshes(painter, child, modelMatrix, projectionMatrix, modelIndex, transparentMeshes, opaqueMeshes, materialOverrides, modelOpacity, modelColorMix);
         }
     }
 }
@@ -485,6 +486,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         const rotation = layer.paint.get('model-rotation').evaluate(modelFeature, modelFeatureState);
         const scale = layer.paint.get('model-scale').evaluate(modelFeature, modelFeatureState);
         const translation = layer.paint.get('model-translation').evaluate(modelFeature, modelFeatureState);
+        const modelOpacity = layer.paint.get('model-opacity').evaluate(modelFeature, modelFeatureState);
 
         evaluateFeatureStateForNodeOverrides(layer, model.id, modelFeatureState, model.featureProperties, model.nodeOverrideNames, model.nodeOverrides);
         evaluateFeatureStateForMaterialOverrides(layer, model.id, modelFeatureState, model.featureProperties, model.materialOverrideNames, model.materialOverrides);
@@ -505,7 +507,7 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         const modelParameters = {zScaleMatrix, negCameraPosMatrix};
         modelParametersVector.push(modelParameters);
         for (const node of model.nodes) {
-            prepareMeshes(painter, node, model.matrix, painter.transform.expandedFarZProjMatrix, modelIndex, transparentMeshes, opaqueMeshes, model.materialOverrides);
+            prepareMeshes(painter, node, model.matrix, painter.transform.expandedFarZProjMatrix, modelIndex, transparentMeshes, opaqueMeshes, model.materialOverrides, modelOpacity);
         }
         modelIndex++;
     }
@@ -527,25 +529,33 @@ function drawModels(painter: Painter, sourceCache: SourceCache, layer: ModelStyl
         return;
     }
 
-    drawSortedMeshes(painter, layer, opacity, transparentMeshes, opaqueMeshes, modelParametersVector);
+    drawSortedMeshes(painter, layer, transparentMeshes, opaqueMeshes, modelParametersVector);
 
     cleanup();
 }
 
-function drawSortedMeshes(painter: Painter, layer: ModelStyleLayer, opacity: number, transparentMeshes: Array<SortedMesh>, opaqueMeshes: Array<SortedMesh>, modelParametersVector: Array<ModelParameters>) {
-    // Draw opaque meshes
-    if (opacity === 1) {
-        for (const opaqueMesh of opaqueMeshes) {
-            drawMesh(opaqueMesh, painter, layer, modelParametersVector[opaqueMesh.modelIndex], StencilMode.disabled, painter.colorModeForRenderPass());
-        }
-    } else {
-        for (const opaqueMesh of opaqueMeshes) {
+function drawSortedMeshes(painter: Painter, layer: ModelStyleLayer, transparentMeshes: Array<SortedMesh>, opaqueMeshes: Array<SortedMesh>, modelParametersVector: Array<ModelParameters>) {
+    let needsStencilClear = false;
+
+    // Render opaque meshes first.
+    // The per-feature model-opacity can be less than 1.0 even for opaque meshes.
+    // In that case we need to render one extra pass to write into the depth buffer.
+    for (const opaqueMesh of opaqueMeshes) {
+        if (opaqueMesh.modelOpacity !== 1.0) {
             // If we have layer opacity draw with two passes opaque meshes
             drawMesh(opaqueMesh, painter, layer, modelParametersVector[opaqueMesh.modelIndex], StencilMode.disabled, ColorMode.disabled);
+            needsStencilClear = true;
         }
-        for (const opaqueMesh of opaqueMeshes) {
+    }
+    for (const opaqueMesh of opaqueMeshes) {
+        if (opaqueMesh.modelOpacity !== 1.0) {
             drawMesh(opaqueMesh, painter, layer, modelParametersVector[opaqueMesh.modelIndex], painter.stencilModeFor3D(), painter.colorModeForRenderPass());
+        } else {
+            drawMesh(opaqueMesh, painter, layer, modelParametersVector[opaqueMesh.modelIndex], StencilMode.disabled, painter.colorModeForRenderPass());
         }
+    }
+
+    if (needsStencilClear) {
         painter.resetStencilClippingMasks();
     }
 
@@ -673,6 +683,8 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
     const layerIndex = painter.style.order.indexOf(layer.fqid);
 
+    const layerOpacity = layer.paint.get('model-opacity').constantOr(1.0);
+
     for (const coord of coords) {
         const tile = source.getTile(coord);
         const bucket = tile.getBucket(layer) as ModelBucket | null | undefined;
@@ -776,7 +788,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
                     modelParametersVector.push(modelParameters);
 
                     for (const node of model.nodes) {
-                        prepareMeshes(painter, node, modelMatrix, painter.transform.expandedFarZProjMatrix, modelIndex, transparentMeshes, opaqueMeshes, model.materialOverrides, colorMix);
+                        prepareMeshes(painter, node, modelMatrix, painter.transform.expandedFarZProjMatrix, modelIndex, transparentMeshes, opaqueMeshes, model.materialOverrides, layerOpacity, colorMix);
                     }
                     ++modelIndex;
                 }
@@ -798,7 +810,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
                     drawShadowCaster(transparentMesh.mesh, transparentMesh.nodeModelMatrix, painter, layer);
                 }
             } else {
-                drawSortedMeshes(painter, layer, 1.0, transparentMeshes, opaqueMeshes, modelParametersVector);
+                drawSortedMeshes(painter, layer, transparentMeshes, opaqueMeshes, modelParametersVector);
             }
 
         }
