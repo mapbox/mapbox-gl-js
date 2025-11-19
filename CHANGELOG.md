@@ -1,3 +1,17 @@
+## 3.17.0-beta.2
+
+### Features and improvements ✨
+
+- Make `line-emissive-strength` data-driven.
+- Remove experimental flag from the `extra_bounds` property of raster and vector sources.
+- Various performance improvements.
+
+### Bug fixes 🐞
+
+- Fix features not being localized in dynamic filters when a worldview is set.
+- Correctly support filtered features in appearances.
+- Fix an issue occuring when expressions are used in appearances.
+
 ## 3.17.0-beta.1
 
 ### Features and improvements ✨
