@@ -14,7 +14,8 @@ import {
     AUTH_ERR_MSG,
     storeAuthState,
     removeAuthState,
-    postStyleWithAppearanceEvent
+    postStyleWithAppearanceEvent,
+    postAddedAppearanceEvent
 } from '../util/mapbox';
 import Style from '../style/style';
 import IndoorManager from '../style/indoor_manager';
@@ -3516,6 +3517,10 @@ export class Map extends Camera {
             return this;
         }
 
+        if (name === 'appearances') {
+            this._postAddingAppearancesToStyleEvent();
+        }
+
         this.style.setLayerProperty(layerId, name, value, options);
         return this._update(true);
     }
@@ -4812,6 +4817,10 @@ export class Map extends Camera {
         }
 
         postStyleWithAppearanceEvent(this._requestManager._customAccessToken);
+    }
+
+    _postAddingAppearancesToStyleEvent() {
+        postAddedAppearanceEvent(this._requestManager._customAccessToken);
     }
 
     _updateTerrain() {

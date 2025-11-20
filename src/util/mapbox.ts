@@ -866,6 +866,10 @@ export const styleWithAppearanceEvent = new MetricsEvent({attributes: [{name: 'm
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const postStyleWithAppearanceEvent: (arg1: string | null | undefined) => void = styleWithAppearanceEvent.postMetricsEvent.bind(styleWithAppearanceEvent);
 
+export const addedAppearanceEvent = new MetricsEvent({attributes: [{name: 'maps/js/layer-animations/runtime-appearances'}]});
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+export const postAddedAppearanceEvent: (arg1: string | null | undefined) => void = addedAppearanceEvent.postMetricsEvent.bind(addedAppearanceEvent);
+
 export const performanceEvent_: PerformanceEvent = new PerformanceEvent();
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 export const postPerformanceEvent: (arg1: string | null | undefined, arg2: LivePerformanceData) => void = performanceEvent_.postPerformanceEvent.bind(performanceEvent_);
