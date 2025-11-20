@@ -5,7 +5,7 @@ import EvaluationParameters from './evaluation_parameters';
 import {ZoomDependentExpression} from '../style-spec/expression/index';
 
 import type {ConfigOptions, TransitionParameters, Transitioning, PossiblyEvaluated} from './properties';
-import type {TerrainSpecification} from '../style-spec/types';
+import type {TerrainSpecification, TerrainSpecificationUpdate} from '../style-spec/types';
 import type {StylePropertySpecification} from '../style-spec/style-spec';
 
 type Props = {
@@ -48,7 +48,7 @@ class Terrain extends Evented {
         return this._transitionable.serialize() as TerrainSpecification;
     }
 
-    set(terrain: TerrainSpecification, configOptions?: ConfigOptions | null) {
+    set(terrain: TerrainSpecification | TerrainSpecificationUpdate, configOptions?: ConfigOptions | null) {
         this._transitionable.setTransitionOrValue(terrain, configOptions);
     }
 

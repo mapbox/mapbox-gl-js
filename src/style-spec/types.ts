@@ -179,6 +179,10 @@ export type TerrainSpecification = {
     "exaggeration"?: PropertyValueSpecification<number>,
     "exaggeration-transition"?: TransitionSpecification
 };
+export type TerrainSpecificationUpdate = {
+    "exaggeration"?: PropertyValueSpecification<number>,
+    "exaggeration-transition"?: TransitionSpecification
+};
 
 export type FogSpecification = {
     "range"?: PropertyValueSpecification<[number, number]>,

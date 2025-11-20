@@ -94,6 +94,7 @@ import type {
     ConfigSpecification,
     SchemaSpecification,
     ColorThemeSpecification,
+    TerrainSpecificationUpdate,
 } from '../style-spec/types';
 import type {Source, SourceClass} from '../source/source';
 import type {EasingOptions} from './camera';
@@ -3769,7 +3770,7 @@ export class Map extends Camera {
      * // update the exaggeration for the existing terrain
      * map.setTerrain({'exaggeration': 2});
      */
-    setTerrain(terrain?: TerrainSpecification | null): this {
+    setTerrain(terrain?: TerrainSpecification | TerrainSpecificationUpdate | null): this {
         this._lazyInitEmptyStyle();
         if (!terrain && this.transform.projection.requiresDraping) {
             this.style.setTerrainForDraping();

@@ -97,7 +97,8 @@ import type {
     FeaturesetsSpecification,
     IconsetSpecification,
     ModelsSpecification,
-    AppearanceSpecification
+    AppearanceSpecification,
+    TerrainSpecificationUpdate
 } from '../style-spec/types';
 import type {Callback} from '../types/callback';
 import type {StyleImage, StyleImageMap} from './style_image';
@@ -3628,7 +3629,7 @@ class Style extends Evented<MapEvents> {
     // eslint-disable-next-line no-warning-comments
     // TODO: generic approach for root level property: light, terrain, skybox.
     // It is not done here to prevent rebasing issues.
-    setTerrain(terrainOptions?: TerrainSpecification | null, drapeRenderMode: number = DrapeRenderMode.elevated) {
+    setTerrain(terrainOptions?: TerrainSpecification | TerrainSpecificationUpdate | null, drapeRenderMode: number = DrapeRenderMode.elevated) {
         this._checkLoaded();
 
         // Disabling
@@ -3659,13 +3660,13 @@ class Style extends Evented<MapEvents> {
 
         this.checkCanvasFingerprintNoise();
 
-        let options: TerrainSpecification = terrainOptions;
-        const isUpdating = terrainOptions.source == null;
+        let options: TerrainSpecification | TerrainSpecificationUpdate = terrainOptions;
+        const isUpdating = !("source" in terrainOptions) || terrainOptions.source == null;
         if (drapeRenderMode === DrapeRenderMode.elevated) {
             if (this.disableElevatedTerrain) return;
 
             // Input validation and source object unrolling
-            if (typeof options.source === 'object') {
+            if ("source" in options && typeof options.source === 'object') {
                 const id = 'terrain-dem-src';
                 this.addSource(id, options.source);
                 options = clone(options);
@@ -3676,7 +3677,7 @@ class Style extends Evented<MapEvents> {
             const validationProps: {style?: StyleSpecification} = {};
 
             if (this.terrain && isUpdating) {
-                validationOptions.source = this.terrain.get().source;
+                (validationOptions as TerrainSpecification).source = this.terrain.get().source;
 
                 const fragmentStyle = this.terrain ? this.getFragmentStyle(this.terrain.scope) : null;
                 if (fragmentStyle) {
@@ -3692,7 +3693,7 @@ class Style extends Evented<MapEvents> {
         // Enabling
         if (!this.terrain || (this.terrain.scope !== this.scope && !isUpdating) || (this.terrain && drapeRenderMode !== this.terrain.drapeRenderMode)) {
             if (!options) return;
-            this._createTerrain(options, drapeRenderMode);
+            this._createTerrain(options as TerrainSpecification, drapeRenderMode);
             this.fire(new Event('data', {dataType: 'style'}));
         } else { // Updating
             const terrain = this.terrain;
@@ -3710,7 +3711,7 @@ class Style extends Evented<MapEvents> {
             for (const key in terrainOptions) {
                 if (!deepEqual(terrainOptions[key], currSpec[key])) {
                     terrain.set(terrainOptions, this.options);
-                    this.stylesheet.terrain = terrainOptions;
+                    this.stylesheet.terrain = terrainOptions as TerrainSpecification;
                     const parameters = this._getTransitionParameters({duration: 0});
                     terrain.updateTransitions(parameters);
                     this.fire(new Event('data', {dataType: 'style'}));

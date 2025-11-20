@@ -288,6 +288,9 @@ const lightTypes = Object.keys(spec['light-3d'].type.values);
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
 const layerTypes = Object.keys(spec.layer.type.values);
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const {source, ...updatableTerrainSpec} = spec.terrain;
+
 fs.writeFileSync('src/style-spec/types.ts', `// Generated code; do not edit. Edit build/generate-typed-style-spec.ts instead.
 
 import type {UnionToIntersection} from './union-to-intersection';
@@ -384,6 +387,7 @@ ${tsObjectDeclaration('IconsetsSpecification', spec.iconsets)}
 ${tsObjectDeclaration('LightSpecification', spec.light)}
 
 ${tsObjectDeclaration('TerrainSpecification', spec.terrain)}
+${tsObjectDeclaration('TerrainSpecificationUpdate', updatableTerrainSpec)}
 
 ${tsObjectDeclaration('FogSpecification', spec.fog)}
 
