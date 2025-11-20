@@ -1974,6 +1974,8 @@ export class Map extends Camera {
      * will be returned as a separate feature. Similarly, a point feature near a tile boundary may appear in multiple
      * tiles due to tile buffering.
      *
+     * For model layers, id or a property "id" is required to be specified per feature in the source.
+     *
      * @example
      * // Find all features at a point
      * const features = map.queryRenderedFeatures(
