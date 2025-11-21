@@ -361,6 +361,7 @@ class Style extends Evented<MapEvents> {
     _has3DLayers: boolean;
     _hasCircleLayers: boolean;
     _hasSymbolLayers: boolean;
+    _hasBuildingLayers: boolean;
 
     _worldview: string | undefined;
     _hasAppearances: boolean;
@@ -406,6 +407,7 @@ class Style extends Evented<MapEvents> {
         this._has3DLayers = false;
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
+        this._hasBuildingLayers = false;
 
         this._importedAsBasemap = false;
 
@@ -1152,6 +1154,7 @@ class Style extends Evented<MapEvents> {
         this._has3DLayers = false;
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
+        this._hasBuildingLayers = false;
 
         this.forEachFragmentStyle((style: Style) => {
             for (const layerId of style._order) {
@@ -1194,6 +1197,7 @@ class Style extends Evented<MapEvents> {
                     if (layer.type === 'circle') this._hasCircleLayers = true;
                     if (layer.type === 'symbol') this._hasSymbolLayers = true;
                     if (layer.type === 'clip') this._clipLayerPresent = true;
+                    if (layer.type === 'building') this._hasBuildingLayers = true;
                 }
             }
         };
@@ -4078,17 +4082,28 @@ class Style extends Evented<MapEvents> {
         if (this.directionalLight) {
             lightDirection = shadowDirectionFromProperties(this.directionalLight);
         }
+
+        // Hack to ensure that for procedural buildings we don't reparse the tile on zoom levels
+        // above source maxzoom. Here we assume that building layer has its own separate source.
+        const sourcesForBuildingLayers: Set<string> = new Set();
         // Find sources with elevated layers
         const sourcesWithElevatedLayers: Set<string> = new Set();
         for (const id in this._mergedLayers) {
             const layer = this._mergedLayers[id];
+            if (layer.type === 'building') {
+                sourcesForBuildingLayers.add(layer.source);
+            }
             if (layer.hasElevation() && !sourcesWithElevatedLayers.has(layer.source)) {
                 sourcesWithElevatedLayers.add(layer.source);
             }
         }
+
         for (const id in this._mergedSourceCaches) {
             const sourceCache = this._mergedSourceCaches[id];
             const elevatedLayers = sourcesWithElevatedLayers.has(sourceCache._source.id);
+            if (sourcesForBuildingLayers.has(sourceCache._source.id)) {
+                sourceCache._source.reparseOverscaled = false;
+            }
             sourceCache.update(transform, undefined, undefined, lightDirection, elevatedLayers);
         }
     }
