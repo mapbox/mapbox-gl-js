@@ -2167,8 +2167,11 @@ describe('shadow caster tiles', () => {
     transform.pitch = 69;
     transform.bearing = 39.2;
 
-    const {sourceCache, eventedParent} = createSourceCache({
+    // for zoom below 16 tile cover is not extended for shadows
+    // create two source cache configurations
+    const sourceCacheMaxZ16 = createSourceCache({
         reparseOverscaled: true,
+        maxzoom: 16,
         loadTile(tile, callback) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             tile.state = 'loaded';
@@ -2176,27 +2179,57 @@ describe('shadow caster tiles', () => {
             callback(null);
         }
     });
+    sourceCacheMaxZ16.sourceCache.updateCacheSize(transform);
+    sourceCacheMaxZ16.sourceCache.castsShadows = true;
 
-    sourceCache.updateCacheSize(transform);
-    sourceCache.castsShadows = true;
-    test('getShadowCasterCoordinates', async () => {
+    const sourceCacheMaxZ14 = createSourceCache({
+        reparseOverscaled: true,
+        maxzoom: 14,
+        loadTile(tile, callback) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            tile.state = 'loaded';
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            callback(null);
+        }
+    });
+    sourceCacheMaxZ14.sourceCache.updateCacheSize(transform);
+    sourceCacheMaxZ14.sourceCache.castsShadows = true;
+
+    test('getShadowCasterCoordinates(extended tile cover)', async () => {
         await new Promise(resolve => {
-            eventedParent.on('data', (e) => {
+            sourceCacheMaxZ16.eventedParent.on('data', (e) => {
                 if (e.sourceDataType === 'metadata') {
-                    sourceCache.update(transform, 512, false, [0.25, -0.433, -0.866]);
-                    expect(sourceCache.getShadowCasterCoordinates().length).toEqual(6);
-                    expect(sourceCache.getRenderableIds(false, true)).toStrictEqual([
-                        new OverscaledTileID(19, 0, 14, 10044, 8193).key,
-                        new OverscaledTileID(19, 0, 14, 10043, 8193).key,
-                        new OverscaledTileID(19, 0, 14, 10044, 8192).key,
-                        new OverscaledTileID(19, 0, 14, 10043, 8192).key,
-                        new OverscaledTileID(19, 0, 14, 10044, 8191).key,
-                        new OverscaledTileID(19, 0, 14, 10043, 8191).key,
+                    sourceCacheMaxZ16.sourceCache.update(transform, 512, false, [0.25, -0.433, -0.866]);
+                    expect(sourceCacheMaxZ16.sourceCache.getShadowCasterCoordinates().length).toEqual(6);
+                    expect(sourceCacheMaxZ16.sourceCache.getRenderableIds(false, true)).toStrictEqual([
+                        new OverscaledTileID(19, 0, 16, 40179, 32769).key,
+                        new OverscaledTileID(19, 0, 16, 40178, 32769).key,
+                        new OverscaledTileID(19, 0, 16, 40179, 32768).key,
+                        new OverscaledTileID(19, 0, 16, 40178, 32768).key,
+                        new OverscaledTileID(19, 0, 16, 40179, 32767).key,
+                        new OverscaledTileID(19, 0, 16, 40178, 32767).key,
                     ]);
                     resolve();
                 }
             });
-            sourceCache.getSource().onAdd();
+            sourceCacheMaxZ16.sourceCache.getSource().onAdd();
+        });
+    });
+
+    test('getShadowCasterCoordinates(non-extended)', async () => {
+        await new Promise(resolve => {
+            sourceCacheMaxZ14.eventedParent.on('data', (e) => {
+                if (e.sourceDataType === 'metadata') {
+                    sourceCacheMaxZ14.sourceCache.update(transform, 512, false, [0.25, -0.433, -0.866]);
+                    expect(sourceCacheMaxZ14.sourceCache.getShadowCasterCoordinates().length).toEqual(2);
+                    expect(sourceCacheMaxZ14.sourceCache.getRenderableIds(false, true)).toStrictEqual([
+                        new OverscaledTileID(19, 0, 14, 10044, 8192).key,
+                        new OverscaledTileID(19, 0, 14, 10044, 8191).key,
+                    ]);
+                    resolve();
+                }
+            });
+            sourceCacheMaxZ14.sourceCache.getSource().onAdd();
         });
     });
 });

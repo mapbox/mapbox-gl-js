@@ -861,7 +861,7 @@ class Transform {
      * @param {vec3} direction direction unit vector, if undefined quadrant visibility information is used
      * @returns {Array<OverscaledTileID>} a set of extension tiles
      */
-    extendTileCover(coveringTiles: Array<OverscaledTileID>, maxZoom: number, direction?: vec3): Array<OverscaledTileID> {
+    extendTileCover(coveringTiles: Array<OverscaledTileID>, maxZoom: number, direction?: vec3, minZoom?: number): Array<OverscaledTileID> {
         let out: OverscaledTileID[] = [];
         const extendDirection = direction != null;
         const extendQuadrants = !extendDirection;
@@ -882,6 +882,9 @@ class Transform {
 
             // Skip if not at the specified zoom level
             if (extendQuadrants && id.canonical.z !== maxZoom) continue;
+
+            // Skip shadow tiles below minimum zoom level
+            if (extendDirection && minZoom !== undefined && minZoom > id.canonical.z) continue;
 
             const tileId = id.canonical;
             const overscaledZ = id.overscaledZ;

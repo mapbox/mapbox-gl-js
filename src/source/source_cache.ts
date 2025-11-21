@@ -613,7 +613,11 @@ class SourceCache extends Evented {
                 }
             } else if (this.castsShadows && directionalLight) {
                 // find shadowCasterTiles
-                const shadowCasterTileIDs = transform.extendTileCover(idealTileIDs, idealZoom, directionalLight);
+                // Start adding shadow caster extra tiles on zoom 16 to reduce the number of tiles in zoom 15.
+                // With this we eliminate extra shadows requests on zoom 15 at the price of a small (tiny)
+                // visual deffect.
+                const SHADOWS_MIN_ZOOM_EXTRA_TILES = 16.0;
+                const shadowCasterTileIDs = transform.extendTileCover(idealTileIDs, idealZoom, directionalLight, SHADOWS_MIN_ZOOM_EXTRA_TILES);
                 for (const id of shadowCasterTileIDs) {
                     this._shadowCasterTiles[id.key] = true;
                     idealTileIDs.push(id);
