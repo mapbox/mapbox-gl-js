@@ -78,7 +78,7 @@ describe('ModelManager', () => {
     });
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    test("#addModel with different ids but with same URL increases it's number of references but doesn't load it again", async () => {
+    test("#addModel with different ids but with same URL and scope increases it's number of references but doesn't load it again", async () => {
         const {modelManager, eventedParent} = createModelManager();
 
         eventedParent.on('error', ({error}) => {
@@ -91,6 +91,25 @@ describe('ModelManager', () => {
 
         modelManager.addModel('model', 'https://www.example.com/', 'basemap');
         modelManager.addModel('model2', 'https://www.example.com/', 'basemap');
+
+        expect(modelManager.loadModel).toHaveBeenCalledOnce();
+        expect(modelManager.models['basemap']['model'].numReferences).toBe(2);
+    });
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    test("#addModel with different ids and scope but with same URL increases it's number of references but doesn't load it again", async () => {
+        const {modelManager, eventedParent} = createModelManager();
+
+        eventedParent.on('error', ({error}) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+            expect.unreachable(error.message);
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        modelManager.loadModel = vi.fn((id, url) => Promise.resolve({id, url}));
+
+        modelManager.addModel('model', 'https://www.example.com/', 'basemap');
+        modelManager.addModel('model2', 'https://www.example.com/', '');
 
         expect(modelManager.loadModel).toHaveBeenCalledOnce();
         expect(modelManager.models['basemap']['model'].numReferences).toBe(2);
@@ -186,6 +205,28 @@ describe('ModelManager', () => {
         });
 
         modelManager.addModelsFromBucket(['https://www.example.com/1', 'https://www.example.com/2', 'https://www.example.com/3'], 'basemap');
+    });
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    test('#addModelsFromBucket doesn\t reload existing models', async () => {
+        const {modelManager, eventedParent} = createModelManager();
+
+        eventedParent.on('error', ({error}) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+            expect.unreachable(error.message);
+        });
+
+        vi.spyOn(modelManager, 'loadModel').mockImplementation(
+            (id, url) => url.startsWith('https://www.example.com/') ? Promise.resolve({id, url}) : Promise.reject(new Error('Not found'))
+        );
+
+        eventedParent.once('data', () => {
+            modelManager.addModelsFromBucket(['https://www.example.com/1'], 'basemap');
+            expect(modelManager.models['basemap']['https://www.example.com/1'].numReferences).toBe(2);
+        });
+
+        modelManager.addModelsFromBucket(['https://www.example.com/1', 'https://www.example.com/2', 'https://www.example.com/3'], 'basemap');
+
     });
 
     test('#reloadModels', () => {

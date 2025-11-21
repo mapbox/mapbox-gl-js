@@ -2044,8 +2044,12 @@ class Style extends Evented<MapEvents> {
         return this._availableImages.slice();
     }
 
+    getActualScope() {
+        return this._importedAsBasemap ? "basemap" : this.scope;
+    }
+
     addModelURLs(models: ModelsSpecification): this {
-        this.modelManager.addModelURLs(models, this.scope);
+        this.modelManager.addModelURLs(models, this.getActualScope());
         this._updateWorkerModels();
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
@@ -2055,13 +2059,13 @@ class Style extends Evented<MapEvents> {
         this._checkLoaded();
         if (this._validate(validateModel, `models.${id}`, url, null, options)) return this;
 
-        this.modelManager.addModel(id, url, this.scope);
+        this.modelManager.addModel(id, url, this.getActualScope());
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
 
     hasModel(id: string): boolean {
-        return this.modelManager.hasModel(id, this.scope);
+        return this.modelManager.hasModel(id, this.getActualScope());
     }
 
     removeModel(id: string): this {
@@ -2070,14 +2074,14 @@ class Style extends Evented<MapEvents> {
         }
         const keepModelURI = false;
         const forceRemoval = true;
-        this.modelManager.removeModel(id, this.scope, keepModelURI, forceRemoval);
+        this.modelManager.removeModel(id, this.getActualScope(), keepModelURI, forceRemoval);
         this.fire(new Event('data', {dataType: 'style'}));
         return this;
     }
 
     listModels(): Array<string> {
         this._checkLoaded();
-        return this.modelManager.listModels(this.scope);
+        return this.modelManager.listModels(this.getActualScope());
     }
 
     addSource(id: string, source: (SourceSpecification | CustomSourceInterface<unknown>) & {collectResourceTiming?: boolean}, options: StyleSetterOptions = {}): void {
