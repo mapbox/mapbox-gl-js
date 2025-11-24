@@ -809,7 +809,7 @@ class Painter {
 
         for (const id of layerIds) {
             const layer = layers[id];
-
+            if (layer.visibility === 'none') continue;
             if (layer.type === 'circle') {
                 layersRequireTerrainDepth = true;
             } else if (layer.type === 'building') {
@@ -979,6 +979,7 @@ class Painter {
         this.layersWithOcclusionOpacity = [];
         for (let i = 0; i < orderedLayers.length; i++) {
             const layer = orderedLayers[i];
+            if (layer.visibility === 'none') continue;
             const cutoffRange = layer.cutoffRange();
             this.longestCutoffRange = Math.max(cutoffRange, this.longestCutoffRange);
             if (cutoffRange > 0.0) {

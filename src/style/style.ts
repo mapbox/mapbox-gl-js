@@ -1788,7 +1788,7 @@ class Style extends Evented<MapEvents> {
 
         for (const layerId of this._mergedOrder) {
             const layer = this._mergedLayers[layerId];
-            layer.recalculate(parameters, this._availableImages);
+            if (layer.visibility !== 'none') layer.recalculate(parameters, this._availableImages);
             if (!layer.isHidden(parameters.zoom)) {
                 const sourceCache = this.getLayerSourceCache(layer);
                 if (sourceCache) {
@@ -4197,6 +4197,7 @@ class Style extends Evented<MapEvents> {
                 const layerId = this._mergedOrder[i];
                 const styleLayer = this._mergedLayers[layerId];
                 if (styleLayer.type !== 'symbol') continue;
+                if (styleLayer.visibility === 'none') continue;
                 const checkAgainstClipLayer = this.isLayerClipped(styleLayer);
                 this.placement.updateLayerOpacities(styleLayer, layerTiles[makeFQID(styleLayer.source, styleLayer.scope)], i, checkAgainstClipLayer ? replacementSource : null);
             }
