@@ -1,26 +1,20 @@
 export type Style = {
-    convertToMeters: boolean,
-    entranceColorRgb: number[],
-    facadeGlazingColorRgb: number[],
     normalScale: number[],
-    ridgeHeight: number,
-    roofColorRgb: number[],
-    tileToMeters: number,
-    tileZoom: number,
-    wallColorRgb: number[]
+    tileToMeters: number
 };
 
 export type Feature = {
-    coordinates: {x: number, y: number}[][],
+    coordinates: number[],
+    ringIndices: number[],
     height: number,
     id: number,
     minHeight: number,
-    roofType: string,
+    roofType: RoofType,
     sourceId: number
 };
 
 export type Facade = {
-    coordinates: {x: number, y: number}[],
+    coordinates: number[],
     crossPerc: number,
     distanceToRoad: number,
     entrances: string,
@@ -30,12 +24,11 @@ export type Facade = {
 export interface MeshBuffer {
     positions?: Float32Array;
     normals?: Float32Array;
-    colors?: Uint8Array;
     ao?: Float32Array;
     uv?: Float32Array;
     isFauxFacade?: Uint8Array;
-    indices?: Int32Array;
-    buildingPart?: string;
+    indices?: Int16Array;
+    buildingPart?: BuildingPart;
 }
 
 export interface MeshCollection {
@@ -44,42 +37,57 @@ export interface MeshCollection {
     modifiedPolygonRings: Float32Array[];
 }
 
+// Roof type constants - these must match the enum in the building generation library
+export const ROOF_TYPE_PARAPET = 0;
+export const ROOF_TYPE_HIPPED = 1;
+export const ROOF_TYPE_GABLED = 2;
+export const ROOF_TYPE_FLAT = 3;
+export const ROOF_TYPE_MANSARD = 4;
+export const ROOF_TYPE_SKILLION = 5;
+export const ROOF_TYPE_PYRAMIDAL = 6;
+export type RoofType = number;
+
+// Building part constants - these must match the enum in the building generation library
+export const BUILDING_PART_WALL = 0;
+export const BUILDING_PART_ROOF = 1;
+export const BUILDING_PART_FACADE_GLAZING = 2;
+export const BUILDING_PART_ENTRANCE = 3;
+export type BuildingPart = number;
+
+const MEMORY_STACK_SIZE = 1024 * 4;
 export class BuildingGen {
     module: BuildingGenModule;
+    memoryStack: number;
+    memoryStackNextFree: number;
 
     constructor(module: BuildingGenModule) {
         this.module = module;
+        this.memoryStack = this.module.malloc(MEMORY_STACK_SIZE);
+        this.memoryStackNextFree = this.memoryStack;
     }
 
-    createIntArray(data: number[]): number {
-        const typedArray = new Int32Array(data);
-        const pointer = this.module.malloc(
-            typedArray.length * typedArray.BYTES_PER_ELEMENT
-        );
-        this.module.heap32.set(
-            typedArray, pointer / typedArray.BYTES_PER_ELEMENT
-        );
-        return pointer;
-    }
-
-    createFloatArray(data: number[]): number {
-        const typedArray = new Float32Array(data);
-        const pointer = this.module.malloc(
-            typedArray.length * typedArray.BYTES_PER_ELEMENT
-        );
-        this.module.heapF32.set(
-            typedArray, pointer / typedArray.BYTES_PER_ELEMENT
-        );
-        return pointer;
-    }
-
-    createStringBuffer(str: string): number {
-        const strPtr = this.module.malloc(str.length + 1);
-        for (let i = 0; i < str.length; ++i) {
-            this.module.heapU8[strPtr + i] = str.charCodeAt(i);
+    createIntArray(data: ArrayLike<number>): number {
+        const positionsPtr = this.memoryStackNextFree;
+        this.memoryStackNextFree += data.length * Int32Array.BYTES_PER_ELEMENT;
+        if (this.memoryStackNextFree - this.memoryStack > MEMORY_STACK_SIZE) {
+            return -1;
         }
-        this.module.heapU8[strPtr + str.length] = 0;
-        return strPtr;
+        const positionsArray = new Int32Array(this.module.heap32.buffer, positionsPtr, data.length);
+        positionsArray.set(data);
+
+        return positionsPtr;
+    }
+
+    createFloatArray(data: ArrayLike<number>): number {
+        const positionsPtr = this.memoryStackNextFree;
+        this.memoryStackNextFree += data.length * Float32Array.BYTES_PER_ELEMENT;
+        if (this.memoryStackNextFree - this.memoryStack > MEMORY_STACK_SIZE) {
+            return -1;
+        }
+        const positionsArray = new Float32Array(this.module.heapF32.buffer, positionsPtr, data.length);
+        positionsArray.set(data);
+
+        return positionsPtr;
     }
 
     readStringBuffer(ptr: number): string {
@@ -92,16 +100,8 @@ export class BuildingGen {
     }
 
     setStyle(style: Style) {
-        const entranceColor = style.entranceColorRgb;
-        const facadeGlazingColor = style.facadeGlazingColorRgb;
-        const roofColor = style.roofColorRgb;
-        const wallColor = style.wallColorRgb;
         const normalScale = style.normalScale;
         this.module.setStyle(
-            entranceColor[0], entranceColor[1], entranceColor[2],
-            facadeGlazingColor[0], facadeGlazingColor[1], facadeGlazingColor[2],
-            roofColor[0], roofColor[1], roofColor[2],
-            wallColor[0], wallColor[1], wallColor[2],
             normalScale[0], normalScale[1], normalScale[2],
             style.tileToMeters);
     }
@@ -131,62 +131,36 @@ export class BuildingGen {
     }
 
     generateMesh(features: Feature[], facades: Facade[]): MeshCollection | string {
+        this.memoryStackNextFree = this.memoryStack;
         for (const feature of features) {
-            const roofTypePtr = this.createStringBuffer(feature.roofType);
-
-            const ringIndices = [0];
-            const coordinates = [];
-            for (const ring of feature.coordinates) {
-                if (!Array.isArray(ring)) {
-                    continue;
-                }
-
-                for (const point of ring) {
-                    coordinates.push(point.x);
-                    coordinates.push(point.y);
-                }
-                ringIndices.push(coordinates.length);
+            const ringIndexPointer = this.createIntArray(feature.ringIndices);
+            const coordinatesPointer = this.createFloatArray(feature.coordinates);
+            if (ringIndexPointer === -1 || coordinatesPointer === -1) {
+                return `building_gen: Out of stack memory: ${this.memoryStackNextFree - this.memoryStack}/${MEMORY_STACK_SIZE}`;
             }
-
-            const ringIndexPointer = this.createIntArray(ringIndices);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            const coordinatesPointer = this.createFloatArray(coordinates);
-
             this.module.addFeature(feature.id, feature.sourceId,
                 feature.minHeight, feature.height,
-                roofTypePtr, feature.roofType.length,
-                coordinatesPointer, ringIndexPointer, ringIndices.length - 1);
-
-            this.module.free(roofTypePtr);
-            this.module.free(ringIndexPointer);
-            this.module.free(coordinatesPointer);
+                feature.roofType,
+                coordinatesPointer, ringIndexPointer, feature.ringIndices.length - 1);
         }
 
         for (const facade of facades) {
             let entrances: number[];
             if (facade.entrances) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                entrances = JSON.parse(facade.entrances);
+                entrances = JSON.parse(facade.entrances) as number[];
             } else {
                 entrances = [];
             }
             const entrancesPointer = this.createFloatArray(entrances);
+            const coordinatesPointer = this.createFloatArray(facade.coordinates);
 
-            const coordinates = [];
-            for (const point of facade.coordinates) {
-                coordinates.push(point.x);
-                coordinates.push(point.y);
+            if (entrancesPointer === -1 || coordinatesPointer === -1) {
+                return `building_gen: Out of stack memory: ${this.memoryStackNextFree - this.memoryStack}/${MEMORY_STACK_SIZE}`;
             }
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            const coordinatesPointer = this.createFloatArray(coordinates);
 
             this.module.addFacade(facade.sourceId, facade.crossPerc, facade.distanceToRoad,
                 entrancesPointer, entrances.length,
-                coordinatesPointer, coordinates.length);
-
-            this.module.free(entrancesPointer);
-            this.module.free(coordinatesPointer);
+                coordinatesPointer, facade.coordinates.length);
         }
 
         const success = this.module.generateMesh();
@@ -197,8 +171,7 @@ export class BuildingGen {
         }
 
         const meshCount = this.module.getMeshCount();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const meshes: MeshBuffer[] = new Array(meshCount);
+        const meshes = new Array<MeshBuffer>(meshCount);
         for (let i = 0; i < meshCount; i++) {
             const positionsPtr = this.module.getPositionsPtr(i);
             const positionsLength = this.module.getPositionsLength(i);
@@ -207,10 +180,6 @@ export class BuildingGen {
             const normalsPtr = this.module.getNormalsPtr(i);
             const normalsLength = this.module.getNormalsLength(i);
             const normalsArray = new Float32Array(this.module.heapF32.buffer, normalsPtr, normalsLength);
-
-            const colorsPtr = this.module.getColorsPtr(i);
-            const colorsLength = this.module.getColorsLength(i);
-            const colorsArray = new Uint8Array(this.module.heapU8.buffer, colorsPtr, colorsLength);
 
             const aoPtr = this.module.getAOPtr(i);
             const aoLength = this.module.getAOLength(i);
@@ -226,15 +195,13 @@ export class BuildingGen {
 
             const indicesPtr = this.module.getIndicesPtr(i);
             const indicesLength = this.module.getIndicesLength(i);
-            const indicesArray = new Int32Array(this.module.heap32.buffer, indicesPtr, indicesLength);
+            const indicesArray = new Int16Array(this.module.heap16.buffer, indicesPtr, indicesLength);
 
-            const buildingPartPtr = this.module.getBuildingPart(i);
-            const buildingPart = this.readStringBuffer(buildingPartPtr);
+            const buildingPart = this.module.getBuildingPart(i);
 
             meshes[i] = {
                 positions: positionsArray,
                 normals: normalsArray,
-                colors: colorsArray,
                 ao: aoArray,
                 uv: uvArray,
                 isFauxFacade: isFauxFacadeArray,
@@ -259,10 +226,6 @@ export class BuildingGen {
 }
 
 type SetStyleFunction = (
-    entranceR: number, entranceG: number, entranceB: number,
-    facadeR: number, facadeG: number, facadeB: number,
-    roofingR: number, roofingG: number, roofingB: number,
-    wallR: number, wallG: number, wallB: number,
     normalScaleX: number, normalScaleY: number, normalScaleZ: number,
     tileToMeters: number) => void;
 type SetAOOptionsFunction = (bakeToVertices: number, parapetOcclusionDistance: number) => void;
@@ -272,7 +235,7 @@ type SetFacadeOptionsFunction = (facadeHeight: number, createEaves: number) => v
 type SetFauxFacadeOptionsFunction = (hasFacade: number, useUvXModifier: number, uvXModifier: number) => void;
 type SetFacadeClassifierOptionsFunction = (classificationDistance: number) => void;
 type AddFeatureFunction = (id: number, sourceId: number, minHeight: number, height: number, roofShape: number,
-                           roofShapeLength: number, coords: number, ringIndices: number, numRings: number) => void;
+                           coords: number, ringIndices: number, numRings: number) => void;
 type AddFacadeFunction = (id: number, crossPerc: number, distanceToRoad: number, entrances: number, entrancesLength: number,
                           coords: number, numCoords: number) => void;
 type GenerateMeshFunction = () => number;
@@ -283,8 +246,6 @@ type GetPositionsPtrFunction = (meshIndex: number) => number;
 type GetPositionsLengthFunction = (meshIndex: number) => number;
 type GetNormalsPtrFunction = (meshIndex: number) => number;
 type GetNormalsLengthFunction = (meshIndex: number) => number;
-type GetColorsPtrFunction = (meshIndex: number) => number;
-type GetColorsLengthFunction = (meshIndex: number) => number;
 type GetAOPtrFunction = (meshIndex: number) => number;
 type GetAOLengthFunction = (meshIndex: number) => number;
 type GetUVPtrFunction = (meshIndex: number) => number;
@@ -302,6 +263,7 @@ type MallocFunction = (size: number) => number;
 
 interface BuildingGenModule {
     heapU8: Uint8Array;
+    heap16: Int16Array;
     heap32: Int32Array;
     heapF32: Float32Array;
     setStyle: SetStyleFunction;
@@ -321,8 +283,6 @@ interface BuildingGenModule {
     getPositionsLength: GetPositionsLengthFunction;
     getNormalsPtr: GetNormalsPtrFunction;
     getNormalsLength: GetNormalsLengthFunction;
-    getColorsPtr: GetColorsPtrFunction;
-    getColorsLength: GetColorsLengthFunction;
     getAOPtr: GetAOPtrFunction;
     getAOLength: GetAOLengthFunction;
     getUVPtr: GetUVPtrFunction;
@@ -341,12 +301,14 @@ interface BuildingGenModule {
 
 export function loadBuildingGen(wasmPromise: Promise<Response>): Promise<BuildingGen> {
     let heapU8: Uint8Array;
+    let heap16: Int16Array;
     let heap32: Int32Array;
     let heapF32: Float32Array;
     let wasmMemory: WebAssembly.Memory;
 
     function updateMemoryViews() {
         heapU8 = new Uint8Array(wasmMemory.buffer);
+        heap16 = new Int16Array(wasmMemory.buffer);
         heap32 = new Int32Array(wasmMemory.buffer);
         heapF32 = new Float32Array(wasmMemory.buffer);
     }
@@ -420,23 +382,22 @@ export function loadBuildingGen(wasmPromise: Promise<Response>): Promise<Buildin
             getPositionsLength: exports.v as GetPositionsLengthFunction,
             getNormalsPtr: exports.w as GetNormalsPtrFunction,
             getNormalsLength: exports.x as GetNormalsLengthFunction,
-            getColorsPtr: exports.y as GetColorsPtrFunction,
-            getColorsLength: exports.z as GetColorsLengthFunction,
-            getAOPtr: exports.A as GetAOPtrFunction,
-            getAOLength: exports.B as GetAOLengthFunction,
-            getUVPtr: exports.C as GetUVPtrFunction,
-            getUVLength: exports.D as GetUVLengthFunction,
-            getFauxFacadePtr: exports.E as GetFauxFacadePtrFunction,
-            getFauxFacadeLength: exports.F as GetFauxFacadeLengthFunction,
-            getIndicesPtr: exports.G as GetIndicesPtrFunction,
-            getIndicesLength: exports.H as GetIndicesLengthFunction,
-            getBuildingPart: exports.I as GetBuildingPartFunction,
-            getRingCount: exports.J as GetRingCountFunction,
-            getRingPtr: exports.K as GetRingPtrFunction,
-            getRingLength: exports.L as GetRingLengthFunction,
-            free: exports.M as FreeFunction,
-            malloc: exports.N as MallocFunction,
+            getAOPtr: exports.y as GetAOPtrFunction,
+            getAOLength: exports.z as GetAOLengthFunction,
+            getUVPtr: exports.A as GetUVPtrFunction,
+            getUVLength: exports.B as GetUVLengthFunction,
+            getFauxFacadePtr: exports.C as GetFauxFacadePtrFunction,
+            getFauxFacadeLength: exports.D as GetFauxFacadeLengthFunction,
+            getIndicesPtr: exports.E as GetIndicesPtrFunction,
+            getIndicesLength: exports.F as GetIndicesLengthFunction,
+            getBuildingPart: exports.G as GetBuildingPartFunction,
+            getRingCount: exports.H as GetRingCountFunction,
+            getRingPtr: exports.I as GetRingPtrFunction,
+            getRingLength: exports.J as GetRingLengthFunction,
+            malloc: exports.K as MallocFunction,
+            free: exports.L as FreeFunction,
             heapU8,
+            heap16,
             heap32,
             heapF32
         });
