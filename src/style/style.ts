@@ -361,7 +361,6 @@ class Style extends Evented<MapEvents> {
     _has3DLayers: boolean;
     _hasCircleLayers: boolean;
     _hasSymbolLayers: boolean;
-    _hasBuildingLayers: boolean;
 
     _worldview: string | undefined;
     _hasAppearances: boolean;
@@ -407,7 +406,6 @@ class Style extends Evented<MapEvents> {
         this._has3DLayers = false;
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
-        this._hasBuildingLayers = false;
 
         this._importedAsBasemap = false;
 
@@ -1154,7 +1152,6 @@ class Style extends Evented<MapEvents> {
         this._has3DLayers = false;
         this._hasCircleLayers = false;
         this._hasSymbolLayers = false;
-        this._hasBuildingLayers = false;
 
         this.forEachFragmentStyle((style: Style) => {
             for (const layerId of style._order) {
@@ -1197,7 +1194,6 @@ class Style extends Evented<MapEvents> {
                     if (layer.type === 'circle') this._hasCircleLayers = true;
                     if (layer.type === 'symbol') this._hasSymbolLayers = true;
                     if (layer.type === 'clip') this._clipLayerPresent = true;
-                    if (layer.type === 'building') this._hasBuildingLayers = true;
                 }
             }
         };
