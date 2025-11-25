@@ -81,7 +81,7 @@ export function renderIcon(icon: Icon, options: RasterizationOptions): ImageData
 
     if (canvas === null) {
         canvas = getCanvas(10, 10);
-        context = canvas.getContext('2d') as Context;
+        context = canvas.getContext('2d', {willReadFrequently: true}) as Context;
     }
 
     canvas.width = renderedWidth;
