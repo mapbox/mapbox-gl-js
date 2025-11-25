@@ -135,7 +135,7 @@ export interface Bucket {
      *
      * @private
      */
-    destroy: () => void;
+    destroy: (reload?: boolean) => void;
     updateFootprints: (id: UnwrappedTileID, footprints: Array<TileFootprint>) => void;
     updateAppearances: (canonical?: CanonicalTileID, featureState?: FeatureStates, availableImages?: Array<ImageId>, globalProperties?: GlobalProperties) => void;
 }

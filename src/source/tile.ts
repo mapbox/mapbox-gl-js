@@ -1018,9 +1018,9 @@ class Tile {
      * @returns {undefined}
      * @private
      */
-    destroy(preserveTexture: boolean = false) {
+    destroy(reload: boolean = true) {
         for (const id in this.buckets) {
-            this.buckets[id].destroy();
+            this.buckets[id].destroy(reload);
         }
 
         this.buckets = {};
@@ -1083,7 +1083,7 @@ class Tile {
             this._globeTileDebugTextBuffer = null;
         }
 
-        if (!preserveTexture && this.texture && this.texture instanceof Texture) {
+        if (reload && this.texture && this.texture instanceof Texture) {
             this.texture.destroy();
             delete this.texture;
         }

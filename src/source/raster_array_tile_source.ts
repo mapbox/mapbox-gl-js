@@ -168,7 +168,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         if (textures.size) {
             // Clean everything else up owned by the tile, but preserve the texture.
             // Destroy first to prevent racing with the texture cache being popped.
-            tile.destroy(true);
+            tile.destroy(false);
             // Preserve the textures in the cache
             for (const texture of textures.values()) {
                 // Save the texture to the cache

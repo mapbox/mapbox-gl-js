@@ -422,7 +422,7 @@ class ModelBucket implements Bucket {
         this.uploaded = true;
     }
 
-    destroy() {
+    destroy(reload?: boolean) {
         for (const modelId in this.instancesPerModel) {
             const perModelAttributes: PerModelAttributes = this.instancesPerModel[modelId];
             if (perModelAttributes.instancedDataArray.length === 0) continue;
@@ -431,7 +431,7 @@ class ModelBucket implements Bucket {
             }
         }
         const modelManager = this.layers[0].modelManager;
-        if (modelManager && this.modelUris && this.modelsRequested) {
+        if (reload && modelManager && this.modelUris && this.modelsRequested) {
             for (const modelUri of this.modelUris) {
                 modelManager.removeModel(modelUri, "", true);
             }

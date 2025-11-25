@@ -245,7 +245,7 @@ class RasterTileSource<T = 'raster'> extends Evented<SourceEvents> implements IS
         if (tile.texture && tile.texture instanceof Texture) {
             // Clean everything else up owned by the tile, but preserve the texture.
             // Destroy first to prevent racing with the texture cache being popped.
-            tile.destroy(true);
+            tile.destroy(false);
 
             // Save the texture to the cache
             if (tile.texture && tile.texture instanceof Texture) {

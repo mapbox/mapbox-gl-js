@@ -476,7 +476,7 @@ class GeoJSONSource extends Evented<SourceEvents> implements ISource {
             }
 
             delete tile.request;
-            tile.destroy();
+            tile.destroy(false);
 
             if (tile.aborted) {
                 return callback(null);
