@@ -1524,7 +1524,6 @@
             "android": "11.16.0",
             "ios": "11.16.0"
           },
-          "experimental": true,
           "private": true
         },
         "raster": {
@@ -2167,6 +2166,7 @@
       },
       "default": "visible",
       "doc": "Whether this layer is displayed.",
+      "private": true,      
       "sdk-support": {
         "basic functionality": {
           "js": "3.16.0",
@@ -2183,7 +2183,6 @@
       "type": "boolean",
       "default": false,
       "doc": "Whether to render facade details on the buildings.",
-      "experimental": true,
       "private": true,
       "sdk-support": {
         "basic functionality": {
@@ -2211,7 +2210,7 @@
       "maximum": 200,
       "default": 3,
       "doc": "Number of floors created when building-facade is enabled.",
-      "experimental": true,
+      "private": true,
       "property-type": "data-driven",
       "sdk-support": {
         "basic functionality": {
@@ -2241,7 +2240,7 @@
       "maximum": 20.0,
       "default": 3.1,
       "doc": "Width of a floor. Think of this as measure how wide each unit should be. This effectively determines the number of units per each floor. Note that this does not affect the ground level facades (i.e. number of windows).",
-      "experimental": true,
+      "private": true,
       "property-type": "data-driven",
       "sdk-support": {
         "basic functionality": {
@@ -2273,7 +2272,7 @@
       "maximum": 1.0,
       "default": [0.9, 0.9],
       "doc": "Given as fractions, specifies the percentage of unit area covered by windows when building-facade is enabled. Note that the area of a unit is ultimately determined by `building-facade-unit-width` and `building-facade-floors`.",
-      "experimental": true,
+      "private": true,
       "property-type": "data-driven",
       "sdk-support": {
         "basic functionality": {
@@ -2324,7 +2323,6 @@
       },
       "default": "flat",
       "doc": "Roof type to use for the procedural buildings.",
-      "experimental": true,
       "private": true,
       "sdk-support": {
         "basic functionality": {
@@ -2353,7 +2351,6 @@
       "units": "meters",
       "doc": "The height of the procedural buildings.",
       "transition": true,
-      "experimental": true,
       "private": true,
       "sdk-support": {
         "basic functionality": {
@@ -2382,7 +2379,6 @@
       "requires": [
         "building-height"
       ],
-      "experimental": true,
       "private": true,
       "sdk-support": {
         "basic functionality": {
@@ -2404,7 +2400,7 @@
     "building-flood-light-wall-radius": {
       "property-type": "data-driven",
       "type": "number",
-      "experimental": true,
+      "private": true,
       "units": "meters",
       "default": 0,
       "minimum": 0,
@@ -2436,7 +2432,7 @@
     "building-flood-light-ground-radius": {
       "property-type": "data-driven",
       "type": "number",
-      "experimental": true,
+      "private": true,
       "units": "meters",
       "default": 0,
       "doc": "The extent of the flood light effect on the ground beneath the buildings in meters.",
@@ -2467,7 +2463,7 @@
     "building-flip-roof-orientation": {
       "property-type": "data-driven",
       "type": "boolean",
-      "experimental": true,
+      "private": true,
       "units": "meters",
       "default": false,
       "doc": "Flips the orientation of the roofs for the buildings. This only affects simple geometries. Namely buildings whose footprints form a quadrilateral. By default (false), the roof ridge takes the direction of the longer edge of the quadrilateral.",
@@ -7915,7 +7911,6 @@
       "maximum": 1,
       "doc": "The opacity of the entire procedural buildings layer. This is rendered on a per-layer, not per-feature, basis, and data-driven styling is not available.",
       "transition": true,
-      "experimental": true,
       "private": true,
       "sdk-support": {
         "basic functionality": {
@@ -7938,7 +7933,6 @@
       "default": 0,
       "minimum": 0,
       "maximum": 1,
-      "experimental": true,
       "private": true,
       "expression": {
         "interpolated": false,
@@ -7961,7 +7955,6 @@
       "default": 0,
       "minimum": 0,
       "maximum": 1,
-      "experimental": true,
       "private": true,
       "expression": {
         "interpolated": true,
@@ -7982,7 +7975,6 @@
     "building-ambient-occlusion-ground-radius": {
       "property-type": "data-constant",
       "type": "number",
-      "experimental": true,
       "private": true,
       "default": 3.0,
       "minimum": 0,
@@ -8005,7 +7997,6 @@
     "building-ambient-occlusion-ground-attenuation": {
       "property-type": "data-constant",
       "type": "number",
-      "experimental": true,
       "private": true,
       "default": 0.69,
       "minimum": 0.0,
@@ -8029,7 +8020,6 @@
     "building-vertical-scale": {
       "property-type": "data-constant",
       "type": "number",
-      "experimental": true,
       "private": true,
       "default": 1.0,
       "minimum": 0.0,
@@ -8054,7 +8044,6 @@
       "default": true,
       "doc": "Enable/Disable shadow casting for this layer",
       "transition": false,
-      "experimental": true,
       "private": true,
       "sdk-support": {
         "basic functionality": {
@@ -8069,7 +8058,6 @@
       "type": "color",
       "default": "rgba(193, 154, 127, 1)",
       "doc": "Color buildings. This can be styled using different building parts (e.g. window, wall, roof).",
-      "experimental": true,
       "private": true,
       "use-theme": true,
       "transition": false,
@@ -8102,7 +8090,6 @@
       "maximum": 5,
       "units": "intensity",
       "doc": "Controls the intensity of light emitted on the source features. There is no emission for value 0. For value 1.0, only emissive component (no shading) is displayed and values above 1.0 produce light contribution to surrounding area, for some of the parts (e.g. doors).",
-      "experimental": true,
       "private": true,
       "sdk-support": {
         "basic functionality": {
@@ -8132,7 +8119,7 @@
       "minimum": 0,
       "maximum": 1,
       "doc": "Given as a fraction specifies the likelihood for the facades to be emissive when building-facade is enabled. A value of 0.0 means the window will never be emissive, while a value of 1.0 means the window will always be emissive. This can be used to create variations on a building where some windows are lit and some are not.",
-      "experimental": true,
+      "private": true,
       "property-type": "data-constant",
       "sdk-support": {
         "basic functionality": {
@@ -8151,6 +8138,7 @@
     },
     "building-cutoff-fade-range": {
       "type": "number",
+      "private": true,      
       "default": 0.0,
       "minimum": 0.0,
       "maximum": 1.0,
@@ -8171,7 +8159,7 @@
     "building-flood-light-color": {
       "property-type": "data-constant",
       "type": "color",
-      "experimental": true,
+      "private": true,
       "default": "#ffffff",
       "doc": "The color of the flood light effect on the walls of the buildings.",
       "requires": [
@@ -8197,7 +8185,7 @@
     "building-flood-light-intensity": {
       "property-type": "data-constant",
       "type": "number",
-      "experimental": true,
+      "private": true,
       "default": 0.0,
       "minimum": 0.0,
       "maximum": 1.0,
@@ -8224,7 +8212,7 @@
     "building-flood-light-ground-attenuation": {
       "property-type": "data-constant",
       "type": "number",
-      "experimental": true,
+      "private": true,
       "default": 0.69,
       "minimum": 0.0,
       "maximum": 1.0,

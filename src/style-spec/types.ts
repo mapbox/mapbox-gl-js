@@ -1138,115 +1138,46 @@ export type BuildingLayerSpecification = {
     "filter"?: FilterSpecification,
     "layout"?: {
         "visibility"?: "visible" | "none" | ExpressionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-facade"?: DataDrivenPropertyValueSpecification<boolean>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-facade-floors"?: DataDrivenPropertyValueSpecification<number>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-facade-unit-width"?: DataDrivenPropertyValueSpecification<number>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-facade-window"?: DataDrivenPropertyValueSpecification<[number, number]>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-roof-shape"?: DataDrivenPropertyValueSpecification<"flat" | "hipped" | "gabled" | "parapet" | "mansard" | "skillion" | "pyramidal">,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-height"?: DataDrivenPropertyValueSpecification<number>,
         "building-height-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-base"?: DataDrivenPropertyValueSpecification<number>,
         "building-base-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-flood-light-wall-radius"?: DataDrivenPropertyValueSpecification<number>,
         "building-flood-light-wall-radius-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-flood-light-ground-radius"?: DataDrivenPropertyValueSpecification<number>,
         "building-flood-light-ground-radius-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-flip-roof-orientation"?: DataDrivenPropertyValueSpecification<boolean>,
         "building-flip-roof-orientation-transition"?: TransitionSpecification
     },
     "paint"?: {
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-opacity"?: PropertyValueSpecification<number>,
         "building-opacity-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-ambient-occlusion-intensity"?: ExpressionSpecification,
         "building-ambient-occlusion-intensity-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-ambient-occlusion-ground-intensity"?: PropertyValueSpecification<number>,
         "building-ambient-occlusion-ground-intensity-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-ambient-occlusion-ground-radius"?: PropertyValueSpecification<number>,
         "building-ambient-occlusion-ground-radius-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-ambient-occlusion-ground-attenuation"?: PropertyValueSpecification<number>,
         "building-ambient-occlusion-ground-attenuation-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-vertical-scale"?: PropertyValueSpecification<number>,
         "building-vertical-scale-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-cast-shadows"?: boolean,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-color"?: DataDrivenPropertyValueSpecification<ColorSpecification>,
         "building-color-use-theme"?: PropertyValueSpecification<string>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-emissive-strength"?: DataDrivenPropertyValueSpecification<number>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-facade-emissive-chance"?: PropertyValueSpecification<number>,
         "building-cutoff-fade-range"?: ExpressionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-flood-light-color"?: PropertyValueSpecification<ColorSpecification>,
         "building-flood-light-color-transition"?: TransitionSpecification,
         "building-flood-light-color-use-theme"?: PropertyValueSpecification<string>,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-flood-light-intensity"?: PropertyValueSpecification<number>,
         "building-flood-light-intensity-transition"?: TransitionSpecification,
-        /**
-         * @experimental This property is experimental and subject to change in future versions.
-         */
         "building-flood-light-ground-attenuation"?: PropertyValueSpecification<number>,
         "building-flood-light-ground-attenuation-transition"?: TransitionSpecification
     },
