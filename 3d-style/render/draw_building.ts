@@ -314,8 +314,7 @@ function draw(painter: Painter, source: SourceCache, layer: BuildingStyleLayer, 
         drawLayer = drawLayer && debugParams.drawTranslucentPass;
     });
 
-    // Hide shadows if the vertical scale is less than 1.0 (similar to gl-native)
-    if (!painter.shadowRenderer || verticalScale < 1.0) {
+    if (!painter.shadowRenderer) {
         receiveShadowsEnabled = false;
     }
 
