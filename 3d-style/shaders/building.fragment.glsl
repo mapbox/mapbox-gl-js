@@ -26,7 +26,6 @@ uniform float u_faux_facade_ao_intensity;
 #ifdef RENDER_SHADOWS
 in highp vec4 v_pos_light_view_0;
 in highp vec4 v_pos_light_view_1;
-in float v_depth_shadows;
 #endif
 
 #ifdef FLOOD_LIGHT
@@ -208,7 +207,6 @@ void main() {
 #else // RENDER_CUTOFF
     shadowed_lighting_factor = shadowed_light_factor_normal(xy_flipped_normal, v_pos_light_view_0, v_pos_light_view_1, 1.0 / gl_FragCoord.w);
 #endif // RENDER_CUTOFF
-    // shadowed_lighting_factor = shadowed_light_factor_normal(xy_flipped_normal, v_pos_light_view_0, v_pos_light_view_1, v_depth_shadows);
 #else
     shadowed_lighting_factor = dot(xy_flipped_normal, u_lighting_directional_dir);
 #endif
