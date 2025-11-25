@@ -137,6 +137,10 @@ const skip = [
     // Current behavior is arbitrary
     "render-tests/geojson/inline-linestring-fill",
 
+    // Broken in similar way as gl-native https://mapbox.atlassian.net/browse/MAPSNAT-3448
+    "render-tests/icon-size/depends-on-coalesce-image",
+    "render-tests/appearance/icon-size-depends-on-coalesce-image",
+
     // Mapbox-gl-js does not support tile-mode
     "render-tests/icon-text-fit/text-variable-anchor-tile-map-mode",
     "render-tests/map-mode/tile",
