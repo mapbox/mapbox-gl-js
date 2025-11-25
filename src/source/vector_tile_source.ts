@@ -300,9 +300,9 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                         const expiryData = getExpiryDataFromHeaders(data.responseHeaders);
                         // the worker will skip the network request if the data is already there
                         params.data = {
-                            cacheControl: expiryData.cacheControl,
+                            rawData: data.rawData.slice(0),
                             expires: expiryData.expires,
-                            rawData: data.rawData.slice(0)
+                            cacheControl: expiryData.cacheControl,
                         };
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         if (tile.actor) tile.actor.send('loadTile', params, done.bind(this), undefined, true);

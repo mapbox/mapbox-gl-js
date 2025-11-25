@@ -66,7 +66,11 @@ export type WorkerSourceVectorTileRequest = WorkerSourceTileRequest & {
     tileSize: number;
     tileZoom: number;
     zoom: number;
-    data?: unknown;
+    data?: {
+        rawData: ArrayBuffer;
+        expires?: string;
+        cacheControl?: string;
+    };
     extraShadowCaster?: boolean;
     isSymbolTile?: boolean | null;
     partial?: boolean;
