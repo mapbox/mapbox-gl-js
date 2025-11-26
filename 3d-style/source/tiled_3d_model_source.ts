@@ -160,7 +160,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
 
         if (!tile.actor || tile.state === 'expired') {
             tile.actor = this.dispatcher.getActor();
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
         } else if (tile.state === 'loading') {
             // schedule tile reloading after it has been loaded
@@ -175,7 +175,7 @@ class Tiled3DModelSource extends Evented<SourceEvents> implements ISource {
                 tile.state = 'loaded';
                 return;
             }
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 

@@ -31,9 +31,9 @@ function drawCustom(painter: Painter, sourceCache: SourceCache, layer: CustomSty
 
             if (painter.transform.projection.name === "globe") {
                 const center = painter.transform.pointMerc;
-                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix(), painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(),  globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio);
+                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix() as number[], painter.transform.getProjection(), painter.transform.globeToMercatorMatrix(),  globeToMercatorTransition(painter.transform.zoom), [center.x, center.y], painter.transform.pixelsPerMeterRatio);
             } else {
-                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix());
+                prerender.call(implementation, context.gl, painter.transform.customLayerMatrix() as number[]);
             }
 
             context.setDirty();

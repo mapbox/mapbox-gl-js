@@ -17,6 +17,7 @@
     "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
     "strict": false,
+    "strictBindCallApply": true,
     "target": "es2022",
     "useDefineForClassFields": false,
     "verbatimModuleSyntax": true,

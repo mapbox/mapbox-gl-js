@@ -116,7 +116,6 @@ class Snow extends Evented {
             return false;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
             value,
             style: {glyphs: true, sprite: true},

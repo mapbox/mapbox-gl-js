@@ -846,11 +846,11 @@ export class TurnstileEvent extends TelemetryEvent {
 }
 
 const turnstileEvent_ = new TurnstileEvent();
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 export const postTurnstileEvent: (tileUrls: Array<string>, customAccessToken?: string | null) => void = turnstileEvent_.postTurnstileEvent.bind(turnstileEvent_);
 
 export const mapLoadEvent: MapLoadEvent = new MapLoadEvent();
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 export const postMapLoadEvent: (
     arg1: number,
     arg2: string,
@@ -859,23 +859,23 @@ export const postMapLoadEvent: (
 ) => void = mapLoadEvent.postMapLoadEvent.bind(mapLoadEvent);
 
 export const styleLoadEvent: StyleLoadEvent = new StyleLoadEvent();
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 export const postStyleLoadEvent: (arg1: string | null | undefined, arg2: StyleLoadEventInput) => void = styleLoadEvent.postStyleLoadEvent.bind(styleLoadEvent);
 
 export const styleWithAppearanceEvent = new MetricsEvent({attributes: [{name: 'maps/js/layer-animations/style-with-appearances'}]});
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 export const postStyleWithAppearanceEvent: (arg1: string | null | undefined) => void = styleWithAppearanceEvent.postMetricsEvent.bind(styleWithAppearanceEvent);
 
 export const addedAppearanceEvent = new MetricsEvent({attributes: [{name: 'maps/js/layer-animations/runtime-appearances'}]});
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 export const postAddedAppearanceEvent: (arg1: string | null | undefined) => void = addedAppearanceEvent.postMetricsEvent.bind(addedAppearanceEvent);
 
 export const performanceEvent_: PerformanceEvent = new PerformanceEvent();
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 export const postPerformanceEvent: (arg1: string | null | undefined, arg2: LivePerformanceData) => void = performanceEvent_.postPerformanceEvent.bind(performanceEvent_);
 
 export const mapSessionAPI: MapSessionAPI = new MapSessionAPI();
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
 export const getMapSessionAPI: (
     arg1: number,
     arg2: string,

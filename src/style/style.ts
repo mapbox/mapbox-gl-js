@@ -68,6 +68,7 @@ import {loadIconset} from './load_iconset';
 import {ImageId} from '../style-spec/expression/types/image_id';
 import {ImageProvider} from '../render/image_provider';
 
+import type {PropertyValidatorOptions} from '../style-spec/validate/validate_property';
 import type Tile from '../source/tile';
 import type GeoJSONSource from '../source/geojson_source';
 import type {ReplacementSource} from "../../3d-style/source/replacement_source";
@@ -2961,7 +2962,6 @@ class Style extends Evented<MapEvents> {
 
         if (value !== null && value !== undefined && !(options && options.validate === false)) {
             const key = `layers.${layerId}.layout.${name}`;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const errors = emitValidationErrors(layer, validateLayoutProperty.call(validateStyle, {
                 key,
                 layerType: layer.type,
@@ -2970,7 +2970,7 @@ class Style extends Evented<MapEvents> {
                 styleSpec,
                 // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
                 style: {glyphs: true, sprite: true}
-            }));
+            } as unknown as PropertyValidatorOptions));
             if (errors) {
                 return;
             }
@@ -3020,14 +3020,13 @@ class Style extends Evented<MapEvents> {
 
         if (value !== null && value !== undefined && !(options && options.validate === false)) {
             const key = `layers.${layerId}.paint.${name}`;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const errors = emitValidationErrors(layer, validatePaintProperty.call(validateStyle, {
                 key,
                 layerType: layer.type,
                 objectKey: name,
                 value,
                 styleSpec
-            }));
+            } as unknown as PropertyValidatorOptions));
             if (errors) {
                 return;
             }
@@ -3977,7 +3976,7 @@ class Style extends Evented<MapEvents> {
 
         // Fallback to the default glyphs URL if none is specified
         const style = Object.assign({}, this.serialize());
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         return emitValidationErrors(this, validate.call(validateStyle, Object.assign({
             key,
             style,

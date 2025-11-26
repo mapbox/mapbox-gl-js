@@ -129,7 +129,7 @@ export function createFunction(parameters, propertySpec) {
         return {
             kind: 'composite',
             interpolationType,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             interpolationFactor: Interpolate.interpolationFactor.bind(undefined, interpolationType),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
             zoomStops: featureFunctionStops.map(s => s[0]),
@@ -150,7 +150,7 @@ export function createFunction(parameters, propertySpec) {
         return {
             kind: 'camera',
             interpolationType,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
             interpolationFactor: Interpolate.interpolationFactor.bind(undefined, interpolationType),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             zoomStops: parameters.stops.map(s => s[0]),

@@ -198,14 +198,11 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
                     const width = terrain.drapeBufferSize[0];
                     const height = terrain.drapeBufferSize[1];
                     let framebufferCopyTexture = terrain.framebufferCopyTexture;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     if (!framebufferCopyTexture || (framebufferCopyTexture && (framebufferCopyTexture.size[0] !== width || framebufferCopyTexture.size[1] !== height))) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                         if (framebufferCopyTexture) framebufferCopyTexture.destroy();
                         framebufferCopyTexture = terrain.framebufferCopyTexture = new Texture(context,
                             new RGBAImage({width, height}), gl.RGBA8);
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     framebufferCopyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
                     gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
                     return framebufferCopyTexture;
@@ -281,12 +278,10 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
 
                     // Render ground AO.
                     if (aoEnabled) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         passDraped(true, false, framebufferCopyTexture);
                     }
                     // Render ground flood light.
                     if (floodLightEnabled) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         passDraped(false, true, framebufferCopyTexture);
                     }
                 }

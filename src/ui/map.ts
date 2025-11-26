@@ -1608,7 +1608,7 @@ export class Map extends Camera {
                     mousein = false;
                 } else if (!mousein) {
                     mousein = true;
-                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent, {features}));
+                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent, {features}) as unknown as MapEventOf<T>);
                 }
             };
 
@@ -1627,14 +1627,14 @@ export class Map extends Camera {
                     mousein = true;
                 } else if (mousein) {
                     mousein = false;
-                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
+                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent) as unknown as MapEventOf<T>);
                 }
             };
 
             const mouseout = (e: MapMouseEvent) => {
                 if (mousein) {
                     mousein = false;
-                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent));
+                    listener.call(this, new MapMouseEvent(type, this, e.originalEvent) as unknown as MapEventOf<T>);
                 }
             };
 
@@ -1646,7 +1646,7 @@ export class Map extends Camera {
                 if (features.length) {
                     // Here we need to mutate the original event, so that preventDefault works as expected.
                     e.features = features;
-                    listener.call(this, e);
+                    listener.call(this, e as unknown as MapEventOf<T>);
                     delete e.features;
                 }
             };

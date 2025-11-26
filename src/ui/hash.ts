@@ -23,7 +23,7 @@ export default class Hash {
         ], this);
 
         // Mobile Safari doesn't allow updating the hash more than 100 times per 30 seconds.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         this._updateHash = throttle(this._updateHashUnthrottled.bind(this), 30 * 1000 / 100);
     }
 

@@ -213,15 +213,15 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
         }
 
         // @ts-expect-error - TS2339 - Property 'update' does not exist on type 'CustomSourceInterface<T>'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         implementation.update = this._update.bind(this);
 
         // @ts-expect-error - TS2339 - Property 'clearTiles' does not exist on type 'CustomSourceInterface<T>'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         implementation.clearTiles = this._clearTiles.bind(this);
 
         // @ts-expect-error - TS2339 - Property 'coveringTiles' does not exist on type 'CustomSourceInterface<T>'.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         implementation.coveringTiles = this._coveringTiles.bind(this);
 
         Object.assign(this, pick(implementation, ['dataType', 'scheme', 'minzoom', 'maxzoom', 'tileSize', 'attribution', 'minTileCacheSize', 'maxTileCacheSize']));
@@ -272,7 +272,7 @@ class CustomSource<T> extends Evented<SourceEvents> implements ISource {
         // @ts-expect-error - TS2741 - Property 'cancel' is missing in type 'Promise<void | Awaited<T>>' but required in type 'Cancelable'.
         tile.request = Promise
             .resolve(this._implementation.loadTile({x, y, z}, {signal}))
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             .then(tileLoaded.bind(this))
             .catch((error?: Error | DOMException | AJAXError) => {
                 // silence AbortError

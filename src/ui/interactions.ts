@@ -108,11 +108,11 @@ export class InteractionSet {
         this.delegatedInteractions = new Map();
         this.typeById = new Map(); // keep track of each id type for easy removal
         this.filters = new Map(); // cache compiled filter expressions for each interaction
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         this.handleType = this.handleType.bind(this);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         this.handleMove = this.handleMove.bind(this);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         this.handleOut = this.handleOut.bind(this);
         this.hoveredFeatures = new Map();
         this.prevHoveredFeatures = new Map();

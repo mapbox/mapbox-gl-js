@@ -436,7 +436,7 @@ export function mapObject<T, U>(
 ): Record<PropertyKey, U> {
     const output: Record<PropertyKey, U> = {};
     for (const key in input) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         output[key] = iterator.call(context || this, input[key], key, input);
     }
     return output;

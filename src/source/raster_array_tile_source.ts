@@ -105,7 +105,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
         tile.requestParams = request;
         if (!tile.actor) tile.actor = this.dispatcher.getActor();
 
-        const done = (error?: AJAXError | null, data?: MapboxRasterTile, responseHeaders?: Headers) => {
+        const done = (error?: AJAXError | null, data?: MapboxRasterTile | ArrayBuffer | null, responseHeaders?: Headers) => {
             delete tile.request;
 
             if (tile.aborted) {
@@ -132,7 +132,7 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
                 tile.state = 'loaded';
                 tile._isHeaderLoaded = true;
-                tile._mrt = data;
+                tile._mrt = data as MapboxRasterTile;
             }
 
             callback(null);
@@ -140,11 +140,9 @@ class RasterArrayTileSource extends RasterTileSource<'raster-array'> {
 
         if (this.partial) {
             // Load only the tile header in the main thread
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             tile.request = tile.fetchHeader(undefined, done.bind(this));
         } else {
             // Load and parse the entire tile in Worker
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
         }
     }

@@ -75,7 +75,7 @@ class FeatureWrapper implements VectorTileFeature {
     }
 
     toGeoJSON(x: number, y: number, z: number): GeoJSON.Feature {
-        return toGeoJSON.call(this, x, y, z) as GeoJSON.Feature;
+        return toGeoJSON.call(this, x, y, z);
     }
 }
 

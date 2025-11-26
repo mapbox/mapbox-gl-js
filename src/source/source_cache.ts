@@ -96,7 +96,7 @@ class SourceCache extends Evented {
 
         this._source = source;
         this._tiles = {};
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         this._cache = new TileCache(0, this._unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
@@ -257,7 +257,6 @@ class SourceCache extends Evented {
             tile.state = state;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this._loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
@@ -585,9 +584,9 @@ class SourceCache extends Evented {
             });
 
             if (this._source.hasTile) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 const hasTile = this._source.hasTile.bind(this._source);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
                 idealTileIDs = idealTileIDs.filter((coord) => hasTile(coord));
             }
         }
@@ -873,7 +872,6 @@ class SourceCache extends Evented {
                 new RasterArrayTile(tileID, size, this.transform.tileZoom, painter, this._isRaster) :
                 new Tile(tileID, size, this.transform.tileZoom, painter, this._isRaster, this._source.worldview);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this._loadTile(tile, this._tileLoaded.bind(this, tile, tileID.key, tile.state));
         }
 

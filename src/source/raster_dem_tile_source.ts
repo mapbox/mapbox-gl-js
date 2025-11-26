@@ -30,7 +30,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
 
     override loadTile(tile: Tile, callback: Callback<undefined>) {
         const url = this.map._requestManager.normalizeTileURL(tile.tileID.canonical.url(this.tiles, this.scheme), false, this.tileSize);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), imageLoaded.bind(this));
 
         function imageLoaded(
@@ -81,7 +81,7 @@ class RasterDEMTileSource extends RasterTileSource<'raster-dem'> {
                 if (!tile.actor || tile.state === 'expired') {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                     tile.actor = this.dispatcher.getActor();
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                     tile.actor.send('loadTile', params, done.bind(this), undefined, true);
                 }
             }

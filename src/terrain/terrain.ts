@@ -353,7 +353,7 @@ export class Terrain extends Elevation {
     }
 
     set style(style: Style) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         style.on('data', this._onStyleDataEvent.bind(this));
         this._style = style;
         this._style.map.on('moveend', () => {

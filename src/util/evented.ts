@@ -148,13 +148,13 @@ export class Evented<R extends EventRegistry = EventRegistry> {
             const listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
 
             for (const listener of listeners) {
-                listener.call(this, event);
+                listener.call(this, event as EventOf<R, T, this>);
             }
 
             const oneTimeListeners = this._oneTimeListeners && this._oneTimeListeners[type] ? this._oneTimeListeners[type].slice() : [];
             for (const listener of oneTimeListeners) {
                 _removeEventListener(type, listener, this._oneTimeListeners);
-                listener.call(this, event);
+                listener.call(this, event as EventOf<R, T, this>);
             }
 
             const parent = this._eventedParent;

@@ -3,7 +3,7 @@ import {getExpiryDataFromHeaders, pick} from '../util/util';
 import loadTileJSON from './load_tilejson';
 import {postTurnstileEvent} from '../util/mapbox';
 import TileBounds from './tile_bounds';
-import {ResourceType} from '../util/ajax';
+import {AJAXError, ResourceType} from '../util/ajax';
 import browser from '../util/browser';
 import {cacheEntryPossiblyAdded} from '../util/tile_request_cache';
 import {DedupedRequest, loadVectorTile} from './load_vector_tile';
@@ -21,7 +21,6 @@ import type {VectorSourceSpecification, PromoteIdSpecification} from '../style-s
 import type Actor from '../util/actor';
 import type {LoadVectorTileResult} from './load_vector_tile';
 import type {WorkerSourceVectorTileRequest, WorkerSourceVectorTileResult} from './worker_source';
-import type {AJAXError} from '../util/ajax';
 
 /**
  * A source containing vector tiles in [Mapbox Vector Tile format](https://docs.mapbox.com/vector-tiles/reference/).
@@ -292,7 +291,7 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             // if workers are not ready to receive messages yet, use the idle time to preemptively
             // load tiles on the main thread and pass the result instead of requesting a worker to do so
             if (!this.dispatcher.ready) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 const cancel = loadVectorTile.call({deduped: this._deduped}, params, (err?: Error | null, data?: LoadVectorTileResult | null) => {
                     if (err || !data) {
                         done.call(this, err);
@@ -304,15 +303,15 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
                             expires: expiryData.expires,
                             cacheControl: expiryData.cacheControl,
                         };
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                         if (tile.actor) tile.actor.send('loadTile', params, done.bind(this), undefined, true);
                     }
                 }, true);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 tile.request = {cancel};
 
             } else {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
                 tile.request = tile.actor.send('loadTile', params, done.bind(this), undefined, true);
             }
 
@@ -321,35 +320,30 @@ class VectorTileSource extends Evented<SourceEvents> implements ISource<'vector'
             tile.reloadCallback = callback;
 
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
             tile.request = tile.actor.send('reloadTile', params, done.bind(this));
         }
 
-        function done(err?: AJAXError | null, data?: WorkerSourceVectorTileResult | null) {
+        function done(this: VectorTileSource, err?: Error | null, data?: WorkerSourceVectorTileResult | null) {
             delete tile.request;
 
             if (tile.aborted)
                 return callback(null);
 
-            if (err && err.status !== 404) {
+            if (err && err instanceof AJAXError && err.status !== 404) {
                 return callback(err);
             }
 
             if (data && data.resourceTiming)
                 tile.resourceTiming = data.resourceTiming;
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (this.map._refreshExpiredTiles && data) tile.setExpiryData(data);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             tile.loadVectorData(data, this.map.painter);
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
             cacheEntryPossiblyAdded(this.dispatcher);
 
             callback(null, data);
 
             if (tile.reloadCallback) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 this.loadTile(tile, tile.reloadCallback);
                 tile.reloadCallback = null;
             }
