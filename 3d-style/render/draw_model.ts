@@ -722,7 +722,7 @@ function drawVectorLayerModels(painter: Painter, source: SourceCache, layer: Mod
 
         const clippable = painter.conflationActive && Object.keys(bucket.instancesPerModel).length > 0 && painter.style.isLayerClipped(layer, source.getSource());
         if (clippable) {
-            if (bucket.updateReplacement(coord, painter.replacementSource, layerIndex, scope)) {
+            if (bucket.updateReplacement(coord, painter.replacementSource, layerIndex, layer.scope)) {
                 bucket.uploaded = false;
                 bucket.upload(painter.context);
             }
